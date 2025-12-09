@@ -1,0 +1,5 @@
+# Firebase cache
+.firebase/
+
+# Firebase config (if contains sensitive data)
+.firebaserc
