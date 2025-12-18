@@ -31,7 +31,11 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **I. Platform-Native Excellence**: Uses SwiftUI, Apple HIG, native iOS patterns
+- [ ] **II. Test-First Development**: Contract tests for APIs, integration tests for critical paths defined
+- [ ] **III. AI Content Quality**: Content traceable to philosophy sources, tone validation process defined
+- [ ] **IV. User-First Validation**: Success metrics defined (shares/DAU, retention), independent deployment possible
+- [ ] **V. Performance as UX**: Performance budgets specified (60fps scroll, <200ms taps, <100ms p95 API)
 
 ## Project Structure
 
