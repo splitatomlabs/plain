@@ -5,7 +5,7 @@
 ---
 
 ## 1. Problem
-Gen Z and Gen Alpha users spend hours doom scrolling low value content across short form social feeds. This behavior is frequent, habitual, and emotionally dysregulating. It amplifies anxiety, comparison, and mental noise rather than resolving it. Existing alternatives either demand high effort such as books or meditation, or reduce ideas to contextless quotes that fail to ground users. As generative AI accelerates the production of low value content, users increasingly lack credible, emotionally stabilizing material in the moments they need it most.
+Gen Z and Gen Alpha users spend significant time in short form social feeds as a way to process emotions, seek perspective, and pass time. While this content is engaging, it is often low in grounding or reflective value, leaving users feeling mentally scattered rather than clearer or more oriented. Existing alternatives either require high effort, such as books or meditation, or reduce complex ideas to isolated quotes without context or progression. As generative AI increases the volume of fast, derivative content, users have fewer accessible ways to encounter high value ideas that support emotional clarity in the moment.
 
 ---
 
