@@ -1,20 +1,6 @@
 [
   {
     "book": 1,
-    "section": 6,
-    "part": 1,
-    "text": "vi. Num.",
-    "char_count": 8
-  },
-  {
-    "book": 1,
-    "section": 48,
-    "part": 1,
-    "text": "xlviii. Whensoever thou wilt rejoice thyself,\n think and meditate upon those good parts and especial gifts, which thou\n hast observed in any of them that live with thee:\n \n \n as industry in one, in another modesty, in another bountifulness, in\n another some other thing. For nothing can so much rejoice thee, as the\n resemblances and parallels of several virtues, eminent in the dispositions\n of them that live with thee, especially when all at once, as it were, they\n represent themselves unto thee. See therefore, that thou have them always\n in a readiness.\n \n \n THE FIRST BOOK",
-    "char_count": 579
-  },
-  {
-    "book": 1,
     "section": 1,
     "part": 1,
     "text": "I. Of my grandfather Verus I have learned to be gentle and meek, and to\n refrain from all anger and passion. From the fame and memory of him that\n begot me I have learned both shamefastness and manlike behaviour. Of my\n mother I have learned to be religious, and bountiful; and to forbear, not\n only to do, but to intend any evil; to content myself with a spare diet,\n and to fly all such excess as is incidental to great wealth.",
@@ -66,34 +52,27 @@
     "book": 1,
     "section": 4,
     "part": 3,
-    "text": "To read with\n diligence; not to rest satisfied with a light and superficial knowledge,\n nor quickly to assent to things commonly spoken of: whom also I must thank\n that ever I lighted upon Epictetus his Hypomnemata , or moral commentaries\n and common-factions: which also he gave me of his own.",
-    "char_count": 294
+    "text": "To read with\n diligence; not to rest satisfied with a light and superficial knowledge,\n nor quickly to assent to things commonly spoken of: whom also I must thank\n that ever I lighted upon Epictetus his \nHypomnemata\n, or moral commentaries\n and common-factions: which also he gave me of his own.",
+    "char_count": 295
   },
   {
     "book": 1,
     "section": 5,
     "part": 1,
-    "text": "V.",
-    "char_count": 2
+    "text": "V. From Apollonius, true liberty, and unvariable steadfastness, and not\n to regard anything at all, though never so little, but right and reason: and always, whether in the sharpest pains, or after the loss of a child, or in long diseases, to be still the same man; who also was a present and\n visible example unto me, that it was possible for the same man to be both\n vehement and remiss: a man not subject to be vexed, and offended with the\n incapacity of his scholars and auditors in his lectures and expositions; and a true pattern of a man who of all his good gifts and faculties,",
+    "char_count": 585
   },
   {
     "book": 1,
     "section": 5,
     "part": 2,
-    "text": "From Apollonius, true liberty, and unvariable steadfastness, and not\n to regard anything at all, though never so little, but right and reason: and always, whether in the sharpest pains, or after the loss of a child, or in long diseases, to be still the same man; who also was a present and\n visible example unto me, that it was possible for the same man to be both\n vehement and remiss: a man not subject to be vexed, and offended with the\n incapacity of his scholars and auditors in his lectures and expositions; and a true pattern of a man who of all his good gifts and faculties,",
-    "char_count": 582
-  },
-  {
-    "book": 1,
-    "section": 5,
-    "part": 3,
     "text": "least\n esteemed in himself, that his excellent skill and ability to teach and\n persuade others the common theorems and maxims of the Stoic philosophy.",
     "char_count": 150
   },
   {
     "book": 1,
     "section": 5,
-    "part": 4,
+    "part": 3,
     "text": "Of\n him also I learned how to receive favours and kindnesses (as commonly they\n are accounted:) from friends, so that I might not become obnoxious unto\n them, for them, nor more yielding upon occasion, than in right I ought;\n and yet so that I should not pass them neither, as an unsensible and\n unthankful man.",
     "char_count": 311
   },
@@ -101,29 +80,22 @@
     "book": 1,
     "section": 6,
     "part": 1,
-    "text": "VI.",
-    "char_count": 3
+    "text": "VI. Of Sextus, mildness and the pattern of a family governed with\n paternal affection; and a purpose to live according to nature: to be grave\n without affectation: to observe carefully the several dispositions of my\n friends, not to be offended with idiots, nor unseasonably to set upon\n those that are carried with the vulgar opinions, with the theorems, and\n tenets of philosophers: his conversation being an example how a man might\n accommodate himself to all men and companies; so that though his company\n were sweeter and more pleasing than any flatterer's cogging and fawning;",
+    "char_count": 582
   },
   {
     "book": 1,
     "section": 6,
     "part": 2,
-    "text": "Of Sextus, mildness and the pattern of a family governed with\n paternal affection; and a purpose to live according to nature: to be grave\n without affectation: to observe carefully the several dispositions of my\n friends, not to be offended with idiots, nor unseasonably to set upon\n those that are carried with the vulgar opinions, with the theorems, and\n tenets of philosophers: his conversation being an example how a man might\n accommodate himself to all men and companies; so that though his company\n were sweeter and more pleasing than any flatterer's cogging and fawning;",
-    "char_count": 578
-  },
-  {
-    "book": 1,
-    "section": 6,
-    "part": 3,
     "text": "yet was it at the same time most respected and reverenced: who also had a\n proper happiness and faculty, rationally and methodically to find out, and\n set in order all necessary determinations and instructions for a man's\n life.",
     "char_count": 228
   },
   {
     "book": 1,
     "section": 6,
-    "part": 4,
-    "text": "A man without ever the least appearance of anger, or any other\n passion; able at the same time most exactly to observe the Stoic Apathia ,\n or unpassionateness, and yet to be most tender-hearted: ever of good\n credit; and yet almost without any noise, or rumour: very learned, and yet\n making little show.",
-    "char_count": 305
+    "part": 3,
+    "text": "A man without ever the least appearance of anger, or any other\n passion; able at the same time most exactly to observe the Stoic \nApathia\n,\n or unpassionateness, and yet to be most tender-hearted: ever of good\n credit; and yet almost without any noise, or rumour: very learned, and yet\n making little show.",
+    "char_count": 306
   },
   {
     "book": 1,
@@ -136,8 +108,8 @@
     "book": 1,
     "section": 8,
     "part": 1,
-    "text": "VIII. Of Fronto, to how much envy and fraud and hypocrisy the state of a\n tyrannous king is subject unto, and how they who are commonly called\n εὐπατρίδαι,\n i.e. nobly born, are in some sort incapable, or void of natural\n affection.",
-    "char_count": 232
+    "text": "VIII. Of Fronto, to how much envy and fraud and hypocrisy the state of a\n tyrannous king is subject unto, and how they who are commonly called\n εὐπατρίδαι,\n \ni.e.\n nobly born, are in some sort incapable, or void of natural\n affection.",
+    "char_count": 234
   },
   {
     "book": 1,
@@ -955,7 +927,7 @@
     "book": 1,
     "section": 43,
     "part": 2,
-    "text": "MEDITATIONS \n \n \n MARCUS AURELIUS ANTONINUS THE ROMAN EMPEROR \n \n \n BOOKS \n \n \n INTRODUCTION \n \n \n HIS FIRST BOOK \n \n \n concerning HIMSELF: \n \n \n \n \n THE FIRST BOOK \n \n \n THE SECOND BOOK \n \n \n THE THIRD BOOK \n \n \n THE FOURTH BOOK \n \n \n THE FIFTH BOOK \n \n \n THE SIXTH BOOK \n \n \n THE SEVENTH BOOK \n \n \n THE EIGHTH BOOK \n \n \n THE NINTH BOOK \n \n \n THE TENTH BOOK \n \n \n THE ELEVENTH BOOK \n \n \n THE TWELFTH BOOK \n \n \n APPENDIX \n \n \n NOTES \n \n \n GLOSSARY \n \n \n Paragraphs with First Lines \n \n \n \n \n THE FULL PROJECT GUTENBERG™ LICENSE",
-    "char_count": 527
+    "text": "MEDITATIONS\n\nMARCUS AURELIUS ANTONINUS THE ROMAN EMPEROR\n\nBOOKS\n\nINTRODUCTION\n\nHIS FIRST BOOK\n\nconcerning HIMSELF:\n\nTHE FIRST BOOK\n\nTHE SECOND BOOK\n\nTHE THIRD BOOK\n\nTHE FOURTH BOOK\n\nTHE FIFTH BOOK\n\nTHE SIXTH BOOK\n\nTHE SEVENTH BOOK\n\nTHE EIGHTH BOOK\n\nTHE NINTH BOOK\n\nTHE TENTH BOOK\n\nTHE ELEVENTH BOOK\n\nTHE TWELFTH BOOK\n\nAPPENDIX\n\nNOTES\n\nGLOSSARY\n\nParagraphs with First Lines\n\nTHE FULL PROJECT GUTENBERG™ LICENSE",
+    "char_count": 409
   }
 ]

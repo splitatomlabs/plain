@@ -20,15 +20,15 @@ from bs4 import BeautifulSoup
 from ebooklib import epub
 
 # Roman numeral pattern that marks section starts, e.g. "I.", "II.", "XIV."
+# Only uppercase, must appear at the start of a line or after a newline.
 ROMAN_PATTERN = re.compile(
-    r'(?<!\w)'               # not preceded by a word char
+    r'(?:^|\n)\s*'           # start of text or after newline
     r'(M{0,4}'               # thousands
     r'(?:CM|CD|D?C{0,3})'   # hundreds
     r'(?:XC|XL|L?X{0,3})'   # tens
     r'(?:IX|IV|V?I{0,3}))'  # ones
     r'\.'                    # trailing dot
     r'(?=\s)',               # followed by whitespace
-    re.IGNORECASE,
 )
 
 MAX_CHARS = 600
@@ -57,8 +57,8 @@ def epub_item_to_text(item) -> str:
     # Remove script/style nodes
     for tag in soup(['script', 'style']):
         tag.decompose()
-    text = soup.get_text(separator=' ')
-    # Collapse whitespace
+    text = soup.get_text(separator='\n')
+    # Collapse whitespace within lines
     text = re.sub(r'[ \t]+', ' ', text)
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
@@ -96,7 +96,9 @@ def split_at_sentences(text: str, max_chars: int = MAX_CHARS) -> list[str]:
     if len(text) <= max_chars:
         return [text]
 
-    sentence_end = re.compile(r'(?<=[.!?])\s+')
+    # Sentence boundary: require a lowercase letter before the period
+    # to avoid splitting on Roman numeral markers like "V.", "XI.", "XIV."
+    sentence_end = re.compile(r'(?<=[a-z][.!?])\s+')
     clause_end = re.compile(r'(?<=[;:,])\s+')
 
     # First pass: split at sentence boundaries
