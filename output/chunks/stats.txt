@@ -1,0 +1,110 @@
+============================================================
+File: Meditations_book_1_original.json
+============================================================
+  Chunks : 133
+  Chars  : min=84  max=599  mean=391.2  median=411.0
+
+  Char count distribution (based on original text):
+    0-200    ####--------------------------   19 ( 14.3%)
+    200-400  #########---------------------   42 ( 31.6%)
+    400-600  ################--------------   72 ( 54.1%)
+    600+     ------------------------------    0 (  0.0%)
+
+  Top 5 longest chunks (by original char count):
+    1. [book=1 sec=4 part=1] chars=599
+       "IV. If to understand and to be reasonable be common unto all men, then  is that reason, for which we..."
+    2. [book=1 sec=28 part=1] chars=599
+       "XXVIII. Those words which once were common and ordinary, are now become  obscure and obsolete; and s..."
+    3. [book=1 sec=14 part=3] chars=597
+       "That I lived under the  government of my lord and father, who would take away from me all pride  and..."
+    4. [book=1 sec=39 part=3] chars=595
+       "Run them over also, whom thou thyself, one  after another, hast known in thy time to drop away. Such..."
+    5. [book=1 sec=12 part=2] chars=593
+       "His manner was, never to wonder at anything;  never to be in haste, and yet never slow: nor to be pe..."
+
+============================================================
+File: Meditations_book_1_plain.json
+============================================================
+  Chunks : 133
+  Chars  : min=84  max=599  mean=391.2  median=411.0
+
+  Char count distribution (based on original text):
+    0-200    ####--------------------------   19 ( 14.3%)
+    200-400  #########---------------------   42 ( 31.6%)
+    400-600  ################--------------   72 ( 54.1%)
+    600+     ------------------------------    0 (  0.0%)
+
+  Top 5 longest chunks (by original char count):
+    1. [book=1 sec=4 part=1] chars=599
+       "IV. If to understand and to be reasonable be common unto all men, then  is that reason, for which we..."
+    2. [book=1 sec=28 part=1] chars=599
+       "XXVIII. Those words which once were common and ordinary, are now become  obscure and obsolete; and s..."
+    3. [book=1 sec=14 part=3] chars=597
+       "That I lived under the  government of my lord and father, who would take away from me all pride  and..."
+    4. [book=1 sec=39 part=3] chars=595
+       "Run them over also, whom thou thyself, one  after another, hast known in thy time to drop away. Such..."
+    5. [book=1 sec=12 part=2] chars=593
+       "His manner was, never to wonder at anything;  never to be in haste, and yet never slow: nor to be pe..."
+
+  Readability of plain_text translations:
+    Flesch-Kincaid Grade Level : min=0.2  max=28.7  mean=8.8  median=8.3
+    Flesch Reading Ease        : min=15.6  max=107.1  mean=68.0  median=69.7
+    Chunks at/below grade 7    : 39/133 (29.3%)
+    Chunks with FRE >= 70      : 66/133 (49.6%)
+
+============================================================
+File: Meditations_book_2_original.json
+============================================================
+  Chunks : 30
+  Chars  : min=151  max=591  mean=403.3  median=402.0
+
+  Char count distribution (based on original text):
+    0-200    ##----------------------------    2 (  6.7%)
+    200-400  #############-----------------   13 ( 43.3%)
+    400-600  ###############---------------   15 ( 50.0%)
+    600+     ------------------------------    0 (  0.0%)
+
+  Top 5 longest chunks (by original char count):
+    1. [book=2 sec=15 part=2] chars=591
+       "And philosophy doth consist in this, for a man to preserve  that spirit which is within him, from al..."
+    2. [book=2 sec=14 part=1] chars=589
+       "XIV. A man's soul doth wrong and disrespect itself first and especially,  when as much as in itself ..."
+    3. [book=2 sec=10 part=1] chars=579
+       "X. It is the part of a man endowed with a good understanding faculty, to  consider what they themsel..."
+    4. [book=2 sec=2 part=1] chars=562
+       "II. Let it be thy earnest and incessant care as a Roman and a man to  perform whatsoever it is that ..."
+    5. [book=2 sec=12 part=1] chars=537
+       "XII. If thou shouldst live three thousand, or as many as ten thousands  of years, yet remember this,..."
+
+============================================================
+File: Meditations_book_2_plain.json
+============================================================
+  Chunks : 30
+  Chars  : min=151  max=591  mean=403.3  median=402.0
+
+  Char count distribution (based on original text):
+    0-200    ##----------------------------    2 (  6.7%)
+    200-400  #############-----------------   13 ( 43.3%)
+    400-600  ###############---------------   15 ( 50.0%)
+    600+     ------------------------------    0 (  0.0%)
+
+  Top 5 longest chunks (by original char count):
+    1. [book=2 sec=15 part=2] chars=591
+       "And philosophy doth consist in this, for a man to preserve  that spirit which is within him, from al..."
+    2. [book=2 sec=14 part=1] chars=589
+       "XIV. A man's soul doth wrong and disrespect itself first and especially,  when as much as in itself ..."
+    3. [book=2 sec=10 part=1] chars=579
+       "X. It is the part of a man endowed with a good understanding faculty, to  consider what they themsel..."
+    4. [book=2 sec=2 part=1] chars=562
+       "II. Let it be thy earnest and incessant care as a Roman and a man to  perform whatsoever it is that ..."
+    5. [book=2 sec=12 part=1] chars=537
+       "XII. If thou shouldst live three thousand, or as many as ten thousands  of years, yet remember this,..."
+
+  Readability of plain_text translations:
+    Flesch-Kincaid Grade Level : min=3.5  max=17.4  mean=8.0  median=7.2
+    Flesch Reading Ease        : min=25.3  max=90.1  mean=71.1  median=74.5
+    Chunks at/below grade 7    : 13/30 (43.3%)
+    Chunks with FRE >= 70      : 17/30 (56.7%)
+
+============================================================
+Done.
