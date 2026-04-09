@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "workflow-engine@claude-code-workflow": true
+  }
+}
