@@ -11,11 +11,6 @@ Plain is a multi-platform project consisting of:
 
 ## Development Commands
 
-### Custom Slash Commands
-
-- `/ios-build` - Build the iOS app for simulator
-- `/ios-run` - Build and run the iOS app in simulator
-
 ### iOS App
 
 Build the iOS app:
