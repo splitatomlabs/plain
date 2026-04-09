@@ -121,8 +121,8 @@ def report_file(path):
 
 def main():
     parser = argparse.ArgumentParser(description="Report statistics for chunk JSON files.")
-    parser.add_argument("--input", metavar="PATH", action="append", required=True,
-                        help="Path to a chunk JSON file (may be repeated).")
+    parser.add_argument("--input", metavar="PATH", nargs="+", required=True,
+                        help="Path(s) to chunk JSON files.")
     args = parser.parse_args()
 
     for path_str in args.input:
