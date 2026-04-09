@@ -153,51 +153,52 @@ def find_book_number(text: str) -> int | None:
     return None
 
 
+def strip_roman_prefix(text: str) -> str:
+    """Remove a leading Roman numeral marker (e.g. 'XIV. ') from text."""
+    stripped = re.sub(
+        r'^(M{0,4}(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3}))\.\s+',
+        '', text.strip()
+    )
+    return stripped.strip()
+
+
 def chunk_book_text(book_num: int, text: str) -> list[dict]:
     """
     Split a book's full text on Roman numeral section markers and
     sub-split any section that exceeds MAX_CHARS.
-    Returns a list of chunk dicts.
+    Returns a flat list of chunk dicts with sequential index.
     """
-    # Find all Roman numeral markers in the text
     matches = list(ROMAN_PATTERN.finditer(text))
     if not matches:
-        # No Roman numeral markers found; treat whole text as one chunk
         parts = split_at_sentences(text)
-        return [
-            {
-                'book': book_num,
-                'section': 1,
-                'part': i + 1,
-                'text': p.strip(),
-                'char_count': len(p.strip()),
-            }
-            for i, p in enumerate(parts) if p.strip()
-        ]
+        raw = [p.strip() for p in parts if p.strip()]
+    else:
+        raw = []
+        for idx, match in enumerate(matches):
+            roman_str = match.group(1)
+            if roman_to_int(roman_str) == 0:
+                continue
+
+            start = match.start()
+            end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+            section_text = text[start:end].strip()
+
+            parts = split_at_sentences(section_text)
+            for part in parts:
+                part = part.strip()
+                if part:
+                    raw.append(part)
 
     chunks: list[dict] = []
-
-    for idx, match in enumerate(matches):
-        roman_str = match.group(1)
-        section_num = roman_to_int(roman_str)
-        if section_num == 0:
-            continue  # skip empty/invalid roman numeral
-
-        start = match.start()
-        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
-        section_text = text[start:end].strip()
-
-        parts = split_at_sentences(section_text)
-        for part_idx, part in enumerate(parts):
-            part = part.strip()
-            if part:
-                chunks.append({
-                    'book': book_num,
-                    'section': section_num,
-                    'part': part_idx + 1,
-                    'text': part,
-                    'char_count': len(part),
-                })
+    for i, t in enumerate(raw):
+        t = strip_roman_prefix(t)
+        if t:
+            chunks.append({
+                'book': book_num,
+                'index': len(chunks),
+                'text': t,
+                'char_count': len(t),
+            })
 
     return chunks
 

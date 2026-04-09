@@ -47,20 +47,12 @@ def draw_card(stdscr, index: int, total: int, chunk: dict, mode: str) -> None:
     max_text_width = min(width - 4, 80)
 
     book = chunk.get("book", "")
-    section = chunk.get("section", "")
-    part = chunk.get("part", "")
+    chunk_index = chunk.get("index", "")
     original_text = chunk.get("text", "")
     plain_text = chunk.get("plain_text", "")
 
     # Build metadata string
-    meta_parts = []
-    if book:
-        meta_parts.append(f"Book {book}")
-    if section:
-        meta_parts.append(f"Section {section}")
-    if part:
-        meta_parts.append(f"Part {part}")
-    meta = " | ".join(meta_parts) if meta_parts else "Unknown location"
+    meta = f"Book {book}" if book else "Unknown location"
 
     position = f"{index + 1}/{total}"
 

@@ -85,7 +85,7 @@ def report_file(path):
     sorted_chunks = sorted(chunks, key=lambda c: c["char_count"], reverse=True)
     print("  Top 5 longest chunks (by original char count):")
     for i, chunk in enumerate(sorted_chunks[:5], 1):
-        loc = f"book={chunk.get('book','?')} sec={chunk.get('section','?')} part={chunk.get('part','?')}"
+        loc = f"book={chunk.get('book','?')} index={chunk.get('index','?')}"
         preview = chunk["text"].replace("\n", " ")[:100]
         print(f"    {i}. [{loc}] chars={chunk['char_count']}")
         print(f"       \"{preview}...\"")
