@@ -210,12 +210,16 @@ def process_epub(epub_path: str, book_numbers: list[int]) -> dict[int, list[dict
     book = epub.read_epub(epub_path)
     items = list(book.get_items_of_type(ebooklib.ITEM_DOCUMENT))
 
-    # Map each document item to a detected book number
+    # Map each document item to a detected book number, forward-filling
+    # so items without a header inherit the most recently seen book number
     item_book_map: list[tuple[int | None, str]] = []
+    last_detected: int | None = None
     for item in items:
         text = epub_item_to_text(item)
-        detected = find_book_number(text[:500])  # check first 500 chars for header
-        item_book_map.append((detected, text))
+        detected = find_book_number(text[:500])
+        if detected is not None:
+            last_detected = detected
+        item_book_map.append((last_detected, text))
 
     results: dict[int, list[dict]] = {}
 

@@ -55,11 +55,11 @@ echo "Example: ask Claude Code to translate output/chunks/<title>_book_1_origina
 
 echo ""
 echo "=== Step 3: Chunk stats ==="
-CHUNK_FILES=("$REPO_ROOT"/output/chunks/*.json)
+CHUNK_FILES=("$REPO_ROOT"/output/chunks/*_original.json)
 if [[ ${#CHUNK_FILES[@]} -eq 0 || ! -e "${CHUNK_FILES[0]}" ]]; then
   echo "No chunk JSON files found in output/chunks/ — skipping stats."
 else
-  python3 scripts/chunk_stats.py --input output/chunks/*.json
+  python3 scripts/chunk_stats.py --input output/chunks/*_original.json
 fi
 
 echo ""

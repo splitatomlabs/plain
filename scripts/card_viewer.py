@@ -180,14 +180,15 @@ def main() -> None:
 
     if len(original_chunks) != len(plain_chunks):
         print(
-            f"Warning: original has {len(original_chunks)} chunks, "
-            f"plain has {len(plain_chunks)} chunks. Pairing by index.",
+            f"Error: chunk count mismatch — original has {len(original_chunks)}, "
+            f"plain has {len(plain_chunks)}. Files must have the same number of chunks.",
             file=sys.stderr,
         )
+        sys.exit(1)
 
     # Merge: use plain chunks as base (they have plain_text), but ensure
     # original text is taken from the original file for fidelity.
-    count = min(len(original_chunks), len(plain_chunks))
+    count = len(original_chunks)
     merged: list[dict] = []
     for i in range(count):
         chunk = dict(plain_chunks[i])
