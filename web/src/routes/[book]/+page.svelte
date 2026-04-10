@@ -1,8 +1,8 @@
 <script>
 	import TagPill from '$lib/components/TagPill.svelte';
 	import GiftBanner from '$lib/components/GiftBanner.svelte';
-	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
@@ -12,8 +12,14 @@
 		seneca: 'var(--color-accent-seneca)'
 	};
 
-	const isGift = $derived($page.url.searchParams.get('gift') === 'true');
-	const giftNote = $derived($page.url.searchParams.get('note') || '');
+	let isGift = $state(false);
+	let giftNote = $state('');
+
+	onMount(() => {
+		const params = new URLSearchParams(window.location.search);
+		isGift = params.get('gift') === 'true';
+		giftNote = params.get('note') || '';
+	});
 	const firstCardUrl = `/${data.book.slug}/${data.book.chapters[0].slug}/1`;
 
 	let showGiftCompose = $state(false);

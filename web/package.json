@@ -27,6 +27,7 @@
 		"@fontsource/dm-sans": "^5.2.8",
 		"@fontsource/literata": "^5.2.8",
 		"@sveltejs/adapter-vercel": "^6.3.3",
+		"@vercel/analytics": "^2.0.1",
 		"@vercel/og": "^0.11.1"
 	}
 }
