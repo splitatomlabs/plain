@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import Anthropic from "@anthropic-ai/sdk";
 
 export class ClaudeCliError extends Error {
   constructor(message: string, public readonly rawOutput?: string) {
@@ -93,6 +94,61 @@ function extractJSON(text: string): string {
   throw new ClaudeCliError("Could not extract JSON from response", text);
 }
 
+// ---------------------------------------------------------------------------
+// Direct API path (PLAIN_USE_API=1)
+// ---------------------------------------------------------------------------
+
+const API_MODEL_MAP: Record<string, string> = {
+  sonnet: "claude-sonnet-4-20250514",
+  opus: "claude-opus-4-20250514",
+};
+
+/** Accumulated token usage for cost reporting */
+export const tokenUsage = {
+  inputTokens: 0,
+  outputTokens: 0,
+  cacheReadTokens: 0,
+  cacheCreationTokens: 0,
+};
+
+let anthropicClient: Anthropic | null = null;
+
+function getClient(): Anthropic {
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic();
+  }
+  return anthropicClient;
+}
+
+async function callClaudeAPI(prompt: string, model = "sonnet"): Promise<string> {
+  const client = getClient();
+  const modelId = API_MODEL_MAP[model] ?? model;
+
+  const response = await client.messages.create({
+    model: modelId,
+    max_tokens: 4096,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  tokenUsage.inputTokens += response.usage.input_tokens;
+  tokenUsage.outputTokens += response.usage.output_tokens;
+  tokenUsage.cacheReadTokens += response.usage.cache_read_input_tokens ?? 0;
+  tokenUsage.cacheCreationTokens +=
+    response.usage.cache_creation_input_tokens ?? 0;
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new ClaudeCliError("No text in API response");
+  }
+  return textBlock.text.trim();
+}
+
+// ---------------------------------------------------------------------------
+// Unified entry point — routes to CLI or API based on PLAIN_USE_API
+// ---------------------------------------------------------------------------
+
+const useAPI = process.env.PLAIN_USE_API === "1";
+
 export async function callClaudeJSON<T>(
   prompt: string,
   schema?: string,
@@ -102,15 +158,19 @@ export async function callClaudeJSON<T>(
     ? `${prompt}\n\nRespond with only valid JSON matching this schema: ${schema}`
     : prompt;
 
-  const output = await callClaude(fullPrompt, options);
+  const model = options?.model ?? "sonnet";
+  const call = useAPI
+    ? (p: string) => callClaudeAPI(p, model)
+    : (p: string) => callClaude(p, options);
+
+  const output = await call(fullPrompt);
 
   try {
     return JSON.parse(extractJSON(output)) as T;
   } catch {
     // Retry once with explicit JSON instruction
-    const retryOutput = await callClaude(
+    const retryOutput = await call(
       `${fullPrompt}\n\nRespond with only valid JSON, no other text.`,
-      options,
     );
     try {
       return JSON.parse(extractJSON(retryOutput)) as T;
