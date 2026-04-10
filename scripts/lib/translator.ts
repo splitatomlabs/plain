@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { callClaudeJSON } from "./claude.js";
@@ -71,7 +72,8 @@ export async function* translateChunks(
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    const stateKey = `${chapterSlug}:${chunk.sectionNumber}`;
+    const textHash = createHash("sha256").update(chunk.text).digest("hex").slice(0, 8);
+    const stateKey = `${chapterSlug}:${chunk.sectionNumber}:${textHash}`;
 
     // Resume: skip already-translated chunks
     if (state.completed[stateKey]) {
