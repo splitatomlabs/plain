@@ -121,7 +121,7 @@
 	}
 
 	.nav-zone {
-		position: fixed;
+		position: absolute;
 		top: 0;
 		bottom: 0;
 		display: flex;
@@ -138,15 +138,15 @@
 	}
 
 	.nav-prev {
-		left: 0;
-		width: calc((100vw - var(--max-line-width)) / 2 - var(--space-lg));
+		right: 100%;
+		left: calc(-1 * (100vw - 100%) / 2);
 		justify-content: flex-end;
 		padding-right: var(--space-lg);
 	}
 
 	.nav-next {
-		right: 0;
-		width: calc((100vw - var(--max-line-width)) / 2 - var(--space-lg));
+		left: 100%;
+		right: calc(-1 * (100vw - 100%) / 2);
 		justify-content: flex-start;
 		padding-left: var(--space-lg);
 	}
