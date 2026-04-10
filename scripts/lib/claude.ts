@@ -161,6 +161,92 @@ async function callClaudeAPI(
 }
 
 // ---------------------------------------------------------------------------
+// Batch API
+// ---------------------------------------------------------------------------
+
+export interface BatchRequest {
+  custom_id: string;
+  model?: string;
+  system?: string;
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
+  max_tokens?: number;
+}
+
+export interface BatchResultItem {
+  custom_id: string;
+  result:
+    | { type: "succeeded"; message: Anthropic.Message }
+    | { type: "errored"; error: unknown };
+}
+
+/**
+ * Creates a message batch via the Anthropic Batch API.
+ * Returns the batch object (id, processing_status, etc.).
+ */
+export async function createMessageBatch(
+  requests: BatchRequest[],
+): Promise<Anthropic.MessageBatch> {
+  const client = getClient();
+  const sdkRequests = requests.map((r) => {
+    const modelId = API_MODEL_MAP[r.model ?? "sonnet"] ?? r.model ?? API_MODEL_MAP["sonnet"];
+    return {
+      custom_id: r.custom_id,
+      params: {
+        model: modelId,
+        max_tokens: r.max_tokens ?? 4096,
+        ...(r.system ? { system: r.system } : {}),
+        messages: r.messages,
+      },
+    };
+  });
+  return client.messages.batches.create({ requests: sdkRequests });
+}
+
+/**
+ * Polls a batch until processing_status is "ended" (or any terminal state).
+ * Uses exponential backoff: starts at 5s, doubles each attempt, caps at 60s.
+ * Times out after 24 hours. Logs status updates to stderr.
+ */
+export async function pollBatchUntilDone(
+  batchId: string,
+): Promise<Anthropic.MessageBatch> {
+  const client = getClient();
+  const MAX_WAIT_MS = 24 * 60 * 60 * 1000; // 24 hours
+  const MIN_INTERVAL_MS = 5_000;
+  const MAX_INTERVAL_MS = 60_000;
+
+  let intervalMs = MIN_INTERVAL_MS;
+  const deadline = Date.now() + MAX_WAIT_MS;
+
+  while (Date.now() < deadline) {
+    const batch = await client.messages.batches.retrieve(batchId);
+    process.stderr.write(
+      `[batch] ${batchId} status=${batch.processing_status}\n`,
+    );
+    if (batch.processing_status === "ended") {
+      return batch;
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, intervalMs));
+    intervalMs = Math.min(intervalMs * 2, MAX_INTERVAL_MS);
+  }
+
+  throw new Error(`Batch ${batchId} did not complete within 24 hours`);
+}
+
+/**
+ * Streams results from a completed batch.
+ * Yields each result item (succeeded or errored).
+ */
+export async function* streamBatchResults(
+  batchId: string,
+): AsyncGenerator<BatchResultItem> {
+  const client = getClient();
+  for await (const item of await client.messages.batches.results(batchId)) {
+    yield item as BatchResultItem;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Unified entry point — routes to CLI or API based on PLAIN_USE_API
 // ---------------------------------------------------------------------------
 
