@@ -4,6 +4,16 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { callClaudeJSON, ClaudeCliError } from "./claude.js";
 import type { Chunk } from "./chunker.js";
+import type { BookConfig } from "./constants.js";
+
+const AUTHOR_CONTEXT: Record<string, string> = {
+  epictetus:
+    "Epictetus is direct and instructional. His sections are short, punchy lessons — most work well as standalone cards. Very short sections (a sentence or two) are common and may need merging.",
+  "marcus-aurelius":
+    "Marcus Aurelius wrote private journal reflections. Sections vary widely — some are a single sentence of self-reminding, others are extended meditations. Very short entries often depend on the previous thought. Longer entries sometimes contain multiple distinct ideas.",
+  seneca:
+    "Seneca wrote conversational essays with flowing arguments. Sections can be long and often build on each other. A section that opens with a continuation ('But...', 'For...', 'And yet...') likely depends on the previous one. Long sections with multiple distinct arguments should be split.",
+};
 
 const CACHE_DIR = "output/refine-cache";
 
@@ -52,6 +62,7 @@ function buildRefinePrompt(
   chunk: Chunk,
   prevChunk: Chunk | null,
   nextChunk: Chunk | null,
+  config: BookConfig,
 ): string {
   let adjacentContext = "";
   if (prevChunk) {
@@ -61,7 +72,16 @@ function buildRefinePrompt(
     adjacentContext += `\nNEXT SECTION:\n"""\n${nextChunk.text}\n"""\n`;
   }
 
-  return `You are preparing source text sections for translation into bite-sized reading cards. Each card should contain ONE coherent idea and make sense on its own.
+  const authorContext = AUTHOR_CONTEXT[config.author_slug] ?? "";
+
+  return `You are preparing sections from "${config.title}" for translation into bite-sized reading cards. Each card will be translated into plain English at an 8th-grade reading level.
+
+A good card:
+- Contains ONE coherent idea
+- Makes sense on its own to a reader with no surrounding context
+- Is roughly 50-300 words (shorter is fine if the idea is complete; longer sections with multiple ideas should be split)
+
+AUTHOR CONTEXT: ${authorContext}
 
 Evaluate this section and decide what to do with it.
 
@@ -104,6 +124,7 @@ export interface RefineResult {
 
 export async function refineChunks(
   chunks: Chunk[],
+  config: BookConfig,
   useCache: boolean = true,
 ): Promise<RefineResult> {
   const refined: Chunk[] = [];
@@ -135,7 +156,7 @@ export async function refineChunks(
 
     if (!response) {
       try {
-        const prompt = buildRefinePrompt(chunk, prev, next);
+        const prompt = buildRefinePrompt(chunk, prev, next, config);
         response = await callClaudeJSON<RefineResponse>(prompt);
         await writeCache(cacheId, response);
       } catch (e) {

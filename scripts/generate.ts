@@ -93,14 +93,14 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
 // Refine — AI reviews chunks, splits multi-idea sections, merges fragments
 // ---------------------------------------------------------------------------
 
-async function runRefine(parsed: ParsedOutput): Promise<ParsedOutput> {
+async function runRefine(parsed: ParsedOutput, config: BookConfig): Promise<ParsedOutput> {
   console.log(`\nRefining ${parsed.bookSlug}...`);
 
   const chapters: ParsedChapter[] = [];
 
   for (const ch of parsed.chapters) {
     console.log(`  ${ch.slug}:`);
-    const result = await refineChunks(ch.chunks);
+    const result = await refineChunks(ch.chunks, config);
 
     if (result.splits > 0 || result.merges > 0) {
       console.log(
@@ -211,7 +211,7 @@ async function processBook(config: BookConfig): Promise<void> {
 
   if (args["parse-only"]) return;
 
-  const refined = await runRefine(parsed);
+  const refined = await runRefine(parsed, config);
   const translated = await runTranslate(config, refined);
   await runAssemble(config, translated);
 }
