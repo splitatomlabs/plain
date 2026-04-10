@@ -11,6 +11,7 @@
 	let resumeUrl = $state(null);
 	let authorProgressData = $state([]);
 	let bookProgress = $state({});
+	let suggestedBook = $state(null);
 
 	$effect(() => {
 		if (!browser) return;
@@ -41,6 +42,12 @@
 				return { author, books, ...ap };
 			});
 			bookProgress = bp;
+
+			// If no book to continue, suggest an unstarted one
+			if (!lastReadBook) {
+				const allBooks = data.returningAuthorData.flatMap(({ books }) => books);
+				suggestedBook = allBooks.find((b) => !bp[b.slug]) || null;
+			}
 		}
 	});
 
@@ -80,6 +87,11 @@
 			<a href={resumeUrl} class="continue-banner">
 				<span class="continue-label">Continue Reading</span>
 				<span class="continue-book">{lastBookMeta.title}</span>
+			</a>
+		{:else if suggestedBook}
+			<a href="/{suggestedBook.slug}" class="continue-banner">
+				<span class="continue-label">Read next</span>
+				<span class="continue-book">{suggestedBook.title}</span>
 			</a>
 		{/if}
 	</section>
