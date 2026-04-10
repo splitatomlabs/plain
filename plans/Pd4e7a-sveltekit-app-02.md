@@ -74,7 +74,7 @@ Content JSON files live at the repo root `content/` directory. All other paths a
 - [x] T13: Build book landing page — Create `src/routes/[book]/+page.svelte` and `+page.server.js`. Displays: book title, author name + title, description, tag pills, chapter list with card counts, "Start Reading" CTA. Server load validates book slug (404 if invalid). Responsive layout. Add book slugs to prerender entries in svelte.config.js.
 - [x] T14: Build tag pages — Create `src/routes/tags/+page.svelte` + `+page.server.js` (tag index: grid of all 12 tags with card counts per tag). Create `src/routes/tags/[tag]/+page.svelte` + `+page.server.js` (cards matching tag, grouped by author in Slave → Emperor → Senator order, each card showing plain_english preview + source reference + link to card page). Validate tag slug (404 if invalid). Add all tag routes to prerender entries.
 - [x] T15: E2E home page tests (new visitor) — `tests/e2e/home-page.spec.js`: fresh visit (clear localStorage) → verify new-visitor layout with Marcus Aurelius first, three author sections visible, "Start Reading" CTAs work. Test at both mobile and desktop viewports.
-- [~] T16: Verify all static pages — Run `npm run build`, confirm all prerendered pages generate without errors. Run `npm run preview`, run full unit test suite (`npm run test:unit`) and Playwright E2E tests (`npx playwright test`). Fix any failures before completing this plan.
+- [x] T16: Verify all static pages — Run `npm run build`, confirm all prerendered pages generate without errors. Run `npm run preview`, run full unit test suite (`npm run test:unit`) and Playwright E2E tests (`npx playwright test`). Fix any failures before completing this plan.
 
 ## Verify
 ```bash
