@@ -1,0 +1,41 @@
+[
+  {
+    "id": "happy-life-01-001",
+    "book_slug": "happy-life",
+    "chapter_slug": "sections-01-10",
+    "card_number": 1,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Everyone wants to live a happy life. But most people have no idea what that actually looks like. They follow the crowd, assuming popular choices must be right. The crowd is the worst guide you could follow.",
+    "original_excerpt": "All men, brother Gallio, wish to live happily, but are dull at perceiving exactly what it is that makes life happy.",
+    "source_reference": "On the Happy Life, Section 1",
+    "author_slug": "seneca",
+    "tags": ["what-really-matters", "human-nature"],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "happy-life-01-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "sections-01-10",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "A happy life is one that fits its own nature. That begins with a clear and healthy mind that is brave and energetic. It does not depend on what happens to you — it depends on how you respond to what happens.",
+    "original_excerpt": "The happy life is one which is in accordance with its own nature, and cannot be brought about unless in the first place the mind be sound.",
+    "source_reference": "On the Happy Life, Section 3 (attributed)",
+    "author_slug": "seneca",
+    "tags": ["self-discipline", "doing-the-right-thing", "what-really-matters"],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "happy-life-01-003",
+    "book_slug": "happy-life",
+    "chapter_slug": "sections-01-10",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Pleasure is not the goal. Pleasure is what follows when you live according to reason. Chase pleasure directly and it runs from you. Live well and pleasure finds you on its own.",
+    "original_excerpt": "True happiness consists in virtue. This virtue will advise you to regard as pleasure what comes from virtue.",
+    "source_reference": "On the Happy Life, Section 9 (attributed)",
+    "author_slug": "seneca",
+    "tags": ["what-really-matters", "self-discipline"],
+    "reading_time_seconds": 15
+  }
+]

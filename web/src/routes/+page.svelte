@@ -1,7 +1,17 @@
+<script>
+	import AuthorSection from '$lib/components/AuthorSection.svelte';
+
+	let { data } = $props();
+</script>
+
 <section class="hero">
 	<h1>Three men. Three completely different lives. The same philosophy.</h1>
 	<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
 </section>
+
+{#each data.authorData as { author, books }}
+	<AuthorSection {author} {books} />
+{/each}
 
 <style>
 	.hero {
@@ -10,8 +20,9 @@
 		align-items: center;
 		justify-content: center;
 		text-align: center;
-		min-height: 60vh;
+		min-height: 40vh;
 		padding: var(--space-xl) var(--space-md);
+		margin-bottom: var(--space-2xl);
 	}
 
 	h1 {

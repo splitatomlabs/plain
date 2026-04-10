@@ -1,17 +1,24 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
+	webServer: {
+		command: 'npm run preview',
+		port: 4173,
+		reuseExistingServer: !process.env.CI
+	},
+	testDir: 'tests',
 	projects: [
 		{
-			name: 'desktop',
+			name: 'desktop-chrome',
 			use: {
+				...devices['Desktop Chrome'],
 				viewport: { width: 1280, height: 720 }
 			}
 		},
 		{
-			name: 'mobile',
+			name: 'mobile-chrome',
 			use: {
-				...devices['iPhone SE'],
+				...devices['Pixel 5'],
 				viewport: { width: 375, height: 812 }
 			}
 		}

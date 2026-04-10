@@ -1,0 +1,41 @@
+[
+  {
+    "id": "enchiridion-01-001",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-01-10",
+    "card_number": 1,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Some things are up to you. Most things are not. Your opinions, your effort, your reactions — those are yours. Everything else — your body, your reputation, your job — belongs to the world. Learn the difference and you will stop suffering.",
+    "original_excerpt": "Some things are in our control and others not. Things in our control are opinion, pursuit, desire, aversion, and, in a word, whatever are our own actions.",
+    "source_reference": "Enchiridion, Section 1",
+    "author_slug": "epictetus",
+    "tags": ["freedom-and-control", "calm-your-mind", "what-really-matters"],
+    "reading_time_seconds": 25
+  },
+  {
+    "id": "enchiridion-01-002",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-01-10",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "It is not things that upset you, but your judgement about things. Death is not terrible — the terror comes from your opinion that death is terrible. When you are disturbed, look at your own thinking first.",
+    "original_excerpt": "Men are disturbed, not by things, but by the principles and notions which they form concerning things. Death, for instance, is not terrible, else it would have appeared so to Socrates.",
+    "source_reference": "Enchiridion, Section 5",
+    "author_slug": "epictetus",
+    "tags": ["facing-fear", "calm-your-mind", "death-and-mortality"],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "enchiridion-01-003",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-01-10",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "When you see someone weeping because their child has gone away or they have lost something, be careful. It is not the event that makes them grieve — it is their view of it. But in the moment, go along with their feeling. Just don't grieve on the inside along with them.",
+    "original_excerpt": "When you see anyone weeping in grief because his son has gone abroad, or is dead, or because he has suffered in his affairs, be careful that the appearance carry you not away with it.",
+    "source_reference": "Enchiridion, Section 16",
+    "author_slug": "epictetus",
+    "tags": ["freedom-and-control", "human-nature"],
+    "reading_time_seconds": 25
+  }
+]
