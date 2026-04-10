@@ -42,10 +42,12 @@
 	<meta property="og:description" content={data.card.plain_english.slice(0, 155)} />
 	<meta property="og:type" content="article" />
 	<meta property="og:url" content="https://plainenglish.app/{data.card.book_slug}/{data.card.chapter_slug}/{data.card.card_number}" />
+	<meta property="og:image" content="/api/og/{data.card.id}" />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="{data.card.source_reference} — In Plain English" />
 	<meta name="twitter:description" content={data.card.plain_english.slice(0, 155)} />
+	<meta name="twitter:image" content="/api/og/{data.card.id}" />
 </svelte:head>
 
 <ProgressBar
