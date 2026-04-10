@@ -118,21 +118,19 @@
 <style>
 	.card-nav {
 		position: relative;
-		display: flex;
-		align-items: stretch;
-		gap: 0;
 	}
 
 	.nav-zone {
+		position: absolute;
+		top: 0;
+		bottom: 0;
 		display: flex;
 		align-items: center;
-		flex-shrink: 0;
 		text-decoration: none;
 		color: var(--color-text-tertiary);
 		transition: color var(--transition-fast);
 		min-width: 44px;
-		min-height: 44px;
-		padding: var(--space-sm);
+		z-index: 1;
 	}
 
 	.nav-zone:hover {
@@ -140,11 +138,17 @@
 	}
 
 	.nav-prev {
-		justify-content: flex-start;
+		left: 0;
+		right: calc(50% + var(--max-line-width) / 2);
+		justify-content: flex-end;
+		padding-right: var(--space-sm);
 	}
 
 	.nav-next {
-		justify-content: flex-end;
+		right: 0;
+		left: calc(50% + var(--max-line-width) / 2);
+		justify-content: flex-start;
+		padding-left: var(--space-sm);
 	}
 
 	.nav-chevron {
@@ -154,7 +158,29 @@
 	}
 
 	.card-content {
-		flex: 1;
-		min-width: 0;
+		position: relative;
+	}
+
+	/* On narrow screens, overlay slim tap zones on card edges */
+	@media (max-width: 767px) {
+		.nav-prev {
+			right: auto;
+			width: 44px;
+			padding-left: var(--space-xs);
+			padding-right: 0;
+			justify-content: flex-start;
+		}
+
+		.nav-next {
+			left: auto;
+			width: 44px;
+			padding-right: var(--space-xs);
+			padding-left: 0;
+			justify-content: flex-end;
+		}
+
+		.nav-chevron {
+			font-size: 1.5rem;
+		}
 	}
 </style>
