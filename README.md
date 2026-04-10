@@ -39,12 +39,12 @@ Every card has two layers: a **plain English translation** (8th-grade reading le
 
 TypeScript CLI tools that turn plain-text source books into card JSON. Requires `claude` CLI on PATH for translation and semantic checks.
 
-**Pipeline:** `parse → precheck → translate → assemble`
+**Pipeline:** `parse → refine → translate → assemble`
 
 1. **Parse** — Split source text into sections by Roman numeral markers
-2. **Pre-check** — AI check that each section contains a single idea and stands alone
+2. **Refine** — AI reviews each section: splits multi-idea sections into separate chunks, merges sections that can't stand alone
 3. **Translate** — Plain English translation + tagging, with built-in meaning preservation verification
-4. **Assemble** — Generate card IDs, reading time, source refs, write to `src/content/`
+4. **Assemble** — Generate card IDs, reading time, source refs, write to `content/`
 
 ```bash
 # Install dependencies

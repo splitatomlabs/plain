@@ -50,5 +50,6 @@ node_modules/
 # Generated pipeline output
 output/parsed/
 output/translated/
+output/refine-cache/
 output/validation-cache/
 output/generate-state-*.json

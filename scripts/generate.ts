@@ -3,9 +3,9 @@ import { parseArgs } from "node:util";
 import { BOOK_CONFIGS, VALID_BOOK_SLUGS, type BookConfig } from "./lib/constants.js";
 import { parseSourceText } from "./lib/parser.js";
 import { chunkSections, type Chunk } from "./lib/chunker.js";
+import { refineChunks } from "./lib/refine.js";
 import { translateChunks, type TranslatedChunk } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
-import { preCheckChunks } from "./lib/validate-semantic.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -17,7 +17,7 @@ const { values: args } = parseArgs({
     all: { type: "boolean", default: false },
     "parse-only": { type: "boolean", default: false },
     limit: { type: "string" },
-    output: { type: "string", default: "src/content" },
+    output: { type: "string", default: "content" },
     help: { type: "boolean", default: false },
   },
 });
@@ -30,10 +30,10 @@ Options:
   --all              Generate all 5 books
   --parse-only       Parse source text only, no Claude CLI calls
   --limit <n>        Max sections per chapter (e.g. --limit 3 for a quick test)
-  --output <dir>     Output directory (default: src/content)
+  --output <dir>     Output directory (default: content)
   --help             Show this help
 
-Pipeline: parse → precheck → translate (with meaning check) → assemble`);
+Pipeline: parse → refine → translate (with meaning check) → assemble`);
   process.exit(0);
 }
 
@@ -46,14 +46,16 @@ if (!args.book && !args.all) {
 // Parse — split source text into sections
 // ---------------------------------------------------------------------------
 
+interface ParsedChapter {
+  slug: string;
+  title: string;
+  bookNumber?: number;
+  chunks: Chunk[];
+}
+
 interface ParsedOutput {
   bookSlug: string;
-  chapters: {
-    slug: string;
-    title: string;
-    bookNumber?: number;
-    chunks: Chunk[];
-  }[];
+  chapters: ParsedChapter[];
 }
 
 async function runParse(config: BookConfig): Promise<ParsedOutput> {
@@ -84,47 +86,42 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
 
-  const outDir = "output/parsed";
-  await mkdir(outDir, { recursive: true });
-  await writeFile(
-    `${outDir}/${config.slug}.json`,
-    JSON.stringify({ bookSlug: config.slug, chapters }, null, 2),
-  );
-
   return { bookSlug: config.slug, chapters };
 }
 
 // ---------------------------------------------------------------------------
-// Pre-check — single-idea + standalone on original text
+// Refine — AI reviews chunks, splits multi-idea sections, merges fragments
 // ---------------------------------------------------------------------------
 
-async function runPreCheck(parsed: ParsedOutput): Promise<void> {
-  console.log(`\nPre-checking ${parsed.bookSlug}...`);
+async function runRefine(parsed: ParsedOutput): Promise<ParsedOutput> {
+  console.log(`\nRefining ${parsed.bookSlug}...`);
+
+  const chapters: ParsedChapter[] = [];
 
   for (const ch of parsed.chapters) {
     console.log(`  ${ch.slug}:`);
-    const report = await preCheckChunks(ch.chunks);
+    const result = await refineChunks(ch.chunks);
 
-    if (report.warnings.length === 0) {
-      console.log(`    All ${ch.chunks.length} sections passed`);
-    } else {
-      for (const { chunk, result } of report.warnings) {
-        if (!result.single_idea) {
-          console.log(
-            `    WARN section ${chunk.sectionNumber}: Multiple ideas. ${result.single_idea_suggestion ?? ""}`,
-          );
-        }
-        if (!result.standalone) {
-          console.log(
-            `    WARN section ${chunk.sectionNumber}: Not standalone. ${result.standalone_resolution ?? ""}`,
-          );
-        }
-      }
+    if (result.splits > 0 || result.merges > 0) {
       console.log(
-        `    ${ch.chunks.length - report.warnings.length}/${ch.chunks.length} sections clean, ${report.warnings.length} warnings`,
+        `    ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`,
       );
+    } else {
+      console.log(`    ${result.refinedCount} chunks (no changes)`);
     }
+
+    chapters.push({
+      slug: ch.slug,
+      title: ch.title,
+      bookNumber: ch.bookNumber,
+      chunks: result.chunks,
+    });
   }
+
+  const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
+  console.log(`  Total after refine: ${totalChunks} chunks`);
+
+  return { bookSlug: parsed.bookSlug, chapters };
 }
 
 // ---------------------------------------------------------------------------
@@ -214,9 +211,8 @@ async function processBook(config: BookConfig): Promise<void> {
 
   if (args["parse-only"]) return;
 
-  await runPreCheck(parsed);
-
-  const translated = await runTranslate(config, parsed);
+  const refined = await runRefine(parsed);
+  const translated = await runTranslate(config, refined);
   await runAssemble(config, translated);
 }
 
