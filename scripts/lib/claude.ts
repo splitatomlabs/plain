@@ -21,7 +21,7 @@ export function callClaude(
   prompt: string,
   options: CallClaudeOptions = {},
 ): Promise<string> {
-  const { model = "sonnet", bare = true } = options;
+  const { model = "sonnet", bare = false } = options;
   const args = bare
     ? ["--bare", "--model", model, "-p", prompt]
     : ["--model", model, "-p", prompt];

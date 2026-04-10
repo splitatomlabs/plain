@@ -196,7 +196,7 @@ export async function refineChunks(
 
     let response: RefineResponse;
     try {
-      const prompt = buildRefinePrompt(chunk, prev, next, config);
+      const prompt = buildRefineUser(chunk, prev, next);
       response = await callClaudeJSON<RefineResponse>(prompt, undefined, { system });
     } catch (e) {
       process.stderr.write(

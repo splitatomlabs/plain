@@ -1,7 +1,7 @@
 import { callClaudeJSON } from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
-import { buildTranslationPrompt, buildTranslationSystem, buildTranslationUser } from "./prompt.js";
+import { buildTranslationSystem, buildTranslationUser } from "./prompt.js";
 
 export interface MeaningCheck {
   faithful: boolean;
@@ -50,7 +50,7 @@ export async function* translateChunks(
       `Translating ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber}...\n`,
     );
 
-    const prompt = buildTranslationPrompt(chunk, config);
+    const prompt = buildTranslationUser(chunk);
     let result = await callClaudeJSON<TranslationResponse>(prompt, undefined, { system });
 
     // Validate tags — re-prompt once if invalid
@@ -62,6 +62,8 @@ export async function* translateChunks(
       result = await callClaudeJSON<TranslationResponse>(
         prompt +
           `\n\nIMPORTANT: Tags must be from this exact list: ${VALID_TAG_SLUGS.join(", ")}. Your previous response used invalid tags. Try again.`,
+        undefined,
+        { system },
       );
       validTags = validateTags(result.tags);
     }
