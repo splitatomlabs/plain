@@ -45,7 +45,7 @@
 	}
 
 	function handlePointerDown(e) {
-		if (e.pointerType === 'touch') return; // handled by touch events
+		if (e.pointerType === 'touch') return;
 		handleSwipeStart(e.clientX, e.clientY);
 	}
 
@@ -88,99 +88,73 @@
 	role="region"
 	aria-label="Card navigation"
 >
-	{#if prevCard}
-		<a
-			href={cardUrl(prevCard)}
-			class="nav-zone nav-prev"
-			aria-label="Previous card"
-			data-sveltekit-preload-data="hover"
-		>
-			<span class="nav-chevron" aria-hidden="true">&#8249;</span>
-		</a>
-	{/if}
+	{@render children()}
 
-	<div class="card-content">
-		{@render children()}
-	</div>
+	<nav class="nav-buttons">
+		{#if prevCard}
+			<a
+				href={cardUrl(prevCard)}
+				class="nav-btn"
+				aria-label="Previous card"
+				data-sveltekit-preload-data="hover"
+			>
+				<span class="nav-chevron" aria-hidden="true">&#8249;</span>
+				Previous
+			</a>
+		{:else}
+			<span></span>
+		{/if}
 
-	{#if nextCard}
-		<a
-			href={cardUrl(nextCard)}
-			class="nav-zone nav-next"
-			aria-label="Next card"
-			data-sveltekit-preload-data="hover"
-		>
-			<span class="nav-chevron" aria-hidden="true">&#8250;</span>
-		</a>
-	{/if}
+		{#if nextCard}
+			<a
+				href={cardUrl(nextCard)}
+				class="nav-btn"
+				aria-label="Next card"
+				data-sveltekit-preload-data="hover"
+			>
+				Next
+				<span class="nav-chevron" aria-hidden="true">&#8250;</span>
+			</a>
+		{/if}
+	</nav>
 </div>
 
 <style>
 	.card-nav {
-		position: relative;
+		max-width: var(--max-line-width);
+		margin: 0 auto;
 	}
 
-	.nav-zone {
-		position: absolute;
-		top: 0;
-		bottom: 0;
+	.nav-buttons {
 		display: flex;
+		justify-content: space-between;
 		align-items: center;
-		text-decoration: none;
-		color: var(--color-text-tertiary);
-		transition: color var(--transition-fast);
-		min-width: 44px;
-		z-index: 1;
+		padding: var(--space-lg) 0;
 	}
 
-	.nav-zone:hover {
+	.nav-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		min-height: 44px;
+		min-width: 44px;
+		padding: var(--space-sm) var(--space-md);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		transition: border-color var(--transition-fast), color var(--transition-fast);
+	}
+
+	.nav-btn:hover {
+		border-color: var(--color-text-secondary);
 		color: var(--color-text-primary);
 	}
 
-	.nav-prev {
-		right: 100%;
-		left: calc(-1 * (100vw - 100%) / 2);
-		justify-content: flex-end;
-		padding-right: var(--space-lg);
-	}
-
-	.nav-next {
-		left: 100%;
-		right: calc(-1 * (100vw - 100%) / 2);
-		justify-content: flex-start;
-		padding-left: var(--space-lg);
-	}
-
 	.nav-chevron {
-		font-size: 2.5rem;
+		font-size: 1.25rem;
 		line-height: 1;
-		pointer-events: none;
-	}
-
-	.card-content {
-		position: relative;
-	}
-
-	/* On narrow screens, overlay slim tap zones on card edges */
-	@media (max-width: 767px) {
-		.nav-prev {
-			right: auto;
-			width: 48px;
-			padding-left: var(--space-xs);
-			padding-right: 0;
-			justify-content: flex-start;
-		}
-
-		.nav-next {
-			left: auto;
-			width: 48px;
-			padding-right: var(--space-xs);
-			padding-left: 0;
-			justify-content: flex-end;
-		}
-
-		.nav-chevron {
-			font-size: 1.5rem;
-		}
 	}
 </style>

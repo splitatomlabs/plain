@@ -23,11 +23,11 @@ test.describe('Card reading experience', () => {
 		await expect(boundary).toContainText('Beginning of Meditations');
 	});
 
-	test('navigates to next card via click zone', async ({ page }) => {
+	test('navigates to next card via button', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const nextLink = page.locator('.nav-next');
-		await nextLink.click();
+		const nextBtn = page.locator('.nav-btn', { hasText: 'Next' });
+		await nextBtn.click();
 
 		await expect(page).toHaveURL(/\/meditations\/book-01\/2$/);
 	});
@@ -128,8 +128,8 @@ test.describe('Card reading — mobile', () => {
 	test('nav buttons visible on mobile', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const navNext = page.locator('.nav-next');
-		await expect(navNext).toBeVisible();
+		const nextBtn = page.locator('.nav-btn', { hasText: 'Next' });
+		await expect(nextBtn).toBeVisible();
 	});
 
 	test('swipe left navigates to next card', async ({ page }) => {
