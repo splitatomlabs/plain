@@ -1,6 +1,4 @@
 {
-  "buildCommand": "cd web && npm install && npm run build",
-  "outputDirectory": "web/.vercel/output",
-  "framework": null,
-  "installCommand": "echo 'skip root install'"
+  "buildCommand": "cd web && npm install && npm run build && cp -r .vercel/output ../.vercel/output",
+  "installCommand": "echo 'handled in buildCommand'"
 }
