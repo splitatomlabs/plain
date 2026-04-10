@@ -26,6 +26,7 @@ const { values: args } = parseArgs({
     all: { type: "boolean", default: false },
     phase: { type: "string", default: "all" },
     "dry-run": { type: "boolean", default: false },
+    limit: { type: "string" },
     output: { type: "string", default: "src/content" },
     help: { type: "boolean", default: false },
   },
@@ -39,6 +40,7 @@ Options:
   --all            Generate all 5 books
   --phase <phase>  Run specific phase: parse, translate, assemble, all (default: all)
   --dry-run        Preview parsing without Claude CLI calls
+  --limit <n>      Max sections per chapter (e.g. --limit 3 for a quick test)
   --output <dir>   Output directory (default: src/content)
   --help           Show this help`);
   process.exit(0);
@@ -75,9 +77,17 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   const text = await readFile(config.source_file, "utf-8");
   const parsed = parseSourceText(text, config);
 
+  const limit = args.limit ? parseInt(args.limit, 10) : undefined;
+
   const chapters = parsed.chapters.map((ch) => {
-    const chunks = chunkSections(ch.sections, config.speakerLabels);
-    console.log(`  ${ch.slug}: ${chunks.length} chunks`);
+    const allChunks = chunkSections(ch.sections, config.speakerLabels);
+    const chunks = limit && allChunks.length > limit
+      ? allChunks.slice(0, limit)
+      : allChunks;
+    const suffix = limit && allChunks.length > limit
+      ? ` (limited from ${allChunks.length})`
+      : "";
+    console.log(`  ${ch.slug}: ${chunks.length} chunks${suffix}`);
     return {
       slug: ch.slug,
       title: ch.title,
