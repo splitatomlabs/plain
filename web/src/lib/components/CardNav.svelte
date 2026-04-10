@@ -1,5 +1,5 @@
 <script>
-	import { goto } from '$app/navigation';
+	import { goto, afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
 	let { prevCard, nextCard, children } = $props();
@@ -50,6 +50,14 @@
 	onMount(() => {
 		window.addEventListener('keydown', handleKeydown);
 		return () => window.removeEventListener('keydown', handleKeydown);
+	});
+
+	afterNavigate(() => {
+		const article = navRef?.querySelector('article');
+		if (article) {
+			article.setAttribute('tabindex', '-1');
+			article.focus({ preventScroll: true });
+		}
 	});
 </script>
 
