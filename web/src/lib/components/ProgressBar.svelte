@@ -7,6 +7,7 @@
 		seneca: 'var(--color-accent-seneca)'
 	};
 
+	const color = accentVar[authorSlug] ?? 'var(--color-text-secondary)';
 	const percentage = $derived(Math.round((current / total) * 100));
 </script>
 
@@ -20,7 +21,7 @@
 >
 	<div
 		class="progress-fill"
-		style="width: {percentage}%; background-color: {accentVar[authorSlug]}"
+		style="width: {percentage}%; background-color: {color}"
 	></div>
 </div>
 

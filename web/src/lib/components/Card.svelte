@@ -2,7 +2,7 @@
 	import TagPill from './TagPill.svelte';
 	import { getTagBySlug } from '$lib/utils/tags.js';
 
-	let { card, book, totalCardsInBook } = $props();
+	let { card, book, totalCardsInBook, cardIndex } = $props();
 
 	const accentVar = {
 		epictetus: 'var(--color-accent-epictetus)',
@@ -15,19 +15,6 @@
 		'marcus-aurelius': 'The Emperor',
 		seneca: 'The Senator'
 	};
-
-	const cardIndex = $derived(getCardIndex());
-
-	function getCardIndex() {
-		let index = 0;
-		for (const ch of book.chapters) {
-			if (ch.slug === card.chapter_slug) {
-				return index + card.card_number;
-			}
-			index += ch.card_count;
-		}
-		return index + card.card_number;
-	}
 </script>
 
 <article class="card" aria-live="polite">

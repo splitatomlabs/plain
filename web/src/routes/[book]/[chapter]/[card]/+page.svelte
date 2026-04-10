@@ -32,7 +32,7 @@
 	{/if}
 
 	<CardNav prevCard={data.prevCard} nextCard={data.nextCard}>
-		<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} />
+		<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
 	</CardNav>
 
 	{#if !data.nextCard}

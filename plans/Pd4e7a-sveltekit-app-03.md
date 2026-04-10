@@ -46,7 +46,7 @@ All paths relative to `web/`.
 - [x] T08: Add prefetching and navigation UX — Add `data-sveltekit-preload-data="hover"` to prev/next navigation links for instant feel. On card transition: manage focus to new card content for screen reader announcement (move focus to the `<article>` or use `aria-live`). Ensure browser back/forward works correctly with card navigation. Test: navigate through several cards, use browser back button, verify correct card loads.
 - [x] T09: E2E card navigation tests — `tests/e2e/card-navigation.spec.js`: navigate to `/meditations/book-01/1`, verify card text visible, click next → card 2 loads, keyboard ArrowRight → card 3, keyboard ArrowLeft → back to card 2, "Show original" toggle expands/collapses, tag pills are clickable links, progress bar updates. Test on both mobile and desktop viewports. Test chapter boundary navigation.
 - [x] T10: E2E theme tests — `tests/e2e/theme.spec.js`: verify default theme matches system preference, click toggle → verify theme changes, reload → verify theme persists. Verify card page renders correctly in both light and dark mode.
-- [~] T11: Verify card experience — Run unit tests (`npm run test:unit`), build, and run full Playwright suite including new card navigation and theme E2E tests. Fix any failures before completing this plan.
+- [x] T11: Verify card experience — Run unit tests (`npm run test:unit`), build, and run full Playwright suite including new card navigation and theme E2E tests. Fix any failures before completing this plan.
 
 ## Verify
 ```bash
