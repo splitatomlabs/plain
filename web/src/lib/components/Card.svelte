@@ -70,10 +70,17 @@
 	.card {
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: 12px;
-		padding: var(--space-xl) var(--space-lg);
+		border-radius: 0;
+		padding: var(--space-xl) var(--space-md);
 		max-width: var(--max-line-width);
 		margin: 0 auto;
+	}
+
+	@media (min-width: 768px) {
+		.card {
+			border-radius: 12px;
+			padding: var(--space-2xl) var(--space-xl);
+		}
 	}
 
 	.card-author {
