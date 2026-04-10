@@ -14,8 +14,6 @@ import {
   validateCardContent,
   validateCardSequence,
 } from "./lib/validate.js";
-import { runSemanticValidation } from "./lib/validate-semantic.js";
-
 // ---------------------------------------------------------------------------
 // CLI argument parsing
 // ---------------------------------------------------------------------------
@@ -24,8 +22,6 @@ const { values: args } = parseArgs({
   options: {
     content: { type: "string", default: "src/content/" },
     file: { type: "string" },
-    semantic: { type: "boolean", default: false },
-    "no-cache": { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
 });
@@ -36,9 +32,10 @@ if (args.help) {
 Options:
   --content <dir>   Content directory (default: src/content/)
   --file <path>     Validate a single chapter JSON file
-  --semantic        Enable AI-powered semantic checks (requires claude CLI)
-  --no-cache        Force re-running semantic checks
-  --help            Show this help`);
+  --help            Show this help
+
+Note: Semantic checks (single-idea, standalone, meaning preservation) run
+as part of the generation pipeline (scripts/generate.ts), not here.`);
   process.exit(0);
 }
 
@@ -259,39 +256,6 @@ async function main(): Promise<void> {
     messages = result.messages;
     booksChecked = result.booksChecked;
     cardsChecked = result.cardsChecked;
-  }
-
-  // Run semantic validation if requested
-  if (args.semantic && !args.file) {
-    // Collect all valid cards for semantic checking
-    const contentDir = args.content!;
-    const metaFiles = await glob(path.join(contentDir, "*/_meta.json"));
-    const allCards: Card[] = [];
-
-    for (const metaFile of metaFiles) {
-      const bookDir = path.dirname(metaFile);
-      const chapterFiles = (await glob(path.join(bookDir, "*.json"))).filter(
-        (f) => path.basename(f) !== "_meta.json",
-      );
-
-      for (const chapterFile of chapterFiles) {
-        try {
-          const cards = await loadJSON<Card[]>(chapterFile);
-          if (Array.isArray(cards)) allCards.push(...cards);
-        } catch {
-          // already reported by structural checks
-        }
-      }
-    }
-
-    if (allCards.length > 0) {
-      console.log(`\nRunning semantic validation on ${allCards.length} cards...`);
-      const semanticMsgs = await runSemanticValidation(
-        allCards,
-        !args["no-cache"],
-      );
-      messages.push(...semanticMsgs);
-    }
   }
 
   // Print report

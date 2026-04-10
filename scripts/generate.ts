@@ -2,19 +2,11 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { BOOK_CONFIGS, VALID_BOOK_SLUGS, type BookConfig } from "./lib/constants.js";
-import { parseSourceText, type ParsedBook } from "./lib/parser.js";
+import { parseSourceText } from "./lib/parser.js";
 import { chunkSections, type Chunk } from "./lib/chunker.js";
 import { translateChunks, type TranslatedChunk } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
-import {
-  validateCardSchema,
-  validateCardTags,
-  validateReadability,
-  validateCardContent,
-  validateCardSequence,
-  validateBookMeta,
-} from "./lib/validate.js";
-import type { Card, ValidationMessage } from "./lib/types.js";
+import { preCheckChunks, type PreCheckReport } from "./lib/validate-semantic.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -26,6 +18,7 @@ const { values: args } = parseArgs({
     all: { type: "boolean", default: false },
     phase: { type: "string", default: "all" },
     "dry-run": { type: "boolean", default: false },
+    "skip-precheck": { type: "boolean", default: false },
     limit: { type: "string" },
     output: { type: "string", default: "src/content" },
     help: { type: "boolean", default: false },
@@ -36,13 +29,16 @@ if (args.help) {
   console.log(`Usage: npx tsx scripts/generate.ts [options]
 
 Options:
-  --book <slug>    Generate a single book (${VALID_BOOK_SLUGS.join(", ")})
-  --all            Generate all 5 books
-  --phase <phase>  Run specific phase: parse, translate, assemble, all (default: all)
-  --dry-run        Preview parsing without Claude CLI calls
-  --limit <n>      Max sections per chapter (e.g. --limit 3 for a quick test)
-  --output <dir>   Output directory (default: src/content)
-  --help           Show this help`);
+  --book <slug>      Generate a single book (${VALID_BOOK_SLUGS.join(", ")})
+  --all              Generate all 5 books
+  --phase <phase>    Run specific phase: parse, precheck, translate, assemble, all (default: all)
+  --dry-run          Preview parsing without Claude CLI calls
+  --skip-precheck    Skip the semantic pre-check phase
+  --limit <n>        Max sections per chapter (e.g. --limit 3 for a quick test)
+  --output <dir>     Output directory (default: src/content)
+  --help             Show this help
+
+Pipeline: parse → precheck → translate (with meaning check) → assemble`);
   process.exit(0);
 }
 
@@ -51,14 +47,14 @@ if (!args.book && !args.all) {
   process.exit(1);
 }
 
-const validPhases = ["parse", "translate", "assemble", "all"];
+const validPhases = ["parse", "precheck", "translate", "assemble", "all"];
 if (!validPhases.includes(args.phase!)) {
   console.error(`Invalid phase "${args.phase}". Use: ${validPhases.join(", ")}`);
   process.exit(1);
 }
 
 // ---------------------------------------------------------------------------
-// Phase: Parse
+// Phase 1: Parse — split source text into sections
 // ---------------------------------------------------------------------------
 
 interface ParsedOutput {
@@ -99,7 +95,6 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
 
-  // Save intermediate
   const outDir = "output/parsed";
   await mkdir(outDir, { recursive: true });
   await writeFile(
@@ -111,7 +106,45 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
 }
 
 // ---------------------------------------------------------------------------
-// Phase: Translate
+// Phase 2: Pre-check — single-idea + standalone on original text
+// ---------------------------------------------------------------------------
+
+async function runPreCheck(parsed: ParsedOutput): Promise<void> {
+  console.log(`\nPre-checking ${parsed.bookSlug}...`);
+
+  if (args["dry-run"]) {
+    console.log("  (dry-run: skipping pre-check)");
+    return;
+  }
+
+  for (const ch of parsed.chapters) {
+    console.log(`  ${ch.slug}:`);
+    const report = await preCheckChunks(ch.chunks);
+
+    if (report.warnings.length === 0) {
+      console.log(`    All ${ch.chunks.length} sections passed`);
+    } else {
+      for (const { chunk, result } of report.warnings) {
+        if (!result.single_idea) {
+          console.log(
+            `    WARN section ${chunk.sectionNumber}: Multiple ideas. ${result.single_idea_suggestion ?? ""}`,
+          );
+        }
+        if (!result.standalone) {
+          console.log(
+            `    WARN section ${chunk.sectionNumber}: Not standalone. ${result.standalone_resolution ?? ""}`,
+          );
+        }
+      }
+      console.log(
+        `    ${ch.chunks.length - report.warnings.length}/${ch.chunks.length} sections clean, ${report.warnings.length} warnings`,
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3: Translate — plain English + tags, with meaning preservation check
 // ---------------------------------------------------------------------------
 
 interface TranslatedOutput {
@@ -130,28 +163,10 @@ async function runTranslate(
 ): Promise<TranslatedOutput> {
   console.log(`\nTranslating ${config.slug}...`);
 
-  if (args["dry-run"]) {
-    console.log("  (dry-run: skipping translation)");
-    return {
-      bookSlug: config.slug,
-      chapters: parsed.chapters.map((ch) => ({
-        slug: ch.slug,
-        title: ch.title,
-        bookNumber: ch.bookNumber,
-        translated: ch.chunks.map((c) => ({
-          sectionNumber: c.sectionNumber,
-          originalText: c.text,
-          plainEnglish: `[DRY RUN] ${c.text.slice(0, 80)}...`,
-          tags: ["what-really-matters" as const],
-        })),
-      })),
-    };
-  }
-
   const chapters = [];
   for (const ch of parsed.chapters) {
     const translated: TranslatedChunk[] = [];
-    for await (const chunk of translateChunks(ch.chunks, config, ch.slug)) {
+    for await (const chunk of translateChunks(ch.chunks, config, ch.slug, args["dry-run"])) {
       translated.push(chunk);
     }
     chapters.push({
@@ -162,7 +177,19 @@ async function runTranslate(
     });
   }
 
-  // Save intermediate
+  // Print meaning check summary
+  let meaningWarnings = 0;
+  for (const ch of chapters) {
+    for (const t of ch.translated) {
+      if (t.meaningCheck && (!t.meaningCheck.faithful || !t.meaningCheck.tone_preserved || t.meaningCheck.ideas_changed)) {
+        meaningWarnings++;
+      }
+    }
+  }
+  if (meaningWarnings > 0) {
+    console.log(`  ${meaningWarnings} sections had meaning preservation warnings`);
+  }
+
   const outDir = "output/translated";
   await mkdir(outDir, { recursive: true });
   await writeFile(
@@ -174,7 +201,7 @@ async function runTranslate(
 }
 
 // ---------------------------------------------------------------------------
-// Phase: Assemble
+// Phase 4: Assemble — write card JSON
 // ---------------------------------------------------------------------------
 
 async function runAssemble(
@@ -192,49 +219,6 @@ async function runAssemble(
 
   const { meta, chapters } = assembleBook(chapterChunks, config);
   await writeContentFiles(meta, chapters, args.output!);
-
-  // Run structural validation
-  console.log(`\nValidating ${config.slug}...`);
-  const messages: ValidationMessage[] = [];
-
-  const chapterMap = new Map<string, Card[]>();
-  for (const [slug, cards] of chapters) {
-    chapterMap.set(slug, cards);
-    for (const card of cards) {
-      messages.push(...validateCardSchema(card));
-      const schemaErrors = messages.filter(
-        (m) => m.severity === "error" && m.card_id === card.id,
-      );
-      if (schemaErrors.length === 0) {
-        messages.push(...validateCardTags(card));
-        messages.push(...validateReadability(card));
-        messages.push(...validateCardContent(card));
-      }
-    }
-    messages.push(...validateCardSequence(cards, slug));
-  }
-  messages.push(...validateBookMeta(meta, chapterMap));
-
-  const errors = messages.filter((m) => m.severity === "error");
-  const warns = messages.filter((m) => m.severity === "warn");
-
-  if (errors.length > 0) {
-    console.error(`\nValidation FAILED: ${errors.length} errors, ${warns.length} warnings`);
-    for (const e of errors) {
-      console.error(`  ERROR ${e.card_id ?? e.book_slug ?? ""}: ${e.message}`);
-    }
-    process.exit(1);
-  }
-
-  if (warns.length > 0) {
-    console.log(`\nValidation passed with ${warns.length} warnings`);
-    for (const w of warns.slice(0, 10)) {
-      console.log(`  WARN ${w.card_id ?? ""}: ${w.message}`);
-    }
-    if (warns.length > 10) console.log(`  ... and ${warns.length - 10} more`);
-  } else {
-    console.log("\nValidation passed cleanly");
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -263,10 +247,22 @@ async function processBook(config: BookConfig): Promise<void> {
   let parsed: ParsedOutput | null = null;
   let translated: TranslatedOutput | null = null;
 
+  // Phase 1: Parse
   if (phase === "all" || phase === "parse") {
     parsed = await runParse(config);
   }
 
+  // Phase 2: Pre-check
+  if ((phase === "all" || phase === "precheck") && !args["skip-precheck"]) {
+    if (!parsed) parsed = await loadParsed(config.slug);
+    if (!parsed) {
+      console.error(`No parsed data for ${config.slug}. Run --phase parse first.`);
+      process.exit(1);
+    }
+    await runPreCheck(parsed);
+  }
+
+  // Phase 3: Translate (includes meaning preservation check)
   if (phase === "all" || phase === "translate") {
     if (!parsed) parsed = await loadParsed(config.slug);
     if (!parsed) {
@@ -276,6 +272,7 @@ async function processBook(config: BookConfig): Promise<void> {
     translated = await runTranslate(config, parsed);
   }
 
+  // Phase 4: Assemble
   if (phase === "all" || phase === "assemble") {
     if (!translated) translated = await loadTranslated(config.slug);
     if (!translated) {

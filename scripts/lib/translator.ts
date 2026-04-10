@@ -1,15 +1,17 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { callClaudeJSON } from "./claude.js";
+import { callClaudeJSON, ClaudeCliError } from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
 import { buildTranslationPrompt } from "./prompt.js";
+import { checkMeaningPreservation, type MeaningCheckResult } from "./validate-semantic.js";
 
 export interface TranslatedChunk {
   sectionNumber: number;
   originalText: string;
   plainEnglish: string;
   tags: TagSlug[];
+  meaningCheck?: MeaningCheckResult;
 }
 
 interface TranslationResponse {
@@ -51,6 +53,7 @@ export async function* translateChunks(
   chunks: Chunk[],
   config: BookConfig,
   chapterSlug: string,
+  dryRun: boolean = false,
 ): AsyncGenerator<TranslatedChunk> {
   const state = await loadState(config.slug);
   const total = chunks.length;
@@ -63,16 +66,27 @@ export async function* translateChunks(
     if (state.completed[stateKey]) {
       const cached = state.completed[stateKey];
       process.stderr.write(
-        `Translating chunk ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber} (cached)\n`,
+        `Translating ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber} (cached)\n`,
       );
       yield cached;
       continue;
     }
 
+    if (dryRun) {
+      yield {
+        sectionNumber: chunk.sectionNumber,
+        originalText: chunk.text,
+        plainEnglish: `[DRY RUN] ${chunk.text.slice(0, 80)}...`,
+        tags: ["what-really-matters"],
+      };
+      continue;
+    }
+
     process.stderr.write(
-      `Translating chunk ${i + 1}/${total}: ${config.slug} section ${chunk.sectionNumber}...\n`,
+      `Translating ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber}...\n`,
     );
 
+    // Step 1: Translate
     const prompt = buildTranslationPrompt(chunk, config);
     let result = await callClaudeJSON<TranslationResponse>(prompt);
 
@@ -89,14 +103,42 @@ export async function* translateChunks(
       validTags = validateTags(result.tags);
     }
 
-    // Fallback: assign at least one generic tag
-    if (validTags.length === 0) {
-      validTags = ["what-really-matters"];
-    }
+    if (validTags.length === 0) validTags = ["what-really-matters"];
+    if (validTags.length > 3) validTags = validTags.slice(0, 3);
 
-    // Cap at 3 tags
-    if (validTags.length > 3) {
-      validTags = validTags.slice(0, 3);
+    // Step 2: Check meaning preservation
+    let meaningCheck: MeaningCheckResult | undefined;
+    try {
+      meaningCheck = await checkMeaningPreservation(
+        chunk.text,
+        result.plain_english,
+        chunk.sectionNumber,
+      );
+
+      if (!meaningCheck.faithful) {
+        process.stderr.write(
+          `  WARNING: Meaning not preserved for section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
+        );
+      }
+      if (!meaningCheck.tone_preserved) {
+        process.stderr.write(
+          `  WARNING: Tone drift for section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
+        );
+      }
+      if (meaningCheck.ideas_changed) {
+        process.stderr.write(
+          `  WARNING: Ideas changed for section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
+        );
+      }
+      if (meaningCheck.over_explains) {
+        process.stderr.write(
+          `  INFO: Over-explains section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
+        );
+      }
+    } catch (e) {
+      process.stderr.write(
+        `  Meaning check failed for section ${chunk.sectionNumber}: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
+      );
     }
 
     const translated: TranslatedChunk = {
@@ -104,6 +146,7 @@ export async function* translateChunks(
       originalText: chunk.text,
       plainEnglish: result.plain_english,
       tags: validTags,
+      meaningCheck,
     };
 
     // Save progress
