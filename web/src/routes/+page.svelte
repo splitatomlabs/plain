@@ -4,6 +4,11 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<title>In Plain English — Ancient Stoic philosophy in words anyone can understand</title>
+	<meta name="description" content="Read the complete works of Epictetus, Marcus Aurelius, and Seneca — translated into clear, modern English." />
+</svelte:head>
+
 <section class="hero">
 	<h1>Three men. Three completely different lives. The same philosophy.</h1>
 	<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>

@@ -2,6 +2,11 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<title>Topics — In Plain English</title>
+	<meta name="description" content="Explore what the slave, the emperor, and the senator each had to say about life's biggest topics." />
+</svelte:head>
+
 <article class="tag-index">
 	<h1>Topics</h1>
 	<p class="subtitle">Explore what the slave, the emperor, and the senator each had to say.</p>

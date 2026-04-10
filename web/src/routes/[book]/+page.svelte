@@ -10,6 +10,11 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{data.book.title} by {data.author.name} — In Plain English</title>
+	<meta name="description" content={data.book.description} />
+</svelte:head>
+
 <article class="book-landing">
 	<header class="book-header">
 		<p class="author-title" style="color: {accentVar[data.author.slug]}">{data.author.title}</p>

@@ -8,6 +8,11 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{data.tag.label} — In Plain English</title>
+	<meta name="description" content="Stoic wisdom on {data.tag.label.toLowerCase()} from Epictetus, Marcus Aurelius, and Seneca — in plain English." />
+</svelte:head>
+
 <article class="tag-page">
 	<header class="tag-header">
 		<h1>{data.tag.label}</h1>
