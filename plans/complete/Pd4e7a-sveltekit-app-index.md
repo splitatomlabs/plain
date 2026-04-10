@@ -16,7 +16,7 @@ Implement the full Plain web app as specified in ARCHITECTURE.md, BRANDING.md, C
    - Status: [x]
    - Depends on: 03
 5. `plans/Pd4e7a-sveltekit-app-05.md` — Accessibility, Visual Regression & Deployment
-   - Status: [ ]
+   - Status: [x]
    - Depends on: 04
 
 ## Notes
