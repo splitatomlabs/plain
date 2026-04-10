@@ -7,6 +7,7 @@ import {
   tokenUsage,
   batchStats,
   type BatchRequest,
+  type CallClaudeOptions,
 } from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
@@ -169,6 +170,7 @@ export async function translateChunksBatch(
 
   // 4. Collect and correlate results
   const resultMap = new Map<string, TranslatedChunk[]>();
+  const failedIds: string[] = [];
   batchStats.totalRequests += requests.length;
 
   for await (const item of streamBatchResults(batch.id)) {
@@ -182,18 +184,18 @@ export async function translateChunksBatch(
 
     if (item.result.type === "errored") {
       batchStats.failed++;
+      failedIds.push(item.custom_id);
       process.stderr.write(
         `[batch] WARNING: request ${item.custom_id} failed: ${JSON.stringify(item.result.error)}\n`,
       );
       continue;
     }
 
-    batchStats.succeeded++;
-
     // Extract text from succeeded message
     const message = item.result.message;
     const textBlock = message.content.find((b) => b.type === "text");
     if (!textBlock || textBlock.type !== "text") {
+      failedIds.push(item.custom_id);
       process.stderr.write(
         `[batch] WARNING: no text content in result for ${item.custom_id}\n`,
       );
@@ -212,65 +214,105 @@ export async function translateChunksBatch(
     try {
       result = JSON.parse(extractJSON(textBlock.text)) as TranslationResponse;
     } catch {
+      failedIds.push(item.custom_id);
       process.stderr.write(
         `[batch] WARNING: failed to parse JSON for ${item.custom_id}\n`,
       );
       continue;
     }
 
-    // Validate and normalize tags (same logic as translateChunks)
-    let validTags = validateTags(result.tags);
-    if (validTags.length === 0) validTags = ["what-matters-most"];
-    if (validTags.length > 3) validTags = validTags.slice(0, 3);
+    batchStats.succeeded++;
+    addTranslatedResult(resultMap, item.custom_id, result, info);
+  }
 
-    const meaningCheck: MeaningCheck = {
-      faithful: result.faithful,
-      tone_preserved: result.tone_preserved,
-      ideas_changed: result.ideas_changed,
-      over_explains: result.over_explains,
-      verification_notes: result.verification_notes ?? undefined,
-    };
+  // 5. Retry failed chunks via real-time API
+  if (failedIds.length > 0) {
+    process.stderr.write(
+      `[batch] Retrying ${failedIds.length} failed chunks via real-time API...\n`,
+    );
+    for (const customId of failedIds) {
+      const info = meta.get(customId)!;
+      const input = inputs.find(
+        (i) => i.bookSlug === info.bookSlug && i.chapterSlug === info.chapterSlug,
+      );
+      if (!input) continue;
 
-    if (!meaningCheck.faithful) {
-      process.stderr.write(
-        `  WARNING: Meaning not preserved (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
-      );
+      const system = buildTranslationSystem(input.config);
+      const prompt = buildTranslationUser(info.chunk);
+      try {
+        const result = await callClaudeJSON<TranslationResponse>(
+          prompt, undefined, { system } as CallClaudeOptions,
+        );
+        batchStats.succeeded++;
+        batchStats.failed = Math.max(0, batchStats.failed - 1);
+        addTranslatedResult(resultMap, customId, result, info);
+        process.stderr.write(`[batch] Retry succeeded for ${customId}\n`);
+      } catch (e) {
+        process.stderr.write(
+          `[batch] Retry also failed for ${customId}: ${e instanceof Error ? e.message : String(e)}\n`,
+        );
+      }
     }
-    if (!meaningCheck.tone_preserved) {
-      process.stderr.write(
-        `  WARNING: Tone drift (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
-      );
-    }
-    if (meaningCheck.ideas_changed) {
-      process.stderr.write(
-        `  WARNING: Ideas changed (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
-      );
-    }
-    if (meaningCheck.over_explains) {
-      process.stderr.write(
-        `  INFO: Over-explains (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
-      );
-    }
-
-    const translated: TranslatedChunk = {
-      sectionNumber: info.chunk.sectionNumber,
-      originalText: info.chunk.text,
-      plainEnglish: result.plain_english,
-      tags: validTags,
-      meaningCheck,
-    };
-
-    const key = `${info.bookSlug}:${info.chapterSlug}`;
-    const existing = resultMap.get(key) ?? [];
-    existing.push(translated);
-    resultMap.set(key, existing);
   }
 
   // Sort each chapter's chunks by sectionNumber to restore original order
-  for (const [key, chunks] of resultMap) {
+  for (const [, chunks] of resultMap) {
     chunks.sort((a, b) => a.sectionNumber - b.sectionNumber);
-    resultMap.set(key, chunks);
   }
 
   return resultMap;
+}
+
+/** Helper: process a translation response and add to the result map. */
+function addTranslatedResult(
+  resultMap: Map<string, TranslatedChunk[]>,
+  customId: string,
+  result: TranslationResponse,
+  info: { bookSlug: string; chapterSlug: string; chunk: Chunk },
+): void {
+  let validTags = validateTags(result.tags);
+  if (validTags.length === 0) validTags = ["what-matters-most"];
+  if (validTags.length > 3) validTags = validTags.slice(0, 3);
+
+  const meaningCheck: MeaningCheck = {
+    faithful: result.faithful,
+    tone_preserved: result.tone_preserved,
+    ideas_changed: result.ideas_changed,
+    over_explains: result.over_explains,
+    verification_notes: result.verification_notes ?? undefined,
+  };
+
+  if (!meaningCheck.faithful) {
+    process.stderr.write(
+      `  WARNING: Meaning not preserved (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
+    );
+  }
+  if (!meaningCheck.tone_preserved) {
+    process.stderr.write(
+      `  WARNING: Tone drift (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
+    );
+  }
+  if (meaningCheck.ideas_changed) {
+    process.stderr.write(
+      `  WARNING: Ideas changed (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
+    );
+  }
+  if (meaningCheck.over_explains) {
+    process.stderr.write(
+      `  INFO: Over-explains (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
+    );
+  }
+
+  const translated: TranslatedChunk = {
+    sectionNumber: info.chunk.sectionNumber,
+    originalText: info.chunk.text,
+    plainEnglish: result.plain_english,
+    tags: validTags,
+    meaningCheck,
+  };
+
+  const key = `${info.bookSlug}:${info.chapterSlug}`;
+  const existing = resultMap.get(key) ?? [];
+  existing.push(translated);
+  resultMap.set(key, existing);
 }
