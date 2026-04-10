@@ -135,4 +135,59 @@ test.describe('Card reading — mobile', () => {
 			await expect(navZone).not.toBeVisible();
 		}
 	});
+
+	test('swipe left navigates to next card', async ({ page }) => {
+		await page.goto('/meditations/book-01/1');
+		await page.waitForSelector('article');
+
+		// Simulate swipe left (finger moves from right to left)
+		const box = await page.locator('.card-nav').boundingBox();
+		const startX = box.x + box.width * 0.8;
+		const endX = box.x + box.width * 0.2;
+		const y = box.y + box.height / 2;
+
+		await page.evaluate(
+			({ sx, ex, cy }) => {
+				const el = document.querySelector('.card-nav');
+				el.dispatchEvent(new TouchEvent('touchstart', {
+					bubbles: true,
+					touches: [new Touch({ identifier: 0, target: el, clientX: sx, clientY: cy })]
+				}));
+				el.dispatchEvent(new TouchEvent('touchend', {
+					bubbles: true,
+					changedTouches: [new Touch({ identifier: 0, target: el, clientX: ex, clientY: cy })]
+				}));
+			},
+			{ sx: startX, ex: endX, cy: y }
+		);
+
+		await expect(page).toHaveURL(/\/meditations\/book-01\/2$/);
+	});
+
+	test('swipe right navigates to previous card', async ({ page }) => {
+		await page.goto('/meditations/book-01/2');
+		await page.waitForSelector('article');
+
+		const box = await page.locator('.card-nav').boundingBox();
+		const startX = box.x + box.width * 0.2;
+		const endX = box.x + box.width * 0.8;
+		const y = box.y + box.height / 2;
+
+		await page.evaluate(
+			({ sx, ex, cy }) => {
+				const el = document.querySelector('.card-nav');
+				el.dispatchEvent(new TouchEvent('touchstart', {
+					bubbles: true,
+					touches: [new Touch({ identifier: 0, target: el, clientX: sx, clientY: cy })]
+				}));
+				el.dispatchEvent(new TouchEvent('touchend', {
+					bubbles: true,
+					changedTouches: [new Touch({ identifier: 0, target: el, clientX: ex, clientY: cy })]
+				}));
+			},
+			{ sx: startX, ex: endX, cy: y }
+		);
+
+		await expect(page).toHaveURL(/\/meditations\/book-01\/1$/);
+	});
 });
