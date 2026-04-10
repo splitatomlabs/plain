@@ -1,0 +1,45 @@
+{
+  "slug": "enchiridion",
+  "title": "The Enchiridion",
+  "author_slug": "epictetus",
+  "description": "",
+  "tags": [
+    "freedom-and-control",
+    "what-really-matters",
+    "self-discipline",
+    "calm-your-mind",
+    "death-and-mortality",
+    "doing-the-right-thing",
+    "human-nature"
+  ],
+  "chapters": [
+    {
+      "slug": "sections-01-10",
+      "title": "Sections 1-10",
+      "card_count": 3
+    },
+    {
+      "slug": "sections-11-20",
+      "title": "Sections 11-20",
+      "card_count": 1
+    },
+    {
+      "slug": "sections-21-30",
+      "title": "Sections 21-30",
+      "card_count": 1
+    },
+    {
+      "slug": "sections-31-40",
+      "title": "Sections 31-40",
+      "card_count": 3
+    },
+    {
+      "slug": "sections-41-53",
+      "title": "Sections 41-53",
+      "card_count": 1
+    }
+  ],
+  "total_cards": 9,
+  "source_url": "",
+  "has_author_chapters": false
+}

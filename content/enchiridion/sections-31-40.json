@@ -1,0 +1,51 @@
+[
+  {
+    "id": "enchiridion-31-001",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-31-40",
+    "card_number": 1,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Here is the core of honoring the gods: believe that they exist, and that they govern the universe with justice and wisdom. Commit yourself to obeying them. Yield to them. Follow their lead willingly, whatever happens, trusting that the wisest possible mind is in charge. Do this, and you will never blame the gods or accuse them of ignoring you. But you can only reach this point one way — by letting go of things that are not in your control, and by deciding that \"good\" and \"bad\" apply only to what is.",
+    "original_excerpt": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you. And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are.",
+    "source_reference": "The Enchiridion, Section 31",
+    "author_slug": "epictetus",
+    "tags": [
+      "doing-the-right-thing",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 28
+  },
+  {
+    "id": "enchiridion-31-002",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-31-40",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "If you treat anything outside yourself as good or evil, here's what will happen: whenever you don't get what you want, or you get what you were trying to avoid, you'll blame whoever caused it. Every living thing naturally runs from what seems harmful — and from whoever causes the harm. Every living thing chases what seems helpful — and whoever brings it. So it's impossible for someone who believes they've been hurt to feel grateful toward the person who hurt them. You can't enjoy the injury itself, so how could you enjoy the one who delivers it?\n\nThis is why a son turns against his father — when the father won't hand over what the son thinks is good. This is what made Polynices and Eteocles into enemies: they both wanted power, and both saw it as a true good. This is why the farmer curses the gods. So does the sailor, the merchant, and anyone who has lost a wife or child. Wherever your self-interest lies, that's where you point your devotion too. So whoever learns to manage their desires and aversions properly will naturally take care of their piety as well.",
+    "original_excerpt": "For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors. For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles[4] mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed. So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise.",
+    "source_reference": "The Enchiridion, Section 31",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "human-nature",
+      "what-really-matters"
+    ],
+    "reading_time_seconds": 58
+  },
+  {
+    "id": "enchiridion-31-003",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-31-40",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "You also have a duty to honor the gods — through prayer, offerings, and whatever traditions your country follows. Do it with sincerity. Don't be careless or sloppy about it. But don't be cheap, either, and don't go overboard.",
+    "original_excerpt": "But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly.",
+    "source_reference": "The Enchiridion, Section 31",
+    "author_slug": "epictetus",
+    "tags": [
+      "doing-the-right-thing",
+      "self-discipline"
+    ],
+    "reading_time_seconds": 12
+  }
+]

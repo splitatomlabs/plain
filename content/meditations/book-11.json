@@ -1,0 +1,66 @@
+[
+  {
+    "id": "meditations-11-001",
+    "book_slug": "meditations",
+    "chapter_slug": "book-11",
+    "card_number": 1,
+    "total_cards_in_chapter": 4,
+    "plain_english": "The natural qualities of a rational soul are these: it can see itself clearly. It can shape and organize itself. It makes itself into whatever it chooses to be. And it reaps its own fruits — unlike plants, trees, and animals, whose fruits always go to others, never to themselves.",
+    "original_excerpt": "The natural properties, and privileges of a reasonable soul are: That she seeth herself; that she can order, and compose herself: that she makes herself as she will herself: that she reaps her own fruits whatsoever, whereas plants, trees, unreasonable creatures, what fruit soever (be it either fruit properly, or analogically only) they bear, they bear them unto others, and not to themselves.",
+    "source_reference": "Meditations, Book 11, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "human-nature"
+    ],
+    "reading_time_seconds": 15
+  },
+  {
+    "id": "meditations-11-002",
+    "book_slug": "meditations",
+    "chapter_slug": "book-11",
+    "card_number": 2,
+    "total_cards_in_chapter": 4,
+    "plain_english": "Again — whenever and wherever her life ends, sooner or later, she still reaches her own completion. She is not like a dancer or an actor, whose whole performance falls apart if it is cut short. No matter when she is stopped, no matter what she is doing, she can make whatever is in her hands complete and whole. She can leave saying, 'I have lived. Nothing that was truly mine was missing.'",
+    "original_excerpt": "Again; whensoever, and wheresoever, sooner or later, her life doth end, she hath her own end nevertheless. For it is not with her, as with dancers and players, who if they be interrupted in any part of their action, the whole action must needs be imperfect: but she in what part of time or action soever she be surprised, can make that which she hath in her hand whatsoever it be, complete and full, so that she may depart with that comfort, 'I have lived; neither want I anything of that which properly did belong unto me.'",
+    "source_reference": "Meditations, Book 11, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-really-matters"
+    ],
+    "reading_time_seconds": 22
+  },
+  {
+    "id": "meditations-11-003",
+    "book_slug": "meditations",
+    "chapter_slug": "book-11",
+    "card_number": 3,
+    "total_cards_in_chapter": 4,
+    "plain_english": "The mind reaches around the whole world. It sees through all the empty show — things that look solid but aren't. It stretches out to grasp the infinity of time. It understands how everything circles back around, returning to the same state after a set period. And it sees clearly that the people who come after us will witness nothing new, just as those who came before us saw nothing more than we have. Really, anyone who reaches forty with half a brain has already seen it all — past and future — because it is all the same kind of thing.",
+    "original_excerpt": "Again, she compasseth the whole world, and penetrateth into the vanity, and mere outside (wanting substance and solidity) of it, and stretcheth herself unto the infiniteness of eternity; and the revolution or restoration of all things after a certain period of time, to the same state and place as before, she fetcheth about, and doth comprehend in herself; and considers withal, and sees clearly this, that neither they that shall follow us, shall see any new thing, that we have not seen, nor they that went before, anything more than we: but that he that is once come to forty (if he have any wit at all) can in a manner (for that they are all of one kind) see all things, both past and future.",
+    "source_reference": "Meditations, Book 11, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-really-matters",
+      "human-nature"
+    ],
+    "reading_time_seconds": 31
+  },
+  {
+    "id": "meditations-11-004",
+    "book_slug": "meditations",
+    "chapter_slug": "book-11",
+    "card_number": 4,
+    "total_cards_in_chapter": 4,
+    "plain_english": "It is natural for the human soul to love others, to be honest and humble, and to value nothing above its own integrity. This is also what the law demands. And so it turns out that sound reason and justice are the same thing. Justice, then, is the highest aim that rational beings should set for themselves.",
+    "original_excerpt": "As proper is it, and natural to the soul of man to love her neighbour, to be true and modest; and to regard nothing so much as herself: which is also the property of the law: whereby by the way it appears, that sound reason and justice comes all to one, and therefore that justice is the chief thing, that reasonable creatures ought to propose unto themselves as their end.",
+    "source_reference": "Meditations, Book 11, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "human-nature"
+    ],
+    "reading_time_seconds": 17
+  }
+]

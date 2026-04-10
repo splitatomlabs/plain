@@ -1,0 +1,51 @@
+[
+  {
+    "id": "enchiridion-01-001",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-01-10",
+    "card_number": 1,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Some things are up to you. Some things are not.\n\nWhat's up to you: your opinions, your goals, what you want, and what you want to avoid — basically, anything that is truly your own doing. What's not up to you: your body, your possessions, your reputation, your job title — anything that isn't really your own doing.\n\nThe things that are up to you are naturally free. Nothing can block them or hold them back. But the things that aren't up to you are weak, dependent, and easily blocked by others.\n\nSo remember this: if you treat things outside your control as though they're free, and if you claim what belongs to others as your own, you will suffer. You will complain. You will be anxious. You will blame both the gods and the people around you.\n\nBut if you only claim what is actually yours, and see everything else for what it really is — not yours — then no one can force you to do anything. No one can hold you back. You won't blame anyone. You won't accuse anyone. You won't do a single thing against your will. No one will be able to hurt you. You won't have enemies. Nothing will harm you.",
+    "original_excerpt": "There are things which are within our power, and there are things which\nbeyond our power. Within our power are opinion, aim, desire,\naversion, and, in one word, whatever affairs are our own. Beyond our\npower are body, property, reputation, office, and, in one word, whatever\nare not properly our own affairs.\n\nNow the things within our power are by nature free, unrestricted,\nunhindered; but those beyond our power are weak, dependent, restricted,\nalien. Remember, then, that if you attribute freedom to things by nature\ndependent and take what belongs to others for your own, you will be\nhindered, you will lament, you will be disturbed, you will find fault\nboth with gods and men. But if you take for your own only that which is\nyour own and view what belongs to others just as it really is, then no\none will ever compel you, no one will restrict you; you will find fault\nwith no one, you will accuse no one, you will do nothing against your\nwill; no one will hurt you, you will not have an enemy, nor will you\nsuffer any harm.",
+    "source_reference": "The Enchiridion, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "what-really-matters"
+    ],
+    "reading_time_seconds": 62
+  },
+  {
+    "id": "enchiridion-01-002",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-01-10",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "If you're serious about these great things, you can't allow yourself even the slightest pull toward the rest. Some of those other things, you need to give up entirely. Others, you can put off for now. But if you try to have it all — these great things plus power and wealth — you'll probably miss the power and wealth by chasing both. And you will certainly fail at the one thing that actually produces happiness and freedom.",
+    "original_excerpt": "Aiming, therefore, at such great things, remember that you must not allow\nyourself any inclination, however slight, toward the attainment of the\nothers; but that you must entirely quit some of them, and for the present\npostpone the rest. But if you would have these, and possess power and\nwealth likewise, you may miss the latter in seeking the former; and you\nwill certainly fail of that by which alone happiness and freedom are\nprocured.",
+    "source_reference": "The Enchiridion, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "self-discipline",
+      "what-really-matters"
+    ],
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "enchiridion-01-003",
+    "book_slug": "enchiridion",
+    "chapter_slug": "sections-01-10",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "So start practicing this right now. When something upsets you, tell yourself: \"You're just an impression — not the real thing.\" Then test it with the rules you've learned. The most important test is this: does it involve something that's up to you, or something that isn't? If it's about something outside your control, be ready to say, \"This is nothing to me.\"",
+    "original_excerpt": "Seek at once, therefore, to be able to say to every unpleasing semblance,\n\"You are but a semblance and by no means the real thing.\" And then\nexamine it by those rules which you have; and first and chiefly by this:\nwhether it concerns the things which are within our own power or those\nwhich are not; and if it concerns anything beyond our power, be prepared\nto say that it is nothing to you.",
+    "source_reference": "The Enchiridion, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 19
+  }
+]
