@@ -18,6 +18,38 @@
 		<p class="book-description">{data.book.description}</p>
 	</header>
 
+	{#if data.book.has_author_chapters}
+		<section class="chapters">
+			<h2 class="chapters-heading">Chapters</h2>
+			<ol class="chapter-list">
+				{#each data.book.chapters as chapter}
+					<li class="chapter-item">
+						<span class="chapter-title">{chapter.title}</span>
+						<span class="chapter-count">{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}</span>
+					</li>
+				{/each}
+			</ol>
+		</section>
+	{:else}
+		<section class="sections">
+			<h2 class="sections-heading">Sections</h2>
+			<ol class="section-list">
+				{#each data.sections as section}
+					<li class="section-item">
+						<span class="section-title">{section.label}</span>
+						{#if section.cardCount > 1}
+							<span class="section-count">{section.cardCount} {section.cardCount === 1 ? 'card' : 'cards'}</span>
+						{/if}
+					</li>
+				{/each}
+			</ol>
+		</section>
+	{/if}
+
+	<div class="cta-row">
+		<a href="/{data.book.slug}/{data.book.chapters[0].slug}/1" class="cta">Start Reading</a>
+	</div>
+
 	{#if data.tags.length > 0}
 		<div class="book-tags">
 			{#each data.tags as tag}
@@ -25,20 +57,6 @@
 			{/each}
 		</div>
 	{/if}
-
-	<section class="chapters">
-		<h2 class="chapters-heading">Chapters</h2>
-		<ol class="chapter-list">
-			{#each data.book.chapters as chapter}
-				<li class="chapter-item">
-					<span class="chapter-title">{chapter.title}</span>
-					<span class="chapter-count">{chapter.card_count} cards</span>
-				</li>
-			{/each}
-		</ol>
-	</section>
-
-	<a href="/{data.book.slug}/{data.book.chapters[0].slug}/1" class="cta">Start Reading</a>
 </article>
 
 <style>
@@ -85,11 +103,50 @@
 		line-height: var(--line-height-body);
 	}
 
+	.sections {
+		margin-bottom: var(--space-xl);
+	}
+
+	.sections-heading {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-md);
+	}
+
+	.section-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.section-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-sm) 0;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.section-title {
+		font-family: var(--font-body);
+		color: var(--color-text-primary);
+	}
+
+	.section-count {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+	}
+
 	.book-tags {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-xs);
-		margin-bottom: var(--space-xl);
+		margin-top: var(--space-xl);
 	}
 
 	.chapters {
@@ -129,6 +186,10 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+	}
+
+	.cta-row {
+		text-align: center;
 	}
 
 	.cta {

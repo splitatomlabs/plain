@@ -9,5 +9,6 @@
     { "slug": "sections-11-20", "title": "Sections 11–20", "card_count": 3 }
   ],
   "total_cards": 6,
-  "source_url": "https://www.gutenberg.org/ebooks/64576"
+  "source_url": "https://www.gutenberg.org/ebooks/64576",
+  "has_author_chapters": false
 }

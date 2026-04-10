@@ -14,7 +14,7 @@
 		background: var(--color-tag-bg);
 		color: var(--color-text-tertiary);
 		font-family: var(--font-ui);
-		font-size: var(--text-ui);
+		font-size: clamp(0.6875rem, 0.625rem + 0.125vw, 0.75rem);
 		font-weight: 500;
 		line-height: var(--line-height-ui);
 		text-decoration: none;

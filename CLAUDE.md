@@ -23,6 +23,20 @@ npm test          # runs both pipeline and web unit tests
 
 Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
 
+## Screenshots
+
+Start the dev server, then use Playwright CLI to capture pages:
+
+```bash
+cd web && npm run dev &                # starts on port 5173 (or next available)
+npx playwright screenshot --viewport-size="390,844" http://localhost:5173/enchiridion /tmp/screenshot.png
+npx playwright screenshot --viewport-size="390,844" --full-page http://localhost:5173/enchiridion /tmp/screenshot-full.png
+```
+
+- Use `--viewport-size="390,844"` for mobile and `--viewport-size="1280,800"` for desktop.
+- Use `--full-page` to capture below the fold.
+- Read the resulting PNG with the Read tool to view it.
+
 ## Content Guidelines
 
 ### Plain Translation Readability
