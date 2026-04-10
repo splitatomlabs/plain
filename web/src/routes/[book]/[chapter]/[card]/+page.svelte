@@ -27,13 +27,43 @@
 />
 
 <div class="card-page">
+	{#if !data.prevCard}
+		<p class="card-boundary">Beginning of {data.book.title}</p>
+	{/if}
+
 	<CardNav prevCard={data.prevCard} nextCard={data.nextCard}>
 		<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} />
 	</CardNav>
+
+	{#if !data.nextCard}
+		<div class="card-completion">
+			<p class="completion-text">You've finished {data.book.title}.</p>
+		</div>
+	{/if}
 </div>
 
 <style>
 	.card-page {
 		padding: var(--space-xl) 0;
+	}
+
+	.card-boundary {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		text-align: center;
+		margin: 0 0 var(--space-md);
+	}
+
+	.card-completion {
+		text-align: center;
+		padding: var(--space-xl) 0;
+	}
+
+	.completion-text {
+		font-family: var(--font-body);
+		font-size: 1.25rem;
+		color: var(--color-text-primary);
+		margin: 0;
 	}
 </style>
