@@ -134,9 +134,6 @@
 		<div class="cta-row">
 			<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
 		</div>
-		<div class="cta-row cta-secondary-row">
-			<a href={firstCardUrl} class="cta-secondary">Start from the beginning</a>
-		</div>
 	{:else}
 		<div class="cta-row">
 			<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
