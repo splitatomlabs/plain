@@ -33,7 +33,7 @@
 			}
 		}
 	});
-	const firstCardUrl = `/${data.book.slug}/${data.book.chapters[0].slug}/1`;
+	let firstCardUrl = $derived(`/${data.book.slug}/${data.book.chapters[0].slug}/1`);
 
 	let showGiftCompose = $state(false);
 	let giftNoteInput = $state('');

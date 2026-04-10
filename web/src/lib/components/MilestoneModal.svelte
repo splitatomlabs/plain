@@ -99,6 +99,7 @@
 		role="dialog"
 		aria-labelledby="milestone-heading"
 		aria-modal="true"
+		tabindex="-1"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={handleKeydown}
 	>
