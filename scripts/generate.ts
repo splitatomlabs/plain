@@ -4,7 +4,7 @@ import { BOOK_CONFIGS, VALID_BOOK_SLUGS, type BookConfig } from "./lib/constants
 import { parseSourceText } from "./lib/parser.js";
 import { chunkSections, type Chunk } from "./lib/chunker.js";
 import { refineChunks } from "./lib/refine.js";
-import { translateChunks, type TranslatedChunk } from "./lib/translator.js";
+import { translateChunks, translateChunksBatch, type TranslatedChunk, type BatchTranslateInput } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
 import { tokenUsage } from "./lib/claude.js";
 
@@ -35,6 +35,10 @@ Options:
   --output <dir>     Output directory (default: content)
   --parallel         Process all books concurrently (use with --all)
   --help             Show this help
+
+Environment:
+  PLAIN_USE_API=1    Use Anthropic API directly (requires ANTHROPIC_API_KEY)
+  PLAIN_USE_BATCH=1  Use Batch API for translate step (50% cheaper, async)
 
 Pipeline: parse → refine → translate (with meaning check) → assemble`);
   process.exit(0);
@@ -202,6 +206,8 @@ async function runAssemble(
 // Main
 // ---------------------------------------------------------------------------
 
+const useBatch = process.env.PLAIN_USE_BATCH === "1";
+
 async function processBook(config: BookConfig): Promise<void> {
   const parsed = await runParse(config);
 
@@ -210,6 +216,73 @@ async function processBook(config: BookConfig): Promise<void> {
   const refined = await runRefine(parsed, config);
   const translated = await runTranslate(config, refined);
   await runAssemble(config, translated);
+}
+
+/** Parse + refine a book, returning config and refined output for batch translation. */
+async function parseAndRefine(config: BookConfig): Promise<{ config: BookConfig; refined: ParsedOutput } | null> {
+  const parsed = await runParse(config);
+  if (args["parse-only"]) return null;
+  const refined = await runRefine(parsed, config);
+  return { config, refined };
+}
+
+/** Batch path: parse+refine all books, translate all chunks in one batch, then assemble. */
+async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
+  // Phase 1: parse + refine (parallel or sequential)
+  const results = args.parallel
+    ? await Promise.all(configs.map(parseAndRefine))
+    : await (async () => {
+        const r = [];
+        for (const c of configs) r.push(await parseAndRefine(c));
+        return r;
+      })();
+
+  const refined = results.filter((r): r is { config: BookConfig; refined: ParsedOutput } => r !== null);
+  if (refined.length === 0) return;
+
+  // Phase 2: collect all chunks into batch inputs
+  const batchInputs: BatchTranslateInput[] = [];
+  for (const { config, refined: r } of refined) {
+    for (const ch of r.chapters) {
+      batchInputs.push({
+        bookSlug: config.slug,
+        chapterSlug: ch.slug,
+        chunks: ch.chunks,
+        config,
+      });
+    }
+  }
+
+  console.log(`\nBatch translating ${batchInputs.reduce((s, i) => s + i.chunks.length, 0)} chunks across ${refined.length} books...`);
+  const translatedMap = await translateChunksBatch(batchInputs);
+
+  // Phase 3: assemble each book from batch results
+  for (const { config, refined: r } of refined) {
+    const translatedOutput: TranslatedOutput = {
+      bookSlug: config.slug,
+      chapters: r.chapters.map((ch) => ({
+        slug: ch.slug,
+        title: ch.title,
+        bookNumber: ch.bookNumber,
+        translated: translatedMap.get(`${config.slug}:${ch.slug}`) ?? [],
+      })),
+    };
+
+    // Print meaning check summary
+    let meaningWarnings = 0;
+    for (const ch of translatedOutput.chapters) {
+      for (const t of ch.translated) {
+        if (t.meaningCheck && (!t.meaningCheck.faithful || !t.meaningCheck.tone_preserved || t.meaningCheck.ideas_changed)) {
+          meaningWarnings++;
+        }
+      }
+    }
+    if (meaningWarnings > 0) {
+      console.log(`  ${config.slug}: ${meaningWarnings} sections had meaning preservation warnings`);
+    }
+
+    await runAssemble(config, translatedOutput);
+  }
 }
 
 async function main(): Promise<void> {
@@ -222,27 +295,33 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (args.parallel) {
-    await Promise.all((configs as BookConfig[]).map((config) => processBook(config)));
+  const validConfigs = configs as BookConfig[];
+
+  if (useBatch) {
+    await runBatchPipeline(validConfigs);
+  } else if (args.parallel) {
+    await Promise.all(validConfigs.map((config) => processBook(config)));
   } else {
-    for (const config of configs as BookConfig[]) {
+    for (const config of validConfigs) {
       await processBook(config);
     }
   }
 
-  // Cost report (only meaningful when PLAIN_USE_API=1)
+  // Cost report (only meaningful when PLAIN_USE_API=1 or PLAIN_USE_BATCH=1)
   const { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens } =
     tokenUsage;
   const totalTokens = inputTokens + outputTokens + cacheReadTokens + cacheCreationTokens;
   if (totalTokens > 0) {
-    // Sonnet pricing per 1M tokens
-    const inputCost = (inputTokens / 1_000_000) * 3;
-    const outputCost = (outputTokens / 1_000_000) * 15;
-    const cacheWriteCost = (cacheCreationTokens / 1_000_000) * 3.75;
-    const cacheReadCost = (cacheReadTokens / 1_000_000) * 0.3;
+    // Sonnet pricing per 1M tokens (batch = 50% discount)
+    const discount = useBatch ? 0.5 : 1;
+    const inputCost = (inputTokens / 1_000_000) * 3 * discount;
+    const outputCost = (outputTokens / 1_000_000) * 15 * discount;
+    const cacheWriteCost = (cacheCreationTokens / 1_000_000) * 3.75 * discount;
+    const cacheReadCost = (cacheReadTokens / 1_000_000) * 0.3 * discount;
     const totalCost = inputCost + outputCost + cacheWriteCost + cacheReadCost;
 
     process.stderr.write("\n--- Cost Report ---\n");
+    if (useBatch) process.stderr.write("  Mode: Batch API (50% discount)\n");
     process.stderr.write(`  Input tokens:          ${inputTokens.toLocaleString()}\n`);
     process.stderr.write(`  Output tokens:         ${outputTokens.toLocaleString()}\n`);
     process.stderr.write(`  Cache creation tokens: ${cacheCreationTokens.toLocaleString()}\n`);
