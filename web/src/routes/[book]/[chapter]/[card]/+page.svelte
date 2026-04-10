@@ -18,7 +18,8 @@
 
 	function handleNavigateNext() {
 		const beforeProgress = progress.getProgress(data.card.book_slug, data.totalCards);
-		progress.markCardRead(data.card.book_slug, data.card.id);
+		const resumeUrl = data.nextCard ? cardUrl(data.nextCard) : null;
+		progress.markCardRead(data.card.book_slug, data.card.id, resumeUrl);
 		const afterProgress = progress.getProgress(data.card.book_slug, data.totalCards);
 
 		for (const threshold of MILESTONES) {

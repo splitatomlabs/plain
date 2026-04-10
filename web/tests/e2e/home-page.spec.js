@@ -44,6 +44,7 @@ test.describe('Home page — returning reader', () => {
 					cards_read: ['meditations-01-001', 'meditations-01-002'],
 					last_card: 'meditations-01-002',
 					last_read_at: new Date().toISOString(),
+					resume_url: '/meditations/book-01/3',
 					completed: false,
 					completed_at: null
 				}

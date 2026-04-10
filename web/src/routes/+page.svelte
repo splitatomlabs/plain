@@ -8,7 +8,7 @@
 
 	let hasProgress = $state(false);
 	let lastReadBook = $state(null);
-	let lastReadCard = $state(null);
+	let resumeUrl = $state(null);
 	let authorProgressData = $state([]);
 
 	$effect(() => {
@@ -17,8 +17,7 @@
 		if (hasProgress) {
 			lastReadBook = progress.getLastReadBook();
 			if (lastReadBook) {
-				const bookProgress = progress.getProgress(lastReadBook, 0);
-				lastReadCard = bookProgress.lastCard;
+				resumeUrl = progress.getResumeUrl(lastReadBook);
 			}
 			authorProgressData = data.returningAuthorData.map(({ author, books }) => {
 				const ap = progress.getAuthorProgress(author.slug, books);
@@ -26,14 +25,6 @@
 			});
 		}
 	});
-
-	function cardUrl(cardId) {
-		if (!cardId) return null;
-		// Card ID format: "meditations-01-001" → /meditations/book-01/1
-		// or "enchiridion-01-003" → /enchiridion/sections-01-10/3
-		// We need the book meta to resolve chapter slug, so link to book page with continue
-		return null;
-	}
 
 	function getBookMeta(slug) {
 		for (const { books } of data.returningAuthorData) {
@@ -43,26 +34,6 @@
 		return null;
 	}
 
-	function getLastCardUrl() {
-		if (!lastReadCard || !lastReadBook) return null;
-		// Parse card ID: "meditations-05-016" → book=meditations, chapter_slug from card ID parts
-		const book = getBookMeta(lastReadBook);
-		if (!book) return null;
-		// Card IDs are like "meditations-01-001" where middle part maps to chapter
-		// We need to find the chapter. The card ID contains book-chapterNum-cardNum.
-		const parts = lastReadCard.split('-');
-		// For compound slugs like "shortness-of-life-01-001", we need the book slug to strip it
-		const suffix = lastReadCard.slice(lastReadBook.length + 1); // "01-001"
-		const suffixParts = suffix.split('-');
-		const chapterNum = suffixParts[0];
-		const cardNum = parseInt(suffixParts[1], 10);
-		// Find matching chapter
-		const chapter = book.chapters.find((ch) => ch.slug.endsWith(chapterNum) || ch.slug.includes(chapterNum));
-		if (!chapter) return `/${lastReadBook}`;
-		return `/${lastReadBook}/${chapter.slug}/${cardNum}`;
-	}
-
-	const lastCardUrl = $derived(getLastCardUrl());
 	const lastBookMeta = $derived(lastReadBook ? getBookMeta(lastReadBook) : null);
 </script>
 
@@ -87,8 +58,8 @@
 			{/each}
 		</div>
 
-		{#if lastBookMeta && lastCardUrl}
-			<a href={lastCardUrl} class="continue-banner">
+		{#if lastBookMeta && resumeUrl}
+			<a href={resumeUrl} class="continue-banner">
 				<span class="continue-label">Continue Reading</span>
 				<span class="continue-book">{lastBookMeta.title}</span>
 			</a>

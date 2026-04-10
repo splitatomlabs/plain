@@ -47,7 +47,7 @@ function createProgressStore() {
 	return {
 		subscribe: store.subscribe,
 
-		markCardRead(bookSlug, cardId) {
+		markCardRead(bookSlug, cardId, resumeUrl = null) {
 			store.update((data) => {
 				const book = ensureBook(data, bookSlug);
 				if (!book.cards_read.includes(cardId)) {
@@ -55,6 +55,9 @@ function createProgressStore() {
 				}
 				book.last_card = cardId;
 				book.last_read_at = new Date().toISOString();
+				if (resumeUrl !== null) {
+					book.resume_url = resumeUrl;
+				}
 				return { ...data };
 			});
 		},
@@ -90,6 +93,11 @@ function createProgressStore() {
 				totalCards,
 				percentage: totalCards > 0 ? Math.round((cardsRead / totalCards) * 100) : 0
 			};
+		},
+
+		getResumeUrl(bookSlug) {
+			const data = get(store);
+			return data[bookSlug]?.resume_url || null;
 		},
 
 		getLastReadBook() {
