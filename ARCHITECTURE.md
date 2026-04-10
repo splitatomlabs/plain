@@ -481,6 +481,62 @@ src/
 
 ---
 
+## Accessibility
+
+Philosophy made accessible means accessible to everyone — including users who navigate with screen readers, keyboards, or assistive devices, and those with low vision or cognitive disabilities.
+
+### Semantic HTML
+
+- Use native elements over custom widgets: `<button>`, `<nav>`, `<main>`, `<article>`, `<aside>`. No `<div>` buttons.
+- Each card page uses `<article>` for the card content, with the plain English text as the primary content and the original excerpt marked up with `<details>`/`<summary>` for the collapsible "Show original" toggle.
+- Page landmarks: `<header>` (nav + author context), `<main>` (card or page content), `<footer>` (source reference + share actions). Screen readers can jump between these.
+- Headings follow a logical hierarchy on every page — never skip levels for styling.
+
+### Keyboard Navigation
+
+- All interactive elements are focusable and operable via keyboard.
+- Card navigation responds to `ArrowLeft` / `ArrowRight` for previous/next. Focus management ensures the new card content is announced.
+- Tag pills, share buttons, and modals are all reachable via `Tab` and activatable via `Enter` / `Space`.
+- `MilestoneModal` traps focus while open and returns focus to the triggering element on close.
+- Visible focus indicators on all interactive elements — styled to match the warm aesthetic, never removed.
+
+### Screen Reader Support
+
+- Card transitions announce the new card content. Use `aria-live="polite"` on the card container or manage focus to the new card heading so screen readers read the updated text.
+- Progress indicators include `aria-label` or `aria-valuenow`/`aria-valuemax` attributes (e.g., `ProgressRing` announces "Meditations: 47 of 120 cards read, 39%").
+- The "Show original" toggle communicates its expanded/collapsed state via `aria-expanded`.
+- Share and favorite buttons use `aria-label` to convey purpose (e.g., "Share this card", "Add to favorites") since they may display as icon-only.
+- `MilestoneModal` uses `role="dialog"` with `aria-labelledby` pointing to its heading.
+
+### Color & Contrast
+
+- All text meets WCAG 2.1 AA contrast minimums: 4.5:1 for body text, 3:1 for large text and UI components.
+- Author accent colors are never used as the sole way to convey meaning — always paired with text labels or icons.
+- Dark mode maintains the same contrast standards. Test both themes.
+- Interactive elements have visible non-color-dependent focus and hover states.
+
+### High Contrast & User Preferences
+
+- Respect `prefers-contrast: more` — increase border visibility, strengthen text/background contrast beyond AA minimums, and ensure tag pills and progress elements remain distinct.
+- Respect `prefers-reduced-motion` — disable swipe animations, card transitions, and progress ring animations. Content still navigates; only motion is removed.
+- Respect `prefers-color-scheme` for automatic light/dark switching.
+- Text reflows correctly up to 200% browser zoom without horizontal scrolling.
+
+### Reading Experience
+
+- Max line width (~65 characters) and generous line height (~1.6) benefit all readers, not just those with reading disabilities.
+- No auto-advancing cards. No timers. The reader controls the pace entirely.
+- Touch targets for card navigation and action buttons meet the 44×44px minimum.
+- No content is conveyed exclusively through images — OG images are for social sharing previews, not for in-app reading.
+
+### Testing
+
+- Test with VoiceOver (macOS/iOS) and at minimum one other screen reader (NVDA or TalkBack).
+- Run axe-core or Lighthouse accessibility audits as part of development. Aim for zero violations.
+- Manual keyboard-only navigation test on every new route or component.
+
+---
+
 ## Future Additions (Not for v1)
 
 Out of scope for launch. Architecture decisions should not block these.

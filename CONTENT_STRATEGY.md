@@ -53,7 +53,8 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 ### The Senator — Seneca
 
 **3. On the Shortness of Life**
-- Source: Public domain translation available via multiple sources. John W. Basore translation (Loeb Classical Library, 1932) is public domain.
+- Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
+- Translation: Aubrey Stewart (public domain)
 - Structure: Single essay, roughly 20 sections
 - Estimated cards: 40–60
 - Character: Punchy, urgent, almost angry. Seneca is frustrated watching people waste their lives. This is his most quotable, most shareable work.
@@ -61,7 +62,8 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Key themes: what really matters, self-discipline, death & mortality, calm your mind, ambition & power
 
 **4. On the Happy Life**
-- Source: John W. Basore translation (Loeb Classical Library, 1932, public domain).
+- Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
+- Translation: Aubrey Stewart (public domain)
 - Structure: Single essay, roughly 28 sections
 - Estimated cards: 40–60
 - Character: Defensive, philosophical, surprisingly personal. Seneca is responding to critics who call him a hypocrite — a man preaching Stoic simplicity while living in luxury. He doesn't dodge the accusation. He argues that pursuing virtue and possessing wealth aren't contradictions, as long as wealth doesn't possess you.
@@ -69,7 +71,8 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Key themes: what really matters, self-discipline, doing the right thing, human nature, ambition & power
 
 **5. On Peace of Mind (De Tranquillitate Animi)**
-- Source: John W. Basore translation (Loeb Classical Library, 1932, public domain).
+- Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
+- Translation: Aubrey Stewart (public domain)
 - Structure: Single essay, roughly 17 sections
 - Estimated cards: 40–60
 - Character: Practical, warm, prescriptive. Written as a response to his friend Serenus, who is anxious and restless. Seneca diagnoses the problem and offers concrete advice — how to choose work, handle setbacks, deal with loss, and find calm without withdrawing from life.

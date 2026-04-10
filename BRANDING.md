@@ -66,8 +66,8 @@ They all arrived at the same answers. Plain lets you read those answers in words
 | Background | `#FAF7F2` | Page background, reading surface |
 | Surface | `#FFFFFF` | Card backgrounds, elevated elements |
 | Primary text | `#2C2520` | Card body text, headings |
-| Secondary text | `#8A8279` | Source references, meta info, timestamps |
-| Tertiary text | `#6B6560` | Tag pill text, subtle labels |
+| Secondary text | `#736B62` | Source references, meta info, timestamps |
+| Tertiary text | `#655F5A` | Tag pill text, subtle labels |
 | Border | `#E8E2D9` | Card borders, dividers, separators |
 | Tag background | `#F0EDE8` | Tag pill fills, subtle backgrounds |
 
@@ -78,7 +78,7 @@ They all arrived at the same answers. Plain lets you read those answers in words
 | Background | `#1A1816` | Page background |
 | Surface | `#252220` | Card backgrounds, elevated elements |
 | Primary text | `#E8E2D9` | Card body text, headings |
-| Secondary text | `#8A8279` | Source references, meta info |
+| Secondary text | `#9E958C` | Source references, meta info |
 | Tertiary text | `#A89E94` | Tag pill text, subtle labels |
 | Border | `#33302B` | Card borders, dividers, separators |
 | Tag background | `#33302B` | Tag pill fills, subtle backgrounds |
@@ -87,11 +87,26 @@ They all arrived at the same answers. Plain lets you read those answers in words
 
 Each of the three Stoic figures gets a subtle accent color, drawn from the ancient world. Used sparingly on progress rings, chapter headings, and author labels. Never dominant — the text is always the focus.
 
+**Accessibility note:** In light mode, accent colors pass WCAG AA for large text and UI components (3:1) but not for normal body text (4.5:1). Only use accents at ≥18px or ≥14px bold. Never use them for body text, source references, or any text at small sizes. In dark mode, all accents pass both thresholds.
+
 | Author | Light Mode | Dark Mode | Inspiration |
 |---|---|---|---|
 | The Slave (Epictetus) | `#B5704F` | `#C9886A` | Terracotta clay — earth, simplicity, the ground beneath a slave's feet |
 | The Emperor (Marcus Aurelius) | `#5B6E8A` | `#7BA3CC` | Muted indigo — imperial but restrained, the colour of Roman twilight |
 | The Senator (Seneca) | `#6B7F5E` | `#8FA67E` | Olive sage — Roman gardens, wealth held lightly, the natural world |
+
+### Accessibility
+
+All text/background pairings meet WCAG AA (4.5:1 for normal text, 3:1 for large text and UI components). Verified minimum contrast ratios:
+
+| Pairing | Light Mode | Dark Mode |
+|---|---|---|
+| Primary text on background | 14.1:1 | 13.8:1 |
+| Primary text on surface | — | 12.3:1 |
+| Secondary text on background | 4.9:1 | 6.0:1 |
+| Secondary text on surface | 5.2:1 | 5.4:1 |
+| Tertiary text on tag background | 5.4:1 | 5.0:1 |
+| Author accents on background | 3.6–4.9:1 (large text only) | 5.1–5.9:1 |
 
 ## Motion
 
