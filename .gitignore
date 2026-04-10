@@ -43,3 +43,12 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 __pycache__
+
+# Node
+node_modules/
+
+# Generated pipeline output
+output/parsed/
+output/translated/
+output/validation-cache/
+output/generate-state-*.json
