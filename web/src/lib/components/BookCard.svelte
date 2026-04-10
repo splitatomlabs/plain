@@ -3,9 +3,9 @@
 </script>
 
 <article class="book-card">
-	<h3 class="book-title">{book.title}</h3>
+	<h3 class="book-title"><a href="/{book.slug}" class="title-link">{book.title}</a></h3>
 	<p class="book-description">{book.description}</p>
-	<a href="/{book.slug}" class="cta">Start Reading</a>
+	<a href="/{book.slug}/{book.chapters[0].slug}/1" class="cta">Start Reading</a>
 </article>
 
 <style>
@@ -21,7 +21,16 @@
 		font-size: 1.25rem;
 		font-weight: 400;
 		margin: 0 0 var(--space-sm);
+	}
+
+	.title-link {
 		color: var(--color-text-primary);
+		text-decoration: none;
+		transition: color var(--transition-fast);
+	}
+
+	.title-link:hover {
+		color: var(--color-text-secondary);
 	}
 
 	.book-description {
