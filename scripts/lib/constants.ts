@@ -1,16 +1,12 @@
 export const VALID_TAGS = [
-  { slug: "calm-your-mind", label: "Calm Your Mind" },
-  { slug: "facing-fear", label: "Facing Fear" },
-  { slug: "dealing-with-anger", label: "Dealing With Anger" },
-  { slug: "death-and-mortality", label: "Death & Mortality" },
-  { slug: "doing-the-right-thing", label: "Doing The Right Thing" },
-  { slug: "self-discipline", label: "Self-Discipline" },
-  { slug: "ambition-and-power", label: "Ambition & Power" },
-  { slug: "leading-others", label: "Leading Others" },
-  { slug: "freedom-and-control", label: "Freedom & Control" },
-  { slug: "human-nature", label: "Human Nature" },
-  { slug: "standing-alone", label: "Standing Alone" },
-  { slug: "what-really-matters", label: "What Really Matters" },
+  { slug: "calm-your-mind", label: "Calm Your Mind", description: "Inner tranquility, managing anxiety, stillness of thought, mindfulness, composure under pressure" },
+  { slug: "death-and-mortality", label: "Death & Mortality", description: "Acceptance of death, impermanence, memento mori, legacy, grief, the shortness of life" },
+  { slug: "doing-the-right-thing", label: "Doing The Right Thing", description: "Virtue, justice, ethics, duty, integrity, moral courage, fairness to others" },
+  { slug: "facing-hardship", label: "Facing Hardship", description: "Enduring fear, anger, pain, loss, and adversity with resilience and courage" },
+  { slug: "freedom-and-control", label: "Freedom & Control", description: "Distinguishing what is up to us from what is not, letting go, acceptance, detachment from externals" },
+  { slug: "human-nature", label: "Human Nature", description: "Understanding others, empathy, social bonds, forgiveness, tolerance, the nature of people" },
+  { slug: "knowing-yourself", label: "Knowing Yourself", description: "Self-discipline, self-awareness, honesty with oneself, personal accountability, character development" },
+  { slug: "what-matters-most", label: "What Matters Most", description: "Priorities, ambition, use of time, purpose, simplicity, what to pursue and what to ignore" },
 ] as const;
 
 export const VALID_TAG_SLUGS = VALID_TAGS.map((t) => t.slug);
