@@ -1,0 +1,139 @@
+/* ============================================
+   Plain — Design Tokens
+   All values derived from BRANDING.md
+   ============================================ */
+
+/* ---------- Light Mode (default) ---------- */
+:root {
+  /* Colors */
+  --color-background: #FAF7F2;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #2C2520;
+  --color-text-secondary: #736B62;
+  --color-text-tertiary: #655F5A;
+  --color-border: #E8E2D9;
+  --color-tag-bg: #F0EDE8;
+
+  /* Author accents — light mode */
+  --color-accent-epictetus: #B5704F;
+  --color-accent-marcus: #5B6E8A;
+  --color-accent-seneca: #6B7F5E;
+
+  /* Typography */
+  --font-body: 'Literata Variable', 'Literata', Georgia, serif;
+  --font-ui: 'DM Sans Variable', 'DM Sans', system-ui, sans-serif;
+
+  --text-body: clamp(1.125rem, 1rem + 0.25vw, 1.25rem); /* 18-20px */
+  --text-ui: clamp(0.8125rem, 0.75rem + 0.125vw, 0.875rem); /* 13-14px */
+  --text-original: 0.875rem; /* 14px */
+
+  --line-height-body: 1.6;
+  --line-height-ui: 1.4;
+  --max-line-width: 65ch;
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;   /* 4px */
+  --space-sm: 0.5rem;    /* 8px */
+  --space-md: 1rem;      /* 16px */
+  --space-lg: 1.5rem;    /* 24px */
+  --space-xl: 2rem;      /* 32px */
+  --space-2xl: 3rem;     /* 48px */
+  --space-3xl: 4rem;     /* 64px */
+
+  /* Transitions */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 250ms ease-out;
+  --transition-slow: 400ms ease-out;
+}
+
+/* ---------- Dark Mode (data attribute) ---------- */
+[data-theme="dark"] {
+  --color-background: #1A1816;
+  --color-surface: #252220;
+  --color-text-primary: #E8E2D9;
+  --color-text-secondary: #9E958C;
+  --color-text-tertiary: #A89E94;
+  --color-border: #33302B;
+  --color-tag-bg: #33302B;
+
+  /* Author accents — dark mode */
+  --color-accent-epictetus: #C9886A;
+  --color-accent-marcus: #7BA3CC;
+  --color-accent-seneca: #8FA67E;
+}
+
+/* ---------- System preference fallback ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-background: #1A1816;
+    --color-surface: #252220;
+    --color-text-primary: #E8E2D9;
+    --color-text-secondary: #9E958C;
+    --color-text-tertiary: #A89E94;
+    --color-border: #33302B;
+    --color-tag-bg: #33302B;
+
+    --color-accent-epictetus: #C9886A;
+    --color-accent-marcus: #7BA3CC;
+    --color-accent-seneca: #8FA67E;
+  }
+}
+
+/* ---------- High contrast overrides ---------- */
+@media (prefers-contrast: more) {
+  :root {
+    --color-text-secondary: #4A4440;
+    --color-text-tertiary: #4A4440;
+    --color-border: #B5ADA3;
+    --color-tag-bg: #E0D9CF;
+  }
+
+  [data-theme="dark"] {
+    --color-text-secondary: #C8C0B6;
+    --color-text-tertiary: #C8C0B6;
+    --color-border: #5A544D;
+    --color-tag-bg: #4A4440;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-text-secondary: #C8C0B6;
+      --color-text-tertiary: #C8C0B6;
+      --color-border: #5A544D;
+      --color-tag-bg: #4A4440;
+    }
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-normal: 0ms;
+    --transition-slow: 0ms;
+  }
+}
+
+/* ---------- Base resets ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- Focus styles ---------- */
+:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
+}
