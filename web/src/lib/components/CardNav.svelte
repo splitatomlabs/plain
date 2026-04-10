@@ -100,6 +100,7 @@
 				class="nav-btn"
 				aria-label="Previous card"
 				data-sveltekit-preload-data="hover"
+				onclick={(e) => { e.preventDefault(); navigatePrev(); }}
 			>
 				<span class="nav-chevron" aria-hidden="true">&#8249;</span>
 				Previous
@@ -114,6 +115,7 @@
 				class="nav-btn"
 				aria-label="Next card"
 				data-sveltekit-preload-data="hover"
+				onclick={(e) => { e.preventDefault(); navigateNext(); }}
 			>
 				Next
 				<span class="nav-chevron" aria-hidden="true">&#8250;</span>

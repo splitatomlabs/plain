@@ -34,3 +34,38 @@ test.describe('Home page — new visitor', () => {
 		expect(href).toMatch(/^\//);
 	});
 });
+
+test.describe('Home page — returning reader', () => {
+	test.beforeEach(async ({ page }) => {
+		await page.goto('/');
+		await page.evaluate(() => {
+			localStorage.setItem('plain-progress', JSON.stringify({
+				meditations: {
+					cards_read: ['meditations-01-001', 'meditations-01-002'],
+					last_card: 'meditations-01-002',
+					last_read_at: new Date().toISOString(),
+					completed: false,
+					completed_at: null
+				}
+			}));
+		});
+		await page.goto('/');
+	});
+
+	test('shows progress rings', async ({ page }) => {
+		await expect(page.locator('.progress-ring')).toHaveCount(3);
+	});
+
+	test('shows Continue Reading banner', async ({ page }) => {
+		await expect(page.locator('.continue-banner')).toBeVisible();
+		await expect(page.locator('.continue-book')).toContainText('Meditations');
+	});
+
+	test('shows authors in Slave, Emperor, Senator order', async ({ page }) => {
+		const labels = page.locator('.ring-label');
+		await expect(labels).toHaveCount(3);
+		await expect(labels.nth(0)).toContainText('The Slave');
+		await expect(labels.nth(1)).toContainText('The Emperor');
+		await expect(labels.nth(2)).toContainText('The Senator');
+	});
+});
