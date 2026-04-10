@@ -1,0 +1,34 @@
+<section class="hero">
+	<h1>Three men. Three completely different lives. The same philosophy.</h1>
+	<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
+</section>
+
+<style>
+	.hero {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		min-height: 60vh;
+		padding: var(--space-xl) var(--space-md);
+	}
+
+	h1 {
+		font-family: var(--font-body);
+		font-size: clamp(1.5rem, 3vw + 0.5rem, 2.5rem);
+		font-weight: 400;
+		line-height: 1.3;
+		max-width: 20ch;
+		margin: 0 0 var(--space-lg);
+		color: var(--color-text-primary);
+	}
+
+	.subtitle {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		max-width: 40ch;
+		margin: 0;
+	}
+</style>
