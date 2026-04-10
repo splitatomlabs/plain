@@ -2,12 +2,35 @@
 	import Card from '$lib/components/Card.svelte';
 	import CardNav from '$lib/components/CardNav.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import MilestoneModal from '$lib/components/MilestoneModal.svelte';
 	import { progress } from '$lib/stores/progress.js';
+	import { browser } from '$app/environment';
 
 	let { data } = $props();
+	let showMilestone = $state(null);
+
+	const MILESTONES = [25, 50, 75, 100];
 
 	function handleNavigateNext() {
+		const beforeProgress = progress.getProgress(data.card.book_slug, data.totalCards);
 		progress.markCardRead(data.card.book_slug, data.card.id);
+		const afterProgress = progress.getProgress(data.card.book_slug, data.totalCards);
+
+		for (const threshold of MILESTONES) {
+			if (beforeProgress.percentage < threshold && afterProgress.percentage >= threshold) {
+				if (browser) {
+					const shown = JSON.parse(localStorage.getItem('plain-milestones') || '{}');
+					if (!shown[data.card.book_slug]?.includes(threshold)) {
+						showMilestone = threshold;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	function closeMilestone() {
+		showMilestone = null;
 	}
 </script>
 
@@ -46,6 +69,15 @@
 		</div>
 	{/if}
 </div>
+
+{#if showMilestone}
+	<MilestoneModal
+		milestone={showMilestone}
+		bookTitle={data.book.title}
+		bookSlug={data.book.slug}
+		onClose={closeMilestone}
+	/>
+{/if}
 
 <style>
 	.card-page {
