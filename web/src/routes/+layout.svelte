@@ -2,7 +2,6 @@
 	import '@fontsource-variable/literata';
 	import '@fontsource-variable/dm-sans';
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
@@ -18,10 +17,6 @@
 		try { localStorage.setItem('plain-theme', theme); } catch (e) {}
 	}
 </script>
-
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
 
