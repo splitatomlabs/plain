@@ -26,6 +26,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 // Must import after mocks are set up
 const { progress } = await import('$lib/stores/progress.js');
+const { favorites } = await import('$lib/stores/favorites.js');
 
 describe('progress store', () => {
 	beforeEach(() => {
@@ -33,6 +34,7 @@ describe('progress store', () => {
 		localStorageMock.getItem.mockClear();
 		localStorageMock.setItem.mockClear();
 		progress.reset();
+		favorites.reset();
 	});
 
 	describe('markCardRead', () => {
@@ -106,14 +108,27 @@ describe('progress store', () => {
 		});
 
 		it('returns most recently read book', () => {
-			const now = Date.now();
-			vi.spyOn(Date.prototype, 'toISOString')
-				.mockReturnValueOnce(new Date(now).toISOString())
-				.mockReturnValueOnce(new Date(now + 1000).toISOString());
+			const realDateNow = Date.now;
+			let time = 1000000;
+			Date.now = () => time;
+			const RealDate = globalThis.Date;
+			const OrigDate = Date;
+			globalThis.Date = class extends RealDate {
+				constructor(...args) {
+					if (args.length === 0) super(time);
+					else super(...args);
+				}
+			};
+			globalThis.Date.now = () => time;
+
 			progress.markCardRead('meditations', 'meditations-01-001');
+			time = 2000000;
 			progress.markCardRead('enchiridion', 'enchiridion-01-001');
+
 			expect(progress.getLastReadBook()).toBe('enchiridion');
-			vi.restoreAllMocks();
+
+			globalThis.Date = RealDate;
+			Date.now = realDateNow;
 		});
 	});
 
@@ -144,6 +159,59 @@ describe('progress store', () => {
 			progress.markCardRead('meditations', 'meditations-01-001');
 			const stored = JSON.parse(localStorageMock._getStore()['plain-progress']);
 			expect(stored.meditations.cards_read).toContain('meditations-01-001');
+		});
+	});
+});
+
+describe('favorites store', () => {
+	beforeEach(() => {
+		localStorageMock.clear();
+		favorites.reset();
+	});
+
+	describe('toggleFavorite', () => {
+		it('adds a card to favorites', () => {
+			favorites.toggleFavorite('meditations-05-016');
+			expect(favorites.isFavorite('meditations-05-016')).toBe(true);
+		});
+
+		it('removes a card when toggled again', () => {
+			favorites.toggleFavorite('meditations-05-016');
+			favorites.toggleFavorite('meditations-05-016');
+			expect(favorites.isFavorite('meditations-05-016')).toBe(false);
+		});
+	});
+
+	describe('isFavorite', () => {
+		it('returns false for unfavorited card', () => {
+			expect(favorites.isFavorite('meditations-05-016')).toBe(false);
+		});
+
+		it('reflects current state after toggles', () => {
+			favorites.toggleFavorite('meditations-05-016');
+			expect(favorites.isFavorite('meditations-05-016')).toBe(true);
+			favorites.toggleFavorite('meditations-05-016');
+			expect(favorites.isFavorite('meditations-05-016')).toBe(false);
+		});
+	});
+
+	describe('getFavorites', () => {
+		it('returns empty array initially', () => {
+			expect(favorites.getFavorites()).toEqual([]);
+		});
+
+		it('returns all favorited card IDs', () => {
+			favorites.toggleFavorite('meditations-05-016');
+			favorites.toggleFavorite('enchiridion-01-008');
+			expect(favorites.getFavorites()).toEqual(['meditations-05-016', 'enchiridion-01-008']);
+		});
+	});
+
+	describe('localStorage sync', () => {
+		it('persists favorites to localStorage', () => {
+			favorites.toggleFavorite('meditations-05-016');
+			const stored = JSON.parse(localStorageMock._getStore()['plain-favorites']);
+			expect(stored).toContain('meditations-05-016');
 		});
 	});
 });
