@@ -75,6 +75,7 @@
 />
 
 <div class="card-page">
+	<h1 class="visually-hidden">{data.card.source_reference} — In Plain English</h1>
 	{#if !data.prevCard}
 		<p class="card-boundary">Beginning of {data.book.title}</p>
 	{/if}
