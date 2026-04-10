@@ -44,3 +44,7 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 __pycache__
+
+# Node
+node_modules/
+

@@ -35,6 +35,42 @@ Every card has two layers: a **plain English translation** (8th-grade reading le
 - OG images generated on-demand via `@vercel/og` for card sharing
 - Self-hosted serif font for a book-like reading experience
 
+## Content Pipeline
+
+TypeScript CLI tools that turn plain-text source books into card JSON. Requires `claude` CLI on PATH for translation and semantic checks.
+
+**Pipeline:** `parse → refine → translate → assemble`
+
+1. **Parse** — Split source text into sections by Roman numeral markers
+2. **Refine** — AI reviews each section: splits multi-idea sections into separate chunks, merges sections that can't stand alone
+3. **Translate** — Plain English translation + tagging, with built-in meaning preservation verification
+4. **Assemble** — Generate card IDs, reading time, source refs, write to `content/`
+
+```bash
+# Install dependencies
+npm install
+
+# Parse all books (no AI calls needed)
+npx tsx scripts/generate.ts --all --parse-only
+
+# Test full pipeline on a small subset (2 sections per chapter)
+npx tsx scripts/generate.ts --book shortness-of-life --limit 2
+
+# Generate a full book
+npx tsx scripts/generate.ts --book shortness-of-life
+
+```
+
+Key flags: `--limit <n>` caps sections per chapter, `--parse-only` skips AI calls.
+
+## Testing
+
+```bash
+npm test
+```
+
+70 unit tests covering the parser (all 5 book formats against real source files), chunker (prefix stripping, fragment merging), structural validator (schema, tags, readability, cross-refs), and card assembler (ID generation, source references, reading time).
+
 ## Documentation
 
 - `ARCHITECTURE.md` — Data models, route structure, rendering strategy, and full project architecture

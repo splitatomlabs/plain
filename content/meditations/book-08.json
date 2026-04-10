@@ -1,0 +1,34 @@
+[
+  {
+    "id": "meditations-08-001",
+    "book_slug": "meditations",
+    "chapter_slug": "book-08",
+    "card_number": 1,
+    "total_cards_in_chapter": 2,
+    "plain_english": "Here is something else that can protect you from vanity: consider that you are now past the point of living a whole life as a philosopher. It is clear to others — and especially to yourself — that you have fallen short many times. You have stumbled along the way, and it will be hard now to earn the name of philosopher. Even your position in life works against it.\n\nSo if you truly understand what matters, stop worrying about your reputation. Let it be enough if you live the rest of your life — however long or short — according to your own nature. Focus on learning what your nature actually asks of you, and let nothing pull you away from that.",
+    "original_excerpt": "This also, among other things, may serve to keep thee from vainglory; if thou shalt consider, that thou art now altogether incapable of the commendation of one, who all his life long, or from his youth at least, hath lived a philosopher's life. For both unto others, and to thyself especially, it is well known, that thou hast done many things contrary to that perfection of life. Thou hast therefore been confounded in thy course, and henceforth it will be hard for thee to recover the title and credit of a philosopher. And to it also is thy calling and profession repugnant. If therefore thou dost truly understand, what it is that is of moment indeed; as for thy fame and credit, take no thought or care for that: let it suffice thee if all the rest of thy life, be it more or less, thou shalt live as thy nature requireth, or according to the true and natural end of thy making. Take pains therefore to know what it is that thy nature requireth, and let nothing else distract thee.",
+    "source_reference": "Meditations, Book 8, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-really-matters",
+      "self-discipline"
+    ],
+    "reading_time_seconds": 37
+  },
+  {
+    "id": "meditations-08-002",
+    "book_slug": "meditations",
+    "chapter_slug": "book-08",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "You have had enough experience by now to know this: all the things you have chased and stumbled through have not made you happy. Not logic and clever arguments. Not wealth. Not honor or reputation. Not pleasure. None of these.\n\nSo where is happiness found? In doing what human nature demands of you — simply being a good human. And how do you do that? By getting your core beliefs right. Because everything you do flows from what you believe.\n\nWhich beliefs matter? The ones about what is truly good and truly bad. Nothing is genuinely good for you unless it makes you just, self-controlled, brave, and generous. Nothing is genuinely bad for you unless it produces the opposite.",
+    "original_excerpt": "Thou hast already had sufficient experience, that of those many things that hitherto thou hast erred and wandered about, thou couldst not find happiness in any of them. Not in syllogisms, and logical subtilties, not in wealth, not in honour and reputation, not in pleasure. In none of all these. Wherein then is it to be found? In the practice of those things, which the nature of man, as he is a man, doth require. How then shall he do those things? if his dogmata, or moral tenets and opinions (from which all motions and actions do proceed), be right and true. Which be those dogmata? Those that concern that which is good or evil, as that there is nothing truly good and beneficial unto man, but that which makes him just, temperate, courageous, liberal; and that there is nothing truly evil and hurtful unto man, but that which causeth the contrary effects.",
+    "source_reference": "Meditations, Book 8, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-really-matters",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 36
+  }
+]

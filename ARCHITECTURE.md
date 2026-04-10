@@ -58,9 +58,12 @@ Books are organized under three Stoic figures. This is a core UI concept, not ju
     { "slug": "book-02", "title": "Book 2", "card_count": 17 }
   ],
   "total_cards": 200,
-  "source_url": "https://www.gutenberg.org/ebooks/2680"
+  "source_url": "https://www.gutenberg.org/ebooks/2680",
+  "has_author_chapters": true
 }
 ```
+
+`has_author_chapters` distinguishes between books with real chapters from the original text (Meditations has 12 "Books" written by the author) and books where chapters are synthetic groupings used only for file-splitting (Enchiridion, Seneca essays). When `false`, the UI should treat the book as a flat sequence of cards rather than displaying chapter navigation.
 
 ### Card Data Model
 
@@ -106,7 +109,9 @@ export const TAGS = [
 
 ## Content File Structure
 
-One JSON file per chapter/section. This keeps individual file reads small (typically 10–40KB) even though total card count will be 300+.
+One JSON file per chapter/section group. This keeps individual file reads small (typically 10–40KB) even though total card count will be 300+.
+
+Only Meditations has real chapters from the source text (12 "Books"). For all other books, the `sections-NN-NN` files are synthetic groupings for file size management — the source texts are continuous numbered sections with no chapter divisions. See `has_author_chapters` in the metadata model.
 
 ```
 src/content/

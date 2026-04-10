@@ -1,0 +1,17 @@
+{
+  "name": "plain-content-pipeline",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx scripts/generate.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "glob": "^11.0.0",
+    "text-readability": "^1.0.2",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  }
+}
