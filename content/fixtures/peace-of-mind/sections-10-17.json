@@ -9,7 +9,10 @@
     "original_excerpt": "We ought therefore to bring ourselves into such a state of mind that all the vices of the vulgar may not appear hateful to us, but merely ridiculous.",
     "source_reference": "On Peace of Mind, Section 10 (attributed)",
     "author_slug": "seneca",
-    "tags": ["facing-fear", "calm-your-mind", "dealing-with-anger"],
+    "tags": [
+      "facing-hardship",
+      "calm-your-mind"
+    ],
     "reading_time_seconds": 20
   },
   {
@@ -22,7 +25,11 @@
     "original_excerpt": "The mind must be given relaxation; it will rise improved and sharper after a good break.",
     "source_reference": "On Peace of Mind, Section 17",
     "author_slug": "seneca",
-    "tags": ["calm-your-mind", "self-discipline", "human-nature"],
+    "tags": [
+      "calm-your-mind",
+      "knowing-yourself",
+      "human-nature"
+    ],
     "reading_time_seconds": 20
   },
   {
@@ -35,7 +42,10 @@
     "original_excerpt": "The wise man regards the reason, not the result, of all his actions. The beginning is in our own power; fortune decides the outcome.",
     "source_reference": "On Peace of Mind, Section 13 (attributed)",
     "author_slug": "seneca",
-    "tags": ["freedom-and-control", "what-really-matters"],
+    "tags": [
+      "freedom-and-control",
+      "what-matters-most"
+    ],
     "reading_time_seconds": 20
   }
 ]

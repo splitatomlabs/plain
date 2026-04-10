@@ -4,8 +4,8 @@
   "author_slug": "marcus-aurelius",
   "description": "A Roman emperor's private journal on self-discipline, duty, and finding peace in a chaotic world.",
   "tags": [
-    "what-really-matters",
-    "self-discipline",
+    "what-matters-most",
+    "knowing-yourself",
     "death-and-mortality",
     "freedom-and-control",
     "calm-your-mind",
@@ -75,6 +75,5 @@
     }
   ],
   "total_cards": 19,
-  "source_url": "https://www.gutenberg.org/ebooks/2680",
-  "has_author_chapters": true
+  "source_url": "https://www.gutenberg.org/ebooks/2680"
 }

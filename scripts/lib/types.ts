@@ -29,8 +29,7 @@ export interface BookMeta {
   chapters: ChapterInfo[];
   total_cards: number;
   source_url: string;
-  /** Whether chapters are from the original text (true) or synthetic file-splitting (false) */
-  has_author_chapters: boolean;
+
 }
 
 export type Severity = "error" | "warn" | "info";

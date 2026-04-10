@@ -3,12 +3,28 @@
   "title": "Meditations",
   "author_slug": "marcus-aurelius",
   "description": "A Roman emperor's private journal on self-discipline, duty, and finding peace in a chaotic world.",
-  "tags": ["calm-your-mind", "self-discipline", "dealing-with-anger", "death-and-mortality", "doing-the-right-thing", "freedom-and-control", "what-really-matters", "leading-others", "human-nature", "facing-fear", "standing-alone"],
+  "tags": [
+    "calm-your-mind",
+    "knowing-yourself",
+    "facing-hardship",
+    "death-and-mortality",
+    "doing-the-right-thing",
+    "freedom-and-control",
+    "what-matters-most",
+    "human-nature"
+  ],
   "chapters": [
-    { "slug": "book-01", "title": "Book 1", "card_count": 3 },
-    { "slug": "book-02", "title": "Book 2", "card_count": 3 }
+    {
+      "slug": "book-01",
+      "title": "Book 1",
+      "card_count": 3
+    },
+    {
+      "slug": "book-02",
+      "title": "Book 2",
+      "card_count": 3
+    }
   ],
   "total_cards": 6,
-  "source_url": "https://www.gutenberg.org/ebooks/2680",
-  "has_author_chapters": true
+  "source_url": "https://www.gutenberg.org/ebooks/2680"
 }

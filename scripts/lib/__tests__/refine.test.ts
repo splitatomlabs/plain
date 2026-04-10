@@ -20,7 +20,6 @@ const testConfig: BookConfig = {
   chapter_slug_pattern: "book-NN",
   source_file: "source-books/meditations.txt",
   sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
-  chapterGrouping: [],
   gutenbergStrip: true,
   speakerLabels: false,
   sourceRefTemplate: "Meditations, Book {chapter}, Section {n}",

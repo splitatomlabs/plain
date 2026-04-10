@@ -8,7 +8,7 @@ function makeTranslated(overrides: Partial<TranslatedChunk> = {}): TranslatedChu
     sectionNumber: 1,
     originalText: "Original text of the passage about virtue and discipline.",
     plainEnglish: "Plain English text about virtue and discipline that is reasonably long.",
-    tags: ["self-discipline"],
+    tags: ["knowing-yourself"],
     ...overrides,
   };
 }
@@ -148,16 +148,16 @@ describe("assembleBook", () => {
         chapterTitle: "Book 1",
         bookNumber: 1,
         chunks: [
-          makeTranslated({ tags: ["self-discipline", "calm-your-mind"] }),
-          makeTranslated({ sectionNumber: 2, tags: ["calm-your-mind", "facing-fear"] }),
+          makeTranslated({ tags: ["knowing-yourself", "calm-your-mind"] }),
+          makeTranslated({ sectionNumber: 2, tags: ["calm-your-mind", "facing-hardship"] }),
         ],
       },
     ];
 
     const { meta } = assembleBook(chunks, config);
-    expect(meta.tags).toContain("self-discipline");
+    expect(meta.tags).toContain("knowing-yourself");
     expect(meta.tags).toContain("calm-your-mind");
-    expect(meta.tags).toContain("facing-fear");
+    expect(meta.tags).toContain("facing-hardship");
     expect(new Set(meta.tags).size).toBe(meta.tags.length); // no duplicates
   });
 

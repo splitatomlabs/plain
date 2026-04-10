@@ -3,12 +3,11 @@
   "title": "On the Happy Life",
   "author_slug": "seneca",
   "description": "Seneca answers his critics — can you preach simplicity while living in luxury? His answer is more honest than you'd expect.",
-  "tags": ["what-really-matters", "self-discipline", "doing-the-right-thing", "human-nature", "ambition-and-power"],
+  "tags": ["what-matters-most", "knowing-yourself", "doing-the-right-thing", "human-nature"],
   "chapters": [
     { "slug": "sections-01-10", "title": "Sections 1–10", "card_count": 3 },
     { "slug": "sections-11-20", "title": "Sections 11–20", "card_count": 3 }
   ],
   "total_cards": 6,
-  "source_url": "https://www.gutenberg.org/ebooks/64576",
-  "has_author_chapters": false
+  "source_url": "https://www.gutenberg.org/ebooks/64576"
 }

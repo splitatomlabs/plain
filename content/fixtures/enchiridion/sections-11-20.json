@@ -9,7 +9,11 @@
     "original_excerpt": "Never say of anything, \"I have lost it\"; but, \"I have returned it.\" Is your child dead? It is returned. Is your wife dead? She is returned.",
     "source_reference": "Enchiridion, Section 11",
     "author_slug": "epictetus",
-    "tags": ["death-and-mortality", "freedom-and-control", "what-really-matters"],
+    "tags": [
+      "death-and-mortality",
+      "freedom-and-control",
+      "what-matters-most"
+    ],
     "reading_time_seconds": 20
   },
   {
@@ -22,7 +26,9 @@
     "original_excerpt": "If you wish to make progress, be content to be thought foolish and stupid with regard to external things. Do not wish to be thought to know anything.",
     "source_reference": "Enchiridion, Section 13",
     "author_slug": "epictetus",
-    "tags": ["standing-alone", "self-discipline"],
+    "tags": [
+      "knowing-yourself"
+    ],
     "reading_time_seconds": 20
   },
   {
@@ -35,7 +41,10 @@
     "original_excerpt": "Remember that thou art an actor in a drama, of such a kind as the author pleases to make it.",
     "source_reference": "Enchiridion, Section 17",
     "author_slug": "epictetus",
-    "tags": ["freedom-and-control", "doing-the-right-thing"],
+    "tags": [
+      "freedom-and-control",
+      "doing-the-right-thing"
+    ],
     "reading_time_seconds": 15
   }
 ]

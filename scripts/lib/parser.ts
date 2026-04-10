@@ -1,4 +1,4 @@
-import type { BookConfig, ChapterGrouping } from "./constants.js";
+import type { BookConfig } from "./constants.js";
 
 export interface Section {
   number: number;
@@ -102,7 +102,7 @@ function parseMeditations(text: string, config: BookConfig): ParsedBook {
     }
     const sections = splitSections(bookText, sectionRe);
 
-    const group = config.chapterGrouping.find(
+    const group = config.chapterGrouping!.find(
       (g) => bookNum >= g.range[0] && bookNum <= g.range[1],
     );
     if (!group) continue;
@@ -138,21 +138,12 @@ function parseSingleEssay(text: string, config: BookConfig): ParsedBook {
     }
   }
 
-  // Group sections into chapters
-  const chapters: ParsedChapter[] = [];
-
-  for (const group of config.chapterGrouping) {
-    const groupSections = sections.filter(
-      (s) => s.number >= group.range[0] && s.number <= group.range[1],
-    );
-    if (groupSections.length > 0) {
-      chapters.push({
-        slug: group.slug,
-        title: group.title,
-        sections: groupSections,
-      });
-    }
-  }
+  // Each section becomes its own chapter
+  const chapters: ParsedChapter[] = sections.map((s) => ({
+    slug: `section-${String(s.number).padStart(2, "0")}`,
+    title: `Section ${s.number}`,
+    sections: [s],
+  }));
 
   return { slug: config.slug, chapters };
 }

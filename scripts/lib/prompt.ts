@@ -3,7 +3,7 @@ import { VALID_TAGS } from "./constants.js";
 import type { Chunk } from "./chunker.js";
 
 const TAG_DESCRIPTIONS = VALID_TAGS.map(
-  (t) => `"${t.slug}" — ${t.label}`,
+  (t) => `"${t.slug}" — ${t.label}: ${t.description}`,
 ).join("\n");
 
 const AUTHOR_VOICE: Record<string, string> = {
@@ -18,32 +18,32 @@ const EXAMPLES: Record<string, string> = {
   epictetus: `EXAMPLE 1:
 Original: "There are things which are within our power, and there are things which are beyond our power. Within our power are opinion, aim, desire, aversion, and, in one word, whatever affairs are our own. Beyond our power are body, property, reputation, office, and, in one word, whatever are not properly our own affairs."
 Translation: "Some things are up to you. Some things are not. What's up to you: your opinions, your goals, what you want, and what you want to avoid — basically, anything that is truly your own doing. What's not up to you: your body, your possessions, your reputation, your job title — anything that isn't really your own doing."
-Tags: ["freedom-and-control", "what-really-matters"]
+Tags: ["freedom-and-control", "knowing-yourself"]
 
 EXAMPLE 2:
 Original: "Men are disturbed not by things, but by the views which they take of things. Thus death is nothing terrible, else it would have appeared so to Socrates."
 Translation: "It's not things that upset you. It's how you think about them. Death, for example, is not frightening on its own. If it were, Socrates would have been afraid of it."
-Tags: ["calm-your-mind", "facing-fear"]`,
+Tags: ["calm-your-mind", "facing-hardship"]`,
 
   "marcus-aurelius": `EXAMPLE 1:
 Original: "Of my grandfather Verus I have learned to be gentle and meek, and to refrain from all anger and passion. From the fame and memory of him that begot me I have learned both shamefastness and manlike behaviour."
 Translation: "From my grandfather Verus I learned to be gentle and calm, and to hold back anger. From the memory of my father I learned both humility and strength of character."
-Tags: ["self-discipline", "what-really-matters"]
+Tags: ["knowing-yourself", "human-nature"]
 
 EXAMPLE 2:
 Original: "Remember how long thou hast already put off these things, and how often a certain day and hour as it were, having been set unto thee by the gods, thou hast neglected it."
 Translation: "Remember how long you have been putting these things off. Again and again you have been given the chance, and you have let it pass."
-Tags: ["self-discipline", "what-really-matters"]`,
+Tags: ["what-matters-most", "doing-the-right-thing"]`,
 
   seneca: `EXAMPLE 1:
 Original: "The greater part of mankind, my Paulinus, complains of the unkindness of Nature, because we are born only for a short space of time, and that this allotted period of life runs away so swiftly."
 Translation: "Most people, Paulinus, complain that nature has been unfair to us. They say we are born with too little time, and that even the time we are given slips away far too quickly."
-Tags: ["death-and-mortality", "what-really-matters"]
+Tags: ["death-and-mortality", "what-matters-most"]
 
 EXAMPLE 2:
 Original: "We do not have a very short time assigned to us, but we lose a great deal of it: life is long enough to carry out the most important projects."
 Translation: "We haven't been given a short life. We've just wasted a lot of it. Life is long enough to do great things — if you stop throwing it away."
-Tags: ["self-discipline", "what-really-matters"]`,
+Tags: ["death-and-mortality", "freedom-and-control"]`,
 };
 
 /** Static system prompt for a given author — cacheable across all chunks of the same book */

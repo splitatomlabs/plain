@@ -3,12 +3,25 @@
   "title": "On the Shortness of Life",
   "author_slug": "seneca",
   "description": "Seneca's most urgent essay — a wake-up call about how we waste our lives on things that don't matter.",
-  "tags": ["what-really-matters", "self-discipline", "death-and-mortality", "calm-your-mind", "ambition-and-power", "human-nature"],
+  "tags": [
+    "what-matters-most",
+    "knowing-yourself",
+    "death-and-mortality",
+    "calm-your-mind",
+    "human-nature"
+  ],
   "chapters": [
-    { "slug": "sections-01-07", "title": "Sections 1–7", "card_count": 3 },
-    { "slug": "sections-08-14", "title": "Sections 8–14", "card_count": 3 }
+    {
+      "slug": "sections-01-07",
+      "title": "Sections 1–7",
+      "card_count": 3
+    },
+    {
+      "slug": "sections-08-14",
+      "title": "Sections 8–14",
+      "card_count": 3
+    }
   ],
   "total_cards": 6,
-  "source_url": "https://www.gutenberg.org/ebooks/64576",
-  "has_author_chapters": false
+  "source_url": "https://www.gutenberg.org/ebooks/64576"
 }

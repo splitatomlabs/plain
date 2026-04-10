@@ -79,12 +79,12 @@ describe("parseSourceText — Enchiridion", () => {
   const text = readFileSync(config.source_file, "utf-8");
   const parsed = parseSourceText(text, config);
 
-  it("finds 5 chapter groups", () => {
-    expect(parsed.chapters).toHaveLength(5);
+  it("has one chapter per section", () => {
+    expect(parsed.chapters.length).toBeGreaterThanOrEqual(50);
   });
 
-  it("first chapter has 10 sections", () => {
-    expect(parsed.chapters[0].sections).toHaveLength(10);
+  it("each chapter has exactly 1 section", () => {
+    expect(parsed.chapters[0].sections).toHaveLength(1);
   });
 
   it("first section starts with expected text", () => {
@@ -116,8 +116,9 @@ describe("parseSourceText — Seneca essays", () => {
       const text = readFileSync(config.source_file, "utf-8");
       const parsed = parseSourceText(text, config);
 
-      it("finds expected chapter groups", () => {
-        expect(parsed.chapters.length).toBe(config.chapterGrouping.length);
+      it("has one chapter per section", () => {
+        expect(parsed.chapters.length).toBeGreaterThan(0);
+        expect(parsed.chapters[0].sections).toHaveLength(1);
       });
 
       it("first section starts at number 1", () => {

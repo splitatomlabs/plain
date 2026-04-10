@@ -80,18 +80,6 @@ export function getAdjacentCard(bookSlug, chapterSlug, cardNumber, direction) {
 	return nextCards[nextCards.length - 1] || null;
 }
 
-export function getSectionsForBook(bookSlug) {
-	const meta = getBookMeta(bookSlug);
-	const allCards = meta.chapters.flatMap((ch) => getChapterCards(bookSlug, ch.slug));
-	const sectionMap = new Map();
-	for (const card of allCards) {
-		const ref = card.source_reference;
-		// Strip book title prefix — "On the Shortness of Life, Section 3" → "Section 3"
-		const label = ref.replace(/^.+,\s*/, '');
-		sectionMap.set(label, (sectionMap.get(label) || 0) + 1);
-	}
-	return Array.from(sectionMap, ([label, cardCount]) => ({ label, cardCount }));
-}
 
 export function getCardsByTag(tagSlug) {
 	const allCards = getAllCards();

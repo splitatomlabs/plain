@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { TAGS, getTagBySlug, getTagsForBook } from '$lib/utils/tags.js';
 
 describe('TAGS', () => {
-	it('has 12 entries', () => {
-		expect(TAGS).toHaveLength(12);
+	it('has 8 entries', () => {
+		expect(TAGS).toHaveLength(8);
 	});
 
 	it('each has slug and label', () => {
@@ -36,7 +36,7 @@ describe('getTagsForBook', () => {
 		const tags = getTagsForBook('happy-life');
 		const slugs = tags.map((t) => t.slug);
 		// happy-life meta has these tags
-		expect(slugs).toContain('what-really-matters');
-		expect(slugs).toContain('self-discipline');
+		expect(slugs).toContain('what-matters-most');
+		expect(slugs).toContain('knowing-yourself');
 	});
 });
