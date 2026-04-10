@@ -17,6 +17,7 @@
 	let giftNote = $state('');
 	let bookResumeUrl = $state(null);
 	let bookPercentage = $state(0);
+	let bookCompleted = $state(false);
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -24,9 +25,12 @@
 		giftNote = params.get('note') || '';
 
 		const p = progress.getProgress(data.book.slug, data.book.total_cards);
-		if (p.cardsRead > 0 && !progress.isCompleted(data.book.slug)) {
-			bookPercentage = p.percentage;
-			bookResumeUrl = progress.getResumeUrl(data.book.slug);
+		if (p.cardsRead > 0) {
+			bookCompleted = progress.isCompleted(data.book.slug);
+			bookPercentage = bookCompleted ? 100 : p.percentage;
+			if (!bookCompleted) {
+				bookResumeUrl = progress.getResumeUrl(data.book.slug);
+			}
 		}
 	});
 	const firstCardUrl = `/${data.book.slug}/${data.book.chapters[0].slug}/1`;
@@ -118,13 +122,15 @@
 		</section>
 	{/if}
 
-	{#if bookResumeUrl}
+	{#if bookPercentage > 0}
 		<div class="book-landing-progress">
 			<div class="landing-progress-track">
 				<div class="landing-progress-fill" style="width: {bookPercentage}%"></div>
 			</div>
-			<span class="landing-progress-label">{bookPercentage}% complete</span>
+			<span class="landing-progress-label">{bookPercentage}%</span>
 		</div>
+	{/if}
+	{#if bookResumeUrl}
 		<div class="cta-row">
 			<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
 		</div>
@@ -133,7 +139,7 @@
 		</div>
 	{:else}
 		<div class="cta-row">
-			<a href={firstCardUrl} class="cta">Start Reading</a>
+			<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
 		</div>
 	{/if}
 

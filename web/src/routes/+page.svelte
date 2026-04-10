@@ -29,10 +29,12 @@
 				const ap = progress.getAuthorProgress(author.slug, books);
 				for (const book of books) {
 					const p = progress.getProgress(book.slug, book.total_cards);
-					if (p.cardsRead > 0 && !progress.isCompleted(book.slug)) {
+					if (p.cardsRead > 0) {
+						const isBookCompleted = progress.isCompleted(book.slug);
 						bp[book.slug] = {
-							resumeUrl: progress.getResumeUrl(book.slug),
-							percentage: p.percentage
+							resumeUrl: isBookCompleted ? null : progress.getResumeUrl(book.slug),
+							percentage: isBookCompleted ? 100 : p.percentage,
+							completed: isBookCompleted
 						};
 					}
 				}

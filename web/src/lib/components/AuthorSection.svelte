@@ -18,7 +18,7 @@
 	</div>
 	<div class="author-books">
 		{#each books as book}
-			<BookCard {book} resumeUrl={bookProgress[book.slug]?.resumeUrl} percentage={bookProgress[book.slug]?.percentage} />
+			<BookCard {book} resumeUrl={bookProgress[book.slug]?.resumeUrl} percentage={bookProgress[book.slug]?.percentage} completed={bookProgress[book.slug]?.completed} />
 		{/each}
 	</div>
 </section>

@@ -1,23 +1,24 @@
 <script>
-	let { book, resumeUrl = null, percentage = 0 } = $props();
+	let { book, resumeUrl = null, percentage = 0, completed = false } = $props();
 
-	const hasProgress = resumeUrl && percentage > 0;
 	const startUrl = `/${book.slug}/${book.chapters[0].slug}/1`;
 </script>
 
 <article class="book-card">
 	<h3 class="book-title"><a href="/{book.slug}" class="title-link">{book.title}</a></h3>
 	<p class="book-description">{book.description}</p>
-	{#if hasProgress}
+	{#if percentage > 0}
 		<div class="book-progress">
 			<div class="progress-track">
 				<div class="progress-fill" style="width: {percentage}%"></div>
 			</div>
 			<span class="progress-label">{percentage}%</span>
 		</div>
+	{/if}
+	{#if resumeUrl && !completed}
 		<a href={resumeUrl} class="cta">Continue</a>
 	{:else}
-		<a href={startUrl} class="cta">Start Reading</a>
+		<a href={startUrl} class="cta">{completed ? 'Read again' : 'Start Reading'}</a>
 	{/if}
 </article>
 
