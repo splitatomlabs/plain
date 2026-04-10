@@ -46,7 +46,7 @@ export function callClaude(
   });
 }
 
-function extractJSON(text: string): string {
+export function extractJSON(text: string): string {
   // 1. Try the full output as-is
   try {
     JSON.parse(text);

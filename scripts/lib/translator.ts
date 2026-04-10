@@ -1,4 +1,12 @@
-import { callClaudeJSON } from "./claude.js";
+import {
+  callClaudeJSON,
+  createMessageBatch,
+  pollBatchUntilDone,
+  streamBatchResults,
+  extractJSON,
+  tokenUsage,
+  type BatchRequest,
+} from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
 import { buildTranslationSystem, buildTranslationUser } from "./prompt.js";
@@ -109,4 +117,155 @@ export async function* translateChunks(
       meaningCheck,
     };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Batch translation
+// ---------------------------------------------------------------------------
+
+export interface BatchTranslateInput {
+  bookSlug: string;
+  chapterSlug: string;
+  chunks: Chunk[];
+  config: BookConfig;
+}
+
+export async function translateChunksBatch(
+  inputs: BatchTranslateInput[],
+): Promise<Map<string, TranslatedChunk[]>> {
+  // 1. Build batch requests
+  const requests: BatchRequest[] = [];
+  // Track metadata by custom_id for result correlation
+  const meta = new Map<
+    string,
+    { bookSlug: string; chapterSlug: string; chunk: Chunk }
+  >();
+
+  for (const { bookSlug, chapterSlug, chunks, config } of inputs) {
+    const system = buildTranslationSystem(config);
+    for (let index = 0; index < chunks.length; index++) {
+      const chunk = chunks[index];
+      const customId = `${bookSlug}:${chapterSlug}:${index}`;
+      requests.push({
+        custom_id: customId,
+        system,
+        messages: [{ role: "user", content: buildTranslationUser(chunk) }],
+      });
+      meta.set(customId, { bookSlug, chapterSlug, chunk });
+    }
+  }
+
+  process.stderr.write(
+    `[batch] Submitting ${requests.length} translation requests...\n`,
+  );
+
+  // 2. Submit batch
+  const batch = await createMessageBatch(requests);
+  process.stderr.write(`[batch] Created batch ${batch.id}\n`);
+
+  // 3. Poll until done
+  await pollBatchUntilDone(batch.id);
+
+  // 4. Collect and correlate results
+  const resultMap = new Map<string, TranslatedChunk[]>();
+
+  for await (const item of streamBatchResults(batch.id)) {
+    const info = meta.get(item.custom_id);
+    if (!info) {
+      process.stderr.write(
+        `[batch] WARNING: unknown custom_id ${item.custom_id}\n`,
+      );
+      continue;
+    }
+
+    if (item.result.type === "errored") {
+      process.stderr.write(
+        `[batch] WARNING: request ${item.custom_id} failed: ${JSON.stringify(item.result.error)}\n`,
+      );
+      continue;
+    }
+
+    // Extract text from succeeded message
+    const message = item.result.message;
+    const textBlock = message.content.find((b) => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      process.stderr.write(
+        `[batch] WARNING: no text content in result for ${item.custom_id}\n`,
+      );
+      continue;
+    }
+
+    // Accumulate token usage
+    tokenUsage.inputTokens += message.usage.input_tokens;
+    tokenUsage.outputTokens += message.usage.output_tokens;
+    tokenUsage.cacheReadTokens += message.usage.cache_read_input_tokens ?? 0;
+    tokenUsage.cacheCreationTokens +=
+      message.usage.cache_creation_input_tokens ?? 0;
+
+    // Parse JSON response
+    let result: TranslationResponse;
+    try {
+      result = JSON.parse(extractJSON(textBlock.text)) as TranslationResponse;
+    } catch {
+      process.stderr.write(
+        `[batch] WARNING: failed to parse JSON for ${item.custom_id}\n`,
+      );
+      continue;
+    }
+
+    // Validate and normalize tags (same logic as translateChunks)
+    let validTags = validateTags(result.tags);
+    if (validTags.length === 0) validTags = ["what-matters-most"];
+    if (validTags.length > 3) validTags = validTags.slice(0, 3);
+
+    const meaningCheck: MeaningCheck = {
+      faithful: result.faithful,
+      tone_preserved: result.tone_preserved,
+      ideas_changed: result.ideas_changed,
+      over_explains: result.over_explains,
+      verification_notes: result.verification_notes ?? undefined,
+    };
+
+    if (!meaningCheck.faithful) {
+      process.stderr.write(
+        `  WARNING: Meaning not preserved (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
+      );
+    }
+    if (!meaningCheck.tone_preserved) {
+      process.stderr.write(
+        `  WARNING: Tone drift (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
+      );
+    }
+    if (meaningCheck.ideas_changed) {
+      process.stderr.write(
+        `  WARNING: Ideas changed (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
+      );
+    }
+    if (meaningCheck.over_explains) {
+      process.stderr.write(
+        `  INFO: Over-explains (${item.custom_id}). ${meaningCheck.verification_notes ?? ""}\n`,
+      );
+    }
+
+    const translated: TranslatedChunk = {
+      sectionNumber: info.chunk.sectionNumber,
+      originalText: info.chunk.text,
+      plainEnglish: result.plain_english,
+      tags: validTags,
+      meaningCheck,
+    };
+
+    const key = `${info.bookSlug}:${info.chapterSlug}`;
+    const existing = resultMap.get(key) ?? [];
+    existing.push(translated);
+    resultMap.set(key, existing);
+  }
+
+  // Sort each chapter's chunks by sectionNumber to restore original order
+  for (const [key, chunks] of resultMap) {
+    chunks.sort((a, b) => a.sectionNumber - b.sectionNumber);
+    resultMap.set(key, chunks);
+  }
+
+  return resultMap;
 }
