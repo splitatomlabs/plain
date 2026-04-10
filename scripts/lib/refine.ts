@@ -42,7 +42,7 @@ async function writeCache(key: string, data: unknown): Promise<void> {
 // ---------------------------------------------------------------------------
 
 interface RefineResponse {
-  action: "keep" | "split" | "merge_next";
+  action: "keep" | "split" | "merge_next" | "merge_prev";
   /** For "split": array of text segments to become separate chunks */
   segments?: string[];
   reason?: string;
@@ -75,6 +75,7 @@ Choose ONE action:
 1. "keep" — This section contains a single idea and stands alone. No changes needed.
 2. "split" — This section contains multiple distinct ideas. Split it into separate segments. Each segment must be the complete original text for that idea (do not summarize or rewrite). Preserve all original wording.
 3. "merge_next" — This section is too dependent on the next section to stand alone. They should be combined into one card.
+4. "merge_prev" — This section is too dependent on the previous section to stand alone. It should be combined with the previous section.
 
 Respond with ONLY this JSON (no other text):
 
@@ -85,7 +86,7 @@ Respond with ONLY this JSON (no other text):
 }
 
 If action is "split", set "segments" to an array of the text segments (each segment is the exact original text for one idea).
-If action is "merge_next", set "reason" to a brief explanation.
+If action is "merge_next" or "merge_prev", set "reason" to a brief explanation.
 If action is "keep", leave segments and reason as null.`;
 }
 
@@ -168,6 +169,13 @@ export async function refineChunks(
         text: chunk.text + "\n\n" + next.text,
       });
       skipNext = true;
+    } else if (response.action === "merge_prev" && refined.length > 0) {
+      process.stderr.write(
+        `  MERGE section ${chunk.sectionNumber} into previous: ${response.reason ?? ""}\n`,
+      );
+      merges++;
+      const last = refined[refined.length - 1];
+      last.text = last.text + "\n\n" + chunk.text;
     } else {
       // "keep" or fallback
       refined.push(chunk);
