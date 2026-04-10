@@ -6,14 +6,16 @@
 		<meta name="description" content="Plain turns classic Stoic philosophy books into bite-sized cards written in plain English." />
 		<script>
 			(function() {
-				var theme = localStorage.getItem('plain-theme');
-				if (theme === 'dark' || theme === 'light') {
-					document.documentElement.setAttribute('data-theme', theme);
-				} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-					document.documentElement.setAttribute('data-theme', 'dark');
-				} else {
-					document.documentElement.setAttribute('data-theme', 'light');
-				}
+				try {
+					var theme = localStorage.getItem('plain-theme');
+					if (theme === 'dark' || theme === 'light') {
+						document.documentElement.setAttribute('data-theme', theme);
+					} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+						document.documentElement.setAttribute('data-theme', 'dark');
+					} else {
+						document.documentElement.setAttribute('data-theme', 'light');
+					}
+				} catch (e) {}
 			})();
 		</script>
 		%sveltekit.head%

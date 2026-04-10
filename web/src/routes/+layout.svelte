@@ -6,16 +6,10 @@
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
-	let theme = $state('light');
+	let theme = $state(null);
 
 	onMount(() => {
-		const stored = localStorage.getItem('plain-theme');
-		if (stored === 'dark' || stored === 'light') {
-			theme = stored;
-		} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-			theme = 'dark';
-		}
-		document.documentElement.setAttribute('data-theme', theme);
+		theme = document.documentElement.getAttribute('data-theme') || 'light';
 	});
 
 	function toggleTheme() {
@@ -33,6 +27,7 @@
 
 <header class="site-header">
 	<a href="/" class="site-name">Plain</a>
+	{#if theme !== null}
 	<button
 		class="theme-toggle"
 		onclick={toggleTheme}
@@ -56,6 +51,7 @@
 			</svg>
 		{/if}
 	</button>
+	{/if}
 </header>
 
 <main id="main-content">
@@ -69,8 +65,11 @@
 <style>
 	.skip-link {
 		position: absolute;
-		top: -100%;
-		left: var(--space-md);
+		left: -9999px;
+		top: auto;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
 		padding: var(--space-sm) var(--space-md);
 		background: var(--color-surface);
 		color: var(--color-text-primary);
@@ -81,7 +80,11 @@
 	}
 
 	.skip-link:focus {
+		left: var(--space-md);
 		top: var(--space-sm);
+		width: auto;
+		height: auto;
+		overflow: visible;
 	}
 
 	.site-header {
