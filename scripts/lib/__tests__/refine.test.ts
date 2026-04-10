@@ -182,6 +182,61 @@ describe("refineChunks", () => {
     expect(result.splits).toBe(0);
   });
 
+  it("splits chunks that exceed 90s reading time cap", async () => {
+    // 400 words ≈ 120s at 200wpm — should be split into two chunks
+    const longText = Array(400).fill("word").join(" ");
+    const chunks = [makeChunk(1, longText)];
+
+    mockCallClaudeJSON.mockResolvedValueOnce({
+      action: "keep",
+      segments: null,
+      reason: null,
+    });
+
+    const result = await refineChunks(chunks, testConfig);
+
+    expect(result.chunks.length).toBe(2);
+    expect(result.splits).toBe(1);
+    // Both pieces should retain the original section number
+    expect(result.chunks[0].sectionNumber).toBe(1);
+    expect(result.chunks[1].sectionNumber).toBe(1);
+  });
+
+  it("splits at paragraph boundaries when available", async () => {
+    const para = Array(200).fill("word").join(" ");
+    const longText = `${para}\n\n${para}`;
+    const chunks = [makeChunk(1, longText)];
+
+    mockCallClaudeJSON.mockResolvedValueOnce({
+      action: "keep",
+      segments: null,
+      reason: null,
+    });
+
+    const result = await refineChunks(chunks, testConfig);
+
+    expect(result.chunks.length).toBe(2);
+    // Neither half should contain a paragraph break
+    expect(result.chunks[0].text).not.toContain("\n\n");
+    expect(result.chunks[1].text).not.toContain("\n\n");
+  });
+
+  it("does not split chunks at or under 90s", async () => {
+    // 300 words = 90s exactly — should NOT be split
+    const text = Array(300).fill("word").join(" ");
+    const chunks = [makeChunk(1, text)];
+
+    mockCallClaudeJSON.mockResolvedValueOnce({
+      action: "keep",
+      segments: null,
+      reason: null,
+    });
+
+    const result = await refineChunks(chunks, testConfig);
+
+    expect(result.chunks.length).toBe(1);
+  });
+
   it("skips the next chunk after merge_next", async () => {
     const chunks = [
       makeChunk(1, "First section."),

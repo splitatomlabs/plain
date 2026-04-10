@@ -5,10 +5,6 @@ import type { Card, BookMeta, ChapterInfo } from "./types.js";
 import type { TranslatedChunk } from "./translator.js";
 
 /**
- * Estimate reading time in seconds based on word count.
- * Assumes ~200 words per minute.
- */
-/**
  * Normalize newlines: collapse single newlines to spaces (Gutenberg line wraps),
  * preserve double newlines as paragraph breaks.
  */

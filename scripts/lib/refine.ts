@@ -2,6 +2,9 @@ import { callClaudeJSON, ClaudeCliError } from "./claude.js";
 import type { Chunk } from "./chunker.js";
 import type { BookConfig } from "./constants.js";
 
+/** Hard cap: any chunk whose original text exceeds this reading time must be split. */
+export const MAX_READING_TIME_SECONDS = 90;
+
 const AUTHOR_CONTEXT: Record<string, string> = {
   epictetus:
     "Epictetus is direct and instructional. His sections are short, punchy lessons — most work well as standalone cards. Very short sections (a sentence or two) are common and may need merging.",
@@ -72,6 +75,73 @@ Respond with ONLY this JSON (no other text):
 If action is "split", set "segments" to an array of the text segments (each segment is the exact original text for one idea).
 If action is "merge_next" or "merge_prev", set "reason" to a brief explanation.
 If action is "keep", leave segments and reason as null.`;
+}
+
+// ---------------------------------------------------------------------------
+// Reading-time cap — split oversized chunks before translation
+// ---------------------------------------------------------------------------
+
+function estimateReadingTime(text: string): number {
+  const words = text.split(/\s+/).filter((w) => w.length > 0).length;
+  return Math.max(Math.round((words / 200) * 60), 5);
+}
+
+/**
+ * Split text into two halves at the best available boundary.
+ * Prefers paragraph breaks (\n\n), falls back to sentence endings,
+ * and as a last resort splits at the midpoint word boundary.
+ */
+function splitTextAtBoundary(text: string): [string, string] {
+  const mid = Math.floor(text.length / 2);
+
+  // Try paragraph breaks — pick the one closest to the midpoint
+  const paraSplits: number[] = [];
+  let idx = text.indexOf("\n\n");
+  while (idx !== -1) {
+    paraSplits.push(idx);
+    idx = text.indexOf("\n\n", idx + 1);
+  }
+  if (paraSplits.length > 0) {
+    const best = paraSplits.reduce((a, b) =>
+      Math.abs(a - mid) <= Math.abs(b - mid) ? a : b,
+    );
+    return [text.slice(0, best).trimEnd(), text.slice(best).trimStart()];
+  }
+
+  // Try sentence boundaries (". ", "? ", "! ")
+  const sentenceRe = /[.?!]\s/g;
+  const sentSplits: number[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = sentenceRe.exec(text)) !== null) {
+    sentSplits.push(m.index + 1);
+  }
+  if (sentSplits.length > 0) {
+    const best = sentSplits.reduce((a, b) =>
+      Math.abs(a - mid) <= Math.abs(b - mid) ? a : b,
+    );
+    return [text.slice(0, best).trimEnd(), text.slice(best).trimStart()];
+  }
+
+  // Last resort: split at midpoint word boundary
+  const spaceAfter = text.indexOf(" ", mid);
+  const splitAt = spaceAfter !== -1 ? spaceAfter : mid;
+  return [text.slice(0, splitAt).trimEnd(), text.slice(splitAt).trimStart()];
+}
+
+/**
+ * Recursively split a chunk's text until every piece is under MAX_READING_TIME_SECONDS.
+ */
+function splitOversizedChunk(chunk: Chunk): Chunk[] {
+  if (estimateReadingTime(chunk.text) <= MAX_READING_TIME_SECONDS) {
+    return [chunk];
+  }
+
+  const [textA, textB] = splitTextAtBoundary(chunk.text);
+
+  return [
+    ...splitOversizedChunk({ sectionNumber: chunk.sectionNumber, text: textA }),
+    ...splitOversizedChunk({ sectionNumber: chunk.sectionNumber, text: textB }),
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -155,11 +225,24 @@ export async function refineChunks(
     }
   }
 
+  // Hard cap: split any chunk that still exceeds MAX_READING_TIME_SECONDS
+  const capped: Chunk[] = [];
+  for (const chunk of refined) {
+    const pieces = splitOversizedChunk(chunk);
+    if (pieces.length > 1) {
+      splits++;
+      process.stderr.write(
+        `  LENGTH-SPLIT section ${chunk.sectionNumber} into ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)\n`,
+      );
+    }
+    capped.push(...pieces);
+  }
+
   return {
     originalCount: chunks.length,
-    refinedCount: refined.length,
+    refinedCount: capped.length,
     splits,
     merges,
-    chunks: refined,
+    chunks: capped,
   };
 }
