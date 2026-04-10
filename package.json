@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "generate": "tsx scripts/generate.ts",
-    "test": "vitest run"
+    "test": "vitest run && npm run test:unit --prefix web"
   },
   "dependencies": {
     "glob": "^11.0.0",

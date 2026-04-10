@@ -66,10 +66,15 @@ Key flags: `--limit <n>` caps sections per chapter, `--parse-only` skips AI call
 ## Testing
 
 ```bash
-npm test
+npm test          # runs both pipeline and web unit tests
 ```
 
-70 unit tests covering the parser (all 5 book formats against real source files), chunker (prefix stripping, fragment merging), structural validator (schema, tags, readability, cross-refs), and card assembler (ID generation, source references, reading time).
+`npm test` runs two suites in sequence:
+
+1. **Pipeline tests** (84 tests) — parser, chunker, refine, validator, and assembler (`scripts/lib/__tests__/`)
+2. **Web unit tests** (22 tests) — content utilities and tag logic (`web/tests/unit/`)
+
+Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
 
 ## Documentation
 

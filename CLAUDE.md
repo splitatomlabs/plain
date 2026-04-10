@@ -10,6 +10,19 @@ Plain is a free web app that presents classic Stoic philosophy books as bite-siz
 
 See `ARCHITECTURE.md` for data models, routes, and rendering strategy. See `BRANDING.md` for voice, visual identity, motion, and sound guidelines. See `CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
 
+## Testing
+
+```bash
+npm test          # runs both pipeline and web unit tests
+```
+
+`npm test` runs two suites in sequence:
+
+1. **Pipeline tests** (84 tests) — parser, chunker, refine, validator, and assembler (`scripts/lib/__tests__/`)
+2. **Web unit tests** (22 tests) — content utilities and tag logic (`web/tests/unit/`)
+
+Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
+
 ## Content Guidelines
 
 ### Plain Translation Readability
