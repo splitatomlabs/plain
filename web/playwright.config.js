@@ -6,10 +6,12 @@ export default defineConfig({
 		port: 4173,
 		reuseExistingServer: !process.env.CI
 	},
-	testDir: 'tests/e2e',
+	testDir: 'tests',
+	snapshotPathTemplate: '{testDir}/visual/snapshots/{projectName}/{testFilePath}/{arg}{ext}',
 	projects: [
 		{
 			name: 'desktop-chrome',
+			testMatch: ['e2e/**/*.spec.js', 'visual/**/*.spec.js'],
 			use: {
 				...devices['Desktop Chrome'],
 				viewport: { width: 1280, height: 720 }
@@ -17,6 +19,7 @@ export default defineConfig({
 		},
 		{
 			name: 'mobile-chrome',
+			testMatch: ['e2e/**/*.spec.js', 'visual/**/*.spec.js'],
 			use: {
 				...devices['Pixel 5'],
 				viewport: { width: 375, height: 812 }

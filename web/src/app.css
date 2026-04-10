@@ -14,10 +14,10 @@
   --color-border: #E8E2D9;
   --color-tag-bg: #F0EDE8;
 
-  /* Author accents — light mode */
-  --color-accent-epictetus: #B5704F;
-  --color-accent-marcus: #5B6E8A;
-  --color-accent-seneca: #6B7F5E;
+  /* Author accents — light mode (WCAG AA 4.5:1 against #FAF7F2) */
+  --color-accent-epictetus: #96593C;
+  --color-accent-marcus: #4E6180;
+  --color-accent-seneca: #576B4C;
 
   /* Typography */
   --font-body: 'Literata Variable', 'Literata', Georgia, serif;
@@ -140,4 +140,17 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-text-primary);
   outline-offset: 2px;
+}
+
+/* ---------- Utility ---------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
