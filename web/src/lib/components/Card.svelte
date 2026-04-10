@@ -69,6 +69,10 @@
 		margin: 0 auto;
 	}
 
+	.card:focus {
+		outline: none;
+	}
+
 	@media (min-width: 768px) {
 		.card {
 			border-radius: 12px;
