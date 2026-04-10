@@ -111,6 +111,9 @@
 
 	<div class="cta-row">
 		<a href={firstCardUrl} class="cta">Start Reading</a>
+	</div>
+
+	<div class="gift-row">
 		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
 			Send this book to a friend
 		</button>
@@ -272,6 +275,11 @@
 
 	.cta-row {
 		text-align: center;
+	}
+
+	.gift-row {
+		text-align: center;
+		margin-top: var(--space-sm);
 	}
 
 	.cta {
