@@ -8,17 +8,6 @@ vi.mock("../claude.js", () => ({
   ClaudeCliError: class ClaudeCliError extends Error {},
 }));
 
-// Mock the cache (fs operations) to avoid disk I/O in tests
-vi.mock("node:fs/promises", () => ({
-  readFile: vi.fn().mockRejectedValue(new Error("not found")),
-  writeFile: vi.fn().mockResolvedValue(undefined),
-  mkdir: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("node:fs", () => ({
-  existsSync: vi.fn().mockReturnValue(false),
-}));
-
 import { refineChunks } from "../refine.js";
 import { callClaudeJSON } from "../claude.js";
 
@@ -56,7 +45,7 @@ describe("refineChunks", () => {
       .mockResolvedValueOnce({ action: "keep", segments: null, reason: null })
       .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(result.chunks[0].text).toBe(chunks[0].text);
@@ -76,7 +65,7 @@ describe("refineChunks", () => {
       reason: null,
     });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(result.chunks[0].text).toBe("First idea about virtue.");
@@ -99,7 +88,7 @@ describe("refineChunks", () => {
       .mockResolvedValueOnce({ action: "merge_next", segments: null, reason: "Thought continues into next section." })
       .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(result.chunks[0].text).toContain("Beginning of a thought");
@@ -119,7 +108,7 @@ describe("refineChunks", () => {
       .mockResolvedValueOnce({ action: "keep", segments: null, reason: null })
       .mockResolvedValueOnce({ action: "merge_prev", segments: null, reason: "Depends on previous section." });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toContain("A complete opening thought");
@@ -139,7 +128,7 @@ describe("refineChunks", () => {
       reason: "Depends on previous.",
     });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toBe("First section that somehow says merge_prev.");
@@ -157,7 +146,7 @@ describe("refineChunks", () => {
       reason: "Should merge with next.",
     });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toBe("Last section that says merge_next.");
@@ -170,7 +159,7 @@ describe("refineChunks", () => {
 
     mockCallClaudeJSON.mockRejectedValueOnce(new Error("API timeout"));
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toBe("This chunk will survive a failure gracefully.");
@@ -187,7 +176,7 @@ describe("refineChunks", () => {
       reason: null,
     });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.splits).toBe(0);
@@ -205,7 +194,7 @@ describe("refineChunks", () => {
       // Section 2 is skipped — no call made for it
       .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
 
-    const result = await refineChunks(chunks, testConfig, false);
+    const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(mockCallClaudeJSON).toHaveBeenCalledTimes(2); // Not 3

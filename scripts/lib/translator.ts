@@ -1,6 +1,3 @@
-import { createHash } from "node:crypto";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import { callClaudeJSON } from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
@@ -32,30 +29,6 @@ interface TranslationResponse {
   verification_notes?: string | null;
 }
 
-interface GenerateState {
-  bookSlug: string;
-  /** Keyed by "chapterSlug:sectionNumber" to avoid collisions when section numbers restart per chapter */
-  completed: Record<string, TranslatedChunk>;
-}
-
-const STATE_DIR = "output";
-const STATE_FILE = (bookSlug: string) =>
-  `${STATE_DIR}/generate-state-${bookSlug}.json`;
-
-async function loadState(bookSlug: string): Promise<GenerateState> {
-  const file = STATE_FILE(bookSlug);
-  if (existsSync(file)) {
-    const data = await readFile(file, "utf-8");
-    return JSON.parse(data) as GenerateState;
-  }
-  return { bookSlug, completed: {} };
-}
-
-async function saveState(state: GenerateState): Promise<void> {
-  await mkdir(STATE_DIR, { recursive: true });
-  await writeFile(STATE_FILE(state.bookSlug), JSON.stringify(state, null, 2));
-}
-
 function validateTags(tags: string[]): TagSlug[] {
   return tags.filter((t): t is TagSlug =>
     VALID_TAG_SLUGS.includes(t as TagSlug),
@@ -67,23 +40,10 @@ export async function* translateChunks(
   config: BookConfig,
   chapterSlug: string,
 ): AsyncGenerator<TranslatedChunk> {
-  const state = await loadState(config.slug);
   const total = chunks.length;
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    const textHash = createHash("sha256").update(chunk.text).digest("hex").slice(0, 8);
-    const stateKey = `${chapterSlug}:${chunk.sectionNumber}:${textHash}`;
-
-    // Resume: skip already-translated chunks
-    if (state.completed[stateKey]) {
-      const cached = state.completed[stateKey];
-      process.stderr.write(
-        `Translating ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber} (cached)\n`,
-      );
-      yield cached;
-      continue;
-    }
 
     process.stderr.write(
       `Translating ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber}...\n`,
@@ -138,18 +98,12 @@ export async function* translateChunks(
       );
     }
 
-    const translated: TranslatedChunk = {
+    yield {
       sectionNumber: chunk.sectionNumber,
       originalText: chunk.text,
       plainEnglish: result.plain_english,
       tags: validTags,
       meaningCheck,
     };
-
-    // Save progress
-    state.completed[stateKey] = translated;
-    await saveState(state);
-
-    yield translated;
   }
 }

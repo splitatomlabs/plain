@@ -1,7 +1,3 @@
-import { createHash } from "node:crypto";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
 import { callClaudeJSON, ClaudeCliError } from "./claude.js";
 import type { Chunk } from "./chunker.js";
 import type { BookConfig } from "./constants.js";
@@ -14,38 +10,6 @@ const AUTHOR_CONTEXT: Record<string, string> = {
   seneca:
     "Seneca wrote conversational essays with flowing arguments. Sections can be long and often build on each other. A section that opens with a continuation ('But...', 'For...', 'And yet...') likely depends on the previous one. Long sections with multiple distinct arguments should be split.",
 };
-
-const CACHE_DIR = "output/refine-cache";
-
-// ---------------------------------------------------------------------------
-// Cache helpers
-// ---------------------------------------------------------------------------
-
-function hashText(...parts: string[]): string {
-  return createHash("sha256")
-    .update(parts.join("\n"))
-    .digest("hex")
-    .slice(0, 16);
-}
-
-async function readCache<T>(key: string): Promise<T | null> {
-  const filePath = path.join(CACHE_DIR, `${key}.json`);
-  if (!existsSync(filePath)) return null;
-  try {
-    const data = await readFile(filePath, "utf-8");
-    return JSON.parse(data) as T;
-  } catch {
-    return null;
-  }
-}
-
-async function writeCache(key: string, data: unknown): Promise<void> {
-  await mkdir(CACHE_DIR, { recursive: true });
-  await writeFile(
-    path.join(CACHE_DIR, `${key}.json`),
-    JSON.stringify(data, null, 2),
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Refine response shape
@@ -125,7 +89,6 @@ export interface RefineResult {
 export async function refineChunks(
   chunks: Chunk[],
   config: BookConfig,
-  useCache: boolean = true,
 ): Promise<RefineResult> {
   const refined: Chunk[] = [];
   let splits = 0;
@@ -142,31 +105,21 @@ export async function refineChunks(
     const chunk = chunks[i];
     const prev = i > 0 ? chunks[i - 1] : null;
     const next = i < chunks.length - 1 ? chunks[i + 1] : null;
-    const cacheId = `refine-${chunk.sectionNumber}-${hashText(chunk.text)}`;
 
     process.stderr.write(
       `Refine ${i + 1}/${total}: section ${chunk.sectionNumber}...\n`,
     );
 
-    let response: RefineResponse | null = null;
-
-    if (useCache) {
-      response = await readCache<RefineResponse>(cacheId);
-    }
-
-    if (!response) {
-      try {
-        const prompt = buildRefinePrompt(chunk, prev, next, config);
-        response = await callClaudeJSON<RefineResponse>(prompt);
-        await writeCache(cacheId, response);
-      } catch (e) {
-        process.stderr.write(
-          `  Refine failed for section ${chunk.sectionNumber}: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
-        );
-        // On failure, keep the chunk as-is
-        refined.push(chunk);
-        continue;
-      }
+    let response: RefineResponse;
+    try {
+      const prompt = buildRefinePrompt(chunk, prev, next, config);
+      response = await callClaudeJSON<RefineResponse>(prompt);
+    } catch (e) {
+      process.stderr.write(
+        `  Refine failed for section ${chunk.sectionNumber}: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
+      );
+      refined.push(chunk);
+      continue;
     }
 
     if (response.action === "split" && response.segments && response.segments.length > 1) {
@@ -198,7 +151,6 @@ export async function refineChunks(
       const last = refined[refined.length - 1];
       last.text = last.text + "\n\n" + chunk.text;
     } else {
-      // "keep" or fallback
       refined.push(chunk);
     }
   }
