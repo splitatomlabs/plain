@@ -15,7 +15,7 @@ Implement the full Plain web app as specified in ARCHITECTURE.md, BRANDING.md, C
 4. `plans/Pd4e7a-sveltekit-app-04.md` — Progress, Sharing & Analytics
    - Status: [ ]
    - Depends on: 03
-5. `plans/Pd4e7a-sveltekit-app-05.md` — Testing & Deployment
+5. `plans/Pd4e7a-sveltekit-app-05.md` — Accessibility, Visual Regression & Deployment
    - Status: [ ]
    - Depends on: 04
 
