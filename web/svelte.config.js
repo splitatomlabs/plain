@@ -8,7 +8,8 @@ export default {
     prerender: {
       entries: [
         '*'
-      ]
+      ],
+      handleHttpError: 'warn'
     }
   }
 };
