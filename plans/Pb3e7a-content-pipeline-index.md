@@ -7,7 +7,7 @@ Build a TypeScript content pipeline that (1) validates card JSON against the ARC
 1. `plans/Pb3e7a-content-pipeline-01.md` — Content validator: schema, readability, tag, and cross-reference checks
    - Status: [x]
 2. `plans/Pb3e7a-content-pipeline-02.md` — Content generator: text parsing, chunking, translation, and card JSON output
-   - Status: [ ]
+   - Status: [x]
    - Depends on: 01 (validator used to verify generator output)
 
 ## Notes
