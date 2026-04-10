@@ -1,0 +1,40 @@
+{
+  "description": "Representative chunks for pipeline testing, extracted via parser + chunker",
+  "chunks": [
+    {
+      "label": "1-EASY",
+      "description": "Short, simple language (Enchiridion section 8)",
+      "bookSlug": "enchiridion",
+      "sectionNumber": 8,
+      "text": "Demand not that events should happen as you wish; but wish them to happen\nas they do happen, and you will go on well."
+    },
+    {
+      "label": "2-LONG",
+      "description": "Long passage, 900+ words (Meditations Book 1, section 13)",
+      "bookSlug": "meditations",
+      "sectionNumber": 13,
+      "text": "In my father, I observed his meekness; his constancy without\nwavering in those things, which after a due examination and\ndeliberation, he had determined. How free from all vanity he carried\nhimself in matter of honour. His industry and assiduity, his readiness\nto hear any man, that had aught to say tending to any common good:\nhow generally and impartially he would give every man his due. His\nskill and knowledge, when rigour or extremity, or when remissness\nor moderation was in season. How he did abstain from all unchaste\nlove of youths. His moderate condescension to other men's occasions\nas an ordinary man, neither absolutely requiring of his friends, that\nthey should wait upon him at his ordinary meals, nor that they should\nnecessitate of themselves to go along with him in his journeys;\nand that whensoever any had been left behind upon any occasion,\nthey ever found him the same towards them. His accurate and moderate\nconsideration in all things upon due deliberation, without any\nhurry at all. His constancy and uniformity in his friendships.\nHis toleration of them that were truly bold and open: and the pleasure\nthat he took in them that could tell him of a better course, without\nany offence. His religion without superstition. All these things\nin him, were without affectation and ostentation. Besides all these\nthings in him, this is also to be observed, that he of all men was\nleast subject to be wearied. His singular ability both to endure\nlabour, and to continue constant and uniform in both. I remember\nalso, that he had a trick of countenance and fashion, that after\nhe had attentively heard any man he ever left off with the same\ncountenance showing neither dislike nor approbation. His care of\nthe body; which was such, that he that regarded it might well\nperceive, that he did not much fancy living; but however, not as\nnaturally neglecting it, by his great temperance and moderation\nin meat and drink, in his exercises, and in the use of other things\nabout him, he had brought himself to such a habit of body that he\nwas neither too fat nor too lean. How void of pride and ostentation\nhe was, and how easily contented with few things; as lodging, and\nbedding, and apparel, and servants, and diet, and attendance. How\nhard he applied himself, and how patiently. A man, how to his great\nfrugality, able to hold out and to endure till the evening,\nnot so much as needing to be refreshed by any other passage of\nrefection, besides his ordinary meal. His constancy and equality in\nfriendship. His bearing with those that openly and with all liberty\nopposed his opinions; and even rejoicing if any man could better\nadvise him: and lastly, his religion without superstition. All\nthese things in him I must remember: that when mine hour is come, my\nconscience may be as clear and ready as his."
+    },
+    {
+      "label": "3-ARCHAIC",
+      "description": "Dense archaic language with thou/thee (Enchiridion section 51)",
+      "bookSlug": "enchiridion",
+      "sectionNumber": 51,
+      "text": "The first and most necessary topic in philosophy is the practical\napplication of principles, as, _We ought not to lie_; the second is that\nof demonstrations as, _Why it is that we ought not to lie_; the third,\nthat which gives strength and logical connection to the other two, as,\n_Why this is a demonstration_. For what is demonstration? What is a\nconsequence? What a contradiction? What truth? What falsehood? The third\ntopic, then, is necessary on account of the second; and the second on\naccount of the first. But the most necessary, and that whereon we ought\nto rest, is the first. But we do just the contrary. For we spend all our\ntime on the third topic, and employ all our diligence about that, and\nentirely neglect the first. Therefore, at the same time that we lie, we\nare very ready to show how it is demonstrated that lying is wrong."
+    },
+    {
+      "label": "4-SENECA",
+      "description": "Conversational Seneca tone (Shortness of Life section 1)",
+      "bookSlug": "shortness-of-life",
+      "sectionNumber": 1,
+      "text": "The greater part of mankind, my Paulinus, complains of the unkindness of Nature, because we are born only for a short space of time, and that this allotted period of life runs away so swiftly, nay, so hurriedly, that with very few exceptions men's life comes to an end just as they are preparing to enjoy it: nor is it only the common people and the ignorant vulgar who mourn over this universal misfortune, as they consider it: this feeling has wrung complaints even from the greatest men."
+    },
+    {
+      "label": "5-FRAGMENT",
+      "description": "Very short fragment, 1-2 sentences (Meditations Book 4, section 2)",
+      "bookSlug": "meditations",
+      "sectionNumber": 2,
+      "text": "Let nothing be done rashly, and at random, but all things according\nto the most exact and perfect rules of art."
+    }
+  ]
+}

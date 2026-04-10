@@ -6,6 +6,7 @@ import { chunkSections, type Chunk } from "./lib/chunker.js";
 import { refineChunks } from "./lib/refine.js";
 import { translateChunks, type TranslatedChunk } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
+import { tokenUsage } from "./lib/claude.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -221,6 +222,26 @@ async function main(): Promise<void> {
 
   for (const config of configs as BookConfig[]) {
     await processBook(config);
+  }
+
+  // Cost report (only meaningful when PLAIN_USE_API=1)
+  const { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens } =
+    tokenUsage;
+  const totalTokens = inputTokens + outputTokens + cacheReadTokens + cacheCreationTokens;
+  if (totalTokens > 0) {
+    // Sonnet pricing per 1M tokens
+    const inputCost = (inputTokens / 1_000_000) * 3;
+    const outputCost = (outputTokens / 1_000_000) * 15;
+    const cacheWriteCost = (cacheCreationTokens / 1_000_000) * 3.75;
+    const cacheReadCost = (cacheReadTokens / 1_000_000) * 0.3;
+    const totalCost = inputCost + outputCost + cacheWriteCost + cacheReadCost;
+
+    process.stderr.write("\n--- Cost Report ---\n");
+    process.stderr.write(`  Input tokens:          ${inputTokens.toLocaleString()}\n`);
+    process.stderr.write(`  Output tokens:         ${outputTokens.toLocaleString()}\n`);
+    process.stderr.write(`  Cache creation tokens: ${cacheCreationTokens.toLocaleString()}\n`);
+    process.stderr.write(`  Cache read tokens:     ${cacheReadTokens.toLocaleString()}\n`);
+    process.stderr.write(`  Estimated cost (Sonnet): $${totalCost.toFixed(4)}\n`);
   }
 
   console.log("\nDone.");

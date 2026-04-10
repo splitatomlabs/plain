@@ -25,20 +25,8 @@ interface RefineResponse {
   reason?: string;
 }
 
-function buildRefinePrompt(
-  chunk: Chunk,
-  prevChunk: Chunk | null,
-  nextChunk: Chunk | null,
-  config: BookConfig,
-): string {
-  let adjacentContext = "";
-  if (prevChunk) {
-    adjacentContext += `\nPREVIOUS SECTION:\n"""\n${prevChunk.text}\n"""\n`;
-  }
-  if (nextChunk) {
-    adjacentContext += `\nNEXT SECTION:\n"""\n${nextChunk.text}\n"""\n`;
-  }
-
+/** Static system prompt for refine — cacheable across all chunks of the same book */
+export function buildRefineSystem(config: BookConfig): string {
   const authorContext = AUTHOR_CONTEXT[config.author_slug] ?? "";
 
   return `You are preparing sections from "${config.title}" for translation into bite-sized reading cards. Each card will be translated into plain English at an 8th-grade reading level.
@@ -50,13 +38,8 @@ A good card:
 
 AUTHOR CONTEXT: ${authorContext}
 
-Evaluate this section and decide what to do with it.
+Evaluate the section provided and decide what to do with it.
 
-CURRENT SECTION (section ${chunk.sectionNumber}):
-"""
-${chunk.text}
-"""
-${adjacentContext}
 Choose ONE action:
 
 1. "keep" — This section contains a single idea and stands alone. No changes needed.
@@ -75,6 +58,36 @@ Respond with ONLY this JSON (no other text):
 If action is "split", set "segments" to an array of the text segments (each segment is the exact original text for one idea).
 If action is "merge_next" or "merge_prev", set "reason" to a brief explanation.
 If action is "keep", leave segments and reason as null.`;
+}
+
+/** Per-chunk user message for refine */
+function buildRefineUser(
+  chunk: Chunk,
+  prevChunk: Chunk | null,
+  nextChunk: Chunk | null,
+): string {
+  let adjacentContext = "";
+  if (prevChunk) {
+    adjacentContext += `\nPREVIOUS SECTION:\n"""\n${prevChunk.text}\n"""\n`;
+  }
+  if (nextChunk) {
+    adjacentContext += `\nNEXT SECTION:\n"""\n${nextChunk.text}\n"""\n`;
+  }
+
+  return `CURRENT SECTION (section ${chunk.sectionNumber}):
+"""
+${chunk.text}
+"""
+${adjacentContext}`;
+}
+
+function buildRefinePrompt(
+  chunk: Chunk,
+  prevChunk: Chunk | null,
+  nextChunk: Chunk | null,
+  config: BookConfig,
+): string {
+  return `${buildRefineSystem(config)}\n\n${buildRefineUser(chunk, prevChunk, nextChunk)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -165,6 +178,7 @@ export async function refineChunks(
   let merges = 0;
   const total = chunks.length;
   let skipNext = false;
+  const system = buildRefineSystem(config);
 
   for (let i = 0; i < chunks.length; i++) {
     if (skipNext) {
@@ -182,8 +196,8 @@ export async function refineChunks(
 
     let response: RefineResponse;
     try {
-      const prompt = buildRefinePrompt(chunk, prev, next, config);
-      response = await callClaudeJSON<RefineResponse>(prompt);
+      const prompt = buildRefineUser(chunk, prev, next);
+      response = await callClaudeJSON<RefineResponse>(prompt, undefined, { system });
     } catch (e) {
       process.stderr.write(
         `  Refine failed for section ${chunk.sectionNumber}: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,

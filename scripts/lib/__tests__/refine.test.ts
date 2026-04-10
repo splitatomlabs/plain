@@ -8,7 +8,7 @@ vi.mock("../claude.js", () => ({
   ClaudeCliError: class ClaudeCliError extends Error {},
 }));
 
-import { refineChunks } from "../refine.js";
+import { refineChunks, buildRefineSystem } from "../refine.js";
 import { callClaudeJSON } from "../claude.js";
 
 const mockCallClaudeJSON = vi.mocked(callClaudeJSON);
@@ -253,5 +253,76 @@ describe("refineChunks", () => {
 
     expect(result.chunks).toHaveLength(2);
     expect(mockCallClaudeJSON).toHaveBeenCalledTimes(2); // Not 3
+  });
+
+  it("passes system prompt via options to callClaudeJSON", async () => {
+    const chunks = [makeChunk(1, "A test section.")];
+
+    mockCallClaudeJSON.mockResolvedValueOnce({
+      action: "keep",
+      segments: null,
+      reason: null,
+    });
+
+    await refineChunks(chunks, testConfig);
+
+    // Third argument should include system prompt
+    const options = mockCallClaudeJSON.mock.calls[0][2];
+    expect(options).toBeDefined();
+    expect(options!.system).toBeDefined();
+    expect(options!.system).toContain("bite-sized reading cards");
+  });
+
+  it("does not include system content in user prompt when system option is set", async () => {
+    const chunks = [makeChunk(1, "A test section.")];
+
+    mockCallClaudeJSON.mockResolvedValueOnce({
+      action: "keep",
+      segments: null,
+      reason: null,
+    });
+
+    await refineChunks(chunks, testConfig);
+
+    // First argument (prompt) should be the user-only part
+    const prompt = mockCallClaudeJSON.mock.calls[0][0];
+    const system = mockCallClaudeJSON.mock.calls[0][2]!.system!;
+
+    // User prompt should contain the chunk text
+    expect(prompt).toContain("A test section.");
+    // User prompt should NOT duplicate the system content
+    expect(prompt).not.toContain("bite-sized reading cards");
+    // System should contain the instructions
+    expect(system).toContain("bite-sized reading cards");
+  });
+});
+
+describe("buildRefineSystem", () => {
+  it("includes author context", () => {
+    const system = buildRefineSystem(testConfig);
+    expect(system).toContain("Marcus Aurelius");
+    expect(system).toContain("private journal reflections");
+  });
+
+  it("includes action descriptions and JSON schema", () => {
+    const system = buildRefineSystem(testConfig);
+    expect(system).toContain('"keep"');
+    expect(system).toContain('"split"');
+    expect(system).toContain('"merge_next"');
+    expect(system).toContain('"merge_prev"');
+    expect(system).toContain('"action"');
+  });
+
+  it("does not include per-chunk text", () => {
+    const system = buildRefineSystem(testConfig);
+    expect(system).not.toContain("CURRENT SECTION");
+    expect(system).not.toContain("PREVIOUS SECTION");
+  });
+
+  it("varies by book config", () => {
+    const senecaConfig = { ...testConfig, slug: "shortness-of-life", title: "On the Shortness of Life", author_slug: "seneca" as const };
+    const system = buildRefineSystem(senecaConfig);
+    expect(system).toContain("On the Shortness of Life");
+    expect(system).toContain("Seneca");
   });
 });
