@@ -35,7 +35,9 @@
 	<details class="card-original">
 		<summary>Show original</summary>
 		<blockquote class="original-text">
-			{card.original_excerpt}
+			{#each card.original_excerpt.split('\n\n') as paragraph}
+				<p>{paragraph}</p>
+			{/each}
 		</blockquote>
 	</details>
 
@@ -137,6 +139,14 @@
 		margin: var(--space-sm) 0 0;
 		padding-left: var(--space-md);
 		border-left: 2px solid var(--color-border);
+	}
+
+	.original-text p {
+		margin: 0 0 var(--space-sm);
+	}
+
+	.original-text p:last-child {
+		margin-bottom: 0;
 	}
 
 	.card-footer {
