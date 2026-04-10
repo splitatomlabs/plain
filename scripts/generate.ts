@@ -141,7 +141,7 @@ async function runTranslate(
   const chapters = [];
   for (const ch of parsed.chapters) {
     const translated: TranslatedChunk[] = [];
-    for await (const chunk of translateChunks(ch.chunks, config)) {
+    for await (const chunk of translateChunks(ch.chunks, config, ch.slug)) {
       translated.push(chunk);
     }
     chapters.push({

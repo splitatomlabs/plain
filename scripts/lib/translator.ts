@@ -19,7 +19,8 @@ interface TranslationResponse {
 
 interface GenerateState {
   bookSlug: string;
-  completed: Record<number, TranslatedChunk>;
+  /** Keyed by "chapterSlug:sectionNumber" to avoid collisions when section numbers restart per chapter */
+  completed: Record<string, TranslatedChunk>;
 }
 
 const STATE_DIR = "output";
@@ -49,18 +50,20 @@ function validateTags(tags: string[]): TagSlug[] {
 export async function* translateChunks(
   chunks: Chunk[],
   config: BookConfig,
+  chapterSlug: string,
 ): AsyncGenerator<TranslatedChunk> {
   const state = await loadState(config.slug);
   const total = chunks.length;
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
+    const stateKey = `${chapterSlug}:${chunk.sectionNumber}`;
 
     // Resume: skip already-translated chunks
-    if (state.completed[chunk.sectionNumber]) {
-      const cached = state.completed[chunk.sectionNumber];
+    if (state.completed[stateKey]) {
+      const cached = state.completed[stateKey];
       process.stderr.write(
-        `Translating chunk ${i + 1}/${total}: section ${chunk.sectionNumber} (cached)\n`,
+        `Translating chunk ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber} (cached)\n`,
       );
       yield cached;
       continue;
@@ -104,7 +107,7 @@ export async function* translateChunks(
     };
 
     // Save progress
-    state.completed[chunk.sectionNumber] = translated;
+    state.completed[stateKey] = translated;
     await saveState(state);
 
     yield translated;
