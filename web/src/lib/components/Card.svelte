@@ -15,6 +15,8 @@
 		'marcus-aurelius': 'The Emperor',
 		seneca: 'The Senator'
 	};
+
+	const paragraphs = $derived(card.plain_english.split('\n\n'));
 </script>
 
 <article class="card" aria-live="polite">
@@ -25,7 +27,9 @@
 	</header>
 
 	<div class="card-text">
-		{card.plain_english}
+		{#each paragraphs as paragraph}
+			<p>{paragraph}</p>
+		{/each}
 	</div>
 
 	<details class="card-original">
@@ -83,6 +87,14 @@
 		line-height: var(--line-height-body);
 		color: var(--color-text-primary);
 		margin-bottom: var(--space-lg);
+	}
+
+	.card-text p {
+		margin: 0 0 var(--space-md);
+	}
+
+	.card-text p:last-child {
+		margin-bottom: 0;
 	}
 
 	.card-original {
