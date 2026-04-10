@@ -121,7 +121,7 @@
 	}
 
 	.nav-zone {
-		position: absolute;
+		position: fixed;
 		top: 0;
 		bottom: 0;
 		display: flex;
@@ -139,16 +139,16 @@
 
 	.nav-prev {
 		left: 0;
-		right: calc(50% + var(--max-line-width) / 2);
+		width: calc((100vw - var(--max-line-width)) / 2 - var(--space-lg));
 		justify-content: flex-end;
-		padding-right: var(--space-sm);
+		padding-right: var(--space-lg);
 	}
 
 	.nav-next {
 		right: 0;
-		left: calc(50% + var(--max-line-width) / 2);
+		width: calc((100vw - var(--max-line-width)) / 2 - var(--space-lg));
 		justify-content: flex-start;
-		padding-left: var(--space-sm);
+		padding-left: var(--space-lg);
 	}
 
 	.nav-chevron {
@@ -165,7 +165,7 @@
 	@media (max-width: 767px) {
 		.nav-prev {
 			right: auto;
-			width: 44px;
+			width: 48px;
 			padding-left: var(--space-xs);
 			padding-right: 0;
 			justify-content: flex-start;
@@ -173,7 +173,7 @@
 
 		.nav-next {
 			left: auto;
-			width: 44px;
+			width: 48px;
 			padding-right: var(--space-xs);
 			padding-left: 0;
 			justify-content: flex-end;
