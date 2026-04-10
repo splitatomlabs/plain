@@ -22,7 +22,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Each figure gets a brief, compelling bio (2–3 sentences, written at the same 8th-grade reading level as the cards).
 - The visual treatment should differentiate the three — not through heavy theming, but through subtle cues (a distinct accent color per figure, or a small icon/motif).
 - The framing invites the reader to explore: "Three men. Three completely different lives. The same philosophy."
-- This structure also makes the cross-book tag experience more powerful — when you tap a tag like "facing fear," seeing how a slave, an emperor, and a senator each approached the same problem is genuinely compelling.
+- This structure also makes the cross-book tag experience more powerful — when you tap a tag like "facing hardship," seeing how a slave, an emperor, and a senator each approached the same problem is genuinely compelling.
 
 ---
 
@@ -37,7 +37,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Estimated cards: 60–80
 - Character: Direct, instructional, no-nonsense. "Here's what you control. Here's what you don't. Act accordingly."
 - Best for: Someone new to Stoicism who wants the essentials fast.
-- Key themes: freedom & control, self-discipline, calm your mind, what really matters
+- Key themes: freedom & control, knowing yourself, calm your mind, what matters most
 
 ### The Emperor — Marcus Aurelius
 
@@ -48,7 +48,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Estimated cards: 150–200
 - Character: Private, reflective, sometimes struggling. He's writing to himself, reminding himself to be better. You're reading someone's journal.
 - Best for: The flagship text. Highest name recognition. Most people start here.
-- Key themes: calm your mind, dealing with anger, death & mortality, self-discipline, leading others, doing the right thing, what really matters
+- Key themes: calm your mind, facing hardship, death & mortality, knowing yourself, doing the right thing, what matters most
 
 ### The Senator — Seneca
 
@@ -59,7 +59,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Estimated cards: 40–60
 - Character: Punchy, urgent, almost angry. Seneca is frustrated watching people waste their lives. This is his most quotable, most shareable work.
 - Best for: The "gateway drug." Nearly every passage hits hard in isolation. Ideal for sharing.
-- Key themes: what really matters, self-discipline, death & mortality, calm your mind, ambition & power
+- Key themes: what matters most, knowing yourself, death & mortality, calm your mind
 
 **4. On the Happy Life**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
@@ -68,7 +68,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Estimated cards: 40–60
 - Character: Defensive, philosophical, surprisingly personal. Seneca is responding to critics who call him a hypocrite — a man preaching Stoic simplicity while living in luxury. He doesn't dodge the accusation. He argues that pursuing virtue and possessing wealth aren't contradictions, as long as wealth doesn't possess you.
 - Best for: Someone wrestling with the gap between their ideals and their actual life. The most relatable Seneca essay for modern readers.
-- Key themes: what really matters, self-discipline, doing the right thing, human nature, ambition & power
+- Key themes: what matters most, knowing yourself, doing the right thing, human nature
 
 **5. On Peace of Mind (De Tranquillitate Animi)**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
@@ -77,7 +77,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Estimated cards: 40–60
 - Character: Practical, warm, prescriptive. Written as a response to his friend Serenus, who is anxious and restless. Seneca diagnoses the problem and offers concrete advice — how to choose work, handle setbacks, deal with loss, and find calm without withdrawing from life.
 - Best for: Someone who already knows something is wrong but can't name it. The most directly useful of Seneca's essays.
-- Key themes: calm your mind, facing fear, self-discipline, what really matters, freedom & control
+- Key themes: calm your mind, facing hardship, knowing yourself, what matters most, freedom & control
 
 ---
 
@@ -116,7 +116,7 @@ Each card has two layers:
   "original_excerpt": "The happiness of your life depends upon the quality of your thoughts: therefore, guard accordingly, and take care that you entertain no notions unsuitable to virtue and reasonable nature.",
   "source_reference": "Meditations, Book 5, Section 16",
   "author_slug": "marcus-aurelius",
-  "tags": ["calm-your-mind", "self-discipline", "what-really-matters"],
+  "tags": ["calm-your-mind", "knowing-yourself", "what-matters-most"],
   "reading_time_seconds": 30
 }
 ```
@@ -125,39 +125,31 @@ Each card has two layers:
 
 ## Tag System
 
-Exactly 12 tags. Plain emotional language that an 8th grader would search for. Every tag spans at least 3 of the 4 books.
+Exactly 8 tags. Plain emotional language that an 8th grader would search for. Every tag spans at least 3 of the 5 books.
 
-| Tag Slug | Display Label |
-|---|---|
-| `calm-your-mind` | Calm Your Mind |
-| `facing-fear` | Facing Fear |
-| `dealing-with-anger` | Dealing With Anger |
-| `death-and-mortality` | Death & Mortality |
-| `doing-the-right-thing` | Doing The Right Thing |
-| `self-discipline` | Self-Discipline |
-| `ambition-and-power` | Ambition & Power |
-| `leading-others` | Leading Others |
-| `freedom-and-control` | Freedom & Control |
-| `human-nature` | Human Nature |
-| `standing-alone` | Standing Alone |
-| `what-really-matters` | What Really Matters |
+| Tag Slug | Display Label | Description |
+|---|---|---|
+| `calm-your-mind` | Calm Your Mind | Inner tranquility, managing anxiety, stillness of thought, composure under pressure |
+| `death-and-mortality` | Death & Mortality | Acceptance of death, impermanence, memento mori, legacy, grief, the shortness of life |
+| `doing-the-right-thing` | Doing The Right Thing | Virtue, justice, ethics, duty, integrity, moral courage, fairness to others |
+| `facing-hardship` | Facing Hardship | Enduring fear, anger, pain, loss, and adversity with resilience and courage |
+| `freedom-and-control` | Freedom & Control | Distinguishing what is up to us from what is not, letting go, acceptance, detachment |
+| `human-nature` | Human Nature | Understanding others, empathy, social bonds, forgiveness, tolerance |
+| `knowing-yourself` | Knowing Yourself | Self-discipline, self-awareness, honesty with oneself, personal accountability |
+| `what-matters-most` | What Matters Most | Priorities, ambition, use of time, purpose, simplicity, what to pursue and ignore |
 
 ### Tag Coverage Across Books
 
 | Tag | Enchiridion | Meditations | Shortness of Life | Happy Life | Peace of Mind |
 |---|---|---|---|---|---|
 | calm-your-mind | heavy | heavy | light | light | heavy |
-| facing-fear | heavy | medium | light | light | medium |
-| dealing-with-anger | medium | heavy | — | light | medium |
 | death-and-mortality | light | heavy | heavy | medium | medium |
 | doing-the-right-thing | heavy | heavy | medium | heavy | medium |
-| self-discipline | heavy | heavy | heavy | heavy | heavy |
-| ambition-and-power | light | light | heavy | heavy | light |
-| leading-others | medium | heavy | — | — | light |
+| facing-hardship | heavy | heavy | light | light | heavy |
 | freedom-and-control | heavy | heavy | medium | medium | heavy |
 | human-nature | medium | medium | heavy | heavy | medium |
-| standing-alone | heavy | medium | light | medium | light |
-| what-really-matters | heavy | heavy | heavy | heavy | heavy |
+| knowing-yourself | heavy | heavy | heavy | heavy | heavy |
+| what-matters-most | heavy | heavy | heavy | heavy | heavy |
 
 ### Tag UX
 
@@ -216,13 +208,13 @@ Examples:
 **death-and-mortality — 15 cards:**
 "You've now read 15 passages on death from people who lived nearly 2,000 years ago. Notice how little the fear has changed — and how consistent the advice is."
 
-**self-discipline — 30 cards:**
-"Thirty passages on self-discipline. A slave, an emperor, and a senator all came to the same conclusion: freedom isn't about your circumstances. It's about what you do with your attention."
+**knowing-yourself — 30 cards:**
+"Thirty passages on knowing yourself. A slave, an emperor, and a senator all came to the same conclusion: freedom isn't about your circumstances. It's about what you do with your attention."
 
-**what-really-matters — 15 cards:**
+**what-matters-most — 15 cards:**
 "Fifteen cards. Three authors. Two thousand years ago. And they keep saying the same thing: stop chasing what doesn't matter."
 
-**facing-fear — 5 cards:**
+**facing-hardship — 5 cards:**
 "Epictetus faced it as a slave. Marcus faced it leading an empire at war. Seneca faced it serving a tyrant. You're starting to see how they each handled it."
 
 Design notes:
@@ -275,7 +267,7 @@ Three mechanisms. All should feel like giving something valuable to the recipien
 - Validate reading level using Flesch-Kincaid scoring.
 
 ### Step 3: Tagging
-- Assign 1–3 tags per card from the fixed set of 12.
+- Assign 1–3 tags per card from the fixed set of 8.
 - Use Claude to assist with initial tagging, then human-review for consistency.
 - Check: does every tag have reasonable coverage across books? Does any tag dominate too heavily?
 

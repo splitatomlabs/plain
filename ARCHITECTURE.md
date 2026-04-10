@@ -52,18 +52,17 @@ Books are organized under three Stoic figures. This is a core UI concept, not ju
   "title": "Meditations",
   "author_slug": "marcus-aurelius",
   "description": "A Roman emperor's private journal on self-discipline, duty, and finding peace in a chaotic world.",
-  "tags": ["calm-your-mind", "self-discipline", "dealing-with-anger", "death-and-mortality", "doing-the-right-thing", "freedom-and-control", "what-really-matters", "leading-others", "human-nature", "facing-fear", "standing-alone"],
+  "tags": ["calm-your-mind", "knowing-yourself", "facing-hardship", "death-and-mortality", "doing-the-right-thing", "freedom-and-control", "what-matters-most", "human-nature"],
   "chapters": [
     { "slug": "book-01", "title": "Book 1", "card_count": 17 },
     { "slug": "book-02", "title": "Book 2", "card_count": 17 }
   ],
   "total_cards": 200,
-  "source_url": "https://www.gutenberg.org/ebooks/2680",
-  "has_author_chapters": true
+  "source_url": "https://www.gutenberg.org/ebooks/2680"
 }
 ```
 
-`has_author_chapters` distinguishes between books with real chapters from the original text (Meditations has 12 "Books" written by the author) and books where chapters are synthetic groupings used only for file-splitting (Enchiridion, Seneca essays). When `false`, the UI should treat the book as a flat sequence of cards rather than displaying chapter navigation.
+Meditations has real author-defined chapters (12 "Books"). All other books use one chapter file per section (`section-01.json`, `section-02.json`, etc.) — each section of the source text maps directly to a chapter.
 
 ### Card Data Model
 
@@ -78,30 +77,26 @@ Books are organized under three Stoic figures. This is a core UI concept, not ju
   "original_excerpt": "The happiness of your life depends upon the quality of your thoughts...",
   "source_reference": "Meditations, Book 5, Section 16",
   "author_slug": "marcus-aurelius",
-  "tags": ["calm-your-mind", "self-discipline", "what-really-matters"],
+  "tags": ["calm-your-mind", "knowing-yourself", "what-matters-most"],
   "reading_time_seconds": 30
 }
 ```
 
 ### Tag Model
 
-12 fixed tags defined in code. See `CONTENT_STRATEGY.md` for the full list and rationale.
+8 fixed tags defined in code. See `CONTENT_STRATEGY.md` for the full list, descriptions, and rationale.
 
 ```javascript
 // src/lib/utils/tags.js
 export const TAGS = [
   { slug: 'calm-your-mind', label: 'Calm Your Mind' },
-  { slug: 'facing-fear', label: 'Facing Fear' },
-  { slug: 'dealing-with-anger', label: 'Dealing With Anger' },
   { slug: 'death-and-mortality', label: 'Death & Mortality' },
   { slug: 'doing-the-right-thing', label: 'Doing The Right Thing' },
-  { slug: 'self-discipline', label: 'Self-Discipline' },
-  { slug: 'ambition-and-power', label: 'Ambition & Power' },
-  { slug: 'leading-others', label: 'Leading Others' },
+  { slug: 'facing-hardship', label: 'Facing Hardship' },
   { slug: 'freedom-and-control', label: 'Freedom & Control' },
   { slug: 'human-nature', label: 'Human Nature' },
-  { slug: 'standing-alone', label: 'Standing Alone' },
-  { slug: 'what-really-matters', label: 'What Really Matters' }
+  { slug: 'knowing-yourself', label: 'Knowing Yourself' },
+  { slug: 'what-matters-most', label: 'What Matters Most' }
 ];
 ```
 
@@ -109,18 +104,18 @@ export const TAGS = [
 
 ## Content File Structure
 
-One JSON file per chapter/section group. This keeps individual file reads small (typically 10–40KB) even though total card count will be 300+.
+One JSON file per chapter (Meditations) or per section (all other books). This keeps individual file reads small (typically 1–10KB per section) even though total card count will be 300+.
 
-Only Meditations has real chapters from the source text (12 "Books"). For all other books, the `sections-NN-NN` files are synthetic groupings for file size management — the source texts are continuous numbered sections with no chapter divisions. See `has_author_chapters` in the metadata model.
+Meditations has real chapters from the source text (12 "Books"). All other books have one file per section — each section of the original text is its own chapter file.
 
 ```
 src/content/
 ├── authors.json
 ├── enchiridion/
 │   ├── _meta.json
-│   ├── sections-01-10.json
-│   ├── sections-11-20.json
-│   └── ...
+│   ├── section-01.json
+│   ├── section-02.json
+│   └── ...                     # 53 section files
 ├── meditations/
 │   ├── _meta.json
 │   ├── book-01.json
@@ -128,18 +123,16 @@ src/content/
 │   └── ...                     # 12 chapter files
 ├── shortness-of-life/
 │   ├── _meta.json
-│   ├── sections-01-07.json
-│   ├── sections-08-14.json
-│   └── sections-15-20.json
+│   ├── section-01.json
+│   └── ...                     # 20 section files
 ├── happy-life/
 │   ├── _meta.json
-│   ├── sections-01-10.json
-│   ├── sections-11-20.json
-│   └── sections-21-28.json
+│   ├── section-01.json
+│   └── ...                     # 28 section files
 └── peace-of-mind/
     ├── _meta.json
-    ├── sections-01-09.json
-    └── sections-10-17.json
+    ├── section-01.json
+    └── ...                     # 17 section files
 ```
 
 ---
@@ -150,7 +143,7 @@ src/content/
 /                              → Home: three-column author layout with books and progress
 /[book]                        → Book landing page: chapter list, progress ring, description
 /[book]/[chapter]/[card]       → Individual card view (the core reading experience)
-/tags                          → Tag index (all 12 tags)
+/tags                          → Tag index (all 8 tags)
 /tags/[tag]                    → Cross-book card feed filtered by tag, grouped by author
 /completed/[book]              → Completion celebration page
 ```
@@ -396,17 +389,13 @@ export default {
         '/',
         '/tags',
         '/tags/calm-your-mind',
-        '/tags/facing-fear',
-        '/tags/dealing-with-anger',
         '/tags/death-and-mortality',
         '/tags/doing-the-right-thing',
-        '/tags/self-discipline',
-        '/tags/ambition-and-power',
-        '/tags/leading-others',
+        '/tags/facing-hardship',
         '/tags/freedom-and-control',
         '/tags/human-nature',
-        '/tags/standing-alone',
-        '/tags/what-really-matters',
+        '/tags/knowing-yourself',
+        '/tags/what-matters-most',
         '/enchiridion',
         '/meditations',
         '/shortness-of-life',
