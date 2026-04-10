@@ -25,12 +25,14 @@
 
 	.title-link {
 		color: var(--color-text-primary);
-		text-decoration: none;
-		transition: color var(--transition-fast);
+		text-decoration: underline;
+		text-decoration-color: var(--color-border);
+		text-underline-offset: 0.15em;
+		transition: text-decoration-color var(--transition-fast);
 	}
 
 	.title-link:hover {
-		color: var(--color-text-secondary);
+		text-decoration-color: var(--color-text-secondary);
 	}
 
 	.book-description {
