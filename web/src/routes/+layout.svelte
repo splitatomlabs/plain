@@ -15,7 +15,7 @@
 	function toggleTheme() {
 		theme = theme === 'light' ? 'dark' : 'light';
 		document.documentElement.setAttribute('data-theme', theme);
-		localStorage.setItem('plain-theme', theme);
+		try { localStorage.setItem('plain-theme', theme); } catch (e) {}
 	}
 </script>
 
