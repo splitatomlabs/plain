@@ -1,22 +1,34 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { callClaudeJSON, ClaudeCliError } from "./claude.js";
+import { callClaudeJSON } from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
 import { buildTranslationPrompt } from "./prompt.js";
-import { checkMeaningPreservation, type MeaningCheckResult } from "./validate-semantic.js";
+
+export interface MeaningCheck {
+  faithful: boolean;
+  tone_preserved: boolean;
+  ideas_changed: boolean;
+  over_explains: boolean;
+  verification_notes?: string;
+}
 
 export interface TranslatedChunk {
   sectionNumber: number;
   originalText: string;
   plainEnglish: string;
   tags: TagSlug[];
-  meaningCheck?: MeaningCheckResult;
+  meaningCheck?: MeaningCheck;
 }
 
 interface TranslationResponse {
   plain_english: string;
   tags: string[];
+  faithful: boolean;
+  tone_preserved: boolean;
+  ideas_changed: boolean;
+  over_explains: boolean;
+  verification_notes?: string | null;
 }
 
 interface GenerateState {
@@ -86,7 +98,6 @@ export async function* translateChunks(
       `Translating ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber}...\n`,
     );
 
-    // Step 1: Translate
     const prompt = buildTranslationPrompt(chunk, config);
     let result = await callClaudeJSON<TranslationResponse>(prompt);
 
@@ -106,38 +117,33 @@ export async function* translateChunks(
     if (validTags.length === 0) validTags = ["what-really-matters"];
     if (validTags.length > 3) validTags = validTags.slice(0, 3);
 
-    // Step 2: Check meaning preservation
-    let meaningCheck: MeaningCheckResult | undefined;
-    try {
-      meaningCheck = await checkMeaningPreservation(
-        chunk.text,
-        result.plain_english,
-        chunk.sectionNumber,
-      );
+    // Report meaning check results
+    const meaningCheck: MeaningCheck = {
+      faithful: result.faithful,
+      tone_preserved: result.tone_preserved,
+      ideas_changed: result.ideas_changed,
+      over_explains: result.over_explains,
+      verification_notes: result.verification_notes ?? undefined,
+    };
 
-      if (!meaningCheck.faithful) {
-        process.stderr.write(
-          `  WARNING: Meaning not preserved for section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
-        );
-      }
-      if (!meaningCheck.tone_preserved) {
-        process.stderr.write(
-          `  WARNING: Tone drift for section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
-        );
-      }
-      if (meaningCheck.ideas_changed) {
-        process.stderr.write(
-          `  WARNING: Ideas changed for section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
-        );
-      }
-      if (meaningCheck.over_explains) {
-        process.stderr.write(
-          `  INFO: Over-explains section ${chunk.sectionNumber}. ${meaningCheck.notes ?? ""}\n`,
-        );
-      }
-    } catch (e) {
+    if (!meaningCheck.faithful) {
       process.stderr.write(
-        `  Meaning check failed for section ${chunk.sectionNumber}: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
+        `  WARNING: Meaning not preserved. ${meaningCheck.verification_notes ?? ""}\n`,
+      );
+    }
+    if (!meaningCheck.tone_preserved) {
+      process.stderr.write(
+        `  WARNING: Tone drift. ${meaningCheck.verification_notes ?? ""}\n`,
+      );
+    }
+    if (meaningCheck.ideas_changed) {
+      process.stderr.write(
+        `  WARNING: Ideas changed. ${meaningCheck.verification_notes ?? ""}\n`,
+      );
+    }
+    if (meaningCheck.over_explains) {
+      process.stderr.write(
+        `  INFO: Over-explains. ${meaningCheck.verification_notes ?? ""}\n`,
       );
     }
 

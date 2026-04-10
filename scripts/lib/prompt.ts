@@ -83,10 +83,33 @@ ${examples}
 
 ---
 
-Now translate this passage and assign tags.
+Your task has two steps. Do them in order.
+
+STEP 1 — TRANSLATE:
+Read the original passage below and write a plain English translation following the rules and voice guidance above. Assign 1-3 tags.
+
+STEP 2 — VERIFY:
+Re-read the original passage. Then re-read your translation. Answer honestly:
+(a) Does your translation preserve the original meaning precisely? (faithful)
+(b) Does it preserve the emotional tone? (tone_preserved)
+(c) Did you add or remove any ideas? (ideas_changed)
+(d) Does it over-explain or patronize? (over_explains)
+If you find a problem in step 2, revise your translation before responding.
 
 ORIGINAL:
 ${chunk.text}
 
-Respond with only valid JSON matching this schema: { "plain_english": string, "tags": string[] }`;
+Respond with ONLY this JSON (no other text):
+
+{
+  "plain_english": "your translation here",
+  "tags": ["tag-1", "tag-2"],
+  "faithful": true,
+  "tone_preserved": true,
+  "ideas_changed": false,
+  "over_explains": false,
+  "verification_notes": null
+}
+
+Set booleans accordingly. Use verification_notes (one sentence) only if there is an issue you could not fully resolve.`;
 }
