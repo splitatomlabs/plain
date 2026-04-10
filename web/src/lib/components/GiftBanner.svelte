@@ -3,7 +3,10 @@
 
 	const decodedNote = (() => {
 		try {
-			return atob(note);
+			// Reverse URL-safe base64: - → +, _ → /, add padding
+			let b64 = note.replace(/-/g, '+').replace(/_/g, '/');
+			while (b64.length % 4) b64 += '=';
+			return atob(b64);
 		} catch {
 			return '';
 		}

@@ -19,8 +19,8 @@
 
 	function navigateNext() {
 		if (nextCard) {
-			onNavigateNext?.();
-			goto(cardUrl(nextCard));
+			const defer = onNavigateNext?.();
+			if (!defer) goto(cardUrl(nextCard));
 		}
 	}
 

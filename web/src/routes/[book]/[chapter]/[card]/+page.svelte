@@ -4,12 +4,17 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import MilestoneModal from '$lib/components/MilestoneModal.svelte';
 	import { progress } from '$lib/stores/progress.js';
+	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 
 	let { data } = $props();
 	let showMilestone = $state(null);
 
 	const MILESTONES = [25, 50, 75, 100];
+
+	function cardUrl(card) {
+		return `/${card.book_slug}/${card.chapter_slug}/${card.card_number}`;
+	}
 
 	function handleNavigateNext() {
 		const beforeProgress = progress.getProgress(data.card.book_slug, data.totalCards);
@@ -22,15 +27,20 @@
 					const shown = JSON.parse(localStorage.getItem('plain-milestones') || '{}');
 					if (!shown[data.card.book_slug]?.includes(threshold)) {
 						showMilestone = threshold;
-						break;
+						return true; // defer navigation
 					}
 				}
 			}
 		}
+		return false;
 	}
 
 	function closeMilestone() {
 		showMilestone = null;
+		// Navigate to next card after modal closes (unless 100% redirects to completion)
+		if (data.nextCard) {
+			goto(cardUrl(data.nextCard));
+		}
 	}
 </script>
 

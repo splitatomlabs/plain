@@ -27,7 +27,10 @@
 
 	function generateGiftUrl() {
 		if (!browser) return '';
-		const encoded = btoa(giftNoteInput);
+		const encoded = btoa(giftNoteInput)
+			.replace(/\+/g, '-')
+			.replace(/\//g, '_')
+			.replace(/=/g, '');
 		return `${window.location.origin}/${data.book.slug}?gift=true&note=${encoded}`;
 	}
 

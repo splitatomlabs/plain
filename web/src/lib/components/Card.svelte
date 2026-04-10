@@ -6,11 +6,12 @@
 
 	let { card, book, totalCardsInBook, cardIndex } = $props();
 
-	let isFav = $state(false);
-
-	$effect(() => {
-		isFav = favorites.isFavorite(card.id);
+	let favList = $derived.by(() => {
+		let value;
+		favorites.subscribe((v) => { value = v; })();
+		return value;
 	});
+	let isFav = $derived(favList.includes(card.id));
 
 	const accentVar = {
 		epictetus: 'var(--color-accent-epictetus)',
@@ -74,7 +75,7 @@
 					class="favorite-button"
 				class:is-favorite={isFav}
 				aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
-				onclick={() => { favorites.toggleFavorite(card.id); isFav = favorites.isFavorite(card.id); }}
+				onclick={() => favorites.toggleFavorite(card.id)}
 			>
 				{#if isFav}
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

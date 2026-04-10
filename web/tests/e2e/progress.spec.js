@@ -26,8 +26,14 @@ test.describe('Progress tracking', () => {
 		await page.click('a[aria-label="Next card"]');
 		await page.waitForURL(/\/meditations\/book-01\/2/);
 
-		// Navigate to next card too
+		// Navigate to next card — may trigger 25% milestone modal
 		await page.click('a[aria-label="Next card"]');
+
+		// Dismiss milestone modal if it appears (25% threshold at 2/6 cards)
+		const modal = page.locator('.modal-button');
+		if (await modal.isVisible({ timeout: 500 }).catch(() => false)) {
+			await modal.click();
+		}
 		await page.waitForURL(/\/meditations\/book-01\/3/);
 
 		// Reload and check progress is still there
