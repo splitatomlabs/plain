@@ -1,0 +1,41 @@
+[
+  {
+    "id": "peace-of-mind-01-001",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "sections-01-09",
+    "card_number": 1,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Something is wrong and you cannot name it. You are not sick, but you are not well either. You drift between ambition and laziness, unable to commit to anything. That restlessness is what I want to help you with.",
+    "original_excerpt": "When I examine myself, I find certain vices which I thought I had overcome still present, though in a less obvious form.",
+    "source_reference": "On Peace of Mind, Section 1 (attributed)",
+    "author_slug": "seneca",
+    "tags": ["calm-your-mind", "self-discipline"],
+    "reading_time_seconds": 25
+  },
+  {
+    "id": "peace-of-mind-01-002",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "sections-01-09",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Choose work that matches your abilities. If the role is too big, you will break under it. If it is too small, you will rot with boredom. Find the thing that stretches you without crushing you.",
+    "original_excerpt": "We must consider whether your character is suited for active life, or for quiet study and reflection.",
+    "source_reference": "On Peace of Mind, Section 6 (attributed)",
+    "author_slug": "seneca",
+    "tags": ["self-discipline", "what-really-matters", "facing-fear"],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "peace-of-mind-01-003",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "sections-01-09",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Collect fewer things. The more you own, the more there is to worry about. A cluttered house mirrors a cluttered mind. Keep what you need and let the rest go.",
+    "original_excerpt": "Our possessions are not ours but Fortune's. Let us limit our property.",
+    "source_reference": "On Peace of Mind, Section 8 (attributed)",
+    "author_slug": "seneca",
+    "tags": ["calm-your-mind", "freedom-and-control"],
+    "reading_time_seconds": 15
+  }
+]

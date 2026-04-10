@@ -1,0 +1,41 @@
+[
+  {
+    "id": "peace-of-mind-02-001",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "sections-10-17",
+    "card_number": 1,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Setbacks will come. Accept that now. If you expect a smooth road, every bump will feel like a crisis. But if you expect difficulty, you will handle it calmly when it arrives.",
+    "original_excerpt": "We ought therefore to bring ourselves into such a state of mind that all the vices of the vulgar may not appear hateful to us, but merely ridiculous.",
+    "source_reference": "On Peace of Mind, Section 10 (attributed)",
+    "author_slug": "seneca",
+    "tags": ["facing-fear", "calm-your-mind", "dealing-with-anger"],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "peace-of-mind-02-002",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "sections-10-17",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Sometimes you need to let go and rest. Not every hour needs to be productive. Even the soil needs to lie fallow, or it stops producing anything at all. Rest is not laziness — it is preparation.",
+    "original_excerpt": "The mind must be given relaxation; it will rise improved and sharper after a good break.",
+    "source_reference": "On Peace of Mind, Section 17",
+    "author_slug": "seneca",
+    "tags": ["calm-your-mind", "self-discipline", "human-nature"],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "peace-of-mind-02-003",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "sections-10-17",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "No one is dealt a perfect hand. The wise person works with what they have been given. They do not rage against fate or envy those who seem to have more. They play their cards and play them well.",
+    "original_excerpt": "The wise man regards the reason, not the result, of all his actions. The beginning is in our own power; fortune decides the outcome.",
+    "source_reference": "On Peace of Mind, Section 13 (attributed)",
+    "author_slug": "seneca",
+    "tags": ["freedom-and-control", "what-really-matters"],
+    "reading_time_seconds": 20
+  }
+]
