@@ -10,6 +10,7 @@
 	let lastReadBook = $state(null);
 	let resumeUrl = $state(null);
 	let authorProgressData = $state([]);
+	let bookProgress = $state({});
 
 	$effect(() => {
 		if (!browser) return;
@@ -19,10 +20,21 @@
 			if (lastReadBook) {
 				resumeUrl = progress.getResumeUrl(lastReadBook);
 			}
+			const bp = {};
 			authorProgressData = data.returningAuthorData.map(({ author, books }) => {
 				const ap = progress.getAuthorProgress(author.slug, books);
+				for (const book of books) {
+					const p = progress.getProgress(book.slug, book.total_cards);
+					if (p.cardsRead > 0) {
+						bp[book.slug] = {
+							resumeUrl: progress.getResumeUrl(book.slug),
+							percentage: p.percentage
+						};
+					}
+				}
 				return { author, books, ...ap };
 			});
+			bookProgress = bp;
 		}
 	});
 
@@ -67,7 +79,7 @@
 	</section>
 
 	{#each data.returningAuthorData as { author, books }}
-		<AuthorSection {author} {books} />
+		<AuthorSection {author} {books} {bookProgress} />
 	{/each}
 {:else}
 	<section class="hero">

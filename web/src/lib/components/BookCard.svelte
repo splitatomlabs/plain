@@ -1,11 +1,24 @@
 <script>
-	let { book } = $props();
+	let { book, resumeUrl = null, percentage = 0 } = $props();
+
+	const hasProgress = resumeUrl && percentage > 0;
+	const startUrl = `/${book.slug}/${book.chapters[0].slug}/1`;
 </script>
 
 <article class="book-card">
 	<h3 class="book-title"><a href="/{book.slug}" class="title-link">{book.title}</a></h3>
 	<p class="book-description">{book.description}</p>
-	<a href="/{book.slug}/{book.chapters[0].slug}/1" class="cta">Start Reading</a>
+	{#if hasProgress}
+		<div class="book-progress">
+			<div class="progress-track">
+				<div class="progress-fill" style="width: {percentage}%"></div>
+			</div>
+			<span class="progress-label">{percentage}%</span>
+		</div>
+		<a href={resumeUrl} class="cta">Continue</a>
+	{:else}
+		<a href={startUrl} class="cta">Start Reading</a>
+	{/if}
 </article>
 
 <style>
@@ -44,6 +57,42 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.book-progress {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		margin-bottom: var(--space-md);
+	}
+
+	.progress-track {
+		flex: 1;
+		height: 4px;
+		background: var(--color-border);
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	.progress-fill {
+		height: 100%;
+		background: var(--color-text-secondary);
+		border-radius: 2px;
+		transition: width var(--transition-slow);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.progress-fill {
+			transition: none;
+		}
+	}
+
+	.progress-label {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		min-width: 3ch;
+		text-align: right;
 	}
 
 	.cta {
