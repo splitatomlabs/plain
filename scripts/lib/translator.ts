@@ -68,7 +68,7 @@ export async function* translateChunks(
       validTags = validateTags(result.tags);
     }
 
-    if (validTags.length === 0) validTags = ["what-really-matters"];
+    if (validTags.length === 0) validTags = ["what-matters-most"];
     if (validTags.length > 3) validTags = validTags.slice(0, 3);
 
     // Report meaning check results
