@@ -39,145 +39,14 @@ async function writeCache(key: string, data: unknown): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// T09: Single-idea check
+// Combined semantic check — one Claude call per card
 // ---------------------------------------------------------------------------
 
-interface SingleIdeaResponse {
+interface SemanticCheckResponse {
   single_idea: boolean;
-  suggestion?: string;
-}
-
-export async function validateSingleIdea(
-  card: Card,
-  useCache: boolean = true,
-): Promise<ValidationMessage[]> {
-  const key = `single-idea-${cacheKey(card)}`;
-
-  if (useCache) {
-    const cached = await readCache<SingleIdeaResponse>(key);
-    if (cached) return singleIdeaToMessages(card.id, cached);
-  }
-
-  try {
-    const result = await callClaudeJSON<SingleIdeaResponse>(
-      `Analyze this card text. Does it contain a single coherent idea, or does it contain multiple distinct ideas that should be separate cards?
-
-Card text:
-"""
-${card.plain_english}
-"""
-
-Respond with JSON: { "single_idea": boolean, "suggestion"?: string }
-If multiple ideas, include a suggestion describing where to split.`,
-      '{ "single_idea": boolean, "suggestion"?: string }',
-    );
-
-    await writeCache(key, result);
-    return singleIdeaToMessages(card.id, result);
-  } catch (e) {
-    return [
-      {
-        severity: "warn",
-        card_id: card.id,
-        message: `Semantic check (single-idea) failed to parse: ${e instanceof ClaudeCliError ? e.message : String(e)}`,
-      },
-    ];
-  }
-}
-
-function singleIdeaToMessages(
-  cardId: string,
-  result: SingleIdeaResponse,
-): ValidationMessage[] {
-  if (result.single_idea) return [];
-  return [
-    {
-      severity: "warn",
-      card_id: cardId,
-      field: "plain_english",
-      message: `Card may contain multiple ideas. ${result.suggestion ?? "Consider splitting."}`,
-    },
-  ];
-}
-
-// ---------------------------------------------------------------------------
-// T10: Standalone coherence
-// ---------------------------------------------------------------------------
-
-interface StandaloneResponse {
+  single_idea_suggestion?: string;
   standalone: boolean;
-  resolution?: string;
-}
-
-export async function validateStandalone(
-  card: Card,
-  prevCard: Card | null,
-  nextCard: Card | null,
-  useCache: boolean = true,
-): Promise<ValidationMessage[]> {
-  const key = `standalone-${cacheKey(card)}`;
-
-  if (useCache) {
-    const cached = await readCache<StandaloneResponse>(key);
-    if (cached) return standaloneToMessages(card.id, cached);
-  }
-
-  let contextSection = "";
-  if (prevCard) {
-    contextSection += `\nPrevious card:\n"""\n${prevCard.plain_english}\n"""`;
-  }
-  if (nextCard) {
-    contextSection += `\nNext card:\n"""\n${nextCard.plain_english}\n"""`;
-  }
-
-  try {
-    const result = await callClaudeJSON<StandaloneResponse>(
-      `Analyze whether this card makes sense on its own to a reader with no surrounding context. Or does it depend on an adjacent card to be understood?
-
-Card text:
-"""
-${card.plain_english}
-"""
-${contextSection}
-
-Respond with JSON: { "standalone": boolean, "resolution"?: string }
-If not standalone, include a resolution (e.g. "merge with previous card" or "add brief context phrase").`,
-      '{ "standalone": boolean, "resolution"?: string }',
-    );
-
-    await writeCache(key, result);
-    return standaloneToMessages(card.id, result);
-  } catch (e) {
-    return [
-      {
-        severity: "warn",
-        card_id: card.id,
-        message: `Semantic check (standalone) failed to parse: ${e instanceof ClaudeCliError ? e.message : String(e)}`,
-      },
-    ];
-  }
-}
-
-function standaloneToMessages(
-  cardId: string,
-  result: StandaloneResponse,
-): ValidationMessage[] {
-  if (result.standalone) return [];
-  return [
-    {
-      severity: "warn",
-      card_id: cardId,
-      field: "plain_english",
-      message: `Card may not stand alone. ${result.resolution ?? "Consider adding context."}`,
-    },
-  ];
-}
-
-// ---------------------------------------------------------------------------
-// T11: Meaning preservation
-// ---------------------------------------------------------------------------
-
-interface MeaningResponse {
+  standalone_resolution?: string;
   faithful: boolean;
   tone_preserved: boolean;
   ideas_changed: boolean;
@@ -185,57 +54,77 @@ interface MeaningResponse {
   notes?: string;
 }
 
-export async function validateMeaningPreservation(
+function buildSemanticPrompt(
   card: Card,
-  useCache: boolean = true,
-): Promise<ValidationMessage[]> {
-  const key = `meaning-${cacheKey(card)}`;
-
-  if (useCache) {
-    const cached = await readCache<MeaningResponse>(key);
-    if (cached) return meaningToMessages(card.id, cached);
+  prevCard: Card | null,
+  nextCard: Card | null,
+): string {
+  let adjacentContext = "";
+  if (prevCard) {
+    adjacentContext += `\nPrevious card:\n"""\n${prevCard.plain_english}\n"""\n`;
+  }
+  if (nextCard) {
+    adjacentContext += `\nNext card:\n"""\n${nextCard.plain_english}\n"""\n`;
   }
 
-  try {
-    const result = await callClaudeJSON<MeaningResponse>(
-      `Compare the original excerpt with its plain English translation. Assess:
-(a) Does the translation preserve the original meaning precisely?
-(b) Does it preserve the emotional tone?
-(c) Are any ideas added or removed?
-(d) Does it over-explain or patronize?
+  return `Evaluate this card on three dimensions. Be concise.
 
-Original:
+ORIGINAL TEXT:
 """
 ${card.original_excerpt}
 """
 
-Plain English:
+PLAIN ENGLISH TRANSLATION:
 """
 ${card.plain_english}
 """
+${adjacentContext}
+Check all three:
 
-Respond with JSON: { "faithful": boolean, "tone_preserved": boolean, "ideas_changed": boolean, "over_explains": boolean, "notes"?: string }`,
-      '{ "faithful": boolean, "tone_preserved": boolean, "ideas_changed": boolean, "over_explains": boolean, "notes"?: string }',
-    );
+1. SINGLE IDEA — Does the plain English contain one coherent idea, or multiple ideas that should be separate cards?
+2. STANDALONE — Does the plain English make sense on its own without surrounding context?
+3. MEANING — Does the translation (a) preserve the original meaning, (b) preserve emotional tone, (c) avoid adding/removing ideas, (d) avoid over-explaining?
 
-    await writeCache(key, result);
-    return meaningToMessages(card.id, result);
-  } catch (e) {
-    return [
-      {
-        severity: "warn",
-        card_id: card.id,
-        message: `Semantic check (meaning) failed to parse: ${e instanceof ClaudeCliError ? e.message : String(e)}`,
-      },
-    ];
-  }
+Respond with ONLY this JSON (no other text):
+
+{
+  "single_idea": true,
+  "single_idea_suggestion": null,
+  "standalone": true,
+  "standalone_resolution": null,
+  "faithful": true,
+  "tone_preserved": true,
+  "ideas_changed": false,
+  "over_explains": false,
+  "notes": null
 }
 
-function meaningToMessages(
+Set booleans to false and fill in the string fields when there are problems. Keep string fields short (one sentence).`;
+}
+
+function responseToMessages(
   cardId: string,
-  result: MeaningResponse,
+  result: SemanticCheckResponse,
 ): ValidationMessage[] {
   const msgs: ValidationMessage[] = [];
+
+  if (!result.single_idea) {
+    msgs.push({
+      severity: "warn",
+      card_id: cardId,
+      field: "plain_english",
+      message: `Card may contain multiple ideas. ${result.single_idea_suggestion ?? "Consider splitting."}`,
+    });
+  }
+
+  if (!result.standalone) {
+    msgs.push({
+      severity: "warn",
+      card_id: cardId,
+      field: "plain_english",
+      message: `Card may not stand alone. ${result.standalone_resolution ?? "Consider adding context."}`,
+    });
+  }
 
   if (!result.faithful) {
     msgs.push({
@@ -277,8 +166,37 @@ function meaningToMessages(
 }
 
 // ---------------------------------------------------------------------------
-// T12: Semantic validation orchestrator
+// Public API
 // ---------------------------------------------------------------------------
+
+export async function validateCardSemantic(
+  card: Card,
+  prevCard: Card | null,
+  nextCard: Card | null,
+  useCache: boolean = true,
+): Promise<ValidationMessage[]> {
+  const key = `semantic-${cacheKey(card)}`;
+
+  if (useCache) {
+    const cached = await readCache<SemanticCheckResponse>(key);
+    if (cached) return responseToMessages(card.id, cached);
+  }
+
+  try {
+    const prompt = buildSemanticPrompt(card, prevCard, nextCard);
+    const result = await callClaudeJSON<SemanticCheckResponse>(prompt);
+    await writeCache(key, result);
+    return responseToMessages(card.id, result);
+  } catch (e) {
+    return [
+      {
+        severity: "warn",
+        card_id: card.id,
+        message: `Semantic check failed to parse: ${e instanceof ClaudeCliError ? e.message : String(e)}`,
+      },
+    ];
+  }
+}
 
 export async function runSemanticValidation(
   cards: Card[],
@@ -296,15 +214,8 @@ export async function runSemanticValidation(
       `Semantic check ${i + 1}/${total}: ${card.id}...\n`,
     );
 
-    // Run all three checks sequentially (one Claude call at a time)
-    const singleIdeaMsgs = await validateSingleIdea(card, useCache);
-    msgs.push(...singleIdeaMsgs);
-
-    const standaloneMsgs = await validateStandalone(card, prev, next, useCache);
-    msgs.push(...standaloneMsgs);
-
-    const meaningMsgs = await validateMeaningPreservation(card, useCache);
-    msgs.push(...meaningMsgs);
+    const cardMsgs = await validateCardSemantic(card, prev, next, useCache);
+    msgs.push(...cardMsgs);
   }
 
   return msgs;
