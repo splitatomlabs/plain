@@ -37,22 +37,7 @@
 	}
 
 	function handleFinishBook() {
-		const beforeProgress = progress.getProgress(data.card.book_slug, data.totalCards);
 		progress.markCardRead(data.card.book_slug, data.card.id);
-		const afterProgress = progress.getProgress(data.card.book_slug, data.totalCards);
-
-		for (const threshold of MILESTONES) {
-			if (beforeProgress.percentage < threshold && afterProgress.percentage >= threshold) {
-				if (browser) {
-					const shown = JSON.parse(localStorage.getItem('plain-milestones') || '{}');
-					if (!shown[data.card.book_slug]?.includes(threshold)) {
-						showMilestone = threshold;
-						return;
-					}
-				}
-			}
-		}
-		// No milestone to show — go straight to completion
 		goto(`/completed/${data.card.book_slug}`);
 	}
 
