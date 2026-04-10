@@ -65,6 +65,8 @@ All paths relative to `web/`.
 - [x] T18: Pass per-book progress into BookCard from home page — On the returning-reader home page, look up each book's `resumeUrl` and `percentage` from the progress store and pass them to `BookCard`. New-visitor home page continues to pass no progress props (all books show "Start Reading"). Also pass progress into `AuthorSection` → `BookCard` on book landing pages if the reader has progress.
 - [x] T19: E2E test per-book Continue CTA — Seed localStorage with progress in two different books (e.g. meditations and enchiridion). Navigate to home page. Verify the book with progress shows "Continue" CTA, a book without progress shows "Start Reading", and the Continue link points to the correct resume URL.
 
+- [x] T20: Show reading progress on book landing page — On `/[book]`, if the reader has progress for that book, show a progress bar with percentage and a "Continue" CTA linking to their `resume_url` above the "Start Reading" button. The "Start Reading" CTA should change to "Start from the beginning" to distinguish it from the resume link. If no progress, show the existing layout unchanged.
+
 ## Verify
 ```bash
 cd web && npm run test:unit

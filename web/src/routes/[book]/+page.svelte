@@ -1,6 +1,7 @@
 <script>
 	import TagPill from '$lib/components/TagPill.svelte';
 	import GiftBanner from '$lib/components/GiftBanner.svelte';
+	import { progress } from '$lib/stores/progress.js';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 
@@ -14,11 +15,19 @@
 
 	let isGift = $state(false);
 	let giftNote = $state('');
+	let bookResumeUrl = $state(null);
+	let bookPercentage = $state(0);
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
 		isGift = params.get('gift') === 'true';
 		giftNote = params.get('note') || '';
+
+		const p = progress.getProgress(data.book.slug, data.book.total_cards);
+		if (p.cardsRead > 0) {
+			bookPercentage = p.percentage;
+			bookResumeUrl = progress.getResumeUrl(data.book.slug);
+		}
 	});
 	const firstCardUrl = `/${data.book.slug}/${data.book.chapters[0].slug}/1`;
 
@@ -109,9 +118,24 @@
 		</section>
 	{/if}
 
-	<div class="cta-row">
-		<a href={firstCardUrl} class="cta">Start Reading</a>
-	</div>
+	{#if bookResumeUrl}
+		<div class="book-landing-progress">
+			<div class="landing-progress-track">
+				<div class="landing-progress-fill" style="width: {bookPercentage}%"></div>
+			</div>
+			<span class="landing-progress-label">{bookPercentage}% complete</span>
+		</div>
+		<div class="cta-row">
+			<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
+		</div>
+		<div class="cta-row cta-secondary-row">
+			<a href={firstCardUrl} class="cta-secondary">Start from the beginning</a>
+		</div>
+	{:else}
+		<div class="cta-row">
+			<a href={firstCardUrl} class="cta">Start Reading</a>
+		</div>
+	{/if}
 
 	<div class="gift-row">
 		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
@@ -273,8 +297,65 @@
 		color: var(--color-text-secondary);
 	}
 
+	.book-landing-progress {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		max-width: 300px;
+		margin: 0 auto var(--space-md);
+	}
+
+	.landing-progress-track {
+		flex: 1;
+		height: 4px;
+		background: var(--color-border);
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	.landing-progress-fill {
+		height: 100%;
+		background: var(--color-text-secondary);
+		border-radius: 2px;
+	}
+
+	.landing-progress-label {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		white-space: nowrap;
+	}
+
 	.cta-row {
 		text-align: center;
+	}
+
+	.cta-secondary-row {
+		margin-top: var(--space-sm);
+	}
+
+	.cta-primary {
+		color: var(--color-surface);
+		background: var(--color-text-primary);
+		border-color: var(--color-text-primary);
+	}
+
+	.cta-primary:hover {
+		opacity: 0.85;
+		background: var(--color-text-primary);
+		border-color: var(--color-text-primary);
+	}
+
+	.cta-secondary {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.cta-secondary:hover {
+		color: var(--color-text-primary);
 	}
 
 	.gift-row {
