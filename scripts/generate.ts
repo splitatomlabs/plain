@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { BOOK_CONFIGS, VALID_BOOK_SLUGS, type BookConfig } from "./lib/constants.js";
 import { parseSourceText } from "./lib/parser.js";
@@ -170,13 +170,6 @@ async function runTranslate(
   if (meaningWarnings > 0) {
     console.log(`  ${meaningWarnings} sections had meaning preservation warnings`);
   }
-
-  const outDir = "output/translated";
-  await mkdir(outDir, { recursive: true });
-  await writeFile(
-    `${outDir}/${config.slug}.json`,
-    JSON.stringify({ bookSlug: config.slug, chapters }, null, 2),
-  );
 
   return { bookSlug: config.slug, chapters };
 }

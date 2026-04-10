@@ -47,6 +47,3 @@ __pycache__
 # Node
 node_modules/
 
-# Generated pipeline output
-output/parsed/
-output/translated/
