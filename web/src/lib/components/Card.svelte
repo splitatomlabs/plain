@@ -2,16 +2,8 @@
 	import TagPill from './TagPill.svelte';
 	import ShareButton from './ShareButton.svelte';
 	import { getTagBySlug } from '$lib/utils/tags.js';
-	import { favorites } from '$lib/stores/favorites.js';
 
 	let { card, book, totalCardsInBook, cardIndex } = $props();
-
-	let favList = $derived.by(() => {
-		let value;
-		favorites.subscribe((v) => { value = v; })();
-		return value;
-	});
-	let isFav = $derived(favList.includes(card.id));
 
 	const accentVar = {
 		epictetus: 'var(--color-accent-epictetus)',
@@ -65,29 +57,11 @@
 		{/if}
 
 		<div class="card-actions">
-			<div class="action-buttons">
-				<ShareButton
-					title="{card.source_reference} — In Plain English"
-					text={card.plain_english.slice(0, 100)}
-					url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
-				/>
-				<button
-					class="favorite-button"
-				class:is-favorite={isFav}
-				aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
-				onclick={() => favorites.toggleFavorite(card.id)}
-			>
-				{#if isFav}
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-						<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-					</svg>
-				{:else}
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-						<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-					</svg>
-				{/if}
-			</button>
-			</div>
+			<ShareButton
+				title="{card.source_reference} — In Plain English"
+				text={card.plain_english.slice(0, 100)}
+				url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
+			/>
 			<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
 		</div>
 	</footer>
@@ -210,35 +184,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-	}
-
-	.action-buttons {
-		display: flex;
-		align-items: center;
-		gap: var(--space-xs);
-	}
-
-	.favorite-button {
-		background: none;
-		border: none;
-		padding: var(--space-xs);
-		cursor: pointer;
-		color: var(--color-text-secondary);
-		min-width: 44px;
-		min-height: 44px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 50%;
-		transition: color var(--transition-fast);
-	}
-
-	.favorite-button:hover {
-		color: var(--color-text-primary);
-	}
-
-	.favorite-button.is-favorite {
-		color: #c44;
 	}
 
 	.card-position {

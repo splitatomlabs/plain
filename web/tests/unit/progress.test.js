@@ -26,7 +26,6 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 // Must import after mocks are set up
 const { progress } = await import('$lib/stores/progress.js');
-const { favorites } = await import('$lib/stores/favorites.js');
 
 describe('progress store', () => {
 	beforeEach(() => {
@@ -34,7 +33,6 @@ describe('progress store', () => {
 		localStorageMock.getItem.mockClear();
 		localStorageMock.setItem.mockClear();
 		progress.reset();
-		favorites.reset();
 	});
 
 	describe('markCardRead', () => {
@@ -159,59 +157,6 @@ describe('progress store', () => {
 			progress.markCardRead('meditations', 'meditations-01-001');
 			const stored = JSON.parse(localStorageMock._getStore()['plain-progress']);
 			expect(stored.meditations.cards_read).toContain('meditations-01-001');
-		});
-	});
-});
-
-describe('favorites store', () => {
-	beforeEach(() => {
-		localStorageMock.clear();
-		favorites.reset();
-	});
-
-	describe('toggleFavorite', () => {
-		it('adds a card to favorites', () => {
-			favorites.toggleFavorite('meditations-05-016');
-			expect(favorites.isFavorite('meditations-05-016')).toBe(true);
-		});
-
-		it('removes a card when toggled again', () => {
-			favorites.toggleFavorite('meditations-05-016');
-			favorites.toggleFavorite('meditations-05-016');
-			expect(favorites.isFavorite('meditations-05-016')).toBe(false);
-		});
-	});
-
-	describe('isFavorite', () => {
-		it('returns false for unfavorited card', () => {
-			expect(favorites.isFavorite('meditations-05-016')).toBe(false);
-		});
-
-		it('reflects current state after toggles', () => {
-			favorites.toggleFavorite('meditations-05-016');
-			expect(favorites.isFavorite('meditations-05-016')).toBe(true);
-			favorites.toggleFavorite('meditations-05-016');
-			expect(favorites.isFavorite('meditations-05-016')).toBe(false);
-		});
-	});
-
-	describe('getFavorites', () => {
-		it('returns empty array initially', () => {
-			expect(favorites.getFavorites()).toEqual([]);
-		});
-
-		it('returns all favorited card IDs', () => {
-			favorites.toggleFavorite('meditations-05-016');
-			favorites.toggleFavorite('enchiridion-01-008');
-			expect(favorites.getFavorites()).toEqual(['meditations-05-016', 'enchiridion-01-008']);
-		});
-	});
-
-	describe('localStorage sync', () => {
-		it('persists favorites to localStorage', () => {
-			favorites.toggleFavorite('meditations-05-016');
-			const stored = JSON.parse(localStorageMock._getStore()['plain-favorites']);
-			expect(stored).toContain('meditations-05-016');
 		});
 	});
 });
