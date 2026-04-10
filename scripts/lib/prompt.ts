@@ -46,20 +46,18 @@ Translation: "We haven't been given a short life. We've just wasted a lot of it.
 Tags: ["self-discipline", "what-really-matters"]`,
 };
 
-export function buildTranslationPrompt(
-  chunk: Chunk,
-  bookConfig: BookConfig,
-): string {
+/** Static system prompt for a given author — cacheable across all chunks of the same book */
+export function buildTranslationSystem(bookConfig: BookConfig): string {
   const voice = AUTHOR_VOICE[bookConfig.author_slug] ?? "";
   const examples = EXAMPLES[bookConfig.author_slug] ?? "";
-
-  return `You are translating a passage from "${bookConfig.title}" by ${
+  const authorName =
     bookConfig.author_slug === "marcus-aurelius"
       ? "Marcus Aurelius"
       : bookConfig.author_slug === "epictetus"
         ? "Epictetus"
-        : "Seneca"
-  } into plain, modern English.
+        : "Seneca";
+
+  return `You are translating passages from "${bookConfig.title}" by ${authorName} into plain, modern English.
 
 VOICE GUIDANCE:
 ${voice}
@@ -86,7 +84,7 @@ ${examples}
 Your task has two steps. Do them in order.
 
 STEP 1 — TRANSLATE:
-Read the original passage below and write a plain English translation following the rules and voice guidance above. Assign 1-3 tags.
+Read the original passage and write a plain English translation following the rules and voice guidance above. Assign 1-3 tags.
 
 STEP 2 — VERIFY:
 Re-read the original passage. Then re-read your translation. Answer honestly:
@@ -95,9 +93,6 @@ Re-read the original passage. Then re-read your translation. Answer honestly:
 (c) Did you add or remove any ideas? (ideas_changed)
 (d) Does it over-explain or patronize? (over_explains)
 If you find a problem in step 2, revise your translation before responding.
-
-ORIGINAL:
-${chunk.text}
 
 Respond with ONLY this JSON (no other text):
 
@@ -112,4 +107,16 @@ Respond with ONLY this JSON (no other text):
 }
 
 Set booleans accordingly. Use verification_notes (one sentence) only if there is an issue you could not fully resolve.`;
+}
+
+/** Per-chunk user message — only the original text */
+export function buildTranslationUser(chunk: Chunk): string {
+  return `ORIGINAL:\n${chunk.text}`;
+}
+
+export function buildTranslationPrompt(
+  chunk: Chunk,
+  bookConfig: BookConfig,
+): string {
+  return `${buildTranslationSystem(bookConfig)}\n\n${buildTranslationUser(chunk)}`;
 }

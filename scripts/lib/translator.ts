@@ -1,7 +1,7 @@
 import { callClaudeJSON } from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
-import { buildTranslationPrompt } from "./prompt.js";
+import { buildTranslationPrompt, buildTranslationSystem, buildTranslationUser } from "./prompt.js";
 
 export interface MeaningCheck {
   faithful: boolean;
@@ -41,6 +41,7 @@ export async function* translateChunks(
   chapterSlug: string,
 ): AsyncGenerator<TranslatedChunk> {
   const total = chunks.length;
+  const system = buildTranslationSystem(config);
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
@@ -50,7 +51,7 @@ export async function* translateChunks(
     );
 
     const prompt = buildTranslationPrompt(chunk, config);
-    let result = await callClaudeJSON<TranslationResponse>(prompt);
+    let result = await callClaudeJSON<TranslationResponse>(prompt, undefined, { system });
 
     // Validate tags — re-prompt once if invalid
     let validTags = validateTags(result.tags);

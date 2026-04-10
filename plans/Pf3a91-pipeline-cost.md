@@ -117,7 +117,7 @@ Conservative estimate: **5-15k tokens of overhead per invocation**. Over 191 cal
 
 - [x] T06: Evaluate direct API migration — Assess whether to replace `claude -p` with `@anthropic-ai/sdk` calls. Benefits: prompt caching (the system/voice/rules portion is identical across chunks), `usage` reporting, batch API (50% discount), structured JSON mode. Write the `callClaudeAPI()` function in `claude.ts` as an alternative path, gated by an env var `PLAIN_USE_API=1`.
 
-- [ ] T07: Implement prompt caching — If using the API (T06), restructure prompts so the static portion (voice guidance, rules, tag list, examples) goes into a cacheable system message. Only the per-chunk original text varies. This should reduce input token cost by ~60% after the first call per author.
+- [x] T07: Implement prompt caching — If using the API (T06), restructure prompts so the static portion (voice guidance, rules, tag list, examples) goes into a cacheable system message. Only the per-chunk original text varies. This should reduce input token cost by ~60% after the first call per author.
 
 - [ ] T08: Add cost reporting to pipeline — After each `callClaudeJSON` call, accumulate token counts. At the end of `generate.ts`, print a summary: total input tokens, total output tokens, estimated cost at current model pricing. Acceptance: running the pipeline prints a cost report to stderr.
 

@@ -13,6 +13,8 @@ export interface CallClaudeOptions {
   model?: string;
   /** Use --bare mode to skip hooks, plugins, CLAUDE.md, etc. Requires ANTHROPIC_API_KEY. */
   bare?: boolean;
+  /** System prompt (used for prompt caching in API mode; prepended to user prompt in CLI mode) */
+  system?: string;
 }
 
 export function callClaude(
@@ -120,13 +122,28 @@ function getClient(): Anthropic {
   return anthropicClient;
 }
 
-async function callClaudeAPI(prompt: string, model = "sonnet"): Promise<string> {
+async function callClaudeAPI(
+  prompt: string,
+  model = "sonnet",
+  system?: string,
+): Promise<string> {
   const client = getClient();
   const modelId = API_MODEL_MAP[model] ?? model;
 
   const response = await client.messages.create({
     model: modelId,
     max_tokens: 4096,
+    ...(system
+      ? {
+          system: [
+            {
+              type: "text" as const,
+              text: system,
+              cache_control: { type: "ephemeral" as const },
+            },
+          ],
+        }
+      : {}),
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -159,9 +176,11 @@ export async function callClaudeJSON<T>(
     : prompt;
 
   const model = options?.model ?? "sonnet";
+  const system = options?.system;
   const call = useAPI
-    ? (p: string) => callClaudeAPI(p, model)
-    : (p: string) => callClaude(p, options);
+    ? (p: string) => callClaudeAPI(p, model, system)
+    : (p: string) =>
+        callClaude(system ? `${system}\n\n${p}` : p, options);
 
   const output = await call(fullPrompt);
 
