@@ -70,3 +70,51 @@ test.describe('Home page — returning reader', () => {
 		await expect(labels.nth(2)).toContainText('The Senator');
 	});
 });
+
+test.describe('Home page — per-book Continue/Start CTAs', () => {
+	test.beforeEach(async ({ page }) => {
+		await page.goto('/');
+		await page.evaluate(() => {
+			localStorage.setItem('plain-progress', JSON.stringify({
+				meditations: {
+					cards_read: ['meditations-01-001', 'meditations-01-002'],
+					last_card: 'meditations-01-002',
+					last_read_at: new Date().toISOString(),
+					resume_url: '/meditations/book-01/3',
+					completed: false,
+					completed_at: null
+				},
+				enchiridion: {
+					cards_read: ['enchiridion-01-001'],
+					last_card: 'enchiridion-01-001',
+					last_read_at: new Date(Date.now() - 86400000).toISOString(),
+					resume_url: '/enchiridion/sections-01-10/2',
+					completed: false,
+					completed_at: null
+				}
+			}));
+		});
+		await page.goto('/');
+	});
+
+	test('book with progress shows Continue CTA', async ({ page }) => {
+		const meditationsCard = page.locator('.book-card', { has: page.locator('.title-link', { hasText: 'Meditations' }) });
+		await expect(meditationsCard.locator('.cta')).toHaveText('Continue');
+	});
+
+	test('Continue CTA links to resume URL', async ({ page }) => {
+		const meditationsCard = page.locator('.book-card', { has: page.locator('.title-link', { hasText: 'Meditations' }) });
+		const href = await meditationsCard.locator('.cta').getAttribute('href');
+		expect(href).toBe('/meditations/book-01/3');
+	});
+
+	test('book with progress shows progress bar', async ({ page }) => {
+		const enchiridionCard = page.locator('.book-card', { has: page.locator('.title-link', { hasText: 'Enchiridion' }) });
+		await expect(enchiridionCard.locator('.book-progress')).toBeVisible();
+	});
+
+	test('book without progress shows Start Reading', async ({ page }) => {
+		const senecaBooks = page.locator('.book-card', { has: page.locator('.cta', { hasText: 'Start Reading' }) });
+		await expect(senecaBooks).toHaveCount(3);
+	});
+});

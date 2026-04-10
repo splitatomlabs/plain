@@ -63,7 +63,7 @@ All paths relative to `web/`.
 
 - [x] T17: Add per-book Continue/Start CTAs to BookCard — Update `BookCard.svelte` to accept optional `resumeUrl` and `percentage` props. When `resumeUrl` is present, show "Continue" linking to the resume URL and a small progress indicator (e.g. "33%" or a thin progress bar) instead of "Start Reading". When no progress, show "Start Reading" as before. The CTA text should be the only change — keep the existing card layout.
 - [x] T18: Pass per-book progress into BookCard from home page — On the returning-reader home page, look up each book's `resumeUrl` and `percentage` from the progress store and pass them to `BookCard`. New-visitor home page continues to pass no progress props (all books show "Start Reading"). Also pass progress into `AuthorSection` → `BookCard` on book landing pages if the reader has progress.
-- [ ] T19: E2E test per-book Continue CTA — Seed localStorage with progress in two different books (e.g. meditations and enchiridion). Navigate to home page. Verify the book with progress shows "Continue" CTA, a book without progress shows "Start Reading", and the Continue link points to the correct resume URL.
+- [x] T19: E2E test per-book Continue CTA — Seed localStorage with progress in two different books (e.g. meditations and enchiridion). Navigate to home page. Verify the book with progress shows "Continue" CTA, a book without progress shows "Start Reading", and the Continue link points to the correct resume URL.
 
 ## Verify
 ```bash
