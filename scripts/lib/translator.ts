@@ -65,7 +65,6 @@ export async function* translateChunks(
   chunks: Chunk[],
   config: BookConfig,
   chapterSlug: string,
-  dryRun: boolean = false,
 ): AsyncGenerator<TranslatedChunk> {
   const state = await loadState(config.slug);
   const total = chunks.length;
@@ -81,16 +80,6 @@ export async function* translateChunks(
         `Translating ${i + 1}/${total}: ${chapterSlug} section ${chunk.sectionNumber} (cached)\n`,
       );
       yield cached;
-      continue;
-    }
-
-    if (dryRun) {
-      yield {
-        sectionNumber: chunk.sectionNumber,
-        originalText: chunk.text,
-        plainEnglish: `[DRY RUN] ${chunk.text.slice(0, 80)}...`,
-        tags: ["what-really-matters"],
-      };
       continue;
     }
 

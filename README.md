@@ -51,7 +51,7 @@ TypeScript CLI tools that turn plain-text source books into card JSON. Requires 
 npm install
 
 # Parse all books (no AI calls needed)
-npx tsx scripts/generate.ts --all --phase parse
+npx tsx scripts/generate.ts --all --parse-only
 
 # Test full pipeline on a small subset (2 sections per chapter)
 npx tsx scripts/generate.ts --book shortness-of-life --limit 2
@@ -61,7 +61,7 @@ npx tsx scripts/generate.ts --book shortness-of-life
 
 ```
 
-Key flags: `--limit <n>` caps sections per chapter, `--dry-run` skips AI calls, `--skip-precheck` skips the pre-check phase, `--phase` runs a single phase.
+Key flags: `--limit <n>` caps sections per chapter, `--parse-only` skips AI calls, `--skip-precheck` skips the pre-check phase.
 
 ## Testing
 

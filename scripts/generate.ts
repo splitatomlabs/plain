@@ -1,12 +1,11 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { BOOK_CONFIGS, VALID_BOOK_SLUGS, type BookConfig } from "./lib/constants.js";
 import { parseSourceText } from "./lib/parser.js";
 import { chunkSections, type Chunk } from "./lib/chunker.js";
 import { translateChunks, type TranslatedChunk } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
-import { preCheckChunks, type PreCheckReport } from "./lib/validate-semantic.js";
+import { preCheckChunks } from "./lib/validate-semantic.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -16,8 +15,7 @@ const { values: args } = parseArgs({
   options: {
     book: { type: "string" },
     all: { type: "boolean", default: false },
-    phase: { type: "string", default: "all" },
-    "dry-run": { type: "boolean", default: false },
+    "parse-only": { type: "boolean", default: false },
     "skip-precheck": { type: "boolean", default: false },
     limit: { type: "string" },
     output: { type: "string", default: "src/content" },
@@ -31,8 +29,7 @@ if (args.help) {
 Options:
   --book <slug>      Generate a single book (${VALID_BOOK_SLUGS.join(", ")})
   --all              Generate all 5 books
-  --phase <phase>    Run specific phase: parse, precheck, translate, assemble, all (default: all)
-  --dry-run          Preview parsing without Claude CLI calls
+  --parse-only       Parse source text only, no Claude CLI calls
   --skip-precheck    Skip the semantic pre-check phase
   --limit <n>        Max sections per chapter (e.g. --limit 3 for a quick test)
   --output <dir>     Output directory (default: src/content)
@@ -47,14 +44,8 @@ if (!args.book && !args.all) {
   process.exit(1);
 }
 
-const validPhases = ["parse", "precheck", "translate", "assemble", "all"];
-if (!validPhases.includes(args.phase!)) {
-  console.error(`Invalid phase "${args.phase}". Use: ${validPhases.join(", ")}`);
-  process.exit(1);
-}
-
 // ---------------------------------------------------------------------------
-// Phase 1: Parse — split source text into sections
+// Parse — split source text into sections
 // ---------------------------------------------------------------------------
 
 interface ParsedOutput {
@@ -106,16 +97,11 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
 }
 
 // ---------------------------------------------------------------------------
-// Phase 2: Pre-check — single-idea + standalone on original text
+// Pre-check — single-idea + standalone on original text
 // ---------------------------------------------------------------------------
 
 async function runPreCheck(parsed: ParsedOutput): Promise<void> {
   console.log(`\nPre-checking ${parsed.bookSlug}...`);
-
-  if (args["dry-run"]) {
-    console.log("  (dry-run: skipping pre-check)");
-    return;
-  }
 
   for (const ch of parsed.chapters) {
     console.log(`  ${ch.slug}:`);
@@ -144,7 +130,7 @@ async function runPreCheck(parsed: ParsedOutput): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Phase 3: Translate — plain English + tags, with meaning preservation check
+// Translate — plain English + tags, with meaning preservation check
 // ---------------------------------------------------------------------------
 
 interface TranslatedOutput {
@@ -166,7 +152,7 @@ async function runTranslate(
   const chapters = [];
   for (const ch of parsed.chapters) {
     const translated: TranslatedChunk[] = [];
-    for await (const chunk of translateChunks(ch.chunks, config, ch.slug, args["dry-run"])) {
+    for await (const chunk of translateChunks(ch.chunks, config, ch.slug)) {
       translated.push(chunk);
     }
     chapters.push({
@@ -201,7 +187,7 @@ async function runTranslate(
 }
 
 // ---------------------------------------------------------------------------
-// Phase 4: Assemble — write card JSON
+// Assemble — write card JSON
 // ---------------------------------------------------------------------------
 
 async function runAssemble(
@@ -222,65 +208,20 @@ async function runAssemble(
 }
 
 // ---------------------------------------------------------------------------
-// Load intermediate files for resuming
-// ---------------------------------------------------------------------------
-
-async function loadParsed(bookSlug: string): Promise<ParsedOutput | null> {
-  const file = `output/parsed/${bookSlug}.json`;
-  if (!existsSync(file)) return null;
-  return JSON.parse(await readFile(file, "utf-8")) as ParsedOutput;
-}
-
-async function loadTranslated(bookSlug: string): Promise<TranslatedOutput | null> {
-  const file = `output/translated/${bookSlug}.json`;
-  if (!existsSync(file)) return null;
-  return JSON.parse(await readFile(file, "utf-8")) as TranslatedOutput;
-}
-
-// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function processBook(config: BookConfig): Promise<void> {
-  const phase = args.phase!;
+  const parsed = await runParse(config);
 
-  let parsed: ParsedOutput | null = null;
-  let translated: TranslatedOutput | null = null;
+  if (args["parse-only"]) return;
 
-  // Phase 1: Parse
-  if (phase === "all" || phase === "parse") {
-    parsed = await runParse(config);
-  }
-
-  // Phase 2: Pre-check
-  if ((phase === "all" || phase === "precheck") && !args["skip-precheck"]) {
-    if (!parsed) parsed = await loadParsed(config.slug);
-    if (!parsed) {
-      console.error(`No parsed data for ${config.slug}. Run --phase parse first.`);
-      process.exit(1);
-    }
+  if (!args["skip-precheck"]) {
     await runPreCheck(parsed);
   }
 
-  // Phase 3: Translate (includes meaning preservation check)
-  if (phase === "all" || phase === "translate") {
-    if (!parsed) parsed = await loadParsed(config.slug);
-    if (!parsed) {
-      console.error(`No parsed data for ${config.slug}. Run --phase parse first.`);
-      process.exit(1);
-    }
-    translated = await runTranslate(config, parsed);
-  }
-
-  // Phase 4: Assemble
-  if (phase === "all" || phase === "assemble") {
-    if (!translated) translated = await loadTranslated(config.slug);
-    if (!translated) {
-      console.error(`No translated data for ${config.slug}. Run --phase translate first.`);
-      process.exit(1);
-    }
-    await runAssemble(config, translated);
-  }
+  const translated = await runTranslate(config, parsed);
+  await runAssemble(config, translated);
 }
 
 async function main(): Promise<void> {
