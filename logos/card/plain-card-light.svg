@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="220" height="56" viewBox="0 0 220 56" xmlns="http://www.w3.org/2000/svg">
+  <title>Plain — Fading Card Logo (Light)</title>
+  <rect x="16" y="8" width="32" height="40" rx="3" fill="none" stroke="#2C2520" stroke-width="1.2"/>
+  <line x1="22" y1="17" x2="42" y2="17" stroke="#2C2520" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+  <line x1="22" y1="23" x2="38" y2="23" stroke="#2C2520" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
+  <line x1="22" y1="29" x2="40" y2="29" stroke="#2C2520" stroke-width="1" stroke-linecap="round" opacity="0.2"/>
+  <text x="62" y="39" font-family="'Literata', Georgia, serif" font-size="36" font-weight="400" fill="#2C2520" letter-spacing="0.5px">Plain</text>
+</svg>

@@ -313,16 +313,18 @@ The most important screen. Must feel calm, focused, and book-like.
 
 ### Typography
 
-- High-quality serif or humanist font for card text (e.g., Lora, Literata, Source Serif Pro, or Newsreader from Google Fonts). Self-host via `@fontsource`.
-- Body text: 18–20px on mobile.
+- **Literata** for card text, headings, and all logo assets. Self-host via `@fontsource/literata`. Warm, humanist variable font designed for long-form reading on screens.
+- **DM Sans** for UI elements — navigation, tag pills, buttons, progress indicators. Self-host via `@fontsource/dm-sans`. Geometric and clean but slightly warm; stays invisible beside Literata.
+- Body text: 18–20px on mobile, font-weight 400. UI text: 13–14px, font-weight 400/500.
 - Line height: ~1.6. Max line width: ~65 characters.
-- High contrast but not stark white — subtle warm or cream background.
+- See `BRANDING.md` for full visual identity guidelines.
 
 ### Color & Theme
 
 - Default: warm, paper-like light theme. "Well-made book" not "tech app."
-- Optional dark mode: feels like reading by lamplight, not a code editor.
-- Each author gets a subtle accent color used for progress rings, chapter headings, and author labels. Keep it restrained — the text is the focus.
+- Dark mode feels like lamplight — warm and restful, not a code editor.
+- Three subtle accent colors, one per author, used sparingly on progress rings, chapter headings, and author labels. Never dominant — the text is the focus.
+- See `BRANDING.md` for motion, sound, and full visual identity rules.
 
 ### Home Page Layout
 
@@ -420,7 +422,8 @@ export default {
 ### Key Dependencies
 
 - `@sveltejs/adapter-vercel` — Vercel deployment with ISR support
-- `@fontsource/lora` (or chosen serif font) — Self-hosted reading font
+- `@fontsource/literata` — Self-hosted reading/brand font
+- `@fontsource/dm-sans` — Self-hosted UI font
 - `@vercel/og` — OG image generation for sharing
 - No UI framework. Custom CSS. Minimal.
 - No database libraries. No auth libraries. Not yet.
@@ -473,7 +476,7 @@ src/
 │               ├── +page.svelte        # Card reading view
 │               └── +page.server.js     # Load chapter JSON, extract card, ISR config
 └── static/
-    └── fonts/                  # Self-hosted fonts if not using @fontsource
+    └── fonts/                  # Self-hosted Literata if not using @fontsource
 ```
 
 ---

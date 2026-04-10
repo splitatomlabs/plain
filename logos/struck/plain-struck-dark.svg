@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="56" viewBox="0 0 320 56" xmlns="http://www.w3.org/2000/svg">
+  <title>Plain — Struck Through Logo (Dark)</title>
+  <text x="16" y="40" font-family="'Literata', Georgia, serif" font-size="38" font-weight="400" fill="#E8E2D9">P</text>
+  <text x="38" y="40" font-family="'Literata', Georgia, serif" font-size="38" font-weight="300" fill="#E8E2D9" opacity="0.2">hilosoph</text>
+  <line x1="38" y1="30" x2="162" y2="30" stroke="#E8E2D9" stroke-width="1" opacity="0.25"/>
+  <text x="162" y="40" font-family="'Literata', Georgia, serif" font-size="38" font-weight="400" fill="#E8E2D9">lain</text>
+</svg>
