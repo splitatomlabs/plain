@@ -23,8 +23,7 @@ test.describe('Card reading experience', () => {
 		await expect(boundary).toContainText('Beginning of Meditations');
 	});
 
-	test('navigates to next card via click zone', async ({ page, isMobile }) => {
-		test.skip(isMobile, 'Click zones hidden on mobile');
+	test('navigates to next card via click zone', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
 		const nextLink = page.locator('.nav-next');
@@ -126,14 +125,11 @@ test.describe('Card reading — mobile', () => {
 		await expect(card).toBeVisible();
 	});
 
-	test('click zones are hidden on mobile', async ({ page }) => {
+	test('nav buttons visible on mobile', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const navZone = page.locator('.nav-next');
-		// nav-zone should be display:none on mobile
-		if (await navZone.count() > 0) {
-			await expect(navZone).not.toBeVisible();
-		}
+		const navNext = page.locator('.nav-next');
+		await expect(navNext).toBeVisible();
 	});
 
 	test('swipe left navigates to next card', async ({ page }) => {

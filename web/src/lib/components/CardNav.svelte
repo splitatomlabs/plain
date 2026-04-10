@@ -5,8 +5,8 @@
 	let { prevCard, nextCard, children } = $props();
 
 	const SWIPE_THRESHOLD = 50;
-	let touchStartX = 0;
-	let touchStartY = 0;
+	let startX = 0;
+	let startY = 0;
 	let navRef;
 
 	function cardUrl(card) {
@@ -21,20 +21,37 @@
 		if (nextCard) goto(cardUrl(nextCard));
 	}
 
-	function handleTouchStart(e) {
-		touchStartX = e.touches[0].clientX;
-		touchStartY = e.touches[0].clientY;
+	function handleSwipeStart(x, y) {
+		startX = x;
+		startY = y;
 	}
 
-	function handleTouchEnd(e) {
-		const deltaX = e.changedTouches[0].clientX - touchStartX;
-		const deltaY = e.changedTouches[0].clientY - touchStartY;
+	function handleSwipeEnd(x, y) {
+		const deltaX = x - startX;
+		const deltaY = y - startY;
 
-		// Only trigger if horizontal swipe is dominant
 		if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
 			if (deltaX < 0) navigateNext();
 			else navigatePrev();
 		}
+	}
+
+	function handleTouchStart(e) {
+		handleSwipeStart(e.touches[0].clientX, e.touches[0].clientY);
+	}
+
+	function handleTouchEnd(e) {
+		handleSwipeEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+	}
+
+	function handlePointerDown(e) {
+		if (e.pointerType === 'touch') return; // handled by touch events
+		handleSwipeStart(e.clientX, e.clientY);
+	}
+
+	function handlePointerUp(e) {
+		if (e.pointerType === 'touch') return;
+		handleSwipeEnd(e.clientX, e.clientY);
 	}
 
 	function handleKeydown(e) {
@@ -66,6 +83,8 @@
 	bind:this={navRef}
 	ontouchstart={handleTouchStart}
 	ontouchend={handleTouchEnd}
+	onpointerdown={handlePointerDown}
+	onpointerup={handlePointerUp}
 	role="region"
 	aria-label="Card navigation"
 >
@@ -105,41 +124,31 @@
 	}
 
 	.nav-zone {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		width: 20%;
 		display: flex;
 		align-items: center;
-		z-index: 1;
+		flex-shrink: 0;
 		text-decoration: none;
-		color: var(--color-text-secondary);
-		opacity: 0;
-		transition: opacity var(--transition-fast);
+		color: var(--color-text-tertiary);
+		transition: color var(--transition-fast);
 		min-width: 44px;
 		min-height: 44px;
+		padding: var(--space-sm);
 	}
 
 	.nav-zone:hover {
-		opacity: 1;
+		color: var(--color-text-primary);
 	}
 
 	.nav-prev {
-		left: 0;
 		justify-content: flex-start;
-		padding-left: var(--space-sm);
-		cursor: w-resize;
 	}
 
 	.nav-next {
-		right: 0;
 		justify-content: flex-end;
-		padding-right: var(--space-sm);
-		cursor: e-resize;
 	}
 
 	.nav-chevron {
-		font-size: 2rem;
+		font-size: 2.5rem;
 		line-height: 1;
 		pointer-events: none;
 	}
@@ -147,12 +156,5 @@
 	.card-content {
 		flex: 1;
 		min-width: 0;
-	}
-
-	/* Hide click zones on mobile — swipe handles navigation */
-	@media (max-width: 767px) {
-		.nav-zone {
-			display: none;
-		}
 	}
 </style>

@@ -7,7 +7,7 @@
 		seneca: 'var(--color-accent-seneca)'
 	};
 
-	const color = accentVar[authorSlug] ?? 'var(--color-text-secondary)';
+	const color = $derived(accentVar[authorSlug] ?? 'var(--color-text-secondary)');
 	const percentage = $derived(Math.round((current / total) * 100));
 </script>
 
