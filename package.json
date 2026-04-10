@@ -7,6 +7,7 @@
     "test": "vitest run && npm run test:unit --prefix web"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.87.0",
     "glob": "^11.0.0",
     "text-readability": "^1.0.2",
     "tsx": "^4.19.2"
