@@ -1,5 +1,6 @@
 <script>
 	import TagPill from './TagPill.svelte';
+	import ShareButton from './ShareButton.svelte';
 	import { getTagBySlug } from '$lib/utils/tags.js';
 	import { favorites } from '$lib/stores/favorites.js';
 
@@ -63,8 +64,14 @@
 		{/if}
 
 		<div class="card-actions">
-			<button
-				class="favorite-button"
+			<div class="action-buttons">
+				<ShareButton
+					title="{card.source_reference} — In Plain English"
+					text={card.plain_english.slice(0, 100)}
+					url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
+				/>
+				<button
+					class="favorite-button"
 				class:is-favorite={isFav}
 				aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
 				onclick={() => { favorites.toggleFavorite(card.id); isFav = favorites.isFavorite(card.id); }}
@@ -79,6 +86,7 @@
 					</svg>
 				{/if}
 			</button>
+			</div>
 			<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
 		</div>
 	</footer>
@@ -201,6 +209,12 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+	}
+
+	.action-buttons {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xs);
 	}
 
 	.favorite-button {
