@@ -67,6 +67,8 @@ export interface BookConfig {
   speakerLabels: boolean;
   /** Source reference format template: {title}, {chapter}, Section {n} */
   sourceRefTemplate: string;
+  /** Whether chapters are from the original text (true) or synthetic file-splitting (false) */
+  hasAuthorChapters: boolean;
 }
 
 export const BOOK_CONFIGS: BookConfig[] = [
@@ -87,6 +89,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     gutenbergStrip: true,
     speakerLabels: false,
     sourceRefTemplate: "The Enchiridion, Section {n}",
+    hasAuthorChapters: false,
   },
   {
     slug: "meditations",
@@ -113,6 +116,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     gutenbergStrip: true,
     speakerLabels: false,
     sourceRefTemplate: "Meditations, Book {chapter}, Section {n}",
+    hasAuthorChapters: true,
   },
   {
     slug: "shortness-of-life",
@@ -129,6 +133,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     gutenbergStrip: false,
     speakerLabels: false,
     sourceRefTemplate: "On the Shortness of Life, Section {n}",
+    hasAuthorChapters: false,
   },
   {
     slug: "happy-life",
@@ -145,6 +150,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     gutenbergStrip: false,
     speakerLabels: false,
     sourceRefTemplate: "On the Happy Life, Section {n}",
+    hasAuthorChapters: false,
   },
   {
     slug: "peace-of-mind",
@@ -160,6 +166,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     gutenbergStrip: false,
     speakerLabels: true,
     sourceRefTemplate: "On Peace of Mind, Section {n}",
+    hasAuthorChapters: false,
   },
 ];
 

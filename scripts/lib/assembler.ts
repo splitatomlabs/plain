@@ -123,6 +123,7 @@ export function assembleBook(
     chapters: chapterInfos,
     total_cards: totalCards,
     source_url: "", // To be filled manually
+    has_author_chapters: config.hasAuthorChapters,
   };
 
   return { meta, chapters };
