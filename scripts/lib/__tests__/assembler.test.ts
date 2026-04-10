@@ -212,4 +212,48 @@ describe("assembleBook", () => {
     expect(cards[0].plain_english).toContain("First");
     expect(cards[2].plain_english).toContain("Third");
   });
+
+  it("collapses single newlines to spaces in text fields", () => {
+    const chunks: ChapterChunks[] = [
+      {
+        chapterSlug: "book-01",
+        chapterTitle: "Book 1",
+        bookNumber: 1,
+        chunks: [
+          makeTranslated({
+            originalText: "Of my grandfather Verus I have learned to be gentle\nand meek, and to refrain from all anger\nand passion.",
+            plainEnglish: "From my grandfather Verus I learned\nto be gentle and calm.",
+          }),
+        ],
+      },
+    ];
+
+    const { chapters } = assembleBook(chunks, config);
+    const card = chapters.get("book-01")![0];
+    expect(card.original_excerpt).not.toContain("\n");
+    expect(card.original_excerpt).toContain("gentle and meek");
+    expect(card.plain_english).not.toContain("\n");
+    expect(card.plain_english).toContain("I learned to be");
+  });
+
+  it("preserves double newlines as paragraph breaks", () => {
+    const chunks: ChapterChunks[] = [
+      {
+        chapterSlug: "book-01",
+        chapterTitle: "Book 1",
+        bookNumber: 1,
+        chunks: [
+          makeTranslated({
+            originalText: "First paragraph about virtue.\n\nSecond paragraph about duty.",
+            plainEnglish: "First part about being good.\n\nSecond part about responsibility.",
+          }),
+        ],
+      },
+    ];
+
+    const { chapters } = assembleBook(chunks, config);
+    const card = chapters.get("book-01")![0];
+    expect(card.original_excerpt).toContain("\n\n");
+    expect(card.plain_english).toContain("\n\n");
+  });
 });

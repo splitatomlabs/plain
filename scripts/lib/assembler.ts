@@ -8,6 +8,20 @@ import type { TranslatedChunk } from "./translator.js";
  * Estimate reading time in seconds based on word count.
  * Assumes ~200 words per minute.
  */
+/**
+ * Normalize newlines: collapse single newlines to spaces (Gutenberg line wraps),
+ * preserve double newlines as paragraph breaks.
+ */
+function normalizeNewlines(text: string): string {
+  return text
+    .replace(/\r\n/g, "\n")
+    .replace(/\n\n+/g, "\x00") // protect paragraph breaks
+    .replace(/\n/g, " ")        // collapse single newlines
+    .replace(/\x00/g, "\n\n")   // restore paragraph breaks
+    .replace(/ {2,}/g, " ")     // collapse double spaces
+    .trim();
+}
+
 function estimateReadingTime(text: string): number {
   const words = text.split(/\s+/).filter((w) => w.length > 0).length;
   return Math.max(Math.round((words / 200) * 60), 5);
@@ -77,8 +91,8 @@ export function assembleBook(
         chapter_slug: chapterSlug,
         card_number: cardNumber,
         total_cards_in_chapter: sorted.length,
-        plain_english: chunk.plainEnglish,
-        original_excerpt: chunk.originalText,
+        plain_english: normalizeNewlines(chunk.plainEnglish),
+        original_excerpt: normalizeNewlines(chunk.originalText),
         source_reference: buildSourceRef(
           config.sourceRefTemplate,
           chunk.sectionNumber,
