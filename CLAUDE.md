@@ -4,86 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Plain is a multi-platform project consisting of:
-- **iOS app** (Swift/SwiftUI) at `ios/Plain/`
-- **Firebase backend** (Cloud Functions, TypeScript) at `firebase/functions/`
-- **Web app** (currently empty placeholder) at `web/`
+Plain is a free web app that presents classic Stoic philosophy books as bite-sized cards in plain English. Users read full books card by card, track progress via localStorage, and share cards or completed books.
 
-## Development Commands
+**Tech stack:** SvelteKit + Vercel (free tier). No database, no auth. All content is static JSON.
 
-### iOS App
+See `ARCHITECTURE.md` for data models, routes, and rendering strategy. See `CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
 
-Build the iOS app:
-```bash
-xcodebuild -project ios/Plain/Plain.xcodeproj -scheme Plain -sdk iphonesimulator -configuration Debug build
-```
+## Content Guidelines
 
-Run tests:
-```bash
-xcodebuild test -project ios/Plain/Plain.xcodeproj -scheme Plain -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17'
-```
-
-Build and run in simulator:
-```bash
-xcodebuild -project ios/Plain/Plain.xcodeproj -scheme Plain -sdk iphonesimulator -configuration Debug build && \
-xcrun simctl boot "iPhone 17" || true && \
-xcrun simctl install booted ios/Plain/build/Debug-iphonesimulator/Plain.app && \
-xcrun simctl launch booted com.splitatomlabs.plain
-```
-
-### Firebase Functions
-
-Firebase Functions use TypeScript with Node.js 18. All commands run from `firebase/functions/`:
-
-Build:
-```bash
-cd firebase/functions && npm run build
-```
-
-Build and watch:
-```bash
-cd firebase/functions && npm run build:watch
-```
-
-Run local emulator:
-```bash
-cd firebase/functions && npm run serve
-```
-
-Deploy to Firebase:
-```bash
-cd firebase/functions && npm run deploy
-```
-
-View logs:
-```bash
-cd firebase/functions && npm run logs
-```
-
-Interactive shell:
-```bash
-cd firebase/functions && npm run shell
-```
-
-## Architecture
-
-### iOS App Structure
-
-- `ios/Plain/Plain/PlainApp.swift` - App entry point using SwiftUI App lifecycle
-- `ios/Plain/Plain/ContentView.swift` - Main view
-- `ios/Plain/PlainTests/` - Unit tests
-- Xcode project: `ios/Plain/Plain.xcodeproj`
-- Bundle identifier: `com.splitatomlabs.plain`
-
-### Firebase Backend Structure
-
-- `firebase/functions/src/index.ts` - Cloud Functions entry point
-- TypeScript compiled to `firebase/functions/lib/` (gitignored)
-- Uses Firebase Functions v5.0 and Firebase Admin SDK v12.0
-- TypeScript config enforces strict mode and modern ES2017 target
-
-## Key Notes
-
-- The iOS app uses the bundle identifier `com.splitatomlabs.plain`
-- Firebase Functions require Node.js 18
-- The web directory exists but is currently empty
+### Plain Translation Readability
+When translating or rewriting source texts into "plain" versions for card display, target **Flesch-Kincaid Grade Level 7-8** (Flesch Reading Ease ~65-75). This balances quick readability with enough sophistication to preserve the reflective tone of philosophical content.
