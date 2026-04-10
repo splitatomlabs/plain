@@ -61,7 +61,7 @@ Respond with ONLY this JSON (no other text):
 async function measureCall(
   label: string,
   prompt: string,
-  model: "claude-sonnet-4-6-20250514" | "claude-haiku-4-5-20251001",
+  model: "claude-sonnet-4-20250514",
 ) {
   const start = Date.now();
   const response = await client.messages.create({
@@ -96,24 +96,12 @@ async function main() {
   const refineSonnet = await measureCall(
     "Refine",
     refinePrompt,
-    "claude-sonnet-4-6-20250514",
+    "claude-sonnet-4-20250514",
   );
   const translateSonnet = await measureCall(
     "Translate",
     translatePrompt,
-    "claude-sonnet-4-6-20250514",
-  );
-
-  // Measure with Haiku (cheapest option)
-  const refineHaiku = await measureCall(
-    "Refine",
-    refinePrompt,
-    "claude-haiku-4-5-20251001",
-  );
-  const translateHaiku = await measureCall(
-    "Translate",
-    translatePrompt,
-    "claude-haiku-4-5-20251001",
+    "claude-sonnet-4-20250514",
   );
 
   // Summary
@@ -134,7 +122,6 @@ async function main() {
 
   for (const [name, pricing, refineU, translateU] of [
     ["Sonnet", { input: 3, output: 15 }, refineSonnet, translateSonnet],
-    ["Haiku", { input: 0.8, output: 4 }, refineHaiku, translateHaiku],
   ] as const) {
     const totalInput =
       refineCount * refineU.input_tokens +
@@ -154,7 +141,7 @@ async function main() {
   }
 
   console.log(
-    "\n  Compare: CLI overhead adds ~22k tokens × 191 calls = ~4.2M extra input tokens",
+    "\n  Compare: CLI overhead adds ~22k tokens x 191 calls = ~4.2M extra input tokens",
   );
   console.log(
     "  CLI overhead cost at Sonnet pricing: ~$12.60 (vs pennies for actual prompts)",

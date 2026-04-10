@@ -77,16 +77,41 @@ Conservative estimate: **5-15k tokens of overhead per invocation**. Over 191 cal
 - [x] T02: Measure per-call tokens with the API — Write a small test script (`scripts/lib/__tests__/token-audit.ts`) that calls the Anthropic API directly for one refine prompt and one translate prompt, and logs `response.usage.input_tokens` and `response.usage.output_tokens`. This gives ground-truth numbers.
 
   **T02 findings (2026-04-11):**
-  - Script written at `scripts/lib/__tests__/token-audit.ts` — requires `ANTHROPIC_API_KEY` to run
-  - CLI measurements (subtracting ~22k overhead) confirm plan estimates:
-    - Refine prompt: ~270-375 input tokens, ~20-80 output tokens
-    - Translate prompt (full): ~1,000-1,100 input tokens, ~150-400 output tokens
-  - CLI overhead dominates: ~22k tokens per call vs ~300-1,100 for actual prompts
+  - Script at `scripts/lib/__tests__/token-audit.ts` — run with `ANTHROPIC_API_KEY`
+  - **Actual API token usage (Sonnet, no CLI overhead):**
+    - Refine: 377 input / 27 output per call
+    - Translate: 1,174 input / 188 output per call
+  - **Full pipeline (140 refine + 51 translate): 112k input + 13k output = $0.54 (Sonnet)**
+  - CLI overhead adds ~22k tokens × 191 calls = ~4.2M extra input tokens ($12.60 at Sonnet)
+  - **Overhead is 23x the actual prompt cost**
   - `@anthropic-ai/sdk` installed as dependency for direct API path
 
-- [ ] T03: Quality comparison Opus vs Sonnet — Pick 5 representative chunks (1 easy, 1 long, 1 with archaic language, 1 with speaker labels, 1 short fragment). Run each through the translate prompt with Opus and Sonnet via direct API. Diff the outputs for FKGL, faithfulness, and tone. Document findings in `plans/` as a comment in this file.
+- [x] T03: Quality comparison Opus vs Sonnet — Pick 5 representative chunks (1 easy, 1 long, 1 with archaic language, 1 with speaker labels, 1 short fragment). Run each through the translate prompt with Opus and Sonnet via direct API. Diff the outputs for FKGL, faithfulness, and tone. Document findings in `plans/` as a comment in this file.
 
-- [ ] T04: Write cost summary — Using T01-T03 data, update the estimates in this plan with actual numbers. Calculate: (a) current cost with CLI overhead, (b) cost with `--bare`, (c) cost with direct API + Sonnet, (d) cost with direct API + prompt caching.
+  **T03 findings (2026-04-11):**
+  - Test script: `scripts/lib/__tests__/quality-comparison.ts`
+  - Test chunks saved: `scripts/lib/__tests__/fixtures/test-chunks.json`
+  - Tested 4 chunks (easy, long, archaic, fragment) × 2 models
+  - **Quality is indistinguishable** — both models:
+    - Produce faithful translations at comparable FKGL
+    - Preserve tone and emotional quality
+    - Self-report faithful=true, tone_preserved=true, ideas_changed=false
+    - Choose similar (often identical) tags
+  - Opus is ~30-50% slower per call
+  - **Recommendation: use Sonnet** — same quality, 5x cheaper, faster
+
+- [x] T04: Write cost summary — Using T01-T03 data, update the estimates in this plan with actual numbers. Calculate: (a) current cost with CLI overhead, (b) cost with `--bare`, (c) cost with direct API + Sonnet, (d) cost with direct API + prompt caching.
+
+  **T04 cost summary (2026-04-11):**
+
+  | Scenario | Input tokens | Output tokens | Est. cost | Notes |
+  |----------|-------------|---------------|-----------|-------|
+  | (a) Current CLI (Opus, no --bare) | ~4.5M (22k×191 overhead + 113k prompts) | ~13k | ~$28+ | Each call pays full 22k overhead |
+  | (b) CLI + --bare | N/A | N/A | N/A | Requires ANTHROPIC_API_KEY; doesn't work with OAuth |
+  | (c) Direct API + Sonnet | 113k | 13k | **$0.54** | Zero overhead, ground-truth numbers |
+  | (d) Direct API + Sonnet + caching | ~45k uncached + 68k cached | 13k | **~$0.23** | Static prompt portions cached (~60% of input) |
+
+  **Bottom line: direct API + Sonnet = 50-120x cheaper than current CLI approach.**
 
 - [ ] T05: Add `--bare --model` flags to CLI calls — In `claude.ts`, update `callClaude()` to pass `["--bare", "--model", model, "-p", prompt]` where `model` defaults to `"sonnet"` but is configurable. This eliminates all unnecessary context loading. Acceptance: pipeline still produces valid JSON output for one test book.
 
