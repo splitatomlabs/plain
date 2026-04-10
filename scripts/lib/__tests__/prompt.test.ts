@@ -23,7 +23,7 @@ describe("buildTranslationSystem", () => {
     const system = buildTranslationSystem(enchiridion);
     expect(system).toContain("Flesch-Kincaid Grade Level 7-8");
     expect(system).toContain("calm-your-mind");
-    expect(system).toContain("what-really-matters");
+    expect(system).toContain("what-matters-most");
   });
 
   it("includes author-specific examples", () => {

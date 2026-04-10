@@ -23,7 +23,7 @@ function makeCard(overrides: Partial<Card> = {}): Card {
       "The happiness of your life depends upon the quality of your thoughts: therefore, guard accordingly.",
     source_reference: "Meditations, Book 5, Section 16",
     author_slug: "marcus-aurelius",
-    tags: ["calm-your-mind", "self-discipline"],
+    tags: ["calm-your-mind", "knowing-yourself"],
     reading_time_seconds: 30,
     ...overrides,
   };
@@ -66,7 +66,7 @@ describe("validateCardSchema", () => {
 
   it("errors on more than 3 tags", () => {
     const msgs = validateCardSchema(
-      makeCard({ tags: ["calm-your-mind", "facing-fear", "self-discipline", "human-nature"] as any }),
+      makeCard({ tags: ["calm-your-mind", "facing-hardship", "knowing-yourself", "human-nature"] as any }),
     );
     const errors = msgs.filter((m) => m.field === "tags");
     expect(errors).toHaveLength(1);
@@ -83,7 +83,7 @@ describe("validateCardSchema", () => {
 
 describe("validateCardTags", () => {
   it("passes for valid tags", () => {
-    const msgs = validateCardTags(makeCard({ tags: ["calm-your-mind", "facing-fear"] }));
+    const msgs = validateCardTags(makeCard({ tags: ["calm-your-mind", "facing-hardship"] }));
     expect(msgs).toHaveLength(0);
   });
 
@@ -99,8 +99,8 @@ describe("validateTagCoverage", () => {
     const cards = [makeCard({ tags: ["calm-your-mind"] })];
     const msgs = validateTagCoverage(cards);
     const warns = msgs.filter((m) => m.severity === "warn");
-    // 11 of 12 tags have zero cards
-    expect(warns).toHaveLength(11);
+    // 7 of 8 tags have zero cards
+    expect(warns).toHaveLength(7);
   });
 });
 
