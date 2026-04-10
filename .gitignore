@@ -30,6 +30,9 @@ yarn-error.log*
 *.tmp
 .temp/
 
+# Test output
+test-results/
+
 # iOS/Xcode
 xcuserdata/
 *.xcuserstate
