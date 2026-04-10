@@ -2,11 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
 	webServer: {
-		command: 'npm run preview',
+		command: 'CONTENT_DIR=fixtures npm run build && npm run preview',
 		port: 4173,
 		reuseExistingServer: !process.env.CI
 	},
-	testDir: 'tests',
+	testDir: 'tests/e2e',
 	projects: [
 		{
 			name: 'desktop-chrome',
