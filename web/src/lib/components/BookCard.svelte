@@ -1,7 +1,7 @@
 <script>
 	let { book, resumeUrl = null, percentage = 0, completed = false } = $props();
 
-	const startUrl = `/${book.slug}/${book.chapters[0].slug}/1`;
+	const startUrl = $derived(`/${book.slug}/${book.chapters[0].slug}/1`);
 </script>
 
 <article class="book-card">
