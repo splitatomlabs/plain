@@ -5,15 +5,15 @@ Implement the full Plain web app as specified in ARCHITECTURE.md, BRANDING.md, C
 
 ## Plans
 1. `plans/Pd4e7a-sveltekit-app-01.md` — Scaffolding & Design System
-   - Status: [ ]
+   - Status: [x]
 2. `plans/Pd4e7a-sveltekit-app-02.md` — Content Layer & Static Pages
-   - Status: [ ]
+   - Status: [x]
    - Depends on: 01
 3. `plans/Pd4e7a-sveltekit-app-03.md` — Card Reading Experience
-   - Status: [ ]
+   - Status: [x]
    - Depends on: 02
 4. `plans/Pd4e7a-sveltekit-app-04.md` — Progress, Sharing & Analytics
-   - Status: [ ]
+   - Status: [x]
    - Depends on: 03
 5. `plans/Pd4e7a-sveltekit-app-05.md` — Accessibility, Visual Regression & Deployment
    - Status: [ ]
