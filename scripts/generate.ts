@@ -19,6 +19,7 @@ const { values: args } = parseArgs({
     "parse-only": { type: "boolean", default: false },
     limit: { type: "string" },
     output: { type: "string", default: "content" },
+    parallel: { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
 });
@@ -32,6 +33,7 @@ Options:
   --parse-only       Parse source text only, no Claude CLI calls
   --limit <n>        Max sections per chapter (e.g. --limit 3 for a quick test)
   --output <dir>     Output directory (default: content)
+  --parallel         Process all books concurrently (use with --all)
   --help             Show this help
 
 Pipeline: parse → refine → translate (with meaning check) → assemble`);
@@ -220,8 +222,12 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  for (const config of configs as BookConfig[]) {
-    await processBook(config);
+  if (args.parallel) {
+    await Promise.all((configs as BookConfig[]).map((config) => processBook(config)));
+  } else {
+    for (const config of configs as BookConfig[]) {
+      await processBook(config);
+    }
   }
 
   // Cost report (only meaningful when PLAIN_USE_API=1)
