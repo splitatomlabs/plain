@@ -17,13 +17,17 @@
 		if (!browser) return;
 		hasProgress = progress.hasAnyProgress();
 		if (hasProgress) {
+			// Find most recent incomplete book for the Continue Reading banner
 			lastReadBook = progress.getLastReadBook();
-			// Skip completed books for the Continue Reading banner
 			if (lastReadBook && progress.isCompleted(lastReadBook)) {
 				lastReadBook = null;
 			}
 			if (lastReadBook) {
 				resumeUrl = progress.getResumeUrl(lastReadBook);
+				// Fallback: if resume_url is missing (pre-existing progress), link to book page
+				if (!resumeUrl) {
+					resumeUrl = `/${lastReadBook}`;
+				}
 			}
 			const bp = {};
 			authorProgressData = data.returningAuthorData.map(({ author, books }) => {
