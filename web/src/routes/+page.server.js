@@ -7,10 +7,19 @@ export function load() {
 	const newVisitorOrder = ['marcus-aurelius', 'epictetus', 'seneca'];
 	const orderedAuthors = newVisitorOrder.map((slug) => authors.find((a) => a.slug === slug));
 
+	// Returning reader order: Slave → Emperor → Senator (standard sort_order)
+	const returningOrder = ['epictetus', 'marcus-aurelius', 'seneca'];
+	const returningAuthors = returningOrder.map((slug) => authors.find((a) => a.slug === slug));
+
 	const authorData = orderedAuthors.map((author) => {
 		const books = getBooksForAuthor(author.slug);
 		return { author, books };
 	});
 
-	return { authorData };
+	const returningAuthorData = returningAuthors.map((author) => {
+		const books = getBooksForAuthor(author.slug);
+		return { author, books };
+	});
+
+	return { authorData, returningAuthorData };
 }
