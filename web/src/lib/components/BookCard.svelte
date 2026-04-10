@@ -1,19 +1,10 @@
 <script>
-	import TagPill from './TagPill.svelte';
-
-	let { book, tags = [] } = $props();
+	let { book } = $props();
 </script>
 
 <article class="book-card">
 	<h3 class="book-title">{book.title}</h3>
 	<p class="book-description">{book.description}</p>
-	{#if tags.length > 0}
-		<div class="book-tags">
-			{#each tags.slice(0, 4) as tag}
-				<TagPill slug={tag.slug} label={tag.label} />
-			{/each}
-		</div>
-	{/if}
 	<a href="/{book.slug}" class="cta">Start Reading</a>
 </article>
 
@@ -42,13 +33,6 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
-	}
-
-	.book-tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-xs);
-		margin-bottom: var(--space-md);
 	}
 
 	.cta {

@@ -1,7 +1,7 @@
 <script>
 	import BookCard from './BookCard.svelte';
 
-	let { author, books, tagsByBook = {} } = $props();
+	let { author, books } = $props();
 
 	const accentVar = {
 		epictetus: 'var(--color-accent-epictetus)',
@@ -18,7 +18,7 @@
 	</div>
 	<div class="author-books">
 		{#each books as book}
-			<BookCard {book} tags={tagsByBook[book.slug] || []} />
+			<BookCard {book} />
 		{/each}
 	</div>
 </section>

@@ -9,8 +9,8 @@
 	<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
 </section>
 
-{#each data.authorData as { author, books, tagsByBook }}
-	<AuthorSection {author} {books} {tagsByBook} />
+{#each data.authorData as { author, books }}
+	<AuthorSection {author} {books} />
 {/each}
 
 <style>

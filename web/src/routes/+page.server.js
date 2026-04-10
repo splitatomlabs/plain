@@ -1,5 +1,4 @@
 import { getAuthors, getBooksForAuthor } from '$lib/utils/content.js';
-import { getTagsForBook } from '$lib/utils/tags.js';
 
 export function load() {
 	const authors = getAuthors();
@@ -10,10 +9,7 @@ export function load() {
 
 	const authorData = orderedAuthors.map((author) => {
 		const books = getBooksForAuthor(author.slug);
-		const tagsByBook = Object.fromEntries(
-			books.map((book) => [book.slug, getTagsForBook(book.slug)])
-		);
-		return { author, books, tagsByBook };
+		return { author, books };
 	});
 
 	return { authorData };
