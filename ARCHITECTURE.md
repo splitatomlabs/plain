@@ -1,4 +1,4 @@
-# Philosophy Cards — Architecture & Implementation Guide
+# Plain — Architecture & Implementation Guide
 
 ## Project Overview
 
@@ -106,7 +106,7 @@ export const TAGS = [
 
 ## Content File Structure
 
-One JSON file per chapter/section. This keeps individual file reads small (typically 10–40KB) even though total card count will be 400+.
+One JSON file per chapter/section. This keeps individual file reads small (typically 10–40KB) even though total card count will be 300+.
 
 ```
 src/content/
@@ -121,16 +121,20 @@ src/content/
 │   ├── book-01.json
 │   ├── book-02.json
 │   └── ...                     # 12 chapter files
-├── letters/
+├── shortness-of-life/
 │   ├── _meta.json
-│   ├── letters-01-05.json      # Grouped by letter selection
-│   ├── letters-06-10.json
-│   └── ...
-└── shortness-of-life/
+│   ├── sections-01-07.json
+│   ├── sections-08-14.json
+│   └── sections-15-20.json
+├── happy-life/
+│   ├── _meta.json
+│   ├── sections-01-10.json
+│   ├── sections-11-20.json
+│   └── sections-21-28.json
+└── peace-of-mind/
     ├── _meta.json
-    ├── sections-01-07.json
-    ├── sections-08-14.json
-    └── sections-15-20.json
+    ├── sections-01-09.json
+    └── sections-10-17.json
 ```
 
 ---
@@ -151,7 +155,7 @@ src/content/
 **Pre-render at build time** (small number of stable pages):
 - `/` (home)
 - `/tags` and all 12 `/tags/[tag]` pages
-- All 4 `/[book]` landing pages
+- All 5 `/[book]` landing pages
 
 **ISR for card pages** (hundreds of pages, avoids long builds):
 
@@ -186,7 +190,7 @@ export async function load({ params }) {
 }
 ```
 
-**Why not full static generation:** With 400+ card pages, build times grow linearly. ISR keeps builds fast (only structural pages are pre-rendered) while still serving cached static HTML to end users. Card content is loaded server-side from JSON files — the browser never downloads full chapter files.
+**Why not full static generation:** With 300+ card pages, build times grow linearly. ISR keeps builds fast (only structural pages are pre-rendered) while still serving cached static HTML to end users. Card content is loaded server-side from JSON files — the browser never downloads full chapter files.
 
 ---
 
@@ -197,7 +201,7 @@ No auth. No backend. All state lives in the browser.
 ### localStorage Schema
 
 ```javascript
-// Key: "stoic-cards-progress"
+// Key: "plain-progress"
 {
   "meditations": {
     "cards_read": ["meditations-01-001", "meditations-01-002", "meditations-05-016"],
@@ -216,7 +220,7 @@ No auth. No backend. All state lives in the browser.
   // ... one entry per book
 }
 
-// Key: "stoic-cards-favorites"
+// Key: "plain-favorites"
 ["meditations-05-016", "letters-03-012", "enchiridion-01-008"]
 ```
 
@@ -228,6 +232,7 @@ No auth. No backend. All state lives in the browser.
 // Exposes:
 //   - markCardRead(bookSlug, cardId)
 //   - getProgress(bookSlug) → { cardsRead, totalCards, percentage, lastCard }
+//   - getAuthorProgress(authorSlug) → { cardsRead, totalCards, percentage }
 //   - toggleFavorite(cardId)
 //   - isFavorite(cardId)
 //   - getLastReadBook() → bookSlug or null (for "continue reading" UX)
@@ -321,26 +326,54 @@ The most important screen. Must feel calm, focused, and book-like.
 
 ### Home Page Layout
 
-Organized by the three authors, not as a flat book list:
+Organized by the three authors, not as a flat book list. The layout adapts based on whether the user has reading progress.
+
+**New visitor** (no localStorage progress):
+
+Lead with Marcus Aurelius — highest name recognition, gives new visitors an immediate anchor. Elsewhere in the product (tag pages, completion suggestions, returning reader home page), use the standard Slave → Emperor → Senator order.
 
 ```
 [Hero: "Three men. Three completely different lives. The same philosophy."]
 
-[The Slave — Epictetus]
-  [bio]
-  [The Enchiridion — progress ring — CTA]
-
 [The Emperor — Marcus Aurelius]
   [bio]
-  [Meditations — progress ring — CTA]
+  [Meditations — description — Start Reading]
+
+[The Slave — Epictetus]
+  [bio]
+  [The Enchiridion — description — Start Reading]
 
 [The Senator — Seneca]
   [bio]
-  [Letters to Lucilius — progress ring — CTA]
-  [On the Shortness of Life — progress ring — CTA]
+  [On the Shortness of Life — description — Start Reading]
+  [On the Happy Life — description — Start Reading]
+  [On Peace of Mind — description — Start Reading]
 ```
 
-If a returning user has an in-progress book, overlay a "Continue reading" banner at the top that links directly to their last card.
+**Returning reader** (has progress in at least one book):
+
+```
+[Three author progress rings — side by side]
+  [The Slave — 65%]  [The Emperor — 30%]  [The Senator — 12%]
+
+[Continue Reading — banner linking to last-read card]
+
+[The Slave — Epictetus]
+  [bio]
+  [The Enchiridion — book progress bar — Continue / Start]
+
+[The Emperor — Marcus Aurelius]
+  [bio]
+  [Meditations — book progress bar — Continue / Start]
+
+[The Senator — Seneca]
+  [bio]
+  [On the Shortness of Life — book progress bar — Continue / Start]
+  [On the Happy Life — book progress bar — Continue / Start]
+  [On Peace of Mind — book progress bar — Continue / Start]
+```
+
+The author progress rings are the first thing a returning reader sees — they answer "where am I?" at a glance and invite cross-author exploration. Book-level detail is still available below but isn't the primary visual.
 
 ---
 
@@ -375,8 +408,9 @@ export default {
         '/tags/what-really-matters',
         '/enchiridion',
         '/meditations',
-        '/letters',
-        '/shortness-of-life'
+        '/shortness-of-life',
+        '/happy-life',
+        '/peace-of-mind'
       ]
     }
   }

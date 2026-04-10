@@ -17,4 +17,5 @@ Books are organized around three Stoic figures — a slave, an emperor, and a se
 ## Documentation
 
 - `ARCHITECTURE.md` — Data models, route structure, rendering strategy, and full project architecture
+- `BRANDING.md` — Brand guide covering voice, visual identity, motion, sound, and brand rules
 - `CONTENT_STRATEGY.md` — Book selection, card writing guidelines, tag taxonomy, and content pipeline

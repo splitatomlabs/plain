@@ -8,7 +8,7 @@ Plain is a free web app that presents classic Stoic philosophy books as bite-siz
 
 **Tech stack:** SvelteKit + Vercel (free tier). No database, no auth. All content is static JSON.
 
-See `ARCHITECTURE.md` for data models, routes, and rendering strategy. See `CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
+See `ARCHITECTURE.md` for data models, routes, and rendering strategy. See `BRANDING.md` for voice, visual identity, motion, and sound guidelines. See `CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
 
 ## Content Guidelines
 

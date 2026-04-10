@@ -1,4 +1,4 @@
-# Philosophy Cards — Content Strategy
+# Plain — Content Strategy
 
 ## Core Concept
 
@@ -26,7 +26,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 
 ---
 
-## Launch Books (4 titles)
+## Launch Books (5 titles)
 
 ### The Slave — Epictetus
 
@@ -52,22 +52,29 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 
 ### The Senator — Seneca
 
-**3. Letters to Lucilius (Selected)**
-- Source: Richard M. Gummere translation (1917–1925, public domain). Available via Wikisource and Internet Archive.
-- Structure: Curated selection of 20–30 letters from the full collection of 124.
-- Estimated cards: 120–150
-- Character: Warm, conversational, personal. Seneca writes to a younger friend, sharing wisdom from his own messy, complicated life. He quotes other philosophers freely and isn't afraid to admit his own failures.
-- Best for: Someone who wants philosophy that feels like advice from a wise friend, not a textbook.
-- Key themes: facing fear, death & mortality, doing the right thing, human nature, what really matters, freedom & control, ambition & power
-- Note on letter selection: Prioritize letters that are self-contained, emotionally resonant, and translate well to plain English. Strong candidates include Letter 1 (on saving time), Letter 3 (on friendship), Letter 7 (on crowds), Letter 12 (on old age), Letter 13 (on fear), Letter 16 (on philosophy), Letter 18 (on voluntary hardship), Letter 28 (on travel), Letter 33 (on thinking for yourself), Letter 40 (on speaking style), Letter 47 (on treating slaves as equals), Letter 49 (on the shortness of life), Letter 56 (on noise), Letter 70 (on dying well), Letter 77 (on taking your own exit), Letter 83 (on drunkenness), Letter 90 (on technology), Letter 104 (on running from yourself).
-
-**4. On the Shortness of Life**
+**3. On the Shortness of Life**
 - Source: Public domain translation available via multiple sources. John W. Basore translation (Loeb Classical Library, 1932) is public domain.
 - Structure: Single essay, roughly 20 sections
 - Estimated cards: 40–60
 - Character: Punchy, urgent, almost angry. Seneca is frustrated watching people waste their lives. This is his most quotable, most shareable work.
 - Best for: The "gateway drug." Nearly every passage hits hard in isolation. Ideal for sharing.
 - Key themes: what really matters, self-discipline, death & mortality, calm your mind, ambition & power
+
+**4. On the Happy Life**
+- Source: John W. Basore translation (Loeb Classical Library, 1932, public domain).
+- Structure: Single essay, roughly 28 sections
+- Estimated cards: 40–60
+- Character: Defensive, philosophical, surprisingly personal. Seneca is responding to critics who call him a hypocrite — a man preaching Stoic simplicity while living in luxury. He doesn't dodge the accusation. He argues that pursuing virtue and possessing wealth aren't contradictions, as long as wealth doesn't possess you.
+- Best for: Someone wrestling with the gap between their ideals and their actual life. The most relatable Seneca essay for modern readers.
+- Key themes: what really matters, self-discipline, doing the right thing, human nature, ambition & power
+
+**5. On Peace of Mind (De Tranquillitate Animi)**
+- Source: John W. Basore translation (Loeb Classical Library, 1932, public domain).
+- Structure: Single essay, roughly 17 sections
+- Estimated cards: 40–60
+- Character: Practical, warm, prescriptive. Written as a response to his friend Serenus, who is anxious and restless. Seneca diagnoses the problem and offers concrete advice — how to choose work, handle setbacks, deal with loss, and find calm without withdrawing from life.
+- Best for: Someone who already knows something is wrong but can't name it. The most directly useful of Seneca's essays.
+- Key themes: calm your mind, facing fear, self-discipline, what really matters, freedom & control
 
 ---
 
@@ -134,20 +141,20 @@ Exactly 12 tags. Plain emotional language that an 8th grader would search for. E
 
 ### Tag Coverage Across Books
 
-| Tag | Enchiridion | Meditations | Letters | Shortness of Life |
-|---|---|---|---|---|
-| calm-your-mind | heavy | heavy | medium | light |
-| facing-fear | heavy | medium | heavy | light |
-| dealing-with-anger | medium | heavy | light | — |
-| death-and-mortality | light | heavy | heavy | heavy |
-| doing-the-right-thing | heavy | heavy | heavy | medium |
-| self-discipline | heavy | heavy | medium | heavy |
-| ambition-and-power | light | light | medium | heavy |
-| leading-others | medium | heavy | medium | — |
-| freedom-and-control | heavy | heavy | heavy | medium |
-| human-nature | medium | medium | heavy | heavy |
-| standing-alone | heavy | medium | medium | light |
-| what-really-matters | heavy | heavy | heavy | heavy |
+| Tag | Enchiridion | Meditations | Shortness of Life | Happy Life | Peace of Mind |
+|---|---|---|---|---|---|
+| calm-your-mind | heavy | heavy | light | light | heavy |
+| facing-fear | heavy | medium | light | light | medium |
+| dealing-with-anger | medium | heavy | — | light | medium |
+| death-and-mortality | light | heavy | heavy | medium | medium |
+| doing-the-right-thing | heavy | heavy | medium | heavy | medium |
+| self-discipline | heavy | heavy | heavy | heavy | heavy |
+| ambition-and-power | light | light | heavy | heavy | light |
+| leading-others | medium | heavy | — | — | light |
+| freedom-and-control | heavy | heavy | medium | medium | heavy |
+| human-nature | medium | medium | heavy | heavy | medium |
+| standing-alone | heavy | medium | light | medium | light |
+| what-really-matters | heavy | heavy | heavy | heavy | heavy |
 
 ### Tag UX
 
@@ -167,6 +174,15 @@ Exactly 12 tags. Plain emotional language that an 8th grader would search for. E
 - Visual: a progress ring or bar on each book's landing page.
 - "Continue where you left off" is the default returning-user experience.
 
+### Author Progress
+
+Author-level progress aggregates all books for a given figure into a single number. This is the highest-level view of a reader's journey and the primary progress visual on the home page for returning users.
+
+- **Calculation:** sum of cards read across all books by that author / sum of total cards across all books by that author.
+- **Display:** progress ring per author on the home page, using the author's accent color.
+- **Purpose:** encourages cross-book exploration within an author ("I've finished On the Shortness of Life — what else did Seneca write?") and cross-author exploration ("I've read 80% of the Emperor but only 30% of the Senator").
+- Book-level progress remains visible on individual book landing pages and within author sections on the home page, but author progress is the top-level metric.
+
 ### Milestone Celebrations
 
 At 25%, 50%, 75%, and 100% thresholds, show a brief interstitial message that connects to the book's content and author. Examples:
@@ -177,11 +193,39 @@ At 25%, 50%, 75%, and 100% thresholds, show a brief interstitial message that co
 **Enchiridion — 25%:**
 "A quarter of the way through Epictetus. Remember — he developed this entire philosophy while living as a slave. He'd say you're already freer than most people."
 
-**Letters — 75%:**
-"Three-quarters through Seneca's letters. He wrote these knowing he might be killed by Nero at any moment. He chose to spend that time helping a friend think more clearly."
+**On the Happy Life — 75%:**
+"Three-quarters through Seneca's defense of his own life. He was one of the richest men in Rome, writing about simplicity. His critics called him a hypocrite. His answer might surprise you."
 
 **On the Shortness of Life — 100%:**
 "You've finished Seneca's most urgent essay. He wrote it nearly 2,000 years ago, but the people he describes — busy, distracted, always planning for later — could be anyone on your commute this morning."
+
+### Tag Milestones
+
+Tag milestones reward cross-book exploration. When a reader has read a certain number of cards with a given tag, show a brief message on the tag page. Thresholds: **5 cards**, **15 cards**, and **30 cards**.
+
+Messages should highlight the cross-author perspective — the whole point is seeing how the slave, the emperor, and the senator approached the same idea differently.
+
+Examples:
+
+**calm-your-mind — 5 cards:**
+"Five different ways to quiet your mind — from three men with very different problems. Keep going."
+
+**death-and-mortality — 15 cards:**
+"You've now read 15 passages on death from people who lived nearly 2,000 years ago. Notice how little the fear has changed — and how consistent the advice is."
+
+**self-discipline — 30 cards:**
+"Thirty passages on self-discipline. A slave, an emperor, and a senator all came to the same conclusion: freedom isn't about your circumstances. It's about what you do with your attention."
+
+**what-really-matters — 15 cards:**
+"Fifteen cards. Three authors. Two thousand years ago. And they keep saying the same thing: stop chasing what doesn't matter."
+
+**facing-fear — 5 cards:**
+"Epictetus faced it as a slave. Marcus faced it leading an empire at war. Seneca faced it serving a tyrant. You're starting to see how they each handled it."
+
+Design notes:
+- Tag milestones appear as a subtle banner on the tag page, not as an interstitial. They should feel like a quiet reward for curiosity, not an interruption.
+- The 30-card milestone is shareable — "I've read 30 passages on [Death & Mortality] across all five books."
+- Thresholds are fixed numbers, not percentages. These can be revisited as the content library grows.
 
 ### Completion
 
@@ -244,9 +288,10 @@ Three mechanisms. All should feel like giving something valuable to the recipien
 |---|---|---|
 | The Enchiridion | 60–80 | Epictetus |
 | Meditations | 150–200 | Marcus Aurelius |
-| Letters (selected) | 120–150 | Seneca |
 | On the Shortness of Life | 40–60 | Seneca |
-| **Total** | **370–490** | |
+| On the Happy Life | 40–60 | Seneca |
+| On Peace of Mind | 40–60 | Seneca |
+| **Total** | **330–460** | |
 
 ---
 
@@ -256,8 +301,8 @@ These are explicitly out of scope for launch, noted here for planning:
 
 **Wave 2 — Deeper Stoic Canon:**
 - Discourses of Epictetus (full text, 4 books — much longer and denser than the Enchiridion)
-- Remaining Seneca Letters (complete the full 124)
-- Seneca's On Anger, On Clemency, On the Happy Life
+- Letters to Lucilius — Seneca (full 124 letters, read front to back as a complete correspondence)
+- Seneca's On Anger, On Clemency
 
 **Wave 3 — Stoic-Adjacent Philosophy:**
 - Walden — Henry David Thoreau (bridges to Stoic themes naturally)
