@@ -1,5 +1,8 @@
 <script>
 	import TagPill from '$lib/components/TagPill.svelte';
+	import GiftBanner from '$lib/components/GiftBanner.svelte';
+	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 
 	let { data } = $props();
 
@@ -8,6 +11,42 @@
 		'marcus-aurelius': 'var(--color-accent-marcus)',
 		seneca: 'var(--color-accent-seneca)'
 	};
+
+	const isGift = $derived($page.url.searchParams.get('gift') === 'true');
+	const giftNote = $derived($page.url.searchParams.get('note') || '');
+	const firstCardUrl = `/${data.book.slug}/${data.book.chapters[0].slug}/1`;
+
+	let showGiftCompose = $state(false);
+	let giftNoteInput = $state('');
+
+	function generateGiftUrl() {
+		if (!browser) return '';
+		const encoded = btoa(giftNoteInput);
+		return `${window.location.origin}/${data.book.slug}?gift=true&note=${encoded}`;
+	}
+
+	async function shareGiftUrl() {
+		const url = generateGiftUrl();
+		if (navigator.share) {
+			try {
+				await navigator.share({
+					title: `${data.book.title} — In Plain English`,
+					text: giftNoteInput || `Check out ${data.book.title} in plain English`,
+					url
+				});
+			} catch {
+				// cancelled
+			}
+		} else {
+			try {
+				await navigator.clipboard.writeText(url);
+			} catch {
+				// unavailable
+			}
+		}
+		showGiftCompose = false;
+		giftNoteInput = '';
+	}
 </script>
 
 <svelte:head>
@@ -16,6 +55,16 @@
 </svelte:head>
 
 <article class="book-landing">
+	{#if isGift && giftNote}
+		<GiftBanner
+			note={giftNote}
+			bookTitle={data.book.title}
+			authorName={data.author.name}
+			bookSlug={data.book.slug}
+			{firstCardUrl}
+		/>
+	{/if}
+
 	<header class="book-header">
 		<p class="author-title" style="color: {accentVar[data.author.slug]}">{data.author.title}</p>
 		<p class="author-name">{data.author.name}</p>
@@ -52,8 +101,27 @@
 	{/if}
 
 	<div class="cta-row">
-		<a href="/{data.book.slug}/{data.book.chapters[0].slug}/1" class="cta">Start Reading</a>
+		<a href={firstCardUrl} class="cta">Start Reading</a>
+		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
+			Send this book to a friend
+		</button>
 	</div>
+
+	{#if showGiftCompose}
+		<div class="gift-compose">
+			<label for="gift-note" class="gift-label">Add a personal note (optional)</label>
+			<textarea
+				id="gift-note"
+				class="gift-textarea"
+				bind:value={giftNoteInput}
+				maxlength="280"
+				placeholder="I thought you'd enjoy this..."
+				rows="3"
+			></textarea>
+			<p class="gift-char-count">{giftNoteInput.length} / 280</p>
+			<button class="gift-send" onclick={shareGiftUrl}>Share gift link</button>
+		</div>
+	{/if}
 
 	{#if data.tags.length > 0}
 		<div class="book-tags">
@@ -217,5 +285,85 @@
 	.cta:hover {
 		border-color: var(--color-text-secondary);
 		background: var(--color-tag-bg);
+	}
+
+	.gift-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: var(--space-sm) var(--space-lg);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		background: none;
+		border: none;
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.gift-button:hover {
+		color: var(--color-text-primary);
+	}
+
+	.gift-compose {
+		max-width: 400px;
+		margin: var(--space-md) auto 0;
+		text-align: left;
+	}
+
+	.gift-label {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		display: block;
+		margin-bottom: var(--space-sm);
+	}
+
+	.gift-textarea {
+		width: 100%;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		color: var(--color-text-primary);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		padding: var(--space-sm);
+		resize: vertical;
+	}
+
+	.gift-textarea:focus {
+		outline: 2px solid var(--color-text-secondary);
+		outline-offset: 2px;
+	}
+
+	.gift-char-count {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-tertiary);
+		text-align: right;
+		margin: var(--space-xs) 0 var(--space-sm);
+	}
+
+	.gift-send {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: var(--space-sm) var(--space-lg);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		color: var(--color-surface);
+		background: var(--color-text-primary);
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: opacity var(--transition-fast);
+	}
+
+	.gift-send:hover {
+		opacity: 0.85;
 	}
 </style>
