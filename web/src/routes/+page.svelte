@@ -1,7 +1,69 @@
 <script>
 	import AuthorSection from '$lib/components/AuthorSection.svelte';
+	import ProgressRing from '$lib/components/ProgressRing.svelte';
+	import { progress } from '$lib/stores/progress.js';
+	import { browser } from '$app/environment';
 
 	let { data } = $props();
+
+	let hasProgress = $state(false);
+	let lastReadBook = $state(null);
+	let resumeUrl = $state(null);
+	let authorProgressData = $state([]);
+	let bookProgress = $state({});
+	let suggestedBook = $state(null);
+
+	$effect(() => {
+		if (!browser) return;
+		hasProgress = progress.hasAnyProgress();
+		if (hasProgress) {
+			// Find most recent incomplete book for the Continue Reading banner
+			lastReadBook = progress.getLastReadBook();
+			if (lastReadBook && progress.isCompleted(lastReadBook)) {
+				lastReadBook = null;
+			}
+			if (lastReadBook) {
+				resumeUrl = progress.getResumeUrl(lastReadBook);
+				// Fallback: if resume_url is missing (pre-existing progress), link to book page
+				if (!resumeUrl) {
+					resumeUrl = `/${lastReadBook}`;
+				}
+			}
+			const bp = {};
+			authorProgressData = data.returningAuthorData.map(({ author, books }) => {
+				const ap = progress.getAuthorProgress(author.slug, books);
+				for (const book of books) {
+					const p = progress.getProgress(book.slug, book.total_cards);
+					if (p.cardsRead > 0) {
+						const isBookCompleted = progress.isCompleted(book.slug);
+						bp[book.slug] = {
+							resumeUrl: isBookCompleted ? null : progress.getResumeUrl(book.slug),
+							percentage: isBookCompleted ? 100 : p.percentage,
+							completed: isBookCompleted
+						};
+					}
+				}
+				return { author, books, ...ap };
+			});
+			bookProgress = bp;
+
+			// If no book to continue, suggest an unstarted one
+			if (!lastReadBook) {
+				const allBooks = data.returningAuthorData.flatMap(({ books }) => books);
+				suggestedBook = allBooks.find((b) => !bp[b.slug]) || null;
+			}
+		}
+	});
+
+	function getBookMeta(slug) {
+		for (const { books } of data.returningAuthorData) {
+			const book = books.find((b) => b.slug === slug);
+			if (book) return book;
+		}
+		return null;
+	}
+
+	const lastBookMeta = $derived(lastReadBook ? getBookMeta(lastReadBook) : null);
 </script>
 
 <svelte:head>
@@ -9,14 +71,48 @@
 	<meta name="description" content="Read the complete works of Epictetus, Marcus Aurelius, and Seneca — translated into clear, modern English." />
 </svelte:head>
 
-<section class="hero">
-	<h1>Three men. Three completely different lives. The same philosophy.</h1>
-	<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
-</section>
+{#if hasProgress}
+	<section class="returning-hero">
+		<div class="author-rings">
+			{#each authorProgressData as { author, percentage, cardsRead, totalCards }}
+				<div class="ring-group">
+					<ProgressRing
+						{percentage}
+						size="medium"
+						authorSlug={author.slug}
+						label="{author.name}: {cardsRead} of {totalCards} cards read, {percentage}%"
+					/>
+					<span class="ring-label" style="color: var(--color-accent-{author.slug === 'marcus-aurelius' ? 'marcus' : author.slug})">{author.title}</span>
+				</div>
+			{/each}
+		</div>
 
-{#each data.authorData as { author, books }}
-	<AuthorSection {author} {books} />
-{/each}
+		{#if lastBookMeta && resumeUrl}
+			<a href={resumeUrl} class="continue-banner">
+				<span class="continue-label">Continue Reading</span>
+				<span class="continue-book">{lastBookMeta.title}</span>
+			</a>
+		{:else if suggestedBook}
+			<a href="/{suggestedBook.slug}" class="continue-banner">
+				<span class="continue-label">Read next</span>
+				<span class="continue-book">{suggestedBook.title}</span>
+			</a>
+		{/if}
+	</section>
+
+	{#each data.returningAuthorData as { author, books }}
+		<AuthorSection {author} {books} {bookProgress} />
+	{/each}
+{:else}
+	<section class="hero">
+		<h1>Three men. Three completely different lives. The same philosophy.</h1>
+		<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
+	</section>
+
+	{#each data.authorData as { author, books }}
+		<AuthorSection {author} {books} />
+	{/each}
+{/if}
 
 <style>
 	.hero {
@@ -46,5 +142,67 @@
 		color: var(--color-text-secondary);
 		max-width: 40ch;
 		margin: 0;
+	}
+
+	.returning-hero {
+		text-align: center;
+		padding: var(--space-xl) var(--space-md);
+		margin-bottom: var(--space-2xl);
+	}
+
+	.author-rings {
+		display: flex;
+		justify-content: center;
+		gap: var(--space-xl);
+		margin-bottom: var(--space-xl);
+		flex-wrap: wrap;
+	}
+
+	.ring-group {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.ring-label {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.continue-banner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-xs);
+		padding: var(--space-md) var(--space-lg);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		text-decoration: none;
+		max-width: 400px;
+		margin: 0 auto;
+		min-height: 44px;
+		transition: border-color var(--transition-fast);
+	}
+
+	.continue-banner:hover {
+		border-color: var(--color-text-secondary);
+	}
+
+	.continue-label {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		color: var(--color-text-primary);
+	}
+
+	.continue-book {
+		font-family: var(--font-body);
+		font-size: 1.125rem;
+		color: var(--color-text-secondary);
 	}
 </style>

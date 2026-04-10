@@ -225,10 +225,6 @@ No auth. No backend. All state lives in the browser.
   // ... one entry per book
 }
 
-// Key: "plain-favorites"
-["meditations-05-016", "letters-03-012", "enchiridion-01-008"]
-```
-
 ### Progress Store (Svelte)
 
 ```javascript
@@ -238,8 +234,6 @@ No auth. No backend. All state lives in the browser.
 //   - markCardRead(bookSlug, cardId)
 //   - getProgress(bookSlug) → { cardsRead, totalCards, percentage, lastCard }
 //   - getAuthorProgress(authorSlug) → { cardsRead, totalCards, percentage }
-//   - toggleFavorite(cardId)
-//   - isFavorite(cardId)
 //   - getLastReadBook() → bookSlug or null (for "continue reading" UX)
 //   - isCompleted(bookSlug)
 //   - markCompleted(bookSlug)
@@ -313,7 +307,7 @@ The most important screen. Must feel calm, focused, and book-like.
 - **Navigation:** Swipe left/right or tap screen edges for next/previous. Keyboard arrow keys on desktop. Clear "next" affordance on the right side.
 - **Tags:** Small pills below the card text. Tappable — navigates to `/tags/[tag]`.
 - **Progress:** Thin progress bar at top of screen or subtle "47 / 120" indicator. Not dominant.
-- **Actions:** Share button, favorite (heart) button. Minimal chrome.
+- **Actions:** Share button. Minimal chrome.
 - **Author context:** Small author name + title ("Marcus Aurelius — The Emperor") at top of card. Reinforces the three-voices framing without being heavy.
 
 ### Typography
@@ -510,7 +504,7 @@ Philosophy made accessible means accessible to everyone — including users who 
 - Card transitions announce the new card content. Use `aria-live="polite"` on the card container or manage focus to the new card heading so screen readers read the updated text.
 - Progress indicators include `aria-label` or `aria-valuenow`/`aria-valuemax` attributes (e.g., `ProgressRing` announces "Meditations: 47 of 120 cards read, 39%").
 - The "Show original" toggle communicates its expanded/collapsed state via `aria-expanded`.
-- Share and favorite buttons use `aria-label` to convey purpose (e.g., "Share this card", "Add to favorites") since they may display as icon-only.
+- The share button uses `aria-label` to convey purpose (e.g., "Share this card") since it displays as icon-only.
 - `MilestoneModal` uses `role="dialog"` with `aria-labelledby` pointing to its heading.
 
 ### Color & Contrast

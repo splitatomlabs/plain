@@ -2,7 +2,7 @@
 	import { goto, afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	let { prevCard, nextCard, children } = $props();
+	let { prevCard, nextCard, children, onNavigateNext } = $props();
 
 	const SWIPE_THRESHOLD = 50;
 	let startX = 0;
@@ -18,7 +18,10 @@
 	}
 
 	function navigateNext() {
-		if (nextCard) goto(cardUrl(nextCard));
+		if (nextCard) {
+			const defer = onNavigateNext?.();
+			if (!defer) goto(cardUrl(nextCard));
+		}
 	}
 
 	function handleSwipeStart(x, y) {
@@ -97,6 +100,7 @@
 				class="nav-btn"
 				aria-label="Previous card"
 				data-sveltekit-preload-data="hover"
+				onclick={(e) => { e.preventDefault(); navigatePrev(); }}
 			>
 				<span class="nav-chevron" aria-hidden="true">&#8249;</span>
 				Previous
@@ -111,6 +115,7 @@
 				class="nav-btn"
 				aria-label="Next card"
 				data-sveltekit-preload-data="hover"
+				onclick={(e) => { e.preventDefault(); navigateNext(); }}
 			>
 				Next
 				<span class="nav-chevron" aria-hidden="true">&#8250;</span>

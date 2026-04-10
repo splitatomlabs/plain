@@ -1,5 +1,6 @@
 <script>
 	import TagPill from './TagPill.svelte';
+	import ShareButton from './ShareButton.svelte';
 	import { getTagBySlug } from '$lib/utils/tags.js';
 
 	let { card, book, totalCardsInBook, cardIndex } = $props();
@@ -55,7 +56,14 @@
 		</div>
 		{/if}
 
-		<p class="card-position">{cardIndex} / {totalCardsInBook}</p>
+		<div class="card-actions">
+			<ShareButton
+				title="{card.source_reference} — In Plain English"
+				text={card.plain_english.slice(0, 100)}
+				url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
+			/>
+			<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
+		</div>
 	</footer>
 </article>
 
@@ -172,11 +180,16 @@
 		margin-bottom: var(--space-sm);
 	}
 
+	.card-actions {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
 	.card-position {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		margin: 0;
 		text-align: right;
 	}
 </style>

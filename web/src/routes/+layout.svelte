@@ -3,12 +3,17 @@
 	import '@fontsource-variable/dm-sans';
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { dev } from '$app/environment';
+	import { inject } from '@vercel/analytics';
 
 	let { children } = $props();
 	let theme = $state(null);
 
 	onMount(() => {
 		theme = document.documentElement.getAttribute('data-theme') || 'light';
+		if (!dev && navigator.doNotTrack !== '1') {
+			inject();
+		}
 	});
 
 	function toggleTheme() {

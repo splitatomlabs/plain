@@ -1,5 +1,9 @@
 <script>
 	import TagPill from '$lib/components/TagPill.svelte';
+	import GiftBanner from '$lib/components/GiftBanner.svelte';
+	import { progress } from '$lib/stores/progress.js';
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
@@ -8,6 +12,63 @@
 		'marcus-aurelius': 'var(--color-accent-marcus)',
 		seneca: 'var(--color-accent-seneca)'
 	};
+
+	let isGift = $state(false);
+	let giftNote = $state('');
+	let bookResumeUrl = $state(null);
+	let bookPercentage = $state(0);
+	let bookCompleted = $state(false);
+
+	onMount(() => {
+		const params = new URLSearchParams(window.location.search);
+		isGift = params.get('gift') === 'true';
+		giftNote = params.get('note') || '';
+
+		const p = progress.getProgress(data.book.slug, data.book.total_cards);
+		if (p.cardsRead > 0) {
+			bookCompleted = progress.isCompleted(data.book.slug);
+			bookPercentage = bookCompleted ? 100 : p.percentage;
+			if (!bookCompleted) {
+				bookResumeUrl = progress.getResumeUrl(data.book.slug);
+			}
+		}
+	});
+	const firstCardUrl = `/${data.book.slug}/${data.book.chapters[0].slug}/1`;
+
+	let showGiftCompose = $state(false);
+	let giftNoteInput = $state('');
+
+	function generateGiftUrl() {
+		if (!browser) return '';
+		const encoded = btoa(giftNoteInput)
+			.replace(/\+/g, '-')
+			.replace(/\//g, '_')
+			.replace(/=/g, '');
+		return `${window.location.origin}/${data.book.slug}?gift=true&note=${encoded}`;
+	}
+
+	async function shareGiftUrl() {
+		const url = generateGiftUrl();
+		if (navigator.share) {
+			try {
+				await navigator.share({
+					title: `${data.book.title} — In Plain English`,
+					text: giftNoteInput || `Check out ${data.book.title} in plain English`,
+					url
+				});
+			} catch {
+				// cancelled
+			}
+		} else {
+			try {
+				await navigator.clipboard.writeText(url);
+			} catch {
+				// unavailable
+			}
+		}
+		showGiftCompose = false;
+		giftNoteInput = '';
+	}
 </script>
 
 <svelte:head>
@@ -16,6 +77,16 @@
 </svelte:head>
 
 <article class="book-landing">
+	{#if isGift && giftNote}
+		<GiftBanner
+			note={giftNote}
+			bookTitle={data.book.title}
+			authorName={data.author.name}
+			bookSlug={data.book.slug}
+			{firstCardUrl}
+		/>
+	{/if}
+
 	<header class="book-header">
 		<p class="author-title" style="color: {accentVar[data.author.slug]}">{data.author.title}</p>
 		<p class="author-name">{data.author.name}</p>
@@ -51,9 +122,48 @@
 		</section>
 	{/if}
 
-	<div class="cta-row">
-		<a href="/{data.book.slug}/{data.book.chapters[0].slug}/1" class="cta">Start Reading</a>
+	{#if bookPercentage > 0}
+		<div class="book-landing-progress">
+			<div class="landing-progress-track">
+				<div class="landing-progress-fill" style="width: {bookPercentage}%"></div>
+			</div>
+			<span class="landing-progress-label">{bookPercentage}%</span>
+		</div>
+	{/if}
+	{#if bookResumeUrl}
+		<div class="cta-row">
+			<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
+		</div>
+		<div class="cta-row cta-secondary-row">
+			<a href={firstCardUrl} class="cta-secondary">Start from the beginning</a>
+		</div>
+	{:else}
+		<div class="cta-row">
+			<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
+		</div>
+	{/if}
+
+	<div class="gift-row">
+		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
+			Send this book to a friend
+		</button>
 	</div>
+
+	{#if showGiftCompose}
+		<div class="gift-compose">
+			<label for="gift-note" class="gift-label">Add a personal note (optional)</label>
+			<textarea
+				id="gift-note"
+				class="gift-textarea"
+				bind:value={giftNoteInput}
+				maxlength="280"
+				placeholder="I thought you'd enjoy this..."
+				rows="3"
+			></textarea>
+			<p class="gift-char-count">{giftNoteInput.length} / 280</p>
+			<button class="gift-send" onclick={shareGiftUrl}>Share gift link</button>
+		</div>
+	{/if}
 
 	{#if data.tags.length > 0}
 		<div class="book-tags">
@@ -193,8 +303,70 @@
 		color: var(--color-text-secondary);
 	}
 
+	.book-landing-progress {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		max-width: 300px;
+		margin: 0 auto var(--space-md);
+	}
+
+	.landing-progress-track {
+		flex: 1;
+		height: 4px;
+		background: var(--color-border);
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	.landing-progress-fill {
+		height: 100%;
+		background: var(--color-text-secondary);
+		border-radius: 2px;
+	}
+
+	.landing-progress-label {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		white-space: nowrap;
+	}
+
 	.cta-row {
 		text-align: center;
+	}
+
+	.cta-secondary-row {
+		margin-top: var(--space-sm);
+	}
+
+	.cta-primary {
+		color: var(--color-surface);
+		background: var(--color-text-primary);
+		border-color: var(--color-text-primary);
+	}
+
+	.cta-primary:hover {
+		opacity: 0.85;
+		background: var(--color-text-primary);
+		border-color: var(--color-text-primary);
+	}
+
+	.cta-secondary {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.cta-secondary:hover {
+		color: var(--color-text-primary);
+	}
+
+	.gift-row {
+		text-align: center;
+		margin-top: var(--space-sm);
 	}
 
 	.cta {
@@ -217,5 +389,85 @@
 	.cta:hover {
 		border-color: var(--color-text-secondary);
 		background: var(--color-tag-bg);
+	}
+
+	.gift-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: var(--space-sm) var(--space-lg);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		background: none;
+		border: none;
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.gift-button:hover {
+		color: var(--color-text-primary);
+	}
+
+	.gift-compose {
+		max-width: 400px;
+		margin: var(--space-md) auto 0;
+		text-align: left;
+	}
+
+	.gift-label {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		display: block;
+		margin-bottom: var(--space-sm);
+	}
+
+	.gift-textarea {
+		width: 100%;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		color: var(--color-text-primary);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		padding: var(--space-sm);
+		resize: vertical;
+	}
+
+	.gift-textarea:focus {
+		outline: 2px solid var(--color-text-secondary);
+		outline-offset: 2px;
+	}
+
+	.gift-char-count {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-tertiary);
+		text-align: right;
+		margin: var(--space-xs) 0 var(--space-sm);
+	}
+
+	.gift-send {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: var(--space-sm) var(--space-lg);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		color: var(--color-surface);
+		background: var(--color-text-primary);
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: opacity var(--transition-fast);
+	}
+
+	.gift-send:hover {
+		opacity: 0.85;
 	}
 </style>
