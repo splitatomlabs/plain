@@ -90,7 +90,7 @@
 	.card-text {
 		font-family: var(--font-body);
 		font-size: var(--text-body);
-		line-height: var(--line-height-body);
+		line-height: 1.75;
 		color: var(--color-text-primary);
 		margin-bottom: var(--space-lg);
 	}
