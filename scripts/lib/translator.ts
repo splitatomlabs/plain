@@ -165,6 +165,8 @@ export async function translateChunksBatch(
     }
   }
 
+  if (requests.length === 0) return new Map();
+
   process.stderr.write(
     `[batch] Submitting ${requests.length} translation requests...\n`,
   );
