@@ -1,45 +1,27 @@
-import authors from '$content/authors.json';
-import meditationsMeta from '$content/meditations/_meta.json';
-import enchiridionMeta from '$content/enchiridion/_meta.json';
-import shortnessMeta from '$content/shortness-of-life/_meta.json';
-import happyMeta from '$content/happy-life/_meta.json';
-import peaceMeta from '$content/peace-of-mind/_meta.json';
-
-import meditationsBook01 from '$content/meditations/book-01.json';
-import meditationsBook02 from '$content/meditations/book-02.json';
-import enchiridionSections0110 from '$content/enchiridion/sections-01-10.json';
-import enchiridionSections1120 from '$content/enchiridion/sections-11-20.json';
-import shortnessSections0107 from '$content/shortness-of-life/sections-01-07.json';
-import shortnessSections0814 from '$content/shortness-of-life/sections-08-14.json';
-import happySections0110 from '$content/happy-life/sections-01-10.json';
-import happySections1120 from '$content/happy-life/sections-11-20.json';
-import peaceSections0109 from '$content/peace-of-mind/sections-01-09.json';
-import peaceSections1017 from '$content/peace-of-mind/sections-10-17.json';
-
 import { error } from '@sveltejs/kit';
 
-const META_BY_SLUG = {
-	meditations: meditationsMeta,
-	enchiridion: enchiridionMeta,
-	'shortness-of-life': shortnessMeta,
-	'happy-life': happyMeta,
-	'peace-of-mind': peaceMeta
-};
+const authorModules = import.meta.glob('$content/authors.json', { eager: true, import: 'default' });
+const metaModules = import.meta.glob('$content/*/_meta.json', { eager: true, import: 'default' });
+const allJsonModules = import.meta.glob('$content/**/*.json', { eager: true, import: 'default' });
 
-const CHAPTER_DATA = {
-	'meditations/book-01': meditationsBook01,
-	'meditations/book-02': meditationsBook02,
-	'enchiridion/sections-01-10': enchiridionSections0110,
-	'enchiridion/sections-11-20': enchiridionSections1120,
-	'shortness-of-life/sections-01-07': shortnessSections0107,
-	'shortness-of-life/sections-08-14': shortnessSections0814,
-	'happy-life/sections-01-10': happySections0110,
-	'happy-life/sections-11-20': happySections1120,
-	'peace-of-mind/sections-01-09': peaceSections0109,
-	'peace-of-mind/sections-10-17': peaceSections1017
-};
-
+const authors = Object.values(authorModules)[0];
 const authorsBySlug = Object.fromEntries(authors.map((a) => [a.slug, a]));
+
+const META_BY_SLUG = {};
+for (const meta of Object.values(metaModules)) {
+	META_BY_SLUG[meta.slug] = meta;
+}
+
+const CHAPTER_DATA = {};
+for (const [path, data] of Object.entries(allJsonModules)) {
+	// Skip meta files and authors
+	if (path.endsWith('_meta.json') || path.endsWith('authors.json')) continue;
+	// Extract book slug and chapter slug from path like ".../meditations/book-01.json"
+	const parts = path.split('/');
+	const bookSlug = parts[parts.length - 2];
+	const chapterSlug = parts[parts.length - 1].replace('.json', '');
+	CHAPTER_DATA[`${bookSlug}/${chapterSlug}`] = data;
+}
 
 export function getAuthors() {
 	return [...authors].sort((a, b) => a.sort_order - b.sort_order);
