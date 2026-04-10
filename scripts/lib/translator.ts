@@ -135,6 +135,14 @@ export interface BatchTranslateInput {
 export async function translateChunksBatch(
   inputs: BatchTranslateInput[],
 ): Promise<Map<string, TranslatedChunk[]>> {
+  // Guard against duplicate inputs (would cause custom_id collisions)
+  const seen = new Set<string>();
+  for (const { bookSlug, chapterSlug } of inputs) {
+    const key = `${bookSlug}:${chapterSlug}`;
+    if (seen.has(key)) throw new Error(`Duplicate batch input for ${key}`);
+    seen.add(key);
+  }
+
   // 1. Build batch requests
   const requests: BatchRequest[] = [];
   // Track metadata by custom_id for result correlation
@@ -195,6 +203,7 @@ export async function translateChunksBatch(
     const message = item.result.message;
     const textBlock = message.content.find((b) => b.type === "text");
     if (!textBlock || textBlock.type !== "text") {
+      batchStats.failed++;
       failedIds.push(item.custom_id);
       process.stderr.write(
         `[batch] WARNING: no text content in result for ${item.custom_id}\n`,
@@ -214,6 +223,7 @@ export async function translateChunksBatch(
     try {
       result = JSON.parse(extractJSON(textBlock.text)) as TranslationResponse;
     } catch {
+      batchStats.failed++;
       failedIds.push(item.custom_id);
       process.stderr.write(
         `[batch] WARNING: failed to parse JSON for ${item.custom_id}\n`,

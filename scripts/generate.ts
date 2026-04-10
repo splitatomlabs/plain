@@ -260,12 +260,15 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
   for (const { config, refined: r } of refined) {
     const translatedOutput: TranslatedOutput = {
       bookSlug: config.slug,
-      chapters: r.chapters.map((ch) => ({
-        slug: ch.slug,
-        title: ch.title,
-        bookNumber: ch.bookNumber,
-        translated: translatedMap.get(`${config.slug}:${ch.slug}`) ?? [],
-      })),
+      chapters: r.chapters.map((ch) => {
+        const translated = translatedMap.get(`${config.slug}:${ch.slug}`);
+        if (!translated || translated.length === 0) {
+          throw new Error(
+            `No translated chunks for ${config.slug}:${ch.slug} — aborting to prevent data loss`,
+          );
+        }
+        return { slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, translated };
+      }),
     };
 
     // Print meaning check summary
