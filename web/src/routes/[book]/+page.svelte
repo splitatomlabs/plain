@@ -24,7 +24,7 @@
 		giftNote = params.get('note') || '';
 
 		const p = progress.getProgress(data.book.slug, data.book.total_cards);
-		if (p.cardsRead > 0) {
+		if (p.cardsRead > 0 && !progress.isCompleted(data.book.slug)) {
 			bookPercentage = p.percentage;
 			bookResumeUrl = progress.getResumeUrl(data.book.slug);
 		}

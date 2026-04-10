@@ -17,6 +17,10 @@
 		hasProgress = progress.hasAnyProgress();
 		if (hasProgress) {
 			lastReadBook = progress.getLastReadBook();
+			// Skip completed books for the Continue Reading banner
+			if (lastReadBook && progress.isCompleted(lastReadBook)) {
+				lastReadBook = null;
+			}
 			if (lastReadBook) {
 				resumeUrl = progress.getResumeUrl(lastReadBook);
 			}
@@ -25,7 +29,7 @@
 				const ap = progress.getAuthorProgress(author.slug, books);
 				for (const book of books) {
 					const p = progress.getProgress(book.slug, book.total_cards);
-					if (p.cardsRead > 0) {
+					if (p.cardsRead > 0 && !progress.isCompleted(book.slug)) {
 						bp[book.slug] = {
 							resumeUrl: progress.getResumeUrl(book.slug),
 							percentage: p.percentage
