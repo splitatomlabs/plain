@@ -33,7 +33,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 **1. The Enchiridion (The Manual)**
 - Source: Project Gutenberg #45109
 - Translation: Thomas Wentworth Higginson (public domain)
-- Structure: 53 short sections
+- Structure: 53 short sections (no chapter divisions — continuous numbered sections)
 - Estimated cards: 60–80
 - Character: Direct, instructional, no-nonsense. "Here's what you control. Here's what you don't. Act accordingly."
 - Best for: Someone new to Stoicism who wants the essentials fast.
@@ -44,7 +44,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 **2. Meditations**
 - Source: Project Gutenberg #2680
 - Translation: George Long (public domain)
-- Structure: 12 "books" (chapters), each containing numbered reflections
+- Structure: 12 "books" (chapters), each containing numbered reflections — the only launch book with real author-defined chapters
 - Estimated cards: 150–200
 - Character: Private, reflective, sometimes struggling. He's writing to himself, reminding himself to be better. You're reading someone's journal.
 - Best for: The flagship text. Highest name recognition. Most people start here.
@@ -55,7 +55,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 **3. On the Shortness of Life**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
 - Translation: Aubrey Stewart (public domain)
-- Structure: Single essay, roughly 20 sections
+- Structure: Single essay, roughly 20 sections (no chapter divisions)
 - Estimated cards: 40–60
 - Character: Punchy, urgent, almost angry. Seneca is frustrated watching people waste their lives. This is his most quotable, most shareable work.
 - Best for: The "gateway drug." Nearly every passage hits hard in isolation. Ideal for sharing.
@@ -64,7 +64,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 **4. On the Happy Life**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
 - Translation: Aubrey Stewart (public domain)
-- Structure: Single essay, roughly 28 sections
+- Structure: Single essay, roughly 28 sections (no chapter divisions)
 - Estimated cards: 40–60
 - Character: Defensive, philosophical, surprisingly personal. Seneca is responding to critics who call him a hypocrite — a man preaching Stoic simplicity while living in luxury. He doesn't dodge the accusation. He argues that pursuing virtue and possessing wealth aren't contradictions, as long as wealth doesn't possess you.
 - Best for: Someone wrestling with the gap between their ideals and their actual life. The most relatable Seneca essay for modern readers.
@@ -73,7 +73,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 **5. On Peace of Mind (De Tranquillitate Animi)**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
 - Translation: Aubrey Stewart (public domain)
-- Structure: Single essay, roughly 17 sections
+- Structure: Single essay, roughly 17 sections (no chapter divisions)
 - Estimated cards: 40–60
 - Character: Practical, warm, prescriptive. Written as a response to his friend Serenus, who is anxious and restless. Seneca diagnoses the problem and offers concrete advice — how to choose work, handle setbacks, deal with loss, and find calm without withdrawing from life.
 - Best for: Someone who already knows something is wrong but can't name it. The most directly useful of Seneca's essays.
