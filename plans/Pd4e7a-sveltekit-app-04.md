@@ -59,7 +59,7 @@ All paths relative to `web/`.
 - [x] T13: E2E progress tracking tests — `tests/e2e/progress.spec.js`: start reading a book, navigate through 3 cards, go to home page → verify "Continue Reading" banner appears with correct card position, reload page → verify progress persists from localStorage, navigate to book landing → verify progress bar shows. Test milestone modal appears at correct threshold (may need to seed localStorage to test 25% threshold efficiently).
 - [x] T14: E2E home page tests (returning reader) — Update `tests/e2e/home-page.spec.js`: seed localStorage with progress → reload → verify returning-reader layout with progress rings, "Continue Reading" banner, correct author order (Slave → Emperor → Senator).
 - [x] T15: E2E sharing tests — `tests/e2e/sharing.spec.js`: on card page, verify share button exists, click it (clipboard fallback since Playwright doesn't support Web Share API), verify URL is copied. Test gift URL: navigate to `/meditations?gift=true&note={base64}`, verify gift banner displays with decoded note.
-- [ ] T16: Verify full feature set — Run unit tests (`npm run test:unit`), build, and run full Playwright suite including all E2E tests from Plans 02–04. Full reading flow end-to-end. Fix any failures before completing this plan.
+- [x] T16: Verify full feature set — Run unit tests (`npm run test:unit`), build, and run full Playwright suite including all E2E tests from Plans 02–04. Full reading flow end-to-end. Fix any failures before completing this plan.
 
 ## Verify
 ```bash
