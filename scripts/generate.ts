@@ -16,7 +16,6 @@ const { values: args } = parseArgs({
     book: { type: "string" },
     all: { type: "boolean", default: false },
     "parse-only": { type: "boolean", default: false },
-    "skip-precheck": { type: "boolean", default: false },
     limit: { type: "string" },
     output: { type: "string", default: "src/content" },
     help: { type: "boolean", default: false },
@@ -30,7 +29,6 @@ Options:
   --book <slug>      Generate a single book (${VALID_BOOK_SLUGS.join(", ")})
   --all              Generate all 5 books
   --parse-only       Parse source text only, no Claude CLI calls
-  --skip-precheck    Skip the semantic pre-check phase
   --limit <n>        Max sections per chapter (e.g. --limit 3 for a quick test)
   --output <dir>     Output directory (default: src/content)
   --help             Show this help
@@ -216,9 +214,7 @@ async function processBook(config: BookConfig): Promise<void> {
 
   if (args["parse-only"]) return;
 
-  if (!args["skip-precheck"]) {
-    await runPreCheck(parsed);
-  }
+  await runPreCheck(parsed);
 
   const translated = await runTranslate(config, parsed);
   await runAssemble(config, translated);

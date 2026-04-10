@@ -61,7 +61,7 @@ npx tsx scripts/generate.ts --book shortness-of-life
 
 ```
 
-Key flags: `--limit <n>` caps sections per chapter, `--parse-only` skips AI calls, `--skip-precheck` skips the pre-check phase.
+Key flags: `--limit <n>` caps sections per chapter, `--parse-only` skips AI calls.
 
 ## Testing
 
