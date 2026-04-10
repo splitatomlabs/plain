@@ -6,7 +6,7 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	resolve: {
 		alias: {
-			$content: path.resolve(__dirname, '../content')
+			$content: path.resolve(__dirname, '../content/fixtures')
 		}
 	},
 	test: {
