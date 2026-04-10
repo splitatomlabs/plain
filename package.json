@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "validate": "tsx scripts/validate.ts",
     "generate": "tsx scripts/generate.ts",
     "test": "vitest run"
   },

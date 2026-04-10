@@ -59,8 +59,6 @@ npx tsx scripts/generate.ts --book shortness-of-life --limit 2
 # Generate a full book
 npx tsx scripts/generate.ts --book shortness-of-life
 
-# Validate generated card JSON (structural checks only)
-npx tsx scripts/validate.ts --content src/content/
 ```
 
 Key flags: `--limit <n>` caps sections per chapter, `--dry-run` skips AI calls, `--skip-precheck` skips the pre-check phase, `--phase` runs a single phase.
