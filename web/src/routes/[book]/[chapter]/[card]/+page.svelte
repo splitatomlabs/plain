@@ -35,10 +35,32 @@
 		return false;
 	}
 
+	function handleFinishBook() {
+		const beforeProgress = progress.getProgress(data.card.book_slug, data.totalCards);
+		progress.markCardRead(data.card.book_slug, data.card.id);
+		const afterProgress = progress.getProgress(data.card.book_slug, data.totalCards);
+
+		for (const threshold of MILESTONES) {
+			if (beforeProgress.percentage < threshold && afterProgress.percentage >= threshold) {
+				if (browser) {
+					const shown = JSON.parse(localStorage.getItem('plain-milestones') || '{}');
+					if (!shown[data.card.book_slug]?.includes(threshold)) {
+						showMilestone = threshold;
+						return;
+					}
+				}
+			}
+		}
+		// No milestone to show — go straight to completion
+		goto(`/completed/${data.card.book_slug}`);
+	}
+
 	function closeMilestone() {
+		const milestone = showMilestone;
 		showMilestone = null;
-		// Navigate to next card after modal closes (unless 100% redirects to completion)
-		if (data.nextCard) {
+		if (milestone === 100 || !data.nextCard) {
+			goto(`/completed/${data.card.book_slug}`);
+		} else if (data.nextCard) {
 			goto(cardUrl(data.nextCard));
 		}
 	}
@@ -77,7 +99,8 @@
 
 	{#if !data.nextCard}
 		<div class="card-completion">
-			<p class="completion-text">You've finished {data.book.title}.</p>
+			<p class="completion-text">This is the last card in {data.book.title}.</p>
+			<button class="finish-button" onclick={handleFinishBook}>Finish book</button>
 		</div>
 	{/if}
 </div>
@@ -113,6 +136,27 @@
 		font-family: var(--font-body);
 		font-size: 1.25rem;
 		color: var(--color-text-primary);
-		margin: 0;
+		margin: 0 0 var(--space-md);
+	}
+
+	.finish-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: var(--space-sm) var(--space-xl);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		color: var(--color-surface);
+		background: var(--color-text-primary);
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: opacity var(--transition-fast);
+	}
+
+	.finish-button:hover {
+		opacity: 0.85;
 	}
 </style>
