@@ -7,11 +7,26 @@ export class ClaudeCliError extends Error {
   }
 }
 
-export function callClaude(prompt: string): Promise<string> {
+export interface CallClaudeOptions {
+  /** Model to use (default: "sonnet") */
+  model?: string;
+  /** Use --bare mode to skip hooks, plugins, CLAUDE.md, etc. Requires ANTHROPIC_API_KEY. */
+  bare?: boolean;
+}
+
+export function callClaude(
+  prompt: string,
+  options: CallClaudeOptions = {},
+): Promise<string> {
+  const { model = "sonnet", bare = true } = options;
+  const args = bare
+    ? ["--bare", "--model", model, "-p", prompt]
+    : ["--model", model, "-p", prompt];
+
   return new Promise((resolve, reject) => {
     execFile(
       "claude",
-      ["-p", prompt],
+      args,
       { maxBuffer: 1024 * 1024 },
       (error, stdout, stderr) => {
         if (error) {
@@ -81,12 +96,13 @@ function extractJSON(text: string): string {
 export async function callClaudeJSON<T>(
   prompt: string,
   schema?: string,
+  options?: CallClaudeOptions,
 ): Promise<T> {
   const fullPrompt = schema
     ? `${prompt}\n\nRespond with only valid JSON matching this schema: ${schema}`
     : prompt;
 
-  const output = await callClaude(fullPrompt);
+  const output = await callClaude(fullPrompt, options);
 
   try {
     return JSON.parse(extractJSON(output)) as T;
@@ -94,6 +110,7 @@ export async function callClaudeJSON<T>(
     // Retry once with explicit JSON instruction
     const retryOutput = await callClaude(
       `${fullPrompt}\n\nRespond with only valid JSON, no other text.`,
+      options,
     );
     try {
       return JSON.parse(extractJSON(retryOutput)) as T;

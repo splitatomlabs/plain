@@ -113,7 +113,7 @@ Conservative estimate: **5-15k tokens of overhead per invocation**. Over 191 cal
 
   **Bottom line: direct API + Sonnet = 50-120x cheaper than current CLI approach.**
 
-- [ ] T05: Add `--bare --model` flags to CLI calls — In `claude.ts`, update `callClaude()` to pass `["--bare", "--model", model, "-p", prompt]` where `model` defaults to `"sonnet"` but is configurable. This eliminates all unnecessary context loading. Acceptance: pipeline still produces valid JSON output for one test book.
+- [x] T05: Add `--bare --model` flags to CLI calls — In `claude.ts`, update `callClaude()` to pass `["--bare", "--model", model, "-p", prompt]` where `model` defaults to `"sonnet"` but is configurable. This eliminates all unnecessary context loading. Acceptance: pipeline still produces valid JSON output for one test book.
 
 - [ ] T06: Evaluate direct API migration — Assess whether to replace `claude -p` with `@anthropic-ai/sdk` calls. Benefits: prompt caching (the system/voice/rules portion is identical across chunks), `usage` reporting, batch API (50% discount), structured JSON mode. Write the `callClaudeAPI()` function in `claude.ts` as an alternative path, gated by an env var `PLAIN_USE_API=1`.
 
