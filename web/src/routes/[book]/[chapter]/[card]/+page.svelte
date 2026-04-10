@@ -2,8 +2,13 @@
 	import Card from '$lib/components/Card.svelte';
 	import CardNav from '$lib/components/CardNav.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import { progress } from '$lib/stores/progress.js';
 
 	let { data } = $props();
+
+	function handleNavigateNext() {
+		progress.markCardRead(data.card.book_slug, data.card.id);
+	}
 </script>
 
 <svelte:head>
@@ -31,7 +36,7 @@
 		<p class="card-boundary">Beginning of {data.book.title}</p>
 	{/if}
 
-	<CardNav prevCard={data.prevCard} nextCard={data.nextCard}>
+	<CardNav prevCard={data.prevCard} nextCard={data.nextCard} onNavigateNext={handleNavigateNext}>
 		<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
 	</CardNav>
 

@@ -2,7 +2,7 @@
 	import { goto, afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	let { prevCard, nextCard, children } = $props();
+	let { prevCard, nextCard, children, onNavigateNext } = $props();
 
 	const SWIPE_THRESHOLD = 50;
 	let startX = 0;
@@ -18,7 +18,10 @@
 	}
 
 	function navigateNext() {
-		if (nextCard) goto(cardUrl(nextCard));
+		if (nextCard) {
+			onNavigateNext?.();
+			goto(cardUrl(nextCard));
+		}
 	}
 
 	function handleSwipeStart(x, y) {
