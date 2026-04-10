@@ -113,6 +113,13 @@ export const tokenUsage = {
   cacheCreationTokens: 0,
 };
 
+/** Accumulated batch statistics for cost reporting */
+export const batchStats = {
+  totalRequests: 0,
+  succeeded: 0,
+  failed: 0,
+};
+
 let anthropicClient: Anthropic | null = null;
 
 function getClient(): Anthropic {

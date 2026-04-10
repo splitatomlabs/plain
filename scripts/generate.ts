@@ -6,7 +6,7 @@ import { chunkSections, type Chunk } from "./lib/chunker.js";
 import { refineChunks } from "./lib/refine.js";
 import { translateChunks, translateChunksBatch, type TranslatedChunk, type BatchTranslateInput } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
-import { tokenUsage } from "./lib/claude.js";
+import { tokenUsage, batchStats } from "./lib/claude.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -321,7 +321,10 @@ async function main(): Promise<void> {
     const totalCost = inputCost + outputCost + cacheWriteCost + cacheReadCost;
 
     process.stderr.write("\n--- Cost Report ---\n");
-    if (useBatch) process.stderr.write("  Mode: Batch API (50% discount)\n");
+    if (useBatch) {
+      process.stderr.write("  Mode: Batch API (50% discount)\n");
+      process.stderr.write(`  Batch requests:        ${batchStats.totalRequests} (${batchStats.succeeded} succeeded, ${batchStats.failed} failed)\n`);
+    }
     process.stderr.write(`  Input tokens:          ${inputTokens.toLocaleString()}\n`);
     process.stderr.write(`  Output tokens:         ${outputTokens.toLocaleString()}\n`);
     process.stderr.write(`  Cache creation tokens: ${cacheCreationTokens.toLocaleString()}\n`);

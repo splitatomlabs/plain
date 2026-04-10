@@ -5,6 +5,7 @@ import {
   streamBatchResults,
   extractJSON,
   tokenUsage,
+  batchStats,
   type BatchRequest,
 } from "./claude.js";
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
@@ -168,6 +169,7 @@ export async function translateChunksBatch(
 
   // 4. Collect and correlate results
   const resultMap = new Map<string, TranslatedChunk[]>();
+  batchStats.totalRequests += requests.length;
 
   for await (const item of streamBatchResults(batch.id)) {
     const info = meta.get(item.custom_id);
@@ -179,11 +181,14 @@ export async function translateChunksBatch(
     }
 
     if (item.result.type === "errored") {
+      batchStats.failed++;
       process.stderr.write(
         `[batch] WARNING: request ${item.custom_id} failed: ${JSON.stringify(item.result.error)}\n`,
       );
       continue;
     }
+
+    batchStats.succeeded++;
 
     // Extract text from succeeded message
     const message = item.result.message;
