@@ -3,22 +3,10 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-// ---------------------------------------------------------------------------
-// Mock the fs and crypto modules to redirect cache to a temp directory
-// ---------------------------------------------------------------------------
-
-// We'll mock the PIPELINE_DIR by mocking the module's internal path resolution.
-// Instead, since cache.ts uses path.resolve("content/pipeline"), we mock
-// the entire module path resolution via a dynamic import approach.
-// Simplest: mock the node:fs/promises calls to intercept paths.
-
 let tempDir: string;
-let sourceFile: string;
 
 beforeEach(async () => {
   tempDir = await mkdtemp(path.join(tmpdir(), "cache-test-"));
-  sourceFile = path.join(tempDir, "source.txt");
-  await writeFile(sourceFile, "Original source text content");
 });
 
 afterEach(async () => {
@@ -26,19 +14,15 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-// ---------------------------------------------------------------------------
-// Import after mocking (cache uses real fs, so we test via the public API
-// but redirect PIPELINE_DIR by setting process.cwd)
-// ---------------------------------------------------------------------------
-
-// Since PIPELINE_DIR is path.resolve("content/pipeline") which depends on cwd,
-// we'll change cwd to tempDir so cache files land there.
 import {
-  hashSourceFile,
+  saveParseCache,
+  loadParseCache,
   saveRefineCache,
   loadRefineCache,
   saveTranslateCache,
   loadTranslateCache,
+  snapshotTokenUsage,
+  computePhaseCost,
   PIPELINE_VERSION,
 } from "../cache.js";
 
@@ -71,6 +55,17 @@ const sampleChapters = [
   },
 ];
 
+const sampleParsedChapters = [
+  {
+    slug: "sections-01-10",
+    title: "Sections 1–10",
+    sections: [
+      { number: 1, text: "Some things are up to you." },
+      { number: 2, text: "If you want freedom, stop wishing." },
+    ],
+  },
+];
+
 const sampleTranslated: TranslatedChunk[] = [
   {
     sectionNumber: 1,
@@ -87,26 +82,45 @@ const sampleTranslated: TranslatedChunk[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// hashSourceFile
+// Parse cache
 // ---------------------------------------------------------------------------
 
-describe("hashSourceFile", () => {
-  it("returns a 16-char hex hash", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    expect(hash).toMatch(/^[0-9a-f]{16}$/);
+describe("parse cache", () => {
+  it("round-trips save and load", async () => {
+    await saveParseCache("enchiridion", sampleParsedChapters);
+    const loaded = await loadParseCache("enchiridion");
+
+    expect(loaded).not.toBeNull();
+    expect(loaded).toHaveLength(1);
+    expect(loaded![0].slug).toBe("sections-01-10");
+    expect(loaded![0].sections).toHaveLength(2);
+    expect(loaded![0].sections[0].number).toBe(1);
   });
 
-  it("returns different hash when content changes", async () => {
-    const hash1 = await hashSourceFile(sourceFile);
-    await writeFile(sourceFile, "Different content");
-    const hash2 = await hashSourceFile(sourceFile);
-    expect(hash1).not.toBe(hash2);
+  it("returns null on cache miss (no file)", async () => {
+    const loaded = await loadParseCache("nonexistent");
+    expect(loaded).toBeNull();
   });
 
-  it("returns same hash for same content", async () => {
-    const hash1 = await hashSourceFile(sourceFile);
-    const hash2 = await hashSourceFile(sourceFile);
-    expect(hash1).toBe(hash2);
+  it("overwrites previous cache on re-save", async () => {
+    await saveParseCache("enchiridion", sampleParsedChapters);
+    const updated = [{ slug: "section-01", title: "Section 1", sections: [{ number: 1, text: "Updated" }] }];
+    await saveParseCache("enchiridion", updated);
+    const loaded = await loadParseCache("enchiridion");
+    expect(loaded![0].sections[0].text).toBe("Updated");
+  });
+
+  it("returns null when pipeline version mismatches", async () => {
+    await saveParseCache("enchiridion", sampleParsedChapters);
+
+    const { readFile, writeFile } = await import("node:fs/promises");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "parse.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    raw.pipelineVersion = 999;
+    await writeFile(filePath, JSON.stringify(raw));
+
+    const loaded = await loadParseCache("enchiridion");
+    expect(loaded).toBeNull();
   });
 });
 
@@ -116,9 +130,8 @@ describe("hashSourceFile", () => {
 
 describe("refine cache", () => {
   it("round-trips save and load", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
-    const loaded = await loadRefineCache("enchiridion", hash);
+    await saveRefineCache("enchiridion", sampleChapters);
+    const loaded = await loadRefineCache("enchiridion");
 
     expect(loaded).not.toBeNull();
     expect(loaded).toHaveLength(1);
@@ -129,38 +142,38 @@ describe("refine cache", () => {
   });
 
   it("preserves bookNumber for Meditations chapters", async () => {
-    const hash = await hashSourceFile(sourceFile);
     const chapters = [{ slug: "book-01", title: "Book 1", bookNumber: 1, chunks: sampleChunks }];
-    await saveRefineCache("meditations", hash, chapters);
-    const loaded = await loadRefineCache("meditations", hash);
+    await saveRefineCache("meditations", chapters);
+    const loaded = await loadRefineCache("meditations");
 
     expect(loaded![0].bookNumber).toBe(1);
   });
 
   it("returns null on cache miss (no file)", async () => {
-    const loaded = await loadRefineCache("nonexistent", "abc123");
-    expect(loaded).toBeNull();
-  });
-
-  it("returns null when source hash has changed", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
-
-    const loaded = await loadRefineCache("enchiridion", "different-hash");
+    const loaded = await loadRefineCache("nonexistent");
     expect(loaded).toBeNull();
   });
 
   it("overwrites previous cache on re-save", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
+    await saveRefineCache("enchiridion", sampleChapters);
 
     const updatedChapters = [
       { slug: "sections-01-10", title: "Sections 1–10", chunks: [sampleChunks[0]] },
     ];
-    await saveRefineCache("enchiridion", hash, updatedChapters);
+    await saveRefineCache("enchiridion", updatedChapters);
 
-    const loaded = await loadRefineCache("enchiridion", hash);
+    const loaded = await loadRefineCache("enchiridion");
     expect(loaded![0].chunks).toHaveLength(1);
+  });
+
+  it("saves and loads cost field", async () => {
+    const cost = { inputTokens: 100, outputTokens: 50, cacheReadTokens: 10, cacheCreationTokens: 5, estimatedCost: 0.001 };
+    await saveRefineCache("enchiridion", sampleChapters, cost);
+
+    const { readFile } = await import("node:fs/promises");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    expect(raw.cost).toEqual(cost);
   });
 });
 
@@ -170,12 +183,11 @@ describe("refine cache", () => {
 
 describe("translate cache", () => {
   it("round-trips save and load", async () => {
-    const hash = await hashSourceFile(sourceFile);
     const translateMap = new Map<string, TranslatedChunk[]>();
     translateMap.set("enchiridion_sections-01-10", sampleTranslated);
 
-    await saveTranslateCache("enchiridion", hash, translateMap);
-    const loaded = await loadTranslateCache("enchiridion", hash);
+    await saveTranslateCache("enchiridion", translateMap);
+    const loaded = await loadTranslateCache("enchiridion");
 
     expect(loaded).not.toBeNull();
     expect(loaded!.size).toBe(1);
@@ -186,12 +198,11 @@ describe("translate cache", () => {
   });
 
   it("preserves meaningCheck fields", async () => {
-    const hash = await hashSourceFile(sourceFile);
     const translateMap = new Map<string, TranslatedChunk[]>();
     translateMap.set("enchiridion_sections-01-10", sampleTranslated);
 
-    await saveTranslateCache("enchiridion", hash, translateMap);
-    const loaded = await loadTranslateCache("enchiridion", hash);
+    await saveTranslateCache("enchiridion", translateMap);
+    const loaded = await loadTranslateCache("enchiridion");
     const check = loaded!.get("enchiridion_sections-01-10")![0].meaningCheck!;
 
     expect(check.faithful).toBe(true);
@@ -201,15 +212,14 @@ describe("translate cache", () => {
   });
 
   it("handles multiple chapters in one book", async () => {
-    const hash = await hashSourceFile(sourceFile);
     const translateMap = new Map<string, TranslatedChunk[]>();
     translateMap.set("meditations_book-01", sampleTranslated);
     translateMap.set("meditations_book-02", [
       { ...sampleTranslated[0], sectionNumber: 5, plainEnglish: "Book 2 text" },
     ]);
 
-    await saveTranslateCache("meditations", hash, translateMap);
-    const loaded = await loadTranslateCache("meditations", hash);
+    await saveTranslateCache("meditations", translateMap);
+    const loaded = await loadTranslateCache("meditations");
 
     expect(loaded!.size).toBe(2);
     expect(loaded!.get("meditations_book-01")).toHaveLength(1);
@@ -217,18 +227,21 @@ describe("translate cache", () => {
   });
 
   it("returns null on cache miss (no file)", async () => {
-    const loaded = await loadTranslateCache("nonexistent", "abc123");
+    const loaded = await loadTranslateCache("nonexistent");
     expect(loaded).toBeNull();
   });
 
-  it("returns null when source hash has changed", async () => {
-    const hash = await hashSourceFile(sourceFile);
+  it("saves and loads cost field", async () => {
+    const cost = { inputTokens: 200, outputTokens: 100, cacheReadTokens: 20, cacheCreationTokens: 10, estimatedCost: 0.002 };
     const translateMap = new Map<string, TranslatedChunk[]>();
     translateMap.set("enchiridion_sections-01-10", sampleTranslated);
 
-    await saveTranslateCache("enchiridion", hash, translateMap);
-    const loaded = await loadTranslateCache("enchiridion", "different-hash");
-    expect(loaded).toBeNull();
+    await saveTranslateCache("enchiridion", translateMap, cost);
+
+    const { readFile } = await import("node:fs/promises");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    expect(raw.cost).toEqual(cost);
   });
 });
 
@@ -238,31 +251,27 @@ describe("translate cache", () => {
 
 describe("pipeline version checking", () => {
   it("refine: save then load with matching version returns data", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
-    const loaded = await loadRefineCache("enchiridion", hash);
+    await saveRefineCache("enchiridion", sampleChapters);
+    const loaded = await loadRefineCache("enchiridion");
     expect(loaded).not.toBeNull();
     expect(loaded).toHaveLength(1);
   });
 
   it("refine: load with mismatched version returns null", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
+    await saveRefineCache("enchiridion", sampleChapters);
 
-    // Tamper with the saved file to simulate an old version
     const { readFile, writeFile } = await import("node:fs/promises");
     const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
     const raw = JSON.parse(await readFile(filePath, "utf-8"));
     raw.pipelineVersion = 999;
     await writeFile(filePath, JSON.stringify(raw));
 
-    const loaded = await loadRefineCache("enchiridion", hash);
+    const loaded = await loadRefineCache("enchiridion");
     expect(loaded).toBeNull();
   });
 
   it("refine: load with missing pipelineVersion field returns null", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
+    await saveRefineCache("enchiridion", sampleChapters);
 
     const { readFile, writeFile } = await import("node:fs/promises");
     const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
@@ -270,15 +279,14 @@ describe("pipeline version checking", () => {
     delete raw.pipelineVersion;
     await writeFile(filePath, JSON.stringify(raw));
 
-    const loaded = await loadRefineCache("enchiridion", hash);
+    const loaded = await loadRefineCache("enchiridion");
     expect(loaded).toBeNull();
   });
 
   it("translate: load with mismatched version returns null", async () => {
-    const hash = await hashSourceFile(sourceFile);
     const translateMap = new Map<string, TranslatedChunk[]>();
     translateMap.set("enchiridion_sections-01-10", sampleTranslated);
-    await saveTranslateCache("enchiridion", hash, translateMap);
+    await saveTranslateCache("enchiridion", translateMap);
 
     const { readFile, writeFile } = await import("node:fs/promises");
     const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
@@ -286,15 +294,14 @@ describe("pipeline version checking", () => {
     raw.pipelineVersion = 999;
     await writeFile(filePath, JSON.stringify(raw));
 
-    const loaded = await loadTranslateCache("enchiridion", hash);
+    const loaded = await loadTranslateCache("enchiridion");
     expect(loaded).toBeNull();
   });
 
   it("translate: load with missing pipelineVersion field returns null", async () => {
-    const hash = await hashSourceFile(sourceFile);
     const translateMap = new Map<string, TranslatedChunk[]>();
     translateMap.set("enchiridion_sections-01-10", sampleTranslated);
-    await saveTranslateCache("enchiridion", hash, translateMap);
+    await saveTranslateCache("enchiridion", translateMap);
 
     const { readFile, writeFile } = await import("node:fs/promises");
     const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
@@ -302,13 +309,12 @@ describe("pipeline version checking", () => {
     delete raw.pipelineVersion;
     await writeFile(filePath, JSON.stringify(raw));
 
-    const loaded = await loadTranslateCache("enchiridion", hash);
+    const loaded = await loadTranslateCache("enchiridion");
     expect(loaded).toBeNull();
   });
 
   it("saved refine files contain pipelineVersion matching the constant", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
+    await saveRefineCache("enchiridion", sampleChapters);
 
     const { readFile } = await import("node:fs/promises");
     const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
@@ -317,12 +323,11 @@ describe("pipeline version checking", () => {
   });
 
   it("saved files contain createdAt as valid ISO string", async () => {
-    const hash = await hashSourceFile(sourceFile);
-    await saveRefineCache("enchiridion", hash, sampleChapters);
+    await saveRefineCache("enchiridion", sampleChapters);
 
     const translateMap = new Map<string, TranslatedChunk[]>();
     translateMap.set("enchiridion_sections-01-10", sampleTranslated);
-    await saveTranslateCache("enchiridion", hash, translateMap);
+    await saveTranslateCache("enchiridion", translateMap);
 
     const { readFile } = await import("node:fs/promises");
 
@@ -333,5 +338,36 @@ describe("pipeline version checking", () => {
     const translateFilePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
     const translateData = JSON.parse(await readFile(translateFilePath, "utf-8"));
     expect(new Date(translateData.createdAt).toISOString()).toBe(translateData.createdAt);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cost helpers
+// ---------------------------------------------------------------------------
+
+describe("cost helpers", () => {
+  it("snapshotTokenUsage returns a copy", () => {
+    const usage = { inputTokens: 100, outputTokens: 50, cacheReadTokens: 10, cacheCreationTokens: 5 };
+    const snap = snapshotTokenUsage(usage);
+    usage.inputTokens = 999;
+    expect(snap.inputTokens).toBe(100);
+  });
+
+  it("computePhaseCost calculates delta and cost", () => {
+    const before = { inputTokens: 100, outputTokens: 50, cacheReadTokens: 10, cacheCreationTokens: 5 };
+    const after = { inputTokens: 1100, outputTokens: 550, cacheReadTokens: 110, cacheCreationTokens: 55 };
+    const cost = computePhaseCost(before, after);
+
+    expect(cost.inputTokens).toBe(1000);
+    expect(cost.outputTokens).toBe(500);
+    expect(cost.cacheReadTokens).toBe(100);
+    expect(cost.cacheCreationTokens).toBe(50);
+    expect(cost.estimatedCost).toBeGreaterThan(0);
+  });
+
+  it("computePhaseCost returns zero cost for zero delta", () => {
+    const snap = { inputTokens: 100, outputTokens: 50, cacheReadTokens: 10, cacheCreationTokens: 5 };
+    const cost = computePhaseCost(snap, snap);
+    expect(cost.estimatedCost).toBe(0);
   });
 });
