@@ -402,6 +402,7 @@
 
 	.gift-row {
 		text-align: center;
+		margin-bottom: var(--space-xl);
 	}
 
 	.cta {
