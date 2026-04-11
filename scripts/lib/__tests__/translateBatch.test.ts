@@ -129,8 +129,8 @@ describe("translateChunksBatch", () => {
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_123", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult("enchiridion:section-01:0", "Some things are in your control.", ["freedom-and-control"]),
-        makeSucceededResult("enchiridion:section-01:1", "Don't wish for things to go your way.", ["calm-your-mind"]),
+        makeSucceededResult("enchiridion_section-01_0", "Some things are in your control.", ["freedom-and-control"]),
+        makeSucceededResult("enchiridion_section-01_1", "Don't wish for things to go your way.", ["calm-your-mind"]),
       ]),
     );
 
@@ -140,15 +140,15 @@ describe("translateChunksBatch", () => {
     expect(mockCreateMessageBatch).toHaveBeenCalledOnce();
     const requests = mockCreateMessageBatch.mock.calls[0][0];
     expect(requests).toHaveLength(2);
-    expect(requests[0].custom_id).toBe("enchiridion:section-01:0");
-    expect(requests[1].custom_id).toBe("enchiridion:section-01:1");
+    expect(requests[0].custom_id).toBe("enchiridion_section-01_0");
+    expect(requests[1].custom_id).toBe("enchiridion_section-01_1");
 
     // Poll was called
     expect(mockPollBatchUntilDone).toHaveBeenCalledWith("batch_123");
 
     // Results are keyed correctly
     expect(result.size).toBe(1);
-    const chunks = result.get("enchiridion:section-01")!;
+    const chunks = result.get("enchiridion_section-01")!;
     expect(chunks).toHaveLength(2);
     expect(chunks[0].plainEnglish).toBe("Some things are in your control.");
     expect(chunks[0].tags).toEqual(["freedom-and-control"]);
@@ -183,16 +183,16 @@ describe("translateChunksBatch", () => {
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_multi", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult("enchiridion:section-01:0", "Translated enchiridion.", ["freedom-and-control"]),
-        makeSucceededResult("shortness-of-life:section-01:0", "Translated seneca.", ["death-and-mortality"]),
+        makeSucceededResult("enchiridion_section-01_0", "Translated enchiridion.", ["freedom-and-control"]),
+        makeSucceededResult("shortness-of-life_section-01_0", "Translated seneca.", ["death-and-mortality"]),
       ]),
     );
 
     const result = await translateChunksBatch(inputs);
 
     expect(result.size).toBe(2);
-    expect(result.get("enchiridion:section-01")![0].plainEnglish).toBe("Translated enchiridion.");
-    expect(result.get("shortness-of-life:section-01")![0].plainEnglish).toBe("Translated seneca.");
+    expect(result.get("enchiridion_section-01")![0].plainEnglish).toBe("Translated enchiridion.");
+    expect(result.get("shortness-of-life_section-01")![0].plainEnglish).toBe("Translated seneca.");
   });
 
   it("returns empty map for empty inputs", async () => {
@@ -215,12 +215,12 @@ describe("translateChunksBatch", () => {
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_tags", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult("enchiridion:section-01:0", "Translated.", ["completely-invalid-tag"]),
+        makeSucceededResult("enchiridion_section-01_0", "Translated.", ["completely-invalid-tag"]),
       ]),
     );
 
     const result = await translateChunksBatch(inputs);
-    const chunks = result.get("enchiridion:section-01")!;
+    const chunks = result.get("enchiridion_section-01")!;
     expect(chunks[0].tags).toEqual(["what-matters-most"]);
   });
 
@@ -238,14 +238,14 @@ describe("translateChunksBatch", () => {
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_clamp", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult("enchiridion:section-01:0", "Translated.", [
+        makeSucceededResult("enchiridion_section-01_0", "Translated.", [
           "calm-your-mind", "freedom-and-control", "knowing-yourself", "facing-hardship",
         ]),
       ]),
     );
 
     const result = await translateChunksBatch(inputs);
-    const chunks = result.get("enchiridion:section-01")!;
+    const chunks = result.get("enchiridion_section-01")!;
     expect(chunks[0].tags).toHaveLength(3);
   });
 
@@ -262,7 +262,7 @@ describe("translateChunksBatch", () => {
     mockCreateMessageBatch.mockResolvedValue({ id: "batch_retry" });
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_retry", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([makeErroredResult("enchiridion:section-01:0")]),
+      asyncIterFrom([makeErroredResult("enchiridion_section-01_0")]),
     );
 
     // Retry via real-time API succeeds
@@ -277,7 +277,7 @@ describe("translateChunksBatch", () => {
     });
 
     const result = await translateChunksBatch(inputs);
-    const chunks = result.get("enchiridion:section-01")!;
+    const chunks = result.get("enchiridion_section-01")!;
 
     expect(chunks).toHaveLength(1);
     expect(chunks[0].plainEnglish).toBe("Retried translation.");
@@ -298,8 +298,8 @@ describe("translateChunksBatch", () => {
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_stats", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult("enchiridion:section-01:0", "OK.", ["calm-your-mind"]),
-        makeErroredResult("enchiridion:section-01:1"),
+        makeSucceededResult("enchiridion_section-01_0", "OK.", ["calm-your-mind"]),
+        makeErroredResult("enchiridion_section-01_1"),
       ]),
     );
 
@@ -327,7 +327,7 @@ describe("translateChunksBatch", () => {
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_tokens", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult("enchiridion:section-01:0", "OK.", ["calm-your-mind"]),
+        makeSucceededResult("enchiridion_section-01_0", "OK.", ["calm-your-mind"]),
       ]),
     );
 
@@ -363,14 +363,14 @@ describe("translateChunksBatch", () => {
     // Results arrive out of order
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult("enchiridion:section-01:1", "First translated.", ["calm-your-mind"]),
-        makeSucceededResult("enchiridion:section-01:2", "Second translated.", ["calm-your-mind"]),
-        makeSucceededResult("enchiridion:section-01:0", "Third translated.", ["calm-your-mind"]),
+        makeSucceededResult("enchiridion_section-01_1", "First translated.", ["calm-your-mind"]),
+        makeSucceededResult("enchiridion_section-01_2", "Second translated.", ["calm-your-mind"]),
+        makeSucceededResult("enchiridion_section-01_0", "Third translated.", ["calm-your-mind"]),
       ]),
     );
 
     const result = await translateChunksBatch(inputs);
-    const chunks = result.get("enchiridion:section-01")!;
+    const chunks = result.get("enchiridion_section-01")!;
 
     expect(chunks[0].sectionNumber).toBe(1);
     expect(chunks[1].sectionNumber).toBe(2);

@@ -129,11 +129,31 @@ function getClient(): Anthropic {
   return anthropicClient;
 }
 
+// Simple rate limiter: tracks timestamps of recent calls and waits if needed.
+const callTimestamps: number[] = [];
+const MAX_RPM = parseInt(process.env.PLAIN_API_RPM ?? "4", 10); // default 4 rpm (safe margin under 5)
+
+async function rateLimit(): Promise<void> {
+  const now = Date.now();
+  const windowStart = now - 60_000;
+  // Remove timestamps older than 1 minute
+  while (callTimestamps.length > 0 && callTimestamps[0] < windowStart) {
+    callTimestamps.shift();
+  }
+  if (callTimestamps.length >= MAX_RPM) {
+    const waitMs = callTimestamps[0] - windowStart + 100; // wait until oldest exits window + buffer
+    process.stderr.write(`[rate-limit] Waiting ${Math.round(waitMs / 1000)}s...\n`);
+    await new Promise<void>((resolve) => setTimeout(resolve, waitMs));
+  }
+  callTimestamps.push(Date.now());
+}
+
 async function callClaudeAPI(
   prompt: string,
   model = "sonnet",
   system?: string,
 ): Promise<string> {
+  await rateLimit();
   const client = getClient();
   const modelId = API_MODEL_MAP[model] ?? model;
 

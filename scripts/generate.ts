@@ -90,10 +90,23 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
     };
   });
 
+  // Apply book-level total cap: --limit caps total chunks across all chapters
+  if (limit) {
+    let remaining = limit;
+    for (const ch of chapters) {
+      if (remaining <= 0) {
+        ch.chunks = [];
+      } else if (ch.chunks.length > remaining) {
+        ch.chunks = ch.chunks.slice(0, remaining);
+      }
+      remaining -= ch.chunks.length;
+    }
+  }
+
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
 
-  return { bookSlug: config.slug, chapters };
+  return { bookSlug: config.slug, chapters: chapters.filter((ch) => ch.chunks.length > 0) };
 }
 
 // ---------------------------------------------------------------------------
@@ -261,7 +274,7 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
     const translatedOutput: TranslatedOutput = {
       bookSlug: config.slug,
       chapters: r.chapters.map((ch) => {
-        const translated = translatedMap.get(`${config.slug}:${ch.slug}`);
+        const translated = translatedMap.get(`${config.slug}_${ch.slug}`);
         if (!translated || translated.length === 0) {
           throw new Error(
             `No translated chunks for ${config.slug}:${ch.slug} — aborting to prevent data loss`,

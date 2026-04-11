@@ -138,7 +138,7 @@ export async function translateChunksBatch(
   // Guard against duplicate inputs (would cause custom_id collisions)
   const seen = new Set<string>();
   for (const { bookSlug, chapterSlug } of inputs) {
-    const key = `${bookSlug}:${chapterSlug}`;
+    const key = `${bookSlug}_${chapterSlug}`;
     if (seen.has(key)) throw new Error(`Duplicate batch input for ${key}`);
     seen.add(key);
   }
@@ -155,7 +155,7 @@ export async function translateChunksBatch(
     const system = buildTranslationSystem(config);
     for (let index = 0; index < chunks.length; index++) {
       const chunk = chunks[index];
-      const customId = `${bookSlug}:${chapterSlug}:${index}`;
+      const customId = `${bookSlug}_${chapterSlug}_${index}`;
       requests.push({
         custom_id: customId,
         system,
@@ -323,7 +323,7 @@ function addTranslatedResult(
     meaningCheck,
   };
 
-  const key = `${info.bookSlug}:${info.chapterSlug}`;
+  const key = `${info.bookSlug}_${info.chapterSlug}`;
   const existing = resultMap.get(key) ?? [];
   existing.push(translated);
   resultMap.set(key, existing);
