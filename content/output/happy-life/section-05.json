@@ -4,15 +4,47 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-05",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "Since I've started defining things more loosely, you could call a man \"happy\" if reason has freed him from both hope and fear. But rocks don't feel fear or sadness either, and neither do cattle. Yet no one would call these things happy, because they can't understand what happiness means. You can put certain people in the same category as cattle — those whose dull minds and lack of self-knowledge reduce them to the level of animals. There's no real difference between them and beasts. Animals have no reason at all, while these people have reason that's been twisted and corrupted, making them clever only at harming themselves.",
-    "original_excerpt": "Since I have begun to make my definitions without a too strict adherence to the letter, a man may be called “happy” who, thanks to reason, has ceased either to hope or to fear: but rocks also feel neither fear nor sadness, nor do cattle, yet no one would call those things happy which cannot comprehend what happiness is. With them you may class men whose dull nature and want of self-knowledge reduces them to the level of cattle, mere animals: there is no difference between the one and the other, because the latter have no reason, while the former have only a corrupted form of it, crooked and cunning to their own hurt. For no one can be styled happy who is beyond the influence of truth: and consequently a happy life is unchangeable, and is founded upon a true and trustworthy discernment; for the mind is uncontaminated and freed from all evils only when it is able to escape not merely from wounds but also from scratches, when it will always be able to maintain the position which it has taken up, and defend it even against the angry assaults of Fortune: for with regard to sensual pleasures, though they were to surround one on every side, and use every means of assault, trying to win over the mind by caresses and making trial of every conceivable stratagem to attract either our entire selves or our separate parts, yet what mortal that retains any traces of human origin would wish to be tickled day and night, and, neglecting his mind, to devote himself to bodily enjoyments?",
+    "total_cards_in_chapter": 3,
+    "plain_english": "Since I'm defining things more loosely now, you could call a person \"happy\" if they've used reason to stop hoping and fearing. But rocks don't feel fear or sadness either, and neither do cattle — yet no one would call them happy, because they can't understand what happiness even is. You could put certain people in the same category as cattle. These are people whose dull minds and lack of self-knowledge have brought them down to the level of animals. There's no real difference between them and beasts. Animals have no reason at all, while these people have reason that's been twisted and corrupted — clever only in ways that harm themselves.",
+    "original_excerpt": "Since I have begun to make my definitions without a too strict adherence to the letter, a man may be called \"happy\" who, thanks to reason, has ceased either to hope or to fear: but rocks also feel neither fear nor sadness, nor do cattle, yet no one would call those things happy which cannot comprehend what happiness is. With them you may class men whose dull nature and want of self-knowledge reduces them to the level of cattle, mere animals: there is no difference between the one and the other, because the latter have no reason, while the former have only a corrupted form of it, crooked and cunning to their own hurt.",
     "source_reference": "On the Happy Life, Section 5",
     "author_slug": "seneca",
     "tags": [
       "knowing-yourself",
       "human-nature"
     ],
-    "reading_time_seconds": 32
+    "reading_time_seconds": 34
+  },
+  {
+    "id": "happy-life-05-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-05",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "No one can be called happy if they live beyond the reach of truth. A happy life never wavers — it's built on solid, reliable judgment. Your mind stays pure and free from all harm only when it can avoid not just deep wounds, but even small scratches. When you reach this point, you can hold your ground no matter what. You can defend your position even when Fortune attacks you with all her fury.",
+    "original_excerpt": "For no one can be styled happy who is beyond the influence of truth: and consequently a happy life is unchangeable, and is founded upon a true and trustworthy discernment; for the mind is uncontaminated and freed from all evils only when it is able to escape not merely from wounds but also from scratches, when it will always be able to maintain the position which it has taken up, and defend it even against the angry assaults of Fortune:",
+    "source_reference": "On the Happy Life, Section 5",
+    "author_slug": "seneca",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "happy-life-05-003",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-05",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Think about physical pleasures. Even if they surrounded you completely and attacked from every angle — flattering you, trying every trick to win over your whole self or just parts of you — what human being would want to be entertained day and night? What person would ignore their mind and live only for bodily pleasures?",
+    "original_excerpt": "for with regard to sensual pleasures, though they were to surround one on every side, and use every means of assault, trying to win over the mind by caresses and making trial of every conceivable stratagem to attract either our entire selves or our separate parts, yet what mortal that retains any traces of human origin would wish to be tickled day and night, and, neglecting his mind, to devote himself to bodily enjoyments?",
+    "source_reference": "On the Happy Life, Section 5",
+    "author_slug": "seneca",
+    "tags": [
+      "what-matters-most",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 17
   }
 ]

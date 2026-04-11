@@ -4,40 +4,118 @@
     "book_slug": "enchiridion",
     "chapter_slug": "section-33",
     "card_number": 1,
-    "total_cards_in_chapter": 6,
-    "plain_english": "First, decide what kind of person you want to be. Then stick to that character whether you're alone or with others.\n\nStay quiet most of the time. When you do speak, say only what's necessary. Keep it brief. You can join conversations sometimes when it makes sense, but don't talk about the usual stuff — gladiators, horse races, athletes, food, or drinks. These are shallow topics. And especially don't gossip about people, whether you're criticizing them, praising them, or comparing them. If you can, steer the conversation toward better subjects. But if you're stuck with strangers, just stay quiet.\n\nDon't laugh too loud, too often, or too much.\n\nAvoid making oaths if you can. At the very least, avoid them as much as possible.",
-    "original_excerpt": "Begin by prescribing to yourself some character and demeanor, such as you may preserve both alone and in company.\n\nBe mostly silent, or speak merely what is needful, and in few words. We may, however, enter sparingly into discourse sometimes, when occasion calls for it; but let it not run on any of the common subjects, as gladiators, or horse races, or athletic champions, or food, or drink—the vulgar topics of conversation—and especially not on men, so as either to blame, or praise, or make comparisons. If you are able, then, by your own conversation, bring over that of your company to proper subjects; but if you happen to find yourself among strangers, be silent.\n\nLet not your laughter be loud, frequent, or abundant.\n\nAvoid taking oaths, if possible, altogether; at any rate, so far as you are able.",
+    "total_cards_in_chapter": 13,
+    "plain_english": "Start by deciding who you want to be. Pick a character and way of acting that you can stick to whether you're alone or with other people.",
+    "original_excerpt": "Begin by prescribing to yourself some character and demeanor, such as you may preserve both alone and in company.",
     "source_reference": "The Enchiridion, Section 33",
     "author_slug": "epictetus",
     "tags": [
-      "knowing-yourself",
-      "doing-the-right-thing"
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 37
+    "reading_time_seconds": 8
   },
   {
     "id": "enchiridion-33-002",
     "book_slug": "enchiridion",
     "chapter_slug": "section-33",
     "card_number": 2,
-    "total_cards_in_chapter": 6,
-    "plain_english": "Stay away from cheap, trashy entertainment. But if you must attend, stay alert so you don't slip into bad behavior without noticing. Remember this: even if you're a good person, spending time with corrupt people will corrupt you too.\n\nTake care of your body's real needs — food, drink, clothes, shelter, basic help. But cut out anything that's just for show or luxury.\n\nBefore marriage, avoid sleeping with women you shouldn't sleep with. But don't be harsh or judgmental toward people who do this. And don't constantly brag about how you don't do it.",
-    "original_excerpt": "Avoid public and vulgar entertainments; but if ever an occasion calls you to them, keep your attention upon the stretch, that you may not imperceptibly slide into vulgarity. For be assured that if a person be ever so pure himself, yet, if his companion be corrupted, he who converses with him will be corrupted likewise.\n\nProvide things relating to the body no further than absolute need requires, as meat, drink, clothing, house, retinue. But cut off everything that looks toward show and luxury.\n\nBefore marriage guard yourself with all your ability from unlawful intercourse with women; yet be not uncharitable or severe to those who are led into this, nor boast frequently that you yourself do otherwise.",
+    "total_cards_in_chapter": 13,
+    "plain_english": "Stay quiet most of the time. When you do speak, say only what's necessary and keep it brief. You can join conversations sometimes when the situation calls for it. But don't talk about the usual stuff — gladiators, horse races, athletes, food, or drink. These are shallow topics. And especially don't gossip about people by criticizing them, praising them, or comparing them. If you can steer the conversation toward better subjects, do it. But if you're stuck with strangers who won't budge, just stay quiet.",
+    "original_excerpt": "Be mostly silent, or speak merely what is needful, and in few words. We may, however, enter sparingly into discourse sometimes, when occasion calls for it; but let it not run on any of the common subjects, as gladiators, or horse races, or athletic champions, or food, or drink—the vulgar topics of conversation—and especially not on men, so as either to blame, or praise, or make comparisons. If you are able, then, by your own conversation, bring over that of your company to proper subjects; but if you happen to find yourself among strangers, be silent.",
     "source_reference": "The Enchiridion, Section 33",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
-      "doing-the-right-thing"
+      "human-nature"
     ],
-    "reading_time_seconds": 28
+    "reading_time_seconds": 26
   },
   {
     "id": "enchiridion-33-003",
     "book_slug": "enchiridion",
     "chapter_slug": "section-33",
     "card_number": 3,
-    "total_cards_in_chapter": 6,
-    "plain_english": "If someone tells you that a person spoke badly about you, don't defend yourself against what they said. Instead, say: \"He doesn't know about my other flaws, or he wouldn't have mentioned just those ones.\"",
+    "total_cards_in_chapter": 13,
+    "plain_english": "Don't laugh too loud, too often, or too much.",
+    "original_excerpt": "Let not your laughter be loud, frequent, or abundant.",
+    "source_reference": "The Enchiridion, Section 33",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 5
+  },
+  {
+    "id": "enchiridion-33-004",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-33",
+    "card_number": 4,
+    "total_cards_in_chapter": 13,
+    "plain_english": "Avoid making promises or swearing oaths if you can. At the very least, avoid them as much as possible.",
+    "original_excerpt": "Avoid taking oaths, if possible, altogether; at any rate, so far as you are able.",
+    "source_reference": "The Enchiridion, Section 33",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 6
+  },
+  {
+    "id": "enchiridion-33-005",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-33",
+    "card_number": 5,
+    "total_cards_in_chapter": 13,
+    "plain_english": "Stay away from crude public entertainment. But if you must attend, stay alert. Don't let yourself slip into crude behavior without noticing. Remember: even if you're a good person, spending time with corrupt people will corrupt you too.",
+    "original_excerpt": "Avoid public and vulgar entertainments; but if ever an occasion calls you to them, keep your attention upon the stretch, that you may not imperceptibly slide into vulgarity. For be assured that if a person be ever so pure himself, yet, if his companion be corrupted, he who converses with him will be corrupted likewise.",
+    "source_reference": "The Enchiridion, Section 33",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 11
+  },
+  {
+    "id": "enchiridion-33-006",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-33",
+    "card_number": 6,
+    "total_cards_in_chapter": 13,
+    "plain_english": "Give your body only what it absolutely needs: food, drink, clothes, shelter, and basic help from others. Cut out anything that's just for show or luxury.",
+    "original_excerpt": "Provide things relating to the body no further than absolute need requires, as meat, drink, clothing, house, retinue. But cut off everything that looks toward show and luxury.",
+    "source_reference": "The Enchiridion, Section 33",
+    "author_slug": "epictetus",
+    "tags": [
+      "what-matters-most",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 8
+  },
+  {
+    "id": "enchiridion-33-007",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-33",
+    "card_number": 7,
+    "total_cards_in_chapter": 13,
+    "plain_english": "Before you get married, do everything you can to avoid sleeping with women outside of marriage. But don't be harsh or judgmental toward people who do this. And don't keep bragging about how you don't do it yourself.",
+    "original_excerpt": "Before marriage guard yourself with all your ability from unlawful intercourse with women; yet be not uncharitable or severe to those who are led into this, nor boast frequently that you yourself do otherwise.",
+    "source_reference": "The Enchiridion, Section 33",
+    "author_slug": "epictetus",
+    "tags": [
+      "doing-the-right-thing",
+      "human-nature"
+    ],
+    "reading_time_seconds": 11
+  },
+  {
+    "id": "enchiridion-33-008",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-33",
+    "card_number": 8,
+    "total_cards_in_chapter": 13,
+    "plain_english": "If someone tells you that a person is talking badly about you, don't defend yourself against what was said. Instead, say: \"He doesn't know about my other faults, or he wouldn't have just mentioned those ones.\"",
     "original_excerpt": "If anyone tells you that a certain person speaks ill of you, do not make excuses about what is said of you, but answer: \"He was ignorant of my other faults, else he would not have mentioned these alone.\"",
     "source_reference": "The Enchiridion, Section 33",
     "author_slug": "epictetus",
@@ -48,51 +126,83 @@
     "reading_time_seconds": 11
   },
   {
-    "id": "enchiridion-33-004",
+    "id": "enchiridion-33-009",
     "book_slug": "enchiridion",
     "chapter_slug": "section-33",
-    "card_number": 4,
-    "total_cards_in_chapter": 6,
-    "plain_english": "You don't need to go to public events very often. But when you do go, don't care more about anyone else than yourself. Just want things to happen as they happen, and want the best person to win. This way, nothing will upset you. Don't cheer loudly, don't mock anyone, and don't get worked up. When you leave, don't spend a lot of time talking about what happened—it doesn't help you improve anyway. All that chatter just shows you were too impressed by the show.\n\nDon't be eager to attend private readings and performances. If you do go, stay serious and dignified. Just don't be unpleasant about it.",
-    "original_excerpt": "It is not necessary for you to appear often at public spectacles; but if ever there is a proper occasion for you to be there, do not appear more solicitous for any other than for yourself—that is, wish things to be only just as they are, and only the best man to win; for thus nothing will go against you. But abstain entirely from acclamations and derision and violent emotions. And when you come away, do not discourse a great deal on what has passed and what contributes nothing to your own amendment. For it would appear by such discourse that you were dazzled by the show.\n\nBe not prompt or ready to attend private recitations; but if you do attend, preserve your gravity and dignity, and yet avoid making yourself disagreeable.",
+    "card_number": 9,
+    "total_cards_in_chapter": 13,
+    "plain_english": "You don't need to go to public events very often. But if there's a good reason to attend, don't root for anyone except yourself. By that I mean: wish for things to happen exactly as they do, and hope the best person wins. This way, nothing will disappoint you. Don't cheer, boo, or get worked up. When you leave, don't spend a lot of time talking about what happened if it doesn't help you improve as a person. Talking too much about it shows you were impressed by the spectacle.",
+    "original_excerpt": "It is not necessary for you to appear often at public spectacles; but if ever there is a proper occasion for you to be there, do not appear more solicitous for any other than for yourself—that is, wish things to be only just as they are, and only the best man to win; for thus nothing will go against you. But abstain entirely from acclamations and derision and violent emotions. And when you come away, do not discourse a great deal on what has passed and what contributes nothing to your own amendment. For it would appear by such discourse that you were dazzled by the show.",
     "source_reference": "The Enchiridion, Section 33",
     "author_slug": "epictetus",
     "tags": [
       "calm-your-mind",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 32
+    "reading_time_seconds": 27
   },
   {
-    "id": "enchiridion-33-005",
+    "id": "enchiridion-33-010",
     "book_slug": "enchiridion",
     "chapter_slug": "section-33",
-    "card_number": 5,
-    "total_cards_in_chapter": 6,
-    "plain_english": "When you're about to meet with someone, especially someone who seems more important than you, ask yourself how Socrates or Zeno would handle it. You'll know what to do.\n\nWhen you're going to see someone powerful, imagine that they might not be home. The door might be shut in your face. They might ignore you completely. If it's still your duty to go, then accept whatever happens. Never tell yourself afterward, \"That wasn't worth the trouble.\" That's shallow thinking. That's how people act when they're obsessed with things outside their control.",
-    "original_excerpt": "When you are going to confer with anyone, and especially with one who seems your superior, represent to yourself how Socrates or Zeno would behave in such a case, and you will not be at a loss to meet properly whatever may occur.\n\nWhen you are going before anyone in power, fancy to yourself that you may not find him at home, that you may be shut out, that the doors may not be opened to you, that he may not notice you. If, with all this, it be your duty to go, bear what happens and never say to yourself, \"It was not worth so much\"; for this is vulgar, and like a man bewildered by externals.",
+    "card_number": 10,
+    "total_cards_in_chapter": 13,
+    "plain_english": "Don't be eager to attend private readings or performances. But if you do go, stay serious and dignified. Just don't be unpleasant about it.",
+    "original_excerpt": "Be not prompt or ready to attend private recitations; but if you do attend, preserve your gravity and dignity, and yet avoid making yourself disagreeable.",
+    "source_reference": "The Enchiridion, Section 33",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "enchiridion-33-011",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-33",
+    "card_number": 11,
+    "total_cards_in_chapter": 13,
+    "plain_english": "When you're about to meet with someone — especially someone who seems more important than you — ask yourself how Socrates or Zeno would handle it. You won't be confused about how to act.",
+    "original_excerpt": "When you are going to confer with anyone, and especially with one who seems your superior, represent to yourself how Socrates or Zeno would behave in such a case, and you will not be at a loss to meet properly whatever may occur.",
+    "source_reference": "The Enchiridion, Section 33",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 10
+  },
+  {
+    "id": "enchiridion-33-012",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-33",
+    "card_number": 12,
+    "total_cards_in_chapter": 13,
+    "plain_english": "When you're going to meet someone powerful, imagine that they might not be home. You might get turned away. The doors might stay closed. They might ignore you completely. If you still have to go despite all this, accept whatever happens. Don't tell yourself afterward, \"It wasn't worth the trouble.\" That's shallow thinking. It's what people do when they get confused by things outside their control.",
+    "original_excerpt": "When you are going before anyone in power, fancy to yourself that you may not find him at home, that you may be shut out, that the doors may not be opened to you, that he may not notice you. If, with all this, it be your duty to go, bear what happens and never say to yourself, \"It was not worth so much\"; for this is vulgar, and like a man bewildered by externals.",
     "source_reference": "The Enchiridion, Section 33",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
       "facing-hardship"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 20
   },
   {
-    "id": "enchiridion-33-006",
+    "id": "enchiridion-33-013",
     "book_slug": "enchiridion",
     "chapter_slug": "section-33",
-    "card_number": 6,
-    "total_cards_in_chapter": 6,
-    "plain_english": "When you're with other people, don't constantly talk about your own actions and dangers. Sure, you might enjoy bringing up the risks you've taken, but others don't enjoy hearing your stories as much as you do. Also avoid trying to make people laugh all the time. This can easily make you seem crude. Plus, it might make people think less of you. Stay away from dirty talk too — it's risky. So when someone starts talking that way, take the first chance you get to call them out. Or at least show you disapprove by staying quiet, blushing, and looking serious.",
+    "card_number": 13,
+    "total_cards_in_chapter": 13,
+    "plain_english": "When you're with other people, don't constantly talk about yourself — your accomplishments, your close calls, your adventures. You might enjoy reliving these stories, but others get tired of hearing them. Also, don't try too hard to make people laugh. This can easily turn crude, and it makes people respect you less. Stay away from dirty jokes and inappropriate talk too. When someone starts going down that path, either call them out on it right away or show your disapproval through silence, embarrassment, and a serious expression.",
     "original_excerpt": "In company, avoid a frequent and excessive mention of your own actions and dangers. For however agreeable it may be to yourself to allude to the risks you have run, it is not equally agreeable to others to hear your adventures. Avoid likewise an endeavor to excite laughter, for this may readily slide you into vulgarity, and, besides, may be apt to lower you in the esteem of your acquaintance. Approaches to indecent discourse are likewise dangerous. Therefore, when anything of this sort happens, use the first fit opportunity to rebuke him who makes advances that way, or, at least, by silence and blushing and a serious look show yourself to be displeased by such talk.",
     "source_reference": "The Enchiridion, Section 33",
     "author_slug": "epictetus",
     "tags": [
       "human-nature",
-      "doing-the-right-thing"
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 30
+    "reading_time_seconds": 26
   }
 ]
