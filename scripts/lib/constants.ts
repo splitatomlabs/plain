@@ -55,12 +55,18 @@ export interface BookConfig {
   headerPattern?: RegExp;
   /** Regex matching section markers (Roman numeral prefixes) */
   sectionPattern: RegExp;
+  /** How sections are split: 'inline' for Roman numerals at line start, 'centered' for indented standalone Roman numerals */
+  sectionSplitMode: "inline" | "centered";
   /** How sections map to chapter JSON files; omit for flat books where each section is its own chapter */
   chapterGrouping?: ChapterGrouping[];
   /** Whether to strip Gutenberg preamble/footer */
   gutenbergStrip: boolean;
   /** Whether source has speaker labels like [_Serenus._] to strip */
   speakerLabels: boolean;
+  /** Regex to strip trailing content (footnotes, publisher info) from the last section */
+  trailingContentPattern?: RegExp;
+  /** Regex to find the start of actual content (strips preamble before first match) */
+  preamblePattern?: RegExp;
   /** Source reference format template: {title}, {chapter}, Section {n} */
   sourceRefTemplate: string;
 }
@@ -73,9 +79,11 @@ export const BOOK_CONFIGS: BookConfig[] = [
     chapter_slug_pattern: "section-NN",
     source_file: "source-books/enchiridion.txt",
     sectionPattern: /^\s{10,}([IVXLCDMivxlcdm]+)\s*$/m,
+    sectionSplitMode: "centered",
 
     gutenbergStrip: true,
     speakerLabels: false,
+    trailingContentPattern: /\n\s*Footnotes\s*\n/,
     sourceRefTemplate: "The Enchiridion, Section {n}",
   },
   {
@@ -86,6 +94,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     source_file: "source-books/meditations.txt",
     headerPattern: /^THE (FIRST|SECOND|THIRD|FOURTH|FIFTH|SIXTH|SEVENTH|EIGHTH|NINTH|TENTH|ELEVENTH|TWELFTH) BOOK$/m,
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
+    sectionSplitMode: "inline",
     chapterGrouping: [
       { slug: "book-01", title: "Book 1", range: [1, 1] },
       { slug: "book-02", title: "Book 2", range: [2, 2] },
@@ -111,9 +120,12 @@ export const BOOK_CONFIGS: BookConfig[] = [
     chapter_slug_pattern: "section-NN",
     source_file: "source-books/on-the-shortness-of-life.txt",
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
+    sectionSplitMode: "inline",
 
     gutenbergStrip: false,
     speakerLabels: false,
+    trailingContentPattern: /\n\s*\[\d+\]\s/,
+    preamblePattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sourceRefTemplate: "On the Shortness of Life, Section {n}",
   },
   {
@@ -123,9 +135,12 @@ export const BOOK_CONFIGS: BookConfig[] = [
     chapter_slug_pattern: "section-NN",
     source_file: "source-books/on-the-happy-life.txt",
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
+    sectionSplitMode: "inline",
 
     gutenbergStrip: false,
     speakerLabels: false,
+    trailingContentPattern: /\n\s*\[\d+\]\s/,
+    preamblePattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sourceRefTemplate: "On the Happy Life, Section {n}",
   },
   {
@@ -135,9 +150,12 @@ export const BOOK_CONFIGS: BookConfig[] = [
     chapter_slug_pattern: "section-NN",
     source_file: "source-books/on-peace-of-mind.txt",
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
+    sectionSplitMode: "inline",
 
     gutenbergStrip: false,
     speakerLabels: true,
+    trailingContentPattern: /\n\s*\[\d+\]\s/,
+    preamblePattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sourceRefTemplate: "On Peace of Mind, Section {n}",
   },
 ];
