@@ -1,0 +1,25 @@
+{
+  "slug": "enchiridion",
+  "title": "The Enchiridion",
+  "author_slug": "epictetus",
+  "description": "",
+  "tags": [
+    "freedom-and-control",
+    "knowing-yourself",
+    "calm-your-mind",
+    "death-and-mortality",
+    "facing-hardship",
+    "what-matters-most",
+    "human-nature",
+    "doing-the-right-thing"
+  ],
+  "chapters": [
+    {
+      "slug": "section-01",
+      "title": "Section 1",
+      "card_count": 2
+    }
+  ],
+  "total_cards": 2,
+  "source_url": ""
+}

@@ -1,0 +1,30 @@
+{
+  "slug": "meditations",
+  "title": "Meditations",
+  "author_slug": "marcus-aurelius",
+  "description": "",
+  "tags": [
+    "knowing-yourself",
+    "human-nature",
+    "what-matters-most",
+    "doing-the-right-thing",
+    "calm-your-mind",
+    "freedom-and-control",
+    "death-and-mortality",
+    "facing-hardship"
+  ],
+  "chapters": [
+    {
+      "slug": "book-01",
+      "title": "Book 1",
+      "card_count": 23
+    },
+    {
+      "slug": "book-02",
+      "title": "Book 2",
+      "card_count": 21
+    }
+  ],
+  "total_cards": 44,
+  "source_url": ""
+}
