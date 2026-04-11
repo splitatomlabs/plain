@@ -233,8 +233,8 @@ function splitCenteredSections(text: string): Section[] {
   const sections: Section[] = [];
   const lines = text.split("\n");
 
-  // Enchiridion uses centered Roman numerals on their own line
-  const centeredRomanRe = /^\s{10,}([IVXLCDMivxlcdm]+)\s*$/;
+  // Centered Roman numerals on their own line, optionally followed by footnote refs like [2]
+  const centeredRomanRe = /^\s{10,}([IVXLCDMivxlcdm]+)\s*(?:\[\d+\])?\s*$/;
 
   // Find the first centered Roman numeral "I" to skip the preamble
   let startIdx = -1;

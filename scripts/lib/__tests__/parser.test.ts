@@ -133,8 +133,14 @@ describe("parseSourceText — Enchiridion", () => {
     expect(total).toBeGreaterThanOrEqual(50);
   });
 
-  it("has exactly 50 chapters (sections 1-51, skipping 29)", () => {
-    expect(parsed.chapters).toHaveLength(50);
+  it("has exactly 51 chapters (sections 1-51)", () => {
+    expect(parsed.chapters).toHaveLength(51);
+  });
+
+  it("includes section 29 (XXIX with footnote marker)", () => {
+    const sec29 = parsed.chapters.find((ch) => ch.slug === "section-29");
+    expect(sec29).toBeDefined();
+    expect(sec29!.sections[0].number).toBe(29);
   });
 
   it("section 51 does not contain footnotes or publisher text", () => {
