@@ -1,0 +1,34 @@
+[
+  {
+    "id": "discourses-32-001",
+    "book_slug": "discourses",
+    "chapter_slug": "how-we-must-adapt-preconceptions-to-particular-cases",
+    "card_number": 1,
+    "total_cards_in_chapter": 2,
+    "plain_english": "What's the first job of anyone who wants to study philosophy? Get rid of your ego. You can't learn something you think you already know.\n\nWe all talk randomly about what should and shouldn't be done. We debate good and bad, beautiful and ugly. We praise and blame. We judge what's honorable and dishonorable. But then we go to philosophers. Why? Because we want to learn what we don't think we know. And what's that? Abstract theories. We want to learn what philosophers say because it sounds clever and sharp. Some people want to learn so they can profit from it.\n\nIt's ridiculous to think you'll learn one thing when you want to learn something else. It's just as ridiculous to think you'll make progress in something you're not actually learning.",
+    "original_excerpt": "What is the first business of him who philosophizes? To throw away self-conceit ([Greek: oiaesis]). For it is impossible for a man to begin to learn that which he thinks that he knows. As to things then which ought to be done and ought not to be done, and good and bad, and beautiful and ugly, all of us talking of them at random go to the philosophers; and on these matters we praise, we censure, we accuse, we blame, we judge and determine about principles honorable and dishonorable. But why do we go to the philosophers? Because we wish to learn what we do not think that we know. And what is this? Theorems. For we wish to learn what philosophers say as being something elegant and acute; and some wish to learn that they may get profit from what they learn. It is ridiculous then to think that a person wishes to learn one thing, and will learn another; or further, that a man will make proficiency in that which he does not learn.",
+    "source_reference": "Discourses, How We Must Adapt Preconceptions to Particular Cases, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 39
+  },
+  {
+    "id": "discourses-32-002",
+    "book_slug": "discourses",
+    "chapter_slug": "how-we-must-adapt-preconceptions-to-particular-cases",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "Most people get fooled by the same thing that fooled the speaker Theopompus when he criticized Plato for wanting to define everything. What does Theopompus say? \"Did none of us use words like 'good' or 'just' before you came along? Or were we just making empty sounds without knowing what they meant?\" But who told you, Theopompus, that we didn't already have natural ideas about these things? We do have basic concepts built into us. But you can't properly use these concepts unless you've thought them through carefully and figured out what each one actually applies to. You could make the same complaint about doctors. Who among us didn't use words like 'healthy' and 'unhealthy' before Hippocrates was around? Were we just making empty sounds? We do have a basic idea of what health means, but we can't apply it properly. That's why one doctor says \"Don't eat,\" another says \"Eat more,\" another says \"Bleed the patient,\" and another says \"Use cupping.\" Why does this happen? Because people can't properly match their basic concepts of health to specific situations.",
+    "original_excerpt": "But the many are deceived by this which deceived also the rhetorician Theopompus, when he blames even Plato for wishing everything to be defined. For what does he say? Did none of us before you use the words good or just, or do we utter the sounds in an unmeaning and empty way without understanding what they severally signify? Now who tells you, Theopompus, that we had not natural notions of each of these things and preconceptions ([Greek: prolaepseis])? But it is not possible to adapt preconceptions to their correspondent objects if we have not distinguished (analyzed) them, and inquired what object must be subjected to each preconception. You may make the same charge against physicians also. For who among us did not use the words healthy and unhealthy before Hippocrates lived, or did we utter these words as empty sounds? For we have also a certain preconception of health, but we are not able to adapt it. For this reason one says, Abstain from food; another says, Give food; another says, Bleed; and another says, Use cupping. What is the reason? is it any other than that a man cannot properly adapt the preconceptions of health to particulars?",
+    "source_reference": "Discourses, How We Must Adapt Preconceptions to Particular Cases, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 54
+  }
+]
