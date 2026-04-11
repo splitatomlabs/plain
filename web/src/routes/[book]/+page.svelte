@@ -175,8 +175,10 @@
 						<span class="chapter-detail">
 							{#if cp && cp.cardsRead > 0}
 								{cp.cardsRead} / {cp.total}
+							{:else if chapter.reading_time_seconds}
+								{formatReadingTime(chapter.reading_time_seconds)}
 							{:else}
-								{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}{#if chapter.reading_time_seconds} · {formatReadingTime(chapter.reading_time_seconds)}{/if}
+								{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}
 							{/if}
 						</span>
 						{#if cp && cp.percentage > 0}
