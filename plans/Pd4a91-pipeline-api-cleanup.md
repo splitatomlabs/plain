@@ -52,8 +52,8 @@ The user's thinking is sound overall. A few refinements worth noting:
 - [x] T05: Simplify translator.ts — remove `translateChunks()` (async generator, non-batch path). Keep `translateChunksBatch()` as the sole entry point. Update exports.
 - [x] T06: Rewrite generate.ts CLI and main — replace flags (`--parse-only`, `--parallel`, `--fresh`, `--limit`) with `--phase <parse|refine|translate|assemble>`. Remove `processBook()`, `parseAndRefine()`, sequential/parallel branching. Collapse `main()` to: determine configs → if `--phase`, run single phase; else run all four phases via `runBatchPipeline()` (simplified).
 - [x] T07: Implement per-phase runners in generate.ts — each phase loads its input intermediate (or errors if missing), runs the phase, saves its output intermediate. Parse phase: read source → parse → save parse.json. Refine: load parse.json → batch refine → save refine.json. Translate: load refine.json → batch translate → save translate.json. Assemble: load translate.json → assemble → write output.
-- [~] T08: Update tests — fix any tests referencing removed functions (`refineChunks`, `translateChunks`, `callClaude`, `processBook`, removed CLI flags). Ensure all 84+ tests pass.
-- [ ] T09: Update docs — update CLAUDE.md pipeline section (new flags, removed flags, simplified env vars; add note that `PIPELINE_VERSION` in cache.ts must be bumped when pipeline logic changes to invalidate cached intermediates). Update README.md pipeline section with new examples.
+- [x] T08: Update tests — fix any tests referencing removed functions (`refineChunks`, `translateChunks`, `callClaude`, `processBook`, removed CLI flags). Ensure all 84+ tests pass.
+- [~] T09: Update docs — update CLAUDE.md pipeline section (new flags, removed flags, simplified env vars; add note that `PIPELINE_VERSION` in cache.ts must be bumped when pipeline logic changes to invalidate cached intermediates). Update README.md pipeline section with new examples.
 
 ## Verify
 ```bash
