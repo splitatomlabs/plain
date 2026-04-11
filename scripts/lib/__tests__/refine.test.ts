@@ -8,7 +8,7 @@ vi.mock("../claude.js", () => ({
   ClaudeCliError: class ClaudeCliError extends Error {},
 }));
 
-import { refineChunks, buildRefineSystem } from "../refine.js";
+import { refineChunks, buildRefineSystem, buildBulkRefineSystem, buildBulkRefineUser } from "../refine.js";
 import { callClaudeJSON } from "../claude.js";
 
 const mockCallClaudeJSON = vi.mocked(callClaudeJSON);
@@ -29,6 +29,23 @@ function makeChunk(number: number, text: string): Chunk {
   return { sectionNumber: number, text };
 }
 
+/** Helper: build a bulk response array */
+function bulkResponse(
+  entries: Array<{
+    section: number;
+    action: "keep" | "split" | "merge_next" | "merge_prev";
+    segments?: string[];
+    reason?: string;
+  }>,
+) {
+  return entries.map((e) => ({
+    section: e.section,
+    action: e.action,
+    segments: e.segments ?? null,
+    reason: e.reason ?? null,
+  }));
+}
+
 beforeEach(() => {
   mockCallClaudeJSON.mockReset();
 });
@@ -40,9 +57,12 @@ describe("refineChunks", () => {
       makeChunk(2, "This is another complete idea about duty and responsibility."),
     ];
 
-    mockCallClaudeJSON
-      .mockResolvedValueOnce({ action: "keep", segments: null, reason: null })
-      .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        { section: 1, action: "keep" },
+        { section: 2, action: "keep" },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -51,6 +71,7 @@ describe("refineChunks", () => {
     expect(result.chunks[1].text).toBe(chunks[1].text);
     expect(result.splits).toBe(0);
     expect(result.merges).toBe(0);
+    expect(result.apiCalls).toBe(1);
   });
 
   it("splits a multi-idea chunk into separate chunks", async () => {
@@ -58,11 +79,15 @@ describe("refineChunks", () => {
       makeChunk(1, "First idea about virtue. Second idea about death."),
     ];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "split",
-      segments: ["First idea about virtue.", "Second idea about death."],
-      reason: null,
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        {
+          section: 1,
+          action: "split",
+          segments: ["First idea about virtue.", "Second idea about death."],
+        },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -83,9 +108,13 @@ describe("refineChunks", () => {
       makeChunk(3, "A separate idea entirely."),
     ];
 
-    mockCallClaudeJSON
-      .mockResolvedValueOnce({ action: "merge_next", segments: null, reason: "Thought continues into next section." })
-      .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        { section: 1, action: "merge_next", reason: "Thought continues into next section." },
+        { section: 2, action: "keep" },
+        { section: 3, action: "keep" },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -103,9 +132,12 @@ describe("refineChunks", () => {
       makeChunk(2, "But this depends on the previous thought to make sense."),
     ];
 
-    mockCallClaudeJSON
-      .mockResolvedValueOnce({ action: "keep", segments: null, reason: null })
-      .mockResolvedValueOnce({ action: "merge_prev", segments: null, reason: "Depends on previous section." });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        { section: 1, action: "keep" },
+        { section: 2, action: "merge_prev", reason: "Depends on previous section." },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -121,11 +153,11 @@ describe("refineChunks", () => {
       makeChunk(1, "First section that somehow says merge_prev."),
     ];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "merge_prev",
-      segments: null,
-      reason: "Depends on previous.",
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        { section: 1, action: "merge_prev", reason: "Depends on previous." },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -139,11 +171,11 @@ describe("refineChunks", () => {
       makeChunk(1, "Last section that says merge_next."),
     ];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "merge_next",
-      segments: null,
-      reason: "Should merge with next.",
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        { section: 1, action: "merge_next", reason: "Should merge with next." },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -151,17 +183,21 @@ describe("refineChunks", () => {
     expect(result.chunks[0].text).toBe("Last section that says merge_next.");
   });
 
-  it("keeps chunk on Claude call failure", async () => {
+  it("falls back to single-chunk evaluation on bulk API failure", async () => {
     const chunks = [
       makeChunk(1, "This chunk will survive a failure gracefully."),
     ];
 
-    mockCallClaudeJSON.mockRejectedValueOnce(new Error("API timeout"));
+    // First call (bulk) fails, second call (single fallback) succeeds
+    mockCallClaudeJSON
+      .mockRejectedValueOnce(new Error("API timeout"))
+      .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
 
     const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toBe("This chunk will survive a failure gracefully.");
+    expect(mockCallClaudeJSON).toHaveBeenCalledTimes(2); // bulk + single fallback
   });
 
   it("ignores split with only one segment", async () => {
@@ -169,11 +205,15 @@ describe("refineChunks", () => {
       makeChunk(1, "A section that the AI incorrectly tries to split into one piece."),
     ];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "split",
-      segments: ["A section that the AI incorrectly tries to split into one piece."],
-      reason: null,
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        {
+          section: 1,
+          action: "split",
+          segments: ["A section that the AI incorrectly tries to split into one piece."],
+        },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -181,22 +221,19 @@ describe("refineChunks", () => {
     expect(result.splits).toBe(0);
   });
 
-  it("splits chunks that exceed 90s reading time cap", async () => {
+  it("splits chunks that exceed 90s reading time cap (safety net)", async () => {
     // 400 words ≈ 120s at 200wpm — should be split into two chunks
     const longText = Array(400).fill("word").join(" ");
     const chunks = [makeChunk(1, longText)];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "keep",
-      segments: null,
-      reason: null,
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks.length).toBe(2);
     expect(result.splits).toBe(1);
-    // Both pieces should retain the original section number
     expect(result.chunks[0].sectionNumber).toBe(1);
     expect(result.chunks[1].sectionNumber).toBe(1);
   });
@@ -206,16 +243,13 @@ describe("refineChunks", () => {
     const longText = `${para}\n\n${para}`;
     const chunks = [makeChunk(1, longText)];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "keep",
-      segments: null,
-      reason: null,
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks.length).toBe(2);
-    // Neither half should contain a paragraph break
     expect(result.chunks[0].text).not.toContain("\n\n");
     expect(result.chunks[1].text).not.toContain("\n\n");
   });
@@ -225,11 +259,9 @@ describe("refineChunks", () => {
     const text = Array(300).fill("word").join(" ");
     const chunks = [makeChunk(1, text)];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "keep",
-      segments: null,
-      reason: null,
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
@@ -243,60 +275,96 @@ describe("refineChunks", () => {
       makeChunk(3, "Third section, independent."),
     ];
 
-    mockCallClaudeJSON
-      .mockResolvedValueOnce({ action: "merge_next", segments: null, reason: "Incomplete thought." })
-      // Section 2 is skipped — no call made for it
-      .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        { section: 1, action: "merge_next", reason: "Incomplete thought." },
+        { section: 2, action: "keep" },
+        { section: 3, action: "keep" },
+      ]),
+    );
 
     const result = await refineChunks(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
-    expect(mockCallClaudeJSON).toHaveBeenCalledTimes(2); // Not 3
+    expect(result.chunks[0].text).toContain("First section.");
+    expect(result.chunks[0].text).toContain("Second section to merge.");
+    expect(result.chunks[1].text).toBe("Third section, independent.");
   });
 
-  it("passes system prompt via options to callClaudeJSON", async () => {
+  it("passes bulk system prompt via options to callClaudeJSON", async () => {
     const chunks = [makeChunk(1, "A test section.")];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "keep",
-      segments: null,
-      reason: null,
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
 
     await refineChunks(chunks, testConfig);
 
-    // Third argument should include system prompt
     const options = mockCallClaudeJSON.mock.calls[0][2];
     expect(options).toBeDefined();
     expect(options!.system).toBeDefined();
     expect(options!.system).toContain("bite-sized reading cards");
+    expect(options!.system).toContain("300 words");
+    expect(options!.system).toContain("JSON array");
   });
 
-  it("does not include system content in user prompt when system option is set", async () => {
+  it("uses one API call for a batch of chunks", async () => {
+    const chunks = [
+      makeChunk(1, "Section one."),
+      makeChunk(2, "Section two."),
+      makeChunk(3, "Section three."),
+    ];
+
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([
+        { section: 1, action: "keep" },
+        { section: 2, action: "keep" },
+        { section: 3, action: "keep" },
+      ]),
+    );
+
+    const result = await refineChunks(chunks, testConfig);
+
+    expect(mockCallClaudeJSON).toHaveBeenCalledTimes(1);
+    expect(result.apiCalls).toBe(1);
+    expect(result.chunks).toHaveLength(3);
+  });
+
+  it("does not include system content in user prompt", async () => {
     const chunks = [makeChunk(1, "A test section.")];
 
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      action: "keep",
-      segments: null,
-      reason: null,
-    });
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
 
     await refineChunks(chunks, testConfig);
 
-    // First argument (prompt) should be the user-only part
     const prompt = mockCallClaudeJSON.mock.calls[0][0];
     const system = mockCallClaudeJSON.mock.calls[0][2]!.system!;
 
-    // User prompt should contain the chunk text
     expect(prompt).toContain("A test section.");
-    // User prompt should NOT duplicate the system content
     expect(prompt).not.toContain("bite-sized reading cards");
-    // System should contain the instructions
     expect(system).toContain("bite-sized reading cards");
+  });
+
+  it("handles model returning oversized split via safety net", async () => {
+    // Model keeps a 400-word chunk (misses the 300-word cap)
+    const longText = Array(400).fill("word").join(" ");
+    const chunks = [makeChunk(1, longText)];
+
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
+
+    const result = await refineChunks(chunks, testConfig);
+
+    // Safety net should catch it
+    expect(result.chunks.length).toBeGreaterThan(1);
+    expect(result.splits).toBe(1);
   });
 });
 
-describe("buildRefineSystem", () => {
+describe("buildRefineSystem (single-chunk, legacy)", () => {
   it("includes author context", () => {
     const system = buildRefineSystem(testConfig);
     expect(system).toContain("Marcus Aurelius");
@@ -309,19 +377,55 @@ describe("buildRefineSystem", () => {
     expect(system).toContain('"split"');
     expect(system).toContain('"merge_next"');
     expect(system).toContain('"merge_prev"');
+  });
+});
+
+describe("buildBulkRefineSystem", () => {
+  it("includes 300-word cap rule", () => {
+    const system = buildBulkRefineSystem(testConfig);
+    expect(system).toContain("300 words");
+    expect(system).toContain("MUST be split");
+  });
+
+  it("specifies JSON array response format", () => {
+    const system = buildBulkRefineSystem(testConfig);
+    expect(system).toContain("JSON array");
+    expect(system).toContain('"section"');
     expect(system).toContain('"action"');
   });
 
-  it("does not include per-chunk text", () => {
-    const system = buildRefineSystem(testConfig);
-    expect(system).not.toContain("CURRENT SECTION");
-    expect(system).not.toContain("PREVIOUS SECTION");
+  it("includes author context", () => {
+    const system = buildBulkRefineSystem(testConfig);
+    expect(system).toContain("Marcus Aurelius");
+    expect(system).toContain("private journal reflections");
   });
 
   it("varies by book config", () => {
     const senecaConfig = { ...testConfig, slug: "shortness-of-life", title: "On the Shortness of Life", author_slug: "seneca" as const };
-    const system = buildRefineSystem(senecaConfig);
+    const system = buildBulkRefineSystem(senecaConfig);
     expect(system).toContain("On the Shortness of Life");
     expect(system).toContain("Seneca");
+  });
+});
+
+describe("buildBulkRefineUser", () => {
+  it("formats chunks as numbered sections", () => {
+    const chunks = [
+      makeChunk(1, "First section text."),
+      makeChunk(2, "Second section text."),
+    ];
+
+    const user = buildBulkRefineUser(chunks);
+    expect(user).toContain("--- SECTION 1 ---");
+    expect(user).toContain("First section text.");
+    expect(user).toContain("--- SECTION 2 ---");
+    expect(user).toContain("Second section text.");
+  });
+
+  it("does not include system instructions", () => {
+    const chunks = [makeChunk(1, "Test.")];
+    const user = buildBulkRefineUser(chunks);
+    expect(user).not.toContain("bite-sized");
+    expect(user).not.toContain("300 words");
   });
 });

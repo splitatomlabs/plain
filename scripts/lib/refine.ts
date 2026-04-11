@@ -232,10 +232,83 @@ export interface RefineResult {
   apiCalls: number;
 }
 
-export async function refineChunks(
+const REFINE_BATCH_SIZE = parseInt(process.env.REFINE_BATCH_SIZE ?? "10", 10);
+
+/**
+ * Apply an array of refine decisions to a batch of chunks.
+ * Returns the refined chunks, plus split/merge counts.
+ */
+function applyDecisions(
+  chunks: Chunk[],
+  decisions: BulkRefineResponse[],
+): { refined: Chunk[]; splits: number; merges: number } {
+  // Build a map from section number to decision
+  const decisionMap = new Map<number, BulkRefineResponse>();
+  for (const d of decisions) {
+    decisionMap.set(d.section, d);
+  }
+
+  const refined: Chunk[] = [];
+  let splits = 0;
+  let merges = 0;
+  let skipNext = false;
+
+  for (let i = 0; i < chunks.length; i++) {
+    if (skipNext) {
+      skipNext = false;
+      continue;
+    }
+
+    const chunk = chunks[i];
+    const next = i < chunks.length - 1 ? chunks[i + 1] : null;
+    const decision = decisionMap.get(chunk.sectionNumber);
+
+    if (!decision) {
+      // No decision for this chunk — keep as-is
+      refined.push(chunk);
+      continue;
+    }
+
+    if (decision.action === "split" && decision.segments && decision.segments.length > 1) {
+      process.stderr.write(
+        `  SPLIT section ${chunk.sectionNumber} into ${decision.segments.length} chunks\n`,
+      );
+      splits++;
+      for (const segment of decision.segments) {
+        refined.push({ sectionNumber: chunk.sectionNumber, text: segment.trim() });
+      }
+    } else if (decision.action === "merge_next" && next) {
+      process.stderr.write(
+        `  MERGE section ${chunk.sectionNumber} + ${next.sectionNumber}: ${decision.reason ?? ""}\n`,
+      );
+      merges++;
+      refined.push({
+        sectionNumber: chunk.sectionNumber,
+        text: chunk.text + "\n\n" + next.text,
+      });
+      skipNext = true;
+    } else if (decision.action === "merge_prev" && refined.length > 0) {
+      process.stderr.write(
+        `  MERGE section ${chunk.sectionNumber} into previous: ${decision.reason ?? ""}\n`,
+      );
+      merges++;
+      const last = refined[refined.length - 1];
+      last.text = last.text + "\n\n" + chunk.text;
+    } else {
+      refined.push(chunk);
+    }
+  }
+
+  return { refined, splits, merges };
+}
+
+/**
+ * Single-chunk refine fallback — used when bulk API call fails.
+ */
+async function refineChunksSingle(
   chunks: Chunk[],
   config: BookConfig,
-): Promise<RefineResult> {
+): Promise<{ refined: Chunk[]; splits: number; merges: number; apiCalls: number }> {
   const refined: Chunk[] = [];
   let splits = 0;
   let merges = 0;
@@ -274,11 +347,8 @@ export async function refineChunks(
         `  SPLIT section ${chunk.sectionNumber} into ${response.segments.length} chunks\n`,
       );
       splits++;
-      for (let s = 0; s < response.segments.length; s++) {
-        refined.push({
-          sectionNumber: chunk.sectionNumber,
-          text: response.segments[s].trim(),
-        });
+      for (const segment of response.segments) {
+        refined.push({ sectionNumber: chunk.sectionNumber, text: segment.trim() });
       }
     } else if (response.action === "merge_next" && next) {
       process.stderr.write(
@@ -302,12 +372,92 @@ export async function refineChunks(
     }
   }
 
-  // Hard cap: split any chunk that still exceeds MAX_READING_TIME_SECONDS
+  return { refined, splits, merges, apiCalls: chunks.length };
+}
+
+/**
+ * Refine chunks using batched API calls.
+ * Sends ~REFINE_BATCH_SIZE chunks per call, falls back to single-chunk on failure.
+ */
+export async function refineChunks(
+  chunks: Chunk[],
+  config: BookConfig,
+): Promise<RefineResult> {
+  let allRefined: Chunk[] = [];
+  let totalSplits = 0;
+  let totalMerges = 0;
+  let apiCalls = 0;
+  const system = buildBulkRefineSystem(config);
+
+  // Split into batches
+  const batches: Chunk[][] = [];
+  for (let i = 0; i < chunks.length; i += REFINE_BATCH_SIZE) {
+    batches.push(chunks.slice(i, i + REFINE_BATCH_SIZE));
+  }
+
+  // Track deferred merge_next from previous batch
+  let deferredMergeChunk: Chunk | null = null;
+
+  for (let b = 0; b < batches.length; b++) {
+    let batch = batches[b];
+
+    // Prepend deferred merge chunk to this batch
+    if (deferredMergeChunk) {
+      batch = [deferredMergeChunk, ...batch];
+      deferredMergeChunk = null;
+    }
+
+    process.stderr.write(
+      `  Batch ${b + 1}/${batches.length}: ${batch.length} chunks (sections ${batch[0].sectionNumber}-${batch[batch.length - 1].sectionNumber})...\n`,
+    );
+
+    let decisions: BulkRefineResponse[];
+    try {
+      const prompt = buildBulkRefineUser(batch);
+      decisions = await callClaudeJSON<BulkRefineResponse[]>(prompt, undefined, { system });
+      apiCalls++;
+    } catch (e) {
+      process.stderr.write(
+        `  Bulk refine failed, falling back to single-chunk: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
+      );
+      const fallback = await refineChunksSingle(batch, config);
+      allRefined.push(...fallback.refined);
+      totalSplits += fallback.splits;
+      totalMerges += fallback.merges;
+      apiCalls += fallback.apiCalls;
+      continue;
+    }
+
+    const { refined, splits, merges } = applyDecisions(batch, decisions);
+    totalSplits += splits;
+    totalMerges += merges;
+
+    // Check if last decision is merge_next — defer it for the next batch
+    const lastDecision = decisions.find(
+      (d) => d.section === batch[batch.length - 1].sectionNumber,
+    );
+    if (
+      lastDecision?.action === "merge_next" &&
+      b < batches.length - 1 &&
+      refined.length > 0
+    ) {
+      deferredMergeChunk = refined.pop()!;
+    }
+
+    allRefined.push(...refined);
+  }
+
+  // If there's a deferred chunk with no next batch, just add it
+  if (deferredMergeChunk) {
+    allRefined.push(deferredMergeChunk);
+  }
+
+  // Safety net: split any chunk that still exceeds MAX_READING_TIME_SECONDS
   const capped: Chunk[] = [];
-  for (const chunk of refined) {
+  for (const chunk of allRefined) {
     const pieces = splitOversizedChunk(chunk);
     if (pieces.length > 1) {
-      splits++;
+      totalSplits++;
       process.stderr.write(
         `  LENGTH-SPLIT section ${chunk.sectionNumber} into ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)\n`,
       );
@@ -318,9 +468,9 @@ export async function refineChunks(
   return {
     originalCount: chunks.length,
     refinedCount: capped.length,
-    splits,
-    merges,
+    splits: totalSplits,
+    merges: totalMerges,
     chunks: capped,
-    apiCalls: chunks.length, // one call per chunk in current sequential mode
+    apiCalls,
   };
 }
