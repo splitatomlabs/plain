@@ -1,4 +1,14 @@
-import { callClaudeJSON, ClaudeCliError } from "./claude.js";
+import {
+  callClaudeJSON,
+  ClaudeCliError,
+  createMessageBatch,
+  pollBatchUntilDone,
+  streamBatchResults,
+  extractJSON,
+  tokenUsage,
+  batchStats,
+  type BatchRequest,
+} from "./claude.js";
 import type { Chunk } from "./chunker.js";
 import type { BookConfig } from "./constants.js";
 
@@ -484,4 +494,233 @@ export async function refineChunks(
     chunks: capped,
     apiCalls,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Batch refine via Anthropic Batch API
+// ---------------------------------------------------------------------------
+
+export interface BatchRefineInput {
+  bookSlug: string;
+  chapterSlug: string;
+  chunks: Chunk[];
+  config: BookConfig;
+}
+
+/**
+ * Batch refine: submits all refine evaluations across all books as a single
+ * Batch API request. Each request is one bulk evaluation (~10 chunks).
+ * Returns results keyed by "{bookSlug}_{chapterSlug}".
+ * Failed requests fall back to real-time refineChunks() per chapter.
+ */
+export async function refineChunksBatch(
+  inputs: BatchRefineInput[],
+): Promise<Map<string, RefineResult>> {
+  // 1. Build batch requests — one per bulk evaluation group
+  const requests: BatchRequest[] = [];
+  const meta = new Map<
+    string,
+    { bookSlug: string; chapterSlug: string; batch: Chunk[]; batchIndex: number; config: BookConfig }
+  >();
+
+  for (const { bookSlug, chapterSlug, chunks, config } of inputs) {
+    const system = buildBulkRefineSystem(config);
+    const batches: Chunk[][] = [];
+    for (let i = 0; i < chunks.length; i += REFINE_BATCH_SIZE) {
+      batches.push(chunks.slice(i, i + REFINE_BATCH_SIZE));
+    }
+
+    for (let b = 0; b < batches.length; b++) {
+      const batch = batches[b];
+      const customId = `refine_${bookSlug}_${chapterSlug}_${b}`;
+      const prompt = buildBulkRefineUser(batch);
+      requests.push({
+        custom_id: customId,
+        system,
+        messages: [{ role: "user", content: prompt }],
+      });
+      meta.set(customId, { bookSlug, chapterSlug, batch, batchIndex: b, config });
+    }
+  }
+
+  if (requests.length === 0) return new Map();
+
+  process.stderr.write(
+    `[batch-refine] Submitting ${requests.length} refine requests...\n`,
+  );
+
+  // 2. Submit batch
+  const batch = await createMessageBatch(requests);
+  process.stderr.write(`[batch-refine] Created batch ${batch.id}\n`);
+
+  // 3. Poll until done
+  await pollBatchUntilDone(batch.id);
+
+  // 4. Collect results — group decisions by chapter
+  // Key: "{bookSlug}_{chapterSlug}", value: array of { batchIndex, decisions }
+  const chapterDecisions = new Map<
+    string,
+    { batchIndex: number; decisions: BulkRefineResponse[]; batch: Chunk[] }[]
+  >();
+  const failedChapters = new Set<string>();
+  batchStats.totalRequests += requests.length;
+
+  for await (const item of streamBatchResults(batch.id)) {
+    const info = meta.get(item.custom_id);
+    if (!info) {
+      process.stderr.write(
+        `[batch-refine] WARNING: unknown custom_id ${item.custom_id}\n`,
+      );
+      continue;
+    }
+
+    const chapterKey = `${info.bookSlug}_${info.chapterSlug}`;
+
+    if (item.result.type === "errored") {
+      batchStats.failed++;
+      failedChapters.add(chapterKey);
+      process.stderr.write(
+        `[batch-refine] WARNING: request ${item.custom_id} failed: ${JSON.stringify(item.result.error)}\n`,
+      );
+      continue;
+    }
+
+    const message = item.result.message;
+    const textBlock = message.content.find((b) => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      batchStats.failed++;
+      failedChapters.add(chapterKey);
+      process.stderr.write(
+        `[batch-refine] WARNING: no text content for ${item.custom_id}\n`,
+      );
+      continue;
+    }
+
+    // Accumulate token usage
+    tokenUsage.inputTokens += message.usage.input_tokens;
+    tokenUsage.outputTokens += message.usage.output_tokens;
+    tokenUsage.cacheReadTokens += message.usage.cache_read_input_tokens ?? 0;
+    tokenUsage.cacheCreationTokens +=
+      message.usage.cache_creation_input_tokens ?? 0;
+
+    let decisions: BulkRefineResponse[];
+    try {
+      decisions = JSON.parse(extractJSON(textBlock.text)) as BulkRefineResponse[];
+    } catch {
+      batchStats.failed++;
+      failedChapters.add(chapterKey);
+      process.stderr.write(
+        `[batch-refine] WARNING: failed to parse JSON for ${item.custom_id}\n`,
+      );
+      continue;
+    }
+
+    batchStats.succeeded++;
+    const existing = chapterDecisions.get(chapterKey) ?? [];
+    existing.push({ batchIndex: info.batchIndex, decisions, batch: info.batch });
+    chapterDecisions.set(chapterKey, existing);
+  }
+
+  // 5. Apply decisions per chapter, handling cross-batch merges
+  const resultMap = new Map<string, RefineResult>();
+
+  for (const { bookSlug, chapterSlug, chunks, config } of inputs) {
+    const chapterKey = `${bookSlug}_${chapterSlug}`;
+
+    // If any batch for this chapter failed, fall back to real-time refine
+    if (failedChapters.has(chapterKey)) {
+      process.stderr.write(
+        `[batch-refine] Falling back to real-time refine for ${chapterKey}\n`,
+      );
+      const result = await refineChunks(chunks, config);
+      resultMap.set(chapterKey, result);
+      continue;
+    }
+
+    const batchEntries = chapterDecisions.get(chapterKey);
+    if (!batchEntries) {
+      // No results at all — fall back
+      process.stderr.write(
+        `[batch-refine] No results for ${chapterKey}, falling back to real-time\n`,
+      );
+      const result = await refineChunks(chunks, config);
+      resultMap.set(chapterKey, result);
+      continue;
+    }
+
+    // Sort by batch index to process in order
+    batchEntries.sort((a, b) => a.batchIndex - b.batchIndex);
+
+    let allRefined: Chunk[] = [];
+    let totalSplits = 0;
+    let totalMerges = 0;
+    let deferredMergeChunk: Chunk | null = null;
+
+    for (let i = 0; i < batchEntries.length; i++) {
+      let { batch: batchChunks, decisions } = batchEntries[i];
+
+      // Handle deferred merge from previous batch
+      if (deferredMergeChunk) {
+        const first = batchChunks[0];
+        batchChunks = [
+          {
+            sectionNumber: deferredMergeChunk.sectionNumber,
+            text: deferredMergeChunk.text + "\n\n" + first.text,
+          },
+          ...batchChunks.slice(1),
+        ];
+        deferredMergeChunk = null;
+        totalMerges++;
+        process.stderr.write(
+          `  MERGE (cross-batch) section ${batchChunks[0].sectionNumber} with next batch\n`,
+        );
+      }
+
+      const { refined, splits, merges } = applyDecisions(batchChunks, decisions);
+      totalSplits += splits;
+      totalMerges += merges;
+
+      // Check if last decision is merge_next — defer for next batch
+      const lastDecision = decisions.find(
+        (d) => d.section === batchChunks[batchChunks.length - 1].sectionNumber,
+      );
+      if (
+        lastDecision?.action === "merge_next" &&
+        i < batchEntries.length - 1 &&
+        refined.length > 0
+      ) {
+        deferredMergeChunk = refined.pop()!;
+      }
+
+      allRefined.push(...refined);
+    }
+
+    if (deferredMergeChunk) {
+      allRefined.push(deferredMergeChunk);
+    }
+
+    // Safety net: split oversized chunks
+    const capped: Chunk[] = [];
+    for (const chunk of allRefined) {
+      const pieces = splitOversizedChunk(chunk);
+      if (pieces.length > 1) {
+        totalSplits++;
+        process.stderr.write(
+          `  LENGTH-SPLIT section ${chunk.sectionNumber} into ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)\n`,
+        );
+      }
+      capped.push(...pieces);
+    }
+
+    resultMap.set(chapterKey, {
+      originalCount: chunks.length,
+      refinedCount: capped.length,
+      splits: totalSplits,
+      merges: totalMerges,
+      chunks: capped,
+      apiCalls: batchEntries.length,
+    });
+  }
+
+  return resultMap;
 }
