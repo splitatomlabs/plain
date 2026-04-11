@@ -212,12 +212,13 @@ export async function pollBatchUntilDone(
   const client = getClient();
   const MAX_WAIT_MS = 24 * 60 * 60 * 1000; // 24 hours
   const MIN_INTERVAL_MS = 5_000;
-  const MAX_INTERVAL_MS = 60_000;
+  const MAX_INTERVAL_MS = 30_000;
   const MAX_CONSECUTIVE_ERRORS = 5;
 
   let intervalMs = MIN_INTERVAL_MS;
   let consecutiveErrors = 0;
-  const deadline = Date.now() + MAX_WAIT_MS;
+  const startTime = Date.now();
+  const deadline = startTime + MAX_WAIT_MS;
 
   while (Date.now() < deadline) {
     let batch: Anthropic.MessageBatch;
@@ -240,8 +241,17 @@ export async function pollBatchUntilDone(
       continue;
     }
 
+    const elapsed = Math.round((Date.now() - startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    const elapsedStr = mins > 0 ? `${mins}m${secs}s` : `${secs}s`;
+    const counts = batch.request_counts;
+    const total = counts.processing + counts.succeeded + counts.errored + counts.canceled + counts.expired;
+    const progress = total > 0
+      ? ` (${counts.succeeded}/${total} succeeded${counts.errored ? `, ${counts.errored} errored` : ""}, ${elapsedStr} elapsed)`
+      : ` (${elapsedStr} elapsed)`;
     process.stderr.write(
-      `[batch] ${batchId} status=${batch.processing_status}\n`,
+      `[batch] ${batchId} status=${batch.processing_status}${progress}\n`,
     );
     if (batch.processing_status === "ended") {
       return batch;

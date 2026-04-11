@@ -104,9 +104,18 @@ describe("createMessageBatch", () => {
 // ---------------------------------------------------------------------------
 // pollBatchUntilDone
 // ---------------------------------------------------------------------------
+/** Helper to build mock batch objects with request_counts */
+function mockBatch(id: string, status: string, succeeded = 0, processing = 0, errored = 0) {
+  return {
+    id,
+    processing_status: status,
+    request_counts: { processing, succeeded, errored, canceled: 0, expired: 0 },
+  };
+}
+
 describe("pollBatchUntilDone", () => {
   it("returns immediately when status is already ended", async () => {
-    const endedBatch = { id: "batch_done", processing_status: "ended" };
+    const endedBatch = mockBatch("batch_done", "ended", 5);
     mockBatchRetrieve.mockResolvedValue(endedBatch);
 
     const promise = pollBatchUntilDone("batch_done");
@@ -120,9 +129,9 @@ describe("pollBatchUntilDone", () => {
 
   it("polls multiple times before ending with exponential backoff", async () => {
     mockBatchRetrieve
-      .mockResolvedValueOnce({ id: "batch_poll", processing_status: "in_progress" })
-      .mockResolvedValueOnce({ id: "batch_poll", processing_status: "in_progress" })
-      .mockResolvedValueOnce({ id: "batch_poll", processing_status: "ended" });
+      .mockResolvedValueOnce(mockBatch("batch_poll", "in_progress", 0, 5))
+      .mockResolvedValueOnce(mockBatch("batch_poll", "in_progress", 3, 2))
+      .mockResolvedValueOnce(mockBatch("batch_poll", "ended", 5));
 
     const promise = pollBatchUntilDone("batch_poll");
 
@@ -137,10 +146,10 @@ describe("pollBatchUntilDone", () => {
 
   it("retries transient errors and recovers", async () => {
     mockBatchRetrieve
-      .mockResolvedValueOnce({ id: "batch_err", processing_status: "in_progress" })
+      .mockResolvedValueOnce(mockBatch("batch_err", "in_progress", 0, 5))
       .mockRejectedValueOnce(new Error("network timeout"))
       .mockRejectedValueOnce(new Error("503 service unavailable"))
-      .mockResolvedValueOnce({ id: "batch_err", processing_status: "ended" });
+      .mockResolvedValueOnce(mockBatch("batch_err", "ended", 5));
 
     const promise = pollBatchUntilDone("batch_err");
 
@@ -164,8 +173,8 @@ describe("pollBatchUntilDone", () => {
     // Catch early to prevent unhandled rejection — we assert the error below
     const caught = promise.catch((e: Error) => e);
 
-    // Advance through 5 consecutive error retries (5s, 10s, 20s, 40s)
-    for (const ms of [5_000, 10_000, 20_000, 40_000]) {
+    // Advance through 5 consecutive error retries (5s, 10s, 20s, 30s)
+    for (const ms of [5_000, 10_000, 20_000, 30_000]) {
       await vi.advanceTimersByTimeAsync(ms);
     }
 
