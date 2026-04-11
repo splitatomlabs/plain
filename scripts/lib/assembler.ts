@@ -125,6 +125,7 @@ export function assembleBook(
     total_cards: totalCards,
     total_reading_time_seconds: totalReadingTime,
     source_url: config.source_url,
+    has_chapters: !!config.chapterGrouping,
   };
 
   return { meta, chapters };
