@@ -167,6 +167,8 @@ export interface RefineResult {
   splits: number;
   merges: number;
   chunks: Chunk[];
+  /** Number of API calls made during refine (for limit tracking) */
+  apiCalls: number;
 }
 
 export async function refineChunks(
@@ -258,5 +260,6 @@ export async function refineChunks(
     splits,
     merges,
     chunks: capped,
+    apiCalls: chunks.length, // one call per chunk in current sequential mode
   };
 }

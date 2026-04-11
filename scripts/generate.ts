@@ -31,7 +31,7 @@ Options:
   --book <slug>      Generate a single book (${VALID_BOOK_SLUGS.join(", ")})
   --all              Generate all 5 books
   --parse-only       Parse source text only, no Claude CLI calls
-  --limit <n>        Max sections per chapter (e.g. --limit 3 for a quick test)
+  --limit <n>        Max refine API calls per book (each processes ~10 chunks)
   --output <dir>     Output directory (default: content)
   --parallel         Process all books concurrently (use with --all)
   --help             Show this help
@@ -71,17 +71,9 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   const text = await readFile(config.source_file, "utf-8");
   const parsed = parseSourceText(text, config);
 
-  const limit = args.limit ? parseInt(args.limit, 10) : undefined;
-
   const chapters = parsed.chapters.map((ch) => {
-    const allChunks = chunkSections(ch.sections, config.speakerLabels);
-    const chunks = limit && allChunks.length > limit
-      ? allChunks.slice(0, limit)
-      : allChunks;
-    const suffix = limit && allChunks.length > limit
-      ? ` (limited from ${allChunks.length})`
-      : "";
-    console.log(`  ${ch.slug}: ${chunks.length} chunks${suffix}`);
+    const chunks = chunkSections(ch.sections, config.speakerLabels);
+    console.log(`  ${ch.slug}: ${chunks.length} chunks`);
     return {
       slug: ch.slug,
       title: ch.title,
@@ -90,23 +82,10 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
     };
   });
 
-  // Apply book-level total cap: --limit caps total chunks across all chapters
-  if (limit) {
-    let remaining = limit;
-    for (const ch of chapters) {
-      if (remaining <= 0) {
-        ch.chunks = [];
-      } else if (ch.chunks.length > remaining) {
-        ch.chunks = ch.chunks.slice(0, remaining);
-      }
-      remaining -= ch.chunks.length;
-    }
-  }
-
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
 
-  return { bookSlug: config.slug, chapters: chapters.filter((ch) => ch.chunks.length > 0) };
+  return { bookSlug: config.slug, chapters };
 }
 
 // ---------------------------------------------------------------------------
@@ -114,13 +93,21 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
 // ---------------------------------------------------------------------------
 
 async function runRefine(parsed: ParsedOutput, config: BookConfig): Promise<ParsedOutput> {
-  console.log(`\nRefining ${parsed.bookSlug}...`);
+  const limit = args.limit ? parseInt(args.limit, 10) : undefined;
+  console.log(`\nRefining ${parsed.bookSlug}...${limit ? ` (limit: ${limit} API calls)` : ""}`);
 
   const chapters: ParsedChapter[] = [];
+  let apiCallsUsed = 0;
 
   for (const ch of parsed.chapters) {
+    if (limit && apiCallsUsed >= limit) {
+      console.log(`  ${ch.slug}: skipped (limit reached)`);
+      continue;
+    }
+
     console.log(`  ${ch.slug}:`);
     const result = await refineChunks(ch.chunks, config);
+    apiCallsUsed += result.apiCalls ?? 1;
 
     if (result.splits > 0 || result.merges > 0) {
       console.log(
@@ -139,7 +126,7 @@ async function runRefine(parsed: ParsedOutput, config: BookConfig): Promise<Pars
   }
 
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
-  console.log(`  Total after refine: ${totalChunks} chunks`);
+  console.log(`  Total after refine: ${totalChunks} chunks (${apiCallsUsed} API calls)`);
 
   return { bookSlug: parsed.bookSlug, chapters };
 }
