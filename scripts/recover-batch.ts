@@ -37,7 +37,7 @@ import {
 const { values: args } = parseArgs({
   options: {
     "batch-id": { type: "string" },
-    output: { type: "string", default: "content" },
+    output: { type: "string", default: "content/output" },
     help: { type: "boolean", default: false },
   },
 });
@@ -53,7 +53,7 @@ Recovers a partially-failed batch run:
 
 Options:
   --batch-id <id>   The batch ID to recover (e.g. msgbatch_018hAMMD...)
-  --output <dir>    Output directory (default: content)
+  --output <dir>    Output directory (default: content/output)
   --help            Show this help`);
   process.exit(args.help ? 0 : 1);
 }

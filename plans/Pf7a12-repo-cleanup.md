@@ -41,7 +41,7 @@ Reorganize top-level directories (docs, content hierarchy, source/pipeline/fixtu
 - [x] T05: Run tests — `npm test` must pass with all path changes
 - [x] T06: Update CLAUDE.md — update doc refs to `docs/` prefix; add "Local Development" section (npm run dev, --host for mobile); add "Deploy" section (Vercel auto-deploy from main, preview deploys on PRs); update Screenshots section to not use `cd` (done: all 4 changes applied)
 - [x] T07: Update README.md — update Documentation section refs to `docs/`; add "Local Development" section with dev server and mobile testing via `--host`; add "Deploy" section explaining Vercel setup; update Content Pipeline section with new directory names; update Testing section with more detail on test structure and e2e (done: all 5 items implemented; added ANALYTICS.md to docs refs)
-- [ ] T08: Final verification — run `npm test`, verify no stale references with grep for old directory names in non-plan source files
+- [x] T08: Final verification — run `npm test`, verify no stale references with grep for old directory names in non-plan source files
 
 ## Verify
 ```bash
