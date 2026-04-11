@@ -24,7 +24,6 @@ import {
 } from "./lib/claude.js";
 import { buildTranslationSystem, buildTranslationUser } from "./lib/prompt.js";
 import {
-  hashSourceFile,
   loadRefineCache,
   saveRefineCache,
   saveTranslateCache,
@@ -112,10 +111,8 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
 }
 
 async function getRefineResult(config: BookConfig): Promise<ParsedOutput> {
-  const sourceHash = await hashSourceFile(config.source_file);
-
   // Try cache first
-  const cached = await loadRefineCache(config.slug, sourceHash);
+  const cached = await loadRefineCache(config.slug);
   if (cached) {
     const totalChunks = cached.reduce((sum, ch) => sum + ch.chunks.length, 0);
     console.log(`\nRefine ${config.slug}: loaded from cache (${totalChunks} chunks across ${cached.length} chapters)`);
@@ -146,7 +143,7 @@ async function getRefineResult(config: BookConfig): Promise<ParsedOutput> {
   console.log(`  Total after refine: ${totalChunks} chunks (${apiCallsUsed} API calls)`);
 
   // Save to cache
-  await saveRefineCache(config.slug, sourceHash, chapters);
+  await saveRefineCache(config.slug, chapters);
   console.log(`  Cached refine results for ${config.slug}`);
 
   return { bookSlug: config.slug, chapters };
@@ -331,7 +328,6 @@ async function main(): Promise<void> {
 
   // Save translate cache per book
   for (const { config } of refined) {
-    const sourceHash = await hashSourceFile(config.source_file);
     const bookTranslations = new Map<string, TranslatedChunk[]>();
     for (const [key, chunks] of resultMap) {
       if (key.startsWith(`${config.slug}_`)) {
@@ -339,7 +335,7 @@ async function main(): Promise<void> {
       }
     }
     if (bookTranslations.size > 0) {
-      await saveTranslateCache(config.slug, sourceHash, bookTranslations);
+      await saveTranslateCache(config.slug, bookTranslations);
       console.log(`  Cached translate results for ${config.slug}`);
     }
   }

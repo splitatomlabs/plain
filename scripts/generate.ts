@@ -8,7 +8,7 @@ import { translateChunks, translateChunksBatch, type TranslatedChunk, type Batch
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
 import { validateSectionCoverage, validateRefineCoverage } from "./lib/validate.js";
 import { tokenUsage, batchStats } from "./lib/claude.js";
-import { hashSourceFile, saveRefineCache, loadRefineCache, saveTranslateCache, loadTranslateCache } from "./lib/cache.js";
+import { saveRefineCache, loadRefineCache, saveTranslateCache, loadTranslateCache } from "./lib/cache.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -119,8 +119,7 @@ async function runRefine(parsed: ParsedOutput, config: BookConfig): Promise<Pars
 
   // Check cache
   if (readCache) {
-    const sourceHash = await hashSourceFile(config.source_file);
-    const cached = await loadRefineCache(config.slug, sourceHash);
+    const cached = await loadRefineCache(config.slug);
     if (cached) {
       const totalChunks = cached.reduce((sum, ch) => sum + ch.chunks.length, 0);
       console.log(`\nRefining ${parsed.bookSlug}... (cached: ${totalChunks} chunks across ${cached.length} chapters)`);
@@ -173,8 +172,7 @@ async function runRefine(parsed: ParsedOutput, config: BookConfig): Promise<Pars
   console.log(`  Total after refine: ${totalChunks} chunks (${apiCallsUsed} API calls)`);
 
   // Always save to cache so refine results aren't lost
-  const sourceHash = await hashSourceFile(config.source_file);
-  await saveRefineCache(config.slug, sourceHash, chapters);
+  await saveRefineCache(config.slug, chapters);
   console.log(`  Cached refine results for ${config.slug}`);
 
   if (validationErrors.length > 0) {
@@ -206,8 +204,7 @@ async function runTranslate(
 
   // Check cache
   if (readCache) {
-    const sourceHash = await hashSourceFile(config.source_file);
-    const cached = await loadTranslateCache(config.slug, sourceHash);
+    const cached = await loadTranslateCache(config.slug);
     if (cached) {
       console.log(`\nTranslating ${config.slug}... (cached)`);
       const chapters = parsed.chapters.map((ch) => {
@@ -249,12 +246,11 @@ async function runTranslate(
   }
 
   // Always save to cache so translate results aren't lost
-  const sourceHash = await hashSourceFile(config.source_file);
   const translateMap = new Map<string, TranslatedChunk[]>();
   for (const ch of chapters) {
     translateMap.set(`${config.slug}_${ch.slug}`, ch.translated);
   }
-  await saveTranslateCache(config.slug, sourceHash, translateMap);
+  await saveTranslateCache(config.slug, translateMap);
   console.log(`  Cached translate results for ${config.slug}`);
 
   return { bookSlug: config.slug, chapters };
@@ -323,8 +319,7 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
   const uncachedRefine: { config: BookConfig; parsed: ParsedOutput }[] = [];
   for (const { config, parsed: p } of parsed) {
     if (readCache) {
-      const sourceHash = await hashSourceFile(config.source_file);
-      const cached = await loadRefineCache(config.slug, sourceHash);
+      const cached = await loadRefineCache(config.slug);
       if (cached) {
         const totalChunks = cached.reduce((sum, ch) => sum + ch.chunks.length, 0);
         console.log(`\nRefining ${config.slug}... (cached: ${totalChunks} chunks across ${cached.length} chapters)`);
@@ -380,8 +375,7 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
       console.log(`  ${config.slug}: ${totalChunks} chunks after refine`);
 
       // Always save refine cache so results aren't lost
-      const sourceHash = await hashSourceFile(config.source_file);
-      await saveRefineCache(config.slug, sourceHash, chapters);
+      await saveRefineCache(config.slug, chapters);
       console.log(`  Cached refine results for ${config.slug}`);
 
       refined.push({ config, refined: { bookSlug: config.slug, chapters } });
@@ -401,8 +395,7 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
 
   for (const { config, refined: r } of refined) {
     if (readCache) {
-      const sourceHash = await hashSourceFile(config.source_file);
-      const cached = await loadTranslateCache(config.slug, sourceHash);
+      const cached = await loadTranslateCache(config.slug);
       if (cached) {
         for (const [key, chunks] of cached) {
           translatedMap.set(key, chunks);
@@ -441,7 +434,6 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
     const batchedBooks = new Set(batchInputs.map(i => i.bookSlug));
     for (const { config } of refined) {
       if (!batchedBooks.has(config.slug)) continue;
-      const sourceHash = await hashSourceFile(config.source_file);
       const bookTranslations = new Map<string, TranslatedChunk[]>();
       for (const [key, chunks] of translatedMap) {
         if (key.startsWith(`${config.slug}_`)) {
@@ -449,7 +441,7 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
         }
       }
       if (bookTranslations.size > 0) {
-        await saveTranslateCache(config.slug, sourceHash, bookTranslations);
+        await saveTranslateCache(config.slug, bookTranslations);
         console.log(`  Cached translate results for ${config.slug}`);
       }
     }
