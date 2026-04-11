@@ -35,7 +35,7 @@ Reorganize top-level directories (docs, content hierarchy, source/pipeline/fixtu
 
 ## Tasks
 - [x] T01: Move markdown files to docs/ — `git mv` ANALYTICS.md, ARCHITECTURE.md, BRANDING.md, CONTENT_STRATEGY.md into new `docs/` folder (done: all 4 files moved, git shows R renames)
-- [ ] T02: Reorganize content directories — rename `content/` → temp, create `content/`, move old content to `content/output/`, `content-pipeline/` → `content/pipeline/`, `content-fixtures/` → `content/fixtures/`, `source-books/` → `content/source/`; all via `git mv`
+- [x] T02: Reorganize content directories — rename `content/` → temp, create `content/`, move old content to `content/output/`, `content-pipeline/` → `content/pipeline/`, `content-fixtures/` → `content/fixtures/`, `source-books/` → `content/source/`; all via `git mv` (done: all moves show as R renames in git status)
 - [ ] T03: Update source code references — update paths in `scripts/lib/constants.ts` (5 source_file entries), `scripts/lib/cache.ts` (cache dir), `scripts/extract-fixtures.ts` (2 dir constants + log message), `scripts/generate.ts` (--output default), `web/vite.config.js` (2 aliases)
 - [ ] T04: Update test references — update `scripts/lib/__tests__/cache.test.ts` (all content-pipeline refs), `refine.test.ts`, `refineBatch.test.ts`, `translateBatch.test.ts` (source-books refs)
 - [ ] T05: Run tests — `npm test` must pass with all path changes
