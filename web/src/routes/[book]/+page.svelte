@@ -172,16 +172,11 @@
 							<span class="chapter-check">&#10003;</span>
 						{/if}
 						<span class="chapter-title">{chapter.title}</span>
-						<span class="chapter-meta">
-							<span class="chapter-count">
-								{#if cp && cp.cardsRead > 0}
-									{cp.cardsRead} / {cp.total}
-								{:else}
-									{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}
-								{/if}
-							</span>
-							{#if chapter.reading_time_seconds}
-								<span class="chapter-time">{formatReadingTime(chapter.reading_time_seconds)}</span>
+						<span class="chapter-detail">
+							{#if cp && cp.cardsRead > 0}
+								{cp.cardsRead} / {cp.total}
+							{:else}
+								{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}{#if chapter.reading_time_seconds} · {formatReadingTime(chapter.reading_time_seconds)}{/if}
 							{/if}
 						</span>
 						{#if cp && cp.percentage > 0}
@@ -321,24 +316,12 @@
 		flex: 1;
 	}
 
-	.chapter-meta {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		margin-left: var(--space-sm);
-		white-space: nowrap;
-	}
-
-	.chapter-count {
+	.chapter-detail {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-	}
-
-	.chapter-time {
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		color: var(--color-text-tertiary);
+		margin-left: var(--space-sm);
+		white-space: nowrap;
 	}
 
 	.book-preview {
