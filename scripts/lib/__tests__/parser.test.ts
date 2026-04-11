@@ -143,7 +143,9 @@ describe("parseSourceText — Enchiridion", () => {
     const text = sec51!.sections[0].text;
     expect(text).not.toContain("Footnotes");
     expect(text).not.toContain("LIBERAL ARTS PRESS");
-    expect(text).not.toMatch(/\[\d+\]/);
+    expect(text).not.toContain("Happiness, the effect of virtue");
+    // Inline refs like [8] are part of the text, but footnote bodies are not
+    expect(text.length).toBeLessThan(2000);
   });
 });
 
