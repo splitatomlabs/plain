@@ -2,7 +2,7 @@
   "slug": "shortness-of-life",
   "title": "On the Shortness of Life",
   "author_slug": "seneca",
-  "description": "Seneca's most urgent essay \u2014 a wake-up call about how we waste our lives on things that don't matter.",
+  "description": "Seneca's most urgent essay — a wake-up call about how we waste our lives on things that don't matter.",
   "tags": [
     "death-and-mortality",
     "what-matters-most",
@@ -136,5 +136,6 @@
   ],
   "total_cards": 69,
   "total_reading_time_seconds": 2838,
-  "source_url": "https://www.gutenberg.org/ebooks/64576"
+  "source_url": "https://www.gutenberg.org/ebooks/64576",
+  "has_chapters": false
 }
