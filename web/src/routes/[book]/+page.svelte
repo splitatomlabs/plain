@@ -13,11 +13,14 @@
 		seneca: 'var(--color-accent-seneca)'
 	};
 
+	let hasChapters = $derived(data.book.slug === 'meditations');
+
 	let isGift = $state(false);
 	let giftNote = $state('');
 	let bookResumeUrl = $state(null);
 	let bookPercentage = $state(0);
 	let bookCompleted = $state(false);
+	let chapterProgressMap = $state({});
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -32,8 +35,28 @@
 				bookResumeUrl = progress.getResumeUrl(data.book.slug);
 			}
 		}
+
+		if (hasChapters) {
+			const map = {};
+			for (const ch of data.book.chapters) {
+				map[ch.slug] = progress.getChapterProgress(data.book.slug, ch.slug, ch.card_count);
+			}
+			chapterProgressMap = map;
+		}
 	});
 	let firstCardUrl = $derived(`/${data.book.slug}/${data.book.chapters[0].slug}/1`);
+
+	function formatReadingTime(seconds) {
+		const mins = Math.ceil(seconds / 60);
+		if (mins > 90) {
+			const hrs = Math.floor(mins / 60);
+			const rem = mins % 60;
+			return rem > 0 ? `~${hrs} hr ${rem} min` : `~${hrs} hr`;
+		}
+		return `~${mins} min`;
+	}
+
+	let readingTimeLabel = $derived(formatReadingTime(data.book.total_reading_time_seconds || 0));
 
 	let showGiftCompose = $state(false);
 	let giftNoteInput = $state('');
@@ -94,40 +117,32 @@
 		<p class="book-description">{data.book.description}</p>
 	</header>
 
-	<section class="chapters">
-		<h2 class="chapters-heading">{data.book.slug === 'meditations' ? 'Chapters' : 'Sections'}</h2>
-		<ol class="chapter-list">
-			{#each data.book.chapters as chapter}
-				<li class="chapter-item">
-					<span class="chapter-title">{chapter.title}</span>
-					<span class="chapter-count">{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}</span>
-				</li>
-			{/each}
-		</ol>
-	</section>
+	<div class="action-zone">
+		<p class="book-scope">{data.book.total_cards} cards · {readingTimeLabel} read</p>
 
-	{#if bookPercentage > 0}
-		<div class="book-landing-progress">
-			<div class="landing-progress-track">
-				<div class="landing-progress-fill" style="width: {bookPercentage}%"></div>
+		{#if bookPercentage > 0}
+			<div class="book-landing-progress">
+				<div class="landing-progress-track">
+					<div class="landing-progress-fill" style="width: {bookPercentage}%"></div>
+				</div>
+				<span class="landing-progress-label">{bookPercentage}%</span>
 			</div>
-			<span class="landing-progress-label">{bookPercentage}%</span>
-		</div>
-	{/if}
-	{#if bookResumeUrl}
-		<div class="cta-row">
-			<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
-		</div>
-	{:else}
-		<div class="cta-row">
-			<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
-		</div>
-	{/if}
+		{/if}
+		{#if bookResumeUrl}
+			<div class="cta-row">
+				<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
+			</div>
+		{:else}
+			<div class="cta-row">
+				<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
+			</div>
+		{/if}
 
-	<div class="gift-row">
-		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
-			Send this book to a friend
-		</button>
+		<div class="gift-row">
+			<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
+				Send this book to a friend
+			</button>
+		</div>
 	</div>
 
 	{#if showGiftCompose}
@@ -143,6 +158,39 @@
 			></textarea>
 			<p class="gift-char-count">{giftNoteInput.length} / 280</p>
 			<button class="gift-send" onclick={shareGiftUrl}>Share gift link</button>
+		</div>
+	{/if}
+
+	{#if hasChapters}
+		<section class="chapters">
+			<h2 class="chapters-heading">Chapters</h2>
+			<ol class="chapter-list">
+				{#each data.book.chapters as chapter}
+					{@const cp = chapterProgressMap[chapter.slug]}
+					<li class="chapter-item">
+						{#if cp?.completed}
+							<span class="chapter-check">&#10003;</span>
+						{/if}
+						<span class="chapter-title">{chapter.title}</span>
+						<span class="chapter-detail">
+							{#if cp && cp.cardsRead > 0}
+								{cp.cardsRead} / {cp.total}
+							{:else if chapter.reading_time_seconds}
+								{formatReadingTime(chapter.reading_time_seconds)}
+							{:else}
+								{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}
+							{/if}
+						</span>
+						{#if cp && cp.percentage > 0}
+							<div class="chapter-progress-bar" style="width: {cp.percentage}%; background: {accentVar[data.author.slug]}"></div>
+						{/if}
+					</li>
+				{/each}
+			</ol>
+		</section>
+	{:else if data.previewCard}
+		<div class="book-preview">
+			<p class="preview-text">{data.previewCard.plain_english}</p>
 		</div>
 	{/if}
 
@@ -199,6 +247,18 @@
 		line-height: var(--line-height-body);
 	}
 
+	.action-zone {
+		text-align: center;
+		margin-bottom: var(--space-xl);
+	}
+
+	.book-scope {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		letter-spacing: 0.03em;
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-md);
+	}
 
 	.book-tags {
 		display: flex;
@@ -208,7 +268,7 @@
 	}
 
 	.chapters {
-		margin-bottom: var(--space-xl);
+		margin-top: var(--space-xl);
 	}
 
 	.chapters-heading {
@@ -228,22 +288,62 @@
 	}
 
 	.chapter-item {
+		position: relative;
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
 		padding: var(--space-sm) 0;
 		border-bottom: 1px solid var(--color-border);
+		overflow: hidden;
+	}
+
+	.chapter-progress-bar {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		opacity: 0.1;
+		pointer-events: none;
+	}
+
+	.chapter-check {
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		margin-right: var(--space-sm);
+		flex-shrink: 0;
 	}
 
 	.chapter-title {
 		font-family: var(--font-body);
 		color: var(--color-text-primary);
+		flex: 1;
 	}
 
-	.chapter-count {
+	.chapter-detail {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+		margin-left: var(--space-sm);
+		white-space: nowrap;
+	}
+
+	.book-preview {
+		display: block;
+		padding: var(--space-lg);
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		margin-bottom: var(--space-lg);
+	}
+
+	.preview-text {
+		font-family: var(--font-body);
+		font-size: var(--text-body);
+		line-height: var(--line-height-body);
+		color: var(--color-text-secondary);
+		margin: 0;
+		display: -webkit-box;
+		-webkit-line-clamp: 5;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	.book-landing-progress {
@@ -277,10 +377,7 @@
 
 	.cta-row {
 		text-align: center;
-	}
-
-	.cta-secondary-row {
-		margin-top: var(--space-sm);
+		margin-bottom: var(--space-xs);
 	}
 
 	.cta-primary {
@@ -295,21 +392,8 @@
 		border-color: var(--color-text-primary);
 	}
 
-	.cta-secondary {
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		color: var(--color-text-secondary);
-		text-decoration: underline;
-		text-underline-offset: 0.15em;
-	}
-
-	.cta-secondary:hover {
-		color: var(--color-text-primary);
-	}
-
 	.gift-row {
 		text-align: center;
-		margin-top: var(--space-sm);
 	}
 
 	.cta {
@@ -356,8 +440,8 @@
 
 	.gift-compose {
 		max-width: 400px;
-		margin: var(--space-md) auto 0;
-		text-align: left;
+		margin: var(--space-md) auto var(--space-xl);
+		text-align: center;
 	}
 
 	.gift-label {
@@ -366,6 +450,7 @@
 		color: var(--color-text-secondary);
 		display: block;
 		margin-bottom: var(--space-sm);
+		text-align: left;
 	}
 
 	.gift-textarea {
