@@ -119,7 +119,7 @@ function parseMeditations(text: string, config: BookConfig): ParsedBook {
 }
 
 // ---------------------------------------------------------------------------
-// Single-essay parser (Seneca and Enchiridion)
+// Single-essay parser (flat section structure)
 // ---------------------------------------------------------------------------
 
 function parseSingleEssay(text: string, config: BookConfig): ParsedBook {
@@ -275,20 +275,6 @@ function splitCenteredSections(text: string): Section[] {
   }
 
   return sections;
-}
-
-// ---------------------------------------------------------------------------
-// Preamble stripping for Seneca essays
-// ---------------------------------------------------------------------------
-
-function stripSenecaPreamble(text: string, config: BookConfig): string {
-  // Seneca essays start with a heading line (e.g. "PAULINUS.") then title,
-  // then jump to "I." — find the first section marker
-  const match = text.match(config.sectionPattern);
-  if (match && match.index !== undefined) {
-    return text.slice(match.index);
-  }
-  return text;
 }
 
 // ---------------------------------------------------------------------------
