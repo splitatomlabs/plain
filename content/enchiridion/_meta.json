@@ -7,9 +7,9 @@
     "freedom-and-control",
     "knowing-yourself",
     "calm-your-mind",
-    "death-and-mortality",
-    "facing-hardship",
     "what-matters-most",
+    "facing-hardship",
+    "death-and-mortality",
     "human-nature",
     "doing-the-right-thing"
   ],
@@ -17,7 +17,7 @@
     {
       "slug": "section-01",
       "title": "Section 1",
-      "card_count": 2
+      "card_count": 4
     },
     {
       "slug": "section-02",
@@ -167,12 +167,12 @@
     {
       "slug": "section-32",
       "title": "Section 32",
-      "card_count": 2
+      "card_count": 1
     },
     {
       "slug": "section-33",
       "title": "Section 33",
-      "card_count": 13
+      "card_count": 6
     },
     {
       "slug": "section-34",
@@ -262,9 +262,9 @@
     {
       "slug": "section-51",
       "title": "Section 51",
-      "card_count": 2
+      "card_count": 7
     }
   ],
-  "total_cards": 71,
+  "total_cards": 70,
   "source_url": ""
 }

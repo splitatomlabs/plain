@@ -5,15 +5,15 @@
     "chapter_slug": "section-31",
     "card_number": 1,
     "total_cards_in_chapter": 4,
-    "plain_english": "Here's the key to being truly reverent toward the gods: think correctly about them. They exist. They rule the universe justly and well. Commit to obeying them and yielding to them. Follow them willingly through whatever happens, knowing they have perfect wisdom. If you do this, you'll never blame the gods or accuse them of abandoning you. There's only one way to achieve this: stop caring about things outside your control. Make good and evil depend only on what is up to you.",
+    "plain_english": "Here's what true devotion to the gods really means: thinking about them correctly. They exist. They run the universe fairly and well. Commit to this: obey them, give in to them, and willingly follow them through whatever happens. You're being guided by perfect wisdom. Do this and you'll never blame the gods or accuse them of abandoning you.",
     "original_excerpt": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you.",
     "source_reference": "The Enchiridion, Section 31",
     "author_slug": "epictetus",
     "tags": [
-      "freedom-and-control",
-      "doing-the-right-thing"
+      "doing-the-right-thing",
+      "facing-hardship"
     ],
-    "reading_time_seconds": 25
+    "reading_time_seconds": 17
   },
   {
     "id": "enchiridion-31-002",
@@ -21,7 +21,7 @@
     "chapter_slug": "section-31",
     "card_number": 2,
     "total_cards_in_chapter": 4,
-    "plain_english": "If you think anything outside your control is good or bad, you'll inevitably get upset when things don't go your way. You'll blame whoever you think caused your problems. Every living thing naturally runs from what seems harmful and chases what seems beneficial. So it's impossible for someone who thinks they've been hurt to feel good about the person who hurt them. They can't even feel good about the hurt itself. This is why a father gets criticized by his son when he doesn't give him things the son thinks are good. This is what turned Polynices and Eteocles into enemies — they both thought having power was good. This is why farmers curse the gods, and so do sailors, merchants, and people who lose their spouse or child. We direct our devotion toward whatever we think serves our interests. So whoever learns to control their desires and aversions properly will also become truly pious.",
+    "plain_english": "There's only one way to achieve this: stop caring about things outside your control. Make your definition of good and bad depend only on what's truly up to you. If you think other things are good or bad, you'll inevitably get upset when you don't get what you want or when bad things happen. Then you'll blame whoever caused it.",
     "original_excerpt": "And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are. For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors.",
     "source_reference": "The Enchiridion, Section 31",
     "author_slug": "epictetus",
@@ -29,7 +29,7 @@
       "freedom-and-control",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 47
+    "reading_time_seconds": 18
   },
   {
     "id": "enchiridion-31-003",
@@ -37,14 +37,15 @@
     "chapter_slug": "section-31",
     "card_number": 3,
     "total_cards_in_chapter": 4,
-    "plain_english": "You should also make offerings, sacrifices, and give first fruits according to your country's customs. Do this purely and carefully — not carelessly or lazily. Don't be cheap about it, but don't go overboard either.",
-    "original_excerpt": "For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles[4] mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed.",
+    "plain_english": "Every living thing naturally runs from what seems harmful and chases after what seems good. So it's impossible for someone who thinks they're being hurt to be happy with the person hurting them. You can't enjoy being hurt. That's why a son gets angry at his father when the father doesn't give him what he thinks is good. This is what made Polynices and Eteocles enemies — they both thought ruling the kingdom was good. This is why farmers curse the gods when crops fail. So do sailors, merchants, and people who lose their spouse or children. We direct our devotion toward whatever we think serves our interests.",
+    "original_excerpt": "For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed.",
     "source_reference": "The Enchiridion, Section 31",
     "author_slug": "epictetus",
     "tags": [
-      "doing-the-right-thing"
+      "human-nature",
+      "what-matters-most"
     ],
-    "reading_time_seconds": 11
+    "reading_time_seconds": 32
   },
   {
     "id": "enchiridion-31-004",
@@ -52,7 +53,7 @@
     "chapter_slug": "section-31",
     "card_number": 4,
     "total_cards_in_chapter": 4,
-    "plain_english": "When you learn to control what you want and what you avoid, you also learn to respect the gods. But everyone should also follow their country's religious customs — make offerings, perform sacrifices, give first fruits. Do this with a pure heart. Don't be careless or lazy about it. Don't be cheap, but don't go overboard either.",
+    "plain_english": "When you learn to control what you want and what you avoid, you naturally become more careful about honoring the gods. You should also make offerings, sacrifices, and give first fruits according to your country's customs. Do this with a pure heart — not carelessly or thoughtlessly. Don't be stingy, but don't go overboard either.",
     "original_excerpt": "So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise. But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly.",
     "source_reference": "The Enchiridion, Section 31",
     "author_slug": "epictetus",

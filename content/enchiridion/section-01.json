@@ -4,9 +4,9 @@
     "book_slug": "enchiridion",
     "chapter_slug": "section-01",
     "card_number": 1,
-    "total_cards_in_chapter": 2,
+    "total_cards_in_chapter": 4,
     "plain_english": "Some things are up to you. Some things are not. What's up to you: your opinions, your goals, what you want, and what you want to avoid — basically, anything that is truly your own doing. What's not up to you: your body, your possessions, your reputation, your job title — anything that isn't really your own doing.",
-    "original_excerpt": "There are things which are within our power, and there are things which are beyond our power. Within our power are opinion, aim, desire, aversion, and, in one word, whatever affairs are our own. Beyond our power are body, property, reputation, office, and, in one word, whatever are not properly our own affairs.\n\nNow the things within our power are by nature free, unrestricted, unhindered; but those beyond our power are weak, dependent, restricted, alien. Remember, then, that if you attribute freedom to things by nature dependent and take what belongs to others for your own, you will be hindered, you will lament, you will be disturbed, you will find fault both with gods and men. But if you take for your own only that which is your own and view what belongs to others just as it really is, then no one will ever compel you, no one will restrict you; you will find fault with no one, you will accuse no one, you will do nothing against your will; no one will hurt you, you will not have an enemy, nor will you suffer any harm.",
+    "original_excerpt": "There are things which are within our power, and there are things which are beyond our power. Within our power are opinion, aim, desire, aversion, and, in one word, whatever affairs are our own. Beyond our power are body, property, reputation, office, and, in one word, whatever are not properly our own affairs.",
     "source_reference": "The Enchiridion, Section 1",
     "author_slug": "epictetus",
     "tags": [
@@ -20,15 +20,47 @@
     "book_slug": "enchiridion",
     "chapter_slug": "section-01",
     "card_number": 2,
-    "total_cards_in_chapter": 2,
-    "plain_english": "The things you control are naturally free, unlimited, and unblocked. The things you don't control are weak, dependent, limited, and foreign to you. Remember: if you think dependent things are free and try to claim what belongs to others, you'll be blocked. You'll complain. You'll be upset. You'll blame gods and people. But if you only claim what's truly yours and see other people's stuff for what it really is, then no one can force you to do anything. No one can limit you. You won't blame anyone or accuse anyone. You won't act against your will. No one will hurt you. You won't have enemies. You won't suffer harm.",
-    "original_excerpt": "Aiming, therefore, at such great things, remember that you must not allow yourself any inclination, however slight, toward the attainment of the others; but that you must entirely quit some of them, and for the present postpone the rest. But if you would have these, and possess power and wealth likewise, you may miss the latter in seeking the former; and you will certainly fail of that by which alone happiness and freedom are procured.\n\nSeek at once, therefore, to be able to say to every unpleasing semblance, “You are but a semblance and by no means the real thing.” And then examine it by those rules which you have; and first and chiefly by this: whether it concerns the things which are within our own power or those which are not; and if it concerns anything beyond our power, be prepared to say that it is nothing to you.",
+    "total_cards_in_chapter": 4,
+    "plain_english": "The things you control are naturally free, unlimited, and unblocked. The things you don't control are weak, dependent, restricted, and foreign to you. Remember this: if you think things outside your control should be free, and if you claim other people's business as your own, you'll be blocked. You'll complain. You'll be upset. You'll blame both gods and people. But if you only claim what's actually yours, and see other people's stuff for what it really is, then no one can force you to do anything. No one can restrict you. You won't blame anyone or accuse anyone. You won't act against your will. No one can hurt you. You won't have enemies. You won't suffer any harm.",
+    "original_excerpt": "Now the things within our power are by nature free, unrestricted, unhindered; but those beyond our power are weak, dependent, restricted, alien. Remember, then, that if you attribute freedom to things by nature dependent and take what belongs to others for your own, you will be hindered, you will lament, you will be disturbed, you will find fault both with gods and men. But if you take for your own only that which is your own and view what belongs to others just as it really is, then no one will ever compel you, no one will restrict you; you will find fault with no one, you will accuse no one, you will do nothing against your will; no one will hurt you, you will not have an enemy, nor will you suffer any harm.",
     "source_reference": "The Enchiridion, Section 1",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 33
+    "reading_time_seconds": 35
+  },
+  {
+    "id": "enchiridion-01-003",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-01",
+    "card_number": 3,
+    "total_cards_in_chapter": 4,
+    "plain_english": "Since you're aiming for such important things, remember this: you can't let yourself want other things, even a little bit. You must completely give up some goals. Put others on hold for now. If you try to have both — these important things AND power and wealth — you'll probably lose the power and wealth while chasing what matters. And you'll definitely fail at the only things that actually bring happiness and freedom.",
+    "original_excerpt": "Aiming, therefore, at such great things, remember that you must not allow yourself any inclination, however slight, toward the attainment of the others; but that you must entirely quit some of them, and for the present postpone the rest. But if you would have these, and possess power and wealth likewise, you may miss the latter in seeking the former; and you will certainly fail of that by which alone happiness and freedom are procured.",
+    "source_reference": "The Enchiridion, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "what-matters-most",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 22
+  },
+  {
+    "id": "enchiridion-01-004",
+    "book_slug": "enchiridion",
+    "chapter_slug": "section-01",
+    "card_number": 4,
+    "total_cards_in_chapter": 4,
+    "plain_english": "Right away, practice saying this to every upsetting situation: \"You're just an appearance, not the real thing.\" Then test it with your principles. Start with the most important rule: Does this involve something I control or something I don't? If it's something beyond your control, be ready to say \"This is nothing to me.\"",
+    "original_excerpt": "Seek at once, therefore, to be able to say to every unpleasing semblance, \"You are but a semblance and by no means the real thing.\" And then examine it by those rules which you have; and first and chiefly by this: whether it concerns the things which are within our own power or those which are not; and if it concerns anything beyond our power, be prepared to say that it is nothing to you.",
+    "source_reference": "The Enchiridion, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 16
   }
 ]
