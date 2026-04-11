@@ -1,161 +1,118 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock child_process before importing claude module
-const mockExecFile = vi.fn();
-vi.mock("node:child_process", () => ({
-  execFile: (...args: unknown[]) => mockExecFile(...args),
-}));
-
-// Mock the Anthropic SDK
-vi.mock("@anthropic-ai/sdk", () => ({
-  default: vi.fn(),
-}));
-
-import { callClaude, callClaudeJSON, type CallClaudeOptions } from "../claude.js";
-
-beforeEach(() => {
-  mockExecFile.mockReset();
+// Set env vars before module loads (vi.hoisted runs before vi.mock hoisting)
+vi.hoisted(() => {
+  process.env.ANTHROPIC_API_KEY = "test-key";
+  process.env.PLAIN_API_RPM = "1000";
 });
 
-// Helper: simulate successful execFile
-function mockExecFileSuccess(stdout: string) {
-  mockExecFile.mockImplementation(
-    (_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
-      cb(null, stdout, "");
+// Mock the Anthropic SDK
+const mockCreate = vi.fn();
+vi.mock("@anthropic-ai/sdk", () => ({
+  default: vi.fn().mockImplementation(() => ({
+    messages: {
+      create: mockCreate,
     },
-  );
+  })),
+}));
+
+import { callClaudeJSON, extractJSON, type CallClaudeOptions } from "../claude.js";
+
+beforeEach(() => {
+  mockCreate.mockReset();
+});
+
+// Helper: simulate a successful API response
+function mockAPIResponse(text: string) {
+  mockCreate.mockResolvedValue({
+    content: [{ type: "text", text }],
+    usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+  });
 }
 
-// Helper: simulate failed execFile
-function mockExecFileError(message: string) {
-  mockExecFile.mockImplementation(
-    (_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
-      cb(new Error(message), "", "some stderr");
-    },
-  );
-}
-
-describe("callClaude", () => {
-  it("passes --model sonnet by default", async () => {
-    mockExecFileSuccess("ok");
-    await callClaude("test prompt");
-
-    const args = mockExecFile.mock.calls[0][1];
-    expect(args).toContain("--model");
-    expect(args).toContain("sonnet");
-    expect(args).toContain("-p");
-    expect(args).toContain("test prompt");
+describe("extractJSON", () => {
+  it("parses valid JSON directly", () => {
+    const result = extractJSON('{"action": "keep"}');
+    expect(JSON.parse(result)).toEqual({ action: "keep" });
   });
 
-  it("does not pass --bare by default", async () => {
-    mockExecFileSuccess("ok");
-    await callClaude("test prompt");
-
-    const args = mockExecFile.mock.calls[0][1];
-    expect(args).not.toContain("--bare");
+  it("extracts JSON from markdown fences", () => {
+    const result = extractJSON('Here is the result:\n```json\n{"action": "keep"}\n```');
+    expect(JSON.parse(result)).toEqual({ action: "keep" });
   });
 
-  it("passes --bare when bare option is true", async () => {
-    mockExecFileSuccess("ok");
-    await callClaude("test prompt", { bare: true });
-
-    const args = mockExecFile.mock.calls[0][1];
-    expect(args).toContain("--bare");
+  it("extracts JSON from surrounding text", () => {
+    const result = extractJSON('Sure! {"action": "split"} Hope that helps!');
+    expect(JSON.parse(result)).toEqual({ action: "split" });
   });
 
-  it("uses specified model", async () => {
-    mockExecFileSuccess("ok");
-    await callClaude("test prompt", { model: "opus" });
-
-    const args = mockExecFile.mock.calls[0][1];
-    expect(args).toContain("opus");
+  it("extracts JSON arrays", () => {
+    const result = extractJSON('Here: [1, 2, 3] done');
+    expect(JSON.parse(result)).toEqual([1, 2, 3]);
   });
 
-  it("trims output", async () => {
-    mockExecFileSuccess("  hello world  \n");
-    const result = await callClaude("test");
-    expect(result).toBe("hello world");
-  });
-
-  it("rejects on execFile error", async () => {
-    mockExecFileError("command not found");
-    await expect(callClaude("test")).rejects.toThrow("claude CLI failed");
+  it("throws on non-JSON text", () => {
+    expect(() => extractJSON("not json at all")).toThrow("Could not extract JSON");
   });
 });
 
 describe("callClaudeJSON", () => {
-  it("parses valid JSON response", async () => {
-    mockExecFileSuccess('{"action": "keep"}');
+  it("parses valid JSON response from API", async () => {
+    mockAPIResponse('{"action": "keep"}');
     const result = await callClaudeJSON<{ action: string }>("test");
     expect(result).toEqual({ action: "keep" });
   });
 
-  it("extracts JSON from markdown fences", async () => {
-    mockExecFileSuccess('Here is the result:\n```json\n{"action": "keep"}\n```');
+  it("extracts JSON from markdown fences in API response", async () => {
+    mockAPIResponse('```json\n{"action": "keep"}\n```');
     const result = await callClaudeJSON<{ action: string }>("test");
     expect(result).toEqual({ action: "keep" });
-  });
-
-  it("extracts JSON from surrounding text", async () => {
-    mockExecFileSuccess('Sure! {"action": "split"} Hope that helps!');
-    const result = await callClaudeJSON<{ action: string }>("test");
-    expect(result).toEqual({ action: "split" });
   });
 
   it("appends schema instruction when provided", async () => {
-    mockExecFileSuccess('{"action": "keep"}');
+    mockAPIResponse('{"action": "keep"}');
     await callClaudeJSON("test", "MySchema");
 
-    const promptArg = mockExecFile.mock.calls[0][1].find(
-      (a: string) => a.includes("MySchema"),
-    );
-    expect(promptArg).toContain("Respond with only valid JSON matching this schema: MySchema");
+    const messages = mockCreate.mock.calls[0][0].messages;
+    expect(messages[0].content).toContain("Respond with only valid JSON matching this schema: MySchema");
   });
 
-  it("prepends system prompt in CLI mode when provided", async () => {
-    mockExecFileSuccess('{"action": "keep"}');
+  it("passes system prompt via API system parameter", async () => {
+    mockAPIResponse('{"action": "keep"}');
     await callClaudeJSON("user message", undefined, {
       system: "You are a translator.",
     });
 
-    const promptArg = mockExecFile.mock.calls[0][1][mockExecFile.mock.calls[0][1].indexOf("-p") + 1];
-    expect(promptArg).toContain("You are a translator.");
-    expect(promptArg).toContain("user message");
-    // System should come before user content
-    const sysIdx = promptArg.indexOf("You are a translator.");
-    const userIdx = promptArg.indexOf("user message");
-    expect(sysIdx).toBeLessThan(userIdx);
+    const callArgs = mockCreate.mock.calls[0][0];
+    expect(callArgs.system[0].text).toBe("You are a translator.");
+    expect(callArgs.system[0].cache_control).toEqual({ type: "ephemeral" });
+    expect(callArgs.messages[0].content).toContain("user message");
   });
 
   it("retries on invalid JSON then succeeds", async () => {
-    mockExecFileSuccess("not json at all");
-    // First call returns garbage, second returns valid JSON
-    mockExecFile
-      .mockImplementationOnce(
-        (_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
-          cb(null, "not json at all", "");
-        },
-      )
-      .mockImplementationOnce(
-        (_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
-          cb(null, '{"action": "keep"}', "");
-        },
-      );
+    mockCreate
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: "not json at all" }],
+        usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: '{"action": "keep"}' }],
+        usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+      });
 
     const result = await callClaudeJSON<{ action: string }>("test");
     expect(result).toEqual({ action: "keep" });
-    expect(mockExecFile).toHaveBeenCalledTimes(2);
+    expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 
   it("throws after retry also fails", async () => {
-    mockExecFile.mockImplementation(
-      (_cmd: string, _args: string[], _opts: unknown, cb: Function) => {
-        cb(null, "still not json", "");
-      },
-    );
+    mockCreate.mockResolvedValue({
+      content: [{ type: "text", text: "still not json" }],
+      usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+    });
 
     await expect(callClaudeJSON("test")).rejects.toThrow(
-      "Failed to parse JSON from claude CLI after retry",
+      "Failed to parse JSON from API after retry",
     );
   });
 });
