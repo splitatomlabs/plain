@@ -4,16 +4,259 @@
     "book_slug": "meditations",
     "chapter_slug": "book-02",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "Remember how long you have been putting these things off. Again and again you have been given the chance, and you have let it pass. It is time you understood the true nature of the world you belong to, and of the power that governs it — the same source you yourself flowed from, like water from a spring. There is only so much time given to you. If you do not use it to quiet the troubles in your soul, it will be gone, and so will you. It will not come again.",
-    "original_excerpt": "Remember how long thou hast already put off these things, and how\noften a certain day and hour as it were, having been set unto thee by\nthe gods, thou hast neglected it. It is high time for thee to understand\nthe true nature both of the world, whereof thou art a part; and of that\nLord and Governor of the world, from whom, as a channel from the spring,\nthou thyself didst flow: and that there is but a certain limit of time\nappointed unto thee, which if thou shalt not make use of to calm and\nallay the many distempers of thy soul, it will pass away and thou with\nit, and never after return.",
+    "total_cards_in_chapter": 16,
+    "plain_english": "Remember how long you have been putting these things off. Again and again you have been given the chance, and you have let it pass. It is time for you to understand what the world really is—the world you are part of. And to understand that greater power that governs everything, the source you came from. You have only so much time. If you don't use it to calm the turmoil in your soul, time will run out. You will be gone with it, and you will never get another chance.",
+    "original_excerpt": "Remember how long thou hast already put off these things, and how often a certain day and hour as it were, having been set unto thee by the gods, thou hast neglected it. It is high time for thee to understand the true nature both of the world, whereof thou art a part; and of that Lord and Governor of the world, from whom, as a channel from the spring, thou thyself didst flow: and that there is but a certain limit of time appointed unto thee, which if thou shalt not make use of to calm and allay the many distempers of thy soul, it will pass away and thou with it, and never after return.",
     "source_reference": "Meditations, Book 2, Section 1",
     "author_slug": "marcus-aurelius",
     "tags": [
+      "what-matters-most",
+      "calm-your-mind",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 27
+  },
+  {
+    "id": "meditations-02-002",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 2,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Make it your constant care as a Roman and as a human being to do whatever you're doing with genuine seriousness, natural kindness, honesty, and justice. Let go of all other worries and thoughts that burden your mind. You can do this if you approach every action as if it were your last. Stay free from vanity, passionate impulses that pull you away from reason, hypocrisy, selfishness, and resentment toward what fate or God has given you. You can see that the things needed to live well and divinely are not many. The gods ask nothing more from anyone who keeps and follows these simple rules.",
+    "original_excerpt": "Let it be thy earnest and incessant care as a Roman and a man to perform whatsoever it is that thou art about, with true and unfeigned gravity, natural affection, freedom and justice: and as for all other cares, and imaginations, how thou mayest ease thy mind of them. Which thou shalt do; if thou shalt go about every action as thy last action, free from all vanity, all passionate and wilful aberration from reason, and from all hypocrisy, and self-love, and dislike of those things, which by the fates or appointment of God have happened unto thee. Thou seest that those things, which for a man to hold on in a prosperous course, and to live a divine life, are requisite and necessary, are not many, for the gods will require no more of any man, that shall but keep and observe these things.",
+    "source_reference": "Meditations, Book 2, Section 2",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "what-matters-most",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 32
+  },
+  {
+    "id": "meditations-02-003",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 3,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Come on, soul, keep it up. Keep treating yourself badly and with contempt. Soon enough, your chance to respect yourself will be gone. Every person's happiness comes from within. But look — your life is almost over, and you're still not respecting yourself. You're letting your happiness depend on what other people think and feel.",
+    "original_excerpt": "Do, soul, do; abuse and contemn thyself; yet a while and the time for thee to respect thyself, will be at an end. Every man's happiness depends from himself, but behold thy life is almost at an end, whiles affording thyself no respect, thou dost make thy happiness to consist in the souls, and conceits of other men.",
+    "source_reference": "Meditations, Book 2, Section 3",
+    "author_slug": "marcus-aurelius",
+    "tags": [
       "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-02-004",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 4,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Why should any of these outside events disturb you so much? Give yourself time to learn something worthwhile, and stop rushing around aimlessly. You must also watch out for another kind of wandering. People who work hard in life but have no clear purpose are just as lost. All their efforts and desires go nowhere.",
+    "original_excerpt": "Why should any of these things that happen externally, so much distract thee? Give thyself leisure to learn some good thing, and cease roving and wandering to and fro. Thou must also take heed of another kind of wandering, for they are idle in their actions, who toil and labour in this life, and have no certain scope to which to direct all their motions, and desires.",
+    "source_reference": "Meditations, Book 2, Section 4",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-02-005",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 5,
+    "total_cards_in_chapter": 16,
+    "plain_english": "No one was ever made unhappy by failing to watch another person's inner life. But those who don't guide their own thoughts with reason will certainly be unhappy.\n\nYou must always keep these things in mind: What is the nature of the whole universe, and what is my own nature? How do I relate to the whole? What kind of part am I, and what kind of universe is this? Remember that no one can stop you from always acting and speaking in ways that match the nature you are part of.",
+    "original_excerpt": "For not observing the state of another man's soul, scarce was ever any man known to be unhappy. Tell whosoever they be that intend not, and guide not by reason and discretion the motions of their own souls, they must of necessity be unhappy.\n\nThese things thou must always have in mind: What is the nature of the universe, and what is mine--in particular: This unto that what relation it hath: what kind of part, of what kind of universe it is: And that there is nobody that can hinder thee, but that thou mayest always both do and speak those things which are agreeable to that nature, whereof thou art a part.",
+    "source_reference": "Meditations, Book 2, Section 5",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 28
+  },
+  {
+    "id": "meditations-02-006",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 6,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Theophrastus makes a good point when he compares different kinds of wrongdoing. He says that sins committed through lust are worse than sins committed through anger. The angry person seems to turn away from reason through a kind of pain and inner tension. But the person who sins through lust is overcome by pleasure. This shows a weaker, less disciplined character. So Theophrastus is right to say that the person who sins for pleasure deserves more blame than the person who sins from grief. The angry person might have been wronged first, and anger forced them into action. But the person driven by lust chose that action all on their own.",
+    "original_excerpt": "Theophrastus, where he compares sin with sin (as after a vulgar sense such things I grant may be compared:) says well and like a philosopher, that those sins are greater which are committed through lust, than those which are committed through anger. For he that is angry seems with a kind of grief and close contraction of himself, to turn away from reason; but he that sins through lust, being overcome by pleasure, doth in his very sin bewray a more impotent, and unmanlike disposition. Well then and like a philosopher doth he say, that he of the two is the more to be condemned, that sins with pleasure, than he that sins with grief. For indeed this latter may seem first to have been wronged, and so in some manner through grief thereof to have been forced to be angry, whereas he who through lust doth commit anything, did of himself merely resolve upon that action.",
+    "source_reference": "Meditations, Book 2, Section 7",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 33
+  },
+  {
+    "id": "meditations-02-007",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 7,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Whatever you want to do, whatever you plan to do — do it all as someone who might die right now. And as for death, if there are gods, it's not terrible to leave human society. The gods won't harm you, you can be sure of that.",
+    "original_excerpt": "Whatsoever thou dost affect, whatsoever thou dost project, so do, and so project all, as one who, for aught thou knowest, may at this very present depart out of this life. And as for death, if there be any gods, it is no grievous thing to leave the society of men. The gods will do thee no hurt, thou mayest be sure.",
+    "source_reference": "Meditations, Book 2, Section 8",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 14
+  },
+  {
+    "id": "meditations-02-008",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 8,
+    "total_cards_in_chapter": 16,
+    "plain_english": "But if there are no gods, or if they don't care about the world, why would I want to live in a world empty of gods and divine care? But there are gods, and they do care for the world. As for things that are truly evil — like vice and wickedness — they put those under our own control, so we can avoid them if we choose. If there were anything else that was truly bad and harmful, they would have made sure we could avoid that too.",
+    "original_excerpt": "But if it be so that there be no gods, or that they take no care of the world, why should I desire to live in a world void of gods, and of all divine providence? But gods there be certainly, and they take care for the world; and as for those things which be truly evil, as vice and wickedness, such things they have put in a man's own power, that he might avoid them if he would: and had there been anything besides that had been truly bad and evil, they would have had a care of that also, that a man might have avoided it.",
+    "source_reference": "Meditations, Book 2, Section 8",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 27
+  },
+  {
+    "id": "meditations-02-009",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 9,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Why should we think that things which don't make us better or worse people can actually hurt our lives? We shouldn't assume that the universe makes these things happen out of ignorance. And we shouldn't think the universe knows about them but is too weak or clumsy to prevent them or arrange them better. The universe isn't so powerless or unskilled that it would let all things — both good and bad — happen randomly to everyone, whether they're good people or bad people. Life and death, honor and disgrace, hard work and pleasure, wealth and poverty — all these things happen to both good and bad people equally. But these things are neither good nor bad in themselves. By their nature, they're neither shameful nor praiseworthy.",
+    "original_excerpt": "But why should that be thought to hurt and prejudice a man's life in this world, which cannot any ways make man himself the better, or the worse in his own person? Neither must we think that the nature of the universe did either through ignorance pass these things, or if not as ignorant of them, yet as unable either to prevent, or better to order and dispose them. It cannot be that she through want either of power or skill, should have committed such a thing, so as to suffer all things both good and bad, equally and promiscuously, to happen unto all both good and bad. As for life therefore, and death, honour and dishonour, labour and pleasure, riches and poverty, all these things happen unto men indeed, both good and bad, equally; but as things which of themselves are neither good nor bad; because of themselves, neither shameful nor praiseworthy.",
+    "source_reference": "Meditations, Book 2, Section 8",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 38
+  },
+  {
+    "id": "meditations-02-010",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 10,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Think about how quickly everything dissolves and breaks down. Bodies and physical things return to the basic matter of the world. Even memories fade into the flow of time. Think about the nature of all the things we can see and touch. Look especially at things that trap us with pleasure, or things we fear because they seem unpleasant, or things we admire for their shine and glamour. See how worthless and disgusting they really are. How cheap and rotting. How empty of any real life.",
+    "original_excerpt": "Consider how quickly all things are dissolved and resolved: the bodies and substances themselves, into the matter and substance of the world: and their memories into the general age and time of the world. Consider the nature of all worldly sensible things; of those especially, which either ensnare by pleasure, or for their irksomeness are dreadful, or for their outward lustre and show are in great esteem and request, how vile and contemptible, how base and corruptible, how destitute of all true life and being they are.",
+    "source_reference": "Meditations, Book 2, Section 9",
+    "author_slug": "marcus-aurelius",
+    "tags": [
       "what-matters-most",
       "death-and-mortality"
     ],
-    "reading_time_seconds": 28
+    "reading_time_seconds": 26
+  },
+  {
+    "id": "meditations-02-011",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 11,
+    "total_cards_in_chapter": 16,
+    "plain_english": "A person with good judgment should think about what people really are — the ones whose empty opinions create honor and reputation. They should also think about what it means to die. If you consider death by itself, stripped of all the frightening images we usually attach to it, you'll see it's just a natural process. Anyone who fears nature's work is like a child. Death is not only natural — it actually helps nature along.",
+    "original_excerpt": "It is the part of a man endowed with a good understanding faculty, to consider what they themselves are in very deed, from whose bare conceits and voices, honour and credit do proceed: as also what it is to die, and how if a man shall consider this by itself alone, to die, and separate from it in his mind all those things which with it usually represent themselves unto us, he can conceive of it no otherwise, than as of a work of nature, and he that fears any work of nature, is a very child. Now death, it is not only a work of nature, but also conducing to nature.",
+    "source_reference": "Meditations, Book 2, Section 10",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "meditations-02-012",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 12,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Think about how a person connects with God, and which part of us makes that connection. There is nothing more miserable than a soul that wanders everywhere, searching even the depths of the earth. It pries into other people's thoughts through signs and guesses. But it doesn't realize something simple: it's enough to focus completely on caring for the spirit within yourself. Serve that spirit truly.\n\nThis service means keeping yourself free from violent emotions and evil feelings. Stay away from rashness, vanity, and all kinds of discontent with gods or people. Whatever comes from the gods deserves respect because of their excellence. Whatever comes from people should be met with love, since they are our family. Sometimes we should also feel pity for them. They act from ignorance about what is truly good and bad. This blindness is like not being able to tell white from black.",
+    "original_excerpt": "Consider with thyself how man, and by what part of his, is joined unto God, and how that part of man is affected, when it is said to be diffused. There is nothing more wretched than that soul, which in a kind of circuit compasseth all things, searching (as he saith) even the very depths of the earth; and by all signs and conjectures prying into the very thoughts of other men's souls; and yet of this, is not sensible, that it is sufficient for a man to apply himself wholly, and to confine all his thoughts and cares to the tendance of that spirit which is within him, and truly and really to serve him. His service doth consist in this, that a man keep himself pure from all violent passion and evil affection, from all rashness and vanity, and from all manner of discontent, either in regard of the gods or men. For indeed whatsoever proceeds from the gods, deserves respect for their worth and excellency; and whatsoever proceeds from men, as they are our kinsmen, should by us be entertained, with love, always; sometimes, as proceeding from their ignorance, of that which is truly good and bad, (a blindness no less, than that by which we are not able to discern between white and black:) with a kind of pity and compassion also.",
+    "source_reference": "Meditations, Book 2, Section 11",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "calm-your-mind",
+      "human-nature"
+    ],
+    "reading_time_seconds": 44
+  },
+  {
+    "id": "meditations-02-013",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 13,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Whether you live three thousand years or ten thousand, remember this: you can only lose the life you're living right now. The life you're living is just this moment that keeps slipping away. The longest life and the shortest life both end the same way. The past might seem different for different people, but the present moment is the same for everyone. And the present is what we lose when we die. It's clear that we only lose a moment. You can't lose the past or the future — how can you lose what you don't have? So remember two things. First, everything in the world has always repeated the same patterns forever. It doesn't matter if you see these patterns for a hundred years or two hundred or forever — they're all the same. Second, the longest-lived person and the shortest-lived person lose exactly the same thing when they die. They both lose only the present moment, because that's all either of them really has. You can't lose what you never had.",
+    "original_excerpt": "If thou shouldst live three thousand, or as many as ten thousands of years, yet remember this, that man can part with no life properly, save with that little part of life, which he now lives: and that which he lives, is no other, than that which at every instant he parts with. That then which is longest of duration, and that which is shortest, come both to one effect. For although in regard of that which is already past there may be some inequality, yet that time which is now present and in being, is equal unto all men. And that being it which we part with whensoever we die, it doth manifestly appear, that it can be but a moment of time, that we then part with. For as for that which is either past or to come, a man cannot be said properly to part with it. For how should a man part with that which he hath not? These two things therefore thou must remember. First, that all things in the world from all eternity, by a perpetual revolution of the same times and things ever continued and renewed, are of one kind and nature; so that whether for a hundred or two hundred years only, or for an infinite space of time, a man see those things which are still the same, it can be no matter of great moment. And secondly, that that life which any the longest liver, or the shortest liver parts with, is for length and duration the very same, for that only which is present, is that, which either of them can lose, as being that only which they have; for that which he hath not, no man can truly be said to lose.",
+    "source_reference": "Meditations, Book 2, Section 12",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 52
+  },
+  {
+    "id": "meditations-02-014",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 14,
+    "total_cards_in_chapter": 16,
+    "plain_english": "Remember that everything is just opinion and belief. This truth was clear to Monimus the Cynic, and it's just as clear how useful this insight can be — if you accept what is true and serious about it, not just what sounds pleasant.",
+    "original_excerpt": "Remember that all is but opinion and conceit, for those things are plain and apparent, which were spoken unto Monimus the Cynic; and as plain and apparent is the use that may be made of those things, if that which is true and serious in them, be received as well as that which is sweet and pleasing.",
+    "source_reference": "Meditations, Book 2, Section 13",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 13
+  },
+  {
+    "id": "meditations-02-015",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 15,
+    "total_cards_in_chapter": 16,
+    "plain_english": "A person's soul harms and dishonors itself in several ways. First and worst, when it becomes like a tumor or growth on the world — when it gets upset and angry about things that happen. This is rebellion against the nature of the universe, which we are all part of. Second, when it turns away from other people or is driven by feelings that want to hurt them — like angry people do. Third, when it gets overwhelmed by pleasure or pain. Fourth, when it lies or acts fake, doing or saying things dishonestly. Fifth, when it does things without any clear purpose, acting rashly without thinking about whether this fits the bigger picture. Even small actions should connect to our purpose. And the purpose of thinking creatures is to follow and obey the reason and law that governs this great city and ancient world we live in.",
+    "original_excerpt": "A man's soul doth wrong and disrespect itself first and especially, when as much as in itself lies it becomes an aposteme, and as it were an excrescency of the world, for to be grieved and displeased with anything that happens in the world, is direct apostacy from the nature of the universe; part of which, all particular natures of the world, are. Secondly, when she either is averse from any man, or led by contrary desires or affections, tending to his hurt and prejudice; such as are the souls of them that are angry. Thirdly, when she is overcome by any pleasure or pain. Fourthly, when she doth dissemble, and covertly and falsely either doth or saith anything. Fifthly, when she doth either affect or endeavour anything to no certain end, but rashly and without due ratiocination and consideration, how consequent or inconsequent it is to the common end. For even the least things ought not to be done, without relation unto the end; and the end of the reasonable creatures is, to follow and obey him, who is the reason as it were, and the law of this great city, and ancient commonwealth.",
+    "source_reference": "Meditations, Book 2, Section 14",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 44
+  },
+  {
+    "id": "meditations-02-016",
+    "book_slug": "meditations",
+    "chapter_slug": "book-02",
+    "card_number": 16,
+    "total_cards_in_chapter": 16,
+    "plain_english": "A person's life is just a moment. Everything about it flows away. Our senses are dim, and our bodies decay. The soul is restless. Fortune changes. Fame means nothing. In short, everything about the body flows like a stream. Everything about the soul passes like a dream or smoke. Life is a battle and a journey. Fame after death is just being forgotten. What stays with you then? Only one thing: philosophy. Philosophy means this — keep your inner spirit safe from insults and harm. Stay above pain and pleasure. Never act rashly or fake or hypocritically. Depend completely on yourself and your own actions. Accept everything that happens as coming from the same source you came from. Most of all, wait for death with gentleness and calm joy. Death is just the breaking apart of elements that make up every living thing. If the elements don't suffer when they constantly change into each other, why should we fear that common breaking apart and change? This is natural. Nothing natural can be evil.\n\n*I wrote this at Carnuntum.*",
+    "original_excerpt": "The time of a man's life is as a point; the substance of it ever flowing, the sense obscure; and the whole composition of the body tending to corruption. His soul is restless, fortune uncertain, and fame doubtful; to be brief, as a stream so are all things belonging to the body; as a dream, or as a smoke, so are all that belong unto the soul. Our life is a warfare, and a mere pilgrimage. Fame after life is no better than oblivion. What is it then that will adhere and follow? Only one thing, philosophy. And philosophy doth consist in this, for a man to preserve that spirit which is within him, from all manner of contumelies and injuries, and above all pains or pleasures; never to do anything either rashly, or feignedly, or hypocritically: wholly to depend from himself and his own proper actions: all things that happen unto him to embrace contentedly, as coming from Him from whom he himself also came; and above all things, with all meekness and a calm cheerfulness, to expect death, as being nothing else but the resolution of those elements, of which every creature is composed. And if the elements themselves suffer nothing by this their perpetual conversion of one into another, that dissolution, and alteration, which is so common unto all, why should it be feared by any? Is not this according to nature? But nothing that is according to nature can be evil.\n\n_Whilst I was at Carnuntum._",
+    "source_reference": "Meditations, Book 2, Section 15",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 53
   }
 ]

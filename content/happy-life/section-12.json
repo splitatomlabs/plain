@@ -1,0 +1,34 @@
+[
+  {
+    "id": "happy-life-12-001",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-12",
+    "card_number": 1,
+    "total_cards_in_chapter": 2,
+    "plain_english": "\"They are troubled,\" he says, \"because many things pull their thoughts in different directions, and their minds are upset by conflicting ideas.\" I admit this is true. But these same men — foolish, inconsistent, and sure to regret their choices — still get great pleasure from life. We have to admit that while they do this, they feel no trouble at all. They can't think straight, but they don't suffer for it. Like many people, they're caught up in a cheerful kind of madness. They laugh while they act like lunatics. The pleasures of wise men, on the other hand, are calm, proper, almost boring. They keep them under control and barely notice them. They don't invite these pleasures in, and when pleasures show up on their own, they don't welcome them with honor. Those who receive them feel no joy about it. They just mix these pleasures into their lives and use them to fill empty moments — like watching a silly comedy between serious plays.",
+    "original_excerpt": "“They are ill at ease,” replies he, “because many things arise which distract their thoughts, and their minds are disquieted by conflicting opinions.” I admit that this is true: still these very men, foolish, inconsistent, and certain to feel remorse as they are, do nevertheless receive great pleasure, and we must allow that in so doing they are as far from feeling any trouble as they are from forming a right judgment, and that, as is the case with many people, they are possessed by a merry madness, and laugh while they rave. The pleasures of wise men, on the other hand, are mild, decorous, verging on dulness, kept under restraint and scarcely noticeable, and are neither invited to come nor received with honour when they come of their own accord, nor are they welcomed with any delight by those whom they visit, who mix them up with their lives and fill up empty spaces with them, like an amusing farce in the intervals of serious business. Let them no longer, then, join incongruous matters together, or connect pleasure with virtue, a mistake whereby they court the worst of men.",
+    "source_reference": "On the Happy Life, Section 12",
+    "author_slug": "seneca",
+    "tags": [
+      "calm-your-mind",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 50
+  },
+  {
+    "id": "happy-life-12-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-12",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "So let's stop mixing things that don't belong together. Stop connecting pleasure with virtue — this mistake attracts the worst kind of people. The reckless drunk, always boozing and reeking of wine, thinks he's living virtuously because he knows he's living pleasurably. He's heard that pleasure can't exist without virtue. So he calls his vices 'wisdom' and shows off everything he should hide. Epicurus doesn't encourage people to go wild, but corrupt people use philosophy as a hiding place. They flock to schools where they hear pleasure praised. They don't bother to understand how sober and restrained Epicurus's idea of 'pleasure' actually is — and by God, I believe it is restrained. Instead, they just hear his name and rush toward it, looking for protection and cover for their vices. They lose the one good thing their bad life had going for it: shame about doing wrong. Now they praise what they used to blush about and brag about their vices. Once shameful laziness gets dressed up with an honorable name, modesty can never recover. The problem with your school's praise of pleasure is that people ignore the noble parts of the teaching. They only see the degrading parts.",
+    "original_excerpt": "The reckless profligate, always in liquor and belching out the fumes of wine, believes that he lives with virtue, because he knows that he lives with pleasure, for he hears it said that pleasure cannot exist apart from virtue; consequently he dubs his vices with the title of wisdom and parades all that he ought to conceal. So, men are not encouraged by Epicurus to run riot, but the vicious hide their excesses in the lap of philosophy, and flock to the schools in which they hear the praises of pleasure. They do not consider how sober and temperate—for so, by Hercules, I believe it to be—that “pleasure” of Epicurus is, but they rush at his mere name, seeking to obtain some protection and cloak for their vices. They lose, therefore, the one virtue which their evil life possessed, that of being ashamed of doing wrong: for they praise what they used to blush at, and boast of their vices. Thus modesty can never reassert itself, when shameful idleness is dignified with an honourable name. The reason why that praise which your school lavishes upon pleasure is so hurtful, is because the honourable part of its teaching passes unnoticed, but the degrading part is seen by all.",
+    "source_reference": "On the Happy Life, Section 12",
+    "author_slug": "seneca",
+    "tags": [
+      "doing-the-right-thing",
+      "human-nature"
+    ],
+    "reading_time_seconds": 60
+  }
+]

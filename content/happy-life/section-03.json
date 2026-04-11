@@ -1,0 +1,33 @@
+[
+  {
+    "id": "happy-life-03-001",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-03",
+    "card_number": 1,
+    "total_cards_in_chapter": 2,
+    "plain_english": "Let's search for something truly good — not just something that looks impressive, but something solid and worthwhile all the way through. Something most beautiful in its hidden parts. Let's dig it up. It's not far from us. It can be found. We just need to know where to reach. But instead, we act like we're stumbling around in the dark. We reach past what's closest to us and knock over the very things we're looking for.",
+    "original_excerpt": "Let us seek for some blessing, which does not merely look fine, but is sound and good throughout alike, and most beautiful in the parts which are least seen: let us unearth this. It is not far distant from us; it can be discovered: all that is necessary is to know whither to stretch out your hand: but, as it is, we behave as though we were in the dark, and reach out beyond what is nearest to us, striking as we do so against the very things that we want. However, that I may not draw you into digressions, I will pass over the opinions of other philosophers, because it would take a long time to state and confute them all: take ours. When, however, I say “ours,” I do not bind myself to any one of the chiefs of the Stoic school, for I too have a right to form my own opinion. I shall, therefore, follow the authority of some of them, but shall ask some others to discriminate their meaning:[2] perhaps, when after having reported all their opinions, I am asked for my own, I shall impugn none of my predecessors’ decisions, and shall say, “I will also add somewhat to them.” Meanwhile I follow nature, which is a point upon which every one of the Stoic philosophers are agreed: true wisdom consists in not departing from nature and in moulding our conduct according to her laws and model.",
+    "source_reference": "On the Happy Life, Section 3",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "happy-life-03-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-03",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "But I don't want to drag you through endless side discussions. I'll skip over what other philosophers think, since it would take forever to list and argue against all their views. Let's focus on our school instead. When I say \"our school,\" I'm not tying myself to any single Stoic leader. I have the right to think for myself too. I'll follow some of their ideas, but I'll ask others to clarify what they really mean. Maybe after I've shared all their opinions and you ask for mine, I won't attack any of my teachers' decisions. Instead, I'll say, \"Let me add something to what they've said.\"",
+    "original_excerpt": "A happy life, therefore, is one which is in accordance with its own nature, and cannot be brought about unless in the first place the mind be sound and remain so without interruption, and next, be bold and vigorous, enduring all things with most admirable courage, suited to the times in which it lives, careful of the body and its appurtenances, yet not troublesomely careful. It must also set due value upon all the things which adorn our lives, without over-estimating any one of them, and must be able to enjoy the bounty of Fortune without becoming her slave. You understand without my mentioning it that an unbroken calm and freedom ensue, when we have driven away all those things which either excite us or alarm us: for in the place of sensual pleasures and those slight perishable matters which are connected with the basest crimes, we thus gain an immense, unchangeable, equable joy, together with peace, calmness and greatness of mind, and kindliness: for all savageness is a sign of weakness.",
+    "source_reference": "On the Happy Life, Section 3",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 32
+  }
+]

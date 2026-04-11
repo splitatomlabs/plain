@@ -7,8 +7,8 @@ import path from "node:path";
 // Mock the fs and crypto modules to redirect cache to a temp directory
 // ---------------------------------------------------------------------------
 
-// We'll mock the CACHE_DIR by mocking the module's internal path resolution.
-// Instead, since cache.ts uses path.resolve(".pipeline-cache"), we mock
+// We'll mock the PIPELINE_DIR by mocking the module's internal path resolution.
+// Instead, since cache.ts uses path.resolve("pipeline"), we mock
 // the entire module path resolution via a dynamic import approach.
 // Simplest: mock the node:fs/promises calls to intercept paths.
 
@@ -28,10 +28,10 @@ afterEach(async () => {
 
 // ---------------------------------------------------------------------------
 // Import after mocking (cache uses real fs, so we test via the public API
-// but redirect CACHE_DIR by setting process.cwd)
+// but redirect PIPELINE_DIR by setting process.cwd)
 // ---------------------------------------------------------------------------
 
-// Since CACHE_DIR is path.resolve(".pipeline-cache") which depends on cwd,
+// Since PIPELINE_DIR is path.resolve("pipeline") which depends on cwd,
 // we'll change cwd to tempDir so cache files land there.
 import {
   hashSourceFile,
@@ -44,7 +44,7 @@ import {
 import type { Chunk } from "../chunker.js";
 import type { TranslatedChunk } from "../translator.js";
 
-// Override cwd so .pipeline-cache is created inside tempDir
+// Override cwd so pipeline is created inside tempDir
 const originalCwd = process.cwd();
 beforeEach(() => {
   process.chdir(tempDir);

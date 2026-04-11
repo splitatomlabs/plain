@@ -1,0 +1,34 @@
+[
+  {
+    "id": "happy-life-18-001",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-18",
+    "card_number": 1,
+    "total_cards_in_chapter": 2,
+    "plain_english": "\"You talk one way,\" our critic says, \"and live another.\" You spiteful creature, you who always show the most bitter hatred toward the best people — this same attack was thrown at Plato, at Epicurus, at Zeno. All of these men taught how we ought to live, not how they actually lived. I speak about virtue, not about myself. When I criticize vices, I criticize my own first. When I have the power, I will live as I should. But spite, no matter how full of poison, will not keep me from what is best. That same poison you spray on others — the poison that chokes you — will not stop me from praising the life I don't lead but know I should lead. I will keep loving virtue and following her, even if I lag far behind with stumbling steps. Should I expect hateful speech to respect anything, when it didn't even respect Rutilius or Cato? Should anyone care about being called too rich by people who thought even Diogenes the Cynic wasn't poor enough? That most determined philosopher fought against every bodily desire. He was poorer than the other Cynics — he had not only given up owning things, he had given up asking for things. Yet they still criticized him for not being needy enough. As if he claimed to be an expert on poverty, not virtue.",
+    "original_excerpt": "\"You talk one way,\" objects our adversary, \"and live another.\" You most spiteful of creatures, you who always show the bitterest hatred to the best of men, this reproach was flung at Plato, at Epicurus, at Zeno: for all these declared how they ought to live, not how they did live. I speak of virtue, not of myself, and when I blame vices, I blame my own first of all: when I have the power, I shall live as I ought to do: spite, however deeply steeped in venom, shall not keep me back from what is best: that poison itself with which you bespatter others, with which you choke yourselves, shall not hinder me from continuing to praise that life which I do not, indeed, lead, but which I know I ought to lead, from loving virtue and from following after her, albeit a long way behind her and with halting gait.",
+    "source_reference": "On the Happy Life, Section 18",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 69
+  },
+  {
+    "id": "happy-life-18-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-18",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "Should I expect gossip and slander to respect anyone? It didn't spare Rutilius or Cato. Will anyone worry about being called too rich by people who thought even Diogenes the Cynic wasn't poor enough? That incredibly disciplined philosopher fought against every bodily desire. He was poorer than all the other Cynics — he had not only given up owning things, he had also given up asking for things. Yet people still criticized him for not being needy enough. As if poverty, not virtue, was what he was trying to teach.",
+    "original_excerpt": "Am I to expect that evil speaking will respect anything, seeing that it respected neither Rutilius nor Cato? Will any one care about being thought too rich by men for whom Diogenes the Cynic was not poor enough? That most energetic philosopher fought against all the desires of the body, and was poorer even than the other Cynics, in that besides haying given up possessing anything he had also given up asking for anything: yet they reproached him for not being sufficiently in want: as though forsooth it were poverty, not virtue, of which he professed knowledge.",
+    "source_reference": "On the Happy Life, Section 18",
+    "author_slug": "seneca",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 27
+  }
+]

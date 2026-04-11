@@ -72,6 +72,32 @@ describe("parseSourceText — Meditations", () => {
       }
     }
   });
+
+  it("section numbers are contiguous within each book (no gaps)", () => {
+    for (const ch of parsed.chapters) {
+      const nums = ch.sections.map((s) => s.number);
+      for (let i = 1; i < nums.length; i++) {
+        expect(nums[i]).toBe(
+          nums[i - 1] + 1,
+          `${ch.slug}: gap between sections ${nums[i - 1]} and ${nums[i]}`,
+        );
+      }
+    }
+  });
+
+  it("handles inline section markers (e.g. sentence ending with '. V. ')", () => {
+    const book2 = parsed.chapters[1];
+    const section5 = book2.sections.find((s) => s.number === 5);
+    expect(section5).toBeDefined();
+    expect(section5!.text).toContain("For not observing");
+  });
+
+  it("handles section markers missing trailing period (e.g. 'XXIII Consider')", () => {
+    const book6 = parsed.chapters[5];
+    const section23 = book6.sections.find((s) => s.number === 23);
+    expect(section23).toBeDefined();
+    expect(section23!.text).toContain("Consider how many different things");
+  });
 });
 
 describe("parseSourceText — Enchiridion", () => {
