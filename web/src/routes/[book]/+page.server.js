@@ -1,4 +1,4 @@
-import { getBookMeta, getAuthors } from '$lib/utils/content.js';
+import { getBookMeta, getAuthors, getCard } from '$lib/utils/content.js';
 import { getTagsForBook } from '$lib/utils/tags.js';
 
 export function load({ params }) {
@@ -7,5 +7,11 @@ export function load({ params }) {
 	const author = authors.find((a) => a.slug === meta.author_slug);
 	const tags = getTagsForBook(params.book);
 
-	return { book: meta, author, tags };
+	const hasChapters = meta.slug === 'meditations';
+	let previewCard = null;
+	if (!hasChapters && meta.chapters.length > 0) {
+		previewCard = getCard(meta.slug, meta.chapters[0].slug, 1);
+	}
+
+	return { book: meta, author, tags, previewCard };
 }
