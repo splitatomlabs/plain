@@ -357,7 +357,10 @@ function normalizeForComparison(text: string): string {
   return text
     .replace(/^[IVXLCDMivxlcdm]+\.\s*/, "")   // strip Roman prefix
     .replace(/\[_[A-Za-z]+\._\]\s*/g, "")       // strip speaker labels
+    .replace(/\[\d+\]/g, "")                     // strip footnote references [4]
     .replace(/\{[\d]+\}/g, "")                   // strip page numbers
+    .replace(/[\u2018\u2019]/g, "'")             // normalize smart quotes
+    .replace(/[\u201C\u201D]/g, '"')             // normalize smart double quotes
     .replace(/\s+/g, " ")                        // collapse all whitespace
     .trim()
     .toLowerCase();

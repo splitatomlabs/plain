@@ -5,7 +5,7 @@
     "chapter_slug": "section-16",
     "card_number": 1,
     "total_cards_in_chapter": 3,
-    "plain_english": "The people who live the shortest and most miserable lives are those who forget their past, ignore their present, and fear their future. When they finally reach the end, these poor souls realize too late that they stayed busy their whole lives without actually doing anything meaningful. Don't think their lives are long just because they sometimes wish for death. Their foolishness torments them with confused desires that drive them toward the very things they're afraid of. So they often wish for death precisely because they live in constant fear.",
+    "plain_english": "The people with the shortest and most miserable lives are those who forget their past, ignore their present, and fear their future. When they reach the end, these poor souls realize too late that they stayed busy while accomplishing nothing. Don't think their lives are long just because they sometimes wish for death. Their foolishness torments them with confused desires that drive them toward the very things they fear. So they often wish for death because they live in constant fear.",
     "original_excerpt": "Those men lead the shortest and unhappiest lives who forget the past, neglect the present, and dread the future: when they reach the end of it the poor wretches learn too late that they were busied all the while that they were doing nothing. You need not think, because sometimes they call for death, that their lives are long: their folly torments them with vague passions which lead them into the very things of which they are afraid: they often, therefore, wish for death because they live in fear.",
     "source_reference": "On the Shortness of Life, Section 16",
     "author_slug": "seneca",
@@ -13,7 +13,7 @@
       "death-and-mortality",
       "what-matters-most"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 24
   },
   {
     "id": "shortness-of-life-16-002",
@@ -21,15 +21,15 @@
     "chapter_slug": "section-16",
     "card_number": 2,
     "total_cards_in_chapter": 3,
-    "plain_english": "And don't think these people have long lives just because they often complain about how slowly time passes. They whine about the hours dragging by until dinner time. But here's the thing: whenever they have nothing to occupy them, they become restless and miserable. They have no idea how to use their free time or make it meaningful. So they rush to find some distraction. Any empty time feels unbearable to them. They would gladly skip right over it — just like they want to fast-forward through the days before a gladiator fight or some other show they're looking forward to. Any delay in getting what they want feels like torture.",
+    "plain_english": "Don't think that people complaining about long days proves they have plenty of time to live. Yes, they often find the days drag on. They complain about how slowly the hours crawl by until dinnertime. But this happens only when they're left without their usual distractions. Without their busy work, they become restless and anxious. They don't know how to arrange their free time or make it meaningful. So they throw themselves into some activity, and every moment in between feels unbearable. They honestly wish they could skip over these empty hours — just like they wish they could fast-forward through the days before a big gladiator fight or some other show they're excited about. Any delay in getting what they want feels like torture.",
     "original_excerpt": "Neither is it, as you might think, a proof of the length of their lives that they often find the days long, that they often complain how slowly the hours pass until the appointed time arrives for dinner: for whenever they are left without their usual business, they fret helplessly in their idleness, and know not how to arrange or to spin it out. They betake themselves, therefore, to some business, and all the intervening time is irksome to them; they would wish, by Hercules, to skip over it, just as they wish to skip over the intervening days before a gladiatorial contest or some other time appointed for a public spectacle or private indulgence: all postponement of what they wish for is grievous to them.",
     "source_reference": "On the Shortness of Life, Section 16",
     "author_slug": "seneca",
     "tags": [
       "what-matters-most",
-      "freedom-and-control"
+      "calm-your-mind"
     ],
-    "reading_time_seconds": 33
+    "reading_time_seconds": 38
   },
   {
     "id": "shortness-of-life-16-003",
@@ -37,7 +37,7 @@
     "chapter_slug": "section-16",
     "card_number": 3,
     "total_cards_in_chapter": 3,
-    "plain_english": "But even the time they do enjoy is short and passes quickly. They make it even shorter through their own mistakes. They jump from one pleasure to another and can't stick with any single passion. Their days don't feel long — they feel awful. But how short the nights seem when they spend them with prostitutes or drinking! This is where poets get their foolish ideas. They encourage people's mistakes with their stories. They say Jupiter made the night twice as long to satisfy his lust. Isn't this just adding fuel to our vices? They make the gods the source of our bad behavior. They give us divine examples to justify our sickness. How can nights that cost so much not feel incredibly short? These people waste their days waiting for night to come, then waste their nights dreading the dawn.",
+    "plain_english": "Yet even the time they do enjoy is brief and passes quickly. They make it even shorter through their own mistakes. They rush from one pleasure to another, never able to stick with one passion for long. Their days don't feel long to them — they feel unbearable. But how short the nights seem when they spend them with prostitutes or drinking! This is where poets get their foolish ideas. They encourage people's mistakes with their stories. They say Jupiter doubled the length of the night to satisfy his lustful desires. Isn't this just adding fuel to our vices? They make the gods the source of our bad behavior. They give us divine examples to justify our sick impulses. How can nights that men pay so dearly for not seem terribly short? They waste the day looking forward to night, then waste the night dreading the dawn.",
     "original_excerpt": "Yet the very time which they enjoy is brief and soon past, and is made much briefer by their own fault: for they run from one pleasure to another, and are not able to devote themselves consistently to one passion: their days are not long, but odious to them: on the other hand, how short they find the nights which they spend with courtezans or over wine? Hence arises that folly of the poets who encourage the errors of mankind by their myths, and declare that Jupiter to gratify his voluptuous desires doubled the length of the night. Is it not adding fuel to our vices to name the gods as their authors, and to offer our distempers free scope by giving them deity for an example? How can the nights for which men pay so dear fail to appear of the shortest? they lose the day in looking forward to the night, and lose the night through fear of the dawn.",
     "source_reference": "On the Shortness of Life, Section 16",
     "author_slug": "seneca",
@@ -45,6 +45,6 @@
       "what-matters-most",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 42
+    "reading_time_seconds": 44
   }
 ]

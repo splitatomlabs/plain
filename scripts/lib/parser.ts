@@ -131,6 +131,14 @@ function parseSingleEssay(text: string, config: BookConfig): ParsedBook {
     sections = splitSections(text, config.sectionPattern);
   }
 
+  // Strip trailing footnotes and next-book headers from the last section
+  // (Seneca source texts end with [N] footnotes, {NNN} page numbers,
+  // and "THE ... BOOK OF THE DIALOGUES..." headers)
+  if (sections.length > 0) {
+    const last = sections[sections.length - 1];
+    last.text = last.text.replace(/\n\s*\[\d+\]\s[\s\S]*$/, "").trim();
+  }
+
   // Strip speaker labels if needed
   if (config.speakerLabels) {
     for (const s of sections) {
