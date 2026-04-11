@@ -158,16 +158,13 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
       continue;
     }
 
-    // Load parse intermediate
+    // Load parse intermediate and chunk sections for refine
     const parseCached = await loadParseCache(config.slug);
     if (!parseCached) {
       throw new Error(`No parse cache for ${config.slug} — run --phase parse first`);
     }
 
-    // Convert parsed chapters to ParsedOutput (with chunks from chunker)
-    const text = await readFile(config.source_file, "utf-8");
-    const parsed = parseSourceText(text, config);
-    const chapters = parsed.chapters.map((ch) => ({
+    const chapters = parseCached.map((ch) => ({
       slug: ch.slug,
       title: ch.title,
       bookNumber: ch.bookNumber,
