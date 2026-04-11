@@ -401,10 +401,21 @@ export async function refineChunks(
   for (let b = 0; b < batches.length; b++) {
     let batch = batches[b];
 
-    // Prepend deferred merge chunk to this batch
+    // Merge deferred chunk with the first chunk of this batch
     if (deferredMergeChunk) {
-      batch = [deferredMergeChunk, ...batch];
+      const first = batch[0];
+      batch = [
+        {
+          sectionNumber: deferredMergeChunk.sectionNumber,
+          text: deferredMergeChunk.text + "\n\n" + first.text,
+        },
+        ...batch.slice(1),
+      ];
       deferredMergeChunk = null;
+      totalMerges++;
+      process.stderr.write(
+        `  MERGE (cross-batch) section ${batch[0].sectionNumber} with next batch\n`,
+      );
     }
 
     process.stderr.write(
