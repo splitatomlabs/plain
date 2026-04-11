@@ -133,6 +133,22 @@
 		</button>
 	</div>
 
+	{#if showGiftCompose}
+		<div class="gift-compose">
+			<label for="gift-note" class="gift-label">Add a personal note (optional)</label>
+			<textarea
+				id="gift-note"
+				class="gift-textarea"
+				bind:value={giftNoteInput}
+				maxlength="280"
+				placeholder="I thought you'd enjoy this..."
+				rows="3"
+			></textarea>
+			<p class="gift-char-count">{giftNoteInput.length} / 280</p>
+			<button class="gift-send" onclick={shareGiftUrl}>Share gift link</button>
+		</div>
+	{/if}
+
 	{#if hasChapters}
 		<section class="chapters">
 			<h2 class="chapters-heading">Chapters</h2>
@@ -162,22 +178,6 @@
 		<a href={firstCardUrl} class="book-preview">
 			<p class="preview-text">{data.previewCard.plain_english}</p>
 		</a>
-	{/if}
-
-	{#if showGiftCompose}
-		<div class="gift-compose">
-			<label for="gift-note" class="gift-label">Add a personal note (optional)</label>
-			<textarea
-				id="gift-note"
-				class="gift-textarea"
-				bind:value={giftNoteInput}
-				maxlength="280"
-				placeholder="I thought you'd enjoy this..."
-				rows="3"
-			></textarea>
-			<p class="gift-char-count">{giftNoteInput.length} / 280</p>
-			<button class="gift-send" onclick={shareGiftUrl}>Share gift link</button>
-		</div>
 	{/if}
 
 	{#if data.tags.length > 0}
