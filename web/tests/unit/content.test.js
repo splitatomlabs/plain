@@ -37,24 +37,23 @@ describe('getBookMeta', () => {
 });
 
 describe('getBooks', () => {
-	it('returns all 5 books sorted by author sort_order', () => {
+	it('returns all 4 fixture books sorted by author sort_order', () => {
 		const books = getBooks();
-		expect(books).toHaveLength(5);
+		expect(books).toHaveLength(4);
 		// Epictetus first (sort_order 1)
 		expect(books[0].author_slug).toBe('epictetus');
 		// Marcus Aurelius second (sort_order 2)
 		expect(books[1].author_slug).toBe('marcus-aurelius');
-		// Seneca last (sort_order 3, 3 books)
+		// Seneca last (sort_order 3, 2 books in fixtures)
 		expect(books[2].author_slug).toBe('seneca');
 		expect(books[3].author_slug).toBe('seneca');
-		expect(books[4].author_slug).toBe('seneca');
 	});
 });
 
 describe('getBooksForAuthor', () => {
-	it('returns 3 books for seneca', () => {
+	it('returns 2 books for seneca', () => {
 		const books = getBooksForAuthor('seneca');
-		expect(books).toHaveLength(3);
+		expect(books).toHaveLength(2);
 	});
 
 	it('returns 1 book for epictetus', () => {
@@ -86,7 +85,7 @@ describe('getCard', () => {
 describe('getChapterCards', () => {
 	it('returns cards for a valid chapter', () => {
 		const cards = getChapterCards('meditations', 'book-01');
-		expect(cards).toHaveLength(3);
+		expect(cards).toHaveLength(23);
 		expect(cards[0].chapter_slug).toBe('book-01');
 	});
 });
@@ -98,7 +97,7 @@ describe('getAdjacentCard', () => {
 	});
 
 	it('crosses chapter boundary forward', () => {
-		const next = getAdjacentCard('meditations', 'book-01', 3, 1);
+		const next = getAdjacentCard('meditations', 'book-01', 23, 1);
 		expect(next.chapter_slug).toBe('book-02');
 		expect(next.card_number).toBe(1);
 	});
@@ -106,7 +105,7 @@ describe('getAdjacentCard', () => {
 	it('crosses chapter boundary backward', () => {
 		const prev = getAdjacentCard('meditations', 'book-02', 1, -1);
 		expect(prev.chapter_slug).toBe('book-01');
-		expect(prev.card_number).toBe(3);
+		expect(prev.card_number).toBe(23);
 	});
 
 	it('returns null at book start', () => {
@@ -115,7 +114,7 @@ describe('getAdjacentCard', () => {
 	});
 
 	it('returns null at book end', () => {
-		const next = getAdjacentCard('meditations', 'book-02', 3, 1);
+		const next = getAdjacentCard('meditations', 'book-02', 21, 1);
 		expect(next).toBeNull();
 	});
 });
@@ -129,8 +128,8 @@ describe('getCardsByTag', () => {
 });
 
 describe('getAllCards', () => {
-	it('returns all 30 fixture cards', () => {
+	it('returns all fixture cards', () => {
 		const cards = getAllCards();
-		expect(cards).toHaveLength(30);
+		expect(cards).toHaveLength(50);
 	});
 });
