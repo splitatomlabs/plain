@@ -46,7 +46,17 @@
 	});
 	let firstCardUrl = $derived(`/${data.book.slug}/${data.book.chapters[0].slug}/1`);
 
-	let totalReadingMinutes = $derived(Math.ceil((data.book.total_reading_time_seconds || 0) / 60));
+	function formatReadingTime(seconds) {
+		const mins = Math.ceil(seconds / 60);
+		if (mins > 90) {
+			const hrs = Math.floor(mins / 60);
+			const rem = mins % 60;
+			return rem > 0 ? `~${hrs} hr ${rem} min` : `~${hrs} hr`;
+		}
+		return `~${mins} min`;
+	}
+
+	let readingTimeLabel = $derived(formatReadingTime(data.book.total_reading_time_seconds || 0));
 
 	let showGiftCompose = $state(false);
 	let giftNoteInput = $state('');
@@ -107,7 +117,7 @@
 		<p class="book-description">{data.book.description}</p>
 	</header>
 
-	<p class="book-scope">{data.book.total_cards} cards · ~{totalReadingMinutes} min read</p>
+	<p class="book-scope">{data.book.total_cards} cards · {readingTimeLabel} read</p>
 
 	{#if bookPercentage > 0}
 		<div class="book-landing-progress">
@@ -160,11 +170,16 @@
 							<span class="chapter-check">&#10003;</span>
 						{/if}
 						<span class="chapter-title">{chapter.title}</span>
-						<span class="chapter-count">
-							{#if cp && cp.cardsRead > 0}
-								{cp.cardsRead} / {cp.total}
-							{:else}
-								{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}
+						<span class="chapter-meta">
+							<span class="chapter-count">
+								{#if cp && cp.cardsRead > 0}
+									{cp.cardsRead} / {cp.total}
+								{:else}
+									{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}
+								{/if}
+							</span>
+							{#if chapter.reading_time_seconds}
+								<span class="chapter-time">{formatReadingTime(chapter.reading_time_seconds)}</span>
 							{/if}
 						</span>
 						{#if cp && cp.percentage > 0}
@@ -175,9 +190,9 @@
 			</ol>
 		</section>
 	{:else if data.previewCard}
-		<a href={firstCardUrl} class="book-preview">
+		<div class="book-preview">
 			<p class="preview-text">{data.previewCard.plain_english}</p>
-		</a>
+		</div>
 	{/if}
 
 	{#if data.tags.length > 0}
@@ -235,8 +250,8 @@
 
 	.book-scope {
 		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		color: var(--color-text-secondary);
+		font-size: 1rem;
+		color: var(--color-text-primary);
 		margin: 0 0 var(--space-lg);
 		text-align: center;
 	}
@@ -299,12 +314,24 @@
 		flex: 1;
 	}
 
+	.chapter-meta {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		margin-left: var(--space-sm);
+		white-space: nowrap;
+	}
+
 	.chapter-count {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		margin-left: var(--space-sm);
-		white-space: nowrap;
+	}
+
+	.chapter-time {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-tertiary);
 	}
 
 	.book-preview {
@@ -313,12 +340,6 @@
 		border: 1px solid var(--color-border);
 		border-radius: 6px;
 		margin-bottom: var(--space-lg);
-		text-decoration: none;
-		transition: border-color var(--transition-fast);
-	}
-
-	.book-preview:hover {
-		border-color: var(--color-text-secondary);
 	}
 
 	.preview-text {

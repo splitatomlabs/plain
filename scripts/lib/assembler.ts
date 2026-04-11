@@ -105,6 +105,7 @@ export function assembleBook(
       slug: chapterSlug,
       title: chapterTitle,
       card_count: cards.length,
+      reading_time_seconds: cards.reduce((sum, c) => sum + c.reading_time_seconds, 0),
     });
   }
 

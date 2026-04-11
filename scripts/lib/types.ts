@@ -18,6 +18,7 @@ export interface ChapterInfo {
   slug: string;
   title: string;
   card_count: number;
+  reading_time_seconds: number;
 }
 
 export interface BookMeta {
