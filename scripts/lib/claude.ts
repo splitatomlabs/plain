@@ -46,7 +46,7 @@ export function callClaude(
   });
 }
 
-function extractJSON(text: string): string {
+export function extractJSON(text: string): string {
   // 1. Try the full output as-is
   try {
     JSON.parse(text);
@@ -113,6 +113,13 @@ export const tokenUsage = {
   cacheCreationTokens: 0,
 };
 
+/** Accumulated batch statistics for cost reporting */
+export const batchStats = {
+  totalRequests: 0,
+  succeeded: 0,
+  failed: 0,
+};
+
 let anthropicClient: Anthropic | null = null;
 
 function getClient(): Anthropic {
@@ -122,11 +129,31 @@ function getClient(): Anthropic {
   return anthropicClient;
 }
 
+// Simple rate limiter: tracks timestamps of recent calls and waits if needed.
+const callTimestamps: number[] = [];
+const MAX_RPM = parseInt(process.env.PLAIN_API_RPM ?? "4", 10); // default 4 rpm (safe margin under 5)
+
+async function rateLimit(): Promise<void> {
+  const now = Date.now();
+  const windowStart = now - 60_000;
+  // Remove timestamps older than 1 minute
+  while (callTimestamps.length > 0 && callTimestamps[0] < windowStart) {
+    callTimestamps.shift();
+  }
+  if (callTimestamps.length >= MAX_RPM) {
+    const waitMs = callTimestamps[0] - windowStart + 100; // wait until oldest exits window + buffer
+    process.stderr.write(`[rate-limit] Waiting ${Math.round(waitMs / 1000)}s...\n`);
+    await new Promise<void>((resolve) => setTimeout(resolve, waitMs));
+  }
+  callTimestamps.push(Date.now());
+}
+
 async function callClaudeAPI(
   prompt: string,
   model = "sonnet",
   system?: string,
 ): Promise<string> {
+  await rateLimit();
   const client = getClient();
   const modelId = API_MODEL_MAP[model] ?? model;
 
@@ -158,6 +185,92 @@ async function callClaudeAPI(
     throw new ClaudeCliError("No text in API response");
   }
   return textBlock.text.trim();
+}
+
+// ---------------------------------------------------------------------------
+// Batch API
+// ---------------------------------------------------------------------------
+
+export interface BatchRequest {
+  custom_id: string;
+  model?: string;
+  system?: string;
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
+  max_tokens?: number;
+}
+
+export interface BatchResultItem {
+  custom_id: string;
+  result:
+    | { type: "succeeded"; message: Anthropic.Message }
+    | { type: "errored"; error: unknown };
+}
+
+/**
+ * Creates a message batch via the Anthropic Batch API.
+ * Returns the batch object (id, processing_status, etc.).
+ */
+export async function createMessageBatch(
+  requests: BatchRequest[],
+): Promise<Anthropic.MessageBatch> {
+  const client = getClient();
+  const sdkRequests = requests.map((r) => {
+    const modelId = API_MODEL_MAP[r.model ?? "sonnet"] ?? r.model ?? API_MODEL_MAP["sonnet"];
+    return {
+      custom_id: r.custom_id,
+      params: {
+        model: modelId,
+        max_tokens: r.max_tokens ?? 4096,
+        ...(r.system ? { system: r.system } : {}),
+        messages: r.messages,
+      },
+    };
+  });
+  return client.messages.batches.create({ requests: sdkRequests });
+}
+
+/**
+ * Polls a batch until processing_status is "ended" (or any terminal state).
+ * Uses exponential backoff: starts at 5s, doubles each attempt, caps at 60s.
+ * Times out after 24 hours. Logs status updates to stderr.
+ */
+export async function pollBatchUntilDone(
+  batchId: string,
+): Promise<Anthropic.MessageBatch> {
+  const client = getClient();
+  const MAX_WAIT_MS = 24 * 60 * 60 * 1000; // 24 hours
+  const MIN_INTERVAL_MS = 5_000;
+  const MAX_INTERVAL_MS = 60_000;
+
+  let intervalMs = MIN_INTERVAL_MS;
+  const deadline = Date.now() + MAX_WAIT_MS;
+
+  while (Date.now() < deadline) {
+    const batch = await client.messages.batches.retrieve(batchId);
+    process.stderr.write(
+      `[batch] ${batchId} status=${batch.processing_status}\n`,
+    );
+    if (batch.processing_status === "ended") {
+      return batch;
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, intervalMs));
+    intervalMs = Math.min(intervalMs * 2, MAX_INTERVAL_MS);
+  }
+
+  throw new Error(`Batch ${batchId} did not complete within 24 hours`);
+}
+
+/**
+ * Streams results from a completed batch.
+ * Yields each result item (succeeded or errored).
+ */
+export async function* streamBatchResults(
+  batchId: string,
+): AsyncGenerator<BatchResultItem> {
+  const client = getClient();
+  for await (const item of await client.messages.batches.results(batchId)) {
+    yield item as BatchResultItem;
+  }
 }
 
 // ---------------------------------------------------------------------------
