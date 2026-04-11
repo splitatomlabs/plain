@@ -313,83 +313,11 @@ function applyDecisions(
 }
 
 /**
- * Single-chunk refine fallback — used when bulk API call fails.
+ * Refine chunks using batched API calls (real-time, not Batch API).
+ * Sends ~REFINE_BATCH_SIZE chunks per call.
+ * Used internally as fallback when Batch API requests fail.
  */
-async function refineChunksSingle(
-  chunks: Chunk[],
-  config: BookConfig,
-): Promise<{ refined: Chunk[]; splits: number; merges: number; apiCalls: number }> {
-  const refined: Chunk[] = [];
-  let splits = 0;
-  let merges = 0;
-  const total = chunks.length;
-  let skipNext = false;
-  const system = buildRefineSystem(config);
-
-  for (let i = 0; i < chunks.length; i++) {
-    if (skipNext) {
-      skipNext = false;
-      continue;
-    }
-
-    const chunk = chunks[i];
-    const prev = i > 0 ? chunks[i - 1] : null;
-    const next = i < chunks.length - 1 ? chunks[i + 1] : null;
-
-    process.stderr.write(
-      `Refine ${i + 1}/${total}: section ${chunk.sectionNumber}...\n`,
-    );
-
-    let response: RefineResponse;
-    try {
-      const prompt = buildRefineUser(chunk, prev, next);
-      response = await callClaudeJSON<RefineResponse>(prompt, undefined, { system });
-    } catch (e) {
-      process.stderr.write(
-        `  Refine failed for section ${chunk.sectionNumber}: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
-      );
-      refined.push(chunk);
-      continue;
-    }
-
-    if (response.action === "split" && response.segments && response.segments.length > 1) {
-      process.stderr.write(
-        `  SPLIT section ${chunk.sectionNumber} into ${response.segments.length} chunks\n`,
-      );
-      splits++;
-      for (const segment of response.segments) {
-        refined.push({ sectionNumber: chunk.sectionNumber, text: segment.trim() });
-      }
-    } else if (response.action === "merge_next" && next) {
-      process.stderr.write(
-        `  MERGE section ${chunk.sectionNumber} + ${next.sectionNumber}: ${response.reason ?? ""}\n`,
-      );
-      merges++;
-      refined.push({
-        sectionNumber: chunk.sectionNumber,
-        text: chunk.text + "\n\n" + next.text,
-      });
-      skipNext = true;
-    } else if (response.action === "merge_prev" && refined.length > 0) {
-      process.stderr.write(
-        `  MERGE section ${chunk.sectionNumber} into previous: ${response.reason ?? ""}\n`,
-      );
-      merges++;
-      const last = refined[refined.length - 1];
-      last.text = last.text + "\n\n" + chunk.text;
-    } else {
-      refined.push(chunk);
-    }
-  }
-
-  return { refined, splits, merges, apiCalls: chunks.length };
-}
-
-/**
- * Refine chunks using batched API calls.
- * Sends ~REFINE_BATCH_SIZE chunks per call, falls back to single-chunk on failure.
- */
-export async function refineChunks(
+export async function refineChunksRealtime(
   chunks: Chunk[],
   config: BookConfig,
 ): Promise<RefineResult> {
@@ -441,11 +369,9 @@ export async function refineChunks(
       process.stderr.write(
         `  Bulk refine failed, falling back to single-chunk: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
       );
-      const fallback = await refineChunksSingle(batch, config);
-      allRefined.push(...fallback.refined);
-      totalSplits += fallback.splits;
-      totalMerges += fallback.merges;
-      apiCalls += fallback.apiCalls;
+      // On bulk failure, keep chunks as-is rather than calling single-chunk API
+      allRefined.push(...batch);
+      apiCalls++;
       continue;
     }
 
@@ -632,7 +558,7 @@ export async function refineChunksBatch(
       process.stderr.write(
         `[batch-refine] Falling back to real-time refine for ${chapterKey}\n`,
       );
-      const result = await refineChunks(chunks, config);
+      const result = await refineChunksRealtime(chunks, config);
       resultMap.set(chapterKey, result);
       continue;
     }
@@ -643,7 +569,7 @@ export async function refineChunksBatch(
       process.stderr.write(
         `[batch-refine] No results for ${chapterKey}, falling back to real-time\n`,
       );
-      const result = await refineChunks(chunks, config);
+      const result = await refineChunksRealtime(chunks, config);
       resultMap.set(chapterKey, result);
       continue;
     }

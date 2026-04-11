@@ -58,7 +58,7 @@ vercel --prod   # production deploy
 
 ## Content Pipeline
 
-TypeScript CLI tools that turn plain-text source books into card JSON. Source texts live in `content/source/`, pipeline cache in `content/pipeline/`, and finished card JSON is written to `content/output/`. Requires `claude` CLI on PATH for translation and semantic checks.
+TypeScript CLI that turns plain-text source books into card JSON via the Anthropic Batch API. Source texts live in `content/source/`, pipeline cache in `content/pipeline/`, and finished card JSON is written to `content/output/`.
 
 **Pipeline:** `parse → refine → translate → assemble`
 
@@ -68,26 +68,20 @@ TypeScript CLI tools that turn plain-text source books into card JSON. Source te
 4. **Assemble** — Generate card IDs, reading time, source refs, write to `content/output/`
 
 ```bash
-# Parse all books (no AI calls needed)
-npx tsx scripts/generate.ts --all --parse-only
+# Run full pipeline for one book (requires ANTHROPIC_API_KEY)
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book shortness-of-life
 
-# Generate one book (requires claude CLI on PATH, or PLAIN_USE_API=1 + ANTHROPIC_API_KEY)
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --book shortness-of-life
+# Run full pipeline for all books
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all
 
-# Test on a small subset (2 refine calls per book)
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --book shortness-of-life --limit 2
-
-# Generate all books in parallel
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --all --parallel
-
-# Force re-generate, ignoring cache
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --fresh
-
-# Use Batch API for translate step (50% cheaper, async)
-PLAIN_USE_API=1 PLAIN_USE_BATCH=1 npx tsx scripts/generate.ts --all
+# Run individual phases against persisted intermediates
+npx tsx scripts/generate.ts --all --phase parse         # no AI calls
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all --phase refine
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all --phase translate
+npx tsx scripts/generate.ts --all --phase assemble      # no AI calls
 ```
 
-Flags: `--book <slug>`, `--all`, `--parse-only`, `--limit <n>`, `--output <dir>` (default: `content/output`), `--parallel`, `--fresh`, `--help`.
+Flags: `--book <slug>`, `--all`, `--phase <parse|refine|translate|assemble>`, `--output <dir>` (default: `content/output`), `--help`.
 
 ## Testing
 
@@ -97,8 +91,8 @@ npm test          # runs both pipeline and web unit tests
 
 `npm test` runs two suites in sequence:
 
-1. **Pipeline tests** (84 tests) — parser, chunker, refine, validator, and assembler (`scripts/lib/__tests__/`)
-2. **Web unit tests** (22 tests) — content utilities and tag logic (`web/tests/unit/`)
+1. **Pipeline tests** (186 tests) — parser, chunker, refine, translator, cache, batch, validator, and assembler (`scripts/lib/__tests__/`)
+2. **Web unit tests** (36 tests) — content utilities and tag logic (`web/tests/unit/`)
 
 Playwright e2e tests are separate and require a built app:
 

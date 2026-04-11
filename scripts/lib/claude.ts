@@ -1,4 +1,3 @@
-import { execFile } from "node:child_process";
 import Anthropic from "@anthropic-ai/sdk";
 
 export class ClaudeCliError extends Error {
@@ -11,39 +10,8 @@ export class ClaudeCliError extends Error {
 export interface CallClaudeOptions {
   /** Model to use (default: "sonnet") */
   model?: string;
-  /** Use --bare mode to skip hooks, plugins, CLAUDE.md, etc. Requires ANTHROPIC_API_KEY. */
-  bare?: boolean;
-  /** System prompt (used for prompt caching in API mode; prepended to user prompt in CLI mode) */
+  /** System prompt (used for prompt caching) */
   system?: string;
-}
-
-export function callClaude(
-  prompt: string,
-  options: CallClaudeOptions = {},
-): Promise<string> {
-  const { model = "sonnet", bare = false } = options;
-  const args = bare
-    ? ["--bare", "--model", model, "-p", prompt]
-    : ["--model", model, "-p", prompt];
-
-  return new Promise((resolve, reject) => {
-    execFile(
-      "claude",
-      args,
-      { maxBuffer: 1024 * 1024 },
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(
-            new ClaudeCliError(
-              `claude CLI failed: ${error.message}\n${stderr}`,
-            ),
-          );
-          return;
-        }
-        resolve(stdout.trim());
-      },
-    );
-  });
 }
 
 export function extractJSON(text: string): string {
@@ -97,7 +65,7 @@ export function extractJSON(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Direct API path (PLAIN_USE_API=1)
+// API client
 // ---------------------------------------------------------------------------
 
 const API_MODEL_MAP: Record<string, string> = {
@@ -124,6 +92,9 @@ let anthropicClient: Anthropic | null = null;
 
 function getClient(): Anthropic {
   if (!anthropicClient) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is required. Set it in your environment.");
+    }
     anthropicClient = new Anthropic();
   }
   return anthropicClient;
@@ -274,10 +245,8 @@ export async function* streamBatchResults(
 }
 
 // ---------------------------------------------------------------------------
-// Unified entry point — routes to CLI or API based on PLAIN_USE_API
+// Unified entry point — API only
 // ---------------------------------------------------------------------------
-
-const useAPI = process.env.PLAIN_USE_API === "1";
 
 export async function callClaudeJSON<T>(
   prompt: string,
@@ -290,25 +259,23 @@ export async function callClaudeJSON<T>(
 
   const model = options?.model ?? "sonnet";
   const system = options?.system;
-  const call = useAPI
-    ? (p: string) => callClaudeAPI(p, model, system)
-    : (p: string) =>
-        callClaude(system ? `${system}\n\n${p}` : p, options);
 
-  const output = await call(fullPrompt);
+  const output = await callClaudeAPI(fullPrompt, model, system);
 
   try {
     return JSON.parse(extractJSON(output)) as T;
   } catch {
     // Retry once with explicit JSON instruction
-    const retryOutput = await call(
+    const retryOutput = await callClaudeAPI(
       `${fullPrompt}\n\nRespond with only valid JSON, no other text.`,
+      model,
+      system,
     );
     try {
       return JSON.parse(extractJSON(retryOutput)) as T;
     } catch {
       throw new ClaudeCliError(
-        "Failed to parse JSON from claude CLI after retry",
+        "Failed to parse JSON from API after retry",
         retryOutput,
       );
     }

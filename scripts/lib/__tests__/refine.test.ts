@@ -8,7 +8,7 @@ vi.mock("../claude.js", () => ({
   ClaudeCliError: class ClaudeCliError extends Error {},
 }));
 
-import { refineChunks, buildRefineSystem, buildBulkRefineSystem, buildBulkRefineUser } from "../refine.js";
+import { refineChunksRealtime, buildRefineSystem, buildBulkRefineSystem, buildBulkRefineUser } from "../refine.js";
 import { callClaudeJSON } from "../claude.js";
 
 const mockCallClaudeJSON = vi.mocked(callClaudeJSON);
@@ -50,7 +50,7 @@ beforeEach(() => {
   mockCallClaudeJSON.mockReset();
 });
 
-describe("refineChunks", () => {
+describe("refineChunksRealtime", () => {
   it("keeps chunks unchanged when action is keep", async () => {
     const chunks = [
       makeChunk(1, "This is a complete idea about virtue that stands on its own."),
@@ -64,7 +64,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(result.chunks[0].text).toBe(chunks[0].text);
@@ -89,7 +89,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(result.chunks[0].text).toBe("First idea about virtue.");
@@ -116,7 +116,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(result.chunks[0].text).toContain("Beginning of a thought");
@@ -139,7 +139,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toContain("A complete opening thought");
@@ -159,7 +159,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toBe("First section that somehow says merge_prev.");
@@ -177,27 +177,24 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toBe("Last section that says merge_next.");
   });
 
-  it("falls back to single-chunk evaluation on bulk API failure", async () => {
+  it("keeps chunks unchanged on bulk API failure", async () => {
     const chunks = [
       makeChunk(1, "This chunk will survive a failure gracefully."),
     ];
 
-    // First call (bulk) fails, second call (single fallback) succeeds
-    mockCallClaudeJSON
-      .mockRejectedValueOnce(new Error("API timeout"))
-      .mockResolvedValueOnce({ action: "keep", segments: null, reason: null });
+    mockCallClaudeJSON.mockRejectedValueOnce(new Error("API timeout"));
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.chunks[0].text).toBe("This chunk will survive a failure gracefully.");
-    expect(mockCallClaudeJSON).toHaveBeenCalledTimes(2); // bulk + single fallback
+    expect(mockCallClaudeJSON).toHaveBeenCalledTimes(1);
   });
 
   it("ignores split with only one segment", async () => {
@@ -215,7 +212,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(1);
     expect(result.splits).toBe(0);
@@ -230,7 +227,7 @@ describe("refineChunks", () => {
       bulkResponse([{ section: 1, action: "keep" }]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks.length).toBe(2);
     expect(result.splits).toBe(1);
@@ -247,7 +244,7 @@ describe("refineChunks", () => {
       bulkResponse([{ section: 1, action: "keep" }]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks.length).toBe(2);
     expect(result.chunks[0].text).not.toContain("\n\n");
@@ -263,7 +260,7 @@ describe("refineChunks", () => {
       bulkResponse([{ section: 1, action: "keep" }]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks.length).toBe(1);
   });
@@ -283,7 +280,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(result.chunks).toHaveLength(2);
     expect(result.chunks[0].text).toContain("First section.");
@@ -298,7 +295,7 @@ describe("refineChunks", () => {
       bulkResponse([{ section: 1, action: "keep" }]),
     );
 
-    await refineChunks(chunks, testConfig);
+    await refineChunksRealtime(chunks, testConfig);
 
     const options = mockCallClaudeJSON.mock.calls[0][2];
     expect(options).toBeDefined();
@@ -323,7 +320,7 @@ describe("refineChunks", () => {
       ]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     expect(mockCallClaudeJSON).toHaveBeenCalledTimes(1);
     expect(result.apiCalls).toBe(1);
@@ -337,7 +334,7 @@ describe("refineChunks", () => {
       bulkResponse([{ section: 1, action: "keep" }]),
     );
 
-    await refineChunks(chunks, testConfig);
+    await refineChunksRealtime(chunks, testConfig);
 
     const prompt = mockCallClaudeJSON.mock.calls[0][0];
     const system = mockCallClaudeJSON.mock.calls[0][2]!.system!;
@@ -356,7 +353,7 @@ describe("refineChunks", () => {
       bulkResponse([{ section: 1, action: "keep" }]),
     );
 
-    const result = await refineChunks(chunks, testConfig);
+    const result = await refineChunksRealtime(chunks, testConfig);
 
     // Safety net should catch it
     expect(result.chunks.length).toBeGreaterThan(1);

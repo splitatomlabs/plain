@@ -18,8 +18,8 @@ npm test          # runs both pipeline and web unit tests
 
 `npm test` runs two suites in sequence:
 
-1. **Pipeline tests** (84 tests) — parser, chunker, refine, validator, and assembler (`scripts/lib/__tests__/`)
-2. **Web unit tests** (22 tests) — content utilities and tag logic (`web/tests/unit/`)
+1. **Pipeline tests** (186 tests) — parser, chunker, refine, translator, cache, batch, validator, and assembler (`scripts/lib/__tests__/`)
+2. **Web unit tests** (36 tests) — content utilities and tag logic (`web/tests/unit/`)
 
 Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
 
@@ -36,36 +36,29 @@ Deploys are manual. Run `vercel` for a preview deploy or `vercel --prod` for pro
 
 ## Content Pipeline
 
-TypeScript CLI that turns plain-text source books into card JSON. Requires `claude` CLI on PATH (or `PLAIN_USE_API=1` with `ANTHROPIC_API_KEY`).
+TypeScript CLI that turns plain-text source books into card JSON. Uses the Anthropic Batch API (requires `ANTHROPIC_API_KEY`).
 
 **Pipeline:** `parse → refine → translate → assemble`
 
 ```bash
-# Parse only (no AI calls)
-npx tsx scripts/generate.ts --book enchiridion --parse-only
+# Run full pipeline for one book
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book enchiridion
 
-# Generate one book
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion
+# Run full pipeline for all books
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all
 
-# Generate all books
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --all
-
-# Generate all books in parallel
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --all --parallel
-
-# Limit refine calls (good for testing)
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --limit 2
-
-# Force re-generate, ignoring cache
-PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --fresh
-
-# Use Batch API for translate step (50% cheaper, async)
-PLAIN_USE_API=1 PLAIN_USE_BATCH=1 npx tsx scripts/generate.ts --all
+# Run a single phase against persisted intermediates
+npx tsx scripts/generate.ts --book enchiridion --phase parse
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book enchiridion --phase refine
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book enchiridion --phase translate
+npx tsx scripts/generate.ts --book enchiridion --phase assemble
 ```
 
-Flags: `--book <slug>`, `--all`, `--parse-only`, `--limit <n>`, `--output <dir>` (default: `content/output`), `--parallel`, `--fresh`, `--help`.
+Flags: `--book <slug>`, `--all`, `--phase <parse|refine|translate|assemble>`, `--output <dir>` (default: `content/output`), `--help`.
 
-Directory layout: source texts in `content/source/`, pipeline cache in `content/pipeline/`, fixtures in `content/fixtures/`, output card JSON in `content/output/`.
+Directory layout: source texts in `content/source/`, pipeline cache in `content/pipeline/` (parse.json, refine.json, translate.json per book), fixtures in `content/fixtures/`, output card JSON in `content/output/`.
+
+**Cache invalidation:** Bump `PIPELINE_VERSION` in `scripts/lib/cache.ts` when pipeline logic changes — this auto-invalidates all cached intermediates.
 
 ## Screenshots
 

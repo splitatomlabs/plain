@@ -4,7 +4,7 @@
  * failed chunks, saves translate cache, and assembles the final content.
  *
  * Usage:
- *   ANTHROPIC_API_KEY=... PLAIN_USE_API=1 npx tsx scripts/recover-batch.ts --batch-id <id>
+ *   ANTHROPIC_API_KEY=... npx tsx scripts/recover-batch.ts --batch-id <id>
  */
 
 import { readFile } from "node:fs/promises";
@@ -12,7 +12,7 @@ import { parseArgs } from "node:util";
 import { BOOK_CONFIGS, VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./lib/constants.js";
 import { parseSourceText } from "./lib/parser.js";
 import { chunkSections, type Chunk } from "./lib/chunker.js";
-import { refineChunks } from "./lib/refine.js";
+import { refineChunksBatch, type BatchRefineInput } from "./lib/refine.js";
 import { type TranslatedChunk } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
 import {
@@ -24,7 +24,6 @@ import {
 } from "./lib/claude.js";
 import { buildTranslationSystem, buildTranslationUser } from "./lib/prompt.js";
 import {
-  hashSourceFile,
   loadRefineCache,
   saveRefineCache,
   saveTranslateCache,
@@ -43,7 +42,7 @@ const { values: args } = parseArgs({
 });
 
 if (args.help || !args["batch-id"]) {
-  console.log(`Usage: PLAIN_USE_API=1 npx tsx scripts/recover-batch.ts --batch-id <id>
+  console.log(`Usage: ANTHROPIC_API_KEY=... npx tsx scripts/recover-batch.ts --batch-id <id>
 
 Recovers a partially-failed batch run:
   1. Loads refine results from cache (or re-refines if uncached)
@@ -112,41 +111,43 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
 }
 
 async function getRefineResult(config: BookConfig): Promise<ParsedOutput> {
-  const sourceHash = await hashSourceFile(config.source_file);
-
   // Try cache first
-  const cached = await loadRefineCache(config.slug, sourceHash);
+  const cached = await loadRefineCache(config.slug);
   if (cached) {
     const totalChunks = cached.reduce((sum, ch) => sum + ch.chunks.length, 0);
     console.log(`\nRefine ${config.slug}: loaded from cache (${totalChunks} chunks across ${cached.length} chapters)`);
     return { bookSlug: config.slug, chapters: cached };
   }
 
-  // Cache miss — must re-refine
-  console.log(`\nRefine ${config.slug}: cache miss, re-refining...`);
+  // Cache miss — must re-refine via batch
+  console.log(`\nRefine ${config.slug}: cache miss, re-refining via batch...`);
   const parsed = await runParse(config);
-  const chapters: ParsedChapter[] = [];
-  let apiCallsUsed = 0;
 
-  for (const ch of parsed.chapters) {
-    console.log(`  ${ch.slug}:`);
-    const result = await refineChunks(ch.chunks, config);
-    apiCallsUsed += result.apiCalls ?? 1;
+  const inputs: BatchRefineInput[] = parsed.chapters.map((ch) => ({
+    bookSlug: config.slug,
+    chapterSlug: ch.slug,
+    chunks: ch.chunks,
+    config,
+  }));
+
+  const resultMap = await refineChunksBatch(inputs);
+
+  const chapters: ParsedChapter[] = parsed.chapters.map((ch) => {
+    const key = `${config.slug}_${ch.slug}`;
+    const result = resultMap.get(key);
+    if (!result) return { slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: ch.chunks };
 
     if (result.splits > 0 || result.merges > 0) {
-      console.log(`    ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`);
-    } else {
-      console.log(`    ${result.refinedCount} chunks (no changes)`);
+      console.log(`    ${ch.slug}: ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`);
     }
-
-    chapters.push({ slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: result.chunks });
-  }
+    return { slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: result.chunks };
+  });
 
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
-  console.log(`  Total after refine: ${totalChunks} chunks (${apiCallsUsed} API calls)`);
+  console.log(`  Total after refine: ${totalChunks} chunks`);
 
   // Save to cache
-  await saveRefineCache(config.slug, sourceHash, chapters);
+  await saveRefineCache(config.slug, chapters);
   console.log(`  Cached refine results for ${config.slug}`);
 
   return { bookSlug: config.slug, chapters };
@@ -331,7 +332,6 @@ async function main(): Promise<void> {
 
   // Save translate cache per book
   for (const { config } of refined) {
-    const sourceHash = await hashSourceFile(config.source_file);
     const bookTranslations = new Map<string, TranslatedChunk[]>();
     for (const [key, chunks] of resultMap) {
       if (key.startsWith(`${config.slug}_`)) {
@@ -339,7 +339,7 @@ async function main(): Promise<void> {
       }
     }
     if (bookTranslations.size > 0) {
-      await saveTranslateCache(config.slug, sourceHash, bookTranslations);
+      await saveTranslateCache(config.slug, bookTranslations);
       console.log(`  Cached translate results for ${config.slug}`);
     }
   }
