@@ -119,24 +119,25 @@ function parseMeditations(text: string, config: BookConfig): ParsedBook {
 }
 
 // ---------------------------------------------------------------------------
-// Single-essay parser (Seneca and Enchiridion)
+// Single-essay parser (flat section structure)
 // ---------------------------------------------------------------------------
 
 function parseSingleEssay(text: string, config: BookConfig): ParsedBook {
   let sections: Section[];
 
-  if (config.slug === "enchiridion") {
-    sections = splitEnchiridionSections(text);
+  if (config.sectionSplitMode === "centered") {
+    sections = splitCenteredSections(text);
   } else {
     sections = splitSections(text, config.sectionPattern);
   }
 
-  // Strip trailing footnotes and next-book headers from the last section
-  // (Seneca source texts end with [N] footnotes, {NNN} page numbers,
-  // and "THE ... BOOK OF THE DIALOGUES..." headers)
-  if (sections.length > 0) {
+  // Strip trailing content (footnotes, publisher info) from the last section
+  if (config.trailingContentPattern && sections.length > 0) {
     const last = sections[sections.length - 1];
-    last.text = last.text.replace(/\n\s*\[\d+\]\s[\s\S]*$/, "").trim();
+    const match = last.text.match(config.trailingContentPattern);
+    if (match && match.index !== undefined) {
+      last.text = last.text.slice(0, match.index).trim();
+    }
   }
 
   // Strip speaker labels if needed
@@ -225,15 +226,15 @@ function splitSections(text: string, sectionRe: RegExp): Section[] {
 }
 
 // ---------------------------------------------------------------------------
-// Enchiridion-specific splitting — centered standalone Roman numerals
+// Centered section splitting — standalone indented Roman numerals
 // ---------------------------------------------------------------------------
 
-function splitEnchiridionSections(text: string): Section[] {
+function splitCenteredSections(text: string): Section[] {
   const sections: Section[] = [];
   const lines = text.split("\n");
 
-  // Enchiridion uses centered Roman numerals on their own line
-  const centeredRomanRe = /^\s{10,}([IVXLCDMivxlcdm]+)\s*$/;
+  // Centered Roman numerals on their own line, optionally followed by footnote refs like [2]
+  const centeredRomanRe = /^\s{10,}([IVXLCDMivxlcdm]+)\s*(?:\[\d+\])?\s*$/;
 
   // Find the first centered Roman numeral "I" to skip the preamble
   let startIdx = -1;
@@ -277,20 +278,6 @@ function splitEnchiridionSections(text: string): Section[] {
 }
 
 // ---------------------------------------------------------------------------
-// Preamble stripping for Seneca essays
-// ---------------------------------------------------------------------------
-
-function stripSenecaPreamble(text: string, config: BookConfig): string {
-  // Seneca essays start with a heading line (e.g. "PAULINUS.") then title,
-  // then jump to "I." — find the first section marker
-  const match = text.match(config.sectionPattern);
-  if (match && match.index !== undefined) {
-    return text.slice(match.index);
-  }
-  return text;
-}
-
-// ---------------------------------------------------------------------------
 // Main parser entry point
 // ---------------------------------------------------------------------------
 
@@ -300,18 +287,18 @@ export function parseSourceText(text: string, config: BookConfig): ParsedBook {
     text = stripGutenberg(text);
   }
 
-  // For Enchiridion: skip the introduction/bibliography preamble
-  // The actual content starts at the first centered "I"
-  if (config.slug === "enchiridion") {
-    return parseSingleEssay(text, config);
-  }
-
   // Meditations has book/chapter structure
   if (config.headerPattern) {
     return parseMeditations(text, config);
   }
 
-  // Seneca essays: strip preamble, then parse as single essay
-  text = stripSenecaPreamble(text, config);
+  // Strip preamble if configured (Seneca essays have title/heading before first section)
+  if (config.preamblePattern) {
+    const match = text.match(config.preamblePattern);
+    if (match && match.index !== undefined) {
+      text = text.slice(match.index);
+    }
+  }
+
   return parseSingleEssay(text, config);
 }
