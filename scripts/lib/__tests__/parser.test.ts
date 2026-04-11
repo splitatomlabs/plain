@@ -132,6 +132,19 @@ describe("parseSourceText — Enchiridion", () => {
     const total = parsed.chapters.reduce((sum, ch) => sum + ch.sections.length, 0);
     expect(total).toBeGreaterThanOrEqual(50);
   });
+
+  it("has exactly 50 chapters (sections 1-51, skipping 29)", () => {
+    expect(parsed.chapters).toHaveLength(50);
+  });
+
+  it("section 51 does not contain footnotes or publisher text", () => {
+    const sec51 = parsed.chapters.find((ch) => ch.slug === "section-51");
+    expect(sec51).toBeDefined();
+    const text = sec51!.sections[0].text;
+    expect(text).not.toContain("Footnotes");
+    expect(text).not.toContain("LIBERAL ARTS PRESS");
+    expect(text).not.toMatch(/\[\d+\]/);
+  });
 });
 
 describe("parseSourceText — Seneca essays", () => {
