@@ -6,6 +6,7 @@ import { chunkSections, type Chunk } from "./lib/chunker.js";
 import { refineChunks, refineChunksBatch, type BatchRefineInput } from "./lib/refine.js";
 import { translateChunks, translateChunksBatch, type TranslatedChunk, type BatchTranslateInput } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
+import { validateSectionCoverage, validateRefineCoverage } from "./lib/validate.js";
 import { tokenUsage, batchStats } from "./lib/claude.js";
 import { hashSourceFile, saveRefineCache, loadRefineCache, saveTranslateCache, loadTranslateCache } from "./lib/cache.js";
 
@@ -74,9 +75,20 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   const text = await readFile(config.source_file, "utf-8");
   const parsed = parseSourceText(text, config);
 
+  const coverageErrors: string[] = [];
+
   const chapters = parsed.chapters.map((ch) => {
     const chunks = chunkSections(ch.sections, config.speakerLabels);
     console.log(`  ${ch.slug}: ${chunks.length} chunks`);
+
+    // Verify no sections were dropped during parse → chunk
+    const msgs = validateSectionCoverage(ch.sections, chunks);
+    for (const m of msgs) {
+      if (m.severity === "error") {
+        coverageErrors.push(`${ch.slug}: ${m.message}`);
+      }
+    }
+
     return {
       slug: ch.slug,
       title: ch.title,
@@ -84,6 +96,12 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
       chunks,
     };
   });
+
+  if (coverageErrors.length > 0) {
+    console.error(`\nSection coverage errors in ${config.slug}:`);
+    for (const e of coverageErrors) console.error(`  ${e}`);
+    throw new Error(`${config.slug}: ${coverageErrors.length} section coverage error(s) — aborting before translation`);
+  }
 
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
@@ -131,6 +149,15 @@ async function runRefine(parsed: ParsedOutput, config: BookConfig): Promise<Pars
       );
     } else {
       console.log(`    ${result.refinedCount} chunks (no changes)`);
+    }
+
+    // Verify refine didn't drop content
+    const refineMsgs = validateRefineCoverage(ch.chunks, result.chunks);
+    const refineErrors = refineMsgs.filter((m) => m.severity === "error");
+    if (refineErrors.length > 0) {
+      console.error(`    Refine coverage errors in ${ch.slug}:`);
+      for (const e of refineErrors) console.error(`      ${e.message}`);
+      throw new Error(`${parsed.bookSlug}/${ch.slug}: refine dropped content — aborting before translation`);
     }
 
     chapters.push({
@@ -334,6 +361,16 @@ async function runBatchPipeline(configs: BookConfig[]): Promise<void> {
         if (result.splits > 0 || result.merges > 0) {
           console.log(`  ${config.slug}/${ch.slug}: ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`);
         }
+
+        // Verify refine didn't drop content
+        const refineMsgs = validateRefineCoverage(ch.chunks, result.chunks);
+        const refineErrors = refineMsgs.filter((m) => m.severity === "error");
+        if (refineErrors.length > 0) {
+          console.error(`  Refine coverage errors in ${config.slug}/${ch.slug}:`);
+          for (const e of refineErrors) console.error(`    ${e.message}`);
+          throw new Error(`${config.slug}/${ch.slug}: refine dropped content — aborting before translation`);
+        }
+
         return { slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: result.chunks };
       });
 

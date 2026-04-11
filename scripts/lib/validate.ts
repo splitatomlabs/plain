@@ -4,6 +4,8 @@ import {
   VALID_BOOK_SLUGS,
   type TagSlug,
 } from "./constants.js";
+import type { Section } from "./parser.js";
+import type { Chunk } from "./chunker.js";
 import type {
   Card,
   BookMeta,
@@ -336,6 +338,159 @@ export function validateCardSequence(
         book_slug: sorted[i].book_slug,
         field: "card_number",
         message: `Card number ${sorted[i].card_number} in chapter "${chapterSlug}" — expected ${expected} (non-sequential)`,
+      });
+    }
+  }
+
+  return msgs;
+}
+
+// ---------------------------------------------------------------------------
+// T09: Section coverage — parsed sections → chunks roundtrip
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalize text the same way the chunker does so we can compare
+ * parser output against chunker output.
+ */
+function normalizeForComparison(text: string): string {
+  return text
+    .replace(/^[IVXLCDMivxlcdm]+\.\s*/, "")   // strip Roman prefix
+    .replace(/\[_[A-Za-z]+\._\]\s*/g, "")       // strip speaker labels
+    .replace(/\{[\d]+\}/g, "")                   // strip page numbers
+    .replace(/\s+/g, " ")                        // collapse all whitespace
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Extract a stable text signature (first N words) for matching.
+ */
+function textSignature(text: string, wordCount = 6): string {
+  const words = normalizeForComparison(text).split(" ");
+  return words.slice(0, wordCount).join(" ");
+}
+
+/**
+ * Extract the last N words as a tail signature for matching.
+ */
+function tailSignature(text: string, wordCount = 6): string {
+  const words = normalizeForComparison(text).split(" ");
+  return words.slice(-wordCount).join(" ");
+}
+
+/**
+ * Verify that every parsed section is accounted for in the chunker output.
+ *
+ * Checks:
+ * 1. Parsed section numbers are contiguous (no gaps from 1..N or minNum..maxNum)
+ * 2. Every parsed section's text appears in some chunk (catches dropped content)
+ */
+export function validateSectionCoverage(
+  parsedSections: Section[],
+  chunks: Chunk[],
+): ValidationMessage[] {
+  const msgs: ValidationMessage[] = [];
+
+  if (parsedSections.length === 0) {
+    msgs.push({
+      severity: "error",
+      field: "sections",
+      message: "No sections parsed from source text",
+    });
+    return msgs;
+  }
+
+  // 1. Check parsed section numbers are contiguous
+  const parsedNums = parsedSections.map((s) => s.number).sort((a, b) => a - b);
+  const minNum = parsedNums[0];
+  for (let i = 0; i < parsedNums.length; i++) {
+    const expected = minNum + i;
+    if (parsedNums[i] !== expected) {
+      msgs.push({
+        severity: "error",
+        field: "sections",
+        message: `Gap in parsed section numbers: expected ${expected}, found ${parsedNums[i]}`,
+      });
+      break; // one error is enough to flag the issue
+    }
+  }
+
+  // 2. Every parsed section's text must appear in some chunk
+  const chunkTexts = chunks.map((c) => normalizeForComparison(c.text));
+
+  for (const section of parsedSections) {
+    const sig = textSignature(section.text);
+    if (sig.length < 10) continue; // too short to match reliably
+
+    const found = chunkTexts.some((ct) => ct.includes(sig));
+    if (!found) {
+      msgs.push({
+        severity: "error",
+        field: "sections",
+        message: `Section ${section.number} text not found in any chunk (starts with: "${sig.slice(0, 50)}")`,
+      });
+    }
+  }
+
+  return msgs;
+}
+
+// ---------------------------------------------------------------------------
+// T10: Refine coverage — pre-refine chunks → post-refine chunks
+// ---------------------------------------------------------------------------
+
+/**
+ * Verify that refining did not silently drop content.
+ *
+ * For every pre-refine chunk, checks that both its opening and closing text
+ * appear somewhere in the post-refine output. This catches:
+ * - Splits where the AI omitted part of the original text
+ * - Merges that accidentally lost a chunk
+ * - Bugs in cross-batch merge handling
+ */
+export function validateRefineCoverage(
+  preRefine: Chunk[],
+  postRefine: Chunk[],
+): ValidationMessage[] {
+  const msgs: ValidationMessage[] = [];
+
+  if (preRefine.length === 0) return msgs;
+
+  if (postRefine.length === 0) {
+    msgs.push({
+      severity: "error",
+      field: "refine",
+      message: "Refine produced zero chunks from non-empty input",
+    });
+    return msgs;
+  }
+
+  // Concatenate all post-refine text for substring searching
+  const postText = postRefine.map((c) => normalizeForComparison(c.text)).join(" ");
+
+  for (const chunk of preRefine) {
+    const head = textSignature(chunk.text);
+    const tail = tailSignature(chunk.text);
+
+    if (head.length < 10) continue;
+
+    const headFound = postText.includes(head);
+    const tailFound = tail.length >= 10 ? postText.includes(tail) : true;
+
+    if (!headFound) {
+      msgs.push({
+        severity: "error",
+        card_id: `section-${chunk.sectionNumber}`,
+        field: "refine",
+        message: `Section ${chunk.sectionNumber} opening text not found after refine (starts with: "${head.slice(0, 50)}")`,
+      });
+    } else if (!tailFound) {
+      msgs.push({
+        severity: "error",
+        card_id: `section-${chunk.sectionNumber}`,
+        field: "refine",
+        message: `Section ${chunk.sectionNumber} closing text not found after refine (ends with: "...${tail.slice(-50)}")`,
       });
     }
   }

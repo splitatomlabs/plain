@@ -152,8 +152,32 @@ function parseSingleEssay(text: string, config: BookConfig): ParsedBook {
 // Section splitting — inline Roman numerals (Meditations, Seneca essays)
 // ---------------------------------------------------------------------------
 
+/**
+ * Normalize section markers that the standard regex would miss:
+ * 1. Inline markers: "...desires. V. For not..." → split onto new line
+ * 2. Missing period: "XXIII Consider" → "XXIII. Consider"
+ */
+function normalizeSectionMarkers(text: string): string {
+  // Split inline section markers onto their own line.
+  // Match sentence-ending punctuation + space + Roman numeral + period + space
+  text = text.replace(
+    /([.;?!]) ([IVXLCDM]{1,10})\. ([A-Z])/g,
+    "$1\n$2. $3",
+  );
+
+  // Add missing period after bare Roman numeral at start of line.
+  // Match: start-of-line Roman numeral + space + uppercase letter (no period)
+  text = text.replace(
+    /^([IVXLCDM]{1,10}) ([A-Z])/gm,
+    "$1. $2",
+  );
+
+  return text;
+}
+
 function splitSections(text: string, sectionRe: RegExp): Section[] {
   const sections: Section[] = [];
+  text = normalizeSectionMarkers(text);
   const lines = text.split("\n");
 
   // Find all section start positions

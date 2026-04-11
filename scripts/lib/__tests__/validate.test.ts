@@ -7,8 +7,12 @@ import {
   validateBookMeta,
   validateCardContent,
   validateCardSequence,
+  validateSectionCoverage,
+  validateRefineCoverage,
 } from "../validate.js";
 import type { Card, BookMeta } from "../types.js";
+import type { Section } from "../parser.js";
+import type { Chunk } from "../chunker.js";
 
 function makeCard(overrides: Partial<Card> = {}): Card {
   return {
@@ -245,5 +249,171 @@ describe("validateCardSequence", () => {
     const msgs = validateCardSequence(cards, "book-01");
     expect(msgs.length).toBeGreaterThan(0);
     expect(msgs[0].severity).toBe("error");
+  });
+});
+
+describe("validateSectionCoverage", () => {
+  const makeSections = (...texts: string[]): Section[] =>
+    texts.map((text, i) => ({ number: i + 1, text }));
+
+  const makeChunks = (...texts: string[]): Chunk[] =>
+    texts.map((text, i) => ({ sectionNumber: i + 1, text }));
+
+  it("passes when all sections map to chunks", () => {
+    const sections = makeSections(
+      "I. The happiness of your life depends upon the quality of your thoughts.",
+      "II. You have power over your mind, not outside events. Realize this and find strength.",
+    );
+    const chunks = makeChunks(
+      "The happiness of your life depends upon the quality of your thoughts.",
+      "You have power over your mind, not outside events. Realize this and find strength.",
+    );
+    const msgs = validateSectionCoverage(sections, chunks);
+    expect(msgs.filter((m) => m.severity === "error")).toHaveLength(0);
+  });
+
+  it("errors when a section is missing from chunks", () => {
+    const sections = makeSections(
+      "I. The happiness of your life depends upon the quality of your thoughts.",
+      "II. You have power over your mind, not outside events. Realize this and find strength.",
+      "III. Everything we hear is an opinion, not a fact. Everything we see is perspective.",
+    );
+    // Only two chunks — section 3's text is missing
+    const chunks = makeChunks(
+      "The happiness of your life depends upon the quality of your thoughts.",
+      "You have power over your mind, not outside events. Realize this and find strength.",
+    );
+    const msgs = validateSectionCoverage(sections, chunks);
+    const errors = msgs.filter((m) => m.severity === "error");
+    expect(errors).toHaveLength(1);
+    expect(errors[0].message).toContain("Section 3");
+  });
+
+  it("passes when a fragment is merged into another chunk", () => {
+    const sections = makeSections(
+      "I. Short.",
+      "II. This is a longer section that has enough text to stand on its own as a proper card.",
+    );
+    // Chunker merges section 1 into section 2
+    const chunks: Chunk[] = [
+      {
+        sectionNumber: 1,
+        text: "Short.\n\nThis is a longer section that has enough text to stand on its own as a proper card.",
+      },
+    ];
+    const msgs = validateSectionCoverage(sections, chunks);
+    // Section 1 is too short for reliable matching (<10 chars signature), so it's skipped.
+    // Section 2's text is present in the merged chunk.
+    const errors = msgs.filter((m) => m.severity === "error");
+    expect(errors).toHaveLength(0);
+  });
+
+  it("errors on gap in parsed section numbers", () => {
+    const sections: Section[] = [
+      { number: 1, text: "I. The happiness of your life depends upon the quality of your thoughts." },
+      { number: 3, text: "III. Everything we hear is an opinion, not a fact. Everything we see is perspective." },
+    ];
+    const chunks: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+      { sectionNumber: 3, text: "Everything we hear is an opinion, not a fact. Everything we see is perspective." },
+    ];
+    const msgs = validateSectionCoverage(sections, chunks);
+    const errors = msgs.filter((m) => m.severity === "error");
+    expect(errors.some((e) => e.message.includes("Gap in parsed section numbers"))).toBe(true);
+  });
+
+  it("errors when no sections are parsed", () => {
+    const msgs = validateSectionCoverage([], []);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0].message).toContain("No sections parsed");
+  });
+
+  it("handles speaker labels and page numbers in source text", () => {
+    const sections: Section[] = [
+      { number: 1, text: "I. [_Serenus._] When I examine {289} myself, some vices appear on the surface clearly." },
+    ];
+    const chunks: Chunk[] = [
+      { sectionNumber: 1, text: "When I examine myself, some vices appear on the surface clearly." },
+    ];
+    const msgs = validateSectionCoverage(sections, chunks);
+    expect(msgs.filter((m) => m.severity === "error")).toHaveLength(0);
+  });
+});
+
+describe("validateRefineCoverage", () => {
+  it("passes when refine keeps all chunks unchanged", () => {
+    const chunks: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+      { sectionNumber: 2, text: "You have power over your mind, not outside events. Realize this and find strength." },
+    ];
+    const msgs = validateRefineCoverage(chunks, chunks);
+    expect(msgs.filter((m) => m.severity === "error")).toHaveLength(0);
+  });
+
+  it("passes when a chunk is split and all text preserved", () => {
+    const pre: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts. You have power over your mind, not outside events." },
+    ];
+    const post: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+      { sectionNumber: 1, text: "You have power over your mind, not outside events." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.filter((m) => m.severity === "error")).toHaveLength(0);
+  });
+
+  it("errors when a split drops the ending of the original text", () => {
+    const pre: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts. You have power over your mind, not outside events." },
+    ];
+    // Split only kept the first half
+    const post: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    const errors = msgs.filter((m) => m.severity === "error");
+    expect(errors).toHaveLength(1);
+    expect(errors[0].message).toContain("closing text not found");
+  });
+
+  it("passes when two chunks are merged", () => {
+    const pre: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+      { sectionNumber: 2, text: "You have power over your mind, not outside events. Realize this and find strength." },
+    ];
+    const post: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts.\n\nYou have power over your mind, not outside events. Realize this and find strength." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.filter((m) => m.severity === "error")).toHaveLength(0);
+  });
+
+  it("errors when a chunk is completely dropped", () => {
+    const pre: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+      { sectionNumber: 2, text: "Everything we hear is an opinion, not a fact. Everything we see is perspective." },
+    ];
+    // Only section 1 survived
+    const post: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    const errors = msgs.filter((m) => m.severity === "error");
+    expect(errors).toHaveLength(1);
+    expect(errors[0].message).toContain("Section 2");
+  });
+
+  it("errors when refine produces zero chunks", () => {
+    const pre: Chunk[] = [
+      { sectionNumber: 1, text: "The happiness of your life depends upon the quality of your thoughts." },
+    ];
+    const msgs = validateRefineCoverage(pre, []);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0].message).toContain("zero chunks");
+  });
+
+  it("returns no errors for empty input", () => {
+    const msgs = validateRefineCoverage([], []);
+    expect(msgs).toHaveLength(0);
   });
 });
