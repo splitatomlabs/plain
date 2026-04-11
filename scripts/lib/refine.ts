@@ -91,6 +91,67 @@ function buildRefinePrompt(
 }
 
 // ---------------------------------------------------------------------------
+// Bulk refine prompts — evaluate multiple sections in one API call
+// ---------------------------------------------------------------------------
+
+interface BulkRefineResponse {
+  section: number;
+  action: "keep" | "split" | "merge_next" | "merge_prev";
+  segments?: string[];
+  reason?: string;
+}
+
+/** System prompt for bulk refine — evaluates a batch of sections at once */
+export function buildBulkRefineSystem(config: BookConfig): string {
+  const authorContext = AUTHOR_CONTEXT[config.author_slug] ?? "";
+
+  return `You are preparing sections from "${config.title}" for translation into bite-sized reading cards. Each card will be translated into plain English at an 8th-grade reading level.
+
+A good card:
+- Contains ONE coherent idea
+- Makes sense on its own to a reader with no surrounding context
+- Is roughly 50-300 words (shorter is fine if the idea is complete)
+
+HARD RULE: Any section longer than 300 words MUST be split. Each resulting segment must be under 300 words.
+
+AUTHOR CONTEXT: ${authorContext}
+
+You will receive multiple sections at once. Evaluate EACH section and decide what to do with it.
+
+For each section, choose ONE action:
+
+1. "keep" — Single idea, stands alone. No changes needed.
+2. "split" — Multiple distinct ideas OR exceeds 300 words. Split into separate segments. Each segment must be the complete original text for that idea (do not summarize or rewrite). Preserve all original wording.
+3. "merge_next" — Too dependent on the next section to stand alone. Combine with next.
+4. "merge_prev" — Too dependent on the previous section to stand alone. Combine with previous.
+
+Respond with ONLY a JSON array (no other text). One entry per section, in order:
+
+[
+  { "section": 1, "action": "keep", "segments": null, "reason": null },
+  { "section": 2, "action": "split", "segments": ["First idea text...", "Second idea text..."], "reason": null },
+  { "section": 3, "action": "merge_prev", "segments": null, "reason": "Continues previous thought" }
+]
+
+Rules:
+- One entry per section, in the same order as provided.
+- "section" must match the section number given.
+- If "split", "segments" is an array of the exact original text for each idea.
+- If "merge_next" or "merge_prev", "reason" is a brief explanation.
+- If "keep", leave segments and reason as null.`;
+}
+
+/** User message for bulk refine — all chunks formatted as numbered sections */
+export function buildBulkRefineUser(chunks: Chunk[]): string {
+  return chunks
+    .map(
+      (chunk) =>
+        `--- SECTION ${chunk.sectionNumber} ---\n${chunk.text}`,
+    )
+    .join("\n\n");
+}
+
+// ---------------------------------------------------------------------------
 // Reading-time cap — split oversized chunks before translation
 // ---------------------------------------------------------------------------
 
@@ -167,12 +228,87 @@ export interface RefineResult {
   splits: number;
   merges: number;
   chunks: Chunk[];
+  /** Number of API calls made during refine (for limit tracking) */
+  apiCalls: number;
 }
 
-export async function refineChunks(
+const REFINE_BATCH_SIZE = parseInt(process.env.REFINE_BATCH_SIZE ?? "10", 10);
+
+/**
+ * Apply an array of refine decisions to a batch of chunks.
+ * Returns the refined chunks, plus split/merge counts.
+ */
+function applyDecisions(
+  chunks: Chunk[],
+  decisions: BulkRefineResponse[],
+): { refined: Chunk[]; splits: number; merges: number } {
+  // Build a map from section number to decision
+  const decisionMap = new Map<number, BulkRefineResponse>();
+  for (const d of decisions) {
+    decisionMap.set(d.section, d);
+  }
+
+  const refined: Chunk[] = [];
+  let splits = 0;
+  let merges = 0;
+  let skipNext = false;
+
+  for (let i = 0; i < chunks.length; i++) {
+    if (skipNext) {
+      skipNext = false;
+      continue;
+    }
+
+    const chunk = chunks[i];
+    const next = i < chunks.length - 1 ? chunks[i + 1] : null;
+    const decision = decisionMap.get(chunk.sectionNumber);
+
+    if (!decision) {
+      // No decision for this chunk — keep as-is
+      refined.push(chunk);
+      continue;
+    }
+
+    if (decision.action === "split" && decision.segments && decision.segments.length > 1) {
+      process.stderr.write(
+        `  SPLIT section ${chunk.sectionNumber} into ${decision.segments.length} chunks\n`,
+      );
+      splits++;
+      for (const segment of decision.segments) {
+        refined.push({ sectionNumber: chunk.sectionNumber, text: segment.trim() });
+      }
+    } else if (decision.action === "merge_next" && next) {
+      process.stderr.write(
+        `  MERGE section ${chunk.sectionNumber} + ${next.sectionNumber}: ${decision.reason ?? ""}\n`,
+      );
+      merges++;
+      refined.push({
+        sectionNumber: chunk.sectionNumber,
+        text: chunk.text + "\n\n" + next.text,
+      });
+      skipNext = true;
+    } else if (decision.action === "merge_prev" && refined.length > 0) {
+      process.stderr.write(
+        `  MERGE section ${chunk.sectionNumber} into previous: ${decision.reason ?? ""}\n`,
+      );
+      merges++;
+      const last = refined[refined.length - 1];
+      last.text = last.text + "\n\n" + chunk.text;
+    } else {
+      refined.push(chunk);
+    }
+  }
+
+  return { refined, splits, merges };
+}
+
+/**
+ * Single-chunk refine fallback — used when bulk API call fails.
+ */
+async function refineChunksSingle(
   chunks: Chunk[],
   config: BookConfig,
-): Promise<RefineResult> {
+): Promise<{ refined: Chunk[]; splits: number; merges: number; apiCalls: number }> {
   const refined: Chunk[] = [];
   let splits = 0;
   let merges = 0;
@@ -211,11 +347,8 @@ export async function refineChunks(
         `  SPLIT section ${chunk.sectionNumber} into ${response.segments.length} chunks\n`,
       );
       splits++;
-      for (let s = 0; s < response.segments.length; s++) {
-        refined.push({
-          sectionNumber: chunk.sectionNumber,
-          text: response.segments[s].trim(),
-        });
+      for (const segment of response.segments) {
+        refined.push({ sectionNumber: chunk.sectionNumber, text: segment.trim() });
       }
     } else if (response.action === "merge_next" && next) {
       process.stderr.write(
@@ -239,12 +372,103 @@ export async function refineChunks(
     }
   }
 
-  // Hard cap: split any chunk that still exceeds MAX_READING_TIME_SECONDS
+  return { refined, splits, merges, apiCalls: chunks.length };
+}
+
+/**
+ * Refine chunks using batched API calls.
+ * Sends ~REFINE_BATCH_SIZE chunks per call, falls back to single-chunk on failure.
+ */
+export async function refineChunks(
+  chunks: Chunk[],
+  config: BookConfig,
+): Promise<RefineResult> {
+  let allRefined: Chunk[] = [];
+  let totalSplits = 0;
+  let totalMerges = 0;
+  let apiCalls = 0;
+  const system = buildBulkRefineSystem(config);
+
+  // Split into batches
+  const batches: Chunk[][] = [];
+  for (let i = 0; i < chunks.length; i += REFINE_BATCH_SIZE) {
+    batches.push(chunks.slice(i, i + REFINE_BATCH_SIZE));
+  }
+
+  // Track deferred merge_next from previous batch
+  let deferredMergeChunk: Chunk | null = null;
+
+  for (let b = 0; b < batches.length; b++) {
+    let batch = batches[b];
+
+    // Merge deferred chunk with the first chunk of this batch
+    if (deferredMergeChunk) {
+      const first = batch[0];
+      batch = [
+        {
+          sectionNumber: deferredMergeChunk.sectionNumber,
+          text: deferredMergeChunk.text + "\n\n" + first.text,
+        },
+        ...batch.slice(1),
+      ];
+      deferredMergeChunk = null;
+      totalMerges++;
+      process.stderr.write(
+        `  MERGE (cross-batch) section ${batch[0].sectionNumber} with next batch\n`,
+      );
+    }
+
+    process.stderr.write(
+      `  Batch ${b + 1}/${batches.length}: ${batch.length} chunks (sections ${batch[0].sectionNumber}-${batch[batch.length - 1].sectionNumber})...\n`,
+    );
+
+    let decisions: BulkRefineResponse[];
+    try {
+      const prompt = buildBulkRefineUser(batch);
+      decisions = await callClaudeJSON<BulkRefineResponse[]>(prompt, undefined, { system });
+      apiCalls++;
+    } catch (e) {
+      process.stderr.write(
+        `  Bulk refine failed, falling back to single-chunk: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
+      );
+      const fallback = await refineChunksSingle(batch, config);
+      allRefined.push(...fallback.refined);
+      totalSplits += fallback.splits;
+      totalMerges += fallback.merges;
+      apiCalls += fallback.apiCalls;
+      continue;
+    }
+
+    const { refined, splits, merges } = applyDecisions(batch, decisions);
+    totalSplits += splits;
+    totalMerges += merges;
+
+    // Check if last decision is merge_next — defer it for the next batch
+    const lastDecision = decisions.find(
+      (d) => d.section === batch[batch.length - 1].sectionNumber,
+    );
+    if (
+      lastDecision?.action === "merge_next" &&
+      b < batches.length - 1 &&
+      refined.length > 0
+    ) {
+      deferredMergeChunk = refined.pop()!;
+    }
+
+    allRefined.push(...refined);
+  }
+
+  // If there's a deferred chunk with no next batch, just add it
+  if (deferredMergeChunk) {
+    allRefined.push(deferredMergeChunk);
+  }
+
+  // Safety net: split any chunk that still exceeds MAX_READING_TIME_SECONDS
   const capped: Chunk[] = [];
-  for (const chunk of refined) {
+  for (const chunk of allRefined) {
     const pieces = splitOversizedChunk(chunk);
     if (pieces.length > 1) {
-      splits++;
+      totalSplits++;
       process.stderr.write(
         `  LENGTH-SPLIT section ${chunk.sectionNumber} into ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)\n`,
       );
@@ -255,8 +479,9 @@ export async function refineChunks(
   return {
     originalCount: chunks.length,
     refinedCount: capped.length,
-    splits,
-    merges,
+    splits: totalSplits,
+    merges: totalMerges,
     chunks: capped,
+    apiCalls,
   };
 }
