@@ -449,7 +449,7 @@
 
 	.gift-compose {
 		max-width: 400px;
-		margin: var(--space-md) auto 0;
+		margin: var(--space-md) auto var(--space-xl);
 		text-align: center;
 	}
 
