@@ -1,12 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-// ---------------------------------------------------------------------------
-// Mock child_process (required because claude.ts imports it at module load)
-// ---------------------------------------------------------------------------
-const mockExecFile = vi.fn();
-vi.mock("node:child_process", () => ({
-  execFile: (...args: unknown[]) => mockExecFile(...args),
-}));
+vi.hoisted(() => {
+  process.env.ANTHROPIC_API_KEY = "test-key";
+});
 
 // ---------------------------------------------------------------------------
 // Mock Anthropic SDK
