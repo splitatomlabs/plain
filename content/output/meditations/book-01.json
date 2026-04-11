@@ -4,8 +4,8 @@
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 1,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From my grandfather Verus I learned to be gentle and calm, and to hold back anger. From the memory of my father I learned both humility and strength of character. From my mother I learned to be devoted to the gods and generous with others. She taught me not just to avoid doing evil, but to avoid even thinking it. She showed me how to live simply and avoid the excesses that come with wealth. From my great-grandfather I learned to value good education — both attending public schools and having excellent teachers at home. He taught me not to worry about the cost when it comes to learning.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From my grandfather Verus I learned to be gentle and calm, and to hold back anger and passion. From the memory of my father I learned both humility and strength of character. From my mother I learned to be devoted to the gods and generous to others. I learned not just to avoid doing evil, but to avoid even thinking it. I learned to be content with simple food and to avoid the excess that comes with great wealth. From my great-grandfather I learned to attend good schools and lectures, and to hire the best teachers for home. I learned that I shouldn't worry about the cost of a good education.",
     "original_excerpt": "Of my grandfather Verus I have learned to be gentle and meek, and to refrain from all anger and passion. From the fame and memory of him that begot me I have learned both shamefastness and manlike behaviour. Of my mother I have learned to be religious, and bountiful; and to forbear, not only to do, but to intend any evil; to content myself with a spare diet, and to fly all such excess as is incidental to great wealth. Of my great-grandfather, both to frequent public schools and auditories, and to get me good and able teachers at home; and that I ought not to think much, if upon such occasions, I were at excessive charges.",
     "source_reference": "Meditations, Book 1, Section 1",
     "author_slug": "marcus-aurelius",
@@ -20,10 +20,42 @@
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 2,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From my adoptive father I learned not to get caught up in the chariot racing teams at the circus—the Greens and Blues. And not to pick favorites among the gladiators in the arena. I learned to work hard and need few things. When I have something to do, I do it myself instead of having others do it. I don't get involved in too many projects at once. And I don't listen to gossip.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From my adoptive father I learned not to get caught up in the chariot racing teams at the circus — the Greens and the Blues. And not to take sides with gladiators in the arena, whether the ones with small shields or the ones who chase them. I also learned to work hard and need little. When I have something to do, I do it myself instead of having others do it. I don't get involved in too many things at once. And I don't easily believe gossip about people.",
     "original_excerpt": "Of him that brought me up, not to be fondly addicted to either of the two great factions of the coursers in the circus, called Prasini, and Veneti: nor in the amphitheatre partially to favour any of the gladiators, or fencers, as either the Parmularii, or the Secutores. Moreover, to endure labour; nor to need many things; when I have anything to do, to do it myself rather than by others; not to meddle with many businesses; and not easily to admit of any slander.",
     "source_reference": "Meditations, Book 1, Section 2",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 27
+  },
+  {
+    "id": "meditations-01-003",
+    "book_slug": "meditations",
+    "chapter_slug": "book-01",
+    "card_number": 3,
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Diognetus I learned not to waste time on empty pursuits. I learned not to believe those who claim to work miracles — sorcerers, magicians, and frauds who say they can cast spells or drive out demons. I learned not to keep fighting quails or get obsessed with such games. I learned not to take offense at free speech, and to focus on philosophy. I must thank him too for introducing me to Bacchius, then Tandasis and Marcianus. Because of him I wrote dialogues when I was young, and I came to love the simple couch and rough clothes that Greek philosophers wear.",
+    "original_excerpt": "Of Diognetus, not to busy myself about vain things, and not easily to believe those things, which are commonly spoken, by such as take upon them to work wonders, and by sorcerers, or prestidigitators, and impostors; concerning the power of charms, and their driving out of demons, or evil spirits; and the like. Not to keep quails for the game; nor to be mad after such things. Not to be offended with other men's liberty of speech, and to apply myself unto philosophy. Him also I must thank, that ever I heard first Bacchius, then Tandasis and Marcianus, and that I did write dialogues in my youth; and that I took liking to the philosophers' little couch and skins, and such other things, which by the Grecian discipline are proper to those who profess philosophy.",
+    "source_reference": "Meditations, Book 1, Section 3",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 31
+  },
+  {
+    "id": "meditations-01-004",
+    "book_slug": "meditations",
+    "chapter_slug": "book-01",
+    "card_number": 4,
+    "total_cards_in_chapter": 26,
+    "plain_english": "I owe Rusticus for showing me that my life needed some fixing and healing. He kept me from the usual showoff habits of teachers — writing fancy essays about common ideas, or giving public speeches to convince people to be virtuous and study philosophy. He also saved me from showing off with athletic feats just to impress people. And he helped me give up the study of fancy speech, poetry, and elegant language.",
+    "original_excerpt": "To Rusticus I am beholding, that I first entered into the conceit that my life wanted some redress and cure. And then, that I did not fall into the ambition of ordinary sophists, either to write tracts concerning the common theorems, or to exhort men unto virtue and the study of philosophy by public orations; as also that I never by way of ostentation did affect to show myself an active able man, for any kind of bodily exercises. And that I gave over the study of rhetoric and poetry, and of elegant neat language.",
+    "source_reference": "Meditations, Book 1, Section 4",
     "author_slug": "marcus-aurelius",
     "tags": [
       "knowing-yourself",
@@ -32,44 +64,12 @@
     "reading_time_seconds": 22
   },
   {
-    "id": "meditations-01-003",
-    "book_slug": "meditations",
-    "chapter_slug": "book-01",
-    "card_number": 3,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Diognetus I learned not to waste time on pointless things. I learned not to believe stories about wonder-workers, magicians, and fake healers who claim they can cast spells or drive out demons. I learned not to get obsessed with cockfighting or other silly pastimes. I learned not to take offense when people speak freely, and to focus on philosophy instead. I also owe him thanks for introducing me to the philosophers Bacchius, Tandasis, and Marcianus. Because of him, I wrote dialogues when I was young and came to love the simple philosopher's couch, rough clothing, and other things that mark the philosophical life in the Greek tradition.",
-    "original_excerpt": "Of Diognetus, not to busy myself about vain things, and not easily to believe those things, which are commonly spoken, by such as take upon them to work wonders, and by sorcerers, or prestidigitators, and impostors; concerning the power of charms, and their driving out of demons, or evil spirits; and the like. Not to keep quails for the game; nor to be mad after such things. Not to be offended with other men's liberty of speech, and to apply myself unto philosophy. Him also I must thank, that ever I heard first Bacchius, then Tandasis and Marcianus, and that I did write dialogues in my youth; and that I took liking to the philosophers' little couch and skins, and such other things, which by the Grecian discipline are proper to those who profess philosophy.",
-    "source_reference": "Meditations, Book 1, Section 3",
-    "author_slug": "marcus-aurelius",
-    "tags": [
-      "what-matters-most",
-      "knowing-yourself"
-    ],
-    "reading_time_seconds": 32
-  },
-  {
-    "id": "meditations-01-004",
-    "book_slug": "meditations",
-    "chapter_slug": "book-01",
-    "card_number": 4,
-    "total_cards_in_chapter": 27,
-    "plain_english": "I owe Rusticus for helping me see that my life needed work and healing. He kept me from becoming like other teachers who just wanted to show off. I didn't write essays about boring theories or give public speeches to make people think I was wise. I didn't try to impress anyone with athletic skills. And I stopped wasting time on fancy writing and poetry just to sound clever.",
-    "original_excerpt": "To Rusticus I am beholding, that I first entered into the conceit that my life wanted some redress and cure. And then, that I did not fall into the ambition of ordinary sophists, either to write tracts concerning the common theorems, or to exhort men unto virtue and the study of philosophy by public orations; as also that I never by way of ostentation did affect to show myself an active able man, for any kind of bodily exercises. And that I gave over the study of rhetoric and poetry, and of elegant neat language.",
-    "source_reference": "Meditations, Book 1, Section 4",
-    "author_slug": "marcus-aurelius",
-    "tags": [
-      "knowing-yourself",
-      "what-matters-most"
-    ],
-    "reading_time_seconds": 21
-  },
-  {
     "id": "meditations-01-005",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 5,
-    "total_cards_in_chapter": 27,
-    "plain_english": "I also learned from him to write letters simply, without showing off or being fancy. His letters to my mother from Sinuessa were like that. I learned to forgive quickly and welcome back those who had hurt me, as soon as they wanted to make things right. I learned to read carefully, not to settle for shallow understanding, and not to believe everything people say. I must also thank him for introducing me to Epictetus's writings and teachings, which he shared with me from his own collection.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "I also learned from him to write letters without showing off or being too clever. His letters were simple and direct, like the one he wrote to my mother from Sinuessa. I learned to be quick to forgive and make peace with people who had wronged me, as soon as they were willing to reach out again. I learned to read carefully and not settle for shallow understanding. I learned not to quickly believe everything people say. I must also thank him for introducing me to Epictetus's writings and moral teachings, which he gave me from his own collection.",
     "original_excerpt": "Moreover I learned of him to write letters without any affectation, or curiosity; such as that was, which by him was written to my mother from Sinuessa: and to be easy and ready to be reconciled, and well pleased again with them that had offended me, as soon as any of them would be content to seek unto me again. To read with diligence; not to rest satisfied with a light and superficial knowledge, nor quickly to assent to things commonly spoken of: whom also I must thank that ever I lighted upon Epictetus his _Hypomnemata_, or moral commentaries and common-factions: which also he gave me of his own.",
     "source_reference": "Meditations, Book 1, Section 4",
     "author_slug": "marcus-aurelius",
@@ -77,15 +77,15 @@
       "knowing-yourself",
       "human-nature"
     ],
-    "reading_time_seconds": 26
+    "reading_time_seconds": 30
   },
   {
     "id": "meditations-01-006",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 6,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Apollonius I learned true freedom and steady consistency. He never let anything, no matter how small, matter more than what was right and reasonable. He stayed the same person through sharp pain, the loss of a child, and long illness. He showed me that one person could be both intense and relaxed. He never got frustrated with students who couldn't understand his teaching. He was a perfect example of someone who cared least about the gift he had most—his amazing ability to teach Stoic philosophy to others.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Apollonius I learned true freedom and steady resolve. He never let anything, no matter how small, matter more than doing what was right and reasonable. He stayed the same person through sharp pain, the loss of a child, and long illness. He showed me that one man could be both intense and relaxed. He never got frustrated with slow students in his classes. He was a true example of someone who, among all his gifts, cared least about his amazing ability to teach Stoic ideas to others.",
     "original_excerpt": "From Apollonius, true liberty, and unvariable steadfastness, and not to regard anything at all, though never so little, but right and reason: and always, whether in the sharpest pains, or after the loss of a child, or in long diseases, to be still the same man; who also was a present and visible example unto me, that it was possible for the same man to be both vehement and remiss: a man not subject to be vexed, and offended with the incapacity of his scholars and auditors in his lectures and expositions; and a true pattern of a man who of all his good gifts and faculties, least esteemed in himself, that his excellent skill and ability to teach and persuade others the common theorems and maxims of the Stoic philosophy.",
     "source_reference": "Meditations, Book 1, Section 5",
     "author_slug": "marcus-aurelius",
@@ -100,8 +100,8 @@
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 7,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From him I also learned how to receive favors and kindness from friends. I learned not to become too dependent on them or give in too easily when I shouldn't. But I also learned not to ignore their generosity like someone who doesn't care or feel grateful.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From him I also learned how to accept favors and kindness from friends. I learned not to become too dependent on them or give in too easily when I shouldn't. But I also learned not to ignore their kindness or seem ungrateful.",
     "original_excerpt": "Of him also I learned how to receive favours and kindnesses (as commonly they are accounted:) from friends, so that I might not become obnoxious unto them, for them, nor more yielding upon occasion, than in right I ought; and yet so that I should not pass them neither, as an unsensible and unthankful man.",
     "source_reference": "Meditations, Book 1, Section 5",
     "author_slug": "marcus-aurelius",
@@ -109,31 +109,31 @@
       "human-nature",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 14
+    "reading_time_seconds": 13
   },
   {
     "id": "meditations-01-008",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 8,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Sextus I learned gentleness and how to run a household with fatherly love. I learned to live according to nature. To be serious without putting on airs. To watch carefully how my friends think and feel. Not to get annoyed with foolish people or argue with those who follow popular opinions using philosophical theories. His way of talking showed how someone can get along with all kinds of people. His company was more enjoyable than any flatterer's sweet talk, yet people respected and admired him at the same time.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Sextus I learned gentleness and how to run a household with fatherly love. I learned to live according to nature. To be serious without being fake. To watch carefully how my friends think and feel. Not to get annoyed with fools or to attack people harshly when they hold common opinions instead of philosophical ideas. His way of talking showed how someone can get along with anyone. His company was more pleasant than any flatterer's smooth words, yet people respected him deeply.",
     "original_excerpt": "Of Sextus, mildness and the pattern of a family governed with paternal affection; and a purpose to live according to nature: to be grave without affectation: to observe carefully the several dispositions of my friends, not to be offended with idiots, nor unseasonably to set upon those that are carried with the vulgar opinions, with the theorems, and tenets of philosophers: his conversation being an example how a man might accommodate himself to all men and companies; so that though his company were sweeter and more pleasing than any flatterer's cogging and fawning; yet was it at the same time most respected and reverenced:",
     "source_reference": "Meditations, Book 1, Section 6",
     "author_slug": "marcus-aurelius",
     "tags": [
-      "knowing-yourself",
-      "human-nature"
+      "human-nature",
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 25
   },
   {
     "id": "meditations-01-009",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 9,
-    "total_cards_in_chapter": 27,
-    "plain_english": "He had real happiness and the ability to think through life's problems step by step. He could figure out what needed to be done and organize it well. He never showed anger or any other strong emotion. He could stay perfectly calm like a Stoic, but he was also kind and caring. People trusted him, but he never made a fuss about himself. He was very learned, but he didn't show off.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "He had true happiness and the skill to think clearly and organize all the guidance a person needs for life. He never showed anger or any other strong emotion. He could follow the Stoic ideal of staying unshaken by feelings, while still being kind and caring. People always respected him, but he never made a show of it. He was very learned, but never showed off.",
     "original_excerpt": "who also had a proper happiness and faculty, rationally and methodically to find out, and set in order all necessary determinations and instructions for a man's life. A man without ever the least appearance of anger, or any other passion; able at the same time most exactly to observe the Stoic _Apathia_, or unpassionateness, and yet to be most tender-hearted: ever of good credit; and yet almost without any noise, or rumour: very learned, and yet making little show.",
     "source_reference": "Meditations, Book 1, Section 6",
     "author_slug": "marcus-aurelius",
@@ -141,21 +141,21 @@
       "knowing-yourself",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 22
+    "reading_time_seconds": 20
   },
   {
     "id": "meditations-01-010",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 10,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Alexander the Grammarian I learned to avoid mistakes in my own speech. When others make errors in grammar or pronunciation, I learned not to scold them. Instead, I can gently correct them by using the right word in my response, or by confirming what they meant with proper language. I don't point out their mistake directly. I find a tactful, indirect way to show them the correct form.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Alexander the Grammarian I learned to avoid mistakes in my own speech. When others make errors in grammar or pronunciation, I learned not to embarrass them by pointing it out directly. Instead, I can correct them gently — by using the right word naturally in my response, or by repeating what they meant to say in the correct way. This lets me help them without making them feel ashamed.",
     "original_excerpt": "From Alexander the Grammarian, to be un-reprovable myself, and not reproachfully to reprehend any man for a barbarism, or a solecism, or any false pronunciation, but dextrously by way of answer, or testimony, or confirmation of the same matter (taking no notice of the word) to utter it as it should have been spoken; or by some other such close and indirect admonition, handsomely and civilly to tell him of it.",
     "source_reference": "Meditations, Book 1, Section 7",
     "author_slug": "marcus-aurelius",
     "tags": [
       "human-nature",
-      "knowing-yourself"
+      "doing-the-right-thing"
     ],
     "reading_time_seconds": 21
   },
@@ -164,8 +164,8 @@
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 11,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Fronto I learned how much envy, fraud, and fakeness surround a tyrant. I also learned that those who are called noble-born often lack natural human feeling.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Fronto I learned how much envy, fraud, and hypocrisy surround a tyrant's rule. I also learned that those we call nobly born often lack natural human affection.",
     "original_excerpt": "Of Fronto, to how much envy and fraud and hypocrisy the state of a tyrannous king is subject unto, and how they who are commonly called εὐπατρίδαι, _i.e._ nobly born, are in some sort incapable, or void of natural affection.",
     "source_reference": "Meditations, Book 1, Section 8",
     "author_slug": "marcus-aurelius",
@@ -180,24 +180,24 @@
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 12,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Alexander the Platonist I learned not to tell people \"I'm too busy\" unless it's truly necessary. And not to keep putting off what we owe our friends and family by claiming we have urgent business.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Alexander the Platonist I learned not to tell people 'I don't have time' unless it's truly necessary. And not to keep putting off what we owe our friends and family by claiming we're too busy with urgent matters.",
     "original_excerpt": "Of Alexander the Platonic, not often nor without great necessity to say, or to write to any man in a letter, 'I am not at leisure'; nor in this manner still to put off those duties, which we owe to our friends and acquaintances (to every one in his kind) under pretence of urgent affairs.",
     "source_reference": "Meditations, Book 1, Section 9",
     "author_slug": "marcus-aurelius",
     "tags": [
-      "doing-the-right-thing",
-      "human-nature"
+      "human-nature",
+      "doing-the-right-thing"
     ],
-    "reading_time_seconds": 11
+    "reading_time_seconds": 12
   },
   {
     "id": "meditations-01-013",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 13,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Catulus I learned not to dismiss a friend's criticism, even when it's unfair. Instead, try to bring him back to his usual good nature. I learned to speak well of all my teachers whenever the chance comes up, as people say Domitius and Athenodotus did. And I learned to love my children with real affection.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Catulus I learned not to dismiss a friend's criticism, even when it seems unfair. Instead, try to restore the friendship to what it was before. I learned to speak well of all my teachers whenever I get the chance, as people say Domitius and Athenodotus did. And I learned to love my children with real affection.",
     "original_excerpt": "Of Catulus, not to contemn any friend's expostulation, though unjust, but to strive to reduce him to his former disposition: freely and heartily to speak well of all my masters upon any occasion, as it is reported of Domitius, and Athenodotus: and to love my children with true affection.",
     "source_reference": "Meditations, Book 1, Section 10",
     "author_slug": "marcus-aurelius",
@@ -212,24 +212,25 @@
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 14,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From my brother Severus I learned to be kind and loving to everyone in my household and family. He introduced me to the great thinkers — Thrasea and Helvidius, Cato and Dio, and Brutus. He first gave me the idea of a fair government run by justice and equality. A kingdom that cares about nothing more than the good of its people. From him I learned to stick with philosophy no matter what else was going on. To be generous without limits. To always expect the best from people. To trust that my friends truly love me. I also saw how direct he was with people he had to correct. His friends never had to guess what he wanted — he was that open and plain.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From my brother Severus I learned to be kind and loving to everyone in my household and family. He also introduced me to great men like Thrasea, Helvidius, Cato, Dio, and Brutus. He gave me my first idea of a fair commonwealth ruled by justice and equality. He showed me a kingdom where nothing matters more than the good of the people. From him I also learned to keep a steady focus on philosophy without getting distracted by other things. To be generous and give freely. Always to hope for the best. And to trust that my friends love me. I also saw in him how direct he was with people he had to correct. His friends never had to guess what he wanted or didn't want - he was that clear and honest.",
     "original_excerpt": "From my brother Severus, to be kind and loving to all them of my house and family; by whom also I came to the knowledge of Thrasea and Helvidius, and Cato, and Dio, and Brutus. He it was also that did put me in the first conceit and desire of an equal commonwealth, administered by justice and equality; and of a kingdom wherein should be regarded nothing more than the good and welfare of the subjects. Of him also, to observe a constant tenor, (not interrupted, with any other cares and distractions,) in the study and esteem of philosophy: to be bountiful and liberal in the largest measure; always to hope the best; and to be confident that my friends love me. In whom I moreover observed open dealing towards those whom he reproved at any time, and that his friends might without all doubt or much observation know what he would, or would not, so open and plain was he.",
     "source_reference": "Meditations, Book 1, Section 11",
     "author_slug": "marcus-aurelius",
     "tags": [
       "knowing-yourself",
-      "human-nature"
+      "human-nature",
+      "doing-the-right-thing"
     ],
-    "reading_time_seconds": 38
+    "reading_time_seconds": 40
   },
   {
     "id": "meditations-01-015",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 15,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From Claudius Maximus I learned to have control over myself in all things, and not to be swept away by anything. I learned to stay cheerful and brave when sudden troubles come, like illness. To value gentleness, balance, and seriousness. To do my work completely, whatever it is, without complaining. When he spoke, everyone believed he meant what he said. When he acted, they knew he had good intentions. He never seemed surprised by anything. He was never rushed, but never slow either. He didn't get confused or sad or act badly or laugh too much. He didn't get angry or suspicious. He was always ready to help others and forgive them and tell the truth. All of this came naturally to him—like he was born straight rather than having to fix himself. No one ever felt looked down on by him, or thought they were better than him. He was also pleasant and kind to be around.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From Claudius Maximus I learned to stay in control of myself in all things, and never to be swept away by emotions. I learned to be cheerful and brave when sudden troubles come, like illness. I learned to love gentleness, balance, and dignity. And to do my work thoroughly, whatever it is, without complaining. Whatever he said, everyone believed that he spoke his true thoughts. Whatever he did, people knew he meant well. He never seemed amazed by anything. He was never rushed, but never slow either. He was never confused, sad, or inappropriate. He never laughed too much or got angry or suspicious. He was always ready to help others, to forgive, and to tell the truth. All of this seemed to come naturally to him, as if he had always been good rather than having to learn to be good. No one ever felt looked down on by him, and no one could honestly think they were better than him. And through it all, he was pleasant and kind.",
     "original_excerpt": "From Claudius Maximus, in all things to endeavour to have power of myself, and in nothing to be carried about; to be cheerful and courageous in all sudden chances and accidents, as in sicknesses: to love mildness, and moderation, and gravity: and to do my business, whatsoever it be, thoroughly, and without querulousness. Whatsoever he said, all men believed him that as he spake, so he thought, and whatsoever he did, that he did it with a good intent. His manner was, never to wonder at anything; never to be in haste, and yet never slow: nor to be perplexed, or dejected, or at any time unseemly, or excessively to laugh: nor to be angry, or suspicious, but ever ready to do good, and to forgive, and to speak truth; and all this, as one that seemed rather of himself to have been straight and right, than ever to have been rectified or redressed; neither was there any man that ever thought himself undervalued by him, or that could find in his heart, to think himself a better man than he. He would also be very pleasant and gracious.",
     "source_reference": "Meditations, Book 1, Section 12",
     "author_slug": "marcus-aurelius",
@@ -237,15 +238,15 @@
       "knowing-yourself",
       "human-nature"
     ],
-    "reading_time_seconds": 47
+    "reading_time_seconds": 51
   },
   {
     "id": "meditations-01-016",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 16,
-    "total_cards_in_chapter": 27,
-    "plain_english": "In my father, I saw his gentleness. He stayed steady in his decisions once he had thought them through carefully. He didn't get caught up in titles and honors. He worked hard and listened to anyone who had something useful to say for the common good. He treated everyone fairly. He knew when to be strict and when to be gentle. He stayed away from improper relationships with young men. He was humble with others, like any ordinary person. He didn't demand that his friends eat with him or travel with him. When business had to be postponed, he would pick it up later exactly as he had left it.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "In my father, I saw his gentleness. He stayed steady in his decisions once he had thought them through carefully. He carried himself without vanity when it came to honors and titles. He worked hard and listened to anyone who had something to say for the common good. He gave everyone what they deserved, fairly and without favorites. He knew when to be strict and when to be lenient. He stayed away from improper relationships with young men. He was considerate of other people's needs like any ordinary person. He didn't demand that his friends attend his meals or travel with him. And whenever he had to postpone some business, when he returned to it later, he was exactly the same person as before.",
     "original_excerpt": "In my father, I observed his meekness; his constancy without wavering in those things, which after a due examination and deliberation, he had determined. How free from all vanity he carried himself in matter of honour and dignity, (as they are esteemed:) his laboriousness and assiduity, his readiness to hear any man, that had aught to say tending to any common good: how generally and impartially he would give every man his due; his skill and knowledge, when rigour or extremity, or when remissness or moderation was in season; how he did abstain from all unchaste love of youths; his moderate condescending to other men's occasions as an ordinary man, neither absolutely requiring of his friends, that they should wait upon him at his ordinary meals, nor that they should of necessity accompany him in his journeys; and that whensoever any business upon some necessary occasions was to be put off and omitted before it could be ended, he was ever found when he went about it again, the same man that he was before.",
     "source_reference": "Meditations, Book 1, Section 13",
     "author_slug": "marcus-aurelius",
@@ -253,20 +254,20 @@
       "knowing-yourself",
       "human-nature"
     ],
-    "reading_time_seconds": 33
+    "reading_time_seconds": 37
   },
   {
     "id": "meditations-01-017",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 17,
-    "total_cards_in_chapter": 27,
-    "plain_english": "He examined things carefully in meetings and listened patiently to others. He wouldn't give up searching for answers too quickly, like someone satisfied with first impressions. He took care of his friends. He never treated them with cold neglect or grew tired of them. But he never became wildly attached to them either. He was content with everything, always cheerful, able to see problems coming from far off, and handled even small matters without fuss or drama. He shut down all praise and flattery. He watched carefully over everything needed for government and kept track of public spending. When some people criticized him for being too strict about this, he bore it patiently.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "He examined things carefully in meetings and listened patiently to others. He wouldn't quit searching for answers too quickly, unlike those who settle for first impressions. He took care of his friends. He never treated them with cold neglect or grew tired of them. But he never became obsessed with them either. He stayed content in all situations. His face was always cheerful. He planned ahead and handled even small details without making a fuss. He brushed off praise and flattery. He watched over everything needed to run the government. He kept track of public spending. And he put up with people who criticized him for being too strict about these things.",
     "original_excerpt": "His accurate examination of things in consultations, and patient hearing of others. He would not hastily give over the search of the matter, as one easy to be satisfied with sudden notions and apprehensions. His care to preserve his friends; how neither at any time he would carry himself towards them with disdainful neglect, and grow weary of them; nor yet at any time be madly fond of them. His contented mind in all things, his cheerful countenance, his care to foresee things afar off, and to take order for the least, without any noise or clamour. Moreover how all acclamations and flattery were repressed by him: how carefully he observed all things necessary to the government, and kept an account of the common expenses, and how patiently he did abide that he was reprehended by some for this his strict and rigid kind of dealing.",
     "source_reference": "Meditations, Book 1, Section 13",
     "author_slug": "marcus-aurelius",
     "tags": [
-      "knowing-yourself",
+      "human-nature",
       "doing-the-right-thing"
     ],
     "reading_time_seconds": 34
@@ -276,24 +277,24 @@
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 18,
-    "total_cards_in_chapter": 27,
-    "plain_english": "He didn't worship the gods with empty show, or try to please people for his own gain, or chase after popular praise. He was steady in all things. He always did what was right for the moment. He didn't chase after new trends. When fortune gave him comfort and ease, he enjoyed these things without pride or showing off. He used them freely. When he had them, he felt no worry. When he lost them, he didn't miss them. No one ever praised him as a brilliant scholar, or a man who fawned over others, or a great speaker. Instead, they saw him as a mature man, a complete man, someone who couldn't stand flattery. He could govern himself and others.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "He was not superstitious about the gods, nor did he try to please people or chase applause. He was steady in all things and always did what was right. He didn't chase after new things. When he had comforts and luxuries (which his position gave him plenty of), he enjoyed them without pride or showing off, but also without clinging to them. When they were gone, he didn't miss them. No one praised him for being clever or scholarly or for being a smooth talker or a people-pleaser. They praised him as a mature man, a solid man, someone who couldn't stand flattery and who could govern both himself and others.",
     "original_excerpt": "How he was neither a superstitious worshipper of the gods, nor an ambitious pleaser of men, or studious of popular applause; but sober in all things, and everywhere observant of that which was fitting; no affecter of novelties: in those things which conduced to his ease and convenience, (plenty whereof his fortune did afford him,) without pride and bragging, yet with all freedom and liberty: so that as he did freely enjoy them without any anxiety or affectation when they were present; so when absent, he found no want of them. Moreover, that he was never commended by any man, as either a learned acute man, or an obsequious officious man, or a fine orator; but as a ripe mature man, a perfect sound man; one that could not endure to be flattered; able to govern both himself and others.",
     "source_reference": "Meditations, Book 1, Section 13",
     "author_slug": "marcus-aurelius",
     "tags": [
       "knowing-yourself",
-      "human-nature"
+      "what-matters-most"
     ],
-    "reading_time_seconds": 36
+    "reading_time_seconds": 33
   },
   {
     "id": "meditations-01-019",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 19,
-    "total_cards_in_chapter": 27,
-    "plain_english": "He honored all true philosophers without criticizing those who weren't. He was friendly and pleasant to talk with, but never tiresome. He took care of his body in moderation — not like someone desperate to live long or obsessed with looking perfect, but not careless either. Because he was careful, he rarely needed medicine or treatments. Most of all, he graciously stepped aside for anyone with special talents — whether in speaking, law, ancient customs, or anything else. He worked to make sure each person got recognition for what they did best. He followed the old ways of his ancestors carefully, but he didn't make a show of it or want praise for keeping traditions.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "He honored all true philosophers without criticizing those who were not. He was friendly and his conversation was gracious and delightful, but never too much. He took care of his body in moderation — not like someone desperate to live long or obsessed with appearance, but not careless either. Through his own attention, he rarely needed medicine or treatments. Most impressive was how gracefully he would defer to anyone with special skills — whether in speaking, law, ancient customs, or anything else. He worked hard to make sure each person was valued for what they did best. Though he carefully followed the old customs of his ancestors, he never made a show of it or wanted people to notice his reverence for tradition.",
     "original_excerpt": "Moreover, how much he did honour all true philosophers, without upbraiding those that were not so; his sociableness, his gracious and delightful conversation, but never unto satiety; his care of his body within bounds and measure, not as one that desired to live long, or over-studious of neatness, and elegancy; and yet not as one that did not regard it: so that through his own care and providence, he seldom needed any inward physic, or outward applications: but especially how ingeniously he would yield to any that had obtained any peculiar faculty, as either eloquence, or the knowledge of the laws, or of ancient customs, or the like; and how he concurred with them, in his best care and endeavour that every one of them might in his kind, for that wherein he excelled, be regarded and esteemed: and although he did all things carefully after the ancient customs of his forefathers, yet even of this was he not desirous that men should take notice, that he did imitate ancient customs.",
     "source_reference": "Meditations, Book 1, Section 13",
     "author_slug": "marcus-aurelius",
@@ -301,15 +302,15 @@
       "human-nature",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 35
+    "reading_time_seconds": 37
   },
   {
     "id": "meditations-01-020",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 20,
-    "total_cards_in_chapter": 27,
-    "plain_english": "He was not easily shaken or thrown off course. He loved to stay steady, both in the same places and in his work. After terrible headaches, he would come back fresh and ready for his usual duties. He kept few secrets, and only about public matters. He was thoughtful and moderate in putting on public shows and entertainment for the people. In public buildings, gifts to citizens, and similar things. In all of this, he treated people simply as human beings. He looked at what was fair and right, not at the glory he might gain. He never used the public baths at odd hours. He was not obsessed with building. He never worried about his food, or how his clothes were made or what color they were, or anything to do with outward appearance. In all his dealings with people, he was never cruel, never pushy, never rude, never greedy or hasty. He never did anything with such intensity that you could say he was sweating over it. Instead, he did everything clearly, as if he had all the time in the world. Without stress. In order, solidly, pleasantly. You could have said of him what they said about Socrates: that he knew how to do without things, and how to enjoy them. Most people show weakness when they lack things, and lose control when they have them. But to stay firm and steady, and to keep true balance and self-control in both situations — that belongs to someone with a perfect and unshakeable soul. This is what he showed during Maximus's illness.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "He was not easily shaken or upset, but loved to stay steady in the same places and work. After his terrible headaches, he would come back fresh and strong to his usual duties. He kept few secrets, and only about public matters. He was wise and restrained when putting on public shows and games for the people. He built public buildings and gave money to citizens. In all this, he thought of people simply as people and what was fair, not the glory he might gain.\n\nHe never took baths at odd hours. He was not obsessed with building. He did not worry about his food, or how his clothes looked, or anything to do with outward beauty. In all his dealings with others, he was never cruel, rude, or pushy. He never did anything so intensely that you could say he was sweating over it. Instead, he did everything calmly, as if he had all the time in the world. Without stress. In order. Solidly and pleasantly.\n\nYou could say of him what they said of Socrates: he knew how to do without things and how to enjoy them. Most people are weak when they lack things and wild when they have them. But to stay firm and steady, and keep true balance in either case — that belongs to a man with a perfect and unshakeable soul. This is what he showed during Maximus's illness.",
     "original_excerpt": "Again, how he was not easily moved and tossed up and down, but loved to be constant, both in the same places and businesses; and how after his great fits of headache he would return fresh and vigorous to his wonted affairs. Again, that secrets he neither had many, nor often, and such only as concerned public matters: his discretion and moderation, in exhibiting of the public sights and shows for the pleasure and pastime of the people: in public buildings. congiaries, and the like. In all these things, having a respect unto men only as men, and to the equity of the things themselves, and not unto the glory that might follow. Never wont to use the baths at unseasonable hours; no builder; never curious, or solicitous, either about his meat, or about the workmanship, or colour of his clothes, or about anything that belonged to external beauty. In all his conversation, far from all inhumanity, all boldness, and incivility, all greediness and impetuosity; never doing anything with such earnestness, and intention, that a man could say of him, that he did sweat about it: but contrariwise, all things distinctly, as at leisure; without trouble; orderly, soundly, and agreeably. A man might have applied that to him, which is recorded of Socrates, that he knew how to want, and to enjoy those things, in the want whereof, most men show themselves weak; and in the fruition, intemperate: but to hold out firm and constant, and to keep within the compass of true moderation and sobriety in either estate, is proper to a man, who hath a perfect and invincible soul; such as he showed himself in the sickness of Maximus.",
     "source_reference": "Meditations, Book 1, Section 13",
     "author_slug": "marcus-aurelius",
@@ -317,16 +318,32 @@
       "knowing-yourself",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 79
+    "reading_time_seconds": 71
   },
   {
     "id": "meditations-01-021",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 21,
-    "total_cards_in_chapter": 27,
-    "plain_english": "From the gods I received good grandfathers and parents, a good sister, good teachers, good servants, loving relatives — almost all good people around me. And I never hurt any of them through haste or carelessness, even though my nature was such that I easily could have. It was the gods' mercy that prevented the right circumstances from coming together to make me do such things. I was not raised for long by my father's mistress. I kept my innocence as a young man. I did not try to act like a man too early, but waited longer than I needed to. I lived under my adoptive father, who stripped away my pride and vanity. He taught me that a ruler can live at court without crowds of guards and followers, fancy clothes, elaborate torches and statues, and all the other trappings of power. A man can live almost like a private citizen and still not become weak or careless in public matters where authority is needed.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "From the gods I received good grandfathers and parents, a good sister, good teachers, good servants, loving relatives — almost everyone in my life. And I never hurt any of them through carelessness or quick anger, even though my nature was such that I easily could have. It was the gods' mercy that prevented the right circumstances from coming together to make me fail them. I was not raised for long by my father's mistress. I kept my innocence through youth. I did not try to act like a man too early, but waited longer than I needed to. I lived under my father, who stripped away my pride and vanity. He taught me that a prince could live at court without guards, followers, fancy clothes, torches, statues, and all the other trappings of power. A man can live almost like a private citizen and still not become weak or careless in public duties that require real authority.",
     "original_excerpt": "From the gods I received that I had good grandfathers, and parents, a good sister, good masters, good domestics, loving kinsmen, almost all that I have; and that I never through haste and rashness transgressed against any of them, notwithstanding that my disposition was such, as that such a thing (if occasion had been) might very well have been committed by me, but that It was the mercy of the gods, to prevent such a concurring of matters and occasions, as might make me to incur this blame. That I was not long brought up by the concubine of my father; that I preserved the flower of my youth. That I took not upon me to be a man before my time, but rather put it off longer than I needed. That I lived under the government of my lord and father, who would take away from me all pride and vainglory, and reduce me to that conceit and opinion that it was not impossible for a prince to live in the court without a troop of guards and followers, extraordinary apparel, such and such torches and statues, and other like particulars of state and magnificence; but that a man may reduce and contract himself almost to the state of a private man, and yet for all that not to become the more base and remiss in those public matters and affairs, wherein power and authority is requisite.",
+    "source_reference": "Meditations, Book 1, Section 14",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 47
+  },
+  {
+    "id": "meditations-01-022",
+    "book_slug": "meditations",
+    "chapter_slug": "book-01",
+    "card_number": 22,
+    "total_cards_in_chapter": 26,
+    "plain_english": "That I had such a brother who could inspire me by his example to examine myself, and who delighted me with his respect and love. That I got honest children who were born healthy, without deformities or defects. That I never became too skilled in rhetoric and poetry and other subjects that might have consumed all my time if I had shown real talent for them. That I promoted the men who raised me to the positions they wanted while they were still alive, instead of making them wait with promises that I would honor them later when they were young. That I came to know Apollonius, Rusticus, and Maximus. That I have had many chances to think deeply about what it means to live according to nature. As for the gods and the guidance they offer, nothing prevented me from starting this natural life long ago. If I still haven't fully grasped it, the fault is mine alone — I ignored their inner promptings and clear instructions.",
+    "original_excerpt": "That I have had such a brother, who by his own example might stir me up to think of myself; and by his respect and love, delight and please me. That I have got ingenuous children, and that they were not born distorted, nor with any other natural deformity. That I was no great proficient in the study of rhetoric and poetry, and of other faculties, which perchance I might have dwelt upon, if I had found myself to go on in them with success. That I did by times prefer those, by whom I was brought up, to such places and dignities, which they seemed unto me most to desire; and that I did not put them off with hope and expectation, that (since that they were yet but young) I would do the same hereafter. That I ever knew Apollonius and Rusticus, and Maximus. That I have had occasion often and effectually to consider and meditate with myself, concerning that life which is according to nature, what the nature and manner of it is: so that as for the gods and such suggestions, helps and inspirations, as might be expected from them, nothing did hinder, but that I might have begun long before to live according to nature; or that even now that I was not yet partaker and in present possession of that life, that I myself (in that I did not observe those inward motions, and suggestions, yea and almost plain and apparent instructions and admonitions of the gods,) was the only cause of it.",
     "source_reference": "Meditations, Book 1, Section 14",
     "author_slug": "marcus-aurelius",
     "tags": [
@@ -336,101 +353,67 @@
     "reading_time_seconds": 50
   },
   {
-    "id": "meditations-01-022",
-    "book_slug": "meditations",
-    "chapter_slug": "book-01",
-    "card_number": 22,
-    "total_cards_in_chapter": 27,
-    "plain_english": "That I have had such a brother, who stirred me to examine myself by his example, and who brought me joy through his respect and love. That my children were born whole and healthy, without any deformities. That I was not very skilled at rhetoric and poetry and other subjects — which might have consumed all my time if I had shown talent for them. That I promoted my guardians to the positions they wanted while they were still alive, instead of making them wait with false hopes that I would honor them later. That I was able to know Apollonius and Rusticus and Maximus.",
-    "original_excerpt": "That I have had such a brother, who by his own example might stir me up to think of myself; and by his respect and love, delight and please me. That I have got ingenuous children, and that they were not born distorted, nor with any other natural deformity. That I was no great proficient in the study of rhetoric and poetry, and of other faculties, which perchance I might have dwelt upon, if I had found myself to go on in them with success. That I did by times prefer those, by whom I was brought up, to such places and dignities, which they seemed unto me most to desire; and that I did not put them off with hope and expectation, that (since that they were yet but young) I would do the same hereafter. That I ever knew Apollonius and Rusticus, and Maximus.",
-    "source_reference": "Meditations, Book 1, Section 14",
-    "author_slug": "marcus-aurelius",
-    "tags": [
-      "knowing-yourself",
-      "human-nature"
-    ],
-    "reading_time_seconds": 32
-  },
-  {
     "id": "meditations-01-023",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 23,
-    "total_cards_in_chapter": 27,
-    "plain_english": "I've had many chances to think deeply about what it means to live according to nature. The gods gave me hints, help, and inspiration. Nothing stopped me from starting this kind of life long ago. If I'm still not living this way, it's my own fault. I ignored the inner movements and suggestions — even the clear instructions — that the gods gave me. My body has held up well through all this. I never got involved with Benedicta and Theodotus. Later, when I did fall in love, I got over it quickly. Though I was often annoyed with Rusticus, I never did anything to him that I later regretted.",
-    "original_excerpt": "That I have had occasion often and effectually to consider and meditate with myself, concerning that life which is according to nature, what the nature and manner of it is: so that as for the gods and such suggestions, helps and inspirations, as might be expected from them, nothing did hinder, but that I might have begun long before to live according to nature; or that even now that I was not yet partaker and in present possession of that life, that I myself (in that I did not observe those inward motions, and suggestions, yea and almost plain and apparent instructions and admonitions of the gods,) was the only cause of it. That my body in such a life, hath been able to hold out so long. That I never had to do with Benedicta and Theodotus, yea and afterwards when I fell into some fits of love, I was soon cured. That having been often displeased with Rusticus, I never did him anything for which afterwards I had occasion to repent.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "That my body has held up this long in such a life. That I never got involved with Benedicta and Theodotus, and when I did fall into fits of love later, I recovered quickly. That though I was often annoyed with Rusticus, I never did anything to him that I later regretted. That even though my mother was meant to die young, she lived with me through all her final years. That whenever I wanted to help someone poor or in urgent need, my officers never told me we lacked the money to do it. And I never needed to ask others for the same help. That I have such a wife — so obedient, so loving, so genuine. That I had good, capable men to raise my children. That through dreams I received help with many things, especially how to stop spitting blood and cure my dizziness, like what happened to you in Cajeta, and to Chryses when he prayed by the sea. And when I first turned to philosophy, I didn't fall into the hands of some sophist, or waste time reading countless volumes of ordinary philosophers, or practice solving arguments and fallacies, or get lost studying meteors and other natural curiosities. None of these things could have happened without the help of the gods and fortune.",
+    "original_excerpt": "That my body in such a life, hath been able to hold out so long. That I never had to do with Benedicta and Theodotus, yea and afterwards when I fell into some fits of love, I was soon cured. That having been often displeased with Rusticus, I never did him anything for which afterwards I had occasion to repent. That it being so that my mother was to die young, yet she lived with me all her latter years. That as often as I had a purpose to help and succour any that either were poor, or fallen into some present necessity, I never was answered by my officers that there was not ready money enough to do it; and that I myself never had occasion to require the like succour from any other. That I have such a wife, so obedient, so loving, so ingenuous. That I had choice of fit and able men, to whom I might commit the bringing up of my children. That by dreams I have received help, as for other things, so in particular, how I might stay my casting of blood, and cure my dizziness, as that also that happened to thee in Cajeta, as unto Chryses when he prayed by the seashore. And when I did first apply myself to philosophy, that I did not fall into the hands of some sophists, or spent my time either in reading the manifold volumes of ordinary philosophers, nor in practising myself in the solution of arguments and fallacies, nor dwelt upon the studies of the meteors, and other natural curiosities. All these things without the assistance of the gods, and fortune, could not have been.",
     "source_reference": "Meditations, Book 1, Section 14",
     "author_slug": "marcus-aurelius",
     "tags": [
       "knowing-yourself",
-      "doing-the-right-thing"
+      "what-matters-most"
     ],
-    "reading_time_seconds": 33
+    "reading_time_seconds": 66
   },
   {
     "id": "meditations-01-024",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 24,
-    "total_cards_in_chapter": 27,
-    "plain_english": "That though my mother was meant to die young, she lived with me through all her later years. That whenever I wanted to help someone who was poor or in need, my officers never told me there wasn't enough money to do it. And I never had to ask others for that kind of help myself. That I have such a wife — so obedient, so loving, so honest. That I had good men to choose from when I needed people to raise my children. That through dreams I got help with many things, including how to stop coughing up blood and cure my dizziness. Just like what happened to you in Cajeta, and to Chryses when he prayed by the sea. And when I first turned to philosophy, I didn't fall into the hands of some fake teachers. I didn't waste time reading endless volumes of ordinary philosophers or practicing arguments and word games. I didn't get lost studying weather patterns and other natural curiosities. None of these things could have happened without the help of the gods and good fortune.",
-    "original_excerpt": "That it being so that my mother was to die young, yet she lived with me all her latter years. That as often as I had a purpose to help and succour any that either were poor, or fallen into some present necessity, I never was answered by my officers that there was not ready money enough to do it; and that I myself never had occasion to require the like succour from any other. That I have such a wife, so obedient, so loving, so ingenuous. That I had choice of fit and able men, to whom I might commit the bringing up of my children. That by dreams I have received help, as for other things, so in particular, how I might stay my casting of blood, and cure my dizziness, as that also that happened to thee in Cajeta, as unto Chryses when he prayed by the seashore. And when I did first apply myself to philosophy, that I did not fall into the hands of some sophists, or spent my time either in reading the manifold volumes of ordinary philosophers, nor in practising myself in the solution of arguments and fallacies, nor dwelt upon the studies of the meteors, and other natural curiosities. All these things without the assistance of the gods, and fortune, could not have been.",
-    "source_reference": "Meditations, Book 1, Section 14",
+    "total_cards_in_chapter": 26,
+    "plain_english": "In the morning, tell yourself: Today I will deal with people who are nosy, ungrateful, rude, sneaky, dishonest, or jealous. I will meet people who don't care about others. They have these flaws because they don't understand what is truly good and what is truly bad. But I do understand. I know that only virtue is worth wanting, and only vice is truly shameful. I also know that whoever wrongs me is still my relative — not by blood, but because we share the same reasoning mind and the same spark of the divine. How can any of these people actually hurt me? They can't make me do anything truly disgraceful. How can I be angry at someone who is so much like me by nature? We were all born to work together, like feet and hands, like upper and lower teeth. To oppose each other goes against our nature. What sense does it make to get upset and hostile? That's just opposition too.",
+    "original_excerpt": "In the country of the Quadi at Granua, these. Betimes in the morning say to thyself, This day I shalt have to do with an idle curious man, with an unthankful man, a railer, a crafty, false, or an envious man; an unsociable uncharitable man. All these ill qualities have happened unto them, through ignorance of that which is truly good and truly bad. But I that understand the nature of that which is good, that it only is to be desired, and of that which is bad, that it only is truly odious and shameful: who know moreover, that this transgressor, whosoever he be, is my kinsman, not by the same blood and seed, but by participation of the same reason, and of the same divine particle; How can I either be hurt by any of those, since it is not in their power to make me incur anything that is truly reproachful? or angry, and ill affected towards him, who by nature is so near unto me? for we are all born to be fellow-workers, as the feet, the hands, and the eyelids; as the rows of the upper and under teeth: for such therefore to be in opposition, is against nature; and what is it to chafe at, and to be averse from, but to be in opposition?",
+    "source_reference": "Meditations, Book 1, Section 15",
     "author_slug": "marcus-aurelius",
     "tags": [
-      "what-matters-most",
-      "human-nature"
+      "human-nature",
+      "calm-your-mind"
     ],
-    "reading_time_seconds": 55
+    "reading_time_seconds": 49
   },
   {
     "id": "meditations-01-025",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 25,
-    "total_cards_in_chapter": 27,
-    "plain_english": "In the morning, tell yourself: Today I will meet someone who is nosy, ungrateful, rude, sneaky, dishonest, or jealous. Someone who doesn't care about others. All these bad qualities come from not knowing what is truly good and what is truly bad. But I understand that only virtue is worth wanting, and only vice is truly shameful. I also know that whoever wrongs me is my relative — not by blood, but because we share the same reasoning mind and the same spark of the divine. How can any of these people hurt me? They cannot make me do anything truly shameful. And how can I be angry at someone who is so close to me by nature? We are all born to work together, like feet and hands, like upper and lower teeth. To oppose each other goes against nature. What is anger but opposition?",
-    "original_excerpt": "In the country of the Quadi at Granua, these. Betimes in the morning say to thyself, This day I shalt have to do with an idle curious man, with an unthankful man, a railer, a crafty, false, or an envious man; an unsociable uncharitable man. All these ill qualities have happened unto them, through ignorance of that which is truly good and truly bad. But I that understand the nature of that which is good, that it only is to be desired, and of that which is bad, that it only is truly odious and shameful: who know moreover, that this transgressor, whosoever he be, is my kinsman, not by the same blood and seed, but by participation of the same reason, and of the same divine particle; How can I either be hurt by any of those, since it is not in their power to make me incur anything that is truly reproachful? or angry, and ill affected towards him, who by nature is so near unto me? for we are all born to be fellow-workers, as the feet, the hands, and the eyelids; as the rows of the upper and under teeth: for such therefore to be in opposition, is against nature; and what is it to chafe at, and to be averse from, but to be in opposition?",
-    "source_reference": "Meditations, Book 1, Section 15",
+    "total_cards_in_chapter": 26,
+    "plain_english": "Whatever I am comes down to three things: flesh, life, or what we call the ruling part of a person — reason. Put away your books. Stop letting your mind get pulled in every direction. It won't last anyway. Since you're ready to die, think little of your flesh. It's just blood, bones, and skin. A fancy weaving of nerves, veins, and arteries. Don't think of it as more than that. And your life — consider what it really is. A breath of wind. Not even steady wind, but something let out and sucked back in every moment. The third part is your ruling mind. Here's what matters: You are an old man. Don't let that excellent part become a slave. Don't let it get jerked around by selfish desires, like it's controlled by strings. Don't let it complain about what's happening now or fear what's coming that destiny has set for you.",
+    "original_excerpt": "Whatsoever I am, is either flesh, or life, or that which we commonly call the mistress and overruling part of man; reason. Away with thy books, suffer not thy mind any more to be distracted, and carried to and fro; for it will not be; but as even now ready to die, think little of thy flesh: blood, bones, and a skin; a pretty piece of knit and twisted work, consisting of nerves, veins and arteries; think no more of it, than so. And as for thy life, consider what it is; a wind; not one constant wind neither, but every moment of an hour let out, and sucked in again. The third, is thy ruling part; and here consider; Thou art an old man; suffer not that excellent part to be brought in subjection, and to become slavish: suffer it not to be drawn up and down with unreasonable and unsociable lusts and motions, as it were with wires and nerves; suffer it not any more, either to repine at anything now present, or to fear and fly anything to come, which the destiny hath appointed thee.",
+    "source_reference": "Meditations, Book 1, Section 16",
     "author_slug": "marcus-aurelius",
     "tags": [
-      "human-nature",
-      "calm-your-mind",
-      "doing-the-right-thing"
+      "knowing-yourself",
+      "what-matters-most"
     ],
-    "reading_time_seconds": 44
+    "reading_time_seconds": 46
   },
   {
     "id": "meditations-01-026",
     "book_slug": "meditations",
     "chapter_slug": "book-01",
     "card_number": 26,
-    "total_cards_in_chapter": 27,
-    "plain_english": "Whatever I am is either flesh, life, or what we call the ruling part of a person: reason. Put away your books. Stop letting your mind get pulled in every direction. There's no point now. You're ready to die, so think little of your flesh: blood, bones, and skin. It's just a network of nerves, veins, and arteries woven together. Don't think of it as more than that. And your life — what is it? A breath of wind. Not even steady wind, but something let out and drawn back in every moment. The third part is your ruling mind. Consider this: you are an old man. Don't let that excellent part become a slave. Don't let it get jerked around by unreasonable desires and antisocial impulses, like a puppet on strings. Don't let it complain about what's happening now, or fear what destiny has planned for you.",
-    "original_excerpt": "Whatsoever I am, is either flesh, or life, or that which we commonly call the mistress and overruling part of man; reason. Away with thy books, suffer not thy mind any more to be distracted, and carried to and fro; for it will not be; but as even now ready to die, think little of thy flesh: blood, bones, and a skin; a pretty piece of knit and twisted work, consisting of nerves, veins and arteries; think no more of it, than so. And as for thy life, consider what it is; a wind; not one constant wind neither, but every moment of an hour let out, and sucked in again. The third, is thy ruling part; and here consider; Thou art an old man; suffer not that excellent part to be brought in subjection, and to become slavish: suffer it not to be drawn up and down with unreasonable and unsociable lusts and motions, as it were with wires and nerves; suffer it not any more, either to repine at anything now present, or to fear and fly anything to come, which the destiny hath appointed thee.",
-    "source_reference": "Meditations, Book 1, Section 16",
-    "author_slug": "marcus-aurelius",
-    "tags": [
-      "knowing-yourself",
-      "what-matters-most",
-      "freedom-and-control"
-    ],
-    "reading_time_seconds": 44
-  },
-  {
-    "id": "meditations-01-027",
-    "book_slug": "meditations",
-    "chapter_slug": "book-01",
-    "card_number": 27,
-    "total_cards_in_chapter": 27,
-    "plain_english": "Whatever comes directly from the gods, everyone agrees depends on divine providence. Even the things we call \"luck\" or \"chance\" come from nature — from that first great chain that connects all things. Divine providence clearly runs through everything.\n\nAll things flow from there. Whatever exists is both necessary and helps the whole. You are part of that whole. Whatever the universe needs to preserve itself must be good for each individual part too. The whole universe stays healthy through constant change — simple elements turning into each other, complex things breaking down and reforming.\n\nLet this be enough for you. Let these ideas be your guiding principles. As for your hunger for more books — let it go quickly. Don't die complaining and wanting more. Die peaceful and satisfied, truly grateful to the gods.",
+    "total_cards_in_chapter": 26,
+    "plain_english": "Whatever comes directly from the gods, everyone agrees depends on divine providence. Even the things we call accidents or luck must come from nature — from that first connection that links all things together. Everything the gods clearly control flows from this same source.\n\nAll things flow from there. Whatever exists is both necessary and helps the whole universe. You are part of that whole. Whatever the universe needs to survive must be good for each individual part too. The universe keeps going through constant change — simple elements changing into each other, and complex things breaking down and reforming.\n\nLet this be enough for you. Keep these ideas as your basic rules. Stop hungering for more books. Put that aside quickly, so you don't die complaining and bitter. Instead, die peaceful and satisfied, truly grateful to the gods in your heart.",
     "original_excerpt": "Whatsoever proceeds from the gods immediately, that any man will grant totally depends from their divine providence. As for those things that are commonly said to happen by fortune, even those must be conceived to have dependence from nature, or from that first and general connection, and concatenation of all those things, which more apparently by the divine providence are administered and brought to pass. All things flow from thence: and whatsoever it is that is, is both necessary, and conducing to the whole (part of which thou art), and whatsoever it is that is requisite and necessary for the preservation of the general, must of necessity for every particular nature, be good and behoveful. And as for the whole, it is preserved, as by the perpetual mutation and conversion of the simple elements one into another, so also by the mutation, and alteration of things mixed and compounded. Let these things suffice thee; let them be always unto thee, as thy general rules and precepts. As for thy thirst after books, away with it with all speed, that thou die not murmuring and complaining, but truly meek and well satisfied, and from thy heart thankful unto the gods.",
     "source_reference": "Meditations, Book 1, Section 17",
     "author_slug": "marcus-aurelius",
     "tags": [
-      "calm-your-mind",
+      "freedom-and-control",
       "what-matters-most"
     ],
-    "reading_time_seconds": 41
+    "reading_time_seconds": 43
   }
 ]

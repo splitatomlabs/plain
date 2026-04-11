@@ -17,7 +17,7 @@
     {
       "slug": "book-01",
       "title": "Book 1",
-      "card_count": 27
+      "card_count": 26
     },
     {
       "slug": "book-02",
@@ -27,54 +27,54 @@
     {
       "slug": "book-03",
       "title": "Book 3",
-      "card_count": 22
+      "card_count": 23
     },
     {
       "slug": "book-04",
       "title": "Book 4",
-      "card_count": 51
+      "card_count": 52
     },
     {
       "slug": "book-05",
       "title": "Book 5",
-      "card_count": 40
+      "card_count": 44
     },
     {
       "slug": "book-06",
       "title": "Book 6",
-      "card_count": 62
+      "card_count": 59
     },
     {
       "slug": "book-07",
       "title": "Book 7",
-      "card_count": 52
+      "card_count": 53
     },
     {
       "slug": "book-08",
       "title": "Book 8",
-      "card_count": 64
+      "card_count": 65
     },
     {
       "slug": "book-09",
       "title": "Book 9",
-      "card_count": 53
+      "card_count": 55
     },
     {
       "slug": "book-10",
       "title": "Book 10",
-      "card_count": 53
+      "card_count": 52
     },
     {
       "slug": "book-11",
       "title": "Book 11",
-      "card_count": 40
+      "card_count": 41
     },
     {
       "slug": "book-12",
       "title": "Book 12",
-      "card_count": 34
+      "card_count": 36
     }
   ],
-  "total_cards": 514,
+  "total_cards": 522,
   "source_url": "https://www.gutenberg.org/ebooks/2680"
 }
