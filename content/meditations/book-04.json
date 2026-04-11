@@ -4,15 +4,849 @@
     "book_slug": "meditations",
     "chapter_slug": "book-04",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "The ruling part of your mind, when it stays true to its own nature, handles whatever happens with flexibility. It adjusts to what is possible when its first plan falls through. It never locks itself completely onto one goal. Whatever it pursues, it pursues with an open hand — ready to shift. So when things go against its original aim, it simply makes the new situation its new work.\n\nThink of fire. A small fire gets smothered by obstacles thrown on it. But a great fire swallows everything in its path. It feeds on the very things meant to block it, and grows stronger because of them.",
-    "original_excerpt": "That inward mistress part of man if it be in its own true natural\ntemper, is towards all worldly chances and events ever so disposed and\naffected, that it will easily turn and apply itself to that which may\nbe, and is within its own power to compass, when that cannot be which at\nfirst it intended. For it never doth absolutely addict and apply itself\nto any one object, but whatsoever it is that it doth now intend and\nprosecute, it doth prosecute it with exception and reservation; so that\nwhatsoever it is that falls out contrary to its first intentions, even\nthat afterwards it makes its proper object. Even as the fire when it\nprevails upon those things that are in his way; by which things indeed a\nlittle fire would have been quenched, but a great fire doth soon turn to\nits own nature, and so consume whatsoever comes in his way: yea by those\nvery things it is made greater and greater.",
+    "total_cards_in_chapter": 53,
+    "plain_english": "The ruling part of our mind, when it's in its natural state, handles all events in the world with flexibility. It easily shifts to what's possible and within its power when it can't have what it first wanted. It never locks itself onto just one goal. Whatever it's working toward, it keeps some flexibility. So when things go against its original plans, it makes those very obstacles its new target. It's like fire spreading through things in its path. Small obstacles that would put out a weak fire just feed a strong fire and make it grow even bigger.",
+    "original_excerpt": "That inward mistress part of man if it be in its own true natural temper, is towards all worldly chances and events ever so disposed and affected, that it will easily turn and apply itself to that which may be, and is within its own power to compass, when that cannot be which at first it intended. For it never doth absolutely addict and apply itself to any one object, but whatsoever it is that it doth now intend and prosecute, it doth prosecute it with exception and reservation; so that whatsoever it is that falls out contrary to its first intentions, even that afterwards it makes its proper object. Even as the fire when it prevails upon those things that are in his way; by which things indeed a little fire would have been quenched, but a great fire doth soon turn to its own nature, and so consume whatsoever comes in his way: yea by those very things it is made greater and greater.",
     "source_reference": "Meditations, Book 4, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 30
+  },
+  {
+    "id": "meditations-04-002",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 2,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Don't do anything rashly or at random. Do everything according to the most precise and perfect principles.",
+    "original_excerpt": "Let nothing be done rashly, and at random, but all things according to the most exact and perfect rules of art.",
+    "source_reference": "Meditations, Book 4, Section 2",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 5
+  },
+  {
+    "id": "meditations-04-003",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 3,
+    "total_cards_in_chapter": 53,
+    "plain_english": "People look for private places to escape to — country villages, the seashore, mountains. You yourself often long for such places. But you should know this comes from the simplest kind of thinking. Whenever you want, you can retreat into yourself and find rest, free from all business. No one can retreat to a better place than his own soul. This is especially true for someone who has prepared such things within himself that whenever he looks inward, he immediately finds perfect peace and calm. By calm I mean a proper, orderly way of being — free from all confusion and chaos. Give yourself this retreat often, and refresh yourself.",
+    "original_excerpt": "They seek for themselves private retiring places, as country villages, the sea-shore, mountains; yea thou thyself art wont to long much after such places. But all this thou must know proceeds from simplicity in the highest degree. At what time soever thou wilt, it is in thy power to retire into thyself, and to be at rest, and free from all businesses. A man cannot any whither retire better than to his own soul; he especially who is beforehand provided of such things within, which whensoever he doth withdraw himself to look in, may presently afford unto him perfect ease and tranquillity. By tranquillity I understand a decent orderly disposition and carriage, free from all confusion and tumultuousness. Afford then thyself this retiring continually, and thereby refresh and renew thyself.",
+    "source_reference": "Meditations, Book 4, Section 3",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 33
+  },
+  {
+    "id": "meditations-04-004",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 4,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Keep these principles short and basic. When you remember them, they should be enough to cleanse your soul and send you back content to whatever you must face. What are you upset about? Are you angry at people's wickedness? Remember this: all thinking beings are made to help each other. It's part of justice to put up with them. They don't mean to do wrong. And how many people who once carried grudges, suspected others, hated, and fought bitterly are now long dead and turned to ash? It's time to let it go.",
+    "original_excerpt": "Let these precepts be brief and fundamental, which as soon as thou dost call them to mind, may suffice thee to purge thy soul throughly, and to send thee away well pleased with those things whatsoever they be, which now again after this short withdrawing of thy soul into herself thou dost return unto. For what is it that thou art offended at? Can it be at the wickedness of men, when thou dost call to mind this conclusion, that all reasonable creatures are made one for another? and that it is part of justice to bear with them? and that it is against their wills that they offend? and how many already, who once likewise prosecuted their enmities, suspected, hated, and fiercely contended, are now long ago stretched out, and reduced unto ashes? It is time for thee to make an end.",
+    "source_reference": "Meditations, Book 4, Section 3",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "human-nature"
+    ],
+    "reading_time_seconds": 28
+  },
+  {
+    "id": "meditations-04-005",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 5,
+    "total_cards_in_chapter": 53,
+    "plain_english": "When bad things happen to you in life, can you really complain? Remember our basic choice: either there's a divine plan, or everything is just random atoms colliding. Either way, we proved that the whole world is like one city. As for your body, what is there to fear? Your mind, once it understands its own power, doesn't care whether your breathing is smooth or rough. It stays neutral. And you've already learned and agreed that pain and pleasure don't really matter.",
+    "original_excerpt": "As for those things which among the common chances of the world happen unto thee as thy particular lot and portion, canst thou be displeased with any of them, when thou dost call that our ordinary dilemma to mind, either a providence, or Democritus his atoms; and with it, whatsoever we brought to prove that the whole world is as it were one city? And as for thy body, what canst thou fear, if thou dost consider that thy mind and understanding, when once it hath recollected itself, and knows its own power, hath in this life and breath (whether it run smoothly and gently, or whether harshly and rudely), no interest at all, but is altogether indifferent: and whatsoever else thou hast heard and assented unto concerning either pain or pleasure?",
+    "source_reference": "Meditations, Book 4, Section 3",
     "author_slug": "marcus-aurelius",
     "tags": [
       "freedom-and-control",
       "calm-your-mind"
     ],
+    "reading_time_seconds": 25
+  },
+  {
+    "id": "meditations-04-006",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 6,
+    "total_cards_in_chapter": 53,
+    "plain_english": "But maybe you worry that caring for your honor and reputation will distract you? How can that be, if you look back and think about how quickly everything is forgotten? Think about the vast chaos of eternity that came before and will come after everything. Think about how empty praise is, and how fickle human judgments are. Think about how small the place is where your reputation matters. The whole earth is just one point. The part where people live is just a tiny piece of that. And in that tiny piece, how many people are there really? What kind of people are they who will praise you?",
+    "original_excerpt": "But the care of thine honour and reputation will perchance distract thee? How can that be, if thou dost look back, and consider both how quickly all things that are, are forgotten, and what an immense chaos of eternity was before, and will follow after all things: and the vanity of praise, and the inconstancy and variableness of human judgments and opinions, and the narrowness of the place, wherein it is limited and circumscribed? For the whole earth is but as one point; and of it, this inhabited part of it, is but a very little part; and of this part, how many in number, and what manner of men are they, that will commend thee?",
+    "source_reference": "Meditations, Book 4, Section 3",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "calm-your-mind"
+    ],
     "reading_time_seconds": 32
+  },
+  {
+    "id": "meditations-04-007",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 7,
+    "total_cards_in_chapter": 53,
+    "plain_english": "What's left then? Keep practicing this retreat into the small, true part of yourself. Above all, don't get scattered. Don't chase anything with desperate energy. Stay free and look at everything as someone whose goal is virtue, as someone whose nature is to be kind and social, as a citizen, as someone who will die. When you need to pull back and think clearly, keep two ideas close at hand. First: things themselves can't touch your soul. They stay outside, quiet and still. All the noise and trouble comes from your own opinions about them. Second: everything you see now will change very soon and disappear. Remember how many changes you've already watched in your lifetime. This world is nothing but change. This life is nothing but opinion.",
+    "original_excerpt": "What remains then, but that thou often put in practice this kind of retiring of thyself, to this little part of thyself; and above all things, keep thyself from distraction, and intend not anything vehemently, but be free and consider all things, as a man whose proper object is Virtue, as a man whose true nature is to be kind and sociable, as a citizen, as a mortal creature. Among other things, which to consider, and look into thou must use to withdraw thyself, let those two be among the most obvious and at hand. One, that the things or objects themselves reach not unto the soul, but stand without still and quiet, and that it is from the opinion only which is within, that all the tumult and all the trouble doth proceed. The next, that all these things, which now thou seest, shall within a very little while be changed, and be no more: and ever call to mind, how many changes and alterations in the world thou thyself hast already been an eyewitness of in thy time. This world is mere change, and this life, opinion.",
+    "source_reference": "Meditations, Book 4, Section 3",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 38
+  },
+  {
+    "id": "meditations-04-008",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 8,
+    "total_cards_in_chapter": 53,
+    "plain_english": "If all people can understand and think clearly, then the reasoning that makes us human is shared by everyone. If reasoning is universal, then the reasoning that tells us what to do and what not to do is also universal. If that's true, then law is universal. If law is universal, then we are all fellow citizens. If we're fellow citizens, then we belong to the same community. If that's the case, then the world is like one big city. What other community could possibly include all of humanity? From this shared city comes our understanding, our reason, and our laws. Where else could they come from? Just as the earthly parts of me come from the common earth, and the wet parts come from water, and my breath and life have their source, and the dry and fiery parts in me have their origin — nothing comes from nowhere, and nothing disappears into nothing — so my understanding must also come from some shared source.",
+    "original_excerpt": "If to understand and to be reasonable be common unto all men, then is that reason, for which we are termed reasonable, common unto all. If reason is general, then is that reason also, which prescribeth what is to be done and what not, common unto all. If that, then law. If law, then are we fellow-citizens. If so, then are we partners in some one commonweal. If so, then the world is as it were a city. For which other commonweal is it, that all men can be said to be members of? From this common city it is, that understanding, reason, and law is derived unto us, for from whence else? For as that which in me is earthly I have from some common earth; and that which is moist from some other element is imparted; as my breath and life hath its proper fountain; and that likewise which is dry and fiery in me: (for there is nothing which doth not proceed from something; as also there is nothing that can be reduced unto mere nothing:) so also is there some common beginning from whence my understanding hath proceeded.",
+    "source_reference": "Meditations, Book 4, Section 4",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 50
+  },
+  {
+    "id": "meditations-04-009",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 9,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Birth is a mystery of nature's wisdom, and so is death. We are made of elements that return to the same elements again. This is nothing to be ashamed of. It's part of a series of natural events that rational creatures go through. It's not wrong or out of place. It fits with how humans are naturally made.",
+    "original_excerpt": "As generation is, so also death, a secret of nature's wisdom: a mixture of elements, resolved into the same elements again, a thing surely which no man ought to be ashamed of: in a series of other fatal events and consequences, which a rational creature is subject unto, not improper or incongruous, nor contrary to the natural and proper constitution of man himself.",
+    "source_reference": "Meditations, Book 4, Section 5",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "human-nature"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-04-010",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 10,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Certain things must happen because of their causes. Someone who doesn't want these things to happen is like someone who wants a fig tree to grow without sap. Remember this: very soon both you and he will be dead. And soon after that, even your names will be forgotten.",
+    "original_excerpt": "Such and such things, from such and such causes, must of necessity proceed. He that would not have such things to happen, is as he that would have the fig-tree grow without any sap or moisture. In sum, remember this, that within a very little while, both thou and he shall both be dead, and after a little while more, not so much as your names and memories shall be remaining.",
+    "source_reference": "Meditations, Book 4, Section 6",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 15
+  },
+  {
+    "id": "meditations-04-011",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 11,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Take away judgment, and no one will think they have been wronged. If no one thinks they have been wronged, then wrong does not exist. What does not make a person worse cannot make his life worse. It cannot harm him inside or outside. Nature made it this way because it had to be so.",
+    "original_excerpt": "Let opinion be taken away, and no man will think himself wronged. If no man shall think himself wronged, then is there no more any such thing as wrong. That which makes not man himself the worse, cannot make his life the worse, neither can it hurt him either inwardly or outwardly. It was expedient in nature that it should be so, and therefore necessary.",
+    "source_reference": "Meditations, Book 4, Section 7",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-04-012",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 12,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Whatever happens in the world happens justly. If you pay close attention, you will see this. I don't just mean things follow in logical order through cause and effect. I mean they happen according to justice — like fair distribution based on what everything truly deserves. Keep watching for this pattern, as you have started to do. And whatever you do, make sure it's something a good person would do (understanding what 'good' really means). Pay careful attention to this in every action.",
+    "original_excerpt": "Whatsoever doth happen in the world, doth happen justly, and so if thou dost well take heed, thou shalt find it. I say not only in right order by a series of inevitable consequences, but according to justice and as it were by way of equal distribution, according to the true worth of everything. Continue then to take notice of it, as thou hast begun, and whatsoever thou dost, do it not without this proviso, that it be a thing of that nature that a good man (as the word good is properly taken) may do it. This observe carefully in every action.",
+    "source_reference": "Meditations, Book 4, Section 8",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 25
+  },
+  {
+    "id": "meditations-04-013",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 13,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Don't accept the ideas that someone who wrongs you wants you to believe. Look at the situation itself and see what it really is.",
+    "original_excerpt": "Conceit no such things, as he that wrongeth thee conceiveth, or would have thee to conceive, but look into the matter itself, and see what it is in very truth.",
+    "source_reference": "Meditations, Book 4, Section 9",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "meditations-04-014",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 14,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Keep these two rules always ready. First, do nothing unless your reason — that ruling part of your mind — tells you it will help other people. Second, if someone can correct you or show you where you're wrong, be ready to change your mind. But don't change for pleasure or to look good. Change only when you see good reasons — when it's more just, or serves the common good, or something like that.",
+    "original_excerpt": "These two rules, thou must have always in a readiness. First, do nothing at all, but what reason proceeding from that regal and supreme part, shall for the good and benefit of men, suggest unto thee. And secondly, if any man that is present shall be able to rectify thee or to turn thee from some erroneous persuasion, that thou be always ready to change thy mind, and this change to proceed, not from any respect of any pleasure or credit thereon depending, but always from some probable apparent ground of justice, or of some public good thereby to be furthered; or from some other such inducement.",
+    "source_reference": "Meditations, Book 4, Section 10",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "meditations-04-015",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 15,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Do you have reason? I do. Then why don't you use it? If your reason does its job, what more could you need?",
+    "original_excerpt": "Hast thou reason? I have. Why then makest thou not use of it? For if thy reason do her part, what more canst thou require?",
+    "source_reference": "Meditations, Book 4, Section 11",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "meditations-04-016",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 16,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Until now you have existed as a separate part. Soon you will dissolve back into the common substance of the one who first created you. Or rather, you will return to that original rational substance from which everything else came. Many small pieces of frankincense are placed on the same altar. One piece burns first, another follows. In the end, it all comes to the same thing.",
+    "original_excerpt": "As a part hitherto thou hast had a particular subsistence: and now shalt thou vanish away into the common substance of Him, who first begot thee, or rather thou shalt be resumed again into that original rational substance, out of which all others have issued, and are propagated. Many small pieces of frankincense are set upon the same altar, one drops first and is consumed, another after; and it comes all to one.",
+    "source_reference": "Meditations, Book 4, Section 12",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "meditations-04-017",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 17,
+    "total_cards_in_chapter": 53,
+    "plain_english": "In ten days, if it happens, you will be seen as a god by the same people who right now, if you return to your principles and honor reason, will think of you as no better than a dumb animal or an ape.",
+    "original_excerpt": "Within ten days, if so happen, thou shalt be esteemed a god of them, who now if thou shalt return to the dogmata and to the honouring of reason, will esteem of thee no better than of a mere brute, and of an ape.",
+    "source_reference": "Meditations, Book 4, Section 13",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "human-nature"
+    ],
+    "reading_time_seconds": 13
+  },
+  {
+    "id": "meditations-04-018",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 18,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Not as though you have thousands of years to live. Death hangs over you. While you are still alive, while you can, be good.",
+    "original_excerpt": "Not as though thou hadst thousands of years to live. Death hangs over thee: whilst yet thou livest, whilst thou mayest, be good.",
+    "source_reference": "Meditations, Book 4, Section 14",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "meditations-04-019",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 19,
+    "total_cards_in_chapter": 53,
+    "plain_english": "How much time and peace you gain when you don't worry about what your neighbor said or did or tried to do. Instead, focus only on what you do yourself — that it may be just and good. Or as Agathos put it: Don't look around at the faults of others, but run straight ahead without getting distracted or worked up.",
+    "original_excerpt": "Now much time and leisure doth he gain, who is not curious to know what his neighbour hath said, or hath done, or hath attempted, but only what he doth himself, that it may be just and holy? or to express it in Agathos' words, Not to look about upon the evil conditions of others, but to run on straight in the line, without any loose and extravagant agitation.",
+    "source_reference": "Meditations, Book 4, Section 15",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 18
+  },
+  {
+    "id": "meditations-04-020",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 20,
+    "total_cards_in_chapter": 53,
+    "plain_english": "If you crave praise and fame after you die, remember this: the people who remember you will also die soon. And the people after them will die too. Eventually all memory of you will fade away completely, passed along by one generation that admires you and dies, then the next, until it's gone. But even if the people who remember you lived forever, and your memory lasted forever — what would that matter to you? I won't even ask what it matters after you're dead. What does praise matter to you even while you're alive? Only for some practical reason that helps you get things done.",
+    "original_excerpt": "He who is greedy of credit and reputation after his death, doth not consider, that they themselves by whom he is remembered, shall soon after every one of them be dead; and they likewise that succeed those; until at last all memory, which hitherto by the succession of men admiring and soon after dying hath had its course, be quite extinct. But suppose that both they that shall remember thee, and thy memory with them should be immortal, what is that to thee? I will not say to thee after thou art dead; but even to thee living, what is thy praise? But only for a secret and politic consideration, which we call οἰκονομίαν, or dispensation.",
+    "source_reference": "Meditations, Book 4, Section 16",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 32
+  },
+  {
+    "id": "meditations-04-021",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 21,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Let's set aside for now the question of natural gifts and what people might say against them - that's not what we're discussing here. Whatever is beautiful and good - no matter what it is or why - it's beautiful and good in itself. It doesn't need praise to complete it. So the thing that gets praised isn't made better or worse by that praise. I mean this even for things we commonly call beautiful and good - things praised for their material or their fine craftsmanship. As for what is truly good, what more does it need than justice or truth? What more than kindness and humility? Which of these becomes good or beautiful because someone praised it? Or gets damaged when criticized? Does an emerald become worse if no one praises it? Do gold, ivory, or purple? Is there anything - even something as ordinary as a knife, a flower, or a tree - that changes based on praise?",
+    "original_excerpt": "For as for that, that it is the gift of nature, whatsoever is commended in thee, what might be objected from thence, let that now that we are upon another consideration be omitted as unseasonable. That which is fair and goodly, whatsoever it be, and in what respect soever it be, that it is fair and goodly, it is so of itself, and terminates in itself, not admitting praise as a part or member: that therefore which is praised, is not thereby made either better or worse. This I understand even of those things, that are commonly called fair and good, as those which are commended either for the matter itself, or for curious workmanship. As for that which is truly good, what can it stand in need of more than either justice or truth; or more than either kindness and modesty? Which of all those, either becomes good or fair, because commended; or dispraised suffers any damage? Doth the emerald become worse in itself, or more vile if it be not commended? Doth gold, or ivory, or purple? Is there anything that doth though never so common, as a knife, a flower, or a tree?",
+    "source_reference": "Meditations, Book 4, Section 16",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 48
+  },
+  {
+    "id": "meditations-04-022",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 22,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Some people say souls survive after death. But if that's true, how can the air hold all of them forever? And how can the earth keep holding all the buried bodies? Here's how it works: dead bodies change and break down into something else. This makes room for new dead bodies. The same thing happens with souls. After death, they go into the air for a while. Then they change form or merge back into the original rational substance that all souls come from. This makes room for new souls that are just starting to exist separately from bodies. That's how it could work if souls do survive for a while after death. And think about this too: besides all the buried human bodies, consider how many animals we and other creatures eat every day. All those animal bodies get consumed and buried inside the bodies of whoever ate them. Yet our bodies can hold them because they convert into blood, air, and heat. What's the real truth here? We need to separate things into two parts: what is passive matter, and what is active form.",
+    "original_excerpt": "If so be that the souls remain after death (say they that will not believe it); how is the air from all eternity able to contain them? How is the earth (say I) ever from that time able to Contain the bodies of them that are buried? For as here the change and resolution of dead bodies into another kind of subsistence (whatsoever it be;) makes place for other dead bodies: so the souls after death transferred into the air, after they have conversed there a while, are either by way of transmutation, or transfusion, or conflagration, received again into that original rational substance, from which all others do proceed: and so give way to those souls, who before coupled and associated unto bodies, now begin to subsist single.",
+    "source_reference": "Meditations, Book 4, Section 17",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "human-nature"
+    ],
+    "reading_time_seconds": 56
+  },
+  {
+    "id": "meditations-04-023",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 23,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Don't get sidetracked. With every impulse and desire, do what is right. And always be careful to see clearly what each thought or impression really is.",
+    "original_excerpt": "This, upon a supposition that the souls after death do for a while subsist single, may be answered. And here, (besides the number of bodies, so buried and contained by the earth), we may further consider the number of several beasts, eaten by us men, and by other creatures. For notwithstanding that such a multitude of them is daily consumed, and as it were buried in the bodies of the eaters, yet is the same place and body able to contain them, by reason of their conversion, partly into blood, partly into air and fire. What in these things is the speculation of truth? to divide things into that which is passive and material; and that which is active and formal.",
+    "source_reference": "Meditations, Book 4, Section 17",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 8
+  },
+  {
+    "id": "meditations-04-024",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 24,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Whatever works for you, O World, works for me. Nothing can be badly timed for me if it's the right time for you. Whatever your seasons bring, I will always welcome as good fruit and growth. O Nature! Everything comes from you, everything exists in you, and everything returns to you. If someone could say of Athens, \"You lovely city of Cecrops,\" shouldn't I say of the world, \"You lovely city of God\"?",
+    "original_excerpt": "Not to wander out of the way, but upon every motion and desire, to perform that which is just: and ever to be careful to attain to the true natural apprehension of every fancy, that presents itself.",
+    "source_reference": "Meditations, Book 4, Section 18",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 22
+  },
+  {
+    "id": "meditations-04-025",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 25,
+    "total_cards_in_chapter": 53,
+    "plain_english": "People often say, \"Don't take on too many things if you want to be happy.\" There's truth in this. The best approach is to limit yourself to necessary actions only — the ones that reason demands from someone who knows they were born to live with others. This brings two kinds of peace: the peace that comes from doing good, and the peace that comes from doing less. Most of what we say and do is unnecessary. Cut out these things and you'll have more time and less trouble. So before every action, ask yourself: \"Is this really necessary?\" Don't just cut out unnecessary actions. Cut out unnecessary thoughts too. When you stop the useless thinking, you prevent the useless actions that follow.",
+    "original_excerpt": "Whatsoever is expedient unto thee, O World, is expedient unto me; nothing can either be 'unseasonable unto me, or out of date, which unto thee is seasonable. Whatsoever thy seasons bear, shall ever by me be esteemed as happy fruit, and increase. O Nature! from thee are all things, in thee all things subsist, and to thee all tend. Could he say of Athens, Thou lovely city of Cecrops; and shalt not thou say of the world, Thou lovely city of God?",
+    "source_reference": "Meditations, Book 4, Section 19",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 37
+  },
+  {
+    "id": "meditations-04-026",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 26,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Try living like a good person — someone who is happy with whatever life gives him, who is satisfied with doing right now and being ready to do good in the future. You've tried the other way of living. Now test this one. Stop making things complicated for yourself. Keep it simple.",
+    "original_excerpt": "They will say commonly, Meddle not with many things, if thou wilt live cheerfully. Certainly there is nothing better, than for a man to confine himself to necessary actions; to such and so many only, as reason in a creature that knows itself born for society, will command and enjoin. This will not only procure that cheerfulness, which from the goodness, but that also, which from the paucity of actions doth usually proceed. For since it is so, that most of those things, which we either speak or do, are unnecessary; if a man shall cut them off, it must needs follow that he shall thereby gain much leisure, and save much trouble, and therefore at every action a man must privately by way of admonition suggest unto himself, What? may not this that now I go about, be of the number of unnecessary actions? Neither must he use himself to cut off actions only, but thoughts and imaginations also, that are unnecessary for so will unnecessary consequent actions the better be prevented and cut off.",
+    "source_reference": "Meditations, Book 4, Section 20",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 16
+  },
+  {
+    "id": "meditations-04-027",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 27,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Does someone offend you? They harm themselves, not you. Why let it bother you? Has something happened to you? That's fine. Whatever it is, it was always meant for you from the beginning of time. Everything that happens was already set in motion long ago. To sum it up: life is short. We must make the most of each moment with wisdom and fairness. Even when we relax, we should do it with moderation.",
+    "original_excerpt": "Try also how a good man's life; (of one, who is well pleased with those things whatsoever, which among the common changes and chances of this world fall to his own lot and share; and can live well contented and fully satisfied in the justice of his own proper present action, and in the goodness of his disposition for the future:) will agree with thee. Thou hast had experience of that other kind of life: make now trial of this also.",
+    "source_reference": "Meditations, Book 4, Section 21",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 22
+  },
+  {
+    "id": "meditations-04-028",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 28,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Either this world is a beautiful, ordered whole — everything arranged and governed by natural law — or it's a mixture of things that seems chaotic but is still beautiful. How could there be any beauty in you while the whole universe is just disorder and confusion? All things are different from each other by their natural properties, yet they're connected throughout by natural sympathy and united as one.",
+    "original_excerpt": "Trouble not thyself any more henceforth, reduce thyself unto perfect simplicity. Doth any man offend? It is against himself that he doth offend: why should it trouble thee? Hath anything happened unto thee? It is well, whatsoever it be, it is that which of all the common chances of the world from the very beginning in the series of all other things that have, or shall happen, was destinated and appointed unto thee. To comprehend all in a few words, our life is short; we must endeavour to gain the present time with best discretion and justice. Use recreation with sobriety.",
+    "source_reference": "Meditations, Book 4, Section 21",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 21
+  },
+  {
+    "id": "meditations-04-029",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 29,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Evil people, weak people, cruel people, wild people, passive people, childish people, stupid people, dishonest people, vulgar people, cheating people, controlling people — what about them? If someone can be a stranger to the world who doesn't understand what's in it, why can't you be a stranger too who is amazed by what people do in it?",
+    "original_excerpt": "Either this world is a κόσμος or comely piece, because all disposed and governed by certain order: or if it be a mixture, though confused, yet still it is a comely piece. For is it possible that in thee there should be any beauty at all, and that in the whole world there should be nothing but disorder and confusion? and all things in it too, by natural different properties one from another differenced and distinguished; and yet all through diffused, and by natural sympathy, one to another united, as they are?",
+    "source_reference": "Meditations, Book 4, Section 22",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-04-030",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 30,
+    "total_cards_in_chapter": 53,
+    "plain_english": "The real runaway is someone who flees from reason — the thing that makes us able to live together. The truly blind person cannot see with their mind's eye. The poor person is one who needs others and doesn't have within himself everything needed for life. A person becomes like a diseased growth on the world when he resents what happens to him. By doing this, he cuts himself off from the rational order that governs all of nature. The same nature that brings you whatever you're facing now is the same nature that brought you into existence. Someone stirs up trouble in the city when his unreasonable actions pull his soul away from the one shared soul of all thinking beings.",
+    "original_excerpt": "A black or malign disposition, an effeminate disposition; an hard inexorable disposition, a wild inhuman disposition, a sheepish disposition, a childish disposition; a blockish, a false, a scurril, a fraudulent, a tyrannical: what then? If he be a stranger in the world, that knows not the things that are in it; why not be a stranger as well, that wonders at the things that are done in it?",
+    "source_reference": "Meditations, Book 4, Section 23",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 37
+  },
+  {
+    "id": "meditations-04-031",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 31,
+    "total_cards_in_chapter": 53,
+    "plain_english": "There is someone who practices philosophy without even a coat. There is someone who practices it without even a book. One person says: \"I am half naked and have no bread to eat, yet I don't abandon reason.\" But I say: I lack the food of good teaching and instruction, yet I don't abandon reason either.",
+    "original_excerpt": "He is a true fugitive, that flies from reason, by which men are sociable. He blind, who cannot see with the eyes of his understanding. He poor, that stands in need of another, and hath not in himself all things needful for this life. He an aposteme of the world, who by being discontented with those things that happen unto him in the world, doth as it were apostatise, and separate himself from common nature's rational administration. For the same nature it is that brings this unto thee, whatsoever it be, that first brought thee into the world. He raises sedition in the city, who by irrational actions withdraws his own soul from that one and common soul of all rational creatures.",
+    "source_reference": "Meditations, Book 4, Section 24",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "facing-hardship",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-04-032",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 32,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Whatever work or skill you have learned, try to love it and find comfort in it. Live the rest of your life as someone who trusts the gods completely with yourself and everything you have. As for other people, don't be either a tyrant or a slave to anyone.",
+    "original_excerpt": "There is, who without so much as a coat; and there is, who without so much as a book, doth put philosophy in practice. I am half naked, neither have I bread to eat, and yet I depart not from reason, saith one. But I say; I want the food of good teaching, and instructions, and yet I depart not from reason.",
+    "source_reference": "Meditations, Book 4, Section 25",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "human-nature"
+    ],
+    "reading_time_seconds": 15
+  },
+  {
+    "id": "meditations-04-033",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 33,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Think about the times of Emperor Vespasian, for example. You'll see the same things: people getting married, raising children, getting sick, dying, fighting, celebrating, doing business, farming, flattering others, bragging, being suspicious, plotting against each other, wishing they were dead, complaining about their lives, pursuing romance, hoarding money, seeking political office, trying to build kingdoms. And now that whole era is over and done.\n\nNow think about the times of Emperor Trajan. You see exactly the same things there too. And that age is also over and finished. Look at any other period in history, or at whole nations — it's the same pattern. People threw themselves completely into some worldly pursuit, then soon dropped away and returned to dust.\n\nBut especially remember the people you knew in your own lifetime who got completely caught up in pointless things. Meanwhile they neglected to do what their own nature actually required of them — to stick closely to that and be satisfied with it.\n\nRemember this: how you handle each task should match how important it really is. If you do this, you won't get worn out and frustrated by spending too much time on small things.",
+    "original_excerpt": "What art and profession soever thou hast learned, endeavour to affect it, and comfort thyself in it; and pass the remainder of thy life as one who from his whole heart commits himself and whatsoever belongs unto him, unto the gods: and as for men, carry not thyself either tyrannically or servilely towards any.",
+    "source_reference": "Meditations, Book 4, Section 26",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 59
+  },
+  {
+    "id": "meditations-04-034",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 34,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Words that were once common and everyday have become unclear and forgotten. The same thing happens to the names of men who were once well-known and famous. Camillus, Cæso, Volesius, Leonnatus — and not long after, Scipio, Cato, then Augustus, then Hadrian, then Antoninus Pius. All these names will soon be outdated. They will seem like myths from another world. And I'm talking about men who once shined as the wonders of their time. As for everyone else, as soon as they die, their fame and memory die with them. So what will always be remembered? Nothing. It's all empty.",
+    "original_excerpt": "Consider in my mind, for example's sake, the times of Vespasian: thou shalt see but the same things: some marrying, some bringing up children, some sick, some dying, some fighting, some feasting, some merchandising, some tilling, some flattering, some boasting, some suspecting, some undermining, some wishing to die, some fretting and murmuring at their present estate, some wooing, some hoarding, some seeking after magistracies, and some after kingdoms. And is not that their age quite over, and ended? Again, consider now the times of Trajan. There likewise thou seest the very self-same things, and that age also is now over and ended. In the like manner consider other periods, both of times and of whole nations, and see how many men, after they had with all their might and main intended and prosecuted some one worldly thing or other did soon after drop away, and were resolved into the elements.",
+    "source_reference": "Meditations, Book 4, Section 27",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 30
+  },
+  {
+    "id": "meditations-04-035",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 35,
+    "total_cards_in_chapter": 53,
+    "plain_english": "What should we focus our effort on? Just this: keeping our thoughts and intentions fair. Making our actions kind. Never lying in our speech. Not letting our minds make errors. Always being ready to accept whatever happens to us as necessary, normal, ordinary — flowing from the same source that made both you and everything else. So surrender yourself willingly to that chain of fate. Let the fates do with you what they will.",
+    "original_excerpt": "But especially thou must call to mind them, whom thou thyself in thy lifetime hast known much distracted about vain things, and in the meantime neglecting to do that, and closely and unseparably (as fully satisfied with it) to adhere unto it, which their own proper constitution did require. And here thou must remember, that thy carriage in every business must be according to the worth and due proportion of it, for so shalt thou not easily be tired out and vexed, if thou shalt not dwell upon small matters longer than is fitting.",
+    "source_reference": "Meditations, Book 4, Section 27",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 22
+  },
+  {
+    "id": "meditations-04-036",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 36,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Everything that exists right now, everything that has existed day by day — all the things we remember, and our minds and memories themselves — keep thinking about this: all things exist through change. Get used to thinking about this often. The universe loves nothing more than changing the things that exist and making new things like them. So we can say that everything that exists is just the seed of what will come next. If you think only what goes into the earth or the womb is a seed, you're being too narrow in your thinking.",
+    "original_excerpt": "Those words which once were common and ordinary, are now become obscure and obsolete; and so the names of men once commonly known and famous, are now become in a manner obscure and obsolete names. Camillus, Cæso, Volesius, Leonnatus; not long after, Scipio, Cato, then Augustus, then Adrianus, then Antoninus Pius: all these in a short time will be out of date, and, as things of another world as it were, become fabulous. And this I say of them, who once shined as the wonders of their ages, for as for the rest, no sooner are they expired, than with them all their fame and memory.",
+    "source_reference": "Meditations, Book 4, Section 28",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 29
+  },
+  {
+    "id": "meditations-04-037",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 37,
+    "total_cards_in_chapter": 53,
+    "plain_english": "You are ready to die, but you still haven't reached that perfect simplicity. You are still troubled by many things and thrown off balance. You are not free from fear and worry about what might happen. You are not as gentle toward everyone as you should be. You don't act like someone whose only focus and wisdom is being just in everything you do.",
+    "original_excerpt": "And what is it then that shall always be remembered? all is vanity. What is it that we must bestow our care and diligence upon? even upon this only: that our minds and wills be just; that our actions be charitable; that our speech be never deceitful, or that our understanding be not subject to error; that our inclination be always set to embrace whatsoever shall happen unto us, as necessary, as usual, as ordinary, as flowing from such a beginning, and such a fountain, from which both thou thyself and all things are. Willingly therefore, and wholly surrender up thyself unto that fatal concatenation, yielding up thyself unto the fates, to be disposed of at their pleasure.",
+    "source_reference": "Meditations, Book 4, Section 28",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 19
+  },
+  {
+    "id": "meditations-04-038",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 38,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Look and see what state their minds are in. Those the world calls wise — see what they run from in fear, and what they chase after.",
+    "original_excerpt": "Whatsoever is now present, and from day to day hath its existence; all objects of memories, and the minds and memories themselves, incessantly consider, all things that are, have their being by change and alteration. Use thyself therefore often to meditate upon this, that the nature of the universe delights in nothing more, than in altering those things that are, and in making others like unto them. So that we may say, that whatsoever is, is but as it were the seed of that which shall be. For if thou think that that only is seed, which either the earth or the womb receiveth, thou art very simple.",
+    "source_reference": "Meditations, Book 4, Section 29",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 8
+  },
+  {
+    "id": "meditations-04-039",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 39,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Your suffering cannot exist in another person's mind. It cannot exist in your body either — your body is just the house where your soul lives. So where can suffering exist? Only in the part of you that forms judgments about misery. Don't let that part accept such judgments, and you'll be fine. Even if your body gets cut, burned, or diseased, let the part of you that judges these things stay calm. Let it remember this: whatever happens equally to both good and bad people is neither good nor evil. Anything that happens just as much to someone who lives according to nature as to someone who doesn't — that thing is neither natural nor unnatural. And therefore neither good nor bad.",
+    "original_excerpt": "Thou art now ready to die, and yet hast thou not attained to that perfect simplicity: thou art yet subject to many troubles and perturbations; not yet free from all fear and suspicion of external accidents; nor yet either so meekly disposed towards all men, as thou shouldest; or so affected as one, whose only study and only wisdom is, to be just in all his actions.",
+    "source_reference": "Meditations, Book 4, Section 30",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 37
+  },
+  {
+    "id": "meditations-04-040",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 40,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Think of the world as one living being with one soul. All things share one awareness and move together by one will. Everything works together to cause everything else. All things are connected in an endless chain.",
+    "original_excerpt": "Behold and observe, what is the state of their rational part; and those that the world doth account wise, see what things they fly and are afraid of; and what things they hunt after.",
+    "source_reference": "Meditations, Book 4, Section 31",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "human-nature"
+    ],
+    "reading_time_seconds": 11
+  },
+  {
+    "id": "meditations-04-041",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 41,
+    "total_cards_in_chapter": 53,
+    "plain_english": "What are you, apart from that better divine part, but as Epictetus said, a miserable soul stuck carrying a dead body around?",
+    "original_excerpt": "In another man's mind and understanding thy evil Cannot subsist, nor in any proper temper or distemper of the natural constitution of thy body, which is but as it were the coat or cottage of thy soul. Wherein then, but in that part of thee, wherein the conceit, and apprehension of any misery can subsist? Let not that part therefore admit any such conceit, and then all is well. Though thy body which is so near it should either be cut or burnt, or suffer any corruption or putrefaction, yet let that part to which it belongs to judge of these, be still at rest; that is, let her judge this, that whatsoever it is, that equally may happen to a wicked man, and to a good man, is neither good nor evil. For that which happens equally to him that lives according to nature, and to him that doth not, is neither according to nature, nor against it; and by consequent, neither good nor bad.",
+    "source_reference": "Meditations, Book 4, Section 32",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "meditations-04-042",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 42,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Change itself cannot hurt you. And change cannot benefit you either. The world's time is like a flood or fast river made up of everything that happens. As soon as something appears and passes away, another thing takes its place. And that too will quickly be gone.",
+    "original_excerpt": "Ever consider and think upon the world as being but one living substance, and having but one soul, and how all things in the world, are terminated into one sensitive power; and are done by one general motion as it were, and deliberation of that one soul; and how all things that are, concur in the cause of one another's being, and by what manner of connection and concatenation all things happen.",
+    "source_reference": "Meditations, Book 4, Section 33",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 14
+  },
+  {
+    "id": "meditations-04-043",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 43,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Whatever happens in the world is as natural and ordinary as roses blooming in spring or fruit ripening in summer. Sickness and death are the same way. So are slander and betrayal. All the things that usually make fools happy or sad are just part of nature.\n\nWhatever comes next always follows naturally from what came before. You must not think of world events as random happenings that just pile up. Think of them as a careful chain of things arranged in order and harmony. The world shows us not just one thing after another, but a beautiful connection where everything fits together.",
+    "original_excerpt": "What art thou, that better and divine part excepted, but as Epictetus said well, a wretched soul, appointed to carry a carcass up and down?",
+    "source_reference": "Meditations, Book 4, Section 34",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 31
+  },
+  {
+    "id": "meditations-04-044",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 44,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Remember what Heraclitus taught: earth dies and becomes water, water dies and becomes air, air dies and becomes fire, and so on in reverse. Remember too the person who didn't know where his path led. Think about this: reason runs everything in the world. We deal with it constantly and intimately. Yet it's the very thing we fight against most. The things that happen to us every day keep surprising us. We shouldn't speak or act like sleepwalkers, driven by mere opinion and imagination. When we do that, we only think we're speaking and acting. And we shouldn't be like children who copy their parents simply because \"that's how we learned it\" or \"that's how our ancestors passed it down.\"",
+    "original_excerpt": "To suffer change can be no hurt; as no benefit it is, by change to attain to being. The age and time of the world is as it were a flood and swift current, consisting of the things that are brought to pass in the world. For as soon as anything hath appeared, and is passed away, another succeeds, and that also will presently out of sight.",
+    "source_reference": "Meditations, Book 4, Section 35",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 36
+  },
+  {
+    "id": "meditations-04-045",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 45,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Imagine if one of the gods told you: You will certainly die tomorrow, or the next day. Unless you were completely weak and cowardly, you wouldn't think it was some great benefit to die the day after tomorrow instead of tomorrow. What's the real difference? For the same reason, don't think it matters much whether you die many years from now or the very next day.",
+    "original_excerpt": "Whatsoever doth happen in the world, is, in the course of nature, as usual and ordinary as a rose in the spring, and fruit in summer. Of the same nature is sickness and death; slander, and lying in wait, and whatsoever else ordinarily doth unto fools use to be occasion either of joy or sorrow. That, whatsoever it is, that comes after, doth always very naturally, and as it were familiarly, follow upon that which was before. For thou must consider the things of the world, not as a loose independent number, consisting merely of necessary events; but as a discreet connection of things orderly and harmoniously disposed. There is then to be seen in the things of the world, not a bare succession, but an admirable correspondence and affinity.",
+    "source_reference": "Meditations, Book 4, Section 36",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "meditations-04-046",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 46,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Make this your constant meditation: how many doctors who once looked so serious and frowned dramatically at their patients are now dead themselves. How many fortune-tellers who proudly predicted other people's deaths. How many philosophers who wrote endless books about death and immortality. How many brave generals after all their killing and conquering. How many kings and tyrants who cruelly abused their power over human lives, as if they themselves would never die. How many entire cities — Helice, Pompeii, Herculaneum, and countless others — are gone forever. Think also of all the people you have personally known who have died, one after another. This person arranged that person's funeral, and soon after was buried himself. One after another. Everything passes quickly.",
+    "original_excerpt": "Let that of Heraclitus never be out of thy mind, that the death of earth, is water, and the death of water, is air; and the death of air, is fire; and so on the contrary. Remember him also who was ignorant whither the way did lead, and how that reason being the thing by which all things in the world are administered, and which men are continually and most inwardly conversant with: yet is the thing, which ordinarily they are most in opposition with, and how those things which daily happen among them, cease not daily to be strange unto them, and that we should not either speak, or do anything as men in their sleep, by opinion and bare imagination: for then we think we speak and do, and that we must not be as children, who follow their father's example; for best reason alleging their bare καθότι παρειλήφαμεν; or, as by successive tradition from our forefathers we have received it.",
+    "source_reference": "Meditations, Book 4, Section 37",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 37
+  },
+  {
+    "id": "meditations-04-047",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 47,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Here is what matters: always see worldly things as they really are — temporary and worthless. What is a human being? Just days ago, when conceived, he was nothing but fluid. In a few days he will be either a preserved corpse or ashes. You must think clearly about this truth. Human life lasts only a moment. Accept this and leave peacefully, like a ripe olive that falls and thanks the ground that held it and the tree that made it.",
+    "original_excerpt": "Even as if any of the gods should tell thee, Thou shalt certainly die to-morrow, or next day, thou wouldst not, except thou wert extremely base and pusillanimous, take it for a great benefit, rather to die the next day after, than to-morrow; (for alas, what is the difference!) so, for the same reason, think it no great matter to die rather many years after, than the very next day.",
+    "source_reference": "Meditations, Book 4, Section 38",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 24
+  },
+  {
+    "id": "meditations-04-048",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 48,
+    "total_cards_in_chapter": 53,
+    "plain_english": "You must be like a rocky cliff by the sea. The waves beat against it constantly, but it stands firm. And around it, those churning waves grow calm and quiet.",
+    "original_excerpt": "Let it be thy perpetual meditation, how many physicians who once looked so grim, and so theatrically shrunk their brows upon their patients, are dead and gone themselves. How many astrologers, after that in great ostentation they had foretold the death of some others, how many philosophers after so many elaborate tracts and volumes concerning either mortality or immortality; how many brave captains and commanders, after the death and slaughter of so many; how many kings and tyrants, after they had with such horror and insolency abused their power upon men's lives, as though themselves had been immortal; how many, that I may so speak, whole cities both men and towns: Helice, Pompeii, Herculaneum, and others innumerable are dead and gone. Run them over also, whom thou thyself, one after another, hast known in thy time to drop away. Such and such a one took care of such and such a one's burial, and soon after was buried himself. So one, so another: and all things in a short time.",
+    "source_reference": "Meditations, Book 4, Section 39",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 9
+  },
+  {
+    "id": "meditations-04-049",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 49,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Oh, poor me — this terrible thing happened to me! No, wait. Lucky me. This thing happened, and I can keep going without falling apart. I'm not hurt by what's happening now. I'm not afraid of what's coming next. This could have happened to anyone. But not everyone could have handled it without breaking down. So why call this bad luck instead of good luck? Can you really call something unfortunate if it doesn't go against human nature? Can you call it a disaster if it doesn't stop you from fulfilling your purpose? What have you learned about what humans are meant to do? Does this thing that happened stop you from being fair? Or brave? Or self-controlled? Or wise? Or careful? Or honest? Or humble? Or free? Does it stop you from having any of the things that make human nature complete? Here's the point: whenever you feel sad, remember this rule. Whatever happened to you isn't really a misfortune. But handling it well — that's real happiness.",
+    "original_excerpt": "For herein lieth all indeed, ever to look upon all worldly things, as things for their continuance, that are but for a day: and for their worth, most vile, and contemptible, as for example, What is man? That which but the other day when he was conceived was vile snivel; and within few days shall be either an embalmed carcass, or mere ashes. Thus must thou according to truth and nature, throughly consider how man's life is but for a very moment of time, and so depart meek and contented: even as if a ripe olive falling should praise the ground that bare her, and give thanks to the tree that begat her.",
+    "source_reference": "Meditations, Book 4, Section 39",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "facing-hardship",
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 51
+  },
+  {
+    "id": "meditations-04-050",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 50,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Here's a simple but effective remedy for the fear of death. Think about people who lived long lives and clung to them greedily. What did they gain over those who died young? They all ended up dead anyway. Look at Cadicianus, Fabius, Julianus Lepidus, and others who buried many people in their lifetimes, only to be buried themselves in the end. Any human life is short. And even that short time is filled with troubles, bad moods, and the burden of a failing body. So treat the length of your life as unimportant. Look backward — you see endless time stretching behind you. Look forward — endless time ahead. In something so infinite, what difference is there between living three days and living three hundred years?",
+    "original_excerpt": "Thou must be like a promontory of the sea, against which though the waves beat continually, yet it both itself stands, and about it are those swelling waves stilled and quieted.",
+    "source_reference": "Meditations, Book 4, Section 40",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 38
+  },
+  {
+    "id": "meditations-04-051",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 51,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Always take the shortest path. The shortest path is the one that follows nature. This means in everything you say and do, choose what is most sound and right. This approach will free you from trouble, conflict, pretending, and showing off.",
+    "original_excerpt": "Oh, wretched I, to whom this mischance is happened! nay, happy I, to whom this thing being happened, I can continue without grief; neither wounded by that which is present, nor in fear of that which is to come. For as for this, it might have happened unto any man, but any man having such a thing befallen him, could not have continued without grief. Why then should that rather be an unhappiness, than this a happiness? But however, canst thou, O man! term that unhappiness, which is no mischance to the nature of man I Canst thou think that a mischance to the nature of man, which is not contrary to the end and will of his nature? What then hast thou learned is the will of man's nature? Doth that then which hath happened unto thee, hinder thee from being just? or magnanimous? or temperate? or wise? or circumspect? or true? or modest? or free? or from anything else of all those things in the present enjoying and possession whereof the nature of man, (as then enjoying all that is proper unto her,) is fully satisfied? Now to conclude; upon all occasion of sorrow remember henceforth to make use of this dogma, that whatsoever it is that hath happened unto thee, is in very deed no such thing of itself, as a misfortune; but that to bear it generously, is certainly great happiness.",
+    "source_reference": "Meditations, Book 4, Section 41",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 12
+  },
+  {
+    "id": "meditations-04-052",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 52,
+    "total_cards_in_chapter": 53,
+    "plain_english": "It's a simple remedy, but it works well against the fear of death. Think about people who lived long lives and clung to them greedily. What did they gain over those who died young? They all ended up dead anyway — Cadicianus, Fabius, Julianus, Lepidus, and others who buried many people in their time, only to be buried themselves. Any human life is short. And even that short time is filled with troubles, bad moods, and the burden of a failing body. So treat the length of your life as unimportant. Look backward — you see an endless stretch of time before you were born. Look forward — another endless stretch after you die. In something so infinite, what difference is there between living three days or three lifetimes?",
+    "original_excerpt": "It is but an ordinary coarse one, yet it is a good effectual remedy against the fear of death, for a man to consider in his mind the examples of such, who greedily and covetously (as it were) did for a long time enjoy their lives. What have they got more, than they whose deaths have been untimely? Are not they themselves dead at the last? as Cadiciant's, Fabius, Julianus Lepidus, or any other who in their lifetime having buried many, were at the last buried themselves. The whole space of any man's life, is but little; and as little as it is, with what troubles, with what manner of dispositions, and in the society of how wretched a body must it be passed! Let it be therefore unto thee altogether as a matter of indifferency. For if thou shalt look backward; behold, what an infinite chaos of time doth present itself unto thee; and as infinite a chaos, if thou shalt look forward. In that which is so infinite, what difference can there be between that which liveth but three days, and that which liveth three ages?",
+    "source_reference": "Meditations, Book 4, Section 42",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 39
+  },
+  {
+    "id": "meditations-04-053",
+    "book_slug": "meditations",
+    "chapter_slug": "book-04",
+    "card_number": 53,
+    "total_cards_in_chapter": 53,
+    "plain_english": "Always take the shortest path. The shortest path is the one that follows nature. This means in everything you say and do, choose what is most sound and right. Such a choice will free you from all trouble, conflict, pretending, and showing off.",
+    "original_excerpt": "Let thy course ever be the most compendious way. The most compendious, is that which is according to nature: that is, in all both words and deeds, ever to follow that which is most sound and perfect. For such a resolution will free a man from all trouble, strife, dissembling, and ostentation.",
+    "source_reference": "Meditations, Book 4, Section 43",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 13
   }
 ]

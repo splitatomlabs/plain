@@ -2,43 +2,269 @@
   "slug": "enchiridion",
   "title": "The Enchiridion",
   "author_slug": "epictetus",
-  "description": "A former slave's handbook for living free \u2014 even when everything around you is out of your control.",
+  "description": "",
   "tags": [
     "freedom-and-control",
-    "what-matters-most",
     "knowing-yourself",
     "calm-your-mind",
     "death-and-mortality",
-    "doing-the-right-thing",
-    "human-nature"
+    "facing-hardship",
+    "what-matters-most",
+    "human-nature",
+    "doing-the-right-thing"
   ],
   "chapters": [
     {
-      "slug": "sections-01-10",
-      "title": "Sections 1-10",
+      "slug": "section-01",
+      "title": "Section 1",
+      "card_count": 2
+    },
+    {
+      "slug": "section-02",
+      "title": "Section 2",
+      "card_count": 1
+    },
+    {
+      "slug": "section-03",
+      "title": "Section 3",
+      "card_count": 1
+    },
+    {
+      "slug": "section-04",
+      "title": "Section 4",
+      "card_count": 1
+    },
+    {
+      "slug": "section-05",
+      "title": "Section 5",
+      "card_count": 1
+    },
+    {
+      "slug": "section-06",
+      "title": "Section 6",
+      "card_count": 1
+    },
+    {
+      "slug": "section-07",
+      "title": "Section 7",
+      "card_count": 1
+    },
+    {
+      "slug": "section-08",
+      "title": "Section 8",
+      "card_count": 1
+    },
+    {
+      "slug": "section-09",
+      "title": "Section 9",
+      "card_count": 1
+    },
+    {
+      "slug": "section-10",
+      "title": "Section 10",
+      "card_count": 1
+    },
+    {
+      "slug": "section-11",
+      "title": "Section 11",
+      "card_count": 1
+    },
+    {
+      "slug": "section-12",
+      "title": "Section 12",
+      "card_count": 1
+    },
+    {
+      "slug": "section-13",
+      "title": "Section 13",
+      "card_count": 1
+    },
+    {
+      "slug": "section-14",
+      "title": "Section 14",
+      "card_count": 1
+    },
+    {
+      "slug": "section-15",
+      "title": "Section 15",
+      "card_count": 1
+    },
+    {
+      "slug": "section-16",
+      "title": "Section 16",
+      "card_count": 1
+    },
+    {
+      "slug": "section-17",
+      "title": "Section 17",
+      "card_count": 1
+    },
+    {
+      "slug": "section-18",
+      "title": "Section 18",
+      "card_count": 1
+    },
+    {
+      "slug": "section-19",
+      "title": "Section 19",
+      "card_count": 1
+    },
+    {
+      "slug": "section-20",
+      "title": "Section 20",
+      "card_count": 1
+    },
+    {
+      "slug": "section-21",
+      "title": "Section 21",
+      "card_count": 1
+    },
+    {
+      "slug": "section-22",
+      "title": "Section 22",
+      "card_count": 1
+    },
+    {
+      "slug": "section-23",
+      "title": "Section 23",
+      "card_count": 1
+    },
+    {
+      "slug": "section-24",
+      "title": "Section 24",
+      "card_count": 2
+    },
+    {
+      "slug": "section-25",
+      "title": "Section 25",
+      "card_count": 1
+    },
+    {
+      "slug": "section-26",
+      "title": "Section 26",
+      "card_count": 1
+    },
+    {
+      "slug": "section-27",
+      "title": "Section 27",
+      "card_count": 1
+    },
+    {
+      "slug": "section-28",
+      "title": "Section 28",
       "card_count": 3
     },
     {
-      "slug": "sections-11-20",
-      "title": "Sections 11-20",
+      "slug": "section-30",
+      "title": "Section 30",
       "card_count": 1
     },
     {
-      "slug": "sections-21-30",
-      "title": "Sections 21-30",
+      "slug": "section-31",
+      "title": "Section 31",
+      "card_count": 4
+    },
+    {
+      "slug": "section-32",
+      "title": "Section 32",
+      "card_count": 2
+    },
+    {
+      "slug": "section-33",
+      "title": "Section 33",
+      "card_count": 13
+    },
+    {
+      "slug": "section-34",
+      "title": "Section 34",
       "card_count": 1
     },
     {
-      "slug": "sections-31-40",
-      "title": "Sections 31-40",
-      "card_count": 3
+      "slug": "section-35",
+      "title": "Section 35",
+      "card_count": 1
     },
     {
-      "slug": "sections-41-53",
-      "title": "Sections 41-53",
+      "slug": "section-36",
+      "title": "Section 36",
       "card_count": 1
+    },
+    {
+      "slug": "section-37",
+      "title": "Section 37",
+      "card_count": 1
+    },
+    {
+      "slug": "section-38",
+      "title": "Section 38",
+      "card_count": 1
+    },
+    {
+      "slug": "section-39",
+      "title": "Section 39",
+      "card_count": 1
+    },
+    {
+      "slug": "section-40",
+      "title": "Section 40",
+      "card_count": 1
+    },
+    {
+      "slug": "section-41",
+      "title": "Section 41",
+      "card_count": 1
+    },
+    {
+      "slug": "section-42",
+      "title": "Section 42",
+      "card_count": 1
+    },
+    {
+      "slug": "section-43",
+      "title": "Section 43",
+      "card_count": 1
+    },
+    {
+      "slug": "section-44",
+      "title": "Section 44",
+      "card_count": 1
+    },
+    {
+      "slug": "section-45",
+      "title": "Section 45",
+      "card_count": 1
+    },
+    {
+      "slug": "section-46",
+      "title": "Section 46",
+      "card_count": 1
+    },
+    {
+      "slug": "section-47",
+      "title": "Section 47",
+      "card_count": 1
+    },
+    {
+      "slug": "section-48",
+      "title": "Section 48",
+      "card_count": 1
+    },
+    {
+      "slug": "section-49",
+      "title": "Section 49",
+      "card_count": 1
+    },
+    {
+      "slug": "section-50",
+      "title": "Section 50",
+      "card_count": 1
+    },
+    {
+      "slug": "section-51",
+      "title": "Section 51",
+      "card_count": 2
     }
   ],
-  "total_cards": 9,
-  "source_url": "https://www.gutenberg.org/ebooks/45109"
+  "total_cards": 71,
+  "source_url": ""
 }

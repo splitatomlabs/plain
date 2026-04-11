@@ -4,15 +4,911 @@
     "book_slug": "meditations",
     "chapter_slug": "book-06",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "The material that makes up the universe is flexible and easy to shape. The rational force that governs it has no reason to cause harm. There is no evil in it. It cannot do anything harmful, and nothing can be damaged by it. Everything happens according to its will and design.",
-    "original_excerpt": "The matter itself, of which the universe doth consist, is of itself\nvery tractable and pliable. That rational essence that doth govern it,\nhath in itself no cause to do evil. It hath no evil in itself; neither\ncan it do anything that is evil: neither can anything be hurt by it. And\nall things are done and determined according to its will and prescript.",
+    "total_cards_in_chapter": 57,
+    "plain_english": "The stuff that makes up the universe is flexible and easy to work with. The rational force that governs it has no reason to do evil. It contains no evil in itself. It cannot do anything evil, and nothing can be harmed by it. Everything happens according to its will and plan.",
+    "original_excerpt": "The matter itself, of which the universe doth consist, is of itself very tractable and pliable. That rational essence that doth govern it, hath in itself no cause to do evil. It hath no evil in itself; neither can it do anything that is evil: neither can anything be hurt by it. And all things are done and determined according to its will and prescript.",
     "source_reference": "Meditations, Book 6, Section 1",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 16
+  },
+  {
+    "id": "meditations-06-002",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 2,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Let it be all the same to you whether you are half frozen or warm. Whether you are sleepy or well-rested. Whether people praise you or criticize you — just do your duty. Whether you are dying or doing something else, it makes no difference. Even dying is one of the duties and actions of life.",
+    "original_excerpt": "Be it all one unto thee, whether half frozen or well warm; whether only slumbering, or after a full sleep; whether discommended or commended thou do thy duty: or whether dying or doing somewhat else; for that also 'to die,' must among the rest be reckoned as one of the duties and actions of our lives.",
+    "source_reference": "Meditations, Book 6, Section 2",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-06-003",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 3,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Look inward. Don't let the true nature or real value of anything slip past you before you fully understand it.",
+    "original_excerpt": "Look in, let not either the proper quality, or the true worth of anything pass thee, before thou hast fully apprehended it.",
+    "source_reference": "Meditations, Book 6, Section 3",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 6
+  },
+  {
+    "id": "meditations-06-004",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 4,
+    "total_cards_in_chapter": 57,
+    "plain_english": "All things change quickly. They either evaporate and merge back into one substance, or they scatter and break apart. The Rational Essence that governs everything understands itself perfectly. It knows its own nature, what it does, and what it works with. So it acts accordingly. We don't understand these things, so no wonder we're amazed by so much that we can't make sense of.",
+    "original_excerpt": "All substances come soon to their change, and either they shall be resolved by way of exhalation (if so be that all things shall be reunited into one substance), or as others maintain, they shall be scattered and dispersed. As for that Rational Essence by which all things are governed, as it best understandeth itself, both its own disposition, and what it doth, and what matter it hath to do with and accordingly doth all things; so we that do not, no wonder, if we wonder at many things, the reasons whereof we cannot comprehend.",
+    "source_reference": "Meditations, Book 6, Section 4",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "human-nature"
+    ],
+    "reading_time_seconds": 19
+  },
+  {
+    "id": "meditations-06-005",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 5,
+    "total_cards_in_chapter": 57,
+    "plain_english": "The best kind of revenge is not to become like them.",
+    "original_excerpt": "The best kind of revenge is, not to become like unto them.",
+    "source_reference": "Meditations, Book 6, Section 5",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "human-nature"
+    ],
+    "reading_time_seconds": 5
+  },
+  {
+    "id": "meditations-06-006",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 6,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Let this be your only joy and comfort: moving from one kind act to another without stopping, always keeping God in mind.",
+    "original_excerpt": "Let this be thy only joy, and thy only comfort, from one sociable kind action without intermission to pass unto another, God being ever in thy mind.",
+    "source_reference": "Meditations, Book 6, Section 6",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "meditations-06-007",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 7,
+    "total_cards_in_chapter": 57,
+    "plain_english": "The rational mind can stir itself up and direct itself. It makes both itself and everything that happens appear exactly as it chooses to see them.",
+    "original_excerpt": "The rational commanding part, as it alone can stir up and turn itself; so it maketh both itself to be, and everything that happeneth, to appear unto itself, as it will itself.",
+    "source_reference": "Meditations, Book 6, Section 7",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 8
+  },
+  {
+    "id": "meditations-06-008",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 8,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Everything in the universe happens according to one natural order. Not according to some other force — either surrounding us, or mixed within us, or hanging over us from outside. Either this universe is just a confused mess of things that will eventually scatter and break apart again. Or it is a unified whole, arranged by divine Providence. If it's the first option, why would I want to stay longer in this random chaos? Why should I care about anything except returning to dust as soon as possible? Why should I bother trying to please the gods? Whatever I do, everything will fall apart anyway, whether I want it to or not. But if it's the second option — if there really is divine order — then my devotion isn't pointless. Then I can be calm and patient, and trust in the one who governs everything.",
+    "original_excerpt": "According to the nature of the universe all things particular are determined, not according to any other nature, either about compassing and containing; or within, dispersed and contained; or without, depending.",
+    "source_reference": "Meditations, Book 6, Section 8",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 44
+  },
+  {
+    "id": "meditations-06-009",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 9,
+    "total_cards_in_chapter": 57,
+    "plain_english": "When difficult things happen and you feel upset or troubled, return to yourself as quickly as you can. Don't stay off balance any longer than necessary. This way you'll be better able to keep your composure next time and maintain your inner harmony. Make it a habit — whenever you get thrown off, immediately come back to center and start again.",
+    "original_excerpt": "Either this universe is a mere confused mass, and an intricate context of things, which shall in time be scattered and dispersed again: or it is an union consisting of order, and administered by Providence. If the first, why should I desire to continue any longer in this fortuit confusion and commixtion? or why should I take care for anything else, but that as soon as may be I may be earth again? And why should I trouble myself any more whilst I seek to please the Gods? Whatsoever I do, dispersion is my end, and will come upon me whether I will or no. But if the latter be, then am not I religious in vain; then will I be quiet and patient, and put my trust in Him, who is the Governor of all.",
+    "source_reference": "Meditations, Book 6, Section 8",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 18
+  },
+  {
+    "id": "meditations-06-010",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 10,
+    "total_cards_in_chapter": 57,
+    "plain_english": "If you had both a stepmother and your natural mother alive at the same time, you would honor and respect the stepmother too. But you would always turn to your real mother for comfort and help. Let the court and your philosophy be like this to you. Turn to philosophy often and find comfort in it. Philosophy makes all those other things bearable for you, and helps you be bearable to others as well.",
+    "original_excerpt": "Whensoever by some present hard occurrences thou art constrained to be in some sort troubled and vexed, return unto thyself as soon as may be, and be not out of tune longer than thou must needs. For so shalt thou be the better able to keep thy part another time, and to maintain the harmony, if thou dost use thyself to this continually; once out, presently to have recourse unto it, and to begin again.",
+    "source_reference": "Meditations, Book 6, Section 9",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 22
+  },
+  {
+    "id": "meditations-06-011",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 11,
+    "total_cards_in_chapter": 57,
+    "plain_english": "How wonderfully useful it is to see food and drink as they really are! This is a dead fish. This is a dead bird. This is a dead pig. That expensive wine everyone praises? It's just squeezed grape juice. That purple robe? Sheep hair dyed with shellfish blood. Sex? Just rubbing body parts together and some fluid, with spasms thrown in. That's what Hippocrates said anyway. These clear ways of seeing things are incredibly useful. They cut through appearances to show what things actually are. You should do this your whole life. When something seems impressive or important, work to see past the show. Strip away the fancy words and circumstances that make it look so serious. Outward appearances trick us. And you're most likely to be fooled when you think you're dealing with something really important.",
+    "original_excerpt": "If it were that thou hadst at one time both a stepmother, and a natural mother living, thou wouldst honour and respect her also; nevertheless to thine own natural mother would thy refuge, and recourse be continually. So let the court and thy philosophy be unto thee. Have recourse unto it often, and comfort thyself in her, by whom it is that those other things are made tolerable unto thee, and thou also in those things not intolerable unto others.",
+    "source_reference": "Meditations, Book 6, Section 10",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 41
+  },
+  {
+    "id": "meditations-06-012",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 12,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Look at what Crates said about Xenocrates himself.\n\nMost people admire very basic things. They like stones, wood, figs, vines, olives — simple natural objects. People who are a bit more refined admire living things like flocks and herds. Those who are even more thoughtful focus on rational creatures. But they don't value them just for being rational. They value them for their skills, their crafts, their clever inventions. Or maybe they just like owning many slaves.\n\nBut someone who truly honors the rational soul — simply because it can reason and naturally connects with others — cares little about anything else. Above all, he works to keep his own soul in the constant practice of reason and fellowship. By doing this, he works together with the one whose nature he shares: God.",
+    "original_excerpt": "How marvellous useful it is for a man to represent unto himself meats, and all such things that are for the mouth, under a right apprehension and imagination! as for example: This is the carcass of a fish; this of a bird; and this of a hog. And again more generally; This phalernum, this excellent highly commended wine, is but the bare juice of an ordinary grape. This purple robe, but sheep's hairs, dyed with the blood of a shellfish. So for coitus, it is but the attrition of an ordinary base entrail, and the excretion of a little vile snivel, with a certain kind of convulsion: according to Hippocrates his opinion. How excellent useful are these lively fancies and representations of things, thus penetrating and passing through the objects, to make their true nature known and apparent! This must thou use all thy life long, and upon all occasions: and then especially, when matters are apprehended as of great worth and respect, thy art and care must be to uncover them, and to behold their vileness, and to take away from them all those serious circumstances and expressions, under which they made so grave a show. For outward pomp and appearance is a great juggler; and then especially art thou most in danger to be beguiled by it, when (to a man's thinking) thou most seemest to be employed about matters of moment.",
+    "source_reference": "Meditations, Book 6, Section 11",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "human-nature"
+    ],
+    "reading_time_seconds": 40
+  },
+  {
+    "id": "meditations-06-013",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 13,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Some things rush into existence, others rush toward their end. Even what exists right now is already partly gone. Everything flows and changes constantly. This keeps the world fresh, just as time keeps rolling forward forever.\n\nIn all this rush and flow, why get attached to anything? Nothing lasts long enough to hold onto. It would be like falling in love with a sparrow that flies past your window — you see it, then it's gone.\n\nOur lives are no different. They're just like breathing — we take in air, we breathe it out. That's all there is to it. What we call living is just one long breath. We breathe in from the common air around us, and someday we'll breathe it all back out. We only borrowed this breath yesterday or today anyway.",
+    "original_excerpt": "See what Crates pronounceth concerning Xenocrates himself.\n\nThose things which the common sort of people do admire, are most of them such things as are very general, and may be comprehended under things merely natural, or naturally affected and qualified: as stones, wood, figs, vines, olives. Those that be admired by them that are more moderate and restrained, are comprehended under things animated: as flocks and herds. Those that are yet more gentle and curious, their admiration is commonly confined to reasonable creatures only; not in general as they are reasonable, but as they are capable of art, or of some craft and subtile invention: or perchance barely to reasonable creatures; as they that delight in the possession of many slaves. But he that honours a reasonable soul in general, as it is reasonable and naturally sociable, doth little regard anything else: and above all things is careful to preserve his own, in the continual habit and exercise both of reason and sociableness: and thereby doth co-operate with him, of whose nature he doth also participate; God.",
+    "source_reference": "Meditations, Book 6, Section 12",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 41
+  },
+  {
+    "id": "meditations-06-014",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 14,
+    "total_cards_in_chapter": 57,
+    "plain_english": "It's not the simple life of plants that should matter to us in this life. It's not the breathing and sensing that animals do. It's not our ability to imagine things, or being pulled around by our desires, or gathering together, or eating — that's no better than eliminating waste. So what should matter to us? Hearing noise and chatter? If not that, then not being praised by people either. The praise of many voices is really just noise from many tongues. If applause doesn't matter, what's left that should be dear to you?",
+    "original_excerpt": "Some things hasten to be, and others to be no more. And even whatsoever now is, some part thereof hath already perished. Perpetual fluxes and alterations renew the world, as the perpetual course of time doth make the age of the world (of itself infinite) to appear always fresh and new. In such a flux and course of all things, what of these things that hasten so fast away should any man regard, since among all there is not any that a man may fasten and fix upon? as if a man would settle his affection upon some ordinary sparrow living by him, who is no sooner seen, than out of sight. For we must not think otherwise of our lives, than as a mere exhalation of blood, or of an ordinary respiration of air. For what in our common apprehension is, to breathe in the air and to breathe it out again, which we do daily: so much is it and no more, at once to breathe out all thy respirative faculty into that common air from whence but lately (as being but from yesterday, and to-day), thou didst first breathe it in, and with it, life.",
+    "source_reference": "Meditations, Book 6, Section 14",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 28
+  },
+  {
+    "id": "meditations-06-015",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 15,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Here's what I think: In everything you do, let your true nature guide you. Nothing else should hold you back or push you forward. Even ordinary crafts and jobs teach us this. Every art aims for the same thing — that whatever it creates should be fit for its purpose. The person who tends vines wants good grapes. The person who trains horses or dogs wants them to do their job well. What else is the point of educating children or learning any profession? This should matter to us too. If you get this right, don't worry about getting other things. But maybe you can't help caring about other things? Then you can't be truly free. You can't be content with yourself. You will always be ruled by emotions. You'll be envious and jealous and suspicious of people who might take these things from you. You'll secretly work against people who have what you want. In short, anyone who needs these external things must be confused inside and often blame the gods. But if you honor and respect only your mind, that will make you happy with yourself. It will make you easy to get along with. It will put you in harmony with the gods — accepting with gratitude whatever they decide to give you.",
+    "original_excerpt": "Not vegetative spiration, it is not surely (which plants have) that in this life should be so dear unto us; nor sensitive respiration, the proper life of beasts, both tame and wild; nor this our imaginative faculty; nor that we are subject to be led and carried up and down by the strength of our sensual appetites; or that we can gather, and live together; or that we can feed: for that in effect is no better, than that we can void the excrements of our food. What is it then that should be dear unto us? to hear a clattering noise? if not that, then neither to be applauded by the tongues of men. For the praises of many tongues, is in effect no better than the clattering of so many tongues. If then neither applause, what is there remaining that should be dear unto thee?",
+    "source_reference": "Meditations, Book 6, Section 15",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 65
+  },
+  {
+    "id": "meditations-06-016",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 16,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Below, above, and around us are the movements of the elements. But the movement of virtue is different from all of these — it is something higher and more divine. To make progress in virtue, you must travel a path that is not easily understood.",
+    "original_excerpt": "This I think: that in all thy motions and actions thou be moved, and restrained according to thine own true natural constitution and Construction only. And to this even ordinary arts and professions do lead us. For it is that which every art doth aim at, that whatsoever it is, that is by art effected and prepared, may be fit for that work that it is prepared for. This is the end that he that dresseth the vine, and he that takes upon him either to tame colts, or to train up dogs, doth aim at. What else doth the education of children, and all learned professions tend unto? Certainly then it is that, which should be dear unto us also. If in this particular it go well with thee, care not for the obtaining of other things. But is it so, that thou canst not but respect other things also? Then canst not thou truly be free? then canst thou not have self-content: then wilt thou ever be subject to passions. For it is not possible, but that thou must be envious, and jealous, and suspicious of them whom thou knowest can bereave thee of such things; and again, a secret underminer of them, whom thou seest in present possession of that which is dear unto thee. To be short, he must of necessity be full of confusion within himself, and often accuse the Gods, whosoever stands in need of these things. But if thou shalt honour and respect thy mind only, that will make thee acceptable towards thyself, towards thy friends very tractable; and conformable and concordant with the Gods; that is, accepting with praises whatsoever they shall think good to appoint and allot unto thee.",
+    "source_reference": "Meditations, Book 6, Section 15",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 14
+  },
+  {
+    "id": "meditations-06-017",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 17,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Who wouldn't wonder at people like this? They won't speak well of those who live alongside them right now. Yet they desperately want future generations — people they've never met and never will meet — to speak well of them. It's like being upset that people who lived before you didn't praise you.",
+    "original_excerpt": "Under, above, and about, are the motions of the elements; but the motion of virtue, is none of those motions, but is somewhat more excellent and divine. Whose way (to speed and prosper in it) must be through a way, that is not easily comprehended.",
+    "source_reference": "Meditations, Book 6, Section 16",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 16
+  },
+  {
+    "id": "meditations-06-018",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 18,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Don't think anything is impossible for you just because it's hard or difficult. Whatever you can imagine another person doing, you can do too.",
+    "original_excerpt": "Who can choose but wonder at them? They will not speak well of them that are at the same time with them, and live with them; yet they themselves are very ambitious, that they that shall follow, whom they have never seen, nor shall ever see, should speak well of them. As if a man should grieve that he hath not been commended by them, that lived before him.",
+    "source_reference": "Meditations, Book 6, Section 17",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "meditations-06-019",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 19,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Don't think that anything is impossible for humans just because you can't do it easily. Whatever you believe any person can achieve, believe you can achieve too.",
+    "original_excerpt": "Do not ever conceive anything impossible to man, which by thee cannot, or not without much difficulty be effected; but whatsoever in general thou canst Conceive possible and proper unto any man, think that very possible unto thee also.",
+    "source_reference": "Meditations, Book 6, Section 18",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 8
+  },
+  {
+    "id": "meditations-06-020",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 20,
+    "total_cards_in_chapter": 57,
+    "plain_english": "If anyone corrects me and shows me clearly that I am wrong in my thoughts or actions, I will gladly change my mind. I am looking for truth, and truth never hurt anyone. But staying in error or ignorance — that does hurt.",
+    "original_excerpt": "Suppose that at the palestra somebody hath all to-torn thee with his nails, and hath broken thy head. Well, thou art wounded. Yet thou dost not exclaim; thou art not offended with him. Thou dost not suspect him for it afterwards, as one that watcheth to do thee a mischief. Yea even then, though thou dost thy best to save thyself from him, yet not from him as an enemy. It is not by way of any suspicious indignation, but by way of gentle and friendly declination. Keep the same mind and disposition in other parts of thy life also. For many things there be, which we must conceit and apprehend, as though we had had to do with an antagonist at the palestra. For as I said, it is very possible for us to avoid and decline, though we neither suspect, nor hate.",
+    "source_reference": "Meditations, Book 6, Section 19",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 13
+  },
+  {
+    "id": "meditations-06-021",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 21,
+    "total_cards_in_chapter": 57,
+    "plain_english": "I will do what belongs to me. As for other things — things without feeling or reason, or rational beings who are deceived and don't know the right way — they won't trouble or distract me. I use non-rational creatures and other worldly things freely and generously, as someone with reason should use things without reason. As for other people, since they share the same rational nature, I try to act in a social way toward them. Whatever you are doing, remember to call on the gods. And don't worry about how long you'll live to do these things. Even three hours would be enough.",
+    "original_excerpt": "If anybody shall reprove me, and shall make it apparent unto me, that in any either opinion or action of mine I do err, I will most gladly retract. For it is the truth that I seek after, by which I am sure that never any man was hurt; and as sure, that he is hurt that continueth in any error, or ignorance whatsoever.",
+    "source_reference": "Meditations, Book 6, Section 20",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 32
+  },
+  {
+    "id": "meditations-06-022",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 22,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Alexander the Great and the man who groomed his mules both ended up the same way when they died. Either they both returned to the same universal reason that creates all things, or they both scattered into atoms in the same way.",
+    "original_excerpt": "I for my part will do what belongs unto me; as for other things, whether things unsensible or things irrational; or if rational, yet deceived and ignorant of the true way, they shall not trouble or distract me. For as for those creatures which are not endued with reason and all other things and-matters of the world whatsoever I freely, and generously, as one endued with reason, of things that have none, make use of them. And as for men, towards them as naturally partakers of the same reason, my care is to carry myself sociably. But whatsoever it is that thou art about, remember to call upon the Gods. And as for the time how long thou shalt live to do these things, let it be altogether indifferent unto thee, for even three such hours are sufficient.",
+    "source_reference": "Meditations, Book 6, Section 21",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 13
+  },
+  {
+    "id": "meditations-06-023",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 23,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Think about how many different things happen in your body and mind at the same moment. Then you won't be surprised that many more things — really, everything that happens — can exist at the same time in the one great whole we call the world.",
+    "original_excerpt": "Alexander of Macedon, and he that dressed his mules, when once dead both came to one. For either they were both resumed into those original rational essences from whence all things in the world are propagated; or both after one fashion were scattered into atoms.",
+    "source_reference": "Meditations, Book 6, Section 22",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "human-nature"
+    ],
+    "reading_time_seconds": 14
+  },
+  {
+    "id": "meditations-06-024",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 24,
+    "total_cards_in_chapter": 57,
+    "plain_english": "If someone asked you how to spell the name Antoninus, you would focus and say each letter in order. If someone tried to argue with you or interrupt, would you argue back? No — you would keep going calmly until you finished spelling it out. Remember this when doing your duty. Every task has its steps, like letters in a word. Stay quiet and focused. Work through each step in order. Don't fight with people who want to pick fights with you.",
+    "original_excerpt": "Consider how many different things, whether they concern our bodies, or our souls, in a moment of time come to pass in every one of us, and so thou wilt not wonder if many more things or rather all things that are done, can at one time subsist, and coexist in that both one and general, which we call the world.",
+    "source_reference": "Meditations, Book 6, Section 22",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 25
+  },
+  {
+    "id": "meditations-06-025",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 25,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Isn't it cruel to stop people from pursuing what they think is best for their nature and their own good? But you deny them this freedom every time you get angry at them for their mistakes. They are drawn to these mistakes because they seem like the right thing to do. 'But that's not true,' you might say. Then teach them better and show them the truth. But don't be angry with them.",
+    "original_excerpt": "if any should put this question unto thee, how this word Antoninus is written, wouldst thou not presently fix thine intention upon it, and utter out in order every letter of it? And if any shall begin to gainsay thee, and quarrel with thee about it; wilt thou quarrel with him again, or rather go on meekly as thou hast begun, until thou hast numbered out every letter? Here then likewise remember, that every duty that belongs unto a man doth consist of some certain letters or numbers as it were, to which without any noise or tumult keeping thyself thou must orderly proceed to thy proposed end, forbearing to quarrel with him that would quarrel and fall out with thee.",
+    "source_reference": "Meditations, Book 6, Section 24",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 22
+  },
+  {
+    "id": "meditations-06-026",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 26,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Death is an end to what your senses tell you, the control of your emotions, the mistakes of your mind, and the slavery of your body.",
+    "original_excerpt": "Is it not a cruel thing to forbid men to affect those things, which they conceive to agree best with their own natures, and to tend most to their own proper good and behoof? But thou after a sort deniest them this liberty, as often as thou art angry with them for their sins. For surely they are led unto those sins whatsoever they be, as to their proper good and commodity. But it is not so (thou wilt object perchance). Thou therefore teach them better, and make it appear unto them: but be not thou angry with them.",
+    "source_reference": "Meditations, Book 6, Section 25",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 8
+  },
+  {
+    "id": "meditations-06-027",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 27,
+    "total_cards_in_chapter": 57,
+    "plain_english": "If your body can handle this kind of life, it would be shameful for your soul to give up first. Be careful not to turn from a philosopher into just another ruler, corrupted by court life. This can happen if you're not watchful. Stay simple, good, honest, serious, and without pretense. Love justice. Be religious, kind, tender-hearted, and strong enough to do what's right. Try to remain the person philosophy would have made you, if you had fully committed to it. Honor the gods and help other people. This life is short. Kind actions and a holy heart are the only things that matter here.",
+    "original_excerpt": "Death is a cessation from the impression of the senses, the tyranny of the passions, the errors of the mind, and the servitude of the body.",
+    "source_reference": "Meditations, Book 6, Section 26",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 32
+  },
+  {
+    "id": "meditations-06-028",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 28,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Do everything as a student of Antoninus Pius would. Remember how steady he was when he acted with reason. Remember his calm approach to everything, his goodness, his cheerful face, his kindness. He never showed off or sought praise. He worked hard to understand the real facts of any situation. He would not give up until he fully grasped what was happening. He was patient with people who wrongly criticized him, never arguing back. He was never hasty or quick to believe gossip and lies. Instead, he carefully watched what people actually did and what kind of character they had.",
+    "original_excerpt": "If in this kind of life thy body be able to hold out, it is a shame that thy soul should faint first, and give over, take heed, lest of a philosopher thou become a mere Cæsar in time, and receive a new tincture from the court. For it may happen if thou dost not take heed. Keep thyself therefore, truly simple, good, sincere, grave, free from all ostentation, a lover of that which is just, religious, kind, tender-hearted, strong and vigorous to undergo anything that becomes thee. Endeavour to continue such, as philosophy (hadst thou wholly and constantly applied thyself unto it) would have made, and secured thee. Worship the Gods, procure the welfare of men, this life is short. Charitable actions, and a holy disposition, is the only fruit of this earthly life.",
+    "source_reference": "Meditations, Book 6, Section 27",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 30
+  },
+  {
+    "id": "meditations-06-029",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 29,
+    "total_cards_in_chapter": 57,
+    "plain_english": "He never spoke badly of others. He wasn't easily scared or suspicious. His speech was natural — no fancy words or odd phrases. He was content with simple things: basic housing, plain bedding, simple clothes, ordinary food, and minimal help from servants. He could work hard and be patient. He ate so little that he could go from morning to evening without needing to step away for basic needs before his usual time. He was steady and loyal in friendship. When people boldly disagreed with him, he listened well. He was even happy when someone gave him better advice. And he was deeply religious without being superstitious. Remember all this about him. When your last hour comes, may it find you as it found him — ready, with a clear conscience.",
+    "original_excerpt": "Do all things as becometh the disciple of Antoninus Pius. Remember his resolute constancy in things that were done by him according to reason, his equability in all things, his sanctity; the cheerfulness of his countenance, his sweetness, and how free he was from all vainglory; how careful to come to the true and exact knowledge of matters in hand, and how he would by no means give over till he did fully, and plainly understand the whole state of the business; and how patiently, and without any contestation he would bear with them, that did unjustly condemn him: how he would never be over-hasty in anything, nor give ear to slanders and false accusations, but examine and observe with best diligence the several actions and dispositions of men.",
+    "source_reference": "Meditations, Book 6, Section 28",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 39
+  },
+  {
+    "id": "meditations-06-030",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 30,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Wake up your mind. Pull your thoughts back from their natural dreams and visions. When you are fully awake and can see that they were just dreams that troubled you, look at the things of this world the same way. Look at them like someone who just woke up from sleep looks at what they saw in their dreams.",
+    "original_excerpt": "Again, how he was no backbiter, nor easily frightened, nor suspicious, and in his language free from all affectation and curiosity: and how easily he would content himself with few things, as lodging, bedding, clothing, and ordinary nourishment, and attendance. How able to endure labour, how patient; able through his spare diet to continue from morning to evening without any necessity of withdrawing before his accustomed hours to the necessities of nature: his uniformity and constancy in matter of friendship. How he would bear with them that with all boldness and liberty opposed his opinions; and even rejoice if any man could better advise him: and lastly, how religious he was without superstition. All these things of him remember, that whensoever thy last hour shall come upon thee, it may find thee, as it did him, ready for it in the possession of a good conscience.",
+    "source_reference": "Meditations, Book 6, Section 28",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 18
+  },
+  {
+    "id": "meditations-06-031",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 31,
+    "total_cards_in_chapter": 57,
+    "plain_english": "I am made of body and mind. To my body, all things are the same. It cannot tell the difference between one thing and another. As for my mind, anything outside its control means nothing to it. Its own actions depend entirely on itself. The mind only deals with what is happening right now. Past and future actions don't matter to it in this moment.",
+    "original_excerpt": "Stir up thy mind, and recall thy wits again from thy natural dreams, and visions, and when thou art perfectly awoken, and canst perceive that they were but dreams that troubled thee, as one newly awakened out of another kind of sleep look upon these worldly things with the same mind as thou didst upon those, that thou sawest in thy sleep.",
+    "source_reference": "Meditations, Book 6, Section 29",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "meditations-06-032",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 32,
+    "total_cards_in_chapter": 57,
+    "plain_english": "As long as the foot does what a foot should do, and the hand does what a hand should do, their work is natural. The same goes for a person — as long as he does what a human being should do, his work cannot be against nature. And if it's not against nature, then it can't harm him. But if happiness really came from pleasure, then why do thieves, corrupt people, murderers, and tyrants get so much pleasure?",
+    "original_excerpt": "I consist of body and soul. Unto my body all things are indifferent, for of itself it cannot affect one thing more than another with apprehension of any difference; as for my mind, all things which are not within the verge of her own operation, are indifferent unto her, and for her own operations, those altogether depend of her; neither does she busy herself about any, but those that are present; for as for future and past operations, those also are now at this present indifferent unto her.",
+    "source_reference": "Meditations, Book 6, Section 30",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 24
+  },
+  {
+    "id": "meditations-06-033",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 33,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Don't you see how even people who work with their hands — though they might not be very smart in other ways — still stick closely to their craft? They can't bring themselves to abandon it. Isn't it terrible that an architect or doctor respects the rules and secrets of their profession more than a person respects the proper course of human nature — reason, which we share with the gods?",
+    "original_excerpt": "As long as the foot doth that which belongeth unto it to do, and the hand that which belongs unto it, their labour, whatsoever it be, is not unnatural. So a man as long as he doth that which is proper unto a man, his labour cannot be against nature; and if it be not against nature, then neither is it hurtful unto him. But if it were so that happiness did consist in pleasure: how came notorious robbers, impure abominable livers, parricides, and tyrants, in so large a measure to have their part of pleasures?",
+    "source_reference": "Meditations, Book 6, Section 31",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 21
+  },
+  {
+    "id": "meditations-06-034",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 34,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Asia, Europe — what are they? Just corners of the world. The whole sea is only one drop. Mount Athos is just a clod of dirt. All present time is just one point in eternity. Everything is small. Everything changes quickly and dies.\n\nAll things come from one source. Either the ruler of everything plans each thing separately, or everything follows by necessity. So the terrible jaws of a lion, all poison, all harmful things — these are like thorns and mud. They are necessary results of beautiful things. Don't think of them as opposed to what you honor. Instead, think about the true source of everything.\n\nSomeone who sees what exists now has seen all that ever was or will be. All things are the same kind. They are all alike. Think often about how everything in the world connects. How everything relates to everything else. All things are folded into each other. This is how they all fit together. One thing leads to another through movement, through natural harmony, and through the unity of all matter.",
+    "original_excerpt": "Dost thou not see, how even those that profess mechanic arts, though in some respect they be no better than mere idiots, yet they stick close to the course of their trade, neither can they find in their heart to decline from it: and is it not a grievous thing that an architect, or a physician shall respect the course and mysteries of their profession, more than a man the proper course and condition of his own nature, reason, which is common to him and to the Gods?",
+    "source_reference": "Meditations, Book 6, Section 32",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 53
+  },
+  {
+    "id": "meditations-06-035",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 35,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Asia, Europe — what are they but corners of the world? The whole ocean is just one drop. Mount Athos is just a clump of dirt. All of present time is just one point in eternity. Everything is small. Everything changes quickly and dies quickly. And everything comes from one source — either planned out individually by the ruler of all, or following naturally from what came before. So the terrifying jaws of a lion, all poisons, all harmful things — these are just like thorns and mud. They're natural results of beautiful things. Don't think of them as opposed to what you honor and respect. Think about the true source of everything.\n\nWhoever sees what exists now has seen everything that ever was or ever will be. All things are the same kind. They're all alike. Think often about how everything in the world connects. Think about how things relate to each other. Everything is wrapped up together, folded into everything else. This is why everything fits together. One thing leads to another — through movement, through natural harmony, through the fact that all things are really one substance.",
+    "original_excerpt": "Asia, Europe; what are they, but as corners of the whole world; of which the whole sea, is but as one drop; and the great Mount Athos, but as a clod, as all present time is but as one point of eternity. All, petty things; all things that are soon altered, soon perished. And all things come from one beginning; either all severally and particularly deliberated and resolved upon, by the general ruler and governor of all; or all by necessary consequence. So that the dreadful hiatus of a gaping lion, and all poison, and all hurtful things, are but (as the thorn and the mire) the necessary consequences of goodly fair things. Think not of these therefore, as things contrary to those which thou dost much honour, and respect; but consider in thy mind the true fountain of all.\n\nXXXIV He that seeth the things that are now, hath Seen all that either was ever, or ever shall be, for all things are of one kind; and all like one unto another. Meditate often upon the connection of all things in the world; and upon the mutual relation that they have one unto another. For all things are after a sort folded and involved one within another, and by these means all agree well together. For one thing is consequent unto another, by local motion, by natural conspiration and agreement, and by substantial union, or, reduction of all substances into one.",
+    "source_reference": "Meditations, Book 6, Section 33",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 57
+  },
+  {
+    "id": "meditations-06-036",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 36,
+    "total_cards_in_chapter": 57,
+    "plain_english": "If you think things outside your control are good or bad, you will end up blaming the gods and hating people when things don't go your way. When you fail to get what you want or face what you fear, you will complain about fate and resent whoever you think caused it. This leads to many wrongs. But if you only judge as good or bad those things that depend entirely on your own choices, you will have no reason to blame the gods or fight with anyone.",
+    "original_excerpt": "Fit and accommodate thyself to that estate and to those occurrences, which by the destinies have been annexed unto thee; and love those men whom thy fate it is to live with; but love them truly. An instrument, a tool, an utensil, whatsoever it be, if it be fit for the purpose it was made for, it is as it should be though he perchance that made and fitted it, be out of sight and gone. But in things natural, that power which hath framed and fitted them, is and abideth within them still: for which reason she ought also the more to be respected, and we are the more obliged (if we may live and pass our time according to her purpose and intention) to think that all is well with us, and according to our own minds. After this manner also, and in this respect it is, that he that is all in all doth enjoy his happiness.",
+    "source_reference": "Meditations, Book 6, Section 35",
     "author_slug": "marcus-aurelius",
     "tags": [
       "freedom-and-control",
       "calm-your-mind"
     ],
+    "reading_time_seconds": 26
+  },
+  {
+    "id": "meditations-06-037",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 37,
+    "total_cards_in_chapter": 57,
+    "plain_english": "We all work toward one goal. Some do it willingly, understanding what they're doing. Others work without knowing it. I think Heraclitus said that even people who sleep are working in their own way, adding to the world's operations. One person helps in one way, another in a different way. Even the person who complains and tries to resist is still helping. The world needed that too. Think about which type you want to be. The one who runs everything will put you to good use whether you want it or not. He will make you work with him as part of the whole, so that whatever you do will serve his plans. But don't be the kind of part that's like a bad, ridiculous line in a play — the kind Chrysippus mentioned.",
+    "original_excerpt": "What things soever are not within the proper power and jurisdiction of thine own will either to compass or avoid, if thou shalt propose unto thyself any of those things as either good, or evil; it must needs be that according as thou shalt either fall into that which thou dost think evil, or miss of that which thou dost think good, so wilt thou be ready both to complain of the Gods, and to hate those men, who either shall be so indeed, or shall by thee be suspected as the cause either of thy missing of the one, or falling into the other. And indeed we must needs commit many evils, if we incline to any of these things, more or less, with an opinion of any difference. But if we mind and fancy those things only, as good and bad, which wholly depend of our own wills, there is no more occasion why we should either murmur against the Gods, or be at enmity with any man.",
+    "source_reference": "Meditations, Book 6, Section 36",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 40
+  },
+  {
+    "id": "meditations-06-038",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 38,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Does the sun try to do what rain should do? Does Aesculapius try to do what the earth should do? What about each of the stars? They are all different from each other. They each have their own jobs and duties. But don't they all work together toward the same goal?",
+    "original_excerpt": "We all work to one effect, some willingly, and with a rational apprehension of what we do: others without any such knowledge. As I think Heraclitus in a place speaketh of them that sleep, that even they do work in their kind, and do confer to the general operations of the world. One man therefore doth co-operate after one sort, and another after another sort; but even he that doth murmur, and to his power doth resist and hinder; even he as much as any doth co-operate. For of such also did the world stand in need. Now do thou consider among which of these thou wilt rank thyself. For as for him who is the Administrator of all, he will make good use of thee whether thou wilt or no, and make thee (as a part and member of the whole) so to co-operate with him, that whatsoever thou doest, shall turn to the furtherance of his own counsels, and resolutions. But be not thou for shame such a part of the whole, as that vile and ridiculous verse (which Chrysippus in a place doth mention) is a part of the comedy.",
+    "source_reference": "Meditations, Book 6, Section 37",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
     "reading_time_seconds": 15
+  },
+  {
+    "id": "meditations-06-039",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 39,
+    "total_cards_in_chapter": 57,
+    "plain_english": "If the Gods have planned what happens to me, I should accept their plan. They are wise and thoughtful. It's hard to imagine that a God would be foolish. Why would they want to hurt me? What would they or the universe gain from that? But even if they haven't planned my life specifically, they have planned the whole universe. The things that happen to me are part of that bigger plan. I should accept them.",
+    "original_excerpt": "Doth either the sun take upon him to do that which belongs to the rain? or his son Aesculapius that, which unto the earth doth properly belong? How is it with every one of the stars in particular? Though they all differ one from another, and have their several charges and functions by themselves, do they not all nevertheless concur and co-operate to one end?",
+    "source_reference": "Meditations, Book 6, Section 37",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "meditations-06-040",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 40,
+    "total_cards_in_chapter": 57,
+    "plain_english": "But if they really haven't planned anything at all (which would be wrong to believe — for then why sacrifice, or pray, or keep our promises, or do any of the things we do because we trust the gods are with us?) — but if they truly haven't planned what happens to us, then at least I can be grateful that I'm free to plan my own life. And all my planning comes down to what's best for me. What's best for anyone is what fits their nature. My nature is to think clearly and to treat my fellow citizens with kindness, like a good member of the community. As Antoninus, my city is Rome. As a human being, my city is the world. So whatever helps these communities is the only thing that's truly good for me.",
+    "original_excerpt": "If so be that the Gods have deliberated in particular of those things that should happen unto me, I must stand to their deliberation, as discrete and wise. For that a God should be an imprudent God, is a thing hard even to conceive: and why should they resolve to do me hurt? for what profit either unto them or the universe (which they specially take care for) could arise from it? But if so be that they have not deliberated of me in particular, certainly they have of the whole in general, and those things which in consequence and coherence of this general deliberation happen unto me in particular, I am bound to embrace and accept of. But if so be that they have not deliberated at all (which indeed is very irreligious for any man to believe: for then let us neither sacrifice, nor pray, nor respect our oaths, neither let us any more use any of those things, which we persuaded of the presence and secret conversation of the Gods among us, daily use and practise:) but, I say, if so be that they have not indeed either in general, or particular deliberated of any of those things, that happen unto us in this world; yet God be thanked, that of those things that concern myself, it is lawful for me to deliberate myself, and all my deliberation is but concerning that which may be to me most profitable.",
+    "source_reference": "Meditations, Book 6, Section 39",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 41
+  },
+  {
+    "id": "meditations-06-041",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 41,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Whatever happens to anyone serves the good of the whole. This should be enough to satisfy us — that it benefits everyone in general. But you will also see this pattern if you pay close attention: whatever happens to any person... And now I'm satisfied that the word 'beneficial' should be understood more broadly to include things we normally call neutral — like health, wealth, and similar things.",
+    "original_excerpt": "Now that unto every one is most profitable, which is according to his own constitution and nature. And my nature is, to be rational in all my actions and as a good, and natural member of a city and commonwealth, towards my fellow members ever to be sociably and kindly disposed and affected. My city and country as I am Antoninus, is Rome; as a man, the whole world. Those things therefore that are expedient and profitable to those cities, are the only things that are good and expedient for me.",
+    "source_reference": "Meditations, Book 6, Section 39",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 20
+  },
+  {
+    "id": "meditations-06-042",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 42,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Theater shows and other entertainments affect you in a certain way. When you see the same things over and over in the same style, they become boring and tiresome. This is how all the things we see throughout our lives should affect us. Everything, whether high or low, stays the same and comes from the same causes. So when will it end?",
+    "original_excerpt": "Whatsoever in any kind doth happen to any one, is expedient to the whole. And thus much to content us might suffice, that it is expedient for the whole in general. But yet this also shalt thou generally perceive, if thou dost diligently take heed, that whatsoever doth happen to any one man or men.... And now I am content that the word expedient, should more generally be understood of those things which we otherwise call middle things, or things indifferent; as health, wealth, and the like.",
+    "source_reference": "Meditations, Book 6, Section 40",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "human-nature"
+    ],
+    "reading_time_seconds": 19
+  },
+  {
+    "id": "meditations-06-043",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 43,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Think constantly about the deaths of all kinds of people — different professions, different nations. Think about names like Philistio, Phœbus, and Origanion. Then move on to other generations. That's where we're all heading after many changes. That's where the great speakers went, where the serious philosophers are — Heraclitus, Pythagoras, Socrates. Where the ancient heroes went, and the great generals of more recent times, and so many kings. After all of them, where Eudoxus, Hipparchus, Archimedes went — where so many other sharp, generous, hardworking, clever, decisive minds are. And among them, even those who mocked and made fun of how fragile and brief human life is, like Menippus and others like him. Think about all of these people — they've all been dead and gone for a long time. What harm does it do them? And those who don't even have names left behind — are they any worse off?",
+    "original_excerpt": "As the ordinary shows of the theatre and of other such places, when thou art presented with them, affect thee; as the same things still seen, and in the same fashion, make the sight ingrateful and tedious; so must all the things that we see all our life long affect us. For all things, above and below, are still the same, and from the same causes. When then will there be an end?",
+    "source_reference": "Meditations, Book 6, Section 41",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 46
+  },
+  {
+    "id": "meditations-06-044",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 44,
+    "total_cards_in_chapter": 57,
+    "plain_english": "There is only one thing worth caring about in this world. That is to live truthfully and do what's right, while treating dishonest and unfair people with gentleness and love.",
+    "original_excerpt": "Let the several deaths of men of all sorts, and of all sorts of professions, and of all sort of nations, be a perpetual object of thy thoughts,... so that thou mayst even come down to Philistio, Phœbus, and Origanion. Pass now to other generations. Thither shall we after many changes, where so many brave orators are; where so many grave philosophers; Heraclitus, Pythagoras, Socrates. Where so many heroes of the old times; and then so many brave captains of the latter times; and so many kings. After all these, where Eudoxus, Hipparchus, Archimedes; where so many other sharp, generous, industrious, subtile, peremptory dispositions; and among others, even they, that have been the greatest scoffers and deriders of the frailty and brevity of this our human life; as Menippus, and others, as many as there have been such as he. Of all these consider, that they long since are all dead, and gone. And what do they suffer by it! Nay they that have not so much as a name remaining, what are they the worse for it!",
+    "source_reference": "Meditations, Book 6, Section 42",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "doing-the-right-thing",
+      "human-nature"
+    ],
+    "reading_time_seconds": 9
+  },
+  {
+    "id": "meditations-06-045",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 45,
+    "total_cards_in_chapter": 57,
+    "plain_english": "When you want to comfort and cheer yourself, think about the different gifts and virtues of the people you spend time with each day. One person's hard work. Another's humility. Someone else's generosity. And other good qualities in others. Nothing will bring you more joy than seeing these virtues clearly in the people around you. Especially when you can see many of them at once. So keep these thoughts ready.",
+    "original_excerpt": "One thing there is, and that only, which is worth our while in this world, and ought by us much to be esteemed; and that is, according to truth and righteousness, meekly and lovingly to converse with false, and unrighteous men.",
+    "source_reference": "Meditations, Book 6, Section 42",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "calm-your-mind",
+      "human-nature"
+    ],
+    "reading_time_seconds": 21
+  },
+  {
+    "id": "meditations-06-046",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 46,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Do you worry that you weigh only so many pounds, and not three hundred instead? You have just as much reason to worry that you will live only so many years, and not longer. Just as you accept the body size that was given to you, you should accept the time that was given to you.",
+    "original_excerpt": "When thou wilt comfort and cheer thyself, call to mind the several gifts and virtues of them, whom thou dost daily converse with; as for example, the industry of the one; the modesty of another; the liberality of a third; of another some other thing. For nothing can so much rejoice thee, as the resemblances and parallels of several virtues, visible and eminent in the dispositions of those who live with thee; especially when, all at once, as near as may be, they represent themselves unto thee. And therefore thou must have them always in a readiness.",
+    "source_reference": "Meditations, Book 6, Section 43",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 17
+  },
+  {
+    "id": "meditations-06-047",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 47,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Try your best to convince them. But if reason and justice tell you to act, do it, even if they strongly oppose you. If someone uses force to stop you, shift your virtue from one goal to another. Move from seeking justice to finding contentment and patient acceptance. What blocks one virtue can become practice for another. Remember that you always meant to act with limits and conditions. You never set your heart on impossible things. What did you want? To keep all your desires reasonable and restrained. You have this power, and you can always use it, whether you get what you want or not. What more do I need? I was born to rule my desires with reason and good judgment. I can do that.",
+    "original_excerpt": "Dost thou grieve that thou dost weigh but so many pounds, and not three hundred rather? Just as much reason hast thou to grieve that thou must live but so many years, and not longer. For as for bulk and substance thou dost content thyself with that proportion of it that is allotted unto thee, so shouldst thou for time.",
+    "source_reference": "Meditations, Book 6, Section 44",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "facing-hardship",
+      "freedom-and-control",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 38
+  },
+  {
+    "id": "meditations-06-048",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 48,
+    "total_cards_in_chapter": 57,
+    "plain_english": "The ambitious person thinks happiness comes from other people's praise and applause. The pleasure-seeker thinks it comes from good feelings. But the wise person knows happiness comes from their own actions.",
+    "original_excerpt": "Let us do our best endeavours to persuade them; but however, if reason and justice lead thee to it, do it, though they be never so much against it. But if any shall by force withstand thee, and hinder thee in it, convert thy virtuous inclination from one object unto another, from justice to contented equanimity, and cheerful patience: so that what in the one is thy hindrance, thou mayst make use of it for the exercise of another virtue: and remember that it was with due exception, and reservation, that thou didst at first incline and desire. For thou didst not set thy mind upon things impossible. Upon what then? that all thy desires might ever be moderated with this due kind of reservation. And this thou hast, and mayst always obtain, whether the thing desired be in thy power or no. And what do I care for more, if that for which I was born and brought forth into the world (to rule all my desires with reason and discretion) may be?",
+    "source_reference": "Meditations, Book 6, Section 45",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 9
+  },
+  {
+    "id": "meditations-06-049",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 49,
+    "total_cards_in_chapter": 57,
+    "plain_english": "You have complete power to shut out all thoughts and judgments about this situation. And by doing that, you can shut out all grief and pain from your mind. The things themselves have no power to force any opinion on you at all.",
+    "original_excerpt": "The ambitious supposeth another man's act, praise and applause, to be his own happiness; the voluptuous his own sense and feeling; but he that is wise, his own action.",
+    "source_reference": "Meditations, Book 6, Section 46",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 13
+  },
+  {
+    "id": "meditations-06-050",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 50,
+    "total_cards_in_chapter": 57,
+    "plain_english": "When someone speaks to you, listen so carefully that you don't let other thoughts interrupt. Focus completely on them. Try to connect with their very soul, whoever they are.",
+    "original_excerpt": "It is in thy power absolutely to exclude all manner of conceit and opinion, as concerning this matter; and by the same means, to exclude all grief and sorrow from thy soul. For as for the things and objects themselves, they of themselves have no such power, whereby to beget and force upon us any opinion at all.",
+    "source_reference": "Meditations, Book 6, Section 47",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 9
+  },
+  {
+    "id": "meditations-06-051",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 51,
+    "total_cards_in_chapter": 57,
+    "plain_english": "What is not good for the hive cannot be good for the bee.",
+    "original_excerpt": "Use thyself when any man speaks unto thee, so to hearken unto him, as that in the interim thou give not way to any other thoughts; that so thou mayst (as far as is possible) seem fixed and fastened to his very soul, whosoever he be that speaks unto thee.",
+    "source_reference": "Meditations, Book 6, Section 48",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 5
+  },
+  {
+    "id": "meditations-06-052",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 52,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Do passengers complain if they reach their destination safely? Do patients complain if they are cured? They only care about one thing: that the captain gets them to shore safely, and that the doctor makes them well.",
+    "original_excerpt": "That which is not good for the bee-hive, cannot be good for the bee.",
+    "source_reference": "Meditations, Book 6, Section 49",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 11
+  },
+  {
+    "id": "meditations-06-053",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 53,
+    "total_cards_in_chapter": 57,
+    "plain_english": "How many people who were born around the same time as me are already dead?",
+    "original_excerpt": "Will either passengers, or patients, find fault and complain, either the one if they be well carried, or the others if well cured? Do they take care for any more than this; the one, that their shipmaster may bring them safe to land, and the other, that their physician may effect their recovery?",
+    "source_reference": "Meditations, Book 6, Section 50",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 5
+  },
+  {
+    "id": "meditations-06-054",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 54,
+    "total_cards_in_chapter": 57,
+    "plain_english": "To someone with jaundice, honey tastes bitter. To someone bitten by a rabid dog, water seems terrifying. To children, a small ball is wonderful. So why should I be angry? Do I think that wrong ideas have less power to make people do bad things than disease has to make honey taste bitter, or poison has to cause madness?",
+    "original_excerpt": "How many of them who came into the world at the same time when I did, are already gone out of it?",
+    "source_reference": "Meditations, Book 6, Section 51",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "human-nature",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 18
+  },
+  {
+    "id": "meditations-06-055",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 55,
+    "total_cards_in_chapter": 57,
+    "plain_english": "No one can stop you from living as your nature requires. Nothing can happen to you except what the common good of nature requires.",
+    "original_excerpt": "To them that are sick of the jaundice, honey seems bitter; and to them that are bitten by a mad dog, the water terrible; and to children, a little ball seems a fine thing. And why then should I be angry? or do I think that error and false opinion is less powerful to make men transgress, than either choler, being immoderate and excessive, to cause the jaundice; or poison, to cause rage?",
+    "source_reference": "Meditations, Book 6, Section 52",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 7
+  },
+  {
+    "id": "meditations-06-056",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 56,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Think about the kind of people you're trying to impress, and what you hope to gain, and what you're doing to get it. Time will soon cover and bury everything. Look how much it has buried already!",
+    "original_excerpt": "No man can hinder thee to live as thy nature doth require. Nothing can happen unto thee, but what the common good of nature doth require.",
+    "source_reference": "Meditations, Book 6, Section 53",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 11
+  },
+  {
+    "id": "meditations-06-057",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 57,
+    "total_cards_in_chapter": 57,
+    "plain_english": "Think about the people you're trying to please. What are you hoping to get from them? What are you doing to win their approval? Soon enough, time will cover and bury all of this. Look how much it has buried already.",
+    "original_excerpt": "What manner of men they be whom they seek to please, and what to get, and by what actions: how soon time will cover and bury all things, and how many it hath already buried!",
+    "source_reference": "Meditations, Book 6, Section 54",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "what-matters-most",
+      "death-and-mortality"
+    ],
+    "reading_time_seconds": 12
   }
 ]

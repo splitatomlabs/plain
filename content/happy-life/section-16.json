@@ -1,0 +1,50 @@
+[
+  {
+    "id": "happy-life-16-001",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-16",
+    "card_number": 1,
+    "total_cards_in_chapter": 3,
+    "plain_english": "True happiness comes from virtue. What does virtue ask of you? First, don't call things good or bad when they have nothing to do with being virtuous or wicked. Second, stay calm when bad things attack you. And when good things come, enjoy them properly — almost like becoming a god yourself. What does virtue promise you for this effort? Something huge that puts you on the level of gods. You won't be restricted or lacking anything. You'll be free, safe, and unharmed. You won't fail at anything you try. Nothing will be forbidden to you. Everything will go your way. No disasters will hit you. Nothing will happen except what you expect and hope for.",
+    "original_excerpt": "True happiness, therefore, consists in virtue: and what will this virtue bid you do? Not to think anything bad or good which is connected neither with virtue nor with wickedness: and in the next place, both to endure unmoved the assaults of evil, and, as far as is right, to form a god out of what is good. What reward does she promise you for this campaign? an enormous one, and one that raises you to the level of the gods: you shall be subject to no restraint and to no want; you shall be free, safe, unhurt; you shall fail in nothing that you attempt; you shall be debarred from nothing; everything shall turn out according to your wish; no misfortune shall befal you; nothing shall happen to you except what you expect and hope for.",
+    "source_reference": "On the Happy Life, Section 16",
+    "author_slug": "seneca",
+    "tags": [
+      "doing-the-right-thing",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 35
+  },
+  {
+    "id": "happy-life-16-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-16",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "\"What! Does virtue alone make you happy?\" Of course it does. Perfect, godlike virtue doesn't just make you happy — it gives you more than enough happiness. Think about it: when you've risen above all desires, what could you possibly be missing? If everything you need is already inside you, why would you need anything from the outside world?",
+    "original_excerpt": "\"What! does virtue alone suffice to make you happy?\" why, of course, consummate and god-like virtue such as this not only suffices, but more than suffices: for when a man is placed beyond the reach of any desire, what can he possibly lack? if all that he needs is concentred in himself, how can he require anything from without?",
+    "source_reference": "On the Happy Life, Section 16",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 18
+  },
+  {
+    "id": "happy-life-16-003",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-16",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Someone who is still working toward virtue might make great progress. But they still need some help from fortune. They are still wrestling with ordinary human problems. They are still untying the knot that binds them to mortal concerns. What's the difference between people? Some are tied more tightly by these bonds. Some have even tied themselves up with extra chains. But the person who has made progress toward higher things and lifted themselves up? They drag a looser chain. They're not yet free, but they're as good as free.",
+    "original_excerpt": "He, however, who is only on the road to virtue, although he may have made great progress along it, nevertheless needs some favour from fortune while he is still struggling among mere human interests, while he is untying that knot, and all the bonds which bind him to mortality. What, then, is the difference between them? it is that some are tied more or less tightly by these bonds, and some have even tied themselves with them as well; whereas he who has made progress towards the upper regions and raised himself upwards drags a looser chain, and though not yet free, is yet as good as free.",
+    "source_reference": "On the Happy Life, Section 16",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 27
+  }
+]
