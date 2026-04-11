@@ -8,7 +8,7 @@ Plain is a free web app that presents classic Stoic philosophy books as bite-siz
 
 **Tech stack:** SvelteKit + Vercel (free tier). No database, no auth. All content is static JSON.
 
-See `ARCHITECTURE.md` for data models, routes, and rendering strategy. See `BRANDING.md` for voice, visual identity, motion, and sound guidelines. See `CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
+See `docs/ARCHITECTURE.md` for data models, routes, and rendering strategy. See `docs/BRANDING.md` for voice, visual identity, motion, and sound guidelines. See `docs/CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
 
 ## Testing
 
@@ -23,12 +23,56 @@ npm test          # runs both pipeline and web unit tests
 
 Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
 
+## Local Development
+
+```bash
+npm run dev --prefix web              # starts dev server on port 5173
+npm run dev --prefix web -- --host    # exposes it for mobile testing on the local network
+```
+
+## Deploy
+
+Deploys are manual. Run `vercel` for a preview deploy or `vercel --prod` for production.
+
+## Content Pipeline
+
+TypeScript CLI that turns plain-text source books into card JSON. Requires `claude` CLI on PATH (or `PLAIN_USE_API=1` with `ANTHROPIC_API_KEY`).
+
+**Pipeline:** `parse → refine → translate → assemble`
+
+```bash
+# Parse only (no AI calls)
+npx tsx scripts/generate.ts --book enchiridion --parse-only
+
+# Generate one book
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion
+
+# Generate all books
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --all
+
+# Generate all books in parallel
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --all --parallel
+
+# Limit refine calls (good for testing)
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --limit 2
+
+# Force re-generate, ignoring cache
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --fresh
+
+# Use Batch API for translate step (50% cheaper, async)
+PLAIN_USE_API=1 PLAIN_USE_BATCH=1 npx tsx scripts/generate.ts --all
+```
+
+Flags: `--book <slug>`, `--all`, `--parse-only`, `--limit <n>`, `--output <dir>` (default: `content/output`), `--parallel`, `--fresh`, `--help`.
+
+Directory layout: source texts in `content/source/`, pipeline cache in `content/pipeline/`, fixtures in `content/fixtures/`, output card JSON in `content/output/`.
+
 ## Screenshots
 
 Start the dev server, then use Playwright CLI to capture pages:
 
 ```bash
-cd web && npm run dev &                # starts on port 5173 (or next available)
+npm run dev --prefix web &             # starts on port 5173 (or next available)
 npx playwright screenshot --viewport-size="390,844" http://localhost:5173/enchiridion /tmp/screenshot.png
 npx playwright screenshot --viewport-size="390,844" --full-page http://localhost:5173/enchiridion /tmp/screenshot-full.png
 ```

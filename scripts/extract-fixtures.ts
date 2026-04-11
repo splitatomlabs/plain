@@ -2,8 +2,8 @@ import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const ROOT = new URL("../", import.meta.url).pathname;
-const CONTENT_DIR = join(ROOT, "content");
-const FIXTURES_DIR = join(ROOT, "content-fixtures");
+const CONTENT_DIR = join(ROOT, "content/output");
+const FIXTURES_DIR = join(ROOT, "content/fixtures");
 
 const BOOK_CHAPTER_COUNTS: Record<string, number> = {
   meditations: 2,
@@ -69,7 +69,7 @@ async function extractFixtures() {
     }
   }
 
-  console.log("\nDone. Fixtures written to content-fixtures/");
+  console.log("\nDone. Fixtures written to content/fixtures/");
 }
 
 extractFixtures().catch((err) => {

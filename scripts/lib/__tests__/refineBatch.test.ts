@@ -44,7 +44,7 @@ const testConfig: BookConfig = {
   title: "The Enchiridion",
   author_slug: "epictetus",
   chapter_slug_pattern: "section-NN",
-  source_file: "source-books/enchiridion.txt",
+  source_file: "content/source/enchiridion.txt",
   sectionPattern: /^\s{10,}([IVXLCDMivxlcdm]+)\s*$/m,
   gutenbergStrip: true,
   speakerLabels: false,

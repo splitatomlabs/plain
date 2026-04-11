@@ -8,7 +8,7 @@ import path from "node:path";
 // ---------------------------------------------------------------------------
 
 // We'll mock the PIPELINE_DIR by mocking the module's internal path resolution.
-// Instead, since cache.ts uses path.resolve("content-pipeline"), we mock
+// Instead, since cache.ts uses path.resolve("content/pipeline"), we mock
 // the entire module path resolution via a dynamic import approach.
 // Simplest: mock the node:fs/promises calls to intercept paths.
 
@@ -31,7 +31,7 @@ afterEach(async () => {
 // but redirect PIPELINE_DIR by setting process.cwd)
 // ---------------------------------------------------------------------------
 
-// Since PIPELINE_DIR is path.resolve("content-pipeline") which depends on cwd,
+// Since PIPELINE_DIR is path.resolve("content/pipeline") which depends on cwd,
 // we'll change cwd to tempDir so cache files land there.
 import {
   hashSourceFile,
@@ -45,7 +45,7 @@ import {
 import type { Chunk } from "../chunker.js";
 import type { TranslatedChunk } from "../translator.js";
 
-// Override cwd so cache.ts resolves content-pipeline inside tempDir
+// Override cwd so cache.ts resolves content/pipeline inside tempDir
 const originalCwd = process.cwd();
 beforeEach(() => {
   process.chdir(tempDir);
@@ -251,7 +251,7 @@ describe("pipeline version checking", () => {
 
     // Tamper with the saved file to simulate an old version
     const { readFile, writeFile } = await import("node:fs/promises");
-    const filePath = path.join(tempDir, "content-pipeline", "enchiridion", "refine.json");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
     const raw = JSON.parse(await readFile(filePath, "utf-8"));
     raw.pipelineVersion = 999;
     await writeFile(filePath, JSON.stringify(raw));
@@ -265,7 +265,7 @@ describe("pipeline version checking", () => {
     await saveRefineCache("enchiridion", hash, sampleChapters);
 
     const { readFile, writeFile } = await import("node:fs/promises");
-    const filePath = path.join(tempDir, "content-pipeline", "enchiridion", "refine.json");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
     const raw = JSON.parse(await readFile(filePath, "utf-8"));
     delete raw.pipelineVersion;
     await writeFile(filePath, JSON.stringify(raw));
@@ -281,7 +281,7 @@ describe("pipeline version checking", () => {
     await saveTranslateCache("enchiridion", hash, translateMap);
 
     const { readFile, writeFile } = await import("node:fs/promises");
-    const filePath = path.join(tempDir, "content-pipeline", "enchiridion", "translate.json");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
     const raw = JSON.parse(await readFile(filePath, "utf-8"));
     raw.pipelineVersion = 999;
     await writeFile(filePath, JSON.stringify(raw));
@@ -297,7 +297,7 @@ describe("pipeline version checking", () => {
     await saveTranslateCache("enchiridion", hash, translateMap);
 
     const { readFile, writeFile } = await import("node:fs/promises");
-    const filePath = path.join(tempDir, "content-pipeline", "enchiridion", "translate.json");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
     const raw = JSON.parse(await readFile(filePath, "utf-8"));
     delete raw.pipelineVersion;
     await writeFile(filePath, JSON.stringify(raw));
@@ -311,7 +311,7 @@ describe("pipeline version checking", () => {
     await saveRefineCache("enchiridion", hash, sampleChapters);
 
     const { readFile } = await import("node:fs/promises");
-    const filePath = path.join(tempDir, "content-pipeline", "enchiridion", "refine.json");
+    const filePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
     const raw = JSON.parse(await readFile(filePath, "utf-8"));
     expect(raw.pipelineVersion).toBe(PIPELINE_VERSION);
   });
@@ -326,11 +326,11 @@ describe("pipeline version checking", () => {
 
     const { readFile } = await import("node:fs/promises");
 
-    const refinePath = path.join(tempDir, "content-pipeline", "enchiridion", "refine.json");
+    const refinePath = path.join(tempDir, "content", "pipeline", "enchiridion", "refine.json");
     const refineData = JSON.parse(await readFile(refinePath, "utf-8"));
     expect(new Date(refineData.createdAt).toISOString()).toBe(refineData.createdAt);
 
-    const translateFilePath = path.join(tempDir, "content-pipeline", "enchiridion", "translate.json");
+    const translateFilePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
     const translateData = JSON.parse(await readFile(translateFilePath, "utf-8"));
     expect(new Date(translateData.createdAt).toISOString()).toBe(translateData.createdAt);
   });

@@ -81,7 +81,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     description: "A former slave's handbook for living free — even when everything around you is out of your control.",
     source_url: "https://www.gutenberg.org/ebooks/45109",
     chapter_slug_pattern: "section-NN",
-    source_file: "source-books/enchiridion.txt",
+    source_file: "content/source/enchiridion.txt",
     sectionPattern: /^\s{10,}([IVXLCDMivxlcdm]+)\s*$/m,
     sectionSplitMode: "centered",
 
@@ -97,7 +97,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     description: "A Roman emperor's private journal on self-discipline, duty, and finding peace in a chaotic world.",
     source_url: "https://www.gutenberg.org/ebooks/2680",
     chapter_slug_pattern: "book-NN",
-    source_file: "source-books/meditations.txt",
+    source_file: "content/source/meditations.txt",
     headerPattern: /^THE (FIRST|SECOND|THIRD|FOURTH|FIFTH|SIXTH|SEVENTH|EIGHTH|NINTH|TENTH|ELEVENTH|TWELFTH) BOOK$/m,
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sectionSplitMode: "inline",
@@ -126,7 +126,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     description: "Seneca's most urgent essay — a wake-up call about how we waste our lives on things that don't matter.",
     source_url: "https://www.gutenberg.org/ebooks/64576",
     chapter_slug_pattern: "section-NN",
-    source_file: "source-books/on-the-shortness-of-life.txt",
+    source_file: "content/source/on-the-shortness-of-life.txt",
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sectionSplitMode: "inline",
 
@@ -143,7 +143,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     description: "Seneca answers his critics — can you preach simplicity while living in luxury? His answer is more honest than you'd expect.",
     source_url: "https://www.gutenberg.org/ebooks/64576",
     chapter_slug_pattern: "section-NN",
-    source_file: "source-books/on-the-happy-life.txt",
+    source_file: "content/source/on-the-happy-life.txt",
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sectionSplitMode: "inline",
 
@@ -160,7 +160,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     description: "A letter to a restless friend — practical advice on finding calm without withdrawing from life.",
     source_url: "https://www.gutenberg.org/ebooks/64576",
     chapter_slug_pattern: "section-NN",
-    source_file: "source-books/on-peace-of-mind.txt",
+    source_file: "content/source/on-peace-of-mind.txt",
     sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sectionSplitMode: "inline",
 

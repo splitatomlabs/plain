@@ -35,33 +35,59 @@ Every card has two layers: a **plain English translation** (8th-grade reading le
 - OG images generated on-demand via `@vercel/og` for card sharing
 - Self-hosted serif font for a book-like reading experience
 
+## Local Development
+
+```bash
+npm install
+
+# Start the dev server (http://localhost:5173)
+npm run dev --prefix web
+
+# Expose to local network for mobile testing
+npm run dev --prefix web -- --host
+```
+
+## Deploy
+
+Deploys are manual via the Vercel CLI:
+
+```bash
+vercel          # preview deploy
+vercel --prod   # production deploy
+```
+
 ## Content Pipeline
 
-TypeScript CLI tools that turn plain-text source books into card JSON. Requires `claude` CLI on PATH for translation and semantic checks.
+TypeScript CLI tools that turn plain-text source books into card JSON. Source texts live in `content/source/`, pipeline cache in `content/pipeline/`, and finished card JSON is written to `content/output/`. Requires `claude` CLI on PATH for translation and semantic checks.
 
 **Pipeline:** `parse → refine → translate → assemble`
 
 1. **Parse** — Split source text into sections by Roman numeral markers
 2. **Refine** — AI reviews each section: splits multi-idea sections into separate chunks, merges sections that can't stand alone
 3. **Translate** — Plain English translation + tagging, with built-in meaning preservation verification
-4. **Assemble** — Generate card IDs, reading time, source refs, write to `content/`
+4. **Assemble** — Generate card IDs, reading time, source refs, write to `content/output/`
 
 ```bash
-# Install dependencies
-npm install
-
 # Parse all books (no AI calls needed)
 npx tsx scripts/generate.ts --all --parse-only
 
-# Test full pipeline on a small subset (2 sections per chapter)
-npx tsx scripts/generate.ts --book shortness-of-life --limit 2
+# Generate one book (requires claude CLI on PATH, or PLAIN_USE_API=1 + ANTHROPIC_API_KEY)
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book shortness-of-life
 
-# Generate a full book
-npx tsx scripts/generate.ts --book shortness-of-life
+# Test on a small subset (2 refine calls per book)
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book shortness-of-life --limit 2
 
+# Generate all books in parallel
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --all --parallel
+
+# Force re-generate, ignoring cache
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --fresh
+
+# Use Batch API for translate step (50% cheaper, async)
+PLAIN_USE_API=1 PLAIN_USE_BATCH=1 npx tsx scripts/generate.ts --all
 ```
 
-Key flags: `--limit <n>` caps sections per chapter, `--parse-only` skips AI calls.
+Flags: `--book <slug>`, `--all`, `--parse-only`, `--limit <n>`, `--output <dir>` (default: `content/output`), `--parallel`, `--fresh`, `--help`.
 
 ## Testing
 
@@ -74,10 +100,16 @@ npm test          # runs both pipeline and web unit tests
 1. **Pipeline tests** (84 tests) — parser, chunker, refine, validator, and assembler (`scripts/lib/__tests__/`)
 2. **Web unit tests** (22 tests) — content utilities and tag logic (`web/tests/unit/`)
 
-Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
+Playwright e2e tests are separate and require a built app:
+
+```bash
+npm run build --prefix web
+npm run test:e2e --prefix web
+```
 
 ## Documentation
 
-- `ARCHITECTURE.md` — Data models, route structure, rendering strategy, and full project architecture
-- `BRANDING.md` — Brand guide covering voice, visual identity, motion, sound, and brand rules
-- `CONTENT_STRATEGY.md` — Book selection, card writing guidelines, tag taxonomy, and content pipeline
+- `docs/ARCHITECTURE.md` — Data models, route structure, rendering strategy, and full project architecture
+- `docs/BRANDING.md` — Brand guide covering voice, visual identity, motion, sound, and brand rules
+- `docs/CONTENT_STRATEGY.md` — Book selection, card writing guidelines, tag taxonomy, and content pipeline
+- `docs/ANALYTICS.md` — Analytics strategy and event tracking
