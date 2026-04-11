@@ -34,7 +34,7 @@ test.describe('Card reading experience', () => {
 
 	test('navigates via keyboard ArrowRight', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
-		await page.waitForSelector('article');
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		await page.keyboard.press('ArrowRight');
 
@@ -43,7 +43,7 @@ test.describe('Card reading experience', () => {
 
 	test('navigates via keyboard ArrowLeft', async ({ page }) => {
 		await page.goto('/meditations/book-01/2');
-		await page.waitForSelector('article');
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		await page.keyboard.press('ArrowLeft');
 
@@ -82,6 +82,7 @@ test.describe('Card reading experience', () => {
 
 	test('progress bar updates between cards', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		const progressBar = page.locator('[role="progressbar"]');
 		await expect(progressBar).toBeVisible();
@@ -105,7 +106,7 @@ test.describe('Card reading experience', () => {
 
 	test('browser back button works after navigation', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
-		await page.waitForSelector('article');
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		await page.keyboard.press('ArrowRight');
 		await page.waitForURL(/\/meditations\/book-01\/2$/);
@@ -134,7 +135,7 @@ test.describe('Card reading — mobile', () => {
 
 	test('swipe left navigates to next card', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
-		await page.waitForSelector('article');
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		// Simulate swipe left (finger moves from right to left)
 		const box = await page.locator('.card-nav').boundingBox();
@@ -162,7 +163,7 @@ test.describe('Card reading — mobile', () => {
 
 	test('swipe right navigates to previous card', async ({ page }) => {
 		await page.goto('/meditations/book-01/2');
-		await page.waitForSelector('article');
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		const box = await page.locator('.card-nav').boundingBox();
 		const startX = box.x + box.width * 0.2;

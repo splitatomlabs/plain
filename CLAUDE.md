@@ -23,6 +23,8 @@ npm test          # runs both pipeline and web unit tests
 
 Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
 
+**Important:** After significant changes to the web app (components, routes, navigation, progress tracking, layout), always run the e2e suite to catch regressions. Build the app first with `npm run build --prefix web`, then run `npm run test:e2e --prefix web`.
+
 ## Local Development
 
 ```bash

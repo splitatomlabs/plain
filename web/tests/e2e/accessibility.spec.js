@@ -57,7 +57,7 @@ test.describe('Keyboard navigation — card page', () => {
 
 	test('arrow keys navigate between cards', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
-		await page.waitForSelector('article');
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		await page.keyboard.press('ArrowRight');
 		await expect(page).toHaveURL(/\/meditations\/book-01\/2$/);

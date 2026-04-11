@@ -69,6 +69,7 @@
 
 	onMount(() => {
 		window.addEventListener('keydown', handleKeydown);
+		if (navRef) navRef.dataset.keyboardReady = '';
 		return () => window.removeEventListener('keydown', handleKeydown);
 	});
 
