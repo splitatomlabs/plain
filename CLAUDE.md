@@ -8,7 +8,7 @@ Plain is a free web app that presents classic Stoic philosophy books as bite-siz
 
 **Tech stack:** SvelteKit + Vercel (free tier). No database, no auth. All content is static JSON.
 
-See `ARCHITECTURE.md` for data models, routes, and rendering strategy. See `BRANDING.md` for voice, visual identity, motion, and sound guidelines. See `CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
+See `docs/ARCHITECTURE.md` for data models, routes, and rendering strategy. See `docs/BRANDING.md` for voice, visual identity, motion, and sound guidelines. See `docs/CONTENT_STRATEGY.md` for book selection, card guidelines, and tag taxonomy.
 
 ## Testing
 
@@ -23,12 +23,24 @@ npm test          # runs both pipeline and web unit tests
 
 Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
 
+## Local Development
+
+```bash
+npm run dev --prefix web              # starts dev server on port 5173
+npm run dev --prefix web -- --host    # exposes it for mobile testing on the local network
+```
+
+## Deploy
+
+- Vercel auto-deploys from main.
+- PRs get preview deploys.
+
 ## Screenshots
 
 Start the dev server, then use Playwright CLI to capture pages:
 
 ```bash
-cd web && npm run dev &                # starts on port 5173 (or next available)
+npm run dev --prefix web &             # starts on port 5173 (or next available)
 npx playwright screenshot --viewport-size="390,844" http://localhost:5173/enchiridion /tmp/screenshot.png
 npx playwright screenshot --viewport-size="390,844" --full-page http://localhost:5173/enchiridion /tmp/screenshot-full.png
 ```
