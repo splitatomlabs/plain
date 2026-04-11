@@ -109,6 +109,10 @@ export function assembleBook(
   }
 
   const totalCards = chapterInfos.reduce((sum, ch) => sum + ch.card_count, 0);
+  const totalReadingTime = [...chapters.values()].flat().reduce(
+    (sum, card) => sum + card.reading_time_seconds,
+    0,
+  );
 
   const meta: BookMeta = {
     slug: config.slug,
@@ -118,8 +122,8 @@ export function assembleBook(
     tags: [...allTags],
     chapters: chapterInfos,
     total_cards: totalCards,
+    total_reading_time_seconds: totalReadingTime,
     source_url: config.source_url,
-
   };
 
   return { meta, chapters };

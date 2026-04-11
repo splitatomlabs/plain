@@ -28,6 +28,7 @@ export interface BookMeta {
   tags: TagSlug[];
   chapters: ChapterInfo[];
   total_cards: number;
+  total_reading_time_seconds: number;
   source_url: string;
 
 }
