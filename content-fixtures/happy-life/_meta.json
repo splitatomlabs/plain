@@ -1,0 +1,25 @@
+{
+  "slug": "happy-life",
+  "title": "On the Happy Life",
+  "author_slug": "seneca",
+  "description": "",
+  "tags": [
+    "what-matters-most",
+    "knowing-yourself",
+    "freedom-and-control",
+    "calm-your-mind",
+    "human-nature",
+    "doing-the-right-thing",
+    "facing-hardship",
+    "death-and-mortality"
+  ],
+  "chapters": [
+    {
+      "slug": "section-01",
+      "title": "Section 1",
+      "card_count": 2
+    }
+  ],
+  "total_cards": 2,
+  "source_url": ""
+}

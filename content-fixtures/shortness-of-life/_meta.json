@@ -1,0 +1,24 @@
+{
+  "slug": "shortness-of-life",
+  "title": "On the Shortness of Life",
+  "author_slug": "seneca",
+  "description": "",
+  "tags": [
+    "death-and-mortality",
+    "what-matters-most",
+    "freedom-and-control",
+    "knowing-yourself",
+    "facing-hardship",
+    "calm-your-mind",
+    "human-nature"
+  ],
+  "chapters": [
+    {
+      "slug": "section-01",
+      "title": "Section 1",
+      "card_count": 2
+    }
+  ],
+  "total_cards": 2,
+  "source_url": ""
+}
