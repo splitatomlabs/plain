@@ -319,34 +319,46 @@ function toSlug(title: string): string {
 
 function parseDiscourses(text: string, config: BookConfig): ParsedBook {
   const headingRe = config.headingPattern!;
+  // ALL-CAPS continuation line that precedes a heading line (multi-line headings)
+  const continuationRe = /^[A-Z][A-Z ,.':()]+$/;
   const lines = text.split("\n");
 
-  // Find all heading positions
-  const headings: { lineIndex: number; title: string }[] = [];
+  // Find all heading positions, merging multi-line headings
+  const headings: { startLine: number; endLine: number; title: string }[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const match = lines[i].match(headingRe);
     if (match) {
-      headings.push({ lineIndex: i, title: toTitleCase(match[1].replace(/\.$/, "").trim()) });
+      let fullTitle = match[1].replace(/\.$/, "").trim();
+      let startLine = i;
+
+      // Check if preceding non-blank lines are ALL-CAPS continuations
+      let j = i - 1;
+      while (j >= 0 && continuationRe.test(lines[j].trim()) && lines[j].trim().length > 0) {
+        fullTitle = lines[j].trim() + " " + fullTitle;
+        startLine = j;
+        j--;
+      }
+
+      headings.push({ startLine, endLine: i, title: toTitleCase(fullTitle) });
     }
   }
 
   const chapters: ParsedChapter[] = [];
 
   for (let i = 0; i < headings.length; i++) {
-    const { lineIndex, title } = headings[i];
-    const endLine = i + 1 < headings.length
-      ? headings[i + 1].lineIndex
+    const { startLine, endLine: headingEndLine, title } = headings[i];
+    const nextStart = i + 1 < headings.length
+      ? headings[i + 1].startLine
       : lines.length;
 
     // The heading line includes the title + em-dash + start of text
-    // Extract the body part after the em-dash on the heading line
-    const headingLine = lines[lineIndex];
+    const headingLine = lines[headingEndLine];
     const dashIdx = headingLine.indexOf("—");
     const firstPart = dashIdx >= 0 ? headingLine.slice(dashIdx + 1) : "";
 
     // Combine first part with remaining lines
-    const bodyLines = [firstPart, ...lines.slice(lineIndex + 1, endLine)];
+    const bodyLines = [firstPart, ...lines.slice(headingEndLine + 1, nextStart)];
     const bodyText = bodyLines.join("\n").trim();
 
     if (bodyText.length === 0) continue;

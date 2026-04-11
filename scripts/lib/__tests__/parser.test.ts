@@ -215,6 +215,18 @@ describe("parseSourceText — Discourses", () => {
       expect(ch.title).not.toContain("—");
     }
   });
+
+  it("handles multi-line headings correctly", () => {
+    // "HOW FROM THE FACT THAT WE ARE AKIN TO GOD A MAN MAY PROCEED TO THE\nCONSEQUENCES.—"
+    const ch = parsed.chapters.find((c) => c.title.includes("Consequences"));
+    expect(ch).toBeDefined();
+    expect(ch!.title).toContain("How from the Fact");
+    expect(ch!.title).toContain("Consequences");
+  });
+
+  it("has exactly 64 chapters", () => {
+    expect(parsed.chapters).toHaveLength(64);
+  });
 });
 
 describe("parseSourceText — Seneca essays", () => {
