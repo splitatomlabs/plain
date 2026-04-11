@@ -20,7 +20,7 @@ const { values: args } = parseArgs({
     all: { type: "boolean", default: false },
     "parse-only": { type: "boolean", default: false },
     limit: { type: "string" },
-    output: { type: "string", default: "content" },
+    output: { type: "string", default: "content/output" },
     parallel: { type: "boolean", default: false },
     fresh: { type: "boolean", default: false },
     help: { type: "boolean", default: false },
@@ -35,7 +35,7 @@ Options:
   --all              Generate all 5 books
   --parse-only       Parse source text only, no Claude CLI calls
   --limit <n>        Max refine API calls per book (each processes ~10 chunks)
-  --output <dir>     Output directory (default: content)
+  --output <dir>     Output directory (default: content/output)
   --parallel         Process all books concurrently (use with --all)
   --fresh            Ignore cached results (force re-refine and re-translate; still saves results to cache)
   --help             Show this help

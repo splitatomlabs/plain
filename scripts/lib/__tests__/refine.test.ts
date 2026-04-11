@@ -18,7 +18,7 @@ const testConfig: BookConfig = {
   title: "Meditations",
   author_slug: "marcus-aurelius",
   chapter_slug_pattern: "book-NN",
-  source_file: "source-books/meditations.txt",
+  source_file: "content/source/meditations.txt",
   sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
   gutenbergStrip: true,
   speakerLabels: false,
