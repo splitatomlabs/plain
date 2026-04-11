@@ -15,11 +15,15 @@ import type { TranslatedChunk } from "./translator.js";
 
 const CACHE_DIR = path.resolve("content-pipeline");
 
+export const PIPELINE_VERSION = 1;
+
 // ---------------------------------------------------------------------------
 // Types stored on disk
 // ---------------------------------------------------------------------------
 
 interface CachedRefine {
+  pipelineVersion: number;
+  createdAt: string;
   sourceHash: string;
   bookSlug: string;
   chapters: {
@@ -31,6 +35,8 @@ interface CachedRefine {
 }
 
 interface CachedTranslate {
+  pipelineVersion: number;
+  createdAt: string;
   sourceHash: string;
   bookSlug: string;
   /** Keyed by "{bookSlug}_{chapterSlug}" */
@@ -68,7 +74,7 @@ export async function saveRefineCache(
   chapters: { slug: string; title: string; bookNumber?: number; chunks: Chunk[] }[],
 ): Promise<void> {
   await ensureBookDir(bookSlug);
-  const data: CachedRefine = { sourceHash, bookSlug, chapters };
+  const data: CachedRefine = { pipelineVersion: PIPELINE_VERSION, createdAt: new Date().toISOString(), sourceHash, bookSlug, chapters };
   await writeFile(refinePath(bookSlug), JSON.stringify(data, null, 2) + "\n");
 }
 
@@ -79,6 +85,10 @@ export async function loadRefineCache(
   try {
     const raw = await readFile(refinePath(bookSlug), "utf-8");
     const data = JSON.parse(raw) as CachedRefine;
+    if (data.pipelineVersion !== PIPELINE_VERSION) {
+      console.log(`  Cache miss (pipeline version changed) for ${bookSlug} refine`);
+      return null;
+    }
     if (data.sourceHash !== sourceHash) {
       console.log(`  Cache miss (source changed) for ${bookSlug} refine`);
       return null;
@@ -103,7 +113,7 @@ export async function saveTranslateCache(
   for (const [key, chunks] of translated) {
     chapters[key] = chunks;
   }
-  const data: CachedTranslate = { sourceHash, bookSlug, chapters };
+  const data: CachedTranslate = { pipelineVersion: PIPELINE_VERSION, createdAt: new Date().toISOString(), sourceHash, bookSlug, chapters };
   await writeFile(translatePath(bookSlug), JSON.stringify(data, null, 2) + "\n");
 }
 
@@ -114,6 +124,10 @@ export async function loadTranslateCache(
   try {
     const raw = await readFile(translatePath(bookSlug), "utf-8");
     const data = JSON.parse(raw) as CachedTranslate;
+    if (data.pipelineVersion !== PIPELINE_VERSION) {
+      console.log(`  Cache miss (pipeline version changed) for ${bookSlug} translate`);
+      return null;
+    }
     if (data.sourceHash !== sourceHash) {
       console.log(`  Cache miss (source changed) for ${bookSlug} translate`);
       return null;
