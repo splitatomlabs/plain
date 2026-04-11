@@ -1,10 +1,10 @@
 /**
- * Pipeline cache: persists refine and translate results to disk so that
- * a failed or interrupted run can resume without redoing completed phases.
+ * Pipeline intermediates: persists refine and translate results to disk so
+ * that a failed or interrupted run can resume without redoing completed phases.
  *
- * Cache files live in .pipeline-cache/ (gitignored).
- * Each file is keyed by book slug and includes a content hash of the source
- * file so the cache auto-invalidates when source text changes.
+ * Files live in pipeline/<book-slug>/ and are checked into version control.
+ * Each file includes a content hash of the source file so the cache
+ * auto-invalidates when source text changes.
  */
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
@@ -13,7 +13,7 @@ import path from "node:path";
 import type { Chunk } from "./chunker.js";
 import type { TranslatedChunk } from "./translator.js";
 
-const CACHE_DIR = path.resolve(".pipeline-cache");
+const CACHE_DIR = path.resolve("pipeline");
 
 // ---------------------------------------------------------------------------
 // Types stored on disk
@@ -41,8 +41,8 @@ interface CachedTranslate {
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function ensureCacheDir(): Promise<void> {
-  await mkdir(CACHE_DIR, { recursive: true });
+async function ensureBookDir(bookSlug: string): Promise<void> {
+  await mkdir(path.join(CACHE_DIR, bookSlug), { recursive: true });
 }
 
 export async function hashSourceFile(sourceFile: string): Promise<string> {
@@ -51,11 +51,11 @@ export async function hashSourceFile(sourceFile: string): Promise<string> {
 }
 
 function refinePath(bookSlug: string): string {
-  return path.join(CACHE_DIR, `${bookSlug}-refine.json`);
+  return path.join(CACHE_DIR, bookSlug, "refine.json");
 }
 
 function translatePath(bookSlug: string): string {
-  return path.join(CACHE_DIR, `${bookSlug}-translate.json`);
+  return path.join(CACHE_DIR, bookSlug, "translate.json");
 }
 
 // ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ export async function saveRefineCache(
   sourceHash: string,
   chapters: { slug: string; title: string; bookNumber?: number; chunks: Chunk[] }[],
 ): Promise<void> {
-  await ensureCacheDir();
+  await ensureBookDir(bookSlug);
   const data: CachedRefine = { sourceHash, bookSlug, chapters };
   await writeFile(refinePath(bookSlug), JSON.stringify(data, null, 2) + "\n");
 }
@@ -98,7 +98,7 @@ export async function saveTranslateCache(
   sourceHash: string,
   translated: Map<string, TranslatedChunk[]>,
 ): Promise<void> {
-  await ensureCacheDir();
+  await ensureBookDir(bookSlug);
   const chapters: Record<string, TranslatedChunk[]> = {};
   for (const [key, chunks] of translated) {
     chapters[key] = chunks;
