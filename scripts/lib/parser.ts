@@ -125,8 +125,8 @@ function parseMeditations(text: string, config: BookConfig): ParsedBook {
 function parseSingleEssay(text: string, config: BookConfig): ParsedBook {
   let sections: Section[];
 
-  if (config.slug === "enchiridion") {
-    sections = splitEnchiridionSections(text);
+  if (config.sectionSplitMode === "centered") {
+    sections = splitCenteredSections(text);
   } else {
     sections = splitSections(text, config.sectionPattern);
   }
@@ -225,10 +225,10 @@ function splitSections(text: string, sectionRe: RegExp): Section[] {
 }
 
 // ---------------------------------------------------------------------------
-// Enchiridion-specific splitting — centered standalone Roman numerals
+// Centered section splitting — standalone indented Roman numerals
 // ---------------------------------------------------------------------------
 
-function splitEnchiridionSections(text: string): Section[] {
+function splitCenteredSections(text: string): Section[] {
   const sections: Section[] = [];
   const lines = text.split("\n");
 
@@ -300,18 +300,18 @@ export function parseSourceText(text: string, config: BookConfig): ParsedBook {
     text = stripGutenberg(text);
   }
 
-  // For Enchiridion: skip the introduction/bibliography preamble
-  // The actual content starts at the first centered "I"
-  if (config.slug === "enchiridion") {
-    return parseSingleEssay(text, config);
-  }
-
   // Meditations has book/chapter structure
   if (config.headerPattern) {
     return parseMeditations(text, config);
   }
 
-  // Seneca essays: strip preamble, then parse as single essay
-  text = stripSenecaPreamble(text, config);
+  // Strip preamble if configured (Seneca essays have title/heading before first section)
+  if (config.preamblePattern) {
+    const match = text.match(config.preamblePattern);
+    if (match && match.index !== undefined) {
+      text = text.slice(match.index);
+    }
+  }
+
   return parseSingleEssay(text, config);
 }
