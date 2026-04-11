@@ -13,7 +13,9 @@ import path from "node:path";
 import type { Chunk } from "./chunker.js";
 import type { TranslatedChunk } from "./translator.js";
 
-const CACHE_DIR = path.resolve("content-pipeline");
+function cacheDir(): string {
+  return path.resolve("content-pipeline");
+}
 
 export const PIPELINE_VERSION = 1;
 
@@ -48,7 +50,7 @@ interface CachedTranslate {
 // ---------------------------------------------------------------------------
 
 async function ensureBookDir(bookSlug: string): Promise<void> {
-  await mkdir(path.join(CACHE_DIR, bookSlug), { recursive: true });
+  await mkdir(path.join(cacheDir(), bookSlug), { recursive: true });
 }
 
 export async function hashSourceFile(sourceFile: string): Promise<string> {
@@ -57,11 +59,11 @@ export async function hashSourceFile(sourceFile: string): Promise<string> {
 }
 
 function refinePath(bookSlug: string): string {
-  return path.join(CACHE_DIR, bookSlug, "refine.json");
+  return path.join(cacheDir(), bookSlug, "refine.json");
 }
 
 function translatePath(bookSlug: string): string {
-  return path.join(CACHE_DIR, bookSlug, "translate.json");
+  return path.join(cacheDir(), bookSlug, "translate.json");
 }
 
 // ---------------------------------------------------------------------------
