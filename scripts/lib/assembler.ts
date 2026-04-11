@@ -114,11 +114,11 @@ export function assembleBook(
     slug: config.slug,
     title: config.title,
     author_slug: config.author_slug,
-    description: "", // To be filled manually
+    description: config.description,
     tags: [...allTags],
     chapters: chapterInfos,
     total_cards: totalCards,
-    source_url: "", // To be filled manually
+    source_url: config.source_url,
 
   };
 

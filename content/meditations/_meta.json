@@ -2,7 +2,7 @@
   "slug": "meditations",
   "title": "Meditations",
   "author_slug": "marcus-aurelius",
-  "description": "",
+  "description": "A Roman emperor's private journal on self-discipline, duty, and finding peace in a chaotic world.",
   "tags": [
     "knowing-yourself",
     "human-nature",
@@ -76,5 +76,5 @@
     }
   ],
   "total_cards": 514,
-  "source_url": ""
+  "source_url": "https://www.gutenberg.org/ebooks/2680"
 }
