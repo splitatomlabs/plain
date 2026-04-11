@@ -1,0 +1,21 @@
+{
+  "sourceHash": "21cf74b7219fe95e",
+  "bookSlug": "meditations",
+  "chapters": [
+    {
+      "slug": "book-01",
+      "title": "Book 1",
+      "bookNumber": 1,
+      "chunks": [
+        {
+          "sectionNumber": 1,
+          "text": "Some things are up to you."
+        },
+        {
+          "sectionNumber": 2,
+          "text": "If you want freedom, stop wishing."
+        }
+      ]
+    }
+  ]
+}

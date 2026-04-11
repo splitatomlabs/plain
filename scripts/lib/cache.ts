@@ -2,7 +2,7 @@
  * Pipeline intermediates: persists refine and translate results to disk so
  * that a failed or interrupted run can resume without redoing completed phases.
  *
- * Files live in pipeline/<book-slug>/ and are checked into version control.
+ * Files live in content-pipeline/<book-slug>/ and are checked into version control.
  * Each file includes a content hash of the source file so the cache
  * auto-invalidates when source text changes.
  */
@@ -13,7 +13,7 @@ import path from "node:path";
 import type { Chunk } from "./chunker.js";
 import type { TranslatedChunk } from "./translator.js";
 
-const CACHE_DIR = path.resolve("pipeline");
+const CACHE_DIR = path.resolve("content-pipeline");
 
 // ---------------------------------------------------------------------------
 // Types stored on disk

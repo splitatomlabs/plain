@@ -1,0 +1,16 @@
+{
+  "sourceHash": "21cf74b7219fe95e",
+  "bookSlug": "enchiridion",
+  "chapters": [
+    {
+      "slug": "sections-01-10",
+      "title": "Sections 1–10",
+      "chunks": [
+        {
+          "sectionNumber": 1,
+          "text": "Some things are up to you."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "sourceHash": "21cf74b7219fe95e",
+  "bookSlug": "meditations",
+  "chapters": {
+    "meditations_book-01": [
+      {
+        "sectionNumber": 1,
+        "originalText": "Some things are up to you.",
+        "plainEnglish": "You control your opinions, not your body.",
+        "tags": [
+          "freedom-and-control"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      }
+    ],
+    "meditations_book-02": [
+      {
+        "sectionNumber": 5,
+        "originalText": "Some things are up to you.",
+        "plainEnglish": "Book 2 text",
+        "tags": [
+          "freedom-and-control"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      }
+    ]
+  }
+}
