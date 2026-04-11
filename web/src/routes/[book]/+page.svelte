@@ -13,11 +13,14 @@
 		seneca: 'var(--color-accent-seneca)'
 	};
 
+	let hasChapters = $derived(data.book.slug === 'meditations');
+
 	let isGift = $state(false);
 	let giftNote = $state('');
 	let bookResumeUrl = $state(null);
 	let bookPercentage = $state(0);
 	let bookCompleted = $state(false);
+	let chapterProgressMap = $state({});
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -32,8 +35,18 @@
 				bookResumeUrl = progress.getResumeUrl(data.book.slug);
 			}
 		}
+
+		if (hasChapters) {
+			const map = {};
+			for (const ch of data.book.chapters) {
+				map[ch.slug] = progress.getChapterProgress(data.book.slug, ch.slug, ch.card_count);
+			}
+			chapterProgressMap = map;
+		}
 	});
 	let firstCardUrl = $derived(`/${data.book.slug}/${data.book.chapters[0].slug}/1`);
+
+	let totalReadingMinutes = $derived(Math.ceil((data.book.total_reading_time_seconds || 0) / 60));
 
 	let showGiftCompose = $state(false);
 	let giftNoteInput = $state('');
@@ -94,17 +107,7 @@
 		<p class="book-description">{data.book.description}</p>
 	</header>
 
-	<section class="chapters">
-		<h2 class="chapters-heading">{data.book.slug === 'meditations' ? 'Chapters' : 'Sections'}</h2>
-		<ol class="chapter-list">
-			{#each data.book.chapters as chapter}
-				<li class="chapter-item">
-					<span class="chapter-title">{chapter.title}</span>
-					<span class="chapter-count">{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}</span>
-				</li>
-			{/each}
-		</ol>
-	</section>
+	<p class="book-scope">{data.book.total_cards} cards · ~{totalReadingMinutes} min read</p>
 
 	{#if bookPercentage > 0}
 		<div class="book-landing-progress">
@@ -122,6 +125,37 @@
 		<div class="cta-row">
 			<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
 		</div>
+	{/if}
+
+	{#if hasChapters}
+		<section class="chapters">
+			<h2 class="chapters-heading">Chapters</h2>
+			<ol class="chapter-list">
+				{#each data.book.chapters as chapter}
+					{@const cp = chapterProgressMap[chapter.slug]}
+					<li class="chapter-item">
+						{#if cp?.completed}
+							<span class="chapter-check">&#10003;</span>
+						{/if}
+						<span class="chapter-title">{chapter.title}</span>
+						<span class="chapter-count">
+							{#if cp && cp.cardsRead > 0}
+								{cp.cardsRead} / {cp.total}
+							{:else}
+								{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}
+							{/if}
+						</span>
+						{#if cp && cp.percentage > 0}
+							<div class="chapter-progress-bar" style="width: {cp.percentage}%; background: {accentVar[data.author.slug]}"></div>
+						{/if}
+					</li>
+				{/each}
+			</ol>
+		</section>
+	{:else if data.previewCard}
+		<a href={firstCardUrl} class="book-preview">
+			<p class="preview-text">{data.previewCard.plain_english}</p>
+		</a>
 	{/if}
 
 	<div class="gift-row">
@@ -163,7 +197,7 @@
 	}
 
 	.book-header {
-		margin-bottom: var(--space-xl);
+		margin-bottom: var(--space-md);
 	}
 
 	.author-title {
@@ -199,6 +233,12 @@
 		line-height: var(--line-height-body);
 	}
 
+	.book-scope {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-lg);
+	}
 
 	.book-tags {
 		display: flex;
@@ -208,7 +248,7 @@
 	}
 
 	.chapters {
-		margin-bottom: var(--space-xl);
+		margin-top: var(--space-xl);
 	}
 
 	.chapters-heading {
@@ -228,22 +268,68 @@
 	}
 
 	.chapter-item {
+		position: relative;
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
 		padding: var(--space-sm) 0;
 		border-bottom: 1px solid var(--color-border);
+		overflow: hidden;
+	}
+
+	.chapter-progress-bar {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		opacity: 0.1;
+		pointer-events: none;
+	}
+
+	.chapter-check {
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		margin-right: var(--space-sm);
+		flex-shrink: 0;
 	}
 
 	.chapter-title {
 		font-family: var(--font-body);
 		color: var(--color-text-primary);
+		flex: 1;
 	}
 
 	.chapter-count {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+		margin-left: var(--space-sm);
+		white-space: nowrap;
+	}
+
+	.book-preview {
+		display: block;
+		padding: var(--space-lg);
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		margin-bottom: var(--space-lg);
+		text-decoration: none;
+		transition: border-color var(--transition-fast);
+	}
+
+	.book-preview:hover {
+		border-color: var(--color-text-secondary);
+	}
+
+	.preview-text {
+		font-family: var(--font-body);
+		font-size: var(--text-body);
+		line-height: var(--line-height-body);
+		color: var(--color-text-secondary);
+		margin: 0;
+		display: -webkit-box;
+		-webkit-line-clamp: 5;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	.book-landing-progress {
@@ -251,7 +337,7 @@
 		align-items: center;
 		gap: var(--space-sm);
 		max-width: 300px;
-		margin: 0 auto var(--space-md);
+		margin: 0 0 var(--space-md);
 	}
 
 	.landing-progress-track {
@@ -277,6 +363,7 @@
 
 	.cta-row {
 		text-align: center;
+		margin-bottom: var(--space-md);
 	}
 
 	.cta-secondary-row {
@@ -309,7 +396,6 @@
 
 	.gift-row {
 		text-align: center;
-		margin-top: var(--space-sm);
 	}
 
 	.cta {
