@@ -32,8 +32,40 @@ npm run dev --prefix web -- --host    # exposes it for mobile testing on the loc
 
 ## Deploy
 
-- Vercel auto-deploys from main.
-- PRs get preview deploys.
+Deploys are manual. Run `vercel` for a preview deploy or `vercel --prod` for production.
+
+## Content Pipeline
+
+TypeScript CLI that turns plain-text source books into card JSON. Requires `claude` CLI on PATH (or `PLAIN_USE_API=1` with `ANTHROPIC_API_KEY`).
+
+**Pipeline:** `parse → refine → translate → assemble`
+
+```bash
+# Parse only (no AI calls)
+npx tsx scripts/generate.ts --book enchiridion --parse-only
+
+# Generate one book
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion
+
+# Generate all books
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --all
+
+# Generate all books in parallel
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --all --parallel
+
+# Limit refine calls (good for testing)
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --limit 2
+
+# Force re-generate, ignoring cache
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --fresh
+
+# Use Batch API for translate step (50% cheaper, async)
+PLAIN_USE_API=1 PLAIN_USE_BATCH=1 npx tsx scripts/generate.ts --all
+```
+
+Flags: `--book <slug>`, `--all`, `--parse-only`, `--limit <n>`, `--output <dir>` (default: `content/output`), `--parallel`, `--fresh`, `--help`.
+
+Directory layout: source texts in `content/source/`, pipeline cache in `content/pipeline/`, fixtures in `content/fixtures/`, output card JSON in `content/output/`.
 
 ## Screenshots
 

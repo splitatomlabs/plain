@@ -49,7 +49,12 @@ npm run dev --prefix web -- --host
 
 ## Deploy
 
-Vercel auto-deploys the `main` branch to production on every push. Pull requests automatically get preview deployments with a unique URL for review before merging.
+Deploys are manual via the Vercel CLI:
+
+```bash
+vercel          # preview deploy
+vercel --prod   # production deploy
+```
 
 ## Content Pipeline
 
@@ -63,21 +68,26 @@ TypeScript CLI tools that turn plain-text source books into card JSON. Source te
 4. **Assemble** — Generate card IDs, reading time, source refs, write to `content/output/`
 
 ```bash
-# Install dependencies
-npm install
-
 # Parse all books (no AI calls needed)
 npx tsx scripts/generate.ts --all --parse-only
 
-# Test full pipeline on a small subset (2 sections per chapter)
-npx tsx scripts/generate.ts --book shortness-of-life --limit 2
+# Generate one book (requires claude CLI on PATH, or PLAIN_USE_API=1 + ANTHROPIC_API_KEY)
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book shortness-of-life
 
-# Generate a full book
-npx tsx scripts/generate.ts --book shortness-of-life
+# Test on a small subset (2 refine calls per book)
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book shortness-of-life --limit 2
 
+# Generate all books in parallel
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --all --parallel
+
+# Force re-generate, ignoring cache
+PLAIN_USE_API=1 npx tsx scripts/generate.ts --book enchiridion --fresh
+
+# Use Batch API for translate step (50% cheaper, async)
+PLAIN_USE_API=1 PLAIN_USE_BATCH=1 npx tsx scripts/generate.ts --all
 ```
 
-Key flags: `--limit <n>` caps sections per chapter, `--parse-only` skips AI calls.
+Flags: `--book <slug>`, `--all`, `--parse-only`, `--limit <n>`, `--output <dir>` (default: `content/output`), `--parallel`, `--fresh`, `--help`.
 
 ## Testing
 
