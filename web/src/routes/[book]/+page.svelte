@@ -127,6 +127,12 @@
 		</div>
 	{/if}
 
+	<div class="gift-row">
+		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
+			Send this book to a friend
+		</button>
+	</div>
+
 	{#if hasChapters}
 		<section class="chapters">
 			<h2 class="chapters-heading">Chapters</h2>
@@ -157,12 +163,6 @@
 			<p class="preview-text">{data.previewCard.plain_english}</p>
 		</a>
 	{/if}
-
-	<div class="gift-row">
-		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
-			Send this book to a friend
-		</button>
-	</div>
 
 	{#if showGiftCompose}
 		<div class="gift-compose">
@@ -238,6 +238,7 @@
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
 		margin: 0 0 var(--space-lg);
+		text-align: center;
 	}
 
 	.book-tags {
@@ -337,7 +338,7 @@
 		align-items: center;
 		gap: var(--space-sm);
 		max-width: 300px;
-		margin: 0 0 var(--space-md);
+		margin: 0 auto var(--space-md);
 	}
 
 	.landing-progress-track {
