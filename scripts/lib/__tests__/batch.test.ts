@@ -134,6 +134,46 @@ describe("pollBatchUntilDone", () => {
     expect(mockBatchRetrieve).toHaveBeenCalledTimes(3);
     expect(result.processing_status).toBe("ended");
   });
+
+  it("retries transient errors and recovers", async () => {
+    mockBatchRetrieve
+      .mockResolvedValueOnce({ id: "batch_err", processing_status: "in_progress" })
+      .mockRejectedValueOnce(new Error("network timeout"))
+      .mockRejectedValueOnce(new Error("503 service unavailable"))
+      .mockResolvedValueOnce({ id: "batch_err", processing_status: "ended" });
+
+    const promise = pollBatchUntilDone("batch_err");
+
+    // Poll 1: in_progress → wait 5s
+    await vi.advanceTimersByTimeAsync(5_000);
+    // Poll 2: error → wait 10s
+    await vi.advanceTimersByTimeAsync(10_000);
+    // Poll 3: error → wait 20s
+    await vi.advanceTimersByTimeAsync(20_000);
+    // Poll 4: ended
+
+    const result = await promise;
+    expect(mockBatchRetrieve).toHaveBeenCalledTimes(4);
+    expect(result.processing_status).toBe("ended");
+  });
+
+  it("throws after max consecutive errors", async () => {
+    mockBatchRetrieve.mockRejectedValue(new Error("persistent failure"));
+
+    const promise = pollBatchUntilDone("batch_fail");
+    // Catch early to prevent unhandled rejection — we assert the error below
+    const caught = promise.catch((e: Error) => e);
+
+    // Advance through 5 consecutive error retries (5s, 10s, 20s, 40s)
+    for (const ms of [5_000, 10_000, 20_000, 40_000]) {
+      await vi.advanceTimersByTimeAsync(ms);
+    }
+
+    const err = await caught;
+    expect(err).toBeInstanceOf(Error);
+    expect(err.message).toMatch("polling failed after 5 consecutive errors");
+    expect(mockBatchRetrieve).toHaveBeenCalledTimes(5);
+  });
 });
 
 // ---------------------------------------------------------------------------

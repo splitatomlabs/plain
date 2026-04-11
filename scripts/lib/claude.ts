@@ -204,6 +204,7 @@ export async function createMessageBatch(
  * Polls a batch until processing_status is "ended" (or any terminal state).
  * Uses exponential backoff: starts at 5s, doubles each attempt, caps at 60s.
  * Times out after 24 hours. Logs status updates to stderr.
+ * Retries transient API errors up to 5 consecutive times before giving up.
  */
 export async function pollBatchUntilDone(
   batchId: string,
@@ -212,12 +213,33 @@ export async function pollBatchUntilDone(
   const MAX_WAIT_MS = 24 * 60 * 60 * 1000; // 24 hours
   const MIN_INTERVAL_MS = 5_000;
   const MAX_INTERVAL_MS = 60_000;
+  const MAX_CONSECUTIVE_ERRORS = 5;
 
   let intervalMs = MIN_INTERVAL_MS;
+  let consecutiveErrors = 0;
   const deadline = Date.now() + MAX_WAIT_MS;
 
   while (Date.now() < deadline) {
-    const batch = await client.messages.batches.retrieve(batchId);
+    let batch: Anthropic.MessageBatch;
+    try {
+      batch = await client.messages.batches.retrieve(batchId);
+      consecutiveErrors = 0;
+    } catch (err) {
+      consecutiveErrors++;
+      const msg = err instanceof Error ? err.message : String(err);
+      process.stderr.write(
+        `[batch] ${batchId} poll error (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}): ${msg}\n`,
+      );
+      if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        throw new Error(
+          `Batch ${batchId} polling failed after ${MAX_CONSECUTIVE_ERRORS} consecutive errors: ${msg}`,
+        );
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, intervalMs));
+      intervalMs = Math.min(intervalMs * 2, MAX_INTERVAL_MS);
+      continue;
+    }
+
     process.stderr.write(
       `[batch] ${batchId} status=${batch.processing_status}\n`,
     );
