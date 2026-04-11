@@ -91,6 +91,67 @@ function buildRefinePrompt(
 }
 
 // ---------------------------------------------------------------------------
+// Bulk refine prompts — evaluate multiple sections in one API call
+// ---------------------------------------------------------------------------
+
+interface BulkRefineResponse {
+  section: number;
+  action: "keep" | "split" | "merge_next" | "merge_prev";
+  segments?: string[];
+  reason?: string;
+}
+
+/** System prompt for bulk refine — evaluates a batch of sections at once */
+export function buildBulkRefineSystem(config: BookConfig): string {
+  const authorContext = AUTHOR_CONTEXT[config.author_slug] ?? "";
+
+  return `You are preparing sections from "${config.title}" for translation into bite-sized reading cards. Each card will be translated into plain English at an 8th-grade reading level.
+
+A good card:
+- Contains ONE coherent idea
+- Makes sense on its own to a reader with no surrounding context
+- Is roughly 50-300 words (shorter is fine if the idea is complete)
+
+HARD RULE: Any section longer than 300 words MUST be split. Each resulting segment must be under 300 words.
+
+AUTHOR CONTEXT: ${authorContext}
+
+You will receive multiple sections at once. Evaluate EACH section and decide what to do with it.
+
+For each section, choose ONE action:
+
+1. "keep" — Single idea, stands alone. No changes needed.
+2. "split" — Multiple distinct ideas OR exceeds 300 words. Split into separate segments. Each segment must be the complete original text for that idea (do not summarize or rewrite). Preserve all original wording.
+3. "merge_next" — Too dependent on the next section to stand alone. Combine with next.
+4. "merge_prev" — Too dependent on the previous section to stand alone. Combine with previous.
+
+Respond with ONLY a JSON array (no other text). One entry per section, in order:
+
+[
+  { "section": 1, "action": "keep", "segments": null, "reason": null },
+  { "section": 2, "action": "split", "segments": ["First idea text...", "Second idea text..."], "reason": null },
+  { "section": 3, "action": "merge_prev", "segments": null, "reason": "Continues previous thought" }
+]
+
+Rules:
+- One entry per section, in the same order as provided.
+- "section" must match the section number given.
+- If "split", "segments" is an array of the exact original text for each idea.
+- If "merge_next" or "merge_prev", "reason" is a brief explanation.
+- If "keep", leave segments and reason as null.`;
+}
+
+/** User message for bulk refine — all chunks formatted as numbered sections */
+export function buildBulkRefineUser(chunks: Chunk[]): string {
+  return chunks
+    .map(
+      (chunk) =>
+        `--- SECTION ${chunk.sectionNumber} ---\n${chunk.text}`,
+    )
+    .join("\n\n");
+}
+
+// ---------------------------------------------------------------------------
 // Reading-time cap — split oversized chunks before translation
 // ---------------------------------------------------------------------------
 
