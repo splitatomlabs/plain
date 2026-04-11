@@ -3,7 +3,9 @@
 	import ShareButton from './ShareButton.svelte';
 	import { getTagBySlug } from '$lib/utils/tags.js';
 
-	let { card, book, totalCardsInBook, cardIndex } = $props();
+	let { card, book, totalCardsInBook, cardIndex, muted = false } = $props();
+
+	let flipped = $state(false);
 
 	const accentVar = {
 		epictetus: 'var(--color-accent-epictetus)',
@@ -17,62 +19,117 @@
 		seneca: 'The Senator'
 	};
 
+	const authorNames = {
+		epictetus: 'Epictetus',
+		'marcus-aurelius': 'Marcus Aurelius',
+		seneca: 'Seneca'
+	};
+
 	const paragraphs = $derived(card.plain_english.split('\n\n'));
+	const originalParagraphs = $derived(card.original_excerpt.split('\n\n'));
+
+	function formatReadingTime(seconds) {
+		if (seconds < 60) return `~${seconds}s read`;
+		const minutes = Math.round(seconds / 60);
+		return `~${minutes}m read`;
+	}
+
+	// Reset flip when card changes
+	$effect(() => {
+		card.id;
+		flipped = false;
+	});
 </script>
 
-<article class="card" aria-live="polite">
-	<header class="card-author" style="color: {accentVar[card.author_slug]}">
-		{card.author_slug === 'marcus-aurelius' ? 'Marcus Aurelius' :
-		 card.author_slug === 'epictetus' ? 'Epictetus' : 'Seneca'}
-		 — {authorTitles[card.author_slug]}
-	</header>
+<article
+	class="card"
+	class:card-muted={muted}
+	aria-live={muted ? undefined : 'polite'}
+	aria-hidden={muted ? 'true' : undefined}
+>
+	<div class="card-perspective">
+		<div class="card-inner" class:flipped>
+			<!-- Front face -->
+			<div class="card-front">
+				<header class="card-author" style="color: {accentVar[card.author_slug]}">
+					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
+				</header>
 
-	<div class="card-text">
-		{#each paragraphs as paragraph}
-			<p>{paragraph}</p>
-		{/each}
-	</div>
+				<div class="card-text">
+					{#each paragraphs as paragraph}
+						<p>{paragraph}</p>
+					{/each}
+				</div>
 
-	<details class="card-original">
-		<summary>Show original</summary>
-		<blockquote class="original-text">
-			{#each card.original_excerpt.split('\n\n') as paragraph}
-				<p>{paragraph}</p>
-			{/each}
-		</blockquote>
-	</details>
-
-	<footer class="card-footer">
-		<p class="card-source">{card.source_reference}</p>
-
-		{#if card.tags?.length}
-		<div class="card-tags">
-			{#each card.tags as tagSlug}
-				{@const tag = getTagBySlug(tagSlug)}
-				{#if tag}
-					<TagPill slug={tag.slug} label={tag.label} />
+				{#if !muted}
+				<button
+					class="flip-btn"
+					onclick={() => { flipped = true; }}
+					aria-label="Show original text"
+				>
+					Show original ↻
+				</button>
 				{/if}
-			{/each}
-		</div>
-		{/if}
 
-		<div class="card-actions">
-			<ShareButton
-				title="{card.source_reference} — In Plain English"
-				text={card.plain_english.slice(0, 100)}
-				url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
-			/>
-			<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
+				<footer class="card-footer">
+					<p class="card-source">{card.source_reference}</p>
+
+					{#if card.tags?.length}
+					<div class="card-tags">
+						{#each card.tags as tagSlug}
+							{@const tag = getTagBySlug(tagSlug)}
+							{#if tag}
+								<TagPill slug={tag.slug} label={tag.label} />
+							{/if}
+						{/each}
+					</div>
+					{/if}
+
+					<div class="card-actions">
+						<ShareButton
+							title="{card.source_reference} — In Plain English"
+							text={card.plain_english.slice(0, 100)}
+							url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
+						/>
+						<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
+						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
+					</div>
+				</footer>
+			</div>
+
+			<!-- Back face -->
+			<div class="card-back">
+				<header class="card-author" style="color: {accentVar[card.author_slug]}">
+					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
+				</header>
+
+				<blockquote class="original-text">
+					{#each originalParagraphs as paragraph}
+						<p>{paragraph}</p>
+					{/each}
+				</blockquote>
+
+				<button
+					class="flip-btn"
+					onclick={() => { flipped = false; }}
+					aria-label="Show translated text"
+				>
+					Show translation ↻
+				</button>
+
+				<footer class="card-footer">
+					<p class="card-source">{card.source_reference}</p>
+					<div class="card-actions">
+						<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
+					</div>
+				</footer>
+			</div>
 		</div>
-	</footer>
+	</div>
 </article>
 
 <style>
 	.card {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 0;
-		padding: var(--space-xl) var(--space-md);
 		max-width: var(--max-line-width);
 		margin: 0 auto;
 	}
@@ -81,11 +138,54 @@
 		outline: none;
 	}
 
+	.card-perspective {
+		perspective: 1000px;
+	}
+
+	.card-inner {
+		position: relative;
+		transform-style: preserve-3d;
+		transition: transform var(--transition-flip);
+	}
+
+	.card-inner.flipped {
+		transform: rotateY(180deg);
+	}
+
+	.card-front,
+	.card-back {
+		backface-visibility: hidden;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 0;
+		padding: var(--space-xl) var(--space-md);
+	}
+
 	@media (min-width: 768px) {
-		.card {
+		.card-front,
+		.card-back {
 			border-radius: 12px;
 			padding: var(--space-2xl) var(--space-xl);
 		}
+	}
+
+	.card-back {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		transform: rotateY(180deg);
+	}
+
+	/* Muted state */
+	.card-muted {
+		opacity: 0.4;
+	}
+
+	.card-muted .flip-btn,
+	.card-muted .card-tags,
+	.card-muted .card-actions {
+		pointer-events: none;
 	}
 
 	.card-author {
@@ -111,35 +211,23 @@
 		margin-bottom: 0;
 	}
 
-	.card-original {
-		margin-bottom: var(--space-lg);
-	}
-
-	.card-original summary {
+	.flip-btn {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+		background: none;
+		border: none;
 		cursor: pointer;
-		list-style: none;
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-xs);
 		padding: var(--space-xs) 0;
 		min-height: 44px;
+		min-width: 44px;
+		margin-bottom: var(--space-lg);
+		display: inline-flex;
+		align-items: center;
 	}
 
-	.card-original summary::-webkit-details-marker {
-		display: none;
-	}
-
-	.card-original summary::before {
-		content: '\25B6';
-		font-size: 0.6em;
-		transition: transform var(--transition-fast);
-	}
-
-	.card-original[open] summary::before {
-		transform: rotate(90deg);
+	.flip-btn:hover {
+		color: var(--color-text-primary);
 	}
 
 	.original-text {
@@ -148,9 +236,9 @@
 		font-style: italic;
 		line-height: var(--line-height-body);
 		color: var(--color-text-secondary);
-		margin: var(--space-sm) 0 0;
-		padding-left: var(--space-md);
-		border-left: 2px solid var(--color-border);
+		margin: 0 0 var(--space-lg);
+		padding: 0;
+		border: none;
 	}
 
 	.original-text p {
@@ -184,6 +272,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: var(--space-sm);
 	}
 
 	.card-position {
@@ -191,5 +280,11 @@
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
 		text-align: right;
+	}
+
+	.reading-time {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
 	}
 </style>
