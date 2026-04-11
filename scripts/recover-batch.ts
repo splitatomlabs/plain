@@ -4,7 +4,7 @@
  * failed chunks, saves translate cache, and assembles the final content.
  *
  * Usage:
- *   ANTHROPIC_API_KEY=... PLAIN_USE_API=1 npx tsx scripts/recover-batch.ts --batch-id <id>
+ *   ANTHROPIC_API_KEY=... npx tsx scripts/recover-batch.ts --batch-id <id>
  */
 
 import { readFile } from "node:fs/promises";
@@ -42,7 +42,7 @@ const { values: args } = parseArgs({
 });
 
 if (args.help || !args["batch-id"]) {
-  console.log(`Usage: PLAIN_USE_API=1 npx tsx scripts/recover-batch.ts --batch-id <id>
+  console.log(`Usage: ANTHROPIC_API_KEY=... npx tsx scripts/recover-batch.ts --batch-id <id>
 
 Recovers a partially-failed batch run:
   1. Loads refine results from cache (or re-refines if uncached)

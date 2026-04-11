@@ -230,7 +230,7 @@ describe("refineChunksBatch", () => {
       makeErroredResult("refine_enchiridion_section-01_0"),
     ]);
 
-    // Real-time fallback: refineChunks calls callClaudeJSON with bulk format
+    // Real-time fallback: refineChunksRealtime calls callClaudeJSON with bulk format
     mockCallClaudeJSON.mockResolvedValue([
       { section: 1, action: "keep", segments: null, reason: null },
     ]);
