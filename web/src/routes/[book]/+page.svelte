@@ -428,7 +428,7 @@
 	.gift-compose {
 		max-width: 400px;
 		margin: var(--space-md) auto 0;
-		text-align: left;
+		text-align: center;
 	}
 
 	.gift-label {
@@ -437,6 +437,7 @@
 		color: var(--color-text-secondary);
 		display: block;
 		margin-bottom: var(--space-sm);
+		text-align: left;
 	}
 
 	.gift-textarea {
