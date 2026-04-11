@@ -3,9 +3,14 @@
 	import ShareButton from './ShareButton.svelte';
 	import { getTagBySlug } from '$lib/utils/tags.js';
 
+	import { onMount } from 'svelte';
+
 	let { card, book, totalCardsInBook, cardIndex, muted = false } = $props();
 
 	let flipped = $state(false);
+	let frontEl = $state(null);
+	let backEl = $state(null);
+	let innerHeight = $state(null);
 
 	const accentVar = {
 		epictetus: 'var(--color-accent-epictetus)',
@@ -39,6 +44,31 @@
 		card.id;
 		flipped = false;
 	});
+
+	function measureHeights() {
+		if (!frontEl || !backEl) return;
+		const frontH = frontEl.scrollHeight;
+		const backH = backEl.scrollHeight;
+		innerHeight = flipped ? backH : frontH;
+	}
+
+	// Measure on mount and resize
+	onMount(() => {
+		measureHeights();
+		const onResize = () => measureHeights();
+		window.addEventListener('resize', onResize);
+		return () => window.removeEventListener('resize', onResize);
+	});
+
+	// Re-measure when flip state or card changes
+	$effect(() => {
+		flipped;
+		card.id;
+		// Wait a tick so DOM updates before measuring
+		if (typeof requestAnimationFrame !== 'undefined') {
+			requestAnimationFrame(() => measureHeights());
+		}
+	});
 </script>
 
 <article
@@ -48,9 +78,9 @@
 	aria-hidden={muted ? 'true' : undefined}
 >
 	<div class="card-perspective">
-		<div class="card-inner" class:flipped>
+		<div class="card-inner" class:flipped style={innerHeight ? `height: ${innerHeight}px` : ''}>
 			<!-- Front face -->
-			<div class="card-front">
+			<div class="card-front" bind:this={frontEl}>
 				<header class="card-author" style="color: {accentVar[card.author_slug]}">
 					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
 				</header>
@@ -98,7 +128,7 @@
 			</div>
 
 			<!-- Back face -->
-			<div class="card-back">
+			<div class="card-back" bind:this={backEl}>
 				<header class="card-author" style="color: {accentVar[card.author_slug]}">
 					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
 				</header>
@@ -145,7 +175,7 @@
 	.card-inner {
 		position: relative;
 		transform-style: preserve-3d;
-		transition: transform var(--transition-flip);
+		transition: transform var(--transition-flip), height var(--transition-flip);
 	}
 
 	.card-inner.flipped {
