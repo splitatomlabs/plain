@@ -95,6 +95,24 @@ function createProgressStore() {
 			};
 		},
 
+		getChapterProgress(bookSlug, chapterSlug, chapterCardCount) {
+			const data = get(store);
+			const book = data[bookSlug];
+			if (!book) {
+				return { cardsRead: 0, total: chapterCardCount, percentage: 0, completed: false };
+			}
+			const chapterMatch = chapterSlug.match(/(\d+)/);
+			const chapterNum = chapterMatch ? chapterMatch[1] : '00';
+			const prefix = `${bookSlug}-${chapterNum}-`;
+			const cardsRead = book.cards_read.filter((id) => id.startsWith(prefix)).length;
+			return {
+				cardsRead,
+				total: chapterCardCount,
+				percentage: chapterCardCount > 0 ? Math.round((cardsRead / chapterCardCount) * 100) : 0,
+				completed: cardsRead >= chapterCardCount
+			};
+		},
+
 		getResumeUrl(bookSlug) {
 			const data = get(store);
 			return data[bookSlug]?.resume_url || null;
