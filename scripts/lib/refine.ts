@@ -17,7 +17,7 @@ export const MAX_READING_TIME_SECONDS = 90;
 
 const AUTHOR_CONTEXT: Record<string, string> = {
   epictetus:
-    "Epictetus is direct and instructional. His sections are short, punchy lessons — most work well as standalone cards. Very short sections (a sentence or two) are common and may need merging.",
+    "Epictetus is direct and instructional. In the Enchiridion, sections are short, punchy lessons — most work well as standalone cards. Very short sections (a sentence or two) are common and may need merging. In the Discourses, sections are longer and more conversational — extended arguments with examples, dialogues, and rhetorical questions. Long discourses with multiple distinct ideas should be split.",
   "marcus-aurelius":
     "Marcus Aurelius wrote private journal reflections. Sections vary widely — some are a single sentence of self-reminding, others are extended meditations. Very short entries often depend on the previous thought. Longer entries sometimes contain multiple distinct ideas.",
   seneca:
