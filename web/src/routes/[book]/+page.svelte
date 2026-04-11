@@ -366,10 +366,6 @@
 		margin-bottom: var(--space-md);
 	}
 
-	.cta-secondary-row {
-		margin-top: var(--space-sm);
-	}
-
 	.cta-primary {
 		color: var(--color-surface);
 		background: var(--color-text-primary);
@@ -380,18 +376,6 @@
 		opacity: 0.85;
 		background: var(--color-text-primary);
 		border-color: var(--color-text-primary);
-	}
-
-	.cta-secondary {
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		color: var(--color-text-secondary);
-		text-decoration: underline;
-		text-underline-offset: 0.15em;
-	}
-
-	.cta-secondary:hover {
-		color: var(--color-text-primary);
 	}
 
 	.gift-row {
