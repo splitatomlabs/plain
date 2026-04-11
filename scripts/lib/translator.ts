@@ -6,6 +6,7 @@ import {
   extractJSON,
   tokenUsage,
   batchStats,
+  safeCustomId,
   type BatchRequest,
   type CallClaudeOptions,
 } from "./claude.js";
@@ -79,7 +80,7 @@ export async function translateChunksBatch(
     const system = buildTranslationSystem(config);
     for (let index = 0; index < chunks.length; index++) {
       const chunk = chunks[index];
-      const customId = `${bookSlug}_${chapterSlug}_${index}`;
+      const customId = safeCustomId(bookSlug, chapterSlug, index);
       requests.push({
         custom_id: customId,
         system,

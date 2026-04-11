@@ -10,7 +10,8 @@ const mockPollBatchUntilDone = vi.fn();
 const mockStreamBatchResults = vi.fn();
 const mockCallClaudeJSON = vi.fn();
 
-vi.mock("../claude.js", () => ({
+vi.mock("../claude.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../claude.js")>()),
   createMessageBatch: (...args: unknown[]) => mockCreateMessageBatch(...args),
   pollBatchUntilDone: (...args: unknown[]) => mockPollBatchUntilDone(...args),
   streamBatchResults: (...args: unknown[]) => mockStreamBatchResults(...args),

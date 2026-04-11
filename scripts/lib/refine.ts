@@ -7,6 +7,7 @@ import {
   extractJSON,
   tokenUsage,
   batchStats,
+  safeCustomId,
   type BatchRequest,
 } from "./claude.js";
 import type { Chunk } from "./chunker.js";
@@ -458,7 +459,7 @@ export async function refineChunksBatch(
 
     for (let b = 0; b < batches.length; b++) {
       const batch = batches[b];
-      const customId = `refine_${bookSlug}_${chapterSlug}_${b}`;
+      const customId = safeCustomId("refine", bookSlug, chapterSlug, b);
       const prompt = buildBulkRefineUser(batch);
       requests.push({
         custom_id: customId,

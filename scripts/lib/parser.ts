@@ -320,7 +320,7 @@ function toSlug(title: string): string {
 function parseDiscourses(text: string, config: BookConfig): ParsedBook {
   const headingRe = config.headingPattern!;
   // ALL-CAPS continuation line that precedes a heading line (multi-line headings)
-  const continuationRe = /^[A-Z][A-Z ,.':()]+$/;
+  const continuationRe = /^[A-Z][A-Z ,.':();]+$/;
   const lines = text.split("\n");
 
   // Find all heading positions, merging multi-line headings

@@ -162,6 +162,16 @@ async function callClaudeAPI(
 // Batch API
 // ---------------------------------------------------------------------------
 
+/** Build a custom_id that fits the Batch API's 64-char limit. */
+export function safeCustomId(...parts: (string | number)[]): string {
+  const joined = parts.join("_");
+  if (joined.length <= 64) return joined;
+  // Truncate the longest part (usually the chapter slug) and add a hash suffix
+  const hash = joined.split("").reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+  const suffix = `_${(hash >>> 0).toString(36)}`;
+  return joined.slice(0, 64 - suffix.length) + suffix;
+}
+
 export interface BatchRequest {
   custom_id: string;
   model?: string;
