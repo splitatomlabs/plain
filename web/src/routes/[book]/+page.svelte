@@ -117,30 +117,32 @@
 		<p class="book-description">{data.book.description}</p>
 	</header>
 
-	<p class="book-scope">{data.book.total_cards} cards · {readingTimeLabel} read</p>
+	<div class="action-zone">
+		<p class="book-scope">{data.book.total_cards} cards · {readingTimeLabel} read</p>
 
-	{#if bookPercentage > 0}
-		<div class="book-landing-progress">
-			<div class="landing-progress-track">
-				<div class="landing-progress-fill" style="width: {bookPercentage}%"></div>
+		{#if bookPercentage > 0}
+			<div class="book-landing-progress">
+				<div class="landing-progress-track">
+					<div class="landing-progress-fill" style="width: {bookPercentage}%"></div>
+				</div>
+				<span class="landing-progress-label">{bookPercentage}%</span>
 			</div>
-			<span class="landing-progress-label">{bookPercentage}%</span>
-		</div>
-	{/if}
-	{#if bookResumeUrl}
-		<div class="cta-row">
-			<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
-		</div>
-	{:else}
-		<div class="cta-row">
-			<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
-		</div>
-	{/if}
+		{/if}
+		{#if bookResumeUrl}
+			<div class="cta-row">
+				<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
+			</div>
+		{:else}
+			<div class="cta-row">
+				<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
+			</div>
+		{/if}
 
-	<div class="gift-row">
-		<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
-			Send this book to a friend
-		</button>
+		<div class="gift-row">
+			<button class="gift-button" onclick={() => showGiftCompose = !showGiftCompose}>
+				Send this book to a friend
+			</button>
+		</div>
 	</div>
 
 	{#if showGiftCompose}
@@ -212,7 +214,7 @@
 	}
 
 	.book-header {
-		margin-bottom: var(--space-md);
+		margin-bottom: var(--space-xl);
 	}
 
 	.author-title {
@@ -248,12 +250,17 @@
 		line-height: var(--line-height-body);
 	}
 
+	.action-zone {
+		text-align: center;
+		margin-bottom: var(--space-xl);
+	}
+
 	.book-scope {
 		font-family: var(--font-ui);
-		font-size: 1rem;
-		color: var(--color-text-primary);
-		margin: 0 0 var(--space-lg);
-		text-align: center;
+		font-size: var(--text-ui);
+		letter-spacing: 0.03em;
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-md);
 	}
 
 	.book-tags {
@@ -385,7 +392,7 @@
 
 	.cta-row {
 		text-align: center;
-		margin-bottom: var(--space-md);
+		margin-bottom: var(--space-xs);
 	}
 
 	.cta-primary {
@@ -402,7 +409,6 @@
 
 	.gift-row {
 		text-align: center;
-		margin-bottom: var(--space-xl);
 	}
 
 	.cta {
