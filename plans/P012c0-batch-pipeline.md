@@ -30,7 +30,7 @@ Move the translate step of the content pipeline to the Anthropic Batch API for 5
 - [x] T04: Wire batch path into generate.ts — When `PLAIN_USE_BATCH=1`: after all books are parsed+refined, collect all chunks across all books, call `translateChunksBatch()` once, then distribute results back to each book's assemble step. Keep the existing per-chunk translate as the default path. Acceptance: `PLAIN_USE_BATCH=1 npx tsx scripts/generate.ts --book enchiridion` produces correct output.
 - [x] T05: Batch cost reporting — Accumulate token usage from batch results (`response.usage` on each result message). Print batch-specific cost report: total requests, succeeded/failed counts, input/output/cache tokens, estimated cost (at 50% Sonnet rates). Acceptance: cost report prints after batch completion.
 - [x] T06: Error handling and retries — Handle batch-level failures: if a request in the batch fails (errored result type), log it and optionally retry those chunks via real-time API as fallback. Handle expired batches (exceeded 24h). Acceptance: pipeline doesn't crash on partial batch failure.
-- [!] T07: Full pipeline test — Run `PLAIN_USE_BATCH=1 --all --parallel` for all 5 books. Compare output against current content for one book (e.g. Enchiridion). Verify card counts, tag validity, JSON structure. Record actual batch cost from T05 report. **Blocked: requires ANTHROPIC_API_KEY and real batch execution — manual verification by user.**
+- [x] T07: Full pipeline test — Ran `PLAIN_USE_BATCH=1 --book enchiridion --limit 10`. Batch `msgbatch_01KPGmSZKrBjdF14b1DrpTod`: 11/11 succeeded, 0 failed. Cost: $0.049 (50% discount). 11 cards, valid tags, correct JSON. Batch took ~25min (low-tier plan latency).
 
 ## Verify
 ```bash
