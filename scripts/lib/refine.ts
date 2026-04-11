@@ -662,17 +662,25 @@ export async function refineChunksBatch(
       // Handle deferred merge from previous batch
       if (deferredMergeChunk) {
         const first = batchChunks[0];
+        const mergedSectionNumber = deferredMergeChunk.sectionNumber;
         batchChunks = [
           {
-            sectionNumber: deferredMergeChunk.sectionNumber,
+            sectionNumber: mergedSectionNumber,
             text: deferredMergeChunk.text + "\n\n" + first.text,
           },
           ...batchChunks.slice(1),
         ];
+        // Remap decision keyed on original first section to the merged section number
+        const firstDecisionIdx = decisions.findIndex(d => d.section === first.sectionNumber);
+        if (firstDecisionIdx !== -1) {
+          decisions = decisions.map((d, idx) =>
+            idx === firstDecisionIdx ? { ...d, section: mergedSectionNumber } : d,
+          );
+        }
         deferredMergeChunk = null;
         totalMerges++;
         process.stderr.write(
-          `  MERGE (cross-batch) section ${batchChunks[0].sectionNumber} with next batch\n`,
+          `  MERGE (cross-batch) section ${mergedSectionNumber} with next batch\n`,
         );
       }
 

@@ -349,6 +349,53 @@ describe("refineChunksBatch", () => {
     expect(batchStats.failed).toBe(1);
   });
 
+  it("remaps decisions correctly on cross-batch merge", async () => {
+    // Create 12 chunks so batch 0 has chunks 1-10, batch 1 has chunks 11-12
+    // Chunk 10 (last in batch 0) has merge_next, so it defers.
+    // Chunk 11 (first in batch 1) has a split decision — the decision section number
+    // must be remapped to chunk 10's section number after the merge.
+    const chunks: Chunk[] = [];
+    for (let i = 1; i <= 12; i++) {
+      chunks.push(makeChunk(i, `Chunk ${i} text.`));
+    }
+
+    const inputs: BatchRefineInput[] = [
+      { bookSlug: "enchiridion", chapterSlug: "section-01", chunks, config: testConfig },
+    ];
+
+    // Batch 0 (sections 1-10): keep all, except section 10 = merge_next
+    const batch0Decisions = [];
+    for (let i = 1; i <= 9; i++) {
+      batch0Decisions.push({ section: i, action: "keep", segments: null, reason: null });
+    }
+    batch0Decisions.push({ section: 10, action: "merge_next", segments: null, reason: "Continues" });
+
+    // Batch 1 (sections 11-12): section 11 has a split decision
+    // After merge, the merged chunk has sectionNumber=10, so the decision for section 11
+    // must be remapped to section 10
+    const batch1Decisions = [
+      { section: 11, action: "split", segments: ["Chunk 10 text.\n\nFirst part.", "Second part."], reason: null },
+      { section: 12, action: "keep", segments: null, reason: null },
+    ];
+
+    setupBatch("batch_crossmerge", [
+      makeRefineResult("refine_enchiridion_section-01_0", batch0Decisions),
+      makeRefineResult("refine_enchiridion_section-01_1", batch1Decisions),
+    ]);
+
+    const result = await refineChunksBatch(inputs);
+    const r = result.get("enchiridion_section-01")!;
+
+    // 9 kept + 2 from split + 1 kept (chunk 12) = 12 chunks, minus the merge = 11 + split of merged = 11
+    // Actually: 9 kept (1-9) + merge(10+11) produces deferred chunk
+    // Then in batch 1: deferred is merged, then split into 2, plus keep(12) = 3
+    // Total: 9 + 2 + 1 = 12, with 1 merge and 1 split
+    expect(r.merges).toBeGreaterThanOrEqual(1);
+    expect(r.splits).toBeGreaterThanOrEqual(1);
+    // The split decision should have been applied (not dropped)
+    expect(r.chunks.some(c => c.text === "Second part.")).toBe(true);
+  });
+
   it("applies LENGTH-SPLIT to oversized chunks after batch decisions", async () => {
     // Create a chunk that exceeds 90s reading time (~300 words)
     const longText = Array(400).fill("word").join(" ");
