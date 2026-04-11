@@ -39,13 +39,17 @@ import {
   loadRefineCache,
   saveTranslateCache,
   loadTranslateCache,
+  PIPELINE_VERSION,
 } from "../cache.js";
 
 import type { Chunk } from "../chunker.js";
 import type { TranslatedChunk } from "../translator.js";
 
-// Override cwd so content-pipeline is created inside tempDir
+// CACHE_DIR in cache.ts is path.resolve("content-pipeline"), evaluated at
+// import time before any chdir.  Capture the same resolved path so tests
+// that read raw JSON from disk use the correct location.
 const originalCwd = process.cwd();
+const RESOLVED_CACHE_DIR = path.resolve("content-pipeline");
 beforeEach(() => {
   process.chdir(tempDir);
 });
@@ -228,5 +232,109 @@ describe("translate cache", () => {
     await saveTranslateCache("enchiridion", hash, translateMap);
     const loaded = await loadTranslateCache("enchiridion", "different-hash");
     expect(loaded).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Pipeline version checking
+// ---------------------------------------------------------------------------
+
+describe("pipeline version checking", () => {
+  it("refine: save then load with matching version returns data", async () => {
+    const hash = await hashSourceFile(sourceFile);
+    await saveRefineCache("enchiridion", hash, sampleChapters);
+    const loaded = await loadRefineCache("enchiridion", hash);
+    expect(loaded).not.toBeNull();
+    expect(loaded).toHaveLength(1);
+  });
+
+  it("refine: load with mismatched version returns null", async () => {
+    const hash = await hashSourceFile(sourceFile);
+    await saveRefineCache("enchiridion", hash, sampleChapters);
+
+    // Tamper with the saved file to simulate an old version
+    const { readFile, writeFile } = await import("node:fs/promises");
+    const filePath = path.join(RESOLVED_CACHE_DIR, "enchiridion", "refine.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    raw.pipelineVersion = 999;
+    await writeFile(filePath, JSON.stringify(raw));
+
+    const loaded = await loadRefineCache("enchiridion", hash);
+    expect(loaded).toBeNull();
+  });
+
+  it("refine: load with missing pipelineVersion field returns null", async () => {
+    const hash = await hashSourceFile(sourceFile);
+    await saveRefineCache("enchiridion", hash, sampleChapters);
+
+    const { readFile, writeFile } = await import("node:fs/promises");
+    const filePath = path.join(RESOLVED_CACHE_DIR, "enchiridion", "refine.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    delete raw.pipelineVersion;
+    await writeFile(filePath, JSON.stringify(raw));
+
+    const loaded = await loadRefineCache("enchiridion", hash);
+    expect(loaded).toBeNull();
+  });
+
+  it("translate: load with mismatched version returns null", async () => {
+    const hash = await hashSourceFile(sourceFile);
+    const translateMap = new Map<string, TranslatedChunk[]>();
+    translateMap.set("enchiridion_sections-01-10", sampleTranslated);
+    await saveTranslateCache("enchiridion", hash, translateMap);
+
+    const { readFile, writeFile } = await import("node:fs/promises");
+    const filePath = path.join(RESOLVED_CACHE_DIR, "enchiridion", "translate.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    raw.pipelineVersion = 999;
+    await writeFile(filePath, JSON.stringify(raw));
+
+    const loaded = await loadTranslateCache("enchiridion", hash);
+    expect(loaded).toBeNull();
+  });
+
+  it("translate: load with missing pipelineVersion field returns null", async () => {
+    const hash = await hashSourceFile(sourceFile);
+    const translateMap = new Map<string, TranslatedChunk[]>();
+    translateMap.set("enchiridion_sections-01-10", sampleTranslated);
+    await saveTranslateCache("enchiridion", hash, translateMap);
+
+    const { readFile, writeFile } = await import("node:fs/promises");
+    const filePath = path.join(RESOLVED_CACHE_DIR, "enchiridion", "translate.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    delete raw.pipelineVersion;
+    await writeFile(filePath, JSON.stringify(raw));
+
+    const loaded = await loadTranslateCache("enchiridion", hash);
+    expect(loaded).toBeNull();
+  });
+
+  it("saved refine files contain pipelineVersion matching the constant", async () => {
+    const hash = await hashSourceFile(sourceFile);
+    await saveRefineCache("enchiridion", hash, sampleChapters);
+
+    const { readFile } = await import("node:fs/promises");
+    const filePath = path.join(RESOLVED_CACHE_DIR, "enchiridion", "refine.json");
+    const raw = JSON.parse(await readFile(filePath, "utf-8"));
+    expect(raw.pipelineVersion).toBe(PIPELINE_VERSION);
+  });
+
+  it("saved files contain createdAt as valid ISO string", async () => {
+    const hash = await hashSourceFile(sourceFile);
+    await saveRefineCache("enchiridion", hash, sampleChapters);
+
+    const translateMap = new Map<string, TranslatedChunk[]>();
+    translateMap.set("enchiridion_sections-01-10", sampleTranslated);
+    await saveTranslateCache("enchiridion", hash, translateMap);
+
+    const { readFile } = await import("node:fs/promises");
+
+    const refinePath = path.join(RESOLVED_CACHE_DIR, "enchiridion", "refine.json");
+    const refineData = JSON.parse(await readFile(refinePath, "utf-8"));
+    expect(new Date(refineData.createdAt).toISOString()).toBe(refineData.createdAt);
+
+    const translateFilePath = path.join(RESOLVED_CACHE_DIR, "enchiridion", "translate.json");
+    const translateData = JSON.parse(await readFile(translateFilePath, "utf-8"));
+    expect(new Date(translateData.createdAt).toISOString()).toBe(translateData.createdAt);
   });
 });
