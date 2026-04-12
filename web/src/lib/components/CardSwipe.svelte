@@ -14,6 +14,7 @@
 	let velocityBuffer = [];
 	let startX = 0;
 	let startY = 0;
+	let throwFallbackTimer = null;
 
 	// Reset drag state when the active card changes (after navigation)
 	$effect(() => {
@@ -23,6 +24,7 @@
 		dragging = false;
 		dx = 0;
 		dy = 0;
+		clearTimeout(throwFallbackTimer);
 	});
 
 	// Drag progress for next-card scale (0 to 1)
@@ -121,6 +123,13 @@
 				const throwDist = Math.max(viewportWidth * 1.5, 800);
 				dx = Math.cos(angle) * throwDist;
 				dy = Math.sin(angle) * throwDist;
+				// Fallback: if transitionend doesn't fire (e.g. element off-viewport),
+				// complete the throw after the transition duration
+				throwFallbackTimer = setTimeout(() => {
+					if (thrown && !promoting) {
+						handleThrowEnd({ propertyName: 'transform' });
+					}
+				}, 300);
 			}
 		} else {
 			// Snap back
@@ -131,9 +140,15 @@
 
 	function handleThrowEnd(e) {
 		if (thrown && !promoting && e.propertyName === 'transform') {
+			clearTimeout(throwFallbackTimer);
 			// Throw complete — start promote phase
-			promoting = true;
 			onPromoteStart?.();
+			if (nextScale >= 0.999) {
+				// Next card already at full scale (drag brought it there) — skip promote
+				onDismiss?.();
+			} else {
+				promoting = true;
+			}
 		}
 	}
 

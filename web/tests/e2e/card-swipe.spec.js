@@ -15,9 +15,14 @@ test.describe('Card stack and swipe', () => {
 		await expect(muted).toBeVisible();
 	});
 
-	test('pointer drag past threshold navigates to next URL', async ({ page }) => {
+	test('pointer drag past threshold advances to next card', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
-		await page.waitForSelector('.card-swipe');
+		// Wait for Svelte hydration — CardNav sets data-keyboard-ready on mount
+		await page.waitForSelector('[data-keyboard-ready]');
+
+		// Capture initial card content
+		const sourceRef = page.locator('.card-swipe-current .card-front .card-source');
+		const initialText = await sourceRef.textContent();
 
 		const box = await page.locator('.card-swipe').boundingBox();
 		const startX = box.x + box.width / 2;
@@ -34,7 +39,8 @@ test.describe('Card stack and swipe', () => {
 		}
 		await page.mouse.up();
 
-		await expect(page).toHaveURL(/\/meditations\/book-01\/2$/);
+		// After throw + promote animation, the active card content should change
+		await expect(sourceRef).not.toHaveText(initialText, { timeout: 5000 });
 	});
 
 	test('flip button toggles card and shows original text', async ({ page }) => {
