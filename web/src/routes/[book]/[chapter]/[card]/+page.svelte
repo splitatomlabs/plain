@@ -2,6 +2,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import CardNav from '$lib/components/CardNav.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import ChapterMarker from '$lib/components/ChapterMarker.svelte';
 	import MilestoneModal from '$lib/components/MilestoneModal.svelte';
 	import { progress } from '$lib/stores/progress.js';
 	import { goto } from '$app/navigation';
@@ -81,6 +82,8 @@
 	{#if !data.prevCard}
 		<p class="card-boundary">Beginning of {data.book.title}</p>
 	{/if}
+
+	<ChapterMarker book={data.book} card={data.card} prevCard={data.prevCard} />
 
 	<CardNav prevCard={data.prevCard} nextCard={data.nextCard} onNavigateNext={handleNavigateNext}>
 		<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
