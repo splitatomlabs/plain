@@ -1,11 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
 
-	let { children, nextCardSnippet, onDismiss, hasNext = false, cardId = '' } = $props();
+	let { children, nextCardSnippet, onDismiss, onPromoteStart, hasNext = false, canSwipe = true, cardId = '' } = $props();
 
 	let containerEl = $state(null);
 	let dragging = $state(false);
 	let thrown = $state(false);
+	let promoting = $state(false);
 	let dx = $state(0);
 	let dy = $state(0);
 
@@ -13,14 +14,24 @@
 	let velocityBuffer = [];
 	let startX = 0;
 	let startY = 0;
+	let throwFallbackTimer = null;
+
+	// Touch gesture state: 'idle' | 'pending' | 'dragging' | 'scrolling'
+	let touchPhase = 'idle';
+	let pendingTimer = null;
+	const AXIS_THRESHOLD = 10;
 
 	// Reset drag state when the active card changes (after navigation)
 	$effect(() => {
 		cardId;
 		thrown = false;
+		promoting = false;
 		dragging = false;
+		touchPhase = 'idle';
 		dx = 0;
 		dy = 0;
+		clearTimeout(throwFallbackTimer);
+		clearTimeout(pendingTimer);
 	});
 
 	// Drag progress for next-card scale (0 to 1)
@@ -49,27 +60,82 @@
 		return () => mq.removeEventListener('change', handler);
 	});
 
+	// Non-passive touchmove: preventDefault during 'pending' and 'dragging' phases.
+	// During 'pending', this blocks the browser's native scroll while we decide
+	// direction. During 'dragging', it keeps the browser from scrolling.
+	// During 'scrolling' (or 'idle'), we don't prevent — native scroll works.
+	onMount(() => {
+		function onTouchMove(e) {
+			if (touchPhase === 'pending' || touchPhase === 'dragging') {
+				e.preventDefault();
+			}
+		}
+		containerEl.addEventListener('touchmove', onTouchMove, { passive: false });
+		return () => containerEl.removeEventListener('touchmove', onTouchMove);
+	});
+
 	function handlePointerDown(e) {
-		if (thrown) return;
-		// Only handle primary button (left click / touch)
+		if (thrown || promoting) return;
 		if (e.button !== 0) return;
-		// Don't capture pointer on interactive elements — let clicks fire normally
 		if (e.target.closest('button, a, [role="button"], summary')) return;
 
-		dragging = true;
-		dx = 0;
-		dy = 0;
 		startX = e.clientX;
 		startY = e.clientY;
 		velocityBuffer = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
 
-		containerEl.setPointerCapture(e.pointerId);
+		if (e.pointerType === 'mouse') {
+			// Mouse: capture immediately, drag in any direction
+			dragging = true;
+			touchPhase = 'dragging';
+			dx = 0;
+			dy = 0;
+			containerEl.setPointerCapture(e.pointerId);
+		} else {
+			// Touch: enter pending — touchmove preventDefault blocks native scroll
+			// while we wait for enough movement to determine direction.
+			// If the user holds still too long, exit pending so native scroll works.
+			touchPhase = 'pending';
+			clearTimeout(pendingTimer);
+			pendingTimer = setTimeout(() => {
+				if (touchPhase === 'pending') {
+					touchPhase = 'idle';
+				}
+			}, 200);
+		}
 	}
 
 	function handlePointerMove(e) {
-		if (!dragging || thrown) return;
+		if (thrown || promoting) return;
 
-		// Only update visual position if motion is allowed
+		if (touchPhase === 'pending') {
+			const moveX = Math.abs(e.clientX - startX);
+			const moveY = Math.abs(e.clientY - startY);
+
+			if (moveX < AXIS_THRESHOLD && moveY < AXIS_THRESHOLD) return;
+
+			clearTimeout(pendingTimer);
+			if (moveX >= moveY) {
+				// Horizontal intent — start dragging
+				touchPhase = 'dragging';
+				dragging = true;
+				dx = 0;
+				dy = 0;
+				containerEl.setPointerCapture(e.pointerId);
+				if (!reducedMotion) {
+					dx = e.clientX - startX;
+					dy = e.clientY - startY;
+				}
+			} else {
+				// Vertical intent — let native scroll take over.
+				// Stop preventing touchmove defaults so the browser scrolls.
+				touchPhase = 'scrolling';
+			}
+			return;
+		}
+
+		if (touchPhase === 'scrolling') return;
+		if (!dragging) return;
+
 		if (!reducedMotion) {
 			dx = e.clientX - startX;
 			dy = e.clientY - startY;
@@ -80,11 +146,15 @@
 	}
 
 	function handlePointerUp(e) {
-		if (!dragging || thrown) return;
-		dragging = false;
+		if (touchPhase === 'pending' || touchPhase === 'scrolling') {
+			touchPhase = 'idle';
+			return;
+		}
 
-		const now = performance.now();
-		// Calculate velocity from last 2 entries
+		if (!dragging || thrown || promoting) return;
+		dragging = false;
+		touchPhase = 'idle';
+
 		let velocity = 0;
 		if (velocityBuffer.length >= 2) {
 			const last = velocityBuffer[velocityBuffer.length - 1];
@@ -97,40 +167,57 @@
 			}
 		}
 
-		// Calculate offset from start position (works even when dx/dy are 0 in reduced motion)
 		const last = velocityBuffer[velocityBuffer.length - 1] || { x: startX, y: startY };
 		const totalDx = last.x - startX;
 		const totalDy = last.y - startY;
 		const offset = Math.sqrt(totalDx * totalDx + totalDy * totalDy);
 		const viewportWidth = containerEl.clientWidth;
-		const shouldDismiss = hasNext && (velocity > 0.5 || offset > viewportWidth * 0.3);
+		const shouldDismiss = canSwipe && hasNext && (velocity > 0.5 || offset > viewportWidth * 0.3);
 
 		if (shouldDismiss) {
 			if (reducedMotion) {
-				// Instant navigation
 				dx = 0;
 				dy = 0;
+				onPromoteStart?.();
 				onDismiss?.();
 			} else {
-				// Throw animation — fly off screen
 				thrown = true;
 				const angle = Math.atan2(dy, dx);
 				const throwDist = Math.max(viewportWidth * 1.5, 800);
 				dx = Math.cos(angle) * throwDist;
 				dy = Math.sin(angle) * throwDist;
+				throwFallbackTimer = setTimeout(() => {
+					if (thrown && !promoting) {
+						handleThrowEnd({ propertyName: 'transform' });
+					}
+				}, 300);
 			}
 		} else {
-			// Snap back
 			dx = 0;
 			dy = 0;
 		}
 	}
 
-	function handleTransitionEnd(e) {
-		if (thrown && e.propertyName === 'transform') {
-			// Don't reset state here — keep the card off-screen.
-			// The $effect watching cardId will reset dx/dy/thrown
-			// once goto() completes and new card data arrives.
+	function handlePointerCancel() {
+		touchPhase = 'idle';
+		dragging = false;
+		dx = 0;
+		dy = 0;
+	}
+
+	function handleThrowEnd(e) {
+		if (thrown && !promoting && e.propertyName === 'transform') {
+			clearTimeout(throwFallbackTimer);
+			promoting = true;
+			onPromoteStart?.();
+			if (nextScale >= 0.999) {
+				onDismiss?.();
+			}
+		}
+	}
+
+	function handlePromoteEnd(e) {
+		if (promoting && e.propertyName === 'transform') {
 			onDismiss?.();
 		}
 	}
@@ -142,15 +229,17 @@
 	onpointerdown={handlePointerDown}
 	onpointermove={handlePointerMove}
 	onpointerup={handlePointerUp}
-	onpointercancel={() => { dragging = false; dx = 0; dy = 0; }}
-	style="touch-action: none;"
+	onpointercancel={handlePointerCancel}
+	style="touch-action: pan-y;"
 	role="presentation"
 >
 	<!-- Next card (underneath) -->
 	{#if nextCardSnippet}
 		<div
 			class="card-swipe-layer card-swipe-next"
-			style="transform: scale({nextScale})"
+			class:promoting
+			style={promoting ? '' : `transform: scale(${nextScale})`}
+			ontransitionend={handlePromoteEnd}
 		>
 			{@render nextCardSnippet()}
 		</div>
@@ -161,11 +250,12 @@
 		class="card-swipe-layer card-swipe-current"
 		class:dragging
 		class:thrown
+		class:hidden-thrown={promoting}
 		style="
 			transform: translate({dx}px, {dy}px) rotate({dragging || thrown ? rotation : 0}deg);
 			box-shadow: 0 {8 * shadowOpacity / 0.12}px {24 * shadowOpacity / 0.12}px rgba(0,0,0,{shadowOpacity});
 		"
-		ontransitionend={handleTransitionEnd}
+		ontransitionend={handleThrowEnd}
 	>
 		{@render children()}
 	</div>
@@ -177,6 +267,12 @@
 		max-width: var(--max-line-width);
 		margin: 0 auto;
 		cursor: grab;
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	.card-swipe :global(*) {
+		-webkit-user-select: none;
 		user-select: none;
 	}
 
@@ -193,14 +289,26 @@
 		top: 0;
 		left: 0;
 		width: 100%;
+		height: 100%;
+		overflow: hidden;
 		transform-origin: center center;
 		pointer-events: none;
+	}
+
+	.card-swipe-next.promoting {
+		transform: scale(1);
+		opacity: 1;
+		transition: transform var(--transition-promote), opacity var(--transition-promote);
 	}
 
 	.card-swipe-current {
 		position: relative;
 		z-index: 1;
 		will-change: transform;
+	}
+
+	.card-swipe-current.hidden-thrown {
+		display: none;
 	}
 
 	.card-swipe-current.thrown {
