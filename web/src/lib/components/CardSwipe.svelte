@@ -1,11 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
 
-	let { children, nextCardSnippet, onDismiss, hasNext = false, cardId = '' } = $props();
+	let { children, nextCardSnippet, onDismiss, onPromoteStart, hasNext = false, canSwipe = true, cardId = '' } = $props();
 
 	let containerEl = $state(null);
 	let dragging = $state(false);
 	let thrown = $state(false);
+	let promoting = $state(false);
 	let dx = $state(0);
 	let dy = $state(0);
 
@@ -18,6 +19,7 @@
 	$effect(() => {
 		cardId;
 		thrown = false;
+		promoting = false;
 		dragging = false;
 		dx = 0;
 		dy = 0;
@@ -50,7 +52,7 @@
 	});
 
 	function handlePointerDown(e) {
-		if (thrown) return;
+		if (thrown || promoting) return;
 		// Only handle primary button (left click / touch)
 		if (e.button !== 0) return;
 		// Don't capture pointer on interactive elements — let clicks fire normally
@@ -67,7 +69,7 @@
 	}
 
 	function handlePointerMove(e) {
-		if (!dragging || thrown) return;
+		if (!dragging || thrown || promoting) return;
 
 		// Only update visual position if motion is allowed
 		if (!reducedMotion) {
@@ -80,7 +82,7 @@
 	}
 
 	function handlePointerUp(e) {
-		if (!dragging || thrown) return;
+		if (!dragging || thrown || promoting) return;
 		dragging = false;
 
 		const now = performance.now();
@@ -103,13 +105,14 @@
 		const totalDy = last.y - startY;
 		const offset = Math.sqrt(totalDx * totalDx + totalDy * totalDy);
 		const viewportWidth = containerEl.clientWidth;
-		const shouldDismiss = hasNext && (velocity > 0.5 || offset > viewportWidth * 0.3);
+		const shouldDismiss = canSwipe && hasNext && (velocity > 0.5 || offset > viewportWidth * 0.3);
 
 		if (shouldDismiss) {
 			if (reducedMotion) {
 				// Instant navigation
 				dx = 0;
 				dy = 0;
+				onPromoteStart?.();
 				onDismiss?.();
 			} else {
 				// Throw animation — fly off screen
@@ -126,11 +129,17 @@
 		}
 	}
 
-	function handleTransitionEnd(e) {
-		if (thrown && e.propertyName === 'transform') {
-			// Don't reset state here — keep the card off-screen.
-			// The $effect watching cardId will reset dx/dy/thrown
-			// once goto() completes and new card data arrives.
+	function handleThrowEnd(e) {
+		if (thrown && !promoting && e.propertyName === 'transform') {
+			// Throw complete — start promote phase
+			promoting = true;
+			onPromoteStart?.();
+		}
+	}
+
+	function handlePromoteEnd(e) {
+		if (promoting && e.propertyName === 'transform') {
+			promoting = false;
 			onDismiss?.();
 		}
 	}
@@ -150,7 +159,9 @@
 	{#if nextCardSnippet}
 		<div
 			class="card-swipe-layer card-swipe-next"
-			style="transform: scale({nextScale})"
+			class:promoting
+			style={promoting ? '' : `transform: scale(${nextScale})`}
+			ontransitionend={handlePromoteEnd}
 		>
 			{@render nextCardSnippet()}
 		</div>
@@ -161,11 +172,12 @@
 		class="card-swipe-layer card-swipe-current"
 		class:dragging
 		class:thrown
+		class:hidden-thrown={promoting}
 		style="
 			transform: translate({dx}px, {dy}px) rotate({dragging || thrown ? rotation : 0}deg);
 			box-shadow: 0 {8 * shadowOpacity / 0.12}px {24 * shadowOpacity / 0.12}px rgba(0,0,0,{shadowOpacity});
 		"
-		ontransitionend={handleTransitionEnd}
+		ontransitionend={handleThrowEnd}
 	>
 		{@render children()}
 	</div>
@@ -197,10 +209,20 @@
 		pointer-events: none;
 	}
 
+	.card-swipe-next.promoting {
+		transform: scale(1);
+		opacity: 1;
+		transition: transform var(--transition-promote), opacity var(--transition-promote);
+	}
+
 	.card-swipe-current {
 		position: relative;
 		z-index: 1;
 		will-change: transform;
+	}
+
+	.card-swipe-current.hidden-thrown {
+		display: none;
 	}
 
 	.card-swipe-current.thrown {
