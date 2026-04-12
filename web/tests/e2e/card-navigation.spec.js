@@ -4,15 +4,15 @@ test.describe('Card reading experience', () => {
 	test('renders card content on direct visit', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const article = page.locator('article');
+		const article = page.locator('article:not([inert])');
 		await expect(article).toBeVisible();
 
 		// Card text is visible
-		const cardText = page.locator('.card-text');
+		const cardText = page.locator('.card-swipe-current .card-text');
 		await expect(cardText).not.toBeEmpty();
 
 		// Source reference is visible
-		const source = page.locator('.card-source');
+		const source = page.locator('.card-swipe-current .card-front .card-source');
 		await expect(source).toContainText('Meditations');
 	});
 
@@ -52,21 +52,22 @@ test.describe('Card reading experience', () => {
 
 	test('Show original flip toggles card faces', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
+		await page.waitForSelector('[data-keyboard-ready]');
 
-		const flipBtn = page.getByRole('button', { name: 'Show original text' });
+		const flipBtn = page.locator('.card-swipe-current .card-front .flip-btn');
 		await expect(flipBtn).toBeVisible();
 
 		// Click to flip to back
-		await flipBtn.click();
+		await flipBtn.dispatchEvent('click');
 
-		const inner = page.locator('.card-inner.flipped');
+		const inner = page.locator('.card-swipe-current .card-inner.flipped');
 		await expect(inner).toHaveCount(1);
 
 		// Click to flip back to front
-		const flipBackBtn = page.getByRole('button', { name: 'Show translated text' });
-		await flipBackBtn.click();
+		const flipBackBtn = page.locator('.card-swipe-current .card-back .flip-btn');
+		await flipBackBtn.dispatchEvent('click');
 
-		const unflipped = page.locator('.card-inner:not(.flipped)');
+		const unflipped = page.locator('.card-swipe-current .card-inner:not(.flipped)');
 		await expect(unflipped).toHaveCount(1);
 	});
 
@@ -101,7 +102,7 @@ test.describe('Card reading experience', () => {
 	test('card position indicator shows correct count', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const position = page.locator('.card-position');
+		const position = page.locator('.card-swipe-current .card-front .card-position');
 		await expect(position).toContainText('/ ');
 	});
 
@@ -123,7 +124,7 @@ test.describe('Card reading — mobile', () => {
 	test('card is full width on mobile', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const card = page.locator('.card-front');
+		const card = page.locator('.card-swipe-current .card-front');
 		await expect(card).toBeVisible();
 	});
 

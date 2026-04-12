@@ -66,14 +66,14 @@ test.describe('Theme toggle', () => {
 		expect(theme).toBe('dark');
 
 		// Card should be visible
-		const card = page.locator('article');
+		const card = page.locator('article:not([inert])');
 		await expect(card).toBeVisible();
 	});
 
 	test('card page renders in light mode', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const card = page.locator('article');
+		const card = page.locator('article:not([inert])');
 		await expect(card).toBeVisible();
 
 		const theme = await page.evaluate(() =>

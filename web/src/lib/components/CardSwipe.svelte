@@ -188,6 +188,7 @@
 		left: 0;
 		width: 100%;
 		transform-origin: center center;
+		pointer-events: none;
 	}
 
 	.card-swipe-current {

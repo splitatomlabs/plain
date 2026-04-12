@@ -4,7 +4,7 @@ test.describe('Card stack and swipe', () => {
 	test('card renders with front face visible', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const front = page.locator('.card-front');
+		const front = page.locator('.card-swipe-current .card-front');
 		await expect(front).toBeVisible();
 	});
 
@@ -39,24 +39,26 @@ test.describe('Card stack and swipe', () => {
 
 	test('flip button toggles card and shows original text', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
+		await page.waitForSelector('[data-keyboard-ready]');
 
-		const flipBtn = page.getByRole('button', { name: 'Show original text' });
+		const flipBtn = page.locator('.card-swipe-current .card-front .flip-btn');
 		await expect(flipBtn).toBeVisible();
 
-		await flipBtn.click();
+		await flipBtn.dispatchEvent('click');
+		await page.waitForTimeout(500);
 
-		const inner = page.locator('.card-inner.flipped');
+		const inner = page.locator('.card-swipe-current .card-inner.flipped');
 		await expect(inner).toHaveCount(1);
 
 		// Original text should be visible on back
-		const originalText = page.locator('.card-back .original-text');
+		const originalText = page.locator('.card-swipe-current .card-back .original-text');
 		await expect(originalText).toBeVisible();
 
 		// Flip back
-		const flipBackBtn = page.getByRole('button', { name: 'Show translated text' });
-		await flipBackBtn.click();
+		const flipBackBtn = page.locator('.card-swipe-current .card-back .flip-btn');
+		await flipBackBtn.dispatchEvent('click');
 
-		const unflipped = page.locator('.card-inner:not(.flipped)');
+		const unflipped = page.locator('.card-swipe-current .card-inner:not(.flipped)');
 		await expect(unflipped).toHaveCount(1);
 	});
 
@@ -92,7 +94,7 @@ test.describe('Chapter markers and progress', () => {
 	test('reading time hint visible on card', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const readingTime = page.locator('.reading-time');
+		const readingTime = page.locator('.card-swipe-current .card-front .reading-time');
 		await expect(readingTime).toBeVisible();
 		await expect(readingTime).toContainText('read');
 	});

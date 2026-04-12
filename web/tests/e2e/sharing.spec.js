@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Share button', () => {
 	test('share button is visible on card page', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
-		const shareButton = page.locator('button[aria-label="Share this card"]');
+		const shareButton = page.locator('.card-swipe-current button[aria-label="Share this card"]');
 		await expect(shareButton).toBeVisible();
 	});
 });

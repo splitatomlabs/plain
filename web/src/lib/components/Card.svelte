@@ -84,7 +84,7 @@
 	class="card"
 	class:card-muted={muted}
 	aria-live={muted ? undefined : 'polite'}
-	aria-hidden={muted ? 'true' : undefined}
+	inert={muted ? true : undefined}
 >
 	<div class="card-perspective">
 		<div class="card-inner" class:flipped style={innerHeight ? `height: ${innerHeight}px` : ''}>

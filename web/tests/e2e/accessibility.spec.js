@@ -71,26 +71,16 @@ test.describe('Screen reader attributes — card page', () => {
 	test('card container has aria-live', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const article = page.locator('article.card');
+		const article = page.locator('article.card:not([inert])');
 		await expect(article).toHaveAttribute('aria-live', 'polite');
 	});
 
-	test('Show original uses accessible details/summary', async ({ page }) => {
+	test('Show original flip button is accessible', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const details = page.locator('details.card-original');
-		const summary = details.locator('summary');
-
-		await expect(summary).toBeVisible();
-		await expect(summary).toContainText('Show original');
-
-		// Click to expand
-		await summary.click();
-		await expect(details).toHaveAttribute('open', '');
-
-		// Click to collapse
-		await summary.click();
-		await expect(details).not.toHaveAttribute('open', '');
+		const flipBtn = page.locator('.card-swipe-current .card-front .flip-btn');
+		await expect(flipBtn).toBeVisible();
+		await expect(flipBtn).toHaveAttribute('aria-label', 'Show original text');
 	});
 
 	test('navigation buttons have aria-labels', async ({ page }) => {
