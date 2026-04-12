@@ -18,6 +18,7 @@
 
 	// Touch gesture state: 'idle' | 'pending' | 'dragging' | 'scrolling'
 	let touchPhase = 'idle';
+	let pendingTimer = null;
 	const AXIS_THRESHOLD = 10;
 
 	// Reset drag state when the active card changes (after navigation)
@@ -30,6 +31,7 @@
 		dx = 0;
 		dy = 0;
 		clearTimeout(throwFallbackTimer);
+		clearTimeout(pendingTimer);
 	});
 
 	// Drag progress for next-card scale (0 to 1)
@@ -90,8 +92,15 @@
 			containerEl.setPointerCapture(e.pointerId);
 		} else {
 			// Touch: enter pending — touchmove preventDefault blocks native scroll
-			// while we wait for enough movement to determine direction
+			// while we wait for enough movement to determine direction.
+			// If the user holds still too long, exit pending so native scroll works.
 			touchPhase = 'pending';
+			clearTimeout(pendingTimer);
+			pendingTimer = setTimeout(() => {
+				if (touchPhase === 'pending') {
+					touchPhase = 'idle';
+				}
+			}, 200);
 		}
 	}
 
@@ -104,6 +113,7 @@
 
 			if (moveX < AXIS_THRESHOLD && moveY < AXIS_THRESHOLD) return;
 
+			clearTimeout(pendingTimer);
 			if (moveX >= moveY) {
 				// Horizontal intent — start dragging
 				touchPhase = 'dragging';
