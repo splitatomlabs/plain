@@ -13,20 +13,22 @@
 	let { data } = $props();
 	let showMilestone = $state(null);
 
-	// Local card state — initialised from server data, updated client-side on swipe
-	let activeCard = $state(data.card);
-	let nextCard = $state(data.nextCard);
-	let prevCard = $state(data.prevCard);
-	let cardIndex = $state(data.cardIndex);
+	// Local card state — tracks server data but can be overridden client-side on swipe.
+	// Using a generation counter lets us override with local values (swipe) and
+	// snap back to server data when it changes (popstate/initial load).
+	let localOverride = $state(null);
+	const serverGeneration = $derived(data.card.id);
 
-	// Reset local state when SvelteKit provides new data (popstate, initial load)
+	// Reset override when server data changes (popstate, new page load)
 	$effect(() => {
-		const id = data.card.id;
-		activeCard = data.card;
-		nextCard = data.nextCard;
-		prevCard = data.prevCard;
-		cardIndex = data.cardIndex;
+		serverGeneration;
+		localOverride = null;
 	});
+
+	const activeCard = $derived(localOverride?.activeCard ?? data.card);
+	const nextCard = $derived(localOverride?.nextCard ?? data.nextCard);
+	const prevCard = $derived(localOverride?.prevCard ?? data.prevCard);
+	const cardIndex = $derived(localOverride?.cardIndex ?? data.cardIndex);
 
 	const MILESTONES = [25, 50, 75, 100];
 
@@ -54,11 +56,7 @@
 		const newPrev = activeCard;
 		const newIndex = computeCardIndex(newActive);
 
-		activeCard = newActive;
-		nextCard = newNext;
-		prevCard = newPrev;
-		cardIndex = newIndex;
-
+		localOverride = { activeCard: newActive, nextCard: newNext, prevCard: newPrev, cardIndex: newIndex };
 		pushState(cardUrl(newActive), {});
 	}
 
@@ -69,11 +67,7 @@
 		const newNext = activeCard;
 		const newIndex = computeCardIndex(newActive);
 
-		activeCard = newActive;
-		nextCard = newNext;
-		prevCard = newPrev;
-		cardIndex = newIndex;
-
+		localOverride = { activeCard: newActive, nextCard: newNext, prevCard: newPrev, cardIndex: newIndex };
 		pushState(cardUrl(newActive), {});
 	}
 
