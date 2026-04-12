@@ -261,7 +261,7 @@
 	.themes-section {
 		max-width: 72rem;
 		margin: 0 auto;
-		padding: var(--space-2xl) var(--space-md);
+		padding: var(--space-2xl) 0;
 		text-align: center;
 	}
 
@@ -279,8 +279,17 @@
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		gap: var(--space-lg) var(--space-sm);
+		gap: var(--space-md);
 		max-width: 28rem;
 		margin: 0 auto;
+	}
+
+	@media (min-width: 768px) {
+		.themes-icon-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			max-width: 60rem;
+			gap: var(--space-md);
+		}
 	}
 </style>

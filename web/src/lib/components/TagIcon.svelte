@@ -31,9 +31,10 @@
 		},
 		'freedom-and-control': {
 			paths: [
-				'M4 18 Q12 8 24 16 Q36 8 44 18',
-				'M24 16 Q24 28 20 36',
-				'M24 16 Q24 28 28 36'
+				'M20 24 A6 6 0 1 0 8 24 A6 6 0 1 0 20 24',
+				'M20 24 L42 24',
+				'M38 24 L38 31',
+				'M33 24 L33 31'
 			]
 		},
 		'human-nature': {
@@ -110,10 +111,10 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: var(--space-sm);
+		gap: var(--space-xs);
 		text-decoration: none;
-		width: 6.5rem;
-		padding: var(--space-lg) var(--space-sm);
+		width: 6.25rem;
+		padding: 0.625rem 0.375rem;
 		border-radius: 12px;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
@@ -129,8 +130,8 @@
 	}
 
 	.icon-wrapper {
-		width: 3rem;
-		height: 3rem;
+		width: 3.6rem;
+		height: 3.6rem;
 	}
 
 	.icon-svg {
@@ -146,7 +147,7 @@
 
 	.icon-label {
 		font-family: var(--font-ui);
-		font-size: 0.6875rem;
+		font-size: 0.8125rem;
 		font-weight: 500;
 		color: var(--color-text-secondary);
 		text-align: center;
@@ -155,8 +156,29 @@
 
 	.icon-count {
 		font-family: var(--font-ui);
-		font-size: 0.5625rem;
+		font-size: 0.6875rem;
 		color: var(--color-text-secondary);
 		opacity: 0.7;
+	}
+
+	@media (min-width: 768px) {
+		.tag-icon {
+			width: auto;
+			padding: var(--space-md) var(--space-sm);
+			gap: var(--space-sm);
+		}
+
+		.icon-wrapper {
+			width: 4rem;
+			height: 4rem;
+		}
+
+		.icon-label {
+			font-size: 0.875rem;
+		}
+
+		.icon-count {
+			font-size: 0.8125rem;
+		}
 	}
 </style>
