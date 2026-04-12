@@ -105,6 +105,7 @@
 				<span class="continue-book">{suggestedBook.title}</span>
 			</a>
 		{/if}
+		<a href="#themes" class="theme-cta">Or explore by theme</a>
 	</section>
 
 	{#each data.returningAuthorData as { author, books }}
@@ -124,6 +125,7 @@
 	<section class="hero">
 		<h1>Three men. Three completely different lives. The same philosophy.</h1>
 		<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
+		<a href="#themes" class="theme-cta">Or explore by theme</a>
 	</section>
 
 	{#each data.authorData as { author, books }}
@@ -230,6 +232,20 @@
 		font-family: var(--font-body);
 		font-size: 1.125rem;
 		color: var(--color-text-secondary);
+	}
+
+	.theme-cta {
+		display: inline-block;
+		margin-top: var(--space-md);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		transition: color var(--transition-fast);
+	}
+
+	.theme-cta:hover {
+		color: var(--color-text-primary);
 	}
 
 	.themes-section {
