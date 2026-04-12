@@ -91,8 +91,8 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 **7. On Anger (De Ira)**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
 - Translation: Aubrey Stewart (public domain)
-- Structure: 3 books with ~123 numbered sections total. The longest Seneca essay in the launch set.
-- Estimated cards: 140–170
+- Structure: 3 books with 100 numbered sections total. The longest Seneca essay in the launch set.
+- Cards: 193
 - Character: Methodical, vivid, sometimes shocking. Seneca dissects anger from every angle — what causes it, why it's destructive, and how to prevent it. Full of concrete examples and practical techniques. He's at his most psychologically sharp.
 - Best for: Anyone who struggles with frustration, impatience, or resentment. Fills the emotional-management gap in the Seneca collection and resonates strongly with Epictetus and Marcus on the same themes.
 - Key themes: calm your mind, facing hardship, human nature, knowing yourself, doing the right thing
@@ -305,10 +305,8 @@ Three mechanisms. All should feel like giving something valuable to the recipien
 | On the Shortness of Life | 69 | Seneca |
 | On the Happy Life | 79 | Seneca |
 | On Peace of Mind | 79 | Seneca |
-| On Anger | ~140–170* | Seneca |
-| **Total** | **~1,255–1,285** | |
-
-*On Anger estimate — pipeline not yet run.
+| On Anger | 193 | Seneca |
+| **Total** | **1,308** | |
 
 ---
 
