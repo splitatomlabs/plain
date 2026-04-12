@@ -4,6 +4,7 @@
 	let { children, nextCardSnippet, onDismiss, onPromoteStart, hasNext = false, canSwipe = true, cardId = '' } = $props();
 
 	let containerEl = $state(null);
+	let pending = $state(false);
 	let dragging = $state(false);
 	let thrown = $state(false);
 	let promoting = $state(false);
@@ -14,13 +15,18 @@
 	let velocityBuffer = [];
 	let startX = 0;
 	let startY = 0;
+	let pendingPointerId = -1;
 	let throwFallbackTimer = null;
+
+	// Axis-lock threshold: movement (px) before we decide swipe vs scroll
+	const AXIS_THRESHOLD = 10;
 
 	// Reset drag state when the active card changes (after navigation)
 	$effect(() => {
 		cardId;
 		thrown = false;
 		promoting = false;
+		pending = false;
 		dragging = false;
 		dx = 0;
 		dy = 0;
@@ -54,24 +60,49 @@
 	});
 
 	function handlePointerDown(e) {
-		if (thrown || promoting) return;
+		if (thrown || promoting || pending || dragging) return;
 		// Only handle primary button (left click / touch)
 		if (e.button !== 0) return;
 		// Don't capture pointer on interactive elements — let clicks fire normally
 		if (e.target.closest('button, a, [role="button"], summary')) return;
 
-		dragging = true;
-		dx = 0;
-		dy = 0;
+		// Enter pending state — don't capture pointer yet.
+		// Wait for movement to determine if this is a horizontal swipe or vertical scroll.
+		pending = true;
+		pendingPointerId = e.pointerId;
 		startX = e.clientX;
 		startY = e.clientY;
 		velocityBuffer = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
-
-		containerEl.setPointerCapture(e.pointerId);
 	}
 
 	function handlePointerMove(e) {
-		if (!dragging || thrown || promoting) return;
+		if (thrown || promoting) return;
+
+		if (pending) {
+			const moveX = Math.abs(e.clientX - startX);
+			const moveY = Math.abs(e.clientY - startY);
+
+			// Not enough movement yet to decide
+			if (moveX < AXIS_THRESHOLD && moveY < AXIS_THRESHOLD) return;
+
+			if (moveX > moveY) {
+				// Horizontal intent — transition to dragging
+				pending = false;
+				dragging = true;
+				containerEl.setPointerCapture(pendingPointerId);
+
+				if (!reducedMotion) {
+					dx = e.clientX - startX;
+					dy = e.clientY - startY;
+				}
+			} else {
+				// Vertical intent — bail out, let the browser scroll
+				pending = false;
+				return;
+			}
+		}
+
+		if (!dragging) return;
 
 		// Only update visual position if motion is allowed
 		if (!reducedMotion) {
@@ -84,10 +115,15 @@
 	}
 
 	function handlePointerUp(e) {
+		if (pending) {
+			// Finger lifted before direction was determined — treat as tap
+			pending = false;
+			return;
+		}
+
 		if (!dragging || thrown || promoting) return;
 		dragging = false;
 
-		const now = performance.now();
 		// Calculate velocity from last 2 entries
 		let velocity = 0;
 		if (velocityBuffer.length >= 2) {
@@ -138,6 +174,14 @@
 		}
 	}
 
+	function handlePointerCancel() {
+		// Browser took over (e.g. vertical scroll via touch-action: pan-y)
+		pending = false;
+		dragging = false;
+		dx = 0;
+		dy = 0;
+	}
+
 	function handleThrowEnd(e) {
 		if (thrown && !promoting && e.propertyName === 'transform') {
 			clearTimeout(throwFallbackTimer);
@@ -170,8 +214,8 @@
 	onpointerdown={handlePointerDown}
 	onpointermove={handlePointerMove}
 	onpointerup={handlePointerUp}
-	onpointercancel={() => { dragging = false; dx = 0; dy = 0; }}
-	style="touch-action: none;"
+	onpointercancel={handlePointerCancel}
+	style="touch-action: pan-y;"
 	role="presentation"
 >
 	<!-- Next card (underneath) -->
