@@ -16,12 +16,17 @@
 	let startY = 0;
 	let throwFallbackTimer = null;
 
+	// Touch gesture state: 'idle' | 'pending' | 'dragging' | 'scrolling'
+	let touchPhase = 'idle';
+	const AXIS_THRESHOLD = 10;
+
 	// Reset drag state when the active card changes (after navigation)
 	$effect(() => {
 		cardId;
 		thrown = false;
 		promoting = false;
 		dragging = false;
+		touchPhase = 'idle';
 		dx = 0;
 		dy = 0;
 		clearTimeout(throwFallbackTimer);
@@ -53,23 +58,73 @@
 		return () => mq.removeEventListener('change', handler);
 	});
 
+	// Non-passive touchmove: preventDefault during 'pending' and 'dragging' phases.
+	// During 'pending', this blocks the browser's native scroll while we decide
+	// direction. During 'dragging', it keeps the browser from scrolling.
+	// During 'scrolling' (or 'idle'), we don't prevent — native scroll works.
+	onMount(() => {
+		function onTouchMove(e) {
+			if (touchPhase === 'pending' || touchPhase === 'dragging') {
+				e.preventDefault();
+			}
+		}
+		containerEl.addEventListener('touchmove', onTouchMove, { passive: false });
+		return () => containerEl.removeEventListener('touchmove', onTouchMove);
+	});
+
 	function handlePointerDown(e) {
 		if (thrown || promoting) return;
 		if (e.button !== 0) return;
 		if (e.target.closest('button, a, [role="button"], summary')) return;
 
-		dragging = true;
-		dx = 0;
-		dy = 0;
 		startX = e.clientX;
 		startY = e.clientY;
 		velocityBuffer = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
 
-		containerEl.setPointerCapture(e.pointerId);
+		if (e.pointerType === 'mouse') {
+			// Mouse: capture immediately, drag in any direction
+			dragging = true;
+			touchPhase = 'dragging';
+			dx = 0;
+			dy = 0;
+			containerEl.setPointerCapture(e.pointerId);
+		} else {
+			// Touch: enter pending — touchmove preventDefault blocks native scroll
+			// while we wait for enough movement to determine direction
+			touchPhase = 'pending';
+		}
 	}
 
 	function handlePointerMove(e) {
-		if (!dragging || thrown || promoting) return;
+		if (thrown || promoting) return;
+
+		if (touchPhase === 'pending') {
+			const moveX = Math.abs(e.clientX - startX);
+			const moveY = Math.abs(e.clientY - startY);
+
+			if (moveX < AXIS_THRESHOLD && moveY < AXIS_THRESHOLD) return;
+
+			if (moveX >= moveY) {
+				// Horizontal intent — start dragging
+				touchPhase = 'dragging';
+				dragging = true;
+				dx = 0;
+				dy = 0;
+				containerEl.setPointerCapture(e.pointerId);
+				if (!reducedMotion) {
+					dx = e.clientX - startX;
+					dy = e.clientY - startY;
+				}
+			} else {
+				// Vertical intent — let native scroll take over.
+				// Stop preventing touchmove defaults so the browser scrolls.
+				touchPhase = 'scrolling';
+			}
+			return;
+		}
+
+		if (touchPhase === 'scrolling') return;
+		if (!dragging) return;
 
 		if (!reducedMotion) {
 			dx = e.clientX - startX;
@@ -81,8 +136,14 @@
 	}
 
 	function handlePointerUp(e) {
+		if (touchPhase === 'pending' || touchPhase === 'scrolling') {
+			touchPhase = 'idle';
+			return;
+		}
+
 		if (!dragging || thrown || promoting) return;
 		dragging = false;
+		touchPhase = 'idle';
 
 		let velocity = 0;
 		if (velocityBuffer.length >= 2) {
@@ -128,7 +189,7 @@
 	}
 
 	function handlePointerCancel() {
-		// Browser took over for native scroll — reset cleanly
+		touchPhase = 'idle';
 		dragging = false;
 		dx = 0;
 		dy = 0;
