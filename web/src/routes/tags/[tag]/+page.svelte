@@ -6,9 +6,13 @@
 
 	let { data } = $props();
 
+	const TAG_MILESTONES = [10, 25, 50, 100];
+	const TAG_MILESTONES_KEY = 'plain-tag-milestones';
+
 	// Local card state — mirrors pushState pattern from book card pages.
 	// Server provides the full sequence; we track position client-side.
 	let localIndex = $state(null);
+	let showMilestone = $state(null);
 	const serverTag = $derived(data.tag.slug);
 
 	// Reset local state when server data changes (new tag page, popstate)
@@ -32,6 +36,38 @@
 		return tagProgress.getTagProgress(data.tag.slug).cardsRead;
 	});
 
+	function getShownMilestones(tagSlug) {
+		try {
+			const shown = JSON.parse(localStorage.getItem(TAG_MILESTONES_KEY) || '{}');
+			return shown[tagSlug] || [];
+		} catch {
+			return [];
+		}
+	}
+
+	function recordMilestone(tagSlug, milestone) {
+		try {
+			const shown = JSON.parse(localStorage.getItem(TAG_MILESTONES_KEY) || '{}');
+			if (!shown[tagSlug]) shown[tagSlug] = [];
+			if (!shown[tagSlug].includes(milestone)) {
+				shown[tagSlug].push(milestone);
+			}
+			localStorage.setItem(TAG_MILESTONES_KEY, JSON.stringify(shown));
+		} catch {
+			// localStorage unavailable
+		}
+	}
+
+	function checkMilestone(tagSlug, beforeCount, afterCount) {
+		const shown = getShownMilestones(tagSlug);
+		for (const threshold of TAG_MILESTONES) {
+			if (beforeCount < threshold && afterCount >= threshold && !shown.includes(threshold)) {
+				return threshold;
+			}
+		}
+		return null;
+	}
+
 	function advanceCard() {
 		if (!nextCard) return;
 		localIndex = currentIndex + 1;
@@ -44,23 +80,33 @@
 		tagProgress.setTagResumeIndex(data.tag.slug, localIndex);
 	}
 
-	function handleDismiss() {
-		if (!nextCard) return;
-		// Mark the card as read for all its tags
+	function markAndCheckMilestone() {
+		const beforeCount = tagProgress.getTagProgress(data.tag.slug).cardsRead;
 		if (activeCard.tags) {
 			for (const tag of activeCard.tags) {
 				tagProgress.markTagCardRead(tag, activeCard.id);
 			}
 		}
-		advanceCard();
+		const afterCount = tagProgress.getTagProgress(data.tag.slug).cardsRead;
+		const milestone = checkMilestone(data.tag.slug, beforeCount, afterCount);
+		if (milestone) {
+			recordMilestone(data.tag.slug, milestone);
+			showMilestone = milestone;
+			return true;
+		}
+		return false;
 	}
 
-	function handleLastCard() {
-		// Mark the last card read too
-		if (activeCard.tags) {
-			for (const tag of activeCard.tags) {
-				tagProgress.markTagCardRead(tag, activeCard.id);
-			}
+	function handleDismiss() {
+		if (!nextCard) return;
+		const deferred = markAndCheckMilestone();
+		if (!deferred) advanceCard();
+	}
+
+	function closeMilestone() {
+		showMilestone = null;
+		if (nextCard) {
+			advanceCard();
 		}
 	}
 
@@ -157,6 +203,27 @@
 		{/if}
 	{/if}
 </div>
+
+{#if showMilestone}
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div class="modal-backdrop" onclick={closeMilestone} onkeydown={(e) => e.key === 'Escape' && closeMilestone()} role="presentation">
+		<div
+			class="modal"
+			role="dialog"
+			aria-labelledby="tag-milestone-heading"
+			aria-modal="true"
+			tabindex="-1"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<h2 id="tag-milestone-heading" class="modal-heading">
+				You've explored {showMilestone} cards on {data.tag.label}
+			</h2>
+			<button class="modal-button" onclick={closeMilestone}>
+				Keep exploring
+			</button>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.tag-detail {
@@ -264,5 +331,74 @@
 		font-size: 1.25rem;
 		color: var(--color-text-primary);
 		margin: 0 0 var(--space-md);
+	}
+
+	.modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+		animation: fade-in var(--transition-fast) ease-out;
+	}
+
+	@keyframes fade-in {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	.modal {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		padding: var(--space-2xl) var(--space-xl);
+		max-width: 400px;
+		width: 90%;
+		text-align: center;
+		animation: slide-up var(--transition-normal) ease-out;
+	}
+
+	@keyframes slide-up {
+		from { transform: translateY(16px); opacity: 0; }
+		to { transform: translateY(0); opacity: 1; }
+	}
+
+	.modal-heading {
+		font-family: var(--font-body);
+		font-size: 1.5rem;
+		line-height: 1.3;
+		color: var(--color-text-primary);
+		margin: 0 0 var(--space-lg);
+	}
+
+	.modal-button {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		color: var(--color-surface);
+		background: var(--color-text-primary);
+		border: none;
+		border-radius: 6px;
+		padding: var(--space-sm) var(--space-lg);
+		min-height: 44px;
+		min-width: 44px;
+		cursor: pointer;
+		transition: opacity var(--transition-fast);
+	}
+
+	.modal-button:hover {
+		opacity: 0.85;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.modal-backdrop {
+			animation: none;
+		}
+
+		.modal {
+			animation: none;
+		}
 	}
 </style>
