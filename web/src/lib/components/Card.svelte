@@ -111,27 +111,30 @@
 				{/if}
 
 				<footer class="card-footer">
-					<p class="card-source">{card.source_reference}</p>
-
-					{#if card.tags?.length}
-					<div class="card-tags">
-						{#each card.tags as tagSlug}
-							{@const tag = getTagBySlug(tagSlug)}
-							{#if tag}
-								<TagPill slug={tag.slug} label={tag.label} />
-							{/if}
-						{/each}
+					<div class="card-meta">
+						<span class="card-source">{card.source_reference}</span>
+						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
+						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
 					</div>
-					{/if}
 
-					<div class="card-actions">
+					<div class="card-tags-row">
+						{#if card.tags?.length}
+						<div class="card-tags">
+							{#each card.tags as tagSlug}
+								{@const tag = getTagBySlug(tagSlug)}
+								{#if tag}
+									<TagPill slug={tag.slug} label={tag.label} />
+								{/if}
+							{/each}
+						</div>
+						{:else}
+						<span></span>
+						{/if}
 						<ShareButton
 							title="{card.source_reference} — In Plain English"
 							text={card.plain_english.slice(0, 100)}
 							url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
 						/>
-						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
-						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
 					</div>
 				</footer>
 			</div>
@@ -299,25 +302,38 @@
 		padding-top: var(--space-md);
 	}
 
+	.card-meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		margin-bottom: var(--space-sm);
+	}
+
 	.card-source {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		margin: 0 0 var(--space-sm);
+	}
+
+	.card-tags-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-sm);
 	}
 
 	.card-tags {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-xs);
-		margin-bottom: var(--space-sm);
 	}
 
-	.card-actions {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-sm);
+	.card-tags-row :global(.share-button) {
+		background: var(--color-tag-bg);
+		border-radius: 6px;
+		min-height: 44px;
+		padding: var(--space-xs) var(--space-sm);
 	}
 
 	.card-position {
@@ -330,7 +346,6 @@
 	.chapter-label {
 		font-weight: 500;
 	}
-
 
 	.reading-time {
 		font-family: var(--font-ui);
