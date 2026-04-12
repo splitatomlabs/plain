@@ -91,12 +91,12 @@ test.describe('Chapter markers and progress', () => {
 		await expect(marker).toContainText('Book 2');
 	});
 
-	test('reading time hint visible on card', async ({ page }) => {
+	test('card position visible on card', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const readingTime = page.locator('.card-swipe-current .card-front .reading-time');
-		await expect(readingTime).toBeVisible();
-		await expect(readingTime).toContainText('~');
+		const position = page.locator('.card-swipe-current .card-front .card-position');
+		await expect(position).toBeVisible();
+		await expect(position).toContainText('/');
 	});
 
 	test('segmented progress bar on Meditations', async ({ page }) => {

@@ -42,12 +42,6 @@
 	const chapterTitle = $derived(chapterInfo?.title);
 	const chapterCardCount = $derived(chapterInfo?.card_count ?? card.total_cards_in_chapter);
 
-	function formatReadingTime(seconds) {
-		if (seconds < 60) return `~${seconds}s`;
-		const minutes = Math.round(seconds / 60);
-		return `~${minutes}m`;
-	}
-
 	// Reset flip when card changes
 	$effect(() => {
 		card.id;
@@ -113,7 +107,6 @@
 				<footer class="card-footer">
 					<div class="card-meta">
 						<span class="card-source">{card.source_reference}</span>
-						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
 						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
 					</div>
 
@@ -309,7 +302,6 @@
 		justify-content: space-between;
 		gap: var(--space-sm);
 		margin-bottom: var(--space-sm);
-		position: relative;
 	}
 
 	.card-source {
@@ -349,12 +341,4 @@
 		font-weight: 500;
 	}
 
-	.reading-time {
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		color: var(--color-text-secondary);
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%);
-	}
 </style>
