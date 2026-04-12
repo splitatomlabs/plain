@@ -5,7 +5,7 @@
 
 	import { onMount } from 'svelte';
 
-	let { card, book, totalCardsInBook, cardIndex, muted = false } = $props();
+	let { card, book, totalCardsInBook, cardIndex, muted = false, linkSource = false } = $props();
 
 	let flipped = $state(false);
 	let frontEl = $state(null);
@@ -106,7 +106,11 @@
 
 				<footer class="card-footer">
 					<div class="card-meta">
-						<span class="card-source">{card.source_reference}</span>
+						{#if linkSource}
+							<a href="/{card.book_slug}" class="card-source card-source-link">{card.source_reference}</a>
+						{:else}
+							<span class="card-source">{card.source_reference}</span>
+						{/if}
 						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> <span class="card-number">· {card.card_number} / {chapterCardCount}</span>{:else}<span class="card-number">{cardIndex} / {totalCardsInBook}</span>{/if}</span>
 					</div>
 
@@ -307,6 +311,15 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+	}
+
+	.card-source-link {
+		text-decoration: none;
+		transition: color var(--transition-fast);
+	}
+
+	.card-source-link:hover {
+		color: var(--color-text-primary);
 	}
 
 	.card-tags-row {
