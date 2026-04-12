@@ -53,21 +53,21 @@ test.describe('Card reading experience', () => {
 	test('Show original flip toggles card faces', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const flipBtn = page.locator('button', { hasText: 'Show original' });
+		const flipBtn = page.getByRole('button', { name: 'Show original text' });
 		await expect(flipBtn).toBeVisible();
 
 		// Click to flip to back
 		await flipBtn.click();
 
-		const backFace = page.locator('.card-back');
-		await expect(backFace).toBeVisible();
+		const inner = page.locator('.card-inner.flipped');
+		await expect(inner).toHaveCount(1);
 
 		// Click to flip back to front
-		const flipBackBtn = page.locator('button', { hasText: 'Show translation' });
+		const flipBackBtn = page.getByRole('button', { name: 'Show translated text' });
 		await flipBackBtn.click();
 
-		const frontFace = page.locator('.card-front');
-		await expect(frontFace).toBeVisible();
+		const unflipped = page.locator('.card-inner:not(.flipped)');
+		await expect(unflipped).toHaveCount(1);
 	});
 
 	test('tag pills are visible and link to tag pages', async ({ page }) => {

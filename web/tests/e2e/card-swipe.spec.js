@@ -40,24 +40,24 @@ test.describe('Card stack and swipe', () => {
 	test('flip button toggles card and shows original text', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const flipBtn = page.locator('button', { hasText: 'Show original' });
+		const flipBtn = page.getByRole('button', { name: 'Show original text' });
 		await expect(flipBtn).toBeVisible();
 
 		await flipBtn.click();
 
-		const backFace = page.locator('.card-back');
-		await expect(backFace).toBeVisible();
+		const inner = page.locator('.card-inner.flipped');
+		await expect(inner).toHaveCount(1);
 
 		// Original text should be visible on back
 		const originalText = page.locator('.card-back .original-text');
 		await expect(originalText).toBeVisible();
 
 		// Flip back
-		const flipBackBtn = page.locator('button', { hasText: 'Show translation' });
+		const flipBackBtn = page.getByRole('button', { name: 'Show translated text' });
 		await flipBackBtn.click();
 
-		const frontFace = page.locator('.card-front');
-		await expect(frontFace).toBeVisible();
+		const unflipped = page.locator('.card-inner:not(.flipped)');
+		await expect(unflipped).toHaveCount(1);
 	});
 
 	test('nav buttons work', async ({ page }) => {

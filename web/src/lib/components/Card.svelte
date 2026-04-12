@@ -205,6 +205,15 @@
 		left: 0;
 		width: 100%;
 		transform: rotateY(180deg);
+		pointer-events: none;
+	}
+
+	.card-inner.flipped .card-back {
+		pointer-events: auto;
+	}
+
+	.card-inner.flipped .card-front {
+		pointer-events: none;
 	}
 
 	/* Muted state */
