@@ -67,6 +67,8 @@ export interface BookConfig {
   gutenbergStrip: boolean;
   /** Whether source has speaker labels like [_Serenus._] to strip */
   speakerLabels: boolean;
+  /** Whether the book has meaningful author-defined chapters (not editorial splits) */
+  has_chapters?: boolean;
   /** Regex to strip trailing content (footnotes, publisher info) from the last section */
   trailingContentPattern?: RegExp;
   /** Regex to find the start of actual content (strips preamble before first match) */

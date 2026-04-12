@@ -4,15 +4,15 @@ test.describe('Card reading experience', () => {
 	test('renders card content on direct visit', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const article = page.locator('article');
+		const article = page.locator('article:not([inert])');
 		await expect(article).toBeVisible();
 
 		// Card text is visible
-		const cardText = page.locator('.card-text');
+		const cardText = page.locator('.card-swipe-current .card-front .card-text');
 		await expect(cardText).not.toBeEmpty();
 
 		// Source reference is visible
-		const source = page.locator('.card-source');
+		const source = page.locator('.card-swipe-current .card-front .card-source');
 		await expect(source).toContainText('Meditations');
 	});
 
@@ -50,23 +50,25 @@ test.describe('Card reading experience', () => {
 		await expect(page).toHaveURL(/\/meditations\/book-01\/1$/);
 	});
 
-	test('Show original toggle expands and collapses', async ({ page }) => {
+	test('Show original flip toggles card faces', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
+		await page.waitForSelector('[data-keyboard-ready]');
 
-		const details = page.locator('.card-original');
-		const summary = details.locator('summary');
-		const originalText = details.locator('.original-text');
+		const flipBtn = page.locator('.card-swipe-current .card-front .flip-btn');
+		await expect(flipBtn).toBeVisible();
 
-		// Initially collapsed
-		await expect(originalText).not.toBeVisible();
+		// Click to flip to back
+		await flipBtn.dispatchEvent('click');
 
-		// Click to expand
-		await summary.click();
-		await expect(originalText).toBeVisible();
+		const inner = page.locator('.card-swipe-current .card-inner.flipped');
+		await expect(inner).toHaveCount(1);
 
-		// Click to collapse
-		await summary.click();
-		await expect(originalText).not.toBeVisible();
+		// Click to flip back to front
+		const flipBackBtn = page.locator('.card-swipe-current .card-back .flip-btn');
+		await flipBackBtn.dispatchEvent('click');
+
+		const unflipped = page.locator('.card-swipe-current .card-inner:not(.flipped)');
+		await expect(unflipped).toHaveCount(1);
 	});
 
 	test('tag pills are visible and link to tag pages', async ({ page }) => {
@@ -100,7 +102,7 @@ test.describe('Card reading experience', () => {
 	test('card position indicator shows correct count', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const position = page.locator('.card-position');
+		const position = page.locator('.card-swipe-current .card-front .card-position');
 		await expect(position).toContainText('/ ');
 	});
 
@@ -122,7 +124,7 @@ test.describe('Card reading — mobile', () => {
 	test('card is full width on mobile', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
-		const card = page.locator('.card');
+		const card = page.locator('.card-swipe-current .card-front');
 		await expect(card).toBeVisible();
 	});
 
@@ -131,60 +133,5 @@ test.describe('Card reading — mobile', () => {
 
 		const nextBtn = page.locator('.nav-btn', { hasText: 'Next' });
 		await expect(nextBtn).toBeVisible();
-	});
-
-	test('swipe left navigates to next card', async ({ page }) => {
-		await page.goto('/meditations/book-01/1');
-		await page.waitForSelector('[data-keyboard-ready]');
-
-		// Simulate swipe left (finger moves from right to left)
-		const box = await page.locator('.card-nav').boundingBox();
-		const startX = box.x + box.width * 0.8;
-		const endX = box.x + box.width * 0.2;
-		const y = box.y + box.height / 2;
-
-		await page.evaluate(
-			({ sx, ex, cy }) => {
-				const el = document.querySelector('.card-nav');
-				el.dispatchEvent(new TouchEvent('touchstart', {
-					bubbles: true,
-					touches: [new Touch({ identifier: 0, target: el, clientX: sx, clientY: cy })]
-				}));
-				el.dispatchEvent(new TouchEvent('touchend', {
-					bubbles: true,
-					changedTouches: [new Touch({ identifier: 0, target: el, clientX: ex, clientY: cy })]
-				}));
-			},
-			{ sx: startX, ex: endX, cy: y }
-		);
-
-		await expect(page).toHaveURL(/\/meditations\/book-01\/2$/);
-	});
-
-	test('swipe right navigates to previous card', async ({ page }) => {
-		await page.goto('/meditations/book-01/2');
-		await page.waitForSelector('[data-keyboard-ready]');
-
-		const box = await page.locator('.card-nav').boundingBox();
-		const startX = box.x + box.width * 0.2;
-		const endX = box.x + box.width * 0.8;
-		const y = box.y + box.height / 2;
-
-		await page.evaluate(
-			({ sx, ex, cy }) => {
-				const el = document.querySelector('.card-nav');
-				el.dispatchEvent(new TouchEvent('touchstart', {
-					bubbles: true,
-					touches: [new Touch({ identifier: 0, target: el, clientX: sx, clientY: cy })]
-				}));
-				el.dispatchEvent(new TouchEvent('touchend', {
-					bubbles: true,
-					changedTouches: [new Touch({ identifier: 0, target: el, clientX: ex, clientY: cy })]
-				}));
-			},
-			{ sx: startX, ex: endX, cy: y }
-		);
-
-		await expect(page).toHaveURL(/\/meditations\/book-01\/1$/);
 	});
 });

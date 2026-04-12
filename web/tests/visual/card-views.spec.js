@@ -27,9 +27,11 @@ test.describe('Card page visual regression', () => {
 			document.documentElement.setAttribute('data-theme', 'light');
 		});
 
-		const summary = page.locator('details.card-original summary');
-		await summary.click();
-		await expect(page.locator('details.card-original')).toHaveAttribute('open', '');
+		await page.waitForSelector('[data-keyboard-ready]');
+		const flipBtn = page.locator('.card-swipe-current .card-front .flip-btn');
+		await flipBtn.dispatchEvent('click');
+		await page.waitForTimeout(500);
+		await expect(page.locator('.card-swipe-current .card-inner.flipped')).toHaveCount(1);
 
 		await expect(page).toHaveScreenshot('card-original-expanded.png', { fullPage: true });
 	});

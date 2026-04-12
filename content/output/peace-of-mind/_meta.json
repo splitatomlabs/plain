@@ -2,7 +2,7 @@
   "slug": "peace-of-mind",
   "title": "On Peace of Mind",
   "author_slug": "seneca",
-  "description": "A letter to a restless friend \u2014 practical advice on finding calm without withdrawing from life.",
+  "description": "A letter to a restless friend — practical advice on finding calm without withdrawing from life.",
   "tags": [
     "knowing-yourself",
     "facing-hardship",
@@ -119,5 +119,6 @@
   ],
   "total_cards": 79,
   "total_reading_time_seconds": 3451,
-  "source_url": "https://www.gutenberg.org/ebooks/64576"
+  "source_url": "https://www.gutenberg.org/ebooks/64576",
+  "has_chapters": false
 }

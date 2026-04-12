@@ -31,7 +31,7 @@ export interface BookMeta {
   total_cards: number;
   total_reading_time_seconds: number;
   source_url: string;
-
+  has_chapters: boolean;
 }
 
 export type Severity = "error" | "warn" | "info";

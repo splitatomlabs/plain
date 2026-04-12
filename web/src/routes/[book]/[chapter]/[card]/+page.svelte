@@ -1,7 +1,9 @@
 <script>
 	import Card from '$lib/components/Card.svelte';
 	import CardNav from '$lib/components/CardNav.svelte';
+	import CardSwipe from '$lib/components/CardSwipe.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import ChapterMarker from '$lib/components/ChapterMarker.svelte';
 	import MilestoneModal from '$lib/components/MilestoneModal.svelte';
 	import { progress } from '$lib/stores/progress.js';
 	import { goto } from '$app/navigation';
@@ -34,6 +36,12 @@
 			}
 		}
 		return false;
+	}
+
+	function handleDismiss() {
+		if (!data.nextCard) return;
+		const defer = handleNavigateNext();
+		if (!defer) goto(cardUrl(data.nextCard));
 	}
 
 	function handleFinishBook() {
@@ -72,6 +80,8 @@
 	current={data.cardIndex}
 	total={data.totalCards}
 	authorSlug={data.book.author_slug}
+	hasChapters={data.book.has_chapters}
+	chapters={data.book.chapters}
 />
 
 <div class="card-page">
@@ -80,8 +90,22 @@
 		<p class="card-boundary">Beginning of {data.book.title}</p>
 	{/if}
 
+	<ChapterMarker book={data.book} card={data.card} prevCard={data.prevCard} />
+
+	<CardSwipe onDismiss={handleDismiss} hasNext={!!data.nextCard} cardId={data.card.id}>
+		{#snippet children()}
+			<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
+		{/snippet}
+		{#snippet nextCardSnippet()}
+			{#if data.nextCard}
+				{@const nextCardIndex = data.cardIndex + 1}
+				<Card card={data.nextCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={nextCardIndex} muted={true} />
+			{/if}
+		{/snippet}
+	</CardSwipe>
+
 	<CardNav prevCard={data.prevCard} nextCard={data.nextCard} onNavigateNext={handleNavigateNext}>
-		<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
+		{#snippet children()}{/snippet}
 	</CardNav>
 
 	{#if !data.nextCard}
@@ -108,10 +132,12 @@
 
 	.card-boundary {
 		font-family: var(--font-ui);
-		font-size: var(--text-ui);
+		font-size: 1rem;
+		font-weight: 500;
 		color: var(--color-text-secondary);
 		text-align: center;
-		margin: 0 0 var(--space-md);
+		margin: 0 0 var(--space-lg);
+		letter-spacing: 0.01em;
 	}
 
 	.card-completion {

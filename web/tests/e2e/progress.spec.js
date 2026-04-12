@@ -8,6 +8,7 @@ test.describe('Progress tracking', () => {
 
 	test('navigating to next card marks current card as read', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
+		await page.waitForSelector('[data-keyboard-ready]');
 		// Click next to navigate to card 2 (marks card 1 as read)
 		await page.click('a[aria-label="Next card"]');
 		await expect(page).toHaveURL(/\/meditations\/book-01\/2/);
@@ -23,8 +24,10 @@ test.describe('Progress tracking', () => {
 
 	test('progress persists across page reloads', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
+		await page.waitForSelector('[data-keyboard-ready]');
 		await page.click('a[aria-label="Next card"]');
 		await page.waitForURL(/\/meditations\/book-01\/2/);
+		await page.waitForSelector('[data-keyboard-ready]');
 
 		// Navigate to next card — may trigger 25% milestone modal
 		await page.click('a[aria-label="Next card"]');

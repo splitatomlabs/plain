@@ -4,9 +4,6 @@
 
 	let { prevCard, nextCard, children, onNavigateNext } = $props();
 
-	const SWIPE_THRESHOLD = 50;
-	let startX = 0;
-	let startY = 0;
 	let navRef;
 
 	function cardUrl(card) {
@@ -22,39 +19,6 @@
 			const defer = onNavigateNext?.();
 			if (!defer) goto(cardUrl(nextCard));
 		}
-	}
-
-	function handleSwipeStart(x, y) {
-		startX = x;
-		startY = y;
-	}
-
-	function handleSwipeEnd(x, y) {
-		const deltaX = x - startX;
-		const deltaY = y - startY;
-
-		if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
-			if (deltaX < 0) navigateNext();
-			else navigatePrev();
-		}
-	}
-
-	function handleTouchStart(e) {
-		handleSwipeStart(e.touches[0].clientX, e.touches[0].clientY);
-	}
-
-	function handleTouchEnd(e) {
-		handleSwipeEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-	}
-
-	function handlePointerDown(e) {
-		if (e.pointerType === 'touch') return;
-		handleSwipeStart(e.clientX, e.clientY);
-	}
-
-	function handlePointerUp(e) {
-		if (e.pointerType === 'touch') return;
-		handleSwipeEnd(e.clientX, e.clientY);
 	}
 
 	function handleKeydown(e) {
@@ -85,10 +49,6 @@
 <div
 	class="card-nav"
 	bind:this={navRef}
-	ontouchstart={handleTouchStart}
-	ontouchend={handleTouchEnd}
-	onpointerdown={handlePointerDown}
-	onpointerup={handlePointerUp}
 	role="region"
 	aria-label="Card navigation"
 >
