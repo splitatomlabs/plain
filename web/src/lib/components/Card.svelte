@@ -309,6 +309,7 @@
 		justify-content: space-between;
 		gap: var(--space-sm);
 		margin-bottom: var(--space-sm);
+		position: relative;
 	}
 
 	.card-source {
@@ -352,7 +353,8 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		flex: 1;
-		text-align: center;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
 	}
 </style>
