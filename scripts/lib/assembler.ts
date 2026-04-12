@@ -37,10 +37,14 @@ function buildSourceRef(
   template: string,
   sectionNumber: number,
   bookNumber?: number,
+  chapterTitle?: string,
 ): string {
   let ref = template.replace("{n}", String(sectionNumber));
   if (bookNumber !== undefined) {
     ref = ref.replace("{chapter}", String(bookNumber));
+  }
+  if (chapterTitle !== undefined) {
+    ref = ref.replace("{chapter_title}", chapterTitle);
   }
   return ref;
 }
@@ -67,15 +71,17 @@ export function assembleBook(
   const chapterInfos: ChapterInfo[] = [];
   const allTags = new Set<TagSlug>();
 
+  let chapterIndex = 0;
   for (const { chapterSlug, chapterTitle, bookNumber, chunks } of chapterChunks) {
     if (chunks.length === 0) continue;
+    chapterIndex++;
 
     // Sort by section number within chapter
     const sorted = [...chunks].sort((a, b) => a.sectionNumber - b.sectionNumber);
 
-    // Determine chapter number from slug (first number in the slug)
+    // Determine chapter number from slug (first number in the slug), or use sequential index
     const chapterMatch = chapterSlug.match(/(\d+)/);
-    const chapterNum = chapterMatch ? parseInt(chapterMatch[1], 10) : 1;
+    const chapterNum = chapterMatch ? parseInt(chapterMatch[1], 10) : chapterIndex;
 
     const cards: Card[] = sorted.map((chunk, idx) => {
       const cardNumber = idx + 1;
@@ -93,6 +99,7 @@ export function assembleBook(
           config.sourceRefTemplate,
           chunk.sectionNumber,
           bookNumber,
+          chapterTitle,
         ),
         author_slug: config.author_slug,
         tags: chunk.tags,

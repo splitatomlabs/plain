@@ -1,0 +1,34 @@
+[
+  {
+    "id": "discourses-10-001",
+    "book_slug": "discourses",
+    "chapter_slug": "what-philosophy-promises",
+    "card_number": 1,
+    "total_cards_in_chapter": 2,
+    "plain_english": "A man asked Epictetus how to make his brother stop being angry with him. Epictetus replied: Philosophy doesn't promise to get you external things. If it did, philosophy would be overstepping its boundaries. A carpenter works with wood. A sculptor works with copper. Philosophy works with your own life. What about your brother's life? That belongs to his own work, not yours. To you, your brother is an external thing — like property, health, or reputation. Philosophy doesn't promise to control any of these. Philosophy says: \"I will keep your mind in harmony with nature.\" Whose mind? The mind of whoever I'm in.\n\nSo how do you make your brother stop being angry? Bring him to me and I'll talk to him. But I have nothing to say to you about his anger.",
+    "original_excerpt": "When a man was consulting him how he should persuade his brother to cease being angry with him, Epictetus replied: Philosophy does not propose to secure for a man any external thing. If it did (or if it were not, as I say), philosophy would be allowing something which is not within its province. For as the carpenter's material is wood, and that of the statuary is copper, so the matter of the art of living is each man's life. When then is my brother's? That again belongs to his own art; but with respect to yours, it is one of the external things, like a piece of land, like health, like reputation. But Philosophy promises none of these. In every circumstance I will maintain, she says, the governing part conformable to nature. Whose governing part? His in whom I am, she says.\n\nHow then shall my brother cease to be angry with me? Bring him to me and I will tell him. But I have nothing to say to you about his anger.",
+    "source_reference": "Discourses, What Philosophy Promises, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "human-nature"
+    ],
+    "reading_time_seconds": 40
+  },
+  {
+    "id": "discourses-10-002",
+    "book_slug": "discourses",
+    "chapter_slug": "what-philosophy-promises",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "A man asked Epictetus: \"I want to know how to stay true to my nature, even if my brother won't make peace with me.\" Epictetus said, \"Nothing great happens overnight. Not even a grape or fig grows instantly. If you told me right now that you wanted a fig, I'd say it takes time. First it has to flower, then grow fruit, then ripen. The fruit of a fig tree doesn't ripen suddenly in one hour. So why do you expect the fruit of a person's character to develop so quickly and easily? Don't expect it — not even from me.\"",
+    "original_excerpt": "When the man who was consulting him said, I seek to know this, How, even if my brother is not reconciled to me, shall I maintain myself in a state conformable to nature? Nothing great, said Epictetus, is produced suddenly, since not even the grape or the fig is. If you say to me now that you want a fig, I will answer to you that it requires time: let it flower first, then put forth fruit, and then ripen. Is then the fruit of a fig-tree not perfected suddenly and in one hour, and would you possess the fruit of a man's mind in so short a time and so easily? Do not expect it, even if I tell you.",
+    "source_reference": "Discourses, What Philosophy Promises, Section 1",
+    "author_slug": "epictetus",
+    "tags": [
+      "facing-hardship",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 30
+  }
+]

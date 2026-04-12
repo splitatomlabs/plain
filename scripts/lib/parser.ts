@@ -278,6 +278,104 @@ function splitCenteredSections(text: string): Section[] {
 }
 
 // ---------------------------------------------------------------------------
+// Heading-based parser (Discourses)
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert an ALL-CAPS heading to Title Case.
+ * e.g. "OF THE THINGS WHICH ARE IN OUR POWER" → "Of the Things Which Are in Our Power"
+ */
+function toTitleCase(heading: string): string {
+  const minorWords = new Set([
+    "a", "an", "the", "and", "but", "or", "nor", "for", "yet", "so",
+    "in", "on", "at", "to", "by", "of", "up", "as", "is", "it",
+    "from", "into", "with", "not",
+  ]);
+
+  return heading
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, i) => {
+      if (i === 0 || !minorWords.has(word)) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+      return word;
+    })
+    .join(" ");
+}
+
+/**
+ * Convert a title to a kebab-case slug.
+ * e.g. "Of the Things Which Are in Our Power" → "of-the-things-which-are-in-our-power"
+ */
+function toSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function parseDiscourses(text: string, config: BookConfig): ParsedBook {
+  const headingRe = config.headingPattern!;
+  // ALL-CAPS continuation line that precedes a heading line (multi-line headings)
+  const continuationRe = /^[A-Z][A-Z ,.':();]+$/;
+  const lines = text.split("\n");
+
+  // Find all heading positions, merging multi-line headings
+  const headings: { startLine: number; endLine: number; title: string }[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(headingRe);
+    if (match) {
+      let fullTitle = match[1].replace(/\.$/, "").trim();
+      let startLine = i;
+
+      // Check if preceding non-blank lines are ALL-CAPS continuations
+      let j = i - 1;
+      while (j >= 0 && continuationRe.test(lines[j].trim()) && lines[j].trim().length > 0) {
+        fullTitle = lines[j].trim() + " " + fullTitle;
+        startLine = j;
+        j--;
+      }
+
+      headings.push({ startLine, endLine: i, title: toTitleCase(fullTitle) });
+    }
+  }
+
+  const chapters: ParsedChapter[] = [];
+
+  for (let i = 0; i < headings.length; i++) {
+    const { startLine, endLine: headingEndLine, title } = headings[i];
+    const nextStart = i + 1 < headings.length
+      ? headings[i + 1].startLine
+      : lines.length;
+
+    // The heading line includes the title + em-dash + start of text
+    const headingLine = lines[headingEndLine];
+    const dashIdx = headingLine.indexOf("—");
+    const firstPart = dashIdx >= 0 ? headingLine.slice(dashIdx + 1) : "";
+
+    // Combine first part with remaining lines
+    const bodyLines = [firstPart, ...lines.slice(headingEndLine + 1, nextStart)];
+    const bodyText = bodyLines.join("\n").trim();
+
+    if (bodyText.length === 0) continue;
+
+    const slug = toSlug(title);
+
+    chapters.push({
+      slug,
+      title,
+      sections: [{ number: 1, text: bodyText }],
+    });
+  }
+
+  return { slug: config.slug, chapters };
+}
+
+// ---------------------------------------------------------------------------
 // Main parser entry point
 // ---------------------------------------------------------------------------
 
@@ -292,12 +390,25 @@ export function parseSourceText(text: string, config: BookConfig): ParsedBook {
     return parseMeditations(text, config);
   }
 
-  // Strip preamble if configured (Seneca essays have title/heading before first section)
+  // Strip preamble if configured
   if (config.preamblePattern) {
     const match = text.match(config.preamblePattern);
     if (match && match.index !== undefined) {
       text = text.slice(match.index);
     }
+  }
+
+  // Strip trailing content if configured (before parsing, for heading-based books)
+  if (config.headingPattern && config.trailingContentPattern) {
+    const trailMatch = text.match(config.trailingContentPattern);
+    if (trailMatch && trailMatch.index !== undefined) {
+      text = text.slice(0, trailMatch.index).trim();
+    }
+  }
+
+  // Discourses use heading-based splitting
+  if (config.headingPattern) {
+    return parseDiscourses(text, config);
   }
 
   return parseSingleEssay(text, config);

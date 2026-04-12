@@ -22,7 +22,8 @@ export default {
         '/meditations',
         '/shortness-of-life',
         '/happy-life',
-        '/peace-of-mind'
+        '/peace-of-mind',
+        '/discourses'
       ]
     }
   }

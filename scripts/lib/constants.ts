@@ -55,10 +55,12 @@ export interface BookConfig {
   source_file: string;
   /** Regex matching chapter/book boundaries (Meditations only) */
   headerPattern?: RegExp;
+  /** Regex matching ALL-CAPS discourse headings with em-dash (Discourses only) */
+  headingPattern?: RegExp;
   /** Regex matching section markers (Roman numeral prefixes) */
-  sectionPattern: RegExp;
+  sectionPattern?: RegExp;
   /** How sections are split: 'inline' for Roman numerals at line start, 'centered' for indented standalone Roman numerals */
-  sectionSplitMode: "inline" | "centered";
+  sectionSplitMode?: "inline" | "centered";
   /** How sections map to chapter JSON files; omit for flat books where each section is its own chapter */
   chapterGrouping?: ChapterGrouping[];
   /** Whether to strip Gutenberg preamble/footer */
@@ -169,6 +171,21 @@ export const BOOK_CONFIGS: BookConfig[] = [
     trailingContentPattern: /\n\s*\[\d+\]\s/,
     preamblePattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
     sourceRefTemplate: "On Peace of Mind, Section {n}",
+  },
+  {
+    slug: "discourses",
+    title: "Discourses",
+    author_slug: "epictetus",
+    description: "25 discourses from the four books of Epictetus's teachings, as recorded by his student Arrian. Practical lessons on what you can control, how to handle hardship, and what philosophy is actually for.",
+    source_url: "https://www.gutenberg.org/ebooks/10661",
+    chapter_slug_pattern: "discourse-slug",
+    source_file: "content/source/discourses.txt",
+    headingPattern: /^([A-Z][A-Z ,.':()]+)\.?—/m,
+    gutenbergStrip: true,
+    speakerLabels: false,
+    preamblePattern: /^A SELECTION FROM THE DISCOURSES OF EPICTETUS\.\s*$/m,
+    trailingContentPattern: /^THE ENCHEIRIDION, OR MANUAL\.\s*$/m,
+    sourceRefTemplate: "Discourses, {chapter_title}, Section {n}",
   },
 ];
 

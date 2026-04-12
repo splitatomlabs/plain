@@ -7,6 +7,7 @@ import {
   extractJSON,
   tokenUsage,
   batchStats,
+  safeCustomId,
   type BatchRequest,
 } from "./claude.js";
 import type { Chunk } from "./chunker.js";
@@ -17,7 +18,7 @@ export const MAX_READING_TIME_SECONDS = 90;
 
 const AUTHOR_CONTEXT: Record<string, string> = {
   epictetus:
-    "Epictetus is direct and instructional. His sections are short, punchy lessons — most work well as standalone cards. Very short sections (a sentence or two) are common and may need merging.",
+    "Epictetus is direct and instructional. In the Enchiridion, sections are short, punchy lessons — most work well as standalone cards. Very short sections (a sentence or two) are common and may need merging. In the Discourses, sections are longer and more conversational — extended arguments with examples, dialogues, and rhetorical questions. Long discourses with multiple distinct ideas should be split.",
   "marcus-aurelius":
     "Marcus Aurelius wrote private journal reflections. Sections vary widely — some are a single sentence of self-reminding, others are extended meditations. Very short entries often depend on the previous thought. Longer entries sometimes contain multiple distinct ideas.",
   seneca:
@@ -458,7 +459,7 @@ export async function refineChunksBatch(
 
     for (let b = 0; b < batches.length; b++) {
       const batch = batches[b];
-      const customId = `refine_${bookSlug}_${chapterSlug}_${b}`;
+      const customId = safeCustomId("refine", bookSlug, chapterSlug, b);
       const prompt = buildBulkRefineUser(batch);
       requests.push({
         custom_id: customId,

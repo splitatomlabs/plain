@@ -155,6 +155,80 @@ describe("parseSourceText — Enchiridion", () => {
   });
 });
 
+describe("parseSourceText — Discourses", () => {
+  const config = BOOK_CONFIGS.find((b) => b.slug === "discourses")!;
+  const text = readFileSync(config.source_file, "utf-8");
+  const parsed = parseSourceText(text, config);
+
+  it("finds all discourse chapters", () => {
+    expect(parsed.chapters.length).toBeGreaterThanOrEqual(50);
+  });
+
+  it("each chapter has exactly 1 section", () => {
+    for (const ch of parsed.chapters) {
+      expect(ch.sections).toHaveLength(1);
+    }
+  });
+
+  it("chapter titles are title-cased, not ALL CAPS", () => {
+    for (const ch of parsed.chapters) {
+      expect(ch.title).not.toMatch(/^[A-Z ,.]+$/);
+      // First word should be capitalized
+      expect(ch.title[0]).toMatch(/[A-Z]/);
+    }
+  });
+
+  it("chapter slugs are kebab-case", () => {
+    for (const ch of parsed.chapters) {
+      expect(ch.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+    }
+  });
+
+  it("first discourse is about things in our power", () => {
+    expect(parsed.chapters[0].title).toContain("Things Which Are in Our Power");
+    expect(parsed.chapters[0].sections[0].text).toContain("faculties");
+  });
+
+  it("does not include Gutenberg preamble or biographical note", () => {
+    const allText = parsed.chapters.map((ch) => ch.sections[0].text).join(" ");
+    expect(allText).not.toContain("Project Gutenberg");
+    expect(allText).not.toContain("Hierapolis");
+    expect(allText).not.toContain("EPICTETUS.");
+  });
+
+  it("does not include Encheiridion content", () => {
+    const allText = parsed.chapters.map((ch) => ch.sections[0].text).join(" ");
+    expect(allText).not.toContain("ENCHEIRIDION");
+    expect(allText).not.toContain("THE ENCHEIRIDION, OR MANUAL");
+  });
+
+  it("sections have non-empty text", () => {
+    for (const ch of parsed.chapters) {
+      for (const s of ch.sections) {
+        expect(s.text.trim().length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("discourse titles do not include the em-dash or body text", () => {
+    for (const ch of parsed.chapters) {
+      expect(ch.title).not.toContain("—");
+    }
+  });
+
+  it("handles multi-line headings correctly", () => {
+    // "HOW FROM THE FACT THAT WE ARE AKIN TO GOD A MAN MAY PROCEED TO THE\nCONSEQUENCES.—"
+    const ch = parsed.chapters.find((c) => c.title.includes("Consequences"));
+    expect(ch).toBeDefined();
+    expect(ch!.title).toContain("How from the Fact");
+    expect(ch!.title).toContain("Consequences");
+  });
+
+  it("has exactly 64 chapters", () => {
+    expect(parsed.chapters).toHaveLength(64);
+  });
+});
+
 describe("parseSourceText — Seneca essays", () => {
   const senecaBooks = BOOK_CONFIGS.filter((b) => b.author_slug === "seneca");
 
