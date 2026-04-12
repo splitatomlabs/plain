@@ -36,7 +36,7 @@
 		style="width: {percentage}%; background-color: {color}"
 	></div>
 	{#each ticks() as pos}
-		<div class="progress-tick" style="left: {pos}%"></div>
+		<div class="progress-tick" style="left: {pos}%" aria-hidden="true"></div>
 	{/each}
 </div>
 

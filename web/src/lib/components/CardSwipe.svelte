@@ -11,6 +11,8 @@
 
 	// Velocity tracking — last 4 pointer positions
 	let velocityBuffer = [];
+	let startX = 0;
+	let startY = 0;
 
 	// Drag progress for next-card scale (0 to 1)
 	const dragProgress = $derived(() => {
@@ -51,6 +53,8 @@
 		dragging = true;
 		dx = 0;
 		dy = 0;
+		startX = e.clientX;
+		startY = e.clientY;
 		velocityBuffer = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
 
 		containerEl.setPointerCapture(e.pointerId);
@@ -59,8 +63,11 @@
 	function handlePointerMove(e) {
 		if (!dragging || thrown) return;
 
-		dx = e.clientX - velocityBuffer[0].x;
-		dy = e.clientY - velocityBuffer[0].y;
+		// Only update visual position if motion is allowed
+		if (!reducedMotion) {
+			dx = e.clientX - startX;
+			dy = e.clientY - startY;
+		}
 
 		velocityBuffer.push({ x: e.clientX, y: e.clientY, t: performance.now() });
 		if (velocityBuffer.length > 4) velocityBuffer.shift();
@@ -84,7 +91,11 @@
 			}
 		}
 
-		const offset = Math.sqrt(dx * dx + dy * dy);
+		// Calculate offset from start position (works even when dx/dy are 0 in reduced motion)
+		const last = velocityBuffer[velocityBuffer.length - 1] || { x: startX, y: startY };
+		const totalDx = last.x - startX;
+		const totalDy = last.y - startY;
+		const offset = Math.sqrt(totalDx * totalDx + totalDy * totalDy);
 		const viewportWidth = containerEl.clientWidth;
 		const shouldDismiss = hasNext && (velocity > 0.5 || offset > viewportWidth * 0.3);
 
