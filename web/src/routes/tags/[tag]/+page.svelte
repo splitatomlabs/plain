@@ -3,6 +3,7 @@
 	import CardSwipe from '$lib/components/CardSwipe.svelte';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
@@ -11,29 +12,26 @@
 
 	// Local card state — mirrors pushState pattern from book card pages.
 	// Server provides the full sequence; we track position client-side.
-	let localIndex = $state(null);
+	let localIndex = $state(0);
 	let showMilestone = $state(null);
-	const serverTag = $derived(data.tag.slug);
+	let mounted = $state(false);
 
-	// Reset local state when server data changes (new tag page, popstate)
-	$effect(() => {
-		serverTag;
-		if (browser) {
-			const resumeIdx = tagProgress.getTagResumeIndex(data.tag.slug);
-			localIndex = Math.min(resumeIdx, data.sequence.length - 1);
-		} else {
-			localIndex = 0;
-		}
+	// On mount, resume from last position
+	onMount(() => {
+		const resumeIdx = tagProgress.getTagResumeIndex(data.tag.slug);
+		localIndex = Math.min(resumeIdx, data.sequence.length - 1);
+		mounted = true;
 	});
 
-	const currentIndex = $derived(localIndex ?? 0);
-	const activeCard = $derived(data.sequence[currentIndex] ?? data.sequence[0]);
-	const nextCard = $derived(currentIndex < data.sequence.length - 1 ? data.sequence[currentIndex + 1] : null);
-	const prevCard = $derived(currentIndex > 0 ? data.sequence[currentIndex - 1] : null);
+	const activeCard = $derived(data.sequence[localIndex] ?? data.sequence[0]);
+	const nextCard = $derived(localIndex < data.sequence.length - 1 ? data.sequence[localIndex + 1] : null);
+	const prevCard = $derived(localIndex > 0 ? data.sequence[localIndex - 1] : null);
 
-	const tagCardsRead = $derived.by(() => {
-		if (!browser) return 0;
-		return tagProgress.getTagProgress(data.tag.slug).cardsRead;
+	// Track cards read as plain state — updated after each dismiss, not reactively subscribed
+	let tagCardsRead = $state(0);
+
+	onMount(() => {
+		tagCardsRead = tagProgress.getTagProgress(data.tag.slug).cardsRead;
 	});
 
 	function getShownMilestones(tagSlug) {
@@ -70,13 +68,13 @@
 
 	function advanceCard() {
 		if (!nextCard) return;
-		localIndex = currentIndex + 1;
+		localIndex = localIndex + 1;
 		tagProgress.setTagResumeIndex(data.tag.slug, localIndex);
 	}
 
 	function advancePrev() {
 		if (!prevCard) return;
-		localIndex = currentIndex - 1;
+		localIndex = localIndex - 1;
 		tagProgress.setTagResumeIndex(data.tag.slug, localIndex);
 	}
 
@@ -88,6 +86,7 @@
 			}
 		}
 		const afterCount = tagProgress.getTagProgress(data.tag.slug).cardsRead;
+		tagCardsRead = afterCount;
 		const milestone = checkMilestone(data.tag.slug, beforeCount, afterCount);
 		if (milestone) {
 			recordMilestone(data.tag.slug, milestone);
@@ -137,12 +136,12 @@
 	<header class="tag-header">
 		<h1>{data.tag.label}</h1>
 		<p class="tag-progress-count">
-			{currentIndex + 1} / {data.totalCards}
+			{localIndex + 1} / {data.totalCards}
 			{#if tagCardsRead > 0}
 				<span class="cards-read-badge">{tagCardsRead} read</span>
 			{/if}
 		</p>
-		{#if currentIndex > 0}
+		{#if localIndex > 0}
 			<button class="reset-btn" onclick={resetToBeginning}>Start from beginning</button>
 		{/if}
 	</header>
@@ -159,7 +158,7 @@
 					card={activeCard}
 					book={null}
 					totalCardsInBook={data.totalCards}
-					cardIndex={currentIndex + 1}
+					cardIndex={localIndex + 1}
 					linkSource={true}
 				/>
 			{/snippet}
@@ -169,7 +168,7 @@
 						card={nextCard}
 						book={null}
 						totalCardsInBook={data.totalCards}
-						cardIndex={currentIndex + 2}
+						cardIndex={localIndex + 2}
 						muted={true}
 						linkSource={true}
 					/>
