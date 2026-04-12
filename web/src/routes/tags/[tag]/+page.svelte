@@ -13,16 +13,24 @@
 	// Local card state — always starts at 0 (sequence is randomized each visit)
 	let localIndex = $state(0);
 	let showMilestone = $state(null);
+	// Locally reordered sequence — unread cards first, then already-read cards
+	let sequence = $state(data.sequence);
 
-	const activeCard = $derived(data.sequence[localIndex] ?? data.sequence[0]);
-	const nextCard = $derived(localIndex < data.sequence.length - 1 ? data.sequence[localIndex + 1] : null);
-	const prevCard = $derived(localIndex > 0 ? data.sequence[localIndex - 1] : null);
+	const activeCard = $derived(sequence[localIndex] ?? sequence[0]);
+	const nextCard = $derived(localIndex < sequence.length - 1 ? sequence[localIndex + 1] : null);
+	const prevCard = $derived(localIndex > 0 ? sequence[localIndex - 1] : null);
 
 	let tagCardsRead = $state(0);
 	const positionDisplay = $derived(`${localIndex + 1} / ${data.totalCards}`);
 
 	onMount(() => {
-		tagCardsRead = tagProgress.getTagProgress(data.tag.slug).cardsRead;
+		const progress = tagProgress.getTagProgress(data.tag.slug);
+		tagCardsRead = progress.cardsRead;
+		// Push already-read cards to the end so the user always starts on unread cards
+		const readSet = new Set(progress.cards);
+		const unread = data.sequence.filter((c) => !readSet.has(c.id));
+		const read = data.sequence.filter((c) => readSet.has(c.id));
+		sequence = [...unread, ...read];
 	});
 
 	function getShownMilestones(tagSlug) {
