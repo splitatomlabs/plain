@@ -11,7 +11,7 @@
 	const percentage = $derived(Math.round((current / total) * 100));
 
 	// Calculate tick positions for chapter boundaries (cumulative percentages)
-	const ticks = $derived(() => {
+	const ticks = $derived.by(() => {
 		if (!hasChapters || !chapters || chapters.length <= 1) return [];
 		const positions = [];
 		let cumulative = 0;
@@ -35,7 +35,7 @@
 		class="progress-fill"
 		style="width: {percentage}%; background-color: {color}"
 	></div>
-	{#each ticks() as pos}
+	{#each ticks as pos}
 		<div class="progress-tick" style="left: {pos}%" aria-hidden="true"></div>
 	{/each}
 </div>

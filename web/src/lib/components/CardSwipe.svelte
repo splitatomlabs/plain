@@ -15,7 +15,7 @@
 	let startY = 0;
 
 	// Drag progress for next-card scale (0 to 1)
-	const dragProgress = $derived(() => {
+	const dragProgress = $derived.by(() => {
 		if (!containerEl) return 0;
 		const maxDist = containerEl.clientWidth * 0.3;
 		return Math.min(Math.sqrt(dx * dx + dy * dy) / maxDist, 1);
@@ -25,15 +25,10 @@
 	const rotation = $derived(Math.max(-6, Math.min(6, dx * 0.04)));
 
 	// Shadow intensity proportional to drag distance
-	const shadowOpacity = $derived(() => {
-		const progress = dragProgress();
-		return progress * 0.12;
-	});
+	const shadowOpacity = $derived(dragProgress * 0.12);
 
 	// Next card scale
-	const nextScale = $derived(() => {
-		return 0.97 + dragProgress() * 0.03;
-	});
+	const nextScale = $derived(0.97 + dragProgress * 0.03);
 
 	// Reduced motion check
 	let reducedMotion = $state(false);
@@ -144,7 +139,7 @@
 	{#if nextCardSnippet}
 		<div
 			class="card-swipe-layer card-swipe-next"
-			style="transform: scale({nextScale()})"
+			style="transform: scale({nextScale})"
 		>
 			{@render nextCardSnippet()}
 		</div>
@@ -157,7 +152,7 @@
 		class:thrown
 		style="
 			transform: translate({dx}px, {dy}px) rotate({dragging || thrown ? rotation : 0}deg);
-			box-shadow: 0 {8 * shadowOpacity() / 0.12}px {24 * shadowOpacity() / 0.12}px rgba(0,0,0,{shadowOpacity()});
+			box-shadow: 0 {8 * shadowOpacity / 0.12}px {24 * shadowOpacity / 0.12}px rgba(0,0,0,{shadowOpacity});
 		"
 		ontransitionend={handleTransitionEnd}
 	>

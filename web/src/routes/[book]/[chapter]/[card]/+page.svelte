@@ -98,7 +98,6 @@
 		{/snippet}
 		{#snippet nextCardSnippet()}
 			{#if data.nextCard}
-				{@const nextChapterCards = data.book.chapters.find(ch => ch.slug === data.nextCard.chapter_slug)}
 				{@const nextCardIndex = data.cardIndex + 1}
 				<Card card={data.nextCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={nextCardIndex} muted={true} />
 			{/if}
