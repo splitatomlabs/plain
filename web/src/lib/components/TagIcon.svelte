@@ -91,11 +91,9 @@
 			{/if}
 		</svg>
 		{#if badge}
-			<span
-				class="milestone-badge"
-				style="background: {badge.fill};"
-				title="{badge.label} — {cardsRead} cards read"
-			></span>
+			<svg class="milestone-badge" viewBox="0 0 12 12" aria-hidden="true" title="{badge.label} — {cardsRead} cards read">
+				<path d="M6 0 L12 6 L6 12 L0 6 Z" fill="{badge.fill}" />
+			</svg>
 		{/if}
 	</div>
 	<span class="icon-label">{label}</span>
@@ -112,11 +110,15 @@
 		gap: var(--space-xs);
 		text-decoration: none;
 		width: 5.5rem;
-		transition: opacity var(--transition-fast);
+		padding: var(--space-sm) var(--space-xs);
+		border-radius: 10px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		transition: border-color var(--transition-fast);
 	}
 
 	.tag-icon:hover {
-		opacity: 0.75;
+		border-color: var(--color-text-secondary);
 	}
 
 	.icon-wrapper {
@@ -129,17 +131,20 @@
 		width: 100%;
 		height: 100%;
 		color: var(--color-text-secondary);
+		transition: color var(--transition-fast);
+	}
+
+	.tag-icon:hover .icon-svg {
+		color: var(--color-text-primary);
 	}
 
 	.milestone-badge {
 		position: absolute;
-		top: -3px;
-		right: -3px;
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		border: 2px solid var(--color-bg);
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+		top: -4px;
+		right: -4px;
+		width: 14px;
+		height: 14px;
+		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
 	}
 
 	.icon-label {
