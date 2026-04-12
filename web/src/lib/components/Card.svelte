@@ -138,6 +138,7 @@
 
 			<!-- Back face -->
 			<div class="card-back" bind:this={backEl}>
+				<span class="card-face-label">Original</span>
 				<header class="card-author" style="color: {accentVar[card.author_slug]}">
 					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
 				</header>
@@ -215,6 +216,24 @@
 		width: 100%;
 		transform: rotateY(180deg);
 		pointer-events: none;
+		background: var(--color-background);
+	}
+
+	.card-face-label {
+		position: absolute;
+		top: var(--space-md);
+		right: var(--space-md);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		pointer-events: none;
+	}
+
+	@media (min-width: 768px) {
+		.card-face-label {
+			top: var(--space-xl);
+			right: var(--space-xl);
+		}
 	}
 
 	.card-inner.flipped .card-back {
