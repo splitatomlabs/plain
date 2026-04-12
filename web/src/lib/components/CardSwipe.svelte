@@ -100,7 +100,7 @@
 				if (touchPhase === 'pending') {
 					touchPhase = 'idle';
 				}
-			}, 200);
+			}, 150);
 		}
 	}
 
