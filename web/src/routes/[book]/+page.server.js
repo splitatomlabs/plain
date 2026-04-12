@@ -7,7 +7,7 @@ export function load({ params }) {
 	const author = authors.find((a) => a.slug === meta.author_slug);
 	const tags = getTagsForBook(params.book);
 
-	const hasChapters = meta.slug === 'meditations';
+	const hasChapters = meta.has_chapters;
 	let previewCard = null;
 	if (!hasChapters && meta.chapters.length > 0) {
 		previewCard = getCard(meta.slug, meta.chapters[0].slug, 1);

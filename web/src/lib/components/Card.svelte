@@ -107,7 +107,7 @@
 				<footer class="card-footer">
 					<div class="card-meta">
 						<span class="card-source">{card.source_reference}</span>
-						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
+						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> <span class="card-number">· {card.card_number} / {chapterCardCount}</span>{:else}<span class="card-number">{cardIndex} / {totalCardsInBook}</span>{/if}</span>
 					</div>
 
 					<div class="card-tags-row">
@@ -156,7 +156,7 @@
 				<footer class="card-footer">
 					<div class="card-meta">
 						<span class="card-source">{card.source_reference}</span>
-						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
+						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> <span class="card-number">· {card.card_number} / {chapterCardCount}</span>{:else}<span class="card-number">{cardIndex} / {totalCardsInBook}</span>{/if}</span>
 					</div>
 				</footer>
 			</div>
@@ -193,14 +193,13 @@
 		backface-visibility: hidden;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: 0;
+		border-radius: 12px;
 		padding: var(--space-xl) var(--space-md);
 	}
 
 	@media (min-width: 768px) {
 		.card-front,
 		.card-back {
-			border-radius: 12px;
 			padding: var(--space-2xl) var(--space-xl);
 		}
 	}
@@ -342,10 +341,20 @@
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
 		text-align: right;
+		display: flex;
+		align-items: baseline;
+		justify-content: flex-end;
+		flex-wrap: wrap;
+		gap: 0 0.25em;
 	}
 
 	.chapter-label {
 		font-weight: 500;
+	}
+
+	.card-number {
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 
 </style>

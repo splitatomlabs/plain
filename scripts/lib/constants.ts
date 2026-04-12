@@ -187,7 +187,7 @@ export const BOOK_CONFIGS: BookConfig[] = [
     speakerLabels: false,
     preamblePattern: /^A SELECTION FROM THE DISCOURSES OF EPICTETUS\.\s*$/m,
     trailingContentPattern: /^THE ENCHEIRIDION, OR MANUAL\.\s*$/m,
-    sourceRefTemplate: "Discourses, {chapter_title}, Section {n}",
+    sourceRefTemplate: "Discourses, {chapter_title}",
   },
 ];
 

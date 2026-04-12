@@ -13,7 +13,7 @@
 		seneca: 'var(--color-accent-seneca)'
 	};
 
-	let hasChapters = $derived(data.book.slug === 'meditations');
+	let hasChapters = $derived(data.book.has_chapters);
 
 	let isGift = $state(false);
 	let giftNote = $state('');
@@ -168,12 +168,11 @@
 				{#each data.book.chapters as chapter}
 					{@const cp = chapterProgressMap[chapter.slug]}
 					<li class="chapter-item">
-						{#if cp?.completed}
-							<span class="chapter-check">&#10003;</span>
-						{/if}
 						<span class="chapter-title">{chapter.title}</span>
 						<span class="chapter-detail">
-							{#if cp && cp.cardsRead > 0}
+							{#if cp?.completed}
+								&#10003;
+							{:else if cp && cp.cardsRead > 0}
 								{cp.cardsRead} / {cp.total}
 							{:else if chapter.reading_time_seconds}
 								{formatReadingTime(chapter.reading_time_seconds)}
@@ -190,6 +189,7 @@
 		</section>
 	{:else if data.previewCard}
 		<div class="book-preview">
+			<span class="preview-label">Preview</span>
 			<p class="preview-text">{data.previewCard.plain_english}</p>
 		</div>
 	{/if}
@@ -291,7 +291,7 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		padding: var(--space-sm) 0;
+		padding: var(--space-sm) var(--space-md);
 		border-bottom: 1px solid var(--color-border);
 		overflow: hidden;
 	}
@@ -305,14 +305,7 @@
 		pointer-events: none;
 	}
 
-	.chapter-check {
-		font-size: var(--text-ui);
-		color: var(--color-text-secondary);
-		margin-right: var(--space-sm);
-		flex-shrink: 0;
-	}
-
-	.chapter-title {
+.chapter-title {
 		font-family: var(--font-body);
 		color: var(--color-text-primary);
 		flex: 1;
@@ -334,16 +327,22 @@
 		margin-bottom: var(--space-lg);
 	}
 
+	.preview-label {
+		display: block;
+		text-align: left;
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 400;
+		color: var(--color-text-secondary);
+		margin-bottom: var(--space-sm);
+	}
+
 	.preview-text {
 		font-family: var(--font-body);
 		font-size: var(--text-body);
 		line-height: var(--line-height-body);
 		color: var(--color-text-secondary);
 		margin: 0;
-		display: -webkit-box;
-		-webkit-line-clamp: 5;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
 	}
 
 	.book-landing-progress {
