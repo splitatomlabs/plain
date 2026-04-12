@@ -2,6 +2,7 @@
 	import AuthorSection from '$lib/components/AuthorSection.svelte';
 	import ProgressRing from '$lib/components/ProgressRing.svelte';
 	import TagPill from '$lib/components/TagPill.svelte';
+	import TagIcon from '$lib/components/TagIcon.svelte';
 	import { progress } from '$lib/stores/progress.js';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
@@ -71,6 +72,16 @@
 		if (!browser) return 0;
 		return tagProgress.getTagProgress(tagSlug).cardsRead;
 	}
+
+	const TAG_MILESTONES = [10, 25, 50, 100];
+
+	function getHighestMilestone(cardsRead) {
+		let highest = null;
+		for (const m of TAG_MILESTONES) {
+			if (cardsRead >= m) highest = m;
+		}
+		return highest;
+	}
 </script>
 
 <svelte:head>
@@ -114,10 +125,10 @@
 
 	<section class="themes-section" id="themes">
 		<h2 class="themes-heading">Browse by theme</h2>
-		<div class="themes-grid">
+		<div class="themes-icon-grid">
 			{#each data.tags as tag}
 				{@const cardsRead = getTagCardsRead(tag.slug)}
-				<TagPill slug={tag.slug} label={tag.label} progress={cardsRead || null} />
+				<TagIcon slug={tag.slug} label={tag.label} {cardsRead} milestone={getHighestMilestone(cardsRead)} />
 			{/each}
 		</div>
 	</section>
@@ -134,9 +145,9 @@
 
 	<section class="themes-section" id="themes">
 		<h2 class="themes-heading">Browse by theme</h2>
-		<div class="themes-grid">
+		<div class="themes-icon-grid">
 			{#each data.tags as tag}
-				<TagPill slug={tag.slug} label={tag.label} />
+				<TagIcon slug={tag.slug} label={tag.label} />
 			{/each}
 		</div>
 	</section>
@@ -270,5 +281,20 @@
 		flex-wrap: wrap;
 		justify-content: center;
 		gap: var(--space-sm);
+	}
+
+	.themes-icon-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: var(--space-lg) var(--space-md);
+		max-width: 28rem;
+		margin: 0 auto;
+	}
+
+	@media (max-width: 400px) {
+		.themes-icon-grid {
+			grid-template-columns: repeat(3, 1fr);
+			max-width: 20rem;
+		}
 	}
 </style>

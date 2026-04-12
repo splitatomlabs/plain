@@ -90,7 +90,7 @@ test.describe('Home page — themes section', () => {
 
 	test('theme section contains 8 tag pills', async ({ page }) => {
 		await page.goto('/');
-		const pills = page.locator('#themes .tag-pill');
+		const pills = page.locator('#themes .tag-icon');
 		await expect(pills).toHaveCount(8);
 	});
 });
