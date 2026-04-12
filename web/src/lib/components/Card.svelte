@@ -301,7 +301,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-sm);
-		margin-bottom: var(--space-sm);
+		margin-bottom: var(--space-md);
 	}
 
 	.card-source {
