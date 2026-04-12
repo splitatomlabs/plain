@@ -5,7 +5,6 @@
 
 	let containerEl = $state(null);
 	let pending = $state(false);
-	let scrolling = $state(false);
 	let dragging = $state(false);
 	let thrown = $state(false);
 	let promoting = $state(false);
@@ -16,13 +15,16 @@
 	let velocityBuffer = [];
 	let startX = 0;
 	let startY = 0;
-	let lastScrollY = 0;
-	let scrollVelocity = 0;
 	let pendingPointerId = -1;
 	let throwFallbackTimer = null;
+
+	// Touch scroll state
+	let touchScrolling = false;
+	let lastTouchY = 0;
+	let scrollVelocityBuffer = [];
 	let inertiaFrame = null;
 
-	// Axis-lock threshold: movement (px) before we decide swipe vs scroll
+	// Axis-lock threshold (px) before deciding swipe vs scroll
 	const AXIS_THRESHOLD = 8;
 
 	// Reset drag state when the active card changes (after navigation)
@@ -31,7 +33,7 @@
 		thrown = false;
 		promoting = false;
 		pending = false;
-		scrolling = false;
+		touchScrolling = false;
 		dragging = false;
 		dx = 0;
 		dy = 0;
@@ -65,15 +67,27 @@
 		return () => mq.removeEventListener('change', handler);
 	});
 
+	// Non-passive touchmove listener to allow preventDefault during pending/dragging.
+	// This prevents the browser from starting a native scroll while we decide direction.
+	onMount(() => {
+		function onTouchMove(e) {
+			if (pending || dragging) {
+				e.preventDefault();
+			}
+		}
+		containerEl.addEventListener('touchmove', onTouchMove, { passive: false });
+		return () => containerEl.removeEventListener('touchmove', onTouchMove);
+	});
+
 	function handlePointerDown(e) {
-		if (thrown || promoting || pending || dragging || scrolling) return;
+		if (thrown || promoting || pending || dragging) return;
 		if (e.button !== 0) return;
 		if (e.target.closest('button, a, [role="button"], summary')) return;
 
 		cancelAnimationFrame(inertiaFrame);
+		touchScrolling = false;
 		startX = e.clientX;
 		startY = e.clientY;
-		lastScrollY = e.clientY;
 		velocityBuffer = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
 		pendingPointerId = e.pointerId;
 
@@ -82,7 +96,7 @@
 			dragging = true;
 			containerEl.setPointerCapture(e.pointerId);
 		} else {
-			// Touch: wait to determine direction
+			// Touch: enter pending state, decide direction on first move
 			pending = true;
 		}
 	}
@@ -97,7 +111,7 @@
 			if (moveX < AXIS_THRESHOLD && moveY < AXIS_THRESHOLD) return;
 
 			if (moveX >= moveY) {
-				// Horizontal intent — transition to dragging
+				// Horizontal intent — drag the card
 				pending = false;
 				dragging = true;
 				containerEl.setPointerCapture(pendingPointerId);
@@ -107,19 +121,22 @@
 					dy = e.clientY - startY;
 				}
 			} else {
-				// Vertical intent — handle scroll ourselves
+				// Vertical intent — scroll the page ourselves
 				pending = false;
-				scrolling = true;
+				touchScrolling = true;
+				lastTouchY = e.clientY;
+				scrollVelocityBuffer = [];
 				containerEl.setPointerCapture(pendingPointerId);
-				lastScrollY = e.clientY;
 			}
 			return;
 		}
 
-		if (scrolling) {
-			const deltaY = lastScrollY - e.clientY;
-			lastScrollY = e.clientY;
-			scrollVelocity = deltaY;
+		if (touchScrolling) {
+			const now = performance.now();
+			const deltaY = lastTouchY - e.clientY;
+			scrollVelocityBuffer.push({ dy: deltaY, t: now });
+			if (scrollVelocityBuffer.length > 5) scrollVelocityBuffer.shift();
+			lastTouchY = e.clientY;
 			window.scrollBy(0, deltaY);
 			return;
 		}
@@ -141,17 +158,31 @@
 			return;
 		}
 
-		if (scrolling) {
-			scrolling = false;
-			// Inertia scroll
-			let v = scrollVelocity;
-			function inertiaStep() {
-				if (Math.abs(v) < 0.5) return;
-				window.scrollBy(0, v);
-				v *= 0.92;
-				inertiaFrame = requestAnimationFrame(inertiaStep);
+		if (touchScrolling) {
+			touchScrolling = false;
+
+			// Calculate scroll velocity from recent samples
+			const now = performance.now();
+			let totalDy = 0;
+			let totalDt = 0;
+			for (const s of scrollVelocityBuffer) {
+				if (now - s.t < 100) {
+					totalDy += s.dy;
+					totalDt += 16; // approximate frame time
+				}
 			}
-			inertiaFrame = requestAnimationFrame(inertiaStep);
+			let velocity = totalDt > 0 ? (totalDy / totalDt) * 16 : 0;
+
+			// Inertia: decelerate smoothly
+			if (Math.abs(velocity) > 0.5) {
+				function step() {
+					if (Math.abs(velocity) < 0.5) return;
+					window.scrollBy(0, velocity);
+					velocity *= 0.95;
+					inertiaFrame = requestAnimationFrame(step);
+				}
+				inertiaFrame = requestAnimationFrame(step);
+			}
 			return;
 		}
 
@@ -203,7 +234,7 @@
 
 	function handlePointerCancel() {
 		pending = false;
-		scrolling = false;
+		touchScrolling = false;
 		dragging = false;
 		dx = 0;
 		dy = 0;
