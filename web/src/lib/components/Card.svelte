@@ -324,15 +324,16 @@
 	}
 
 	.card-tags-row :global(.share-button) {
-		background: var(--color-tag-bg);
+		background: none;
+		border: 1px solid var(--color-border);
 		border-radius: 6px;
 		min-height: 44px;
 		padding: var(--space-xs) var(--space-sm);
-		transition: background var(--transition-fast), color var(--transition-fast);
+		transition: border-color var(--transition-fast), color var(--transition-fast);
 	}
 
 	.card-tags-row :global(.share-button:hover) {
-		background: var(--color-border);
+		border-color: var(--color-text-secondary);
 		color: var(--color-text-primary);
 	}
 
