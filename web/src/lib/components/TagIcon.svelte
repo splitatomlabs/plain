@@ -107,6 +107,15 @@
 </a>
 
 <style>
+	/*
+	 * Mobile layout notes:
+	 * - width 6.25rem (100px) is chosen so 3 cards + 16px gaps fit in iPhone 17 (402pt)
+	 *   but don't fit in iPhone 15 (390pt) — forces 3-up at 402, 2-up below
+	 * - padding is intentionally tight horizontally to allow that width while keeping
+	 *   labels from touching the border
+	 * - icon-wrapper 3.6rem ≈ 57% of the card width — enough visual weight without
+	 *   crowding the label
+	 */
 	.tag-icon {
 		display: flex;
 		flex-direction: column;
@@ -161,6 +170,13 @@
 		opacity: 0.7;
 	}
 
+	/*
+	 * Tablet/desktop (≥768px):
+	 * - width: auto lets cards stretch to fill grid columns (set on .themes-icon-grid)
+	 * - larger icon + bumped font sizes give more visual weight at desktop proportions
+	 * - count font (0.8125rem) is intentionally slightly smaller than label (0.875rem)
+	 *   so the read count reads as subordinate metadata, not a headline
+	 */
 	@media (min-width: 768px) {
 		.tag-icon {
 			width: auto;

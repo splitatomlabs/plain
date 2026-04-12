@@ -88,6 +88,25 @@
 	<meta name="description" content="Read the complete works of Epictetus, Marcus Aurelius, and Seneca — translated into clear, modern English." />
 </svelte:head>
 
+{#snippet themesSection(showProgress)}
+	<!-- Depends on the #themes anchor being present somewhere below in DOM order.
+	     Both hasProgress branches render it, so the hero's "Or explore by theme"
+	     anchor link is always valid. -->
+	<section class="themes-section" id="themes">
+		<h2 class="themes-heading">Browse by theme</h2>
+		<div class="themes-icon-grid">
+			{#each data.tags as tag}
+				{#if showProgress}
+					{@const cardsRead = getTagCardsRead(tag.slug)}
+					<TagIcon slug={tag.slug} label={tag.label} {cardsRead} milestone={getHighestMilestone(cardsRead)} />
+				{:else}
+					<TagIcon slug={tag.slug} label={tag.label} />
+				{/if}
+			{/each}
+		</div>
+	</section>
+{/snippet}
+
 {#if hasProgress}
 	<section class="returning-hero">
 		<div class="author-rings">
@@ -122,15 +141,7 @@
 		<AuthorSection {author} {books} {bookProgress} />
 	{/each}
 
-	<section class="themes-section" id="themes">
-		<h2 class="themes-heading">Browse by theme</h2>
-		<div class="themes-icon-grid">
-			{#each data.tags as tag}
-				{@const cardsRead = getTagCardsRead(tag.slug)}
-				<TagIcon slug={tag.slug} label={tag.label} {cardsRead} milestone={getHighestMilestone(cardsRead)} />
-			{/each}
-		</div>
-	</section>
+	{@render themesSection(true)}
 {:else}
 	<section class="hero">
 		<h1>Three men. Three completely different lives. The same philosophy.</h1>
@@ -142,14 +153,7 @@
 		<AuthorSection {author} {books} />
 	{/each}
 
-	<section class="themes-section" id="themes">
-		<h2 class="themes-heading">Browse by theme</h2>
-		<div class="themes-icon-grid">
-			{#each data.tags as tag}
-				<TagIcon slug={tag.slug} label={tag.label} />
-			{/each}
-		</div>
-	</section>
+	{@render themesSection(false)}
 {/if}
 
 <style>
@@ -289,7 +293,7 @@
 			display: grid;
 			grid-template-columns: repeat(4, 1fr);
 			max-width: 60rem;
-			gap: var(--space-md);
+			/* gap inherited from base .themes-icon-grid */
 		}
 	}
 </style>
