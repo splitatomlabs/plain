@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 
-	let { children, nextCardSnippet, onDismiss, hasNext = false } = $props();
+	let { children, nextCardSnippet, onDismiss, hasNext = false, cardId = '' } = $props();
 
 	let containerEl = $state(null);
 	let dragging = $state(false);
@@ -13,6 +13,15 @@
 	let velocityBuffer = [];
 	let startX = 0;
 	let startY = 0;
+
+	// Reset drag state when the active card changes (after navigation)
+	$effect(() => {
+		cardId;
+		thrown = false;
+		dragging = false;
+		dx = 0;
+		dy = 0;
+	});
 
 	// Drag progress for next-card scale (0 to 1)
 	const dragProgress = $derived.by(() => {
@@ -117,9 +126,9 @@
 
 	function handleTransitionEnd(e) {
 		if (thrown && e.propertyName === 'transform') {
-			thrown = false;
-			dx = 0;
-			dy = 0;
+			// Don't reset state here — keep the card off-screen.
+			// The $effect watching cardId will reset dx/dy/thrown
+			// once goto() completes and new card data arrives.
 			onDismiss?.();
 		}
 	}

@@ -92,7 +92,7 @@
 
 	<ChapterMarker book={data.book} card={data.card} prevCard={data.prevCard} />
 
-	<CardSwipe onDismiss={handleDismiss} hasNext={!!data.nextCard}>
+	<CardSwipe onDismiss={handleDismiss} hasNext={!!data.nextCard} cardId={data.card.id}>
 		{#snippet children()}
 			<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
 		{/snippet}
