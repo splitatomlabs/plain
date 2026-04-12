@@ -5,6 +5,7 @@
 
 	let containerEl = $state(null);
 	let pending = $state(false);
+	let scrolling = $state(false);
 	let dragging = $state(false);
 	let thrown = $state(false);
 	let promoting = $state(false);
@@ -15,11 +16,14 @@
 	let velocityBuffer = [];
 	let startX = 0;
 	let startY = 0;
+	let lastScrollY = 0;
+	let scrollVelocity = 0;
 	let pendingPointerId = -1;
 	let throwFallbackTimer = null;
+	let inertiaFrame = null;
 
 	// Axis-lock threshold: movement (px) before we decide swipe vs scroll
-	const AXIS_THRESHOLD = 10;
+	const AXIS_THRESHOLD = 8;
 
 	// Reset drag state when the active card changes (after navigation)
 	$effect(() => {
@@ -27,10 +31,12 @@
 		thrown = false;
 		promoting = false;
 		pending = false;
+		scrolling = false;
 		dragging = false;
 		dx = 0;
 		dy = 0;
 		clearTimeout(throwFallbackTimer);
+		cancelAnimationFrame(inertiaFrame);
 	});
 
 	// Drag progress for next-card scale (0 to 1)
@@ -60,19 +66,25 @@
 	});
 
 	function handlePointerDown(e) {
-		if (thrown || promoting || pending || dragging) return;
-		// Only handle primary button (left click / touch)
+		if (thrown || promoting || pending || dragging || scrolling) return;
 		if (e.button !== 0) return;
-		// Don't capture pointer on interactive elements — let clicks fire normally
 		if (e.target.closest('button, a, [role="button"], summary')) return;
 
-		// Enter pending state — don't capture pointer yet.
-		// Wait for movement to determine if this is a horizontal swipe or vertical scroll.
-		pending = true;
-		pendingPointerId = e.pointerId;
+		cancelAnimationFrame(inertiaFrame);
 		startX = e.clientX;
 		startY = e.clientY;
+		lastScrollY = e.clientY;
 		velocityBuffer = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+		pendingPointerId = e.pointerId;
+
+		if (e.pointerType === 'mouse') {
+			// Mouse: capture immediately, drag in any direction
+			dragging = true;
+			containerEl.setPointerCapture(e.pointerId);
+		} else {
+			// Touch: wait to determine direction
+			pending = true;
+		}
 	}
 
 	function handlePointerMove(e) {
@@ -82,10 +94,9 @@
 			const moveX = Math.abs(e.clientX - startX);
 			const moveY = Math.abs(e.clientY - startY);
 
-			// Not enough movement yet to decide
 			if (moveX < AXIS_THRESHOLD && moveY < AXIS_THRESHOLD) return;
 
-			if (moveX > moveY) {
+			if (moveX >= moveY) {
 				// Horizontal intent — transition to dragging
 				pending = false;
 				dragging = true;
@@ -96,15 +107,25 @@
 					dy = e.clientY - startY;
 				}
 			} else {
-				// Vertical intent — bail out, let the browser scroll
+				// Vertical intent — handle scroll ourselves
 				pending = false;
-				return;
+				scrolling = true;
+				containerEl.setPointerCapture(pendingPointerId);
+				lastScrollY = e.clientY;
 			}
+			return;
+		}
+
+		if (scrolling) {
+			const deltaY = lastScrollY - e.clientY;
+			lastScrollY = e.clientY;
+			scrollVelocity = deltaY;
+			window.scrollBy(0, deltaY);
+			return;
 		}
 
 		if (!dragging) return;
 
-		// Only update visual position if motion is allowed
 		if (!reducedMotion) {
 			dx = e.clientX - startX;
 			dy = e.clientY - startY;
@@ -116,15 +137,27 @@
 
 	function handlePointerUp(e) {
 		if (pending) {
-			// Finger lifted before direction was determined — treat as tap
 			pending = false;
+			return;
+		}
+
+		if (scrolling) {
+			scrolling = false;
+			// Inertia scroll
+			let v = scrollVelocity;
+			function inertiaStep() {
+				if (Math.abs(v) < 0.5) return;
+				window.scrollBy(0, v);
+				v *= 0.92;
+				inertiaFrame = requestAnimationFrame(inertiaStep);
+			}
+			inertiaFrame = requestAnimationFrame(inertiaStep);
 			return;
 		}
 
 		if (!dragging || thrown || promoting) return;
 		dragging = false;
 
-		// Calculate velocity from last 2 entries
 		let velocity = 0;
 		if (velocityBuffer.length >= 2) {
 			const last = velocityBuffer[velocityBuffer.length - 1];
@@ -137,7 +170,6 @@
 			}
 		}
 
-		// Calculate offset from start position (works even when dx/dy are 0 in reduced motion)
 		const last = velocityBuffer[velocityBuffer.length - 1] || { x: startX, y: startY };
 		const totalDx = last.x - startX;
 		const totalDy = last.y - startY;
@@ -147,20 +179,16 @@
 
 		if (shouldDismiss) {
 			if (reducedMotion) {
-				// Instant navigation
 				dx = 0;
 				dy = 0;
 				onPromoteStart?.();
 				onDismiss?.();
 			} else {
-				// Throw animation — fly off screen
 				thrown = true;
 				const angle = Math.atan2(dy, dx);
 				const throwDist = Math.max(viewportWidth * 1.5, 800);
 				dx = Math.cos(angle) * throwDist;
 				dy = Math.sin(angle) * throwDist;
-				// Fallback: if transitionend doesn't fire (e.g. element off-viewport),
-				// complete the throw after the transition duration
 				throwFallbackTimer = setTimeout(() => {
 					if (thrown && !promoting) {
 						handleThrowEnd({ propertyName: 'transform' });
@@ -168,15 +196,14 @@
 				}, 300);
 			}
 		} else {
-			// Snap back
 			dx = 0;
 			dy = 0;
 		}
 	}
 
 	function handlePointerCancel() {
-		// Browser took over (e.g. vertical scroll via touch-action: pan-y)
 		pending = false;
+		scrolling = false;
 		dragging = false;
 		dx = 0;
 		dy = 0;
@@ -185,24 +212,16 @@
 	function handleThrowEnd(e) {
 		if (thrown && !promoting && e.propertyName === 'transform') {
 			clearTimeout(throwFallbackTimer);
-			// Hide the thrown card immediately so the new card doesn't inherit
-			// the throw position and animate back. The $effect watching cardId
-			// will reset promoting/thrown/dx/dy in the next microtask — since
-			// the element goes from display:none → visible, no transition fires.
 			promoting = true;
 			onPromoteStart?.();
 			if (nextScale >= 0.999) {
-				// Next card already at full scale — no promote animation needed
 				onDismiss?.();
 			}
-			// else: CSS promote transition → handlePromoteEnd → onDismiss
 		}
 	}
 
 	function handlePromoteEnd(e) {
 		if (promoting && e.propertyName === 'transform') {
-			// Keep promoting=true so the thrown card stays hidden.
-			// The $effect watching cardId handles the full reset.
 			onDismiss?.();
 		}
 	}
@@ -215,7 +234,7 @@
 	onpointermove={handlePointerMove}
 	onpointerup={handlePointerUp}
 	onpointercancel={handlePointerCancel}
-	style="touch-action: pan-y;"
+	style="touch-action: none;"
 	role="presentation"
 >
 	<!-- Next card (underneath) -->
