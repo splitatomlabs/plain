@@ -110,11 +110,11 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: var(--space-xs);
+		gap: var(--space-sm);
 		text-decoration: none;
-		width: 5.5rem;
-		padding: var(--space-sm) var(--space-xs);
-		border-radius: 10px;
+		width: 6.5rem;
+		padding: var(--space-lg) var(--space-sm);
+		border-radius: 12px;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		transition: border-color var(--transition-fast);
