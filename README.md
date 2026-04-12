@@ -19,12 +19,25 @@ They all arrived at the same answers. Plain lets you read those answers in words
 | Author | Book | Cards |
 |---|---|---|
 | Epictetus | The Enchiridion | 72 |
+| Epictetus | Discourses | 294 |
 | Marcus Aurelius | Meditations | 522 |
 | Seneca | On the Shortness of Life | 69 |
 | Seneca | On the Happy Life | 79 |
 | Seneca | On Peace of Mind | 79 |
+| Seneca | On Anger | 193 |
 
-Every card has two layers: a **plain English translation** (8th-grade reading level) and the **original text** shown below it. Cards are tagged with 12 themes like "Calm Your Mind," "Facing Fear," and "Death & Mortality" — tap a tag to see how a slave, an emperor, and a senator each approached the same idea.
+Every card has two layers: a **plain English translation** (8th-grade reading level) and the **original text** shown below it. Cards are tagged with 8 themes — tap a tag to see how a slave, an emperor, and a senator each approached the same idea.
+
+| Tag | Cards |
+|---|---|
+| Knowing Yourself | 494 |
+| Freedom & Control | 407 |
+| What Matters Most | 387 |
+| Human Nature | 382 |
+| Calm Your Mind | 357 |
+| Doing The Right Thing | 266 |
+| Facing Hardship | 221 |
+| Death & Mortality | 167 |
 
 ## Tech Stack
 

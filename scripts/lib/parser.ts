@@ -81,8 +81,9 @@ function parseMeditations(text: string, config: BookConfig): ParsedBook {
   for (let i = 0; i < lines.length; i++) {
     const match = lines[i].match(headerRe);
     if (match) {
-      const ordinal = match[1].toUpperCase();
-      bookBoundaries.push({ bookNum: BOOK_ORDINALS[ordinal], startLine: i });
+      const captured = match[1].toUpperCase();
+      const bookNum = BOOK_ORDINALS[captured] ?? romanToInt(captured);
+      bookBoundaries.push({ bookNum, startLine: i });
     }
   }
 
@@ -102,11 +103,37 @@ function parseMeditations(text: string, config: BookConfig): ParsedBook {
     }
     const sections = splitSections(bookText, sectionRe);
 
+    // Capture implicit section 1: if the first explicit marker is > 1,
+    // the text before it is an unmarked opening section (e.g. On Anger
+    // Books I & II start without an "I." marker).
+    if (sectionRe && sections.length > 0 && sections[0].number > 1) {
+      const normalized = normalizeSectionMarkers(bookText);
+      const bookLines = normalized.split("\n");
+      const firstMarkerLine = sections[0].text.split("\n")[0];
+      const idx = bookLines.findIndex((l) => l.trimEnd() === firstMarkerLine.trimEnd());
+      if (idx > 0) {
+        const preambleText = bookLines.slice(0, idx).join("\n").trim();
+        if (preambleText.length > 0) {
+          sections.unshift({ number: 1, text: preambleText });
+        }
+      }
+    }
+
     // Strip trailing editorial annotations (italic colophons like
     // "_Whilst I was at Carnuntum._") from the last section of each book.
     if (sections.length > 0) {
       const last = sections[sections.length - 1];
       last.text = last.text.replace(/\r?\n\r?\n_[^_]+_\s*$/, "").trimEnd();
+    }
+
+    // Strip trailing content (footnotes, inter-book preamble) from the
+    // last section of each book when trailingContentPattern is set.
+    if (config.trailingContentPattern && sections.length > 0) {
+      const last = sections[sections.length - 1];
+      const trailMatch = last.text.match(config.trailingContentPattern);
+      if (trailMatch && trailMatch.index !== undefined) {
+        last.text = last.text.slice(0, trailMatch.index).trim();
+      }
     }
 
     const group = config.chapterGrouping!.find(
@@ -392,7 +419,7 @@ export function parseSourceText(text: string, config: BookConfig): ParsedBook {
     text = stripGutenberg(text);
   }
 
-  // Meditations has book/chapter structure
+  // Multi-book structure (Meditations, On Anger)
   if (config.headerPattern) {
     return parseMeditations(text, config);
   }

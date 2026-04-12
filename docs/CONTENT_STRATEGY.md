@@ -26,7 +26,7 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 
 ---
 
-## Launch Books (5 titles)
+## Launch Books (7 titles)
 
 ### The Slave — Epictetus
 
@@ -34,50 +34,68 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 - Source: Project Gutenberg #45109
 - Translation: Thomas Wentworth Higginson (public domain)
 - Structure: 53 short sections (no chapter divisions — continuous numbered sections)
-- Estimated cards: 60–80
+- Cards: 72
 - Character: Direct, instructional, no-nonsense. "Here's what you control. Here's what you don't. Act accordingly."
 - Best for: Someone new to Stoicism who wants the essentials fast.
 - Key themes: freedom & control, knowing yourself, calm your mind, what matters most
 
+**2. Discourses**
+- Source: Project Gutenberg #10661
+- Translation: George Long (public domain)
+- Structure: 64 discourses across 4 books, as recorded by Epictetus's student Arrian. The longest and densest launch title.
+- Cards: 294
+- Character: A teacher in action — arguing, challenging, provoking. Where the Enchiridion gives you the conclusions, the Discourses show you how Epictetus got there. He's blunt, funny, and relentless.
+- Best for: Someone who finished the Enchiridion and wants the full picture. This is the deep end.
+- Key themes: freedom & control, knowing yourself, facing hardship, calm your mind, doing the right thing, human nature
+
 ### The Emperor — Marcus Aurelius
 
-**2. Meditations**
+**3. Meditations**
 - Source: Project Gutenberg #2680
 - Translation: George Long (public domain)
-- Structure: 12 "books" (chapters), each containing numbered reflections — the only launch book with real author-defined chapters
-- Estimated cards: 150–200
+- Structure: 12 "books" (chapters), each containing numbered reflections
+- Cards: 522
 - Character: Private, reflective, sometimes struggling. He's writing to himself, reminding himself to be better. You're reading someone's journal.
 - Best for: The flagship text. Highest name recognition. Most people start here.
 - Key themes: calm your mind, facing hardship, death & mortality, knowing yourself, doing the right thing, what matters most
 
 ### The Senator — Seneca
 
-**3. On the Shortness of Life**
+**4. On the Shortness of Life**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
 - Translation: Aubrey Stewart (public domain)
 - Structure: Single essay, roughly 20 sections (no chapter divisions)
-- Estimated cards: 40–60
+- Cards: 69
 - Character: Punchy, urgent, almost angry. Seneca is frustrated watching people waste their lives. This is his most quotable, most shareable work.
 - Best for: The "gateway drug." Nearly every passage hits hard in isolation. Ideal for sharing.
 - Key themes: what matters most, knowing yourself, death & mortality, calm your mind
 
-**4. On the Happy Life**
+**5. On the Happy Life**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
 - Translation: Aubrey Stewart (public domain)
 - Structure: Single essay, roughly 28 sections (no chapter divisions)
-- Estimated cards: 40–60
+- Cards: 79
 - Character: Defensive, philosophical, surprisingly personal. Seneca is responding to critics who call him a hypocrite — a man preaching Stoic simplicity while living in luxury. He doesn't dodge the accusation. He argues that pursuing virtue and possessing wealth aren't contradictions, as long as wealth doesn't possess you.
 - Best for: Someone wrestling with the gap between their ideals and their actual life. The most relatable Seneca essay for modern readers.
 - Key themes: what matters most, knowing yourself, doing the right thing, human nature
 
-**5. On Peace of Mind (De Tranquillitate Animi)**
+**6. On Peace of Mind (De Tranquillitate Animi)**
 - Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
 - Translation: Aubrey Stewart (public domain)
 - Structure: Single essay, roughly 17 sections (no chapter divisions)
-- Estimated cards: 40–60
+- Cards: 79
 - Character: Practical, warm, prescriptive. Written as a response to his friend Serenus, who is anxious and restless. Seneca diagnoses the problem and offers concrete advice — how to choose work, handle setbacks, deal with loss, and find calm without withdrawing from life.
 - Best for: Someone who already knows something is wrong but can't name it. The most directly useful of Seneca's essays.
 - Key themes: calm your mind, facing hardship, knowing yourself, what matters most, freedom & control
+
+**7. On Anger (De Ira)**
+- Source: Project Gutenberg #64576 (part of "Minor Dialogues, Together With the Dialogue on Clemency")
+- Translation: Aubrey Stewart (public domain)
+- Structure: 3 books with 100 numbered sections total. The longest Seneca essay in the launch set.
+- Cards: 193
+- Character: Methodical, vivid, sometimes shocking. Seneca dissects anger from every angle — what causes it, why it's destructive, and how to prevent it. Full of concrete examples and practical techniques. He's at his most psychologically sharp.
+- Best for: Anyone who struggles with frustration, impatience, or resentment. Fills the emotional-management gap in the Seneca collection and resonates strongly with Epictetus and Marcus on the same themes.
+- Key themes: calm your mind, facing hardship, human nature, knowing yourself, doing the right thing
 
 ---
 
@@ -277,16 +295,18 @@ Three mechanisms. All should feel like giving something valuable to the recipien
 - Check that the original excerpt maps correctly to the plain English version.
 - Verify source references are accurate.
 
-### Estimated Total Content
+### Total Content
 
-| Book | Est. Cards | Author |
+| Book | Cards | Author |
 |---|---|---|
-| The Enchiridion | 60–80 | Epictetus |
-| Meditations | 150–200 | Marcus Aurelius |
-| On the Shortness of Life | 40–60 | Seneca |
-| On the Happy Life | 40–60 | Seneca |
-| On Peace of Mind | 40–60 | Seneca |
-| **Total** | **330–460** | |
+| The Enchiridion | 72 | Epictetus |
+| Discourses | 294 | Epictetus |
+| Meditations | 522 | Marcus Aurelius |
+| On the Shortness of Life | 69 | Seneca |
+| On the Happy Life | 79 | Seneca |
+| On Peace of Mind | 79 | Seneca |
+| On Anger | 193 | Seneca |
+| **Total** | **1,308** | |
 
 ---
 
@@ -295,9 +315,8 @@ Three mechanisms. All should feel like giving something valuable to the recipien
 These are explicitly out of scope for launch, noted here for planning:
 
 **Wave 2 — Deeper Stoic Canon:**
-- Discourses of Epictetus (full text, 4 books — much longer and denser than the Enchiridion)
 - Letters to Lucilius — Seneca (full 124 letters, read front to back as a complete correspondence)
-- Seneca's On Anger, On Clemency
+- Seneca's On Clemency
 
 **Wave 3 — Stoic-Adjacent Philosophy:**
 - Walden — Henry David Thoreau (bridges to Stoic themes naturally)

@@ -53,7 +53,7 @@ export interface BookConfig {
   source_url: string;
   chapter_slug_pattern: string;
   source_file: string;
-  /** Regex matching chapter/book boundaries (Meditations only) */
+  /** Regex matching chapter/book boundaries (e.g. Meditations, On Anger) */
   headerPattern?: RegExp;
   /** Regex matching ALL-CAPS discourse headings with em-dash (Discourses only) */
   headingPattern?: RegExp;
@@ -188,6 +188,28 @@ export const BOOK_CONFIGS: BookConfig[] = [
     preamblePattern: /^A SELECTION FROM THE DISCOURSES OF EPICTETUS\.\s*$/m,
     trailingContentPattern: /^THE ENCHEIRIDION, OR MANUAL\.\s*$/m,
     sourceRefTemplate: "Discourses, {chapter_title}",
+  },
+  {
+    slug: "on-anger",
+    title: "On Anger",
+    author_slug: "seneca",
+    description: "Seneca dissects anger from every angle — what causes it, why it's destructive, and how to prevent it. Full of concrete examples and psychological insight.",
+    source_url: "https://www.gutenberg.org/ebooks/64576",
+    chapter_slug_pattern: "book-NN",
+    source_file: "content/source/on-anger.txt",
+    headerPattern: /^Book ([IVX]+)\.$/m,
+    sectionPattern: /^([IVXLCDMivxlcdm]+)\.\s/m,
+    sectionSplitMode: "inline",
+    chapterGrouping: [
+      { slug: "book-1", title: "Book 1", range: [1, 1] },
+      { slug: "book-2", title: "Book 2", range: [2, 2] },
+      { slug: "book-3", title: "Book 3", range: [3, 3] },
+    ],
+    gutenbergStrip: false,
+    speakerLabels: false,
+    has_chapters: true,
+    trailingContentPattern: /\n\s*\[\d+\]\s/,
+    sourceRefTemplate: "On Anger, Book {chapter}, Section {n}",
   },
 ];
 
