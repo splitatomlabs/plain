@@ -46,7 +46,7 @@
 		top: 0;
 		left: 0;
 		right: 0;
-		height: 3px;
+		height: 5px;
 		background: var(--color-border);
 		z-index: 50;
 	}
@@ -59,9 +59,9 @@
 	.progress-tick {
 		position: absolute;
 		top: 0;
-		width: 1px;
+		width: 2px;
 		height: 100%;
 		background: var(--color-text-secondary);
-		opacity: 0.4;
+		opacity: 0.5;
 	}
 </style>
