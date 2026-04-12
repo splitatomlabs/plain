@@ -328,6 +328,12 @@
 		border-radius: 6px;
 		min-height: 44px;
 		padding: var(--space-xs) var(--space-sm);
+		transition: background var(--transition-fast), color var(--transition-fast);
+	}
+
+	.card-tags-row :global(.share-button:hover) {
+		background: var(--color-border);
+		color: var(--color-text-primary);
 	}
 
 	.card-position {
