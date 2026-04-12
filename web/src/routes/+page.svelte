@@ -1,7 +1,6 @@
 <script>
 	import AuthorSection from '$lib/components/AuthorSection.svelte';
 	import ProgressRing from '$lib/components/ProgressRing.svelte';
-	import TagPill from '$lib/components/TagPill.svelte';
 	import TagIcon from '$lib/components/TagIcon.svelte';
 	import { progress } from '$lib/stores/progress.js';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
@@ -274,13 +273,6 @@
 		letter-spacing: 0.05em;
 		color: var(--color-text-secondary);
 		margin: 0 0 var(--space-lg);
-	}
-
-	.themes-grid {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: var(--space-sm);
 	}
 
 	.themes-icon-grid {
