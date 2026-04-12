@@ -208,6 +208,12 @@
 		max-width: var(--max-line-width);
 		margin: 0 auto;
 		cursor: grab;
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	.card-swipe :global(*) {
+		-webkit-user-select: none;
 		user-select: none;
 	}
 
