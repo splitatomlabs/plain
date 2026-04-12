@@ -159,14 +159,9 @@
 				<footer class="card-footer">
 					<p class="card-source">{card.source_reference}</p>
 					<div class="card-actions">
-						<span class="card-position">
-								{#if chapterTitle}
-									<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span>
-									<span class="position-separator">&nbsp;·&nbsp;</span>{card.card_number} / {chapterCardCount}
-								{:else}
-									{cardIndex} / {totalCardsInBook}
-								{/if}
-							</span>
+						<span></span>
+						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
+						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
 					</div>
 				</footer>
 			</div>
