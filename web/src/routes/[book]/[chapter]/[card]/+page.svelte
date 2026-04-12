@@ -72,6 +72,8 @@
 	current={data.cardIndex}
 	total={data.totalCards}
 	authorSlug={data.book.author_slug}
+	hasChapters={data.book.has_chapters}
+	chapters={data.book.chapters}
 />
 
 <div class="card-page">
