@@ -132,10 +132,12 @@
 
 	.card-boundary {
 		font-family: var(--font-ui);
-		font-size: var(--text-ui);
+		font-size: 1rem;
+		font-weight: 500;
 		color: var(--color-text-secondary);
 		text-align: center;
-		margin: 0 0 var(--space-md);
+		margin: 0 0 var(--space-lg);
+		letter-spacing: 0.01em;
 	}
 
 	.card-completion {

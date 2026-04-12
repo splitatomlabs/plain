@@ -43,9 +43,9 @@
 	const chapterCardCount = $derived(chapterInfo?.card_count ?? card.total_cards_in_chapter);
 
 	function formatReadingTime(seconds) {
-		if (seconds < 60) return `~${seconds}s read`;
+		if (seconds < 60) return `~${seconds}s`;
 		const minutes = Math.round(seconds / 60);
-		return `~${minutes}m read`;
+		return `~${minutes}m`;
 	}
 
 	// Reset flip when card changes
@@ -130,10 +130,8 @@
 							text={card.plain_english.slice(0, 100)}
 							url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
 						/>
-						<span class="card-position">
-{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}
-						</span>
 						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
+						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
 					</div>
 				</footer>
 			</div>
@@ -144,18 +142,18 @@
 					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
 				</header>
 
-				<blockquote class="original-text">
+				<div class="card-text">
 					{#each originalParagraphs as paragraph}
 						<p>{paragraph}</p>
 					{/each}
-				</blockquote>
+				</div>
 
 				<button
 					class="flip-btn"
 					onclick={() => { flipped = false; }}
-					aria-label="Show translated text"
+					aria-label="Show plain English"
 				>
-					Show translation ↻
+					Show plain English ↻
 				</button>
 
 				<footer class="card-footer">
@@ -287,26 +285,7 @@
 		color: var(--color-text-primary);
 	}
 
-	.original-text {
-		font-family: var(--font-body);
-		font-size: var(--text-original);
-		font-style: italic;
-		line-height: var(--line-height-body);
-		color: var(--color-text-secondary);
-		margin: 0 0 var(--space-lg);
-		padding: 0;
-		border: none;
-	}
-
-	.original-text p {
-		margin: 0 0 var(--space-sm);
-	}
-
-	.original-text p:last-child {
-		margin-bottom: 0;
-	}
-
-	.card-footer {
+.card-footer {
 		border-top: 1px solid var(--color-border);
 		padding-top: var(--space-md);
 	}

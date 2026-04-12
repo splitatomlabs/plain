@@ -51,7 +51,7 @@ test.describe('Card stack and swipe', () => {
 		await expect(inner).toHaveCount(1);
 
 		// Original text should be visible on back
-		const originalText = page.locator('.card-swipe-current .card-back .original-text');
+		const originalText = page.locator('.card-swipe-current .card-back .card-text');
 		await expect(originalText).toBeVisible();
 
 		// Flip back
@@ -96,7 +96,7 @@ test.describe('Chapter markers and progress', () => {
 
 		const readingTime = page.locator('.card-swipe-current .card-front .reading-time');
 		await expect(readingTime).toBeVisible();
-		await expect(readingTime).toContainText('read');
+		await expect(readingTime).toContainText('~');
 	});
 
 	test('segmented progress bar on Meditations', async ({ page }) => {

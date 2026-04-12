@@ -8,7 +8,7 @@ test.describe('Card reading experience', () => {
 		await expect(article).toBeVisible();
 
 		// Card text is visible
-		const cardText = page.locator('.card-swipe-current .card-text');
+		const cardText = page.locator('.card-swipe-current .card-front .card-text');
 		await expect(cardText).not.toBeEmpty();
 
 		// Source reference is visible
