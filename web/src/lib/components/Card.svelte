@@ -161,7 +161,7 @@
 				</button>
 
 				<footer class="card-footer">
-					<div class="card-actions">
+					<div class="card-meta">
 						<span class="card-source">{card.source_reference}</span>
 						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
 					</div>
@@ -251,7 +251,8 @@
 
 	.card-muted .flip-btn,
 	.card-muted .card-tags,
-	.card-muted .card-actions {
+	.card-muted .card-tags-row,
+	.card-muted .card-meta {
 		pointer-events: none;
 	}
 
@@ -351,5 +352,7 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+		flex: 1;
+		text-align: center;
 	}
 </style>
