@@ -25,6 +25,8 @@ Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a b
 
 **Important:** After significant changes to the web app (components, routes, navigation, progress tracking, layout), always run the e2e suite to catch regressions. Build the app first with `npm run build --prefix web`, then run `npm run test:e2e --prefix web`.
 
+**E2e and visual test updates:** When UI changes affect component structure, selectors, or visual output, existing e2e tests (`web/tests/e2e/`) and visual regression tests (`web/tests/visual/`) will need updating. Common issues: selectors matching new DOM elements (e.g., adding a second card requires scoping selectors to `.card-swipe-current`), `<details>` elements replaced by buttons, and visual snapshots needing `--update-snapshots`. When creating implementation plans, include tasks for updating affected e2e/visual tests and regenerating snapshots.
+
 ## Local Development
 
 ```bash
