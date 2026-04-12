@@ -1,4 +1,5 @@
-import { getAuthors, getBooksForAuthor } from '$lib/utils/content.js';
+import { getAuthors, getBooksForAuthor, getCardsByTag } from '$lib/utils/content.js';
+import { TAGS } from '$lib/utils/tags.js';
 
 export function load() {
 	const authors = getAuthors();
@@ -21,5 +22,10 @@ export function load() {
 		return { author, books };
 	});
 
-	return { authorData, returningAuthorData };
+	const tags = TAGS.map((tag) => ({
+		...tag,
+		count: getCardsByTag(tag.slug).length
+	}));
+
+	return { authorData, returningAuthorData, tags };
 }

@@ -6,6 +6,7 @@
 	import ChapterMarker from '$lib/components/ChapterMarker.svelte';
 	import MilestoneModal from '$lib/components/MilestoneModal.svelte';
 	import { progress } from '$lib/stores/progress.js';
+	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { getAdjacentCard, getBookMeta, getCard } from '$lib/utils/content.js';
 	import { pushState, goto } from '$app/navigation';
 	import { browser } from '$app/environment';
@@ -75,6 +76,11 @@
 		const beforeProgress = progress.getProgress(activeCard.book_slug, data.totalCards);
 		const resumeUrl = nextCard ? cardUrl(nextCard) : null;
 		progress.markCardRead(activeCard.book_slug, activeCard.id, resumeUrl);
+		if (activeCard.tags) {
+			for (const tag of activeCard.tags) {
+				tagProgress.markTagCardRead(tag, activeCard.id);
+			}
+		}
 		const afterProgress = progress.getProgress(activeCard.book_slug, data.totalCards);
 
 		for (const threshold of MILESTONES) {
@@ -99,6 +105,11 @@
 
 	function handleFinishBook() {
 		progress.markCardRead(activeCard.book_slug, activeCard.id);
+		if (activeCard.tags) {
+			for (const tag of activeCard.tags) {
+				tagProgress.markTagCardRead(tag, activeCard.id);
+			}
+		}
 		goto(`/completed/${activeCard.book_slug}`);
 	}
 

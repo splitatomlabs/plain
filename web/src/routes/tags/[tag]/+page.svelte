@@ -1,11 +1,124 @@
 <script>
+	import Card from '$lib/components/Card.svelte';
+	import CardSwipe from '$lib/components/CardSwipe.svelte';
+	import { tagProgress } from '$lib/stores/tagProgress.js';
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
+
 	let { data } = $props();
 
-	const accentVar = {
-		epictetus: 'var(--color-accent-epictetus)',
-		'marcus-aurelius': 'var(--color-accent-marcus)',
-		seneca: 'var(--color-accent-seneca)'
-	};
+	const TAG_MILESTONES = [10, 25, 50, 100];
+	const TAG_MILESTONES_KEY = 'plain-tag-milestones';
+
+	// Local card state — always starts at 0 (sequence is randomized each visit)
+	let localIndex = $state(0);
+	let showMilestone = $state(null);
+	// Locally reordered sequence — unread cards first, then already-read cards
+	let sequence = $state(data.sequence);
+
+	const activeCard = $derived(sequence[localIndex] ?? sequence[0]);
+	const nextCard = $derived(localIndex < sequence.length - 1 ? sequence[localIndex + 1] : null);
+	const prevCard = $derived(localIndex > 0 ? sequence[localIndex - 1] : null);
+
+	let tagCardsRead = $state(0);
+	const positionDisplay = $derived(`${localIndex + 1} / ${data.totalCards}`);
+
+	onMount(() => {
+		const progress = tagProgress.getTagProgress(data.tag.slug);
+		tagCardsRead = progress.cardsRead;
+		// Push already-read cards to the end so the user always starts on unread cards
+		const readSet = new Set(progress.cards);
+		const unread = data.sequence.filter((c) => !readSet.has(c.id));
+		const read = data.sequence.filter((c) => readSet.has(c.id));
+		sequence = [...unread, ...read];
+	});
+
+	function getShownMilestones(tagSlug) {
+		try {
+			const shown = JSON.parse(localStorage.getItem(TAG_MILESTONES_KEY) || '{}');
+			return shown[tagSlug] || [];
+		} catch {
+			return [];
+		}
+	}
+
+	function recordMilestone(tagSlug, milestone) {
+		try {
+			const shown = JSON.parse(localStorage.getItem(TAG_MILESTONES_KEY) || '{}');
+			if (!shown[tagSlug]) shown[tagSlug] = [];
+			if (!shown[tagSlug].includes(milestone)) {
+				shown[tagSlug].push(milestone);
+			}
+			localStorage.setItem(TAG_MILESTONES_KEY, JSON.stringify(shown));
+		} catch {
+			// localStorage unavailable
+		}
+	}
+
+	function checkMilestone(tagSlug, beforeCount, afterCount) {
+		const shown = getShownMilestones(tagSlug);
+		for (const threshold of TAG_MILESTONES) {
+			if (beforeCount < threshold && afterCount >= threshold && !shown.includes(threshold)) {
+				return threshold;
+			}
+		}
+		return null;
+	}
+
+	function advanceCard() {
+		if (!nextCard) return;
+		localIndex = localIndex + 1;
+	}
+
+	function advancePrev() {
+		if (!prevCard) return;
+		localIndex = localIndex - 1;
+	}
+
+	function markAndCheckMilestone() {
+		const beforeCount = tagProgress.getTagProgress(data.tag.slug).cardsRead;
+		if (activeCard.tags) {
+			for (const tag of activeCard.tags) {
+				tagProgress.markTagCardRead(tag, activeCard.id);
+			}
+		}
+		const afterCount = tagProgress.getTagProgress(data.tag.slug).cardsRead;
+		tagCardsRead = afterCount;
+		const milestone = checkMilestone(data.tag.slug, beforeCount, afterCount);
+		if (milestone) {
+			recordMilestone(data.tag.slug, milestone);
+			showMilestone = milestone;
+			return true;
+		}
+		return false;
+	}
+
+	function handleDismiss() {
+		if (!nextCard) return;
+		const deferred = markAndCheckMilestone();
+		if (!deferred) advanceCard();
+	}
+
+	function closeMilestone() {
+		showMilestone = null;
+		if (nextCard) {
+			advanceCard();
+		}
+	}
+
+	function resetToBeginning() {
+		localIndex = 0;
+	}
+
+	function handleKeydown(e) {
+		if (e.key === 'ArrowRight') {
+			e.preventDefault();
+			if (nextCard) handleDismiss();
+		} else if (e.key === 'ArrowLeft') {
+			e.preventDefault();
+			advancePrev();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -13,105 +126,271 @@
 	<meta name="description" content="Stoic wisdom on {data.tag.label.toLowerCase()} from Epictetus, Marcus Aurelius, and Seneca — in plain English." />
 </svelte:head>
 
-<article class="tag-page">
+<svelte:window onkeydown={handleKeydown} />
+
+<div class="tag-detail">
 	<header class="tag-header">
 		<h1>{data.tag.label}</h1>
-		<p class="subtitle">
-			Here's what the slave, the emperor, and the senator each had to say about {data.tag.label.toLowerCase()}.
+		<p class="tag-progress-count">
+			{positionDisplay}
+			{#if tagCardsRead > 0}
+				<span class="cards-read-badge">{tagCardsRead} read</span>
+			{/if}
 		</p>
 	</header>
 
-	{#each data.grouped as group}
-		<section class="author-group">
-			<h2 class="author-heading" style="color: {accentVar[group.author.slug]}">
-				{group.author.title} — {group.author.name}
-			</h2>
-			<div class="card-list">
-				{#each group.cards as card}
-					<a href="/{card.book_slug}/{card.chapter_slug}/{card.card_number}" class="card-preview">
-						<p class="card-text">{card.plain_english}</p>
-						<span class="card-source">{card.source_reference}</span>
-					</a>
-				{/each}
+	{#if activeCard}
+		<CardSwipe
+			onDismiss={handleDismiss}
+			hasNext={!!nextCard}
+			canSwipe={!!nextCard}
+			cardId={activeCard.id}
+		>
+			{#snippet children()}
+				<Card
+					card={activeCard}
+					book={null}
+					totalCardsInBook={data.totalCards}
+					cardIndex={localIndex + 1}
+					linkSource={true}
+				/>
+			{/snippet}
+			{#snippet nextCardSnippet()}
+				{#if nextCard}
+					<Card
+						card={nextCard}
+						book={null}
+						totalCardsInBook={data.totalCards}
+						cardIndex={localIndex + 2}
+						muted={true}
+						linkSource={true}
+					/>
+				{/if}
+			{/snippet}
+		</CardSwipe>
+
+		<nav class="nav-buttons">
+			{#if prevCard}
+				<button class="nav-btn" onclick={advancePrev} aria-label="Previous card">
+					<span class="nav-chevron" aria-hidden="true">&#8249;</span>
+					Previous
+				</button>
+			{:else}
+				<span></span>
+			{/if}
+
+			{#if nextCard}
+				<button class="nav-btn" onclick={() => handleDismiss()} aria-label="Next card">
+					Next
+					<span class="nav-chevron" aria-hidden="true">&#8250;</span>
+				</button>
+			{/if}
+		</nav>
+
+		{#if !nextCard}
+			<div class="tag-completion">
+				<p class="completion-text">You've reached the end of {data.tag.label}.</p>
+				<button class="reset-btn" onclick={resetToBeginning}>Start from beginning</button>
 			</div>
-		</section>
-	{/each}
-</article>
+		{/if}
+	{/if}
+</div>
+
+{#if showMilestone}
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div class="modal-backdrop" onclick={closeMilestone} onkeydown={(e) => e.key === 'Escape' && closeMilestone()} role="presentation">
+		<div
+			class="modal"
+			role="dialog"
+			aria-labelledby="tag-milestone-heading"
+			aria-modal="true"
+			tabindex="-1"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<h2 id="tag-milestone-heading" class="modal-heading">
+				You've explored {showMilestone} cards on {data.tag.label}
+			</h2>
+			<button class="modal-button" onclick={closeMilestone}>
+				Keep exploring
+			</button>
+		</div>
+	</div>
+{/if}
 
 <style>
-	.tag-page {
-		max-width: var(--max-line-width);
-		margin: 0 auto;
+	.tag-detail {
 		padding: var(--space-xl) 0;
 	}
 
+	@media (max-width: 600px) {
+		.tag-detail {
+			padding: var(--space-sm) 0;
+		}
+	}
+
 	.tag-header {
-		margin-bottom: var(--space-2xl);
+		max-width: var(--max-line-width);
+		margin: 0 auto var(--space-lg);
+		text-align: center;
 	}
 
 	h1 {
 		font-family: var(--font-body);
 		font-size: clamp(1.5rem, 3vw + 0.5rem, 2rem);
 		font-weight: 400;
-		margin: 0 0 var(--space-sm);
+		margin: 0 0 var(--space-xs);
 		color: var(--color-text-primary);
 	}
 
-	.subtitle {
+	.tag-progress-count {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
 		margin: 0;
-	}
-
-	.author-group {
-		margin-bottom: var(--space-2xl);
-	}
-
-	.author-heading {
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		margin: 0 0 var(--space-md);
-	}
-
-	.card-list {
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-md);
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-sm);
 	}
 
-	.card-preview {
-		display: block;
-		padding: var(--space-lg);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 8px;
-		text-decoration: none;
-		transition: border-color var(--transition-fast);
+	.cards-read-badge {
+		display: inline-block;
+		padding: 2px var(--space-xs);
+		background: var(--color-border);
+		border-radius: 4px;
+		font-size: 0.75rem;
 	}
 
-	.card-preview:hover {
-		border-color: var(--color-text-secondary);
-	}
-
-	.card-text {
-		font-family: var(--font-body);
-		font-size: var(--text-body);
-		line-height: var(--line-height-body);
-		color: var(--color-text-primary);
-		margin: 0 0 var(--space-sm);
-		display: -webkit-box;
-		-webkit-line-clamp: 3;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	.card-source {
+	.reset-btn {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: var(--space-xs) 0;
+		margin-top: var(--space-xs);
+		transition: color var(--transition-fast);
+	}
+
+	.reset-btn:hover {
+		color: var(--color-text-primary);
+	}
+
+	.nav-buttons {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		max-width: var(--max-line-width);
+		margin: 0 auto;
+		padding: var(--space-lg) 0;
+	}
+
+	.nav-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		min-height: 44px;
+		min-width: 44px;
+		padding: var(--space-sm) var(--space-md);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		background: none;
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		cursor: pointer;
+		transition: border-color var(--transition-fast), color var(--transition-fast);
+	}
+
+	.nav-btn:hover {
+		border-color: var(--color-text-secondary);
+		color: var(--color-text-primary);
+	}
+
+	.nav-chevron {
+		font-size: 1.25rem;
+		line-height: 1;
+	}
+
+	.tag-completion {
+		text-align: center;
+		padding: var(--space-xl) 0;
+	}
+
+	.completion-text {
+		font-family: var(--font-body);
+		font-size: 1.25rem;
+		color: var(--color-text-primary);
+		margin: 0 0 var(--space-md);
+	}
+
+	.modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+		animation: fade-in var(--transition-fast) ease-out;
+	}
+
+	@keyframes fade-in {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	.modal {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		padding: var(--space-2xl) var(--space-xl);
+		max-width: 400px;
+		width: 90%;
+		text-align: center;
+		animation: slide-up var(--transition-normal) ease-out;
+	}
+
+	@keyframes slide-up {
+		from { transform: translateY(16px); opacity: 0; }
+		to { transform: translateY(0); opacity: 1; }
+	}
+
+	.modal-heading {
+		font-family: var(--font-body);
+		font-size: 1.5rem;
+		line-height: 1.3;
+		color: var(--color-text-primary);
+		margin: 0 0 var(--space-lg);
+	}
+
+	.modal-button {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		color: var(--color-surface);
+		background: var(--color-text-primary);
+		border: none;
+		border-radius: 6px;
+		padding: var(--space-sm) var(--space-lg);
+		min-height: 44px;
+		min-width: 44px;
+		cursor: pointer;
+		transition: opacity var(--transition-fast);
+	}
+
+	.modal-button:hover {
+		opacity: 0.85;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.modal-backdrop {
+			animation: none;
+		}
+
+		.modal {
+			animation: none;
+		}
 	}
 </style>

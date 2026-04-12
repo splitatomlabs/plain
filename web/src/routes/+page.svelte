@@ -1,7 +1,9 @@
 <script>
 	import AuthorSection from '$lib/components/AuthorSection.svelte';
 	import ProgressRing from '$lib/components/ProgressRing.svelte';
+	import TagIcon from '$lib/components/TagIcon.svelte';
 	import { progress } from '$lib/stores/progress.js';
+	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
 
 	let { data } = $props();
@@ -64,12 +66,46 @@
 	}
 
 	const lastBookMeta = $derived(lastReadBook ? getBookMeta(lastReadBook) : null);
+
+	function getTagCardsRead(tagSlug) {
+		if (!browser) return 0;
+		return tagProgress.getTagProgress(tagSlug).cardsRead;
+	}
+
+	const TAG_MILESTONES = [10, 25, 50, 100];
+
+	function getHighestMilestone(cardsRead) {
+		let highest = null;
+		for (const m of TAG_MILESTONES) {
+			if (cardsRead >= m) highest = m;
+		}
+		return highest;
+	}
 </script>
 
 <svelte:head>
 	<title>In Plain English — Ancient Stoic philosophy in words anyone can understand</title>
 	<meta name="description" content="Read the complete works of Epictetus, Marcus Aurelius, and Seneca — translated into clear, modern English." />
 </svelte:head>
+
+{#snippet themesSection(showProgress)}
+	<!-- Depends on the #themes anchor being present somewhere below in DOM order.
+	     Both hasProgress branches render it, so the hero's "Or explore by theme"
+	     anchor link is always valid. -->
+	<section class="themes-section" id="themes">
+		<h2 class="themes-heading">Browse by theme</h2>
+		<div class="themes-icon-grid">
+			{#each data.tags as tag}
+				{#if showProgress}
+					{@const cardsRead = getTagCardsRead(tag.slug)}
+					<TagIcon slug={tag.slug} label={tag.label} {cardsRead} milestone={getHighestMilestone(cardsRead)} />
+				{:else}
+					<TagIcon slug={tag.slug} label={tag.label} />
+				{/if}
+			{/each}
+		</div>
+	</section>
+{/snippet}
 
 {#if hasProgress}
 	<section class="returning-hero">
@@ -98,20 +134,26 @@
 				<span class="continue-book">{suggestedBook.title}</span>
 			</a>
 		{/if}
+		<a href="#themes" class="theme-cta">Or explore by theme</a>
 	</section>
 
 	{#each data.returningAuthorData as { author, books }}
 		<AuthorSection {author} {books} {bookProgress} />
 	{/each}
+
+	{@render themesSection(true)}
 {:else}
 	<section class="hero">
 		<h1>Three men. Three completely different lives. The same philosophy.</h1>
 		<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
+		<a href="#themes" class="theme-cta">Or explore by theme</a>
 	</section>
 
 	{#each data.authorData as { author, books }}
 		<AuthorSection {author} {books} />
 	{/each}
+
+	{@render themesSection(false)}
 {/if}
 
 <style>
@@ -204,5 +246,54 @@
 		font-family: var(--font-body);
 		font-size: 1.125rem;
 		color: var(--color-text-secondary);
+	}
+
+	.theme-cta {
+		display: inline-block;
+		margin-top: var(--space-md);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		transition: color var(--transition-fast);
+	}
+
+	.theme-cta:hover {
+		color: var(--color-text-primary);
+	}
+
+	.themes-section {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: var(--space-2xl) 0;
+		text-align: center;
+	}
+
+	.themes-heading {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-lg);
+	}
+
+	.themes-icon-grid {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-md);
+		max-width: 28rem;
+		margin: 0 auto;
+	}
+
+	@media (min-width: 768px) {
+		.themes-icon-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			max-width: 60rem;
+			/* gap inherited from base .themes-icon-grid */
+		}
 	}
 </style>

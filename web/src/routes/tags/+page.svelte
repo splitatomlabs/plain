@@ -1,5 +1,13 @@
 <script>
+	import { tagProgress } from '$lib/stores/tagProgress.js';
+	import { browser } from '$app/environment';
+
 	let { data } = $props();
+
+	function getTagCardsRead(tagSlug) {
+		if (!browser) return 0;
+		return tagProgress.getTagProgress(tagSlug).cardsRead;
+	}
 </script>
 
 <svelte:head>
@@ -15,7 +23,12 @@
 		{#each data.tags as tag}
 			<a href="/tags/{tag.slug}" class="tag-card">
 				<span class="tag-label">{tag.label}</span>
-				<span class="tag-count">{tag.count} {tag.count === 1 ? 'card' : 'cards'}</span>
+				<span class="tag-count">
+					{tag.count} {tag.count === 1 ? 'card' : 'cards'}
+					{#if getTagCardsRead(tag.slug) > 0}
+						<span class="tag-read-badge">· {getTagCardsRead(tag.slug)} read</span>
+					{/if}
+				</span>
 			</a>
 		{/each}
 	</div>
@@ -75,5 +88,9 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+	}
+
+	.tag-read-badge {
+		opacity: 0.7;
 	}
 </style>
