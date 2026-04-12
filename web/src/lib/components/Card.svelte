@@ -33,6 +33,15 @@
 	const paragraphs = $derived(card.plain_english.split('\n\n'));
 	const originalParagraphs = $derived(card.original_excerpt.split('\n\n'));
 
+	// Chapter-aware position
+	const chapterInfo = $derived(
+		book?.has_chapters
+			? book.chapters?.find((ch) => ch.slug === card.chapter_slug)
+			: null
+	);
+	const chapterTitle = $derived(chapterInfo?.title);
+	const chapterCardCount = $derived(chapterInfo?.card_count ?? card.total_cards_in_chapter);
+
 	function formatReadingTime(seconds) {
 		if (seconds < 60) return `~${seconds}s read`;
 		const minutes = Math.round(seconds / 60);
@@ -121,7 +130,9 @@
 							text={card.plain_english.slice(0, 100)}
 							url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
 						/>
-						<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
+						<span class="card-position">
+{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}
+						</span>
 						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
 					</div>
 				</footer>
@@ -150,7 +161,14 @@
 				<footer class="card-footer">
 					<p class="card-source">{card.source_reference}</p>
 					<div class="card-actions">
-						<span class="card-position">{cardIndex} / {totalCardsInBook}</span>
+						<span class="card-position">
+								{#if chapterTitle}
+									<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span>
+									<span class="position-separator">&nbsp;·&nbsp;</span>{card.card_number} / {chapterCardCount}
+								{:else}
+									{cardIndex} / {totalCardsInBook}
+								{/if}
+							</span>
 					</div>
 				</footer>
 			</div>
@@ -320,6 +338,11 @@
 		color: var(--color-text-secondary);
 		text-align: right;
 	}
+
+	.chapter-label {
+		font-weight: 500;
+	}
+
 
 	.reading-time {
 		font-family: var(--font-ui);
