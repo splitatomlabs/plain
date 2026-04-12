@@ -1,7 +1,6 @@
 <script>
 	const ICONS = {
 		'calm-your-mind': {
-			// Still water ripple
 			paths: [
 				'M8 16 Q16 12 24 16 Q32 20 40 16',
 				'M6 24 Q16 20 26 24 Q36 28 42 24',
@@ -9,7 +8,6 @@
 			]
 		},
 		'death-and-mortality': {
-			// Hourglass
 			paths: [
 				'M12 8 H36',
 				'M12 40 H36',
@@ -18,7 +16,6 @@
 			]
 		},
 		'doing-the-right-thing': {
-			// Scales of justice
 			paths: [
 				'M24 6 V38',
 				'M16 38 H32',
@@ -28,13 +25,11 @@
 			]
 		},
 		'facing-hardship': {
-			// Mountain peak
 			paths: [
 				'M4 38 L18 12 L26 22 L34 10 L44 38 Z'
 			]
 		},
 		'freedom-and-control': {
-			// Bird in flight — spread wings
 			paths: [
 				'M4 18 Q12 8 24 16 Q36 8 44 18',
 				'M24 16 Q24 28 20 36',
@@ -42,7 +37,6 @@
 			]
 		},
 		'human-nature': {
-			// Two figures with space between
 			paths: [
 				'M13 14 A4 4 0 1 1 13.01 14',
 				'M35 14 A4 4 0 1 1 35.01 14',
@@ -51,7 +45,6 @@
 			]
 		},
 		'knowing-yourself': {
-			// Mirror / reflection
 			paths: [
 				'M24 6 A14 14 0 1 1 24 34',
 				'M24 6 A14 14 0 1 0 24 34',
@@ -61,42 +54,52 @@
 			]
 		},
 		'what-matters-most': {
-			// Compass star
 			paths: [
 				'M24 4 L28 20 L44 24 L28 28 L24 44 L20 28 L4 24 L20 20 Z'
 			]
 		}
 	};
 
-	const MILESTONE_COLORS = {
-		10: { fill: '#CD7F32', label: 'Bronze' },   // Bronze
-		25: { fill: '#A8A9AD', label: 'Silver' },   // Silver
-		50: { fill: '#CFB53B', label: 'Gold' },     // Gold
-		100: { fill: '#E5E4E2', label: 'Platinum' } // Platinum
+	// Border + icon color per milestone tier (light / dark mode handled via opacity on bg)
+	const MILESTONE_STYLES = {
+		10:  { border: '#CD7F32', bg: 'rgba(205, 127, 50, 0.08)',  icon: '#CD7F32', label: 'Bronze' },
+		25:  { border: '#8E8E93', bg: 'rgba(142, 142, 147, 0.08)', icon: '#8E8E93', label: 'Silver' },
+		50:  { border: '#BFA630', bg: 'rgba(191, 166, 48, 0.06)',  icon: '#BFA630', label: 'Gold' },
+		100: { border: '#9B8EC4', bg: 'rgba(155, 142, 196, 0.08)', icon: '#9B8EC4', label: 'Platinum' }
 	};
 
 	let { slug, label, cardsRead = 0, milestone = null } = $props();
 
 	const icon = $derived(ICONS[slug]);
-	const badge = $derived(milestone ? MILESTONE_COLORS[milestone] : null);
+	const tier = $derived(milestone ? MILESTONE_STYLES[milestone] : null);
 </script>
 
-<a href="/tags/{slug}" class="tag-icon" aria-label="{label} — {cardsRead} cards read">
+<a
+	href="/tags/{slug}"
+	class="tag-icon"
+	class:has-milestone={tier}
+	style={tier ? `border-color: ${tier.border}; background: ${tier.bg};` : ''}
+	aria-label="{label}{cardsRead ? ` — ${cardsRead} cards read` : ''}{tier ? ` — ${tier.label}` : ''}"
+>
 	<div class="icon-wrapper">
-		<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="icon-svg">
+		<svg
+			viewBox="0 0 48 48"
+			fill="none"
+			stroke={tier ? tier.icon : 'currentColor'}
+			stroke-width="2.5"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+			class="icon-svg"
+		>
 			{#if icon}
 				{#each icon.paths as d}
 					<path {d} />
 				{/each}
 			{/if}
 		</svg>
-		{#if badge}
-			<svg class="milestone-badge" viewBox="0 0 12 12" aria-hidden="true" title="{badge.label} — {cardsRead} cards read">
-				<path d="M6 0 L12 6 L6 12 L0 6 Z" fill="{badge.fill}" />
-			</svg>
-		{/if}
 	</div>
-	<span class="icon-label">{label}</span>
+	<span class="icon-label" style={tier ? `color: ${tier.border};` : ''}>{label}</span>
 	{#if cardsRead > 0}
 		<span class="icon-count">{cardsRead} read</span>
 	{/if}
@@ -121,8 +124,11 @@
 		border-color: var(--color-text-secondary);
 	}
 
+	.tag-icon.has-milestone:hover {
+		filter: brightness(0.97);
+	}
+
 	.icon-wrapper {
-		position: relative;
 		width: 3rem;
 		height: 3rem;
 	}
@@ -134,17 +140,8 @@
 		transition: color var(--transition-fast);
 	}
 
-	.tag-icon:hover .icon-svg {
+	.tag-icon:not(.has-milestone):hover .icon-svg {
 		color: var(--color-text-primary);
-	}
-
-	.milestone-badge {
-		position: absolute;
-		top: -4px;
-		right: -4px;
-		width: 14px;
-		height: 14px;
-		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
 	}
 
 	.icon-label {
