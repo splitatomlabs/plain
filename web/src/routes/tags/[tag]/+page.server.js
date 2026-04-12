@@ -14,8 +14,8 @@ function interleaveByAuthor(cards, authorOrder) {
 	}
 
 	const result = [];
-	let exhausted = 0;
 	const iterators = authorOrder.map((slug) => ({ slug, index: 0 }));
+	let exhausted = iterators.filter((it) => piles.get(it.slug).length === 0).length;
 
 	while (exhausted < iterators.length) {
 		for (const it of iterators) {

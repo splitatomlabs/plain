@@ -69,7 +69,7 @@ Transform tag pages from static scrolling lists into a swipeable card stack expe
 - [x] T11: Home page — hero secondary CTA — Add "Or explore by theme" link below the hero subtitle (new visitors) and below the continue banner (returning readers). Links to `#themes` anchor. Styled as secondary text link — understated, not competing with main CTA. Files: `web/src/routes/+page.svelte`
 - [x] T12: Screenshot check — home page + tag index — Capture screenshots of home page (new visitor + returning reader states) and `/tags` index at mobile + desktop, light + dark. Verify: theme section visible at bottom, hero CTA present, progress badges render correctly, visual warmth matches BRANDING.md. Fix issues. Files: screenshots only
 - [x] T13: Update e2e tests — Add `web/tests/e2e/tag-exploration.spec.js`: (1) tag detail page renders card stack, (2) swipe dismisses card and advances, (3) author interleaving: first two cards have different `author_slug`, (4) source reference links to book page not card page, (5) tag index shows progress badge when localStorage has data, (6) home page has themes section with anchor link. Update existing tag tests if selectors changed. Files: `web/tests/e2e/tag-exploration.spec.js` (new), existing tag specs
-- [~] T14: Run tests + final screenshots — Run `npm test` (unit tests including new tagProgress tests). Run full Playwright suite. Final screenshot pass: tag detail page, tag index, home page — mobile + desktop, light + dark. Verify against BRANDING.md.
+- [x] T14: Run tests + final screenshots — Run `npm test` (unit tests including new tagProgress tests). Run full Playwright suite. Final screenshot pass: tag detail page, tag index, home page — mobile + desktop, light + dark. Verify against BRANDING.md.
 
 ## Verify
 ```bash
