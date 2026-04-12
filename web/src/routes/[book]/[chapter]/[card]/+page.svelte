@@ -1,6 +1,7 @@
 <script>
 	import Card from '$lib/components/Card.svelte';
 	import CardNav from '$lib/components/CardNav.svelte';
+	import CardSwipe from '$lib/components/CardSwipe.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import ChapterMarker from '$lib/components/ChapterMarker.svelte';
 	import MilestoneModal from '$lib/components/MilestoneModal.svelte';
@@ -35,6 +36,12 @@
 			}
 		}
 		return false;
+	}
+
+	function handleDismiss() {
+		if (!data.nextCard) return;
+		const defer = handleNavigateNext();
+		if (!defer) goto(cardUrl(data.nextCard));
 	}
 
 	function handleFinishBook() {
@@ -85,8 +92,21 @@
 
 	<ChapterMarker book={data.book} card={data.card} prevCard={data.prevCard} />
 
+	<CardSwipe onDismiss={handleDismiss} hasNext={!!data.nextCard}>
+		{#snippet children()}
+			<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
+		{/snippet}
+		{#snippet nextCardSnippet()}
+			{#if data.nextCard}
+				{@const nextChapterCards = data.book.chapters.find(ch => ch.slug === data.nextCard.chapter_slug)}
+				{@const nextCardIndex = data.cardIndex + 1}
+				<Card card={data.nextCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={nextCardIndex} muted={true} />
+			{/if}
+		{/snippet}
+	</CardSwipe>
+
 	<CardNav prevCard={data.prevCard} nextCard={data.nextCard} onNavigateNext={handleNavigateNext}>
-		<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
+		{#snippet children()}{/snippet}
 	</CardNav>
 
 	{#if !data.nextCard}
