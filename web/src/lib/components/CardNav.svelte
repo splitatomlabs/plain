@@ -2,7 +2,7 @@
 	import { goto, afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	let { prevCard, nextCard, children, onNavigateNext } = $props();
+	let { prevCard, nextCard, children, onNavigateNext, onNavigatePrev, onAdvanceNext } = $props();
 
 	let navRef;
 
@@ -11,13 +11,25 @@
 	}
 
 	function navigatePrev() {
-		if (prevCard) goto(cardUrl(prevCard));
+		if (prevCard) {
+			if (onNavigatePrev) {
+				onNavigatePrev();
+			} else {
+				goto(cardUrl(prevCard));
+			}
+		}
 	}
 
 	function navigateNext() {
 		if (nextCard) {
 			const defer = onNavigateNext?.();
-			if (!defer) goto(cardUrl(nextCard));
+			if (!defer) {
+				if (onAdvanceNext) {
+					onAdvanceNext();
+				} else {
+					goto(cardUrl(nextCard));
+				}
+			}
 		}
 	}
 

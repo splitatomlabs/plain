@@ -6,11 +6,27 @@
 	import ChapterMarker from '$lib/components/ChapterMarker.svelte';
 	import MilestoneModal from '$lib/components/MilestoneModal.svelte';
 	import { progress } from '$lib/stores/progress.js';
-	import { goto } from '$app/navigation';
+	import { getAdjacentCard, getBookMeta, getCard } from '$lib/utils/content.js';
+	import { pushState, goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 
 	let { data } = $props();
 	let showMilestone = $state(null);
+
+	// Local card state — initialised from server data, updated client-side on swipe
+	let activeCard = $state(data.card);
+	let nextCard = $state(data.nextCard);
+	let prevCard = $state(data.prevCard);
+	let cardIndex = $state(data.cardIndex);
+
+	// Reset local state when SvelteKit provides new data (popstate, initial load)
+	$effect(() => {
+		const id = data.card.id;
+		activeCard = data.card;
+		nextCard = data.nextCard;
+		prevCard = data.prevCard;
+		cardIndex = data.cardIndex;
+	});
 
 	const MILESTONES = [25, 50, 75, 100];
 
@@ -18,17 +34,60 @@
 		return `/${card.book_slug}/${card.chapter_slug}/${card.card_number}`;
 	}
 
+	function computeCardIndex(card) {
+		const book = getBookMeta(card.book_slug);
+		let idx = 0;
+		for (const ch of book.chapters) {
+			if (ch.slug === card.chapter_slug) {
+				idx += card.card_number;
+				break;
+			}
+			idx += ch.card_count;
+		}
+		return idx;
+	}
+
+	function advanceCard() {
+		if (!nextCard) return;
+		const newActive = nextCard;
+		const newNext = getAdjacentCard(newActive.book_slug, newActive.chapter_slug, newActive.card_number, 1);
+		const newPrev = activeCard;
+		const newIndex = computeCardIndex(newActive);
+
+		activeCard = newActive;
+		nextCard = newNext;
+		prevCard = newPrev;
+		cardIndex = newIndex;
+
+		pushState(cardUrl(newActive), {});
+	}
+
+	function advancePrev() {
+		if (!prevCard) return;
+		const newActive = prevCard;
+		const newPrev = getAdjacentCard(newActive.book_slug, newActive.chapter_slug, newActive.card_number, -1);
+		const newNext = activeCard;
+		const newIndex = computeCardIndex(newActive);
+
+		activeCard = newActive;
+		nextCard = newNext;
+		prevCard = newPrev;
+		cardIndex = newIndex;
+
+		pushState(cardUrl(newActive), {});
+	}
+
 	function handleNavigateNext() {
-		const beforeProgress = progress.getProgress(data.card.book_slug, data.totalCards);
-		const resumeUrl = data.nextCard ? cardUrl(data.nextCard) : null;
-		progress.markCardRead(data.card.book_slug, data.card.id, resumeUrl);
-		const afterProgress = progress.getProgress(data.card.book_slug, data.totalCards);
+		const beforeProgress = progress.getProgress(activeCard.book_slug, data.totalCards);
+		const resumeUrl = nextCard ? cardUrl(nextCard) : null;
+		progress.markCardRead(activeCard.book_slug, activeCard.id, resumeUrl);
+		const afterProgress = progress.getProgress(activeCard.book_slug, data.totalCards);
 
 		for (const threshold of MILESTONES) {
 			if (beforeProgress.percentage < threshold && afterProgress.percentage >= threshold) {
 				if (browser) {
 					const shown = JSON.parse(localStorage.getItem('plain-milestones') || '{}');
-					if (!shown[data.card.book_slug]?.includes(threshold)) {
+					if (!shown[activeCard.book_slug]?.includes(threshold)) {
 						showMilestone = threshold;
 						return true; // defer navigation
 					}
@@ -39,45 +98,45 @@
 	}
 
 	function handleDismiss() {
-		if (!data.nextCard) return;
+		if (!nextCard) return;
 		const defer = handleNavigateNext();
-		if (!defer) goto(cardUrl(data.nextCard));
+		if (!defer) advanceCard();
 	}
 
 	function handleFinishBook() {
-		progress.markCardRead(data.card.book_slug, data.card.id);
-		goto(`/completed/${data.card.book_slug}`);
+		progress.markCardRead(activeCard.book_slug, activeCard.id);
+		goto(`/completed/${activeCard.book_slug}`);
 	}
 
 	function closeMilestone() {
 		const milestone = showMilestone;
 		showMilestone = null;
-		if (milestone === 100 || !data.nextCard) {
-			goto(`/completed/${data.card.book_slug}`);
-		} else if (data.nextCard) {
-			goto(cardUrl(data.nextCard));
+		if (milestone === 100 || !nextCard) {
+			goto(`/completed/${activeCard.book_slug}`);
+		} else if (nextCard) {
+			advanceCard();
 		}
 	}
 </script>
 
 <svelte:head>
-	<title>{data.card.source_reference} — In Plain English</title>
-	<meta name="description" content={data.card.plain_english.slice(0, 155)} />
+	<title>{activeCard.source_reference} — In Plain English</title>
+	<meta name="description" content={activeCard.plain_english.slice(0, 155)} />
 
-	<meta property="og:title" content="{data.card.source_reference} — In Plain English" />
-	<meta property="og:description" content={data.card.plain_english.slice(0, 155)} />
+	<meta property="og:title" content="{activeCard.source_reference} — In Plain English" />
+	<meta property="og:description" content={activeCard.plain_english.slice(0, 155)} />
 	<meta property="og:type" content="article" />
-	<meta property="og:url" content="https://plainenglish.app/{data.card.book_slug}/{data.card.chapter_slug}/{data.card.card_number}" />
-	<meta property="og:image" content="/api/og/{data.card.id}" />
+	<meta property="og:url" content="https://plainenglish.app/{activeCard.book_slug}/{activeCard.chapter_slug}/{activeCard.card_number}" />
+	<meta property="og:image" content="/api/og/{activeCard.id}" />
 
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="{data.card.source_reference} — In Plain English" />
-	<meta name="twitter:description" content={data.card.plain_english.slice(0, 155)} />
-	<meta name="twitter:image" content="/api/og/{data.card.id}" />
+	<meta name="twitter:title" content="{activeCard.source_reference} — In Plain English" />
+	<meta name="twitter:description" content={activeCard.plain_english.slice(0, 155)} />
+	<meta name="twitter:image" content="/api/og/{activeCard.id}" />
 </svelte:head>
 
 <ProgressBar
-	current={data.cardIndex}
+	current={cardIndex}
 	total={data.totalCards}
 	authorSlug={data.book.author_slug}
 	hasChapters={data.book.has_chapters}
@@ -85,30 +144,30 @@
 />
 
 <div class="card-page">
-	<h1 class="visually-hidden">{data.card.source_reference} — In Plain English</h1>
-	{#if !data.prevCard}
+	<h1 class="visually-hidden">{activeCard.source_reference} — In Plain English</h1>
+	{#if !prevCard}
 		<p class="card-boundary">Beginning of {data.book.title}</p>
 	{/if}
 
-	<ChapterMarker book={data.book} card={data.card} prevCard={data.prevCard} />
+	<ChapterMarker book={data.book} card={activeCard} prevCard={prevCard} />
 
-	<CardSwipe onDismiss={handleDismiss} hasNext={!!data.nextCard} cardId={data.card.id}>
+	<CardSwipe onDismiss={handleDismiss} hasNext={!!nextCard} canSwipe={!!nextCard} cardId={activeCard.id}>
 		{#snippet children()}
-			<Card card={data.card} book={data.book} totalCardsInBook={data.totalCards} cardIndex={data.cardIndex} />
+			<Card card={activeCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={cardIndex} />
 		{/snippet}
 		{#snippet nextCardSnippet()}
-			{#if data.nextCard}
-				{@const nextCardIndex = data.cardIndex + 1}
-				<Card card={data.nextCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={nextCardIndex} muted={true} />
+			{#if nextCard}
+				{@const nextIdx = cardIndex + 1}
+				<Card card={nextCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={nextIdx} muted={true} />
 			{/if}
 		{/snippet}
 	</CardSwipe>
 
-	<CardNav prevCard={data.prevCard} nextCard={data.nextCard} onNavigateNext={handleNavigateNext}>
+	<CardNav prevCard={prevCard} nextCard={nextCard} onNavigateNext={handleNavigateNext} onNavigatePrev={advancePrev} onAdvanceNext={advanceCard}>
 		{#snippet children()}{/snippet}
 	</CardNav>
 
-	{#if !data.nextCard}
+	{#if !nextCard}
 		<div class="card-completion">
 			<p class="completion-text">This is the last card in {data.book.title}.</p>
 			<button class="finish-button" onclick={handleFinishBook}>Finish book</button>
