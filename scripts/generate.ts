@@ -6,7 +6,7 @@ import { chunkSections, type Chunk } from "./lib/chunker.js";
 import { refineChunksBatch, type BatchRefineInput } from "./lib/refine.js";
 import { translateChunksBatch, type TranslatedChunk, type BatchTranslateInput } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
-import { validateSectionCoverage, validateRefineCoverage } from "./lib/validate.js";
+import { validateSectionCoverage, validateRefineCoverage, validateParseContent } from "./lib/validate.js";
 import { tokenUsage, batchStats } from "./lib/claude.js";
 import {
   saveParseCache,
@@ -101,6 +101,23 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
 
   const text = await readFile(config.source_file, "utf-8");
   const parsed = parseSourceText(text, config);
+
+  // Validate parsed content before chunking (catches source artifacts
+  // like inter-book preamble before we spend money on refine/translate).
+  const parseContentErrors: string[] = [];
+  for (const ch of parsed.chapters) {
+    const msgs = validateParseContent(ch.sections, ch.slug);
+    for (const m of msgs) {
+      if (m.severity === "error") {
+        parseContentErrors.push(m.message);
+      }
+    }
+  }
+  if (parseContentErrors.length > 0) {
+    console.error(`\nParse content errors in ${config.slug}:`);
+    for (const e of parseContentErrors) console.error(`  ${e}`);
+    throw new Error(`${config.slug}: ${parseContentErrors.length} parse content error(s)`);
+  }
 
   const coverageErrors: string[] = [];
 

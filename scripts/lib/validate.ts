@@ -346,6 +346,43 @@ export function validateCardSequence(
 }
 
 // ---------------------------------------------------------------------------
+// T09a: Parse content validation — catch source artifacts before refine
+// ---------------------------------------------------------------------------
+
+/** Patterns that indicate source artifacts leaked into parsed section text. */
+const SOURCE_ARTIFACT_PATTERNS: { pattern: RegExp; label: string }[] = [
+  { pattern: /^THE\s+(THIRD|FOURTH|FIFTH|SIXTH|SEVENTH|EIGHTH|NINTH|TENTH|ELEVENTH|TWELFTH)\s+BOOK\s+OF\s+THE\s+DIALOGUES/m, label: "dialogue header" },
+  { pattern: /^OF\s+[A-Z][A-Z ]+\.$/m, label: "dialogue title line" },
+  { pattern: /^\[\d+\]\s+\w/m, label: "footnote block" },
+];
+
+/**
+ * Validate that parsed sections don't contain source artifacts like
+ * inter-book preamble, footnote blocks, or dialogue headers.
+ * Runs after parsing, before refine (which costs API calls).
+ */
+export function validateParseContent(
+  sections: Section[],
+  chapterSlug: string,
+): ValidationMessage[] {
+  const msgs: ValidationMessage[] = [];
+
+  for (const section of sections) {
+    for (const { pattern, label } of SOURCE_ARTIFACT_PATTERNS) {
+      if (pattern.test(section.text)) {
+        msgs.push({
+          severity: "error",
+          field: "parse",
+          message: `${chapterSlug} section ${section.number} contains ${label} — source text not cleanly separated`,
+        });
+      }
+    }
+  }
+
+  return msgs;
+}
+
+// ---------------------------------------------------------------------------
 // T09: Section coverage — parsed sections → chunks roundtrip
 // ---------------------------------------------------------------------------
 

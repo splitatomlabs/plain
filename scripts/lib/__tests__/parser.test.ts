@@ -237,9 +237,9 @@ describe("parseSourceText — Discourses", () => {
 });
 
 describe("parseSourceText — Seneca essays", () => {
-  const senecaBooks = BOOK_CONFIGS.filter((b) => b.author_slug === "seneca");
+  const senecaEssays = BOOK_CONFIGS.filter((b) => b.author_slug === "seneca" && !b.headerPattern);
 
-  for (const config of senecaBooks) {
+  for (const config of senecaEssays) {
     describe(config.slug, () => {
       const text = readFileSync(config.source_file, "utf-8");
       const parsed = parseSourceText(text, config);
@@ -270,5 +270,51 @@ describe("parseSourceText — Seneca essays", () => {
     // Speaker labels are stripped by the parser for peace-of-mind
     const section1 = parsed.chapters[0].sections[0].text;
     expect(section1).not.toContain("[_Serenus._]");
+  });
+});
+
+describe("parseSourceText — On Anger", () => {
+  const config = BOOK_CONFIGS.find((b) => b.slug === "on-anger")!;
+  const text = readFileSync(config.source_file, "utf-8");
+  const parsed = parseSourceText(text, config);
+
+  it("has 3 books", () => {
+    expect(parsed.chapters).toHaveLength(3);
+  });
+
+  it("books have correct slugs", () => {
+    expect(parsed.chapters.map((c) => c.slug)).toEqual(["book-1", "book-2", "book-3"]);
+  });
+
+  it("each book starts at section 1", () => {
+    for (const ch of parsed.chapters) {
+      expect(ch.sections[0].number).toBe(1);
+    }
+  });
+
+  it("Book I has 21 sections", () => {
+    expect(parsed.chapters[0].sections).toHaveLength(21);
+  });
+
+  it("Book II has 36 sections", () => {
+    expect(parsed.chapters[1].sections).toHaveLength(36);
+  });
+
+  it("Book III has 43 sections", () => {
+    expect(parsed.chapters[2].sections).toHaveLength(43);
+  });
+
+  it("has non-empty sections", () => {
+    for (const ch of parsed.chapters) {
+      for (const s of ch.sections) {
+        expect(s.text.trim().length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("strips trailing footnotes from Book III", () => {
+    const lastBook = parsed.chapters[2];
+    const lastSection = lastBook.sections[lastBook.sections.length - 1];
+    expect(lastSection.text).not.toContain("[1] The hook alluded to");
   });
 });
