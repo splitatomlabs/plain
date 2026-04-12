@@ -141,20 +141,24 @@
 	function handleThrowEnd(e) {
 		if (thrown && !promoting && e.propertyName === 'transform') {
 			clearTimeout(throwFallbackTimer);
-			// Throw complete — start promote phase
+			// Hide the thrown card immediately so the new card doesn't inherit
+			// the throw position and animate back. The $effect watching cardId
+			// will reset promoting/thrown/dx/dy in the next microtask — since
+			// the element goes from display:none → visible, no transition fires.
+			promoting = true;
 			onPromoteStart?.();
 			if (nextScale >= 0.999) {
-				// Next card already at full scale (drag brought it there) — skip promote
+				// Next card already at full scale — no promote animation needed
 				onDismiss?.();
-			} else {
-				promoting = true;
 			}
+			// else: CSS promote transition → handlePromoteEnd → onDismiss
 		}
 	}
 
 	function handlePromoteEnd(e) {
 		if (promoting && e.propertyName === 'transform') {
-			promoting = false;
+			// Keep promoting=true so the thrown card stays hidden.
+			// The $effect watching cardId handles the full reset.
 			onDismiss?.();
 		}
 	}
