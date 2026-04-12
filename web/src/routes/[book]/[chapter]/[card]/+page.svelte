@@ -183,6 +183,12 @@
 		padding: var(--space-xl) 0;
 	}
 
+	@media (max-width: 600px) {
+		.card-page {
+			padding: var(--space-sm) 0;
+		}
+	}
+
 	.card-boundary {
 		font-family: var(--font-body);
 		font-size: 1.35rem;
