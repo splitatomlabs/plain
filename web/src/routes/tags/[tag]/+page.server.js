@@ -38,7 +38,12 @@ export function load({ params }) {
 	const cards = getCardsByTag(params.tag);
 	const authors = getAuthors();
 
+	// Randomize author order each visit for casual exploration
 	const authorOrder = ['epictetus', 'marcus-aurelius', 'seneca'];
+	for (let i = authorOrder.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[authorOrder[i], authorOrder[j]] = [authorOrder[j], authorOrder[i]];
+	}
 	const sequence = interleaveByAuthor(cards, authorOrder);
 
 	const authorMap = Object.fromEntries(authors.map((a) => [a.slug, a]));

@@ -10,18 +10,9 @@
 	const TAG_MILESTONES = [10, 25, 50, 100];
 	const TAG_MILESTONES_KEY = 'plain-tag-milestones';
 
-	// Local card state — mirrors pushState pattern from book card pages.
-	// Server provides the full sequence; we track position client-side.
+	// Local card state — always starts at 0 (sequence is randomized each visit)
 	let localIndex = $state(0);
 	let showMilestone = $state(null);
-	let mounted = $state(false);
-
-	// On mount, resume from last position
-	onMount(() => {
-		const resumeIdx = tagProgress.getTagResumeIndex(data.tag.slug);
-		localIndex = Math.min(resumeIdx, data.sequence.length - 1);
-		mounted = true;
-	});
 
 	const activeCard = $derived(data.sequence[localIndex] ?? data.sequence[0]);
 	const nextCard = $derived(localIndex < data.sequence.length - 1 ? data.sequence[localIndex + 1] : null);
@@ -69,13 +60,11 @@
 	function advanceCard() {
 		if (!nextCard) return;
 		localIndex = localIndex + 1;
-		tagProgress.setTagResumeIndex(data.tag.slug, localIndex);
 	}
 
 	function advancePrev() {
 		if (!prevCard) return;
 		localIndex = localIndex - 1;
-		tagProgress.setTagResumeIndex(data.tag.slug, localIndex);
 	}
 
 	function markAndCheckMilestone() {
@@ -111,7 +100,6 @@
 
 	function resetToBeginning() {
 		localIndex = 0;
-		tagProgress.setTagResumeIndex(data.tag.slug, 0);
 	}
 
 	function handleKeydown(e) {
@@ -141,9 +129,6 @@
 				<span class="cards-read-badge">{tagCardsRead} read</span>
 			{/if}
 		</p>
-		{#if localIndex > 0}
-			<button class="reset-btn" onclick={resetToBeginning}>Start from beginning</button>
-		{/if}
 	</header>
 
 	{#if activeCard}
