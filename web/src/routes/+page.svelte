@@ -284,17 +284,11 @@
 	}
 
 	.themes-icon-grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: var(--space-lg) var(--space-md);
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-lg) var(--space-sm);
 		max-width: 28rem;
 		margin: 0 auto;
-	}
-
-	@media (max-width: 400px) {
-		.themes-icon-grid {
-			grid-template-columns: repeat(3, 1fr);
-			max-width: 20rem;
-		}
 	}
 </style>

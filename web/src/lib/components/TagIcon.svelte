@@ -34,20 +34,20 @@
 			]
 		},
 		'freedom-and-control': {
-			// Bird in flight
+			// Bird in flight — spread wings
 			paths: [
-				'M6 28 Q14 12 24 20',
-				'M42 28 Q34 12 24 20',
-				'M24 20 V36'
+				'M4 18 Q12 8 24 16 Q36 8 44 18',
+				'M24 16 Q24 28 20 36',
+				'M24 16 Q24 28 28 36'
 			]
 		},
 		'human-nature': {
-			// Two figures side by side
+			// Two figures with space between
 			paths: [
-				'M16 14 A4 4 0 1 1 16.01 14',
-				'M32 14 A4 4 0 1 1 32.01 14',
-				'M10 36 Q10 22 16 20 Q22 18 24 24',
-				'M38 36 Q38 22 32 20 Q26 18 24 24'
+				'M13 14 A4 4 0 1 1 13.01 14',
+				'M35 14 A4 4 0 1 1 35.01 14',
+				'M7 38 Q7 22 13 20 Q18 18 22 24',
+				'M41 38 Q41 22 35 20 Q30 18 26 24'
 			]
 		},
 		'knowing-yourself': {
