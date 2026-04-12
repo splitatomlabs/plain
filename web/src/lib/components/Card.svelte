@@ -217,7 +217,7 @@
 		transform: rotateY(180deg);
 		pointer-events: none;
 		background: var(--color-surface);
-		border-left: 3px solid var(--color-border);
+		border-left: 5px solid var(--color-border);
 	}
 
 	.card-author-back {
