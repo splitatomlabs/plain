@@ -3,6 +3,7 @@
 	import CardSwipe from '$lib/components/CardSwipe.svelte';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
@@ -17,13 +18,11 @@
 	const nextCard = $derived(localIndex < data.sequence.length - 1 ? data.sequence[localIndex + 1] : null);
 	const prevCard = $derived(localIndex > 0 ? data.sequence[localIndex - 1] : null);
 
-	// Bumped after each dismiss to trigger re-read of tag progress
-	let readGeneration = $state(0);
+	let tagCardsRead = $state(0);
+	const positionDisplay = $derived(`${localIndex + 1} / ${data.totalCards}`);
 
-	const tagCardsRead = $derived.by(() => {
-		readGeneration;
-		if (!browser) return 0;
-		return tagProgress.getTagProgress(data.tag.slug).cardsRead;
+	onMount(() => {
+		tagCardsRead = tagProgress.getTagProgress(data.tag.slug).cardsRead;
 	});
 
 	function getShownMilestones(tagSlug) {
@@ -76,7 +75,7 @@
 			}
 		}
 		const afterCount = tagProgress.getTagProgress(data.tag.slug).cardsRead;
-		readGeneration++;
+		tagCardsRead = afterCount;
 		const milestone = checkMilestone(data.tag.slug, beforeCount, afterCount);
 		if (milestone) {
 			recordMilestone(data.tag.slug, milestone);
@@ -125,7 +124,7 @@
 	<header class="tag-header">
 		<h1>{data.tag.label}</h1>
 		<p class="tag-progress-count">
-			{localIndex + 1} / {data.totalCards}
+			{positionDisplay}
 			{#if tagCardsRead > 0}
 				<span class="cards-read-badge">{tagCardsRead} read</span>
 			{/if}
