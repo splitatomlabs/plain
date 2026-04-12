@@ -102,6 +102,13 @@ function parseMeditations(text: string, config: BookConfig): ParsedBook {
     }
     const sections = splitSections(bookText, sectionRe);
 
+    // Strip trailing editorial annotations (italic colophons like
+    // "_Whilst I was at Carnuntum._") from the last section of each book.
+    if (sections.length > 0) {
+      const last = sections[sections.length - 1];
+      last.text = last.text.replace(/\r?\n\r?\n_[^_]+_\s*$/, "").trimEnd();
+    }
+
     const group = config.chapterGrouping!.find(
       (g) => bookNum >= g.range[0] && bookNum <= g.range[1],
     );

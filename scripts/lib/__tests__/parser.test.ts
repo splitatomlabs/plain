@@ -85,6 +85,13 @@ describe("parseSourceText — Meditations", () => {
     }
   });
 
+  it("strips trailing editorial colophons (e.g. '_Whilst I was at Carnuntum._')", () => {
+    const book2 = parsed.chapters[1];
+    const lastSection = book2.sections[book2.sections.length - 1];
+    expect(lastSection.text).not.toContain("Carnuntum");
+    expect(lastSection.text.trimEnd()).toMatch(/nothing that is according to nature can be evil\.$/);
+  });
+
   it("handles inline section markers (e.g. sentence ending with '. V. ')", () => {
     const book2 = parsed.chapters[1];
     const section5 = book2.sections.find((s) => s.number === 5);
