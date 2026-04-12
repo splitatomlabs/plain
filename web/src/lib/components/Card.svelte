@@ -157,10 +157,8 @@
 				</button>
 
 				<footer class="card-footer">
-					<p class="card-source">{card.source_reference}</p>
 					<div class="card-actions">
-						<span></span>
-						<span class="reading-time" aria-label="Estimated reading time">{formatReadingTime(card.reading_time_seconds)}</span>
+						<span class="card-source">{card.source_reference}</span>
 						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> · {card.card_number} / {chapterCardCount}{:else}{cardIndex} / {totalCardsInBook}{/if}</span>
 					</div>
 				</footer>
