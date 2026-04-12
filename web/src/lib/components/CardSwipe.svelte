@@ -53,6 +53,8 @@
 		if (thrown) return;
 		// Only handle primary button (left click / touch)
 		if (e.button !== 0) return;
+		// Don't capture pointer on interactive elements — let clicks fire normally
+		if (e.target.closest('button, a, [role="button"], summary')) return;
 
 		dragging = true;
 		dx = 0;

@@ -46,7 +46,7 @@
 		top: 0;
 		left: 0;
 		right: 0;
-		height: 5px;
+		height: 4px;
 		background: var(--color-border);
 		z-index: 50;
 	}
