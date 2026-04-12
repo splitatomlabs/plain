@@ -3,7 +3,6 @@
 	import CardSwipe from '$lib/components/CardSwipe.svelte';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
@@ -23,14 +22,20 @@
 	let tagCardsRead = $state(0);
 	const positionDisplay = $derived(`${localIndex + 1} / ${data.totalCards}`);
 
-	onMount(() => {
-		const progress = tagProgress.getTagProgress(data.tag.slug);
+	// Reset local state when navigating between tags (same route, new params).
+	// Runs on mount and on every tag slug change.
+	$effect(() => {
+		if (!browser) return;
+		const slug = data.tag.slug;
+		const progress = tagProgress.getTagProgress(slug);
 		tagCardsRead = progress.cardsRead;
 		// Push already-read cards to the end so the user always starts on unread cards
 		const readSet = new Set(progress.cards);
 		const unread = data.sequence.filter((c) => !readSet.has(c.id));
 		const read = data.sequence.filter((c) => readSet.has(c.id));
 		sequence = [...unread, ...read];
+		localIndex = 0;
+		showMilestone = null;
 	});
 
 	function getShownMilestones(tagSlug) {

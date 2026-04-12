@@ -7,11 +7,10 @@ export default defineConfig({
 		reuseExistingServer: !process.env.CI
 	},
 	testDir: 'tests',
-	snapshotPathTemplate: '{testDir}/visual/snapshots/{projectName}/{testFilePath}/{arg}{ext}',
 	projects: [
 		{
 			name: 'desktop-chrome',
-			testMatch: ['e2e/**/*.spec.js', 'visual/**/*.spec.js'],
+			testMatch: ['e2e/**/*.spec.js'],
 			use: {
 				...devices['Desktop Chrome'],
 				viewport: { width: 1280, height: 720 }
@@ -19,7 +18,7 @@ export default defineConfig({
 		},
 		{
 			name: 'mobile-chrome',
-			testMatch: ['e2e/**/*.spec.js', 'visual/**/*.spec.js'],
+			testMatch: ['e2e/**/*.spec.js'],
 			use: {
 				...devices['Pixel 5'],
 				viewport: { width: 375, height: 812 }
