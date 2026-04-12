@@ -63,7 +63,7 @@
 	// Border + icon color per milestone tier (light / dark mode handled via opacity on bg)
 	const MILESTONE_STYLES = {
 		10:  { border: '#CD7F32', bg: 'rgba(205, 127, 50, 0.08)',  icon: '#CD7F32', label: 'Bronze' },
-		25:  { border: '#8E8E93', bg: 'rgba(142, 142, 147, 0.08)', icon: '#8E8E93', label: 'Silver' },
+		25:  { border: '#7A9AAE', bg: 'rgba(122, 154, 174, 0.08)', icon: '#7A9AAE', label: 'Silver' },
 		50:  { border: '#BFA630', bg: 'rgba(191, 166, 48, 0.06)',  icon: '#BFA630', label: 'Gold' },
 		100: { border: '#9B8EC4', bg: 'rgba(155, 142, 196, 0.08)', icon: '#9B8EC4', label: 'Platinum' }
 	};
