@@ -1,7 +1,9 @@
 <script>
 	import AuthorSection from '$lib/components/AuthorSection.svelte';
 	import ProgressRing from '$lib/components/ProgressRing.svelte';
+	import TagPill from '$lib/components/TagPill.svelte';
 	import { progress } from '$lib/stores/progress.js';
+	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
 
 	let { data } = $props();
@@ -64,6 +66,11 @@
 	}
 
 	const lastBookMeta = $derived(lastReadBook ? getBookMeta(lastReadBook) : null);
+
+	function getTagCardsRead(tagSlug) {
+		if (!browser) return 0;
+		return tagProgress.getTagProgress(tagSlug).cardsRead;
+	}
 </script>
 
 <svelte:head>
@@ -103,6 +110,16 @@
 	{#each data.returningAuthorData as { author, books }}
 		<AuthorSection {author} {books} {bookProgress} />
 	{/each}
+
+	<section class="themes-section" id="themes">
+		<h2 class="themes-heading">Browse by theme</h2>
+		<div class="themes-grid">
+			{#each data.tags as tag}
+				{@const cardsRead = getTagCardsRead(tag.slug)}
+				<TagPill slug={tag.slug} label={tag.label} progress={cardsRead || null} />
+			{/each}
+		</div>
+	</section>
 {:else}
 	<section class="hero">
 		<h1>Three men. Three completely different lives. The same philosophy.</h1>
@@ -112,6 +129,15 @@
 	{#each data.authorData as { author, books }}
 		<AuthorSection {author} {books} />
 	{/each}
+
+	<section class="themes-section" id="themes">
+		<h2 class="themes-heading">Browse by theme</h2>
+		<div class="themes-grid">
+			{#each data.tags as tag}
+				<TagPill slug={tag.slug} label={tag.label} />
+			{/each}
+		</div>
+	</section>
 {/if}
 
 <style>
@@ -204,5 +230,29 @@
 		font-family: var(--font-body);
 		font-size: 1.125rem;
 		color: var(--color-text-secondary);
+	}
+
+	.themes-section {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: var(--space-2xl) var(--space-md);
+		text-align: center;
+	}
+
+	.themes-heading {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-lg);
+	}
+
+	.themes-grid {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-sm);
 	}
 </style>
