@@ -4,6 +4,7 @@
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { trackEvent } from '$lib/analytics.js';
 	import { browser } from '$app/environment';
+	import { untrack } from 'svelte';
 
 	let { data } = $props();
 
@@ -14,7 +15,7 @@
 	let localIndex = $state(0);
 	let showMilestone = $state(null);
 	// Locally reordered sequence — unread cards first, then already-read cards
-	let sequence = $state(data.sequence);
+	let sequence = $state(untrack(() => data.sequence));
 
 	const activeCard = $derived(sequence[localIndex] ?? sequence[0]);
 	const nextCard = $derived(localIndex < sequence.length - 1 ? sequence[localIndex + 1] : null);
@@ -206,6 +207,7 @@
 {#if showMilestone}
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div class="modal-backdrop" onclick={closeMilestone} onkeydown={(e) => e.key === 'Escape' && closeMilestone()} role="presentation">
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
 			class="modal"
 			role="dialog"

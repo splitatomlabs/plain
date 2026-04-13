@@ -5,10 +5,11 @@
 	import { progress } from '$lib/stores/progress.js';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
+	import { untrack } from 'svelte';
 
 	let { data } = $props();
 
-	let hasProgress = $state(data.hasProgress);
+	let hasProgress = $state(untrack(() => data.hasProgress));
 	let lastReadBook = $state(null);
 	let resumeUrl = $state(null);
 	let authorProgressData = $state([]);
