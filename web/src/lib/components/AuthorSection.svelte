@@ -65,7 +65,6 @@
 	@media (min-width: 768px) {
 		.author-books {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
-			max-width: 56rem;
 		}
 	}
 </style>
