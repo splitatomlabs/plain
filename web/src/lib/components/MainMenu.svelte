@@ -13,7 +13,8 @@
 		'main#main-content',
 		'footer.site-footer',
 		'header.site-header a.site-name',
-		'header.site-header .theme-toggle'
+		'header.site-header .theme-toggle',
+		'header.site-header .menu-trigger'
 	];
 
 	function setBackgroundInert(value) {
