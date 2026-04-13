@@ -1,5 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
+import { trackEvent } from '$lib/analytics.js';
 
 const STORAGE_KEY = 'plain-progress';
 
@@ -150,6 +151,10 @@ function createProgressStore() {
 		hasAnyProgress() {
 			const data = get(store);
 			return Object.values(data).some((book) => book.cards_read.length > 0);
+		},
+
+		trackBookLandingViewed(bookSlug) {
+			trackEvent('book_landing_viewed', { book_id: bookSlug });
 		},
 
 		reset() {

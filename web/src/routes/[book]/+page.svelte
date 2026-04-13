@@ -23,6 +23,8 @@
 	let chapterProgressMap = $state({});
 
 	onMount(() => {
+		progress.trackBookLandingViewed(data.book.slug);
+
 		const params = new URLSearchParams(window.location.search);
 		isGift = params.get('gift') === 'true';
 		giftNote = params.get('note') || '';

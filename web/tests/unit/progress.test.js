@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock $app/environment before importing the store
 vi.mock('$app/environment', () => ({
-	browser: true
+	browser: true,
+	dev: false
 }));
 
 // Mock localStorage
