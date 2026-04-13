@@ -115,6 +115,7 @@
 		<p class="author-name">{data.author.name}</p>
 		<h1 class="book-title">{data.book.title}</h1>
 		<p class="book-description">{data.book.description}</p>
+		<a class="translation-link" href="/about">How this translation was made</a>
 	</header>
 
 	<div class="action-zone">
@@ -245,6 +246,20 @@
 		color: var(--color-text-secondary);
 		margin: 0;
 		line-height: var(--line-height-body);
+	}
+
+	.translation-link {
+		display: inline-block;
+		margin-top: var(--space-sm);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.translation-link:hover {
+		color: var(--color-text-primary);
 	}
 
 	.action-zone {
