@@ -7,24 +7,27 @@ import { test, expect } from '@playwright/test';
 test.describe('Analytics event wiring', () => {
 	test.beforeEach(async ({ page }) => {
 		// Install the stub before the page loads so app code finds window.va.
+		// Persist captured calls in sessionStorage so they survive navigations.
 		await page.addInitScript(() => {
 			window.va = (...args) => {
-				(window.__vaCalls ||= []).push(args);
+				const stored = JSON.parse(sessionStorage.getItem('__vaCalls') || '[]');
+				stored.push(args);
+				sessionStorage.setItem('__vaCalls', JSON.stringify(stored));
 			};
 		});
 
-		// Clear localStorage so each test starts from a clean state.
-		// Navigate to any page first so localStorage is accessible.
+		// Clear storage so each test starts from a clean state.
 		await page.goto('/');
 		await page.evaluate(() => {
 			localStorage.clear();
+			sessionStorage.clear();
 		});
 	});
 
 	test('book_landing_viewed fires on book landing visit', async ({ page }) => {
 		await page.goto('/enchiridion');
 
-		const calls = await page.evaluate(() => window.__vaCalls || []);
+		const calls = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__vaCalls') || '[]'));
 		const names = calls
 			.filter((c) => c[0] === 'event' && c[1]?.name)
 			.map((c) => c[1].name);
@@ -55,7 +58,7 @@ test.describe('Analytics event wiring', () => {
 		await page.click('a[aria-label="Next card"]');
 		await page.waitForURL(/\/enchiridion\/section-01\/[34]|\/(section-02)\/1/);
 
-		const calls = await page.evaluate(() => window.__vaCalls || []);
+		const calls = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__vaCalls') || '[]'));
 		const eventNames = calls
 			.filter((c) => c[0] === 'event' && c[1]?.name)
 			.map((c) => c[1].name);
