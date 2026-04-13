@@ -132,6 +132,8 @@
 							title="{card.source_reference} — In Plain English"
 							text={card.plain_english.slice(0, 100)}
 							url="{page.url.origin}/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
+							type="card"
+							bookId={card.book_slug}
 						/>
 					</div>
 				</footer>

@@ -4,6 +4,7 @@
 	import { progress } from '$lib/stores/progress.js';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
+	import { trackEvent } from '$lib/analytics.js';
 
 	let { data } = $props();
 
@@ -81,12 +82,14 @@
 					text: giftNoteInput || `Check out ${data.book.title} in plain English`,
 					url
 				});
+				trackEvent('share_clicked', { type: 'gift', book_id: data.book.slug });
 			} catch {
 				// cancelled
 			}
 		} else {
 			try {
 				await navigator.clipboard.writeText(url);
+				trackEvent('share_clicked', { type: 'gift', book_id: data.book.slug });
 			} catch {
 				// unavailable
 			}
