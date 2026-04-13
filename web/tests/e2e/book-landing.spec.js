@@ -21,7 +21,7 @@ test.describe('Book landing page — essay-style (Shortness of Life)', () => {
 	test('shows "How this translation was made" link to /about', async ({ page }) => {
 		const link = page.getByRole('link', { name: 'How this translation was made' });
 		await expect(link).toBeVisible();
-		await expect(link).toHaveAttribute('href', '/about');
+		await expect(link).toHaveAttribute('href', '/about#how-translations-are-made');
 	});
 
 	test('shows preview card', async ({ page }) => {
