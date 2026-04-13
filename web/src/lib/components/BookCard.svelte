@@ -28,6 +28,7 @@
 		border: 1px solid var(--color-border);
 		border-radius: 8px;
 		padding: var(--space-lg);
+		cursor: pointer;
 		transition: border-color var(--transition-fast);
 	}
 
