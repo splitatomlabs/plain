@@ -60,6 +60,11 @@
 
 <footer class="site-footer">
 	<p>Ancient philosophy, in plain English.</p>
+	<nav class="footer-links" aria-label="Footer">
+		<a href="/about">About</a>
+		<span aria-hidden="true">·</span>
+		<a href="/support">Support</a>
+	</nav>
 </footer>
 
 <style>
@@ -138,5 +143,25 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+	}
+
+	.site-footer p {
+		margin: 0 0 var(--space-sm);
+	}
+
+	.footer-links {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.footer-links a {
+		color: var(--color-text-secondary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.footer-links a:hover {
+		color: var(--color-text-primary);
 	}
 </style>
