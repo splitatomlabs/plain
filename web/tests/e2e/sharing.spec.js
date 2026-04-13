@@ -6,6 +6,27 @@ test.describe('Share button', () => {
 		const shareButton = page.locator('.card-swipe-current button[aria-label="Share this card"]');
 		await expect(shareButton).toBeVisible();
 	});
+
+	test('completion page share button copies link via clipboard fallback', async ({ page, context }) => {
+		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+		await page.addInitScript(() => {
+			// Force clipboard fallback path by removing navigator.share
+			Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+		});
+
+		await page.goto('/completed/meditations');
+
+		const shareButton = page.locator('button.share-button');
+		await expect(shareButton).toBeVisible();
+
+		await shareButton.click();
+
+		await expect(page.locator('.share-confirm')).toHaveText('Link copied');
+
+		const copied = await page.evaluate(() => navigator.clipboard.readText());
+		expect(copied).toMatch(/\/meditations$/);
+	});
 });
 
 test.describe('Gift-a-book', () => {

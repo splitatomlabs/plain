@@ -219,6 +219,15 @@ function createProgressStore() {
 
 		reset() {
 			store.set({});
+		},
+
+		_debugSetCardsRead(bookSlug, count) {
+			store.update((data) => {
+				const book = ensureBook(data, bookSlug);
+				book.cards_read = Array.from({ length: count }, (_, i) => `debug-${i}`);
+				book.last_read_at = new Date().toISOString();
+				return { ...data };
+			});
 		}
 	};
 }

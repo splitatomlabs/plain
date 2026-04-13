@@ -44,6 +44,17 @@ test.describe('Analytics event wiring', () => {
 		// Visit the landing first (matches real user flow).
 		await page.goto('/enchiridion');
 
+		// Wait for the landing-viewed event to be captured before navigating away,
+		// otherwise the next goto can abort onMount on slower runs (e.g. mobile chrome).
+		await expect
+			.poll(async () =>
+				page.evaluate(() => {
+					const calls = JSON.parse(sessionStorage.getItem('__vaCalls') || '[]');
+					return calls.some((c) => c[0] === 'event' && c[1]?.name === 'book_landing_viewed');
+				})
+			)
+			.toBe(true);
+
 		// Navigate to card 1 of the first chapter.
 		await page.goto('/enchiridion/section-01/1');
 		await page.waitForSelector('[data-keyboard-ready]');
