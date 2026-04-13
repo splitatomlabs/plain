@@ -59,7 +59,7 @@ Brainstormed alternatives (pick one in T05):
   - Reduce `.author-rings` gap to `var(--space-md)` on mobile; keep `space-xl` at ≥768px. Add `@media (min-width: 402px)` nudge or use `clamp()` on gap. Set `flex-wrap: nowrap` at ≥402px so rings never break to 2 rows. Verify with `npx playwright screenshot --viewport-size="402,874"` on a returning user state.
   - Acceptance: 3 rings render on a single row at 402px; still wrap gracefully below 390px if labels overflow.
 
-- [ ] T02: Underline "Or explore by theme"
+- [x] T02: Underline "Or explore by theme"
   - File: `web/src/routes/+page.svelte`
   - Add `text-decoration: underline; text-underline-offset: 0.2em; text-decoration-color: var(--color-border);` to `.theme-cta`; darken decoration-color on hover. Applies to both `hasProgress` branches (selector is shared).
   - Acceptance: link is clearly underlined in light and dark mode; underline color deepens on hover.

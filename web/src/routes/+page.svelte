@@ -266,12 +266,15 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		text-decoration: none;
-		transition: color var(--transition-fast);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		text-decoration-color: var(--color-border);
+		transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
 	}
 
 	.theme-cta:hover {
 		color: var(--color-text-primary);
+		text-decoration-color: var(--color-text-secondary);
 	}
 
 	.themes-section {
