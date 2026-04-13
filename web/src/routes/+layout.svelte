@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
 	import { inject } from '@vercel/analytics';
+	import MainMenu from '$lib/components/MainMenu.svelte';
 
 	let { children } = $props();
 	let theme = $state(null);
@@ -27,6 +28,7 @@
 
 <header class="site-header">
 	<a href="/" class="site-name">Plain</a>
+	<div class="header-actions">
 	{#if theme !== null}
 	<button
 		class="theme-toggle"
@@ -52,6 +54,8 @@
 		{/if}
 	</button>
 	{/if}
+	<MainMenu />
+	</div>
 </header>
 
 <main id="main-content">
@@ -107,6 +111,12 @@
 		font-weight: 400;
 		color: var(--color-text-primary);
 		text-decoration: none;
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
 	}
 
 	.theme-toggle {
