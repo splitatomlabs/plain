@@ -40,6 +40,10 @@
 		</div>
 	</section>
 
+	<p class="support-line">
+		If Plain helped you finish this, you can <a href="/support">support the project</a>.
+	</p>
+
 	{#if data.suggestion}
 		<section class="next-book">
 			<h2>What to read next</h2>
@@ -62,7 +66,7 @@
 	}
 
 	.celebration {
-		margin-bottom: var(--space-3xl);
+		margin-bottom: var(--space-md);
 	}
 
 	.author-label {
@@ -159,6 +163,23 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.support-line {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-3xl);
+	}
+
+	.support-line a {
+		color: var(--color-text-secondary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.support-line a:hover {
+		color: var(--color-text-primary);
 	}
 
 	.home-link {

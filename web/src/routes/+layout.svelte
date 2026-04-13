@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
 	import { inject } from '@vercel/analytics';
+	import MainMenu from '$lib/components/MainMenu.svelte';
 
 	let { children } = $props();
 	let theme = $state(null);
@@ -27,6 +28,7 @@
 
 <header class="site-header">
 	<a href="/" class="site-name">Plain</a>
+	<div class="header-actions">
 	{#if theme !== null}
 	<button
 		class="theme-toggle"
@@ -52,6 +54,8 @@
 		{/if}
 	</button>
 	{/if}
+	<MainMenu />
+	</div>
 </header>
 
 <main id="main-content">
@@ -60,6 +64,11 @@
 
 <footer class="site-footer">
 	<p>Ancient philosophy, in plain English.</p>
+	<nav class="footer-links" aria-label="Footer">
+		<a href="/about">About</a>
+		<span aria-hidden="true">·</span>
+		<a href="/support">Support</a>
+	</nav>
 </footer>
 
 <style>
@@ -104,6 +113,12 @@
 		text-decoration: none;
 	}
 
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
 	.theme-toggle {
 		display: flex;
 		align-items: center;
@@ -138,5 +153,25 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
+	}
+
+	.site-footer p {
+		margin: 0 0 var(--space-sm);
+	}
+
+	.footer-links {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.footer-links a {
+		color: var(--color-text-secondary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.footer-links a:hover {
+		color: var(--color-text-primary);
 	}
 </style>

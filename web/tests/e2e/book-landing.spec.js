@@ -18,6 +18,12 @@ test.describe('Book landing page — essay-style (Shortness of Life)', () => {
 		await expect(page.locator('.chapter-list')).not.toBeVisible();
 	});
 
+	test('shows "How this translation was made" link to /about', async ({ page }) => {
+		const link = page.getByRole('link', { name: 'How this translation was made' });
+		await expect(link).toBeVisible();
+		await expect(link).toHaveAttribute('href', '/about');
+	});
+
 	test('shows preview card', async ({ page }) => {
 		const preview = page.locator('.book-preview');
 		await expect(preview).toBeVisible();
