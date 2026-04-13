@@ -1,6 +1,7 @@
 <script>
 	import { progress } from '$lib/stores/progress.js';
 	import { onMount } from 'svelte';
+	import { KOFI_URL } from '$lib/config.js';
 
 	let { data } = $props();
 
@@ -49,6 +50,10 @@
 			</a>
 		</section>
 	{/if}
+
+	<p class="support-line">
+		If Plain helped you finish this, you can <a href={KOFI_URL} target="_blank" rel="noopener">support the project</a>.
+	</p>
 
 	<a href="/" class="home-link">Back to all books</a>
 </div>
@@ -159,6 +164,23 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.support-line {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--space-lg);
+	}
+
+	.support-line a {
+		color: var(--color-text-secondary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.support-line a:hover {
+		color: var(--color-text-primary);
 	}
 
 	.home-link {
