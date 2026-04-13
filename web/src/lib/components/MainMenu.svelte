@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/state';
 	import { dev } from '$app/environment';
-	import { tick, untrack } from 'svelte';
+	import { tick, untrack, onDestroy } from 'svelte';
 	import { menuOpen } from '$lib/stores/menuState.js';
 
 	let open = $state(false);
@@ -25,6 +25,10 @@
 		if (open) {
 			tick().then(() => firstLinkEl?.focus());
 		}
+	});
+
+	onDestroy(() => {
+		menuOpen.set(false);
 	});
 
 	function openMenu() {
