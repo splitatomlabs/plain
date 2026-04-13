@@ -86,10 +86,11 @@ Brainstormed alternatives (pick one in T05):
   - Replace `grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))` with `repeat(2, minmax(0, 1fr))` inside the `@media (min-width: 768px)` block. Optional max-width on `.author-books` (~56rem) so cards don't stretch absurdly wide on ultrawide screens.
   - Acceptance: at ≥1280px, each author section shows at most 2 book cards per row.
 
-- [ ] T07: Rework BookCard using the card-overlay-link pattern
+- [x] T07: Rework BookCard using the card-overlay-link pattern
   - File: `web/src/lib/components/BookCard.svelte`
   - Keep root as `<article class="book-card">` with `position: relative`. Drop the `<a class="title-link">` wrapper around the title text — title becomes plain `<h3>`. Add a new `<a class="card-link" href="/{book.slug}" aria-label="About {book.title}">` placed immediately inside the article; style it with `position: absolute; inset: 0;` (or use an `::after`) so the entire card is its click target, and give it a visible `:focus-visible` outline that traces the card border. Keep the CTA as a real `<a class="cta">` with `position: relative; z-index: 1` so it intercepts clicks over the card link. CTA `href` stays `resumeUrl` / `startUrl` / chapter 1 for "Read again". Card hover state: border-color shifts when hovering anywhere on the card (via `.book-card:hover`), CTA pill gets its own hover treatment.
   - Acceptance: clicking the card body navigates to `/{book.slug}`; clicking the CTA navigates to resume/start; both focusable by keyboard in a logical order; no nested anchors; screen reader reads title + description + "About {title}" link + CTA link as distinct targets.
+  - Notes: Replaced `<a class="title-link">` wrapping `<h3>` with a plain `<h3 class="book-title">`. Added `<a class="card-link">` as first child of article, styled `position: absolute; inset: 0; z-index: 0` — hits the entire card. `.cta` and all content elements get `position: relative; z-index: 1` so they layer above the overlay. Collapsed the two CTA `{#if}` branches into `ctaHref`/`ctaLabel` derived variables. `.book-card:hover` shifts border-color; `.cta:hover` keeps its own pill treatment. Focus ring on `.card-link:focus-visible` traces the card border.
 
 - [ ] T08: Update e2e selectors for new BookCard structure
   - Files: `web/tests/e2e/*.spec.ts` (grep for `title-link`, `book-card a`, `Start Reading`, `Continue`, book-card selectors)
