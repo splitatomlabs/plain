@@ -4,6 +4,7 @@
 	import { onDestroy, tick, untrack } from 'svelte';
 
 	let open = $state(false);
+	let openedByKeyboard = $state(false);
 	let triggerEl = $state();
 	let drawerEl = $state();
 	let firstLinkEl = $state();
@@ -43,7 +44,9 @@
 		if (open) {
 			document.body.style.overflow = 'hidden';
 			setBackgroundInert(true);
-			tick().then(() => firstLinkEl?.focus());
+			if (openedByKeyboard) {
+				tick().then(() => firstLinkEl?.focus());
+			}
 		} else {
 			document.body.style.overflow = '';
 			setBackgroundInert(false);
@@ -57,7 +60,10 @@
 		}
 	});
 
-	function openMenu() {
+	function openMenu(e) {
+		// detail === 0 on click means keyboard activation (Enter/Space).
+		// Mouse/touch clicks have detail >= 1.
+		openedByKeyboard = e?.detail === 0;
 		open = true;
 	}
 
