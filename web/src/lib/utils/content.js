@@ -89,3 +89,13 @@ export function getCardsByTag(tagSlug) {
 export function getAllCards() {
 	return Object.values(CHAPTER_DATA).flat();
 }
+
+export function getBookCardsInOrder(bookSlug) {
+	const meta = getBookMeta(bookSlug);
+	const ordered = [];
+	for (const chapter of meta.chapters) {
+		const cards = getChapterCards(bookSlug, chapter.slug);
+		for (const card of cards) ordered.push(card);
+	}
+	return ordered;
+}

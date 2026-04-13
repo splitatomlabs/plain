@@ -1,5 +1,6 @@
 <script>
 	import { progress } from '$lib/stores/progress.js';
+	import { getBookCardsInOrder } from '$lib/utils/content.js';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
@@ -22,13 +23,16 @@
 	}
 
 	function primeAndJump(book, threshold) {
-		const target = Math.floor((book.total_cards * threshold) / 100) - 1;
-		const safe = Math.max(0, target);
-		progress._debugSetCardsRead(book.slug, safe);
+		const ordered = getBookCardsInOrder(book.slug);
+		// Pre-read the first N cards so the next card advance crosses the threshold.
+		const target = Math.max(0, Math.floor((book.total_cards * threshold) / 100) - 1);
+		const preRead = ordered.slice(0, target).map((c) => c.id);
+		progress._debugSetCardsRead(book.slug, preRead);
 		clearBookMilestones(book.slug);
-		const firstChapter = book.chapters[0]?.slug;
-		if (firstChapter) {
-			goto(`/${book.slug}/${firstChapter}/1`);
+		// Jump to the card immediately after the pre-read window so advancing trips the milestone.
+		const jumpTo = ordered[target] ?? ordered[0];
+		if (jumpTo) {
+			goto(`/${book.slug}/${jumpTo.chapter_slug}/${jumpTo.card_number}`);
 		}
 	}
 </script>
