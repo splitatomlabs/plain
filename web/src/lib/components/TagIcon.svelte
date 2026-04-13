@@ -61,16 +61,19 @@
 		}
 	};
 
+	const MILESTONE_TIERS = { 10: 'BRONZE', 25: 'SILVER', 50: 'GOLD', 100: 'PLATINUM' };
+
 	let { slug, label, cardsRead = 0, milestone = null } = $props();
 
 	const icon = $derived(ICONS[slug]);
+	const tierName = $derived(milestone ? (MILESTONE_TIERS[milestone] ?? null) : null);
 </script>
 
 <a
 	href="/tags/{slug}"
 	class="tag-icon"
 	class:has-milestone={milestone}
-	aria-label="{label}{cardsRead ? ` — ${cardsRead} cards read` : ''}"
+	aria-label="{label}{tierName ? ` — ${tierName}` : ''}{cardsRead ? ` — ${cardsRead} cards read` : ''}"
 >
 	<div class="icon-wrapper">
 		<svg
@@ -92,7 +95,9 @@
 	</div>
 	<span class="icon-label">{label}</span>
 	{#if cardsRead > 0}
-		<span class="icon-count">{cardsRead} read</span>
+		<span class="icon-count">
+			{#if tierName}{tierName} · {/if}{cardsRead}
+		</span>
 	{/if}
 </a>
 
@@ -152,8 +157,9 @@
 	.icon-count {
 		font-family: var(--font-ui);
 		font-size: 0.6875rem;
-		color: var(--color-text-secondary);
-		opacity: 0.7;
+		color: var(--color-text-tertiary);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 	}
 
 	/*
@@ -180,7 +186,7 @@
 		}
 
 		.icon-count {
-			font-size: 0.8125rem;
+			font-size: 0.75rem;
 		}
 	}
 </style>
