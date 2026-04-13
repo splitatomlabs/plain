@@ -42,7 +42,7 @@ Reproduce and fix two reported navigation failures: (1) tapping the current-page
 - [x] T06: Updated `+layout.svelte` — imports `menuOpen` store; `<main>`, `<footer>`, and skip link now have `inert={$menuOpen || undefined}` reactive bindings; `$effect` toggles `body.menu-open` class with explicit cleanup return.
 - [x] T07: Added `body.menu-open { overflow: hidden; }` to `web/src/app.css`.
 - [x] T08: Fix `+page.svelte` staleness — inside the existing `$effect`, read `page.url.pathname` so the effect re-runs on client-side re-entry; OR replace state with `$derived` expressions keyed off a reactive progress version. Verify: navigating `/` → `/enchiridion` → back to `/` shows up-to-date Continue Reading banner and author rings. Done: imported `page` from `$app/state` and added `page.url.pathname;` as the first reactive read inside the `$effect`, with a one-line comment explaining why. No other changes.
-- [ ] T09: Re-run the e2e suite from T01-T03; confirm all now pass. Also run the existing navigation.spec.js cases to check for regression.
+- [x] T09: Re-ran navigation.spec.js on desktop-chrome (25/25 pass) and desktop-webkit (25/25 pass after installing webkit browser). T01 self-healing test now passes; refined assertion to look for any `a|button` inside `main#main-content` since the home page uses links rather than bare buttons.
 - [ ] T10: Manual smoke in Chrome and Safari (desktop + mobile viewport via devtools) — open menu, tap current-page link; navigate across a few pages; check back/forward; verify the page is always interactive. Record anything unexpected as a new task.
 - [ ] T11: Update `web/tests/e2e/navigation.spec.js` with any additional regression tests uncovered during T10.
 

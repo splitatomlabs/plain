@@ -179,11 +179,9 @@ test.describe('Main menu self-healing', () => {
 		);
 		expect(mainInert).toBe(false);
 
-		// A button inside <main> must be clickable (respond to click without error)
-		const mainButton = page.locator('main#main-content button').first();
-		await expect(mainButton).toBeVisible();
-		await expect(mainButton).toBeEnabled();
-		// Verify it is not blocked by inert by clicking it
-		await mainButton.click({ timeout: 3000 });
+		// An interactive element inside <main> must be clickable (respond to click without error)
+		const mainInteractive = page.locator('main#main-content a, main#main-content button').first();
+		await expect(mainInteractive).toBeVisible();
+		await mainInteractive.click({ timeout: 3000 });
 	});
 });
