@@ -1,5 +1,7 @@
 <script>
-	let { title = '', text = '', url = '' } = $props();
+	import { trackEvent } from '$lib/analytics.js';
+
+	let { title = '', text = '', url = '', type = 'card', bookId = null } = $props();
 
 	let copied = $state(false);
 	let copyTimeout;
@@ -9,8 +11,9 @@
 		if (navigator.share) {
 			try {
 				await navigator.share(shareData);
-			} catch {
-				// User cancelled or share failed
+				trackEvent('share_clicked', { type, book_id: bookId });
+			} catch (err) {
+				// User cancelled or share failed — do not fire event
 			}
 		} else {
 			await copyToClipboard();
@@ -25,6 +28,7 @@
 			copyTimeout = setTimeout(() => {
 				copied = false;
 			}, 2000);
+			trackEvent('share_clicked', { type, book_id: bookId });
 		} catch {
 			// Clipboard API unavailable
 		}
