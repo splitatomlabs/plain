@@ -92,10 +92,11 @@ Brainstormed alternatives (pick one in T05):
   - Acceptance: clicking the card body navigates to `/{book.slug}`; clicking the CTA navigates to resume/start; both focusable by keyboard in a logical order; no nested anchors; screen reader reads title + description + "About {title}" link + CTA link as distinct targets.
   - Notes: Replaced `<a class="title-link">` wrapping `<h3>` with a plain `<h3 class="book-title">`. Added `<a class="card-link">` as first child of article, styled `position: absolute; inset: 0; z-index: 0` — hits the entire card. `.cta` and all content elements get `position: relative; z-index: 1` so they layer above the overlay. Collapsed the two CTA `{#if}` branches into `ctaHref`/`ctaLabel` derived variables. `.book-card:hover` shifts border-color; `.cta:hover` keeps its own pill treatment. Focus ring on `.card-link:focus-visible` traces the card border.
 
-- [ ] T08: Update e2e selectors for new BookCard structure
+- [x] T08: Update e2e selectors for new BookCard structure
   - Files: `web/tests/e2e/*.spec.ts` (grep for `title-link`, `book-card a`, `Start Reading`, `Continue`, book-card selectors)
   - Tests that previously clicked the title link should now click `.card-link` (or the card surface). Tests that clicked the CTA stay valid but the selector may need tightening to `.book-card .cta` to avoid matching the overlay link. Run `npm run build --prefix web && npm run test:e2e --prefix web`.
   - Acceptance: full e2e suite passes.
+  - Notes: Replaced three `.title-link` selectors in `home-page.spec.js` (lines 101, 106, 112) with `.book-title` to match the plain `<h3 class="book-title">` element. No other e2e files used `title-link`. All 158 e2e tests pass.
 
 - [ ] T09: Visual QA on mobile + desktop
   - Start dev server, capture screenshots at `390,844`, `402,874`, and `1280,800` for both first-time and returning-user home states (seed progress via localStorage in the dev tools or a query param if the app supports one).
