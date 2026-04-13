@@ -69,10 +69,11 @@ Brainstormed alternatives (pick one in T05):
   - Drop SVG `stroke-width` from `2.5` to `1.75`. Verify icons still read at mobile 3.6rem and desktop 4rem sizes. Take before/after screenshots at 402 and 1280.
   - Acceptance: icons feel lighter / more elegant while remaining legible.
 
-- [ ] T04: Remove loud milestone fill from tag icons
+- [x] T04: Remove loud milestone fill from tag icons
   - File: `web/src/lib/components/TagIcon.svelte`
   - Delete `MILESTONE_STYLES` and all inline `style={tier ? ... : ''}` bindings on border/bg/icon/label. Keep the `milestone` prop — it drives T05 instead.
   - Acceptance: a tag with a milestone renders with the same border/bg/icon/label colors as one without.
+  - Notes: Removed `MILESTONE_STYLES` constant, `tier` derived variable, all `style={tier ? ...}` inline bindings on border/bg/icon/label, and the `has-milestone`-specific hover overrides. `milestone` prop retained; `class:has-milestone={milestone}` kept for T05 to hook into. Hover icon color now applies uniformly to all tags.
 
 - [ ] T05: Add subtle wordmark milestone indicator
   - File: `web/src/lib/components/TagIcon.svelte`
