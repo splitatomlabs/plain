@@ -1,10 +1,10 @@
 <script>
-	import { KOFI_URL, SPLIT_ATOM_LABS_URL } from '$lib/config.js';
+	import { BMC_URL, SPLIT_ATOM_LABS_URL } from '$lib/config.js';
 </script>
 
 <svelte:head>
 	<title>Support — Plain</title>
-	<meta name="description" content="Plain is free and always will be. If it has helped you, you can support the project on Ko-fi." />
+	<meta name="description" content="Plain is free and always will be. If it has helped you, you can support the project." />
 </svelte:head>
 
 <article class="static-page">
@@ -14,19 +14,19 @@
 
 	<p>It's built by <a href={SPLIT_ATOM_LABS_URL} target="_blank" rel="noopener">Split Atom Labs</a>, a small independent studio. Plain is free. No ads, no paywalls, no premium tier. You can read more about how Plain is made on the <a href="/about">about page</a>.</p>
 
-	<p>If Plain has helped you, and you'd like to help it keep going, you can donate to Split Atom Labs on Ko-fi. Any amount, one-time or recurring. No account required.</p>
+	<p>If Plain has helped you, and you'd like to help it keep going, you can support Split Atom Labs financially. Any amount, one-time or recurring. No account required.</p>
 
 	<p class="cta-row">
-		<a class="cta-primary" href={KOFI_URL} target="_blank" rel="noopener">Donate on Ko-fi →</a>
+		<a class="cta-primary" href={BMC_URL} target="_blank" rel="noopener">Support on Buy Me a Coffee →</a>
 	</p>
 
-	<h2>What donations fund</h2>
+	<h2>What your support funds</h2>
 	<ul>
 		<li><strong>Hosting.</strong> The domain, servers, and infrastructure that keep Plain online.</li>
 		<li><strong>New books.</strong> Every book added to Plain goes through an AI-assisted editorial pipeline — parsing the source text, refining it into chunks, translating it into plain English, and assembling it into cards, with verification at every step.</li>
 	</ul>
 
-	<h2>What donations do not buy</h2>
+	<h2>What your support does not buy</h2>
 	<ul>
 		<li>Early access to new books</li>
 		<li>Premium features</li>
@@ -34,11 +34,11 @@
 		<li>Influence over what gets translated next</li>
 	</ul>
 
-	<p>Plain treats every reader the same, whether they've donated or not. Democratizing knowledge is the whole point.</p>
+	<p>Plain treats every reader the same, whether they've contributed financially or not. Democratizing knowledge is the whole point.</p>
 
 	<h2>Other ways to help</h2>
 
-	<p>Donations are not the only way to support Plain. If you can't give money, you can:</p>
+	<p>Money isn't the only way to support Plain. If financial support isn't an option, you can:</p>
 
 	<ul>
 		<li><strong>Share a card with someone.</strong> Plain is built around giving, not extracting. Sharing a card with a friend is the kind of distribution the project was designed for.</li>
