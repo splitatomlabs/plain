@@ -55,6 +55,7 @@
 		margin: 0 0 var(--space-sm);
 		position: relative;
 		z-index: 1;
+		pointer-events: none;
 	}
 
 	.book-description {
@@ -68,6 +69,7 @@
 		overflow: hidden;
 		position: relative;
 		z-index: 1;
+		pointer-events: none;
 	}
 
 	.book-progress {
@@ -77,6 +79,7 @@
 		margin-bottom: var(--space-md);
 		position: relative;
 		z-index: 1;
+		pointer-events: none;
 	}
 
 	.progress-track {
