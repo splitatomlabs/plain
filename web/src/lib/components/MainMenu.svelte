@@ -1,5 +1,6 @@
 <script>
 	import { page } from '$app/state';
+	import { dev } from '$app/environment';
 	import { onDestroy, tick, untrack } from 'svelte';
 
 	let open = $state(false);
@@ -138,6 +139,9 @@
 			<a bind:this={firstLinkEl} href="/">Home</a>
 			<a href="/about">About</a>
 			<a href="/support">Support</a>
+			{#if dev}
+				<a href="/debug">Debug</a>
+			{/if}
 		</nav>
 	</div>
 {/if}
