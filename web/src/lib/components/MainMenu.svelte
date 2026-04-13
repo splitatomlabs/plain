@@ -32,7 +32,7 @@
 	$effect(() => {
 		const path = page.url.pathname;
 		untrack(() => {
-			if (lastPath && path !== lastPath && open) {
+			if (lastPath && path !== lastPath) {
 				open = false;
 			}
 			lastPath = path;
@@ -136,11 +136,11 @@
 			</button>
 		</div>
 		<nav class="drawer-nav" aria-label="Main">
-			<a bind:this={firstLinkEl} href="/">Home</a>
-			<a href="/about">About</a>
-			<a href="/support">Support</a>
+			<a bind:this={firstLinkEl} href="/" onclick={closeMenu}>Home</a>
+			<a href="/about" onclick={closeMenu}>About</a>
+			<a href="/support" onclick={closeMenu}>Support</a>
 			{#if dev}
-				<a href="/debug">Debug</a>
+				<a href="/debug" onclick={closeMenu}>Debug</a>
 			{/if}
 		</nav>
 	</div>
