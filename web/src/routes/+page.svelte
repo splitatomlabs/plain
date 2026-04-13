@@ -5,6 +5,7 @@
 	import { progress } from '$lib/stores/progress.js';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 
 	let { data } = $props();
@@ -18,6 +19,8 @@
 
 	$effect(() => {
 		if (!browser) return;
+		// Read pathname so this effect re-runs on client-side re-entry to `/`
+		page.url.pathname;
 		hasProgress = progress.hasAnyProgress();
 		if (hasProgress) {
 			// Find most recent incomplete book for the Continue Reading banner
