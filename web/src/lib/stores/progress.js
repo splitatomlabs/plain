@@ -10,6 +10,7 @@ import {
 } from '$lib/analytics.js';
 
 const STORAGE_KEY = 'plain-progress';
+const HAS_PROGRESS_COOKIE = 'plain_has_progress';
 
 function loadFromStorage() {
 	if (!browser) return {};
@@ -30,12 +31,23 @@ function saveToStorage(data) {
 	}
 }
 
+function syncHasProgressCookie(data) {
+	if (!browser || typeof document === 'undefined') return;
+	const has = Object.values(data).some((book) => book.cards_read.length > 0);
+	if (has) {
+		document.cookie = `${HAS_PROGRESS_COOKIE}=1; path=/; max-age=31536000; samesite=lax`;
+	} else {
+		document.cookie = `${HAS_PROGRESS_COOKIE}=; path=/; max-age=0; samesite=lax`;
+	}
+}
+
 function createProgressStore() {
 	const store = writable(loadFromStorage());
 
 	if (browser) {
 		store.subscribe((value) => {
 			saveToStorage(value);
+			syncHasProgressCookie(value);
 		});
 	}
 

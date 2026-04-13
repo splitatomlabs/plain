@@ -8,7 +8,7 @@
 
 	let { data } = $props();
 
-	let hasProgress = $state(false);
+	let hasProgress = $state(data.hasProgress);
 	let lastReadBook = $state(null);
 	let resumeUrl = $state(null);
 	let authorProgressData = $state([]);

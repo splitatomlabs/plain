@@ -1,7 +1,8 @@
 import { getAuthors, getBooksForAuthor, getCardsByTag } from '$lib/utils/content.js';
 import { TAGS } from '$lib/utils/tags.js';
 
-export function load() {
+export function load({ cookies }) {
+	const hasProgress = cookies.get('plain_has_progress') === '1';
 	const authors = getAuthors();
 
 	// New visitor order: Marcus Aurelius first (highest recognition), then Epictetus, then Seneca
@@ -27,5 +28,5 @@ export function load() {
 		count: getCardsByTag(tag.slug).length
 	}));
 
-	return { authorData, returningAuthorData, tags };
+	return { authorData, returningAuthorData, tags, hasProgress };
 }
