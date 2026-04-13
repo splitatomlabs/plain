@@ -9,6 +9,7 @@
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { getAdjacentCard, getBookMeta, getCard } from '$lib/utils/content.js';
 	import { pushState, goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 
 	let { data } = $props();
@@ -131,8 +132,8 @@
 	<meta property="og:title" content="{activeCard.source_reference} — In Plain English" />
 	<meta property="og:description" content={activeCard.plain_english.slice(0, 155)} />
 	<meta property="og:type" content="article" />
-	<meta property="og:url" content="https://plainenglish.app/{activeCard.book_slug}/{activeCard.chapter_slug}/{activeCard.card_number}" />
-	<meta property="og:image" content="/api/og/{activeCard.id}" />
+	<meta property="og:url" content="{page.url.origin}/{activeCard.book_slug}/{activeCard.chapter_slug}/{activeCard.card_number}" />
+	<meta property="og:image" content="{page.url.origin}/api/og/{activeCard.id}" />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="{activeCard.source_reference} — In Plain English" />

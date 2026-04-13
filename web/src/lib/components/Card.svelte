@@ -2,6 +2,7 @@
 	import TagPill from './TagPill.svelte';
 	import ShareButton from './ShareButton.svelte';
 	import { getTagBySlug } from '$lib/utils/tags.js';
+	import { page } from '$app/state';
 
 	import { onMount } from 'svelte';
 
@@ -130,7 +131,7 @@
 						<ShareButton
 							title="{card.source_reference} — In Plain English"
 							text={card.plain_english.slice(0, 100)}
-							url="https://plainenglish.app/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
+							url="{page.url.origin}/{card.book_slug}/{card.chapter_slug}/{card.card_number}"
 						/>
 					</div>
 				</footer>
