@@ -1,6 +1,13 @@
 import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
-import { trackEvent } from '$lib/analytics.js';
+import {
+	trackEvent,
+	incrementSessionCardCount,
+	markFirstBookStarted,
+	isFirstBook,
+	endFirstSession,
+	getFirstSessionState
+} from '$lib/analytics.js';
 
 const STORAGE_KEY = 'plain-progress';
 
@@ -49,10 +56,16 @@ function createProgressStore() {
 		subscribe: store.subscribe,
 
 		markCardRead(bookSlug, cardId, resumeUrl = null) {
+			let wasNewCard = false;
+			let wasFirstCard = false;
+
 			store.update((data) => {
 				const book = ensureBook(data, bookSlug);
+				const wasEmpty = book.cards_read.length === 0;
 				if (!book.cards_read.includes(cardId)) {
 					book.cards_read = [...book.cards_read, cardId];
+					wasNewCard = true;
+					if (wasEmpty) wasFirstCard = true;
 				}
 				book.last_card = cardId;
 				book.last_read_at = new Date().toISOString();
@@ -61,6 +74,20 @@ function createProgressStore() {
 				}
 				return { ...data };
 			});
+
+			if (wasNewCard) {
+				if (wasFirstCard) {
+					const firstBook = isFirstBook();
+					trackEvent('book_started', { book_id: bookSlug, is_first_book: firstBook });
+					markFirstBookStarted(bookSlug);
+				}
+
+				const newCount = incrementSessionCardCount();
+				if (newCount === 2 && getFirstSessionState().firstSession === true) {
+					trackEvent('engaged_session');
+					endFirstSession();
+				}
+			}
 		},
 
 		getProgress(bookSlug, totalCards) {
