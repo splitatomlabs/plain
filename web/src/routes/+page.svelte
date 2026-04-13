@@ -5,7 +5,7 @@
 	import { progress } from '$lib/stores/progress.js';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 
 	let { data } = $props();
 
@@ -16,46 +16,47 @@
 	let bookProgress = $state({});
 	let suggestedBook = $state(null);
 
-	$effect(() => {
-		if (!browser) return;
-		hasProgress = progress.hasAnyProgress();
-		if (hasProgress) {
-			// Find most recent incomplete book for the Continue Reading banner
-			lastReadBook = progress.getLastReadBook();
-			if (lastReadBook && progress.isCompleted(lastReadBook)) {
-				lastReadBook = null;
-			}
-			if (lastReadBook) {
-				resumeUrl = progress.getResumeUrl(lastReadBook);
-				// Fallback: if resume_url is missing (pre-existing progress), link to book page
-				if (!resumeUrl) {
-					resumeUrl = `/${lastReadBook}`;
-				}
-			}
-			const bp = {};
-			authorProgressData = data.returningAuthorData.map(({ author, books }) => {
-				const ap = progress.getAuthorProgress(author.slug, books);
-				for (const book of books) {
-					const p = progress.getProgress(book.slug, book.total_cards);
-					if (p.cardsRead > 0) {
-						const isBookCompleted = progress.isCompleted(book.slug);
-						bp[book.slug] = {
-							resumeUrl: isBookCompleted ? null : progress.getResumeUrl(book.slug),
-							percentage: isBookCompleted ? 100 : p.percentage,
-							completed: isBookCompleted
-						};
-					}
-				}
-				return { author, books, ...ap };
-			});
-			bookProgress = bp;
+	function hydrateFromProgress() {
+		const has = progress.hasAnyProgress();
+		hasProgress = has;
+		if (!has) return;
 
-			// If no book to continue, suggest an unstarted one
-			if (!lastReadBook) {
-				const allBooks = data.returningAuthorData.flatMap(({ books }) => books);
-				suggestedBook = allBooks.find((b) => !bp[b.slug]) || null;
-			}
+		let lrb = progress.getLastReadBook();
+		if (lrb && progress.isCompleted(lrb)) lrb = null;
+		let ru = null;
+		if (lrb) {
+			ru = progress.getResumeUrl(lrb) || `/${lrb}`;
 		}
+		lastReadBook = lrb;
+		resumeUrl = ru;
+
+		const bp = {};
+		const apd = data.returningAuthorData.map(({ author, books }) => {
+			const ap = progress.getAuthorProgress(author.slug, books);
+			for (const book of books) {
+				const p = progress.getProgress(book.slug, book.total_cards);
+				if (p.cardsRead > 0) {
+					const isBookCompleted = progress.isCompleted(book.slug);
+					bp[book.slug] = {
+						resumeUrl: isBookCompleted ? null : progress.getResumeUrl(book.slug),
+						percentage: isBookCompleted ? 100 : p.percentage,
+						completed: isBookCompleted
+					};
+				}
+			}
+			return { author, books, ...ap };
+		});
+		authorProgressData = apd;
+		bookProgress = bp;
+
+		if (!lrb) {
+			const allBooks = data.returningAuthorData.flatMap(({ books }) => books);
+			suggestedBook = allBooks.find((b) => !bp[b.slug]) || null;
+		}
+	}
+
+	onMount(() => {
+		if (browser) hydrateFromProgress();
 	});
 
 	function getBookMeta(slug) {
