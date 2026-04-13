@@ -71,7 +71,7 @@
 	bind:this={triggerEl}
 	type="button"
 	class="menu-trigger"
-	aria-label="Open menu"
+	aria-label={open ? 'Close menu' : 'Open menu'}
 	aria-expanded={open}
 	aria-controls="main-menu-drawer"
 	onclick={openMenu}
