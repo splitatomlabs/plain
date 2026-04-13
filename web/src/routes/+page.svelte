@@ -55,6 +55,9 @@
 		}
 	}
 
+	// onMount, not $effect: this hydration writes several $state vars and
+	// reads them back in the same block, which Svelte 5 tracks as a
+	// self-dependency and can loop on.
 	onMount(() => {
 		if (browser) hydrateFromProgress();
 	});
