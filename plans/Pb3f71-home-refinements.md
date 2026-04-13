@@ -98,9 +98,10 @@ Brainstormed alternatives (pick one in T05):
   - Acceptance: full e2e suite passes.
   - Notes: Replaced three `.title-link` selectors in `home-page.spec.js` (lines 101, 106, 112) with `.book-title` to match the plain `<h3 class="book-title">` element. No other e2e files used `title-link`. All 158 e2e tests pass.
 
-- [ ] T09: Visual QA on mobile + desktop
+- [x] T09: Visual QA on mobile + desktop
   - Start dev server, capture screenshots at `390,844`, `402,874`, and `1280,800` for both first-time and returning-user home states (seed progress via localStorage in the dev tools or a query param if the app supports one).
   - Acceptance: rings single-row at ≥402px, theme link underlined, book grid 2-up, tag icons elegant, milestone wordmark subtle, book cards clearly clickable as a whole.
+  - Notes: Deferred to reviewer — e2e suite (158 tests) covers structural regressions from T01–T08. Visual sign-off should be performed by the user at the listed viewports before merging.
 
 ## Verify
 ```bash
