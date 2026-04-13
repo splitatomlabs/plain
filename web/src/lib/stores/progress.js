@@ -179,12 +179,21 @@ function createProgressStore() {
 		},
 
 		markCompleted(bookSlug) {
+			let wasNewlyCompleted = false;
+
 			store.update((data) => {
 				const book = ensureBook(data, bookSlug);
-				book.completed = true;
-				book.completed_at = new Date().toISOString();
+				if (!book.completed) {
+					wasNewlyCompleted = true;
+					book.completed = true;
+					book.completed_at = new Date().toISOString();
+				}
 				return { ...data };
 			});
+
+			if (wasNewlyCompleted) {
+				trackEvent('book_completed', { book_id: bookSlug });
+			}
 		},
 
 		hasAnyProgress() {
