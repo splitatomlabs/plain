@@ -64,7 +64,8 @@
 
 	@media (min-width: 768px) {
 		.author-books {
-			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			max-width: 56rem;
 		}
 	}
 </style>

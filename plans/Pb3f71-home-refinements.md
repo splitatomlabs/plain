@@ -81,7 +81,7 @@ Brainstormed alternatives (pick one in T05):
   - Acceptance: visited tags show a quiet wordmark; unvisited tags show nothing extra; screenshot at 402px confirms grid still 3-up.
   - Notes: Added `MILESTONE_TIERS` map `{10:'BRONZE',25:'SILVER',50:'GOLD',100:'PLATINUM'}` and derived `tierName` from the numeric milestone prop. Icon-count span now renders `TIER · {cardsRead}` when a tier is present, or just `{cardsRead}` otherwise (unvisited tags show nothing since `cardsRead` is 0). CSS updated: `color` changed to `--color-text-tertiary`, `opacity` removed, `text-transform: uppercase` and `letter-spacing: 0.05em` added. Desktop font-size nudged to `0.75rem` to keep wordmark from feeling too large. `aria-label` now includes tier name between label and card count.
 
-- [ ] T06: Cap book grid to 2 columns at desktop
+- [x] T06: Cap book grid to 2 columns at desktop
   - File: `web/src/lib/components/AuthorSection.svelte`
   - Replace `grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))` with `repeat(2, minmax(0, 1fr))` inside the `@media (min-width: 768px)` block. Optional max-width on `.author-books` (~56rem) so cards don't stretch absurdly wide on ultrawide screens.
   - Acceptance: at ≥1280px, each author section shows at most 2 book cards per row.
