@@ -34,7 +34,7 @@ export function getFirstSessionState() {
 	if (!browser) return { firstSession: true, sessionCardCount: 0, booksStarted: [] };
 	try {
 		const firstSession = localStorage.getItem(KEY_FIRST_SESSION) !== 'false';
-		const rawCount = localStorage.getItem(KEY_SESSION_CARD_COUNT);
+		const rawCount = sessionStorage.getItem(KEY_SESSION_CARD_COUNT);
 		const sessionCardCount = rawCount !== null ? parseInt(rawCount, 10) : 0;
 		const rawBooks = localStorage.getItem(KEY_BOOKS_STARTED);
 		const booksStarted = rawBooks ? JSON.parse(rawBooks) : [];
@@ -48,9 +48,9 @@ export function getFirstSessionState() {
 export function incrementSessionCardCount() {
 	if (!browser) return 0;
 	try {
-		const rawCount = localStorage.getItem(KEY_SESSION_CARD_COUNT);
+		const rawCount = sessionStorage.getItem(KEY_SESSION_CARD_COUNT);
 		const next = (rawCount !== null ? parseInt(rawCount, 10) : 0) + 1;
-		localStorage.setItem(KEY_SESSION_CARD_COUNT, String(next));
+		sessionStorage.setItem(KEY_SESSION_CARD_COUNT, String(next));
 		return next;
 	} catch {
 		return 0;
@@ -113,7 +113,9 @@ export function trackReturnVisit({ hasProgress } = {}) {
 				trackEvent('return_visit');
 			}
 		}
-		localStorage.setItem(KEY_LAST_VISIT_AT, now.toISOString());
+		if (analyticsEnabled) {
+			localStorage.setItem(KEY_LAST_VISIT_AT, now.toISOString());
+		}
 	} catch {
 		// localStorage unavailable
 	}

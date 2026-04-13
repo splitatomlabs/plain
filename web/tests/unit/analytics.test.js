@@ -25,6 +25,25 @@ const localStorageMock = (() => {
 })();
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
+// In-memory sessionStorage shim
+const sessionStorageMock = (() => {
+	let store = {};
+	return {
+		getItem: vi.fn((key) => store[key] ?? null),
+		setItem: vi.fn((key, value) => {
+			store[key] = value;
+		}),
+		removeItem: vi.fn((key) => {
+			delete store[key];
+		}),
+		clear: vi.fn(() => {
+			store = {};
+		}),
+		_getStore: () => store
+	};
+})();
+Object.defineProperty(globalThis, 'sessionStorage', { value: sessionStorageMock });
+
 // Stub window.va so trackEvent calls are observable without relying on real Vercel
 const vaSpy = vi.fn();
 Object.defineProperty(globalThis, 'window', {
@@ -47,6 +66,9 @@ describe('analytics first-session helpers', () => {
 		localStorageMock.clear();
 		localStorageMock.getItem.mockClear();
 		localStorageMock.setItem.mockClear();
+		sessionStorageMock.clear();
+		sessionStorageMock.getItem.mockClear();
+		sessionStorageMock.setItem.mockClear();
 		vaSpy.mockClear();
 	});
 
@@ -60,7 +82,7 @@ describe('analytics first-session helpers', () => {
 
 		it('reflects persisted values', () => {
 			localStorageMock._getStore()['plain:first_session'] = 'false';
-			localStorageMock._getStore()['plain:session_card_count'] = '3';
+			sessionStorageMock._getStore()['plain:session_card_count'] = '3';
 			localStorageMock._getStore()['plain:books_started'] = JSON.stringify(['enchiridion']);
 			const state = getFirstSessionState();
 			expect(state.firstSession).toBe(false);
@@ -79,7 +101,7 @@ describe('analytics first-session helpers', () => {
 			incrementSessionCardCount();
 			const result = incrementSessionCardCount();
 			expect(result).toBe(3);
-			expect(localStorageMock._getStore()['plain:session_card_count']).toBe('3');
+			expect(sessionStorageMock._getStore()['plain:session_card_count']).toBe('3');
 		});
 	});
 
