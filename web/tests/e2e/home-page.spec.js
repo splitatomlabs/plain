@@ -98,18 +98,18 @@ test.describe('Home page — per-book Continue/Start CTAs', () => {
 	});
 
 	test('book with progress shows Continue CTA', async ({ page }) => {
-		const meditationsCard = page.locator('.book-card', { has: page.locator('.title-link', { hasText: 'Meditations' }) });
+		const meditationsCard = page.locator('.book-card', { has: page.locator('.book-title', { hasText: 'Meditations' }) });
 		await expect(meditationsCard.locator('.cta')).toHaveText('Continue');
 	});
 
 	test('Continue CTA links to resume URL', async ({ page }) => {
-		const meditationsCard = page.locator('.book-card', { has: page.locator('.title-link', { hasText: 'Meditations' }) });
+		const meditationsCard = page.locator('.book-card', { has: page.locator('.book-title', { hasText: 'Meditations' }) });
 		const href = await meditationsCard.locator('.cta').getAttribute('href');
 		expect(href).toBe('/meditations/book-01/3');
 	});
 
 	test('book with progress shows progress bar', async ({ page }) => {
-		const enchiridionCard = page.locator('.book-card', { has: page.locator('.title-link', { hasText: 'Enchiridion' }) });
+		const enchiridionCard = page.locator('.book-card', { has: page.locator('.book-title', { hasText: 'Enchiridion' }) });
 		await expect(enchiridionCard.locator('.book-progress')).toBeVisible();
 	});
 

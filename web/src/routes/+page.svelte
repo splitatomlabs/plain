@@ -72,7 +72,7 @@
 		return tagProgress.getTagProgress(tagSlug).cardsRead;
 	}
 
-	const TAG_MILESTONES = [10, 25, 50, 100];
+	const TAG_MILESTONES = [10, 25, 50, 100, 200];
 
 	function getHighestMilestone(cardsRead) {
 		let highest = null;
@@ -195,9 +195,21 @@
 	.author-rings {
 		display: flex;
 		justify-content: center;
-		gap: var(--space-xl);
+		gap: var(--space-md);
 		margin-bottom: var(--space-xl);
 		flex-wrap: wrap;
+	}
+
+	@media (min-width: 402px) {
+		.author-rings {
+			flex-wrap: nowrap;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.author-rings {
+			gap: var(--space-xl);
+		}
 	}
 
 	.ring-group {
@@ -254,12 +266,15 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		text-decoration: none;
-		transition: color var(--transition-fast);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		text-decoration-color: var(--color-border);
+		transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
 	}
 
 	.theme-cta:hover {
 		color: var(--color-text-primary);
+		text-decoration-color: var(--color-text-secondary);
 	}
 
 	.themes-section {

@@ -61,33 +61,29 @@
 		}
 	};
 
-	// Border + icon color per milestone tier (light / dark mode handled via opacity on bg)
-	const MILESTONE_STYLES = {
-		10:  { border: '#CD7F32', bg: 'rgba(205, 127, 50, 0.08)',  icon: '#CD7F32', label: 'Bronze' },
-		25:  { border: '#7A9AAE', bg: 'rgba(122, 154, 174, 0.08)', icon: '#7A9AAE', label: 'Silver' },
-		50:  { border: '#BFA630', bg: 'rgba(191, 166, 48, 0.06)',  icon: '#BFA630', label: 'Gold' },
-		100: { border: '#9B8EC4', bg: 'rgba(155, 142, 196, 0.08)', icon: '#9B8EC4', label: 'Platinum' }
-	};
+	const MILESTONES = [10, 25, 50, 100, 200];
 
 	let { slug, label, cardsRead = 0, milestone = null } = $props();
 
 	const icon = $derived(ICONS[slug]);
-	const tier = $derived(milestone ? MILESTONE_STYLES[milestone] : null);
+	const nextMilestone = $derived(MILESTONES.find((m) => cardsRead < m) ?? null);
+	const countDisplay = $derived(
+		nextMilestone ? `${cardsRead} / ${nextMilestone}` : `${cardsRead} read`
+	);
 </script>
 
 <a
 	href="/tags/{slug}"
 	class="tag-icon"
-	class:has-milestone={tier}
-	style={tier ? `border-color: ${tier.border}; background: ${tier.bg};` : ''}
-	aria-label="{label}{cardsRead ? ` — ${cardsRead} cards read` : ''}{tier ? ` — ${tier.label}` : ''}"
+	class:has-milestone={milestone}
+	aria-label="{label}{cardsRead ? ` — ${cardsRead} cards read` : ''}"
 >
 	<div class="icon-wrapper">
 		<svg
 			viewBox="0 0 48 48"
 			fill="none"
-			stroke={tier ? tier.icon : 'currentColor'}
-			stroke-width="2.5"
+			stroke="currentColor"
+			stroke-width="1.75"
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			aria-hidden="true"
@@ -100,9 +96,9 @@
 			{/if}
 		</svg>
 	</div>
-	<span class="icon-label" style={tier ? `color: ${tier.border};` : ''}>{label}</span>
+	<span class="icon-label">{label}</span>
 	{#if cardsRead > 0}
-		<span class="icon-count">{cardsRead} read</span>
+		<span class="icon-count">{countDisplay}</span>
 	{/if}
 </a>
 
@@ -134,10 +130,6 @@
 		border-color: var(--color-text-secondary);
 	}
 
-	.tag-icon.has-milestone:hover {
-		filter: brightness(0.97);
-	}
-
 	.icon-wrapper {
 		width: 3.6rem;
 		height: 3.6rem;
@@ -150,7 +142,7 @@
 		transition: color var(--transition-fast);
 	}
 
-	.tag-icon:not(.has-milestone):hover .icon-svg {
+	.tag-icon:hover .icon-svg {
 		color: var(--color-text-primary);
 	}
 
@@ -166,8 +158,9 @@
 	.icon-count {
 		font-family: var(--font-ui);
 		font-size: 0.6875rem;
-		color: var(--color-text-secondary);
-		opacity: 0.7;
+		color: var(--color-text-tertiary);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 	}
 
 	/*
@@ -194,7 +187,7 @@
 		}
 
 		.icon-count {
-			font-size: 0.8125rem;
+			font-size: 0.75rem;
 		}
 	}
 </style>

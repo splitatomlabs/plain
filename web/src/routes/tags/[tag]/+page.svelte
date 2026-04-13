@@ -6,7 +6,7 @@
 
 	let { data } = $props();
 
-	const TAG_MILESTONES = [10, 25, 50, 100];
+	const TAG_MILESTONES = [10, 25, 50, 100, 200];
 	const TAG_MILESTONES_KEY = 'plain-tag-milestones';
 
 	// Local card state — always starts at 0 (sequence is randomized each visit)

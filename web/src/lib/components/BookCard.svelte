@@ -2,10 +2,13 @@
 	let { book, resumeUrl = null, percentage = 0, completed = false } = $props();
 
 	const startUrl = $derived(`/${book.slug}/${book.chapters[0].slug}/1`);
+	const ctaHref = $derived(resumeUrl && !completed ? resumeUrl : startUrl);
+	const ctaLabel = $derived(resumeUrl && !completed ? 'Continue' : completed ? 'Read again' : 'Start Reading');
 </script>
 
 <article class="book-card">
-	<h3 class="book-title"><a href="/{book.slug}" class="title-link">{book.title}</a></h3>
+	<a href="/{book.slug}" class="card-link" aria-label="About {book.title}"></a>
+	<h3 class="book-title">{book.title}</h3>
 	<p class="book-description">{book.description}</p>
 	{#if percentage > 0}
 		<div class="book-progress">
@@ -15,19 +18,34 @@
 			<span class="progress-label">{percentage}%</span>
 		</div>
 	{/if}
-	{#if resumeUrl && !completed}
-		<a href={resumeUrl} class="cta">Continue</a>
-	{:else}
-		<a href={startUrl} class="cta">{completed ? 'Read again' : 'Start Reading'}</a>
-	{/if}
+	<a href={ctaHref} class="cta">{ctaLabel}</a>
 </article>
 
 <style>
 	.book-card {
+		position: relative;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: 8px;
 		padding: var(--space-lg);
+		cursor: pointer;
+		transition: border-color var(--transition-fast);
+	}
+
+	.book-card:hover {
+		border-color: var(--color-text-secondary);
+	}
+
+	.card-link {
+		position: absolute;
+		inset: 0;
+		border-radius: 8px;
+		z-index: 0;
+	}
+
+	.card-link:focus-visible {
+		outline: 2px solid var(--color-text-primary);
+		outline-offset: 2px;
 	}
 
 	.book-title {
@@ -35,18 +53,8 @@
 		font-size: 1.25rem;
 		font-weight: 400;
 		margin: 0 0 var(--space-sm);
-	}
-
-	.title-link {
-		color: var(--color-text-primary);
-		text-decoration: underline;
-		text-decoration-color: var(--color-border);
-		text-underline-offset: 0.15em;
-		transition: text-decoration-color var(--transition-fast);
-	}
-
-	.title-link:hover {
-		text-decoration-color: var(--color-text-secondary);
+		position: relative;
+		z-index: 1;
 	}
 
 	.book-description {
@@ -58,6 +66,8 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+		position: relative;
+		z-index: 1;
 	}
 
 	.book-progress {
@@ -65,6 +75,8 @@
 		align-items: center;
 		gap: var(--space-sm);
 		margin-bottom: var(--space-md);
+		position: relative;
+		z-index: 1;
 	}
 
 	.progress-track {
@@ -110,6 +122,8 @@
 		border: 1px solid var(--color-border);
 		border-radius: 6px;
 		text-decoration: none;
+		position: relative;
+		z-index: 1;
 		transition: border-color var(--transition-fast), background var(--transition-fast);
 	}
 
