@@ -45,6 +45,11 @@ Add About and Support static pages, footer links on every page, a main menu draw
 - [x] T09: Add `web/tests/e2e/navigation.spec.js` covering: footer About/Support links visible and navigate correctly from `/`, from a book landing, and from a reading route; main menu hamburger opens drawer, drawer shows Home/About/Support, Esc closes, each link navigates. Acceptance: tests pass against built app.
 - [x] T10: Update `web/tests/e2e/book-landing.spec.js` to assert the "How this translation was made" link is present and points to `/about`. Acceptance: existing assertions still pass; new assertion added.
 - [x] T11: Build web app and run full test suite: `npm test` then `npm run build --prefix web && npm run test:e2e --prefix web`. Fix any regressions (selector scoping, etc.). Acceptance: all suites green.
+- [x] T12: Apply `inert` to main page content (`<main>` and header siblings, or a wrapper) while MainMenu drawer is open, so screen readers and keyboard users cannot reach background content. Acceptance: with drawer open, Tab cycles only through drawer controls and background links are not reachable via screen reader.
+- [x] T13: Honor `prefers-reduced-motion` in `MainMenu.svelte` — disable or instantly-apply the slide-in/fade-in animations when the user has requested reduced motion. Acceptance: with `prefers-reduced-motion: reduce` set, drawer appears without slide/fade animation.
+- [x] T14: Replace the fake-button backdrop in `MainMenu.svelte` with a real `<button class="backdrop">` (or drop the `role="button"`/keydown/`aria-hidden` combo in favor of a plain div with `onclick` plus an eslint-disable comment). Acceptance: backdrop no longer has a contradictory role/aria-hidden combination; clicking still closes the drawer.
+- [x] T15: Wrap the `lastPath` read/write in the first `$effect` of `MainMenu.svelte` with `untrack` so writing `lastPath` doesn't re-trigger the effect. Acceptance: effect runs once per navigation, verified mentally or via a console log in dev.
+- [x] T16: Re-run the full verification (`npm test`, `npm run build --prefix web`, `npm run test:e2e --prefix web`) after T12–T15 and fix any regressions. Acceptance: all suites green.
 
 ## Verify
 ```

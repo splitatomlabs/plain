@@ -1,32 +1,58 @@
 <script>
-	import { page } from '$app/stores';
-	import { onDestroy, tick } from 'svelte';
+	import { page } from '$app/state';
+	import { onDestroy, tick, untrack } from 'svelte';
 
 	let open = $state(false);
-	let triggerEl;
-	let drawerEl;
-	let firstLinkEl;
+	let triggerEl = $state();
+	let drawerEl = $state();
+	let firstLinkEl = $state();
 	let lastPath = $state('');
 
-	$effect(() => {
-		const path = $page.url.pathname;
-		if (lastPath && path !== lastPath && open) {
-			open = false;
+	const INERT_SELECTORS = [
+		'a.skip-link',
+		'main#main-content',
+		'footer.site-footer',
+		'header.site-header a.site-name',
+		'header.site-header .theme-toggle'
+	];
+
+	function setBackgroundInert(value) {
+		if (typeof document === 'undefined') return;
+		for (const sel of INERT_SELECTORS) {
+			const el = document.querySelector(sel);
+			if (el) {
+				if (value) el.setAttribute('inert', '');
+				else el.removeAttribute('inert');
+			}
 		}
-		lastPath = path;
+	}
+
+	$effect(() => {
+		const path = page.url.pathname;
+		untrack(() => {
+			if (lastPath && path !== lastPath && open) {
+				open = false;
+			}
+			lastPath = path;
+		});
 	});
 
 	$effect(() => {
 		if (open) {
 			document.body.style.overflow = 'hidden';
+			setBackgroundInert(true);
 			tick().then(() => firstLinkEl?.focus());
 		} else {
 			document.body.style.overflow = '';
+			setBackgroundInert(false);
 		}
 	});
 
 	onDestroy(() => {
-		if (typeof document !== 'undefined') document.body.style.overflow = '';
+		if (typeof document !== 'undefined') {
+			document.body.style.overflow = '';
+			setBackgroundInert(false);
+		}
 	});
 
 	function openMenu() {
@@ -84,15 +110,14 @@
 </button>
 
 {#if open}
-	<div
+	<button
+		type="button"
 		class="backdrop"
-		onclick={onBackdropClick}
-		onkeydown={(e) => e.key === 'Enter' && onBackdropClick()}
-		role="button"
+		aria-label="Close menu"
 		tabindex="-1"
-		aria-hidden="true"
-	></div>
-	<aside
+		onclick={onBackdropClick}
+	></button>
+	<div
 		bind:this={drawerEl}
 		id="main-menu-drawer"
 		class="drawer"
@@ -113,7 +138,7 @@
 			<a href="/about">About</a>
 			<a href="/support">Support</a>
 		</nav>
-	</aside>
+	</div>
 {/if}
 
 <style>
@@ -141,6 +166,9 @@
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.3);
+		border: 0;
+		padding: 0;
+		cursor: default;
 		z-index: 90;
 		animation: fade-in 180ms ease-out;
 	}
@@ -218,6 +246,13 @@
 		}
 		to {
 			transform: translateX(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.backdrop,
+		.drawer {
+			animation: none;
 		}
 	}
 </style>
