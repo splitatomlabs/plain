@@ -120,7 +120,6 @@
 		<p class="author-name">{data.author.name}</p>
 		<h1 class="book-title">{data.book.title}</h1>
 		<p class="book-description">{data.book.description}</p>
-		<a class="translation-link" href="/about">How this translation was made</a>
 	</header>
 
 	<div class="action-zone">
@@ -207,6 +206,15 @@
 			{/each}
 		</div>
 	{/if}
+
+	<footer class="book-colophon">
+		<a class="colophon-link" href="/about#how-translations-are-made">How this translation was made</a>
+		{#if data.book.source_url}
+			<a class="colophon-link" href={data.book.source_url} target="_blank" rel="noopener noreferrer">
+				Source text on Project Gutenberg
+			</a>
+		{/if}
+	</footer>
 </article>
 
 <style>
@@ -253,9 +261,18 @@
 		line-height: var(--line-height-body);
 	}
 
-	.translation-link {
-		display: inline-block;
-		margin-top: var(--space-sm);
+	.book-colophon {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+		align-items: center;
+		text-align: center;
+		margin-top: var(--space-xl);
+		padding-top: var(--space-lg);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.colophon-link {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
@@ -263,7 +280,7 @@
 		text-underline-offset: 0.15em;
 	}
 
-	.translation-link:hover {
+	.colophon-link:hover {
 		color: var(--color-text-primary);
 	}
 

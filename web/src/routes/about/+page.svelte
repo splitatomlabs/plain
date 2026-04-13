@@ -24,7 +24,7 @@
 
 	<p>Plain strips that language away. Every card contains one idea, translated into plain modern English at roughly an 8th-grade reading level. The original text is always one tap away if you want to check the translation, see the formal language, or read it the old way.</p>
 
-	<h2>How the translations are made</h2>
+	<h2 id="how-translations-are-made">How the translations are made</h2>
 
 	<p>Plain's translations are produced through an editorial pipeline that combines AI with human oversight. Here is exactly what happens for every book:</p>
 
