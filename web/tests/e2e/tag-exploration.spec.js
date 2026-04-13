@@ -78,7 +78,22 @@ test.describe('Home page — themes section', () => {
 
 	test('has theme CTA link in hero', async ({ page }) => {
 		await page.goto('/');
-		await page.evaluate(() => localStorage.clear());
+		await page.evaluate(() => {
+			localStorage.clear();
+			// Seed progress so the returning-user hero (which contains .theme-cta) renders.
+			localStorage.setItem(
+				'plain-progress',
+				JSON.stringify({
+					enchiridion: {
+						cards_read: ['enchiridion-01-1'],
+						last_card: 'enchiridion-01-1',
+						last_read_at: new Date().toISOString(),
+						completed: false,
+						completed_at: null
+					}
+				})
+			);
+		});
 		await page.goto('/');
 
 		const cta = page.locator('.theme-cta');

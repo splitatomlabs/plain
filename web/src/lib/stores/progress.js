@@ -1,5 +1,13 @@
 import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
+import {
+	trackEvent,
+	incrementSessionCardCount,
+	markFirstBookStarted,
+	isFirstBook,
+	endFirstSession,
+	getFirstSessionState
+} from '$lib/analytics.js';
 
 const STORAGE_KEY = 'plain-progress';
 
@@ -47,11 +55,19 @@ function createProgressStore() {
 	return {
 		subscribe: store.subscribe,
 
-		markCardRead(bookSlug, cardId, resumeUrl = null) {
+		markCardRead(bookSlug, cardId, resumeUrl = null, totalCards = null) {
+			let wasNewCard = false;
+			let wasFirstCard = false;
+			let cardsReadBefore = 0;
+
 			store.update((data) => {
 				const book = ensureBook(data, bookSlug);
+				const wasEmpty = book.cards_read.length === 0;
+				cardsReadBefore = book.cards_read.length;
 				if (!book.cards_read.includes(cardId)) {
 					book.cards_read = [...book.cards_read, cardId];
+					wasNewCard = true;
+					if (wasEmpty) wasFirstCard = true;
 				}
 				book.last_card = cardId;
 				book.last_read_at = new Date().toISOString();
@@ -60,6 +76,30 @@ function createProgressStore() {
 				}
 				return { ...data };
 			});
+
+			if (wasNewCard) {
+				if (wasFirstCard) {
+					const firstBook = isFirstBook();
+					trackEvent('book_started', { book_id: bookSlug, is_first_book: firstBook });
+					markFirstBookStarted(bookSlug);
+				}
+
+				const newCount = incrementSessionCardCount();
+				if (newCount === 2 && getFirstSessionState().firstSession === true) {
+					trackEvent('engaged_session');
+					endFirstSession();
+				}
+
+				if (totalCards !== null && totalCards > 0) {
+					const beforePct = Math.round((cardsReadBefore / totalCards) * 100);
+					const afterPct = Math.round(((cardsReadBefore + 1) / totalCards) * 100);
+					for (const threshold of [25, 50, 75, 100]) {
+						if (beforePct < threshold && afterPct >= threshold) {
+							trackEvent('milestone_reached', { book_id: bookSlug, milestone: threshold });
+						}
+					}
+				}
+			}
 		},
 
 		getProgress(bookSlug, totalCards) {
@@ -139,17 +179,30 @@ function createProgressStore() {
 		},
 
 		markCompleted(bookSlug) {
+			let wasNewlyCompleted = false;
+
 			store.update((data) => {
 				const book = ensureBook(data, bookSlug);
-				book.completed = true;
-				book.completed_at = new Date().toISOString();
+				if (!book.completed) {
+					wasNewlyCompleted = true;
+					book.completed = true;
+					book.completed_at = new Date().toISOString();
+				}
 				return { ...data };
 			});
+
+			if (wasNewlyCompleted) {
+				trackEvent('book_completed', { book_id: bookSlug });
+			}
 		},
 
 		hasAnyProgress() {
 			const data = get(store);
 			return Object.values(data).some((book) => book.cards_read.length > 0);
+		},
+
+		trackBookLandingViewed(bookSlug) {
+			trackEvent('book_landing_viewed', { book_id: bookSlug });
 		},
 
 		reset() {

@@ -76,7 +76,7 @@
 	function handleNavigateNext() {
 		const beforeProgress = progress.getProgress(activeCard.book_slug, data.totalCards);
 		const resumeUrl = nextCard ? cardUrl(nextCard) : null;
-		progress.markCardRead(activeCard.book_slug, activeCard.id, resumeUrl);
+		progress.markCardRead(activeCard.book_slug, activeCard.id, resumeUrl, data.totalCards);
 		if (activeCard.tags) {
 			for (const tag of activeCard.tags) {
 				tagProgress.markTagCardRead(tag, activeCard.id);
@@ -105,7 +105,7 @@
 	}
 
 	function handleFinishBook() {
-		progress.markCardRead(activeCard.book_slug, activeCard.id);
+		progress.markCardRead(activeCard.book_slug, activeCard.id, null, data.totalCards);
 		if (activeCard.tags) {
 			for (const tag of activeCard.tags) {
 				tagProgress.markTagCardRead(tag, activeCard.id);

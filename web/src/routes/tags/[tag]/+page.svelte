@@ -2,6 +2,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import CardSwipe from '$lib/components/CardSwipe.svelte';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
+	import { trackEvent } from '$lib/analytics.js';
 	import { browser } from '$app/environment';
 
 	let { data } = $props();
@@ -27,6 +28,7 @@
 	$effect(() => {
 		if (!browser) return;
 		const slug = data.tag.slug;
+		trackEvent('tag_explored', { tag_id: slug });
 		const progress = tagProgress.getTagProgress(slug);
 		tagCardsRead = progress.cardsRead;
 		// Push already-read cards to the end so the user always starts on unread cards
