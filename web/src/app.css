@@ -142,6 +142,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.menu-open {
+  overflow: hidden;
+}
+
 /* ---------- Focus styles ---------- */
 :focus-visible {
   outline: 2px solid var(--color-text-primary);

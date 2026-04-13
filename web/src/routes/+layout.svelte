@@ -7,6 +7,7 @@
 	import { inject } from '@vercel/analytics';
 	import { trackReturnVisit } from '$lib/analytics.js';
 	import { progress } from '$lib/stores/progress.js';
+	import { menuOpen } from '$lib/stores/menuState.js';
 	import MainMenu from '$lib/components/MainMenu.svelte';
 
 	let { children } = $props();
@@ -20,6 +21,17 @@
 		trackReturnVisit({ hasProgress: progress.hasAnyProgress() });
 	});
 
+	$effect(() => {
+		if ($menuOpen) {
+			document.body.classList.add('menu-open');
+		} else {
+			document.body.classList.remove('menu-open');
+		}
+		return () => {
+			document.body.classList.remove('menu-open');
+		};
+	});
+
 	function toggleTheme() {
 		theme = theme === 'light' ? 'dark' : 'light';
 		document.documentElement.setAttribute('data-theme', theme);
@@ -27,7 +39,7 @@
 	}
 </script>
 
-<a href="#main-content" class="skip-link">Skip to content</a>
+<a href="#main-content" class="skip-link" inert={$menuOpen || undefined}>Skip to content</a>
 
 <header class="site-header">
 	<a href="/" class="site-name">Plain</a>
@@ -61,11 +73,11 @@
 	</div>
 </header>
 
-<main id="main-content">
+<main id="main-content" inert={$menuOpen || undefined}>
 	{@render children()}
 </main>
 
-<footer class="site-footer">
+<footer class="site-footer" inert={$menuOpen || undefined}>
 	<p>Ancient philosophy, in plain English.</p>
 	<nav class="footer-links" aria-label="Footer">
 		<a href="/about">About</a>

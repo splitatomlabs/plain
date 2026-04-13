@@ -1,33 +1,14 @@
 <script>
 	import { page } from '$app/state';
 	import { dev } from '$app/environment';
-	import { onDestroy, tick, untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
+	import { menuOpen } from '$lib/stores/menuState.js';
 
 	let open = $state(false);
 	let triggerEl = $state();
 	let drawerEl = $state();
 	let firstLinkEl = $state();
 	let lastPath = $state('');
-
-	const INERT_SELECTORS = [
-		'a.skip-link',
-		'main#main-content',
-		'footer.site-footer',
-		'header.site-header a.site-name',
-		'header.site-header .theme-toggle',
-		'header.site-header .menu-trigger'
-	];
-
-	function setBackgroundInert(value) {
-		if (typeof document === 'undefined') return;
-		for (const sel of INERT_SELECTORS) {
-			const el = document.querySelector(sel);
-			if (el) {
-				if (value) el.setAttribute('inert', '');
-				else el.removeAttribute('inert');
-			}
-		}
-	}
 
 	$effect(() => {
 		const path = page.url.pathname;
@@ -40,20 +21,9 @@
 	});
 
 	$effect(() => {
+		menuOpen.set(open);
 		if (open) {
-			document.body.style.overflow = 'hidden';
-			setBackgroundInert(true);
 			tick().then(() => firstLinkEl?.focus());
-		} else {
-			document.body.style.overflow = '';
-			setBackgroundInert(false);
-		}
-	});
-
-	onDestroy(() => {
-		if (typeof document !== 'undefined') {
-			document.body.style.overflow = '';
-			setBackgroundInert(false);
 		}
 	});
 
