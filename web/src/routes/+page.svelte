@@ -145,8 +145,7 @@
 {:else}
 	<section class="hero">
 		<h1>Three men. Three completely different lives. The same philosophy.</h1>
-		<p class="subtitle">Ancient philosophy, stripped to its core, in words anyone can understand.</p>
-		<a href="#themes" class="theme-cta">Or explore by theme</a>
+		<p class="subtitle">Ancient philosophy. In plain English. One card at a time.</p>
 	</section>
 
 	{#each data.authorData as { author, books }}
