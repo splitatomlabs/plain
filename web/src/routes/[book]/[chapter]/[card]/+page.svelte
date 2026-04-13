@@ -26,10 +26,10 @@
 		localOverride = null;
 	});
 
-	const activeCard = $derived(localOverride?.activeCard ?? data.card);
-	const nextCard = $derived(localOverride?.nextCard ?? data.nextCard);
-	const prevCard = $derived(localOverride?.prevCard ?? data.prevCard);
-	const cardIndex = $derived(localOverride?.cardIndex ?? data.cardIndex);
+	const activeCard = $derived(localOverride ? localOverride.activeCard : data.card);
+	const nextCard = $derived(localOverride ? localOverride.nextCard : data.nextCard);
+	const prevCard = $derived(localOverride ? localOverride.prevCard : data.prevCard);
+	const cardIndex = $derived(localOverride ? localOverride.cardIndex : data.cardIndex);
 
 	const MILESTONES = [25, 50, 75, 100];
 
