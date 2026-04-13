@@ -1,8 +1,34 @@
 <script>
 	import { progress } from '$lib/stores/progress.js';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
+	import { trackEvent } from '$lib/analytics.js';
 
 	let { data } = $props();
+
+	let shareConfirm = $state('');
+
+	async function shareCompletion() {
+		const url = `${page.url.origin}/${data.book.slug}`;
+		const title = `I just finished ${data.book.title} — In Plain English`;
+		if (navigator.share) {
+			try {
+				await navigator.share({ title, url });
+				trackEvent('share_clicked', { type: 'completion', book_id: data.book.slug });
+			} catch {
+				// cancelled
+			}
+		} else {
+			try {
+				await navigator.clipboard.writeText(url);
+				trackEvent('share_clicked', { type: 'completion', book_id: data.book.slug });
+				shareConfirm = 'Link copied';
+				setTimeout(() => { shareConfirm = ''; }, 2000);
+			} catch {
+				// unavailable
+			}
+		}
+	}
 
 	const accentVar = {
 		epictetus: 'var(--color-accent-epictetus)',
@@ -20,6 +46,17 @@
 <svelte:head>
 	<title>Completed {data.book.title} — In Plain English</title>
 	<meta name="description" content="You just read all of {data.book.title} in plain English." />
+
+	<meta property="og:title" content="I just finished {data.book.title} — In Plain English" />
+	<meta property="og:description" content="You just read all of {data.book.title} in plain English." />
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content="{page.url.origin}/{data.book.slug}" />
+	<meta property="og:image" content="{page.url.origin}/api/og/completed-{data.book.slug}" />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="I just finished {data.book.title} — In Plain English" />
+	<meta name="twitter:description" content="You just read all of {data.book.title} in plain English." />
+	<meta name="twitter:image" content="/api/og/completed-{data.book.slug}" />
 </svelte:head>
 
 <div class="completion-page">
@@ -39,6 +76,15 @@
 			</div>
 		</div>
 	</section>
+
+	<div class="share-row">
+		<button type="button" class="share-button" onclick={shareCompletion} aria-label="Share that you finished this book">
+			Share
+		</button>
+		{#if shareConfirm}
+			<span class="share-confirm" aria-live="polite">{shareConfirm}</span>
+		{/if}
+	</div>
 
 	<p class="support-line">
 		If Plain helped you finish this, you can <a href="/support">support the project</a>.
@@ -163,6 +209,36 @@
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.share-row {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-md);
+		margin: 0 0 var(--space-md);
+	}
+
+	.share-button {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-primary);
+		background: none;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		padding: var(--space-sm) var(--space-lg);
+		cursor: pointer;
+		transition: border-color var(--transition-fast);
+	}
+
+	.share-button:hover {
+		border-color: var(--color-text-secondary);
+	}
+
+	.share-confirm {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui);
+		color: var(--color-text-secondary);
 	}
 
 	.support-line {
