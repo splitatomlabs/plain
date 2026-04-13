@@ -8,11 +8,11 @@
 </svelte:head>
 
 <article class="static-page">
-	<h1>Support Plain</h1>
+	<h1>Support</h1>
 
 	<p>In a world of constant noise, wisdom from the people who came before us matters more than ever. Plain exists to make ancient wisdom readable again, in plain English, for everyone. It starts with the Stoics — Epictetus, Marcus Aurelius, Seneca — whose ideas remain strikingly practical for living in a world you can't control.</p>
 
-	<p>It's built by <a href={SPLIT_ATOM_LABS_URL} target="_blank" rel="noopener">Split Atom Labs</a>, a small independent studio. Plain is free and always will be — no ads, no paywalls, no premium tier. You can read more about how Plain is made on the <a href="/about">about page</a>.</p>
+	<p>It's built by <a href={SPLIT_ATOM_LABS_URL} target="_blank" rel="noopener">Split Atom Labs</a>, a small independent studio. Plain is free. No ads, no paywalls, no premium tier. You can read more about how Plain is made on the <a href="/about">about page</a>.</p>
 
 	<p>If Plain has helped you, and you'd like to help it keep going, you can donate to Split Atom Labs on Ko-fi. Any amount, one-time or recurring. No account required.</p>
 
@@ -23,7 +23,7 @@
 	<h2>What donations fund</h2>
 	<ul>
 		<li><strong>Hosting.</strong> The domain, servers, and infrastructure that keep Plain online.</li>
-		<li><strong>New books.</strong> Every book added to Plain goes through an AI-assisted editorial pipeline — parsing the source text, refining it into chunks, translating it into plain English, and assembling it into cards, with verification at every step. Donations help fund the time this takes.</li>
+		<li><strong>New books.</strong> Every book added to Plain goes through an AI-assisted editorial pipeline — parsing the source text, refining it into chunks, translating it into plain English, and assembling it into cards, with verification at every step.</li>
 	</ul>
 
 	<h2>What donations do not buy</h2>
@@ -34,7 +34,7 @@
 		<li>Influence over what gets translated next</li>
 	</ul>
 
-	<p>Plain treats every reader the same, whether they've donated or not. That's the point.</p>
+	<p>Plain treats every reader the same, whether they've donated or not. Democratizing knowledge is the whole point.</p>
 
 	<h2>Other ways to help</h2>
 
@@ -55,6 +55,12 @@
 		padding: var(--space-3xl) var(--space-md);
 	}
 
+	@media (max-width: 600px) {
+		.static-page {
+			padding: var(--space-sm) var(--space-md) var(--space-xl);
+		}
+	}
+
 	h1 {
 		font-family: var(--font-body);
 		font-size: clamp(1.5rem, 3vw + 0.5rem, 2.25rem);
@@ -66,10 +72,11 @@
 
 	h2 {
 		font-family: var(--font-body);
-		font-size: 1.25rem;
-		font-weight: 400;
+		font-size: 1.5rem;
+		font-weight: 500;
+		line-height: 1.3;
 		color: var(--color-text-primary);
-		margin: var(--space-2xl) 0 var(--space-md);
+		margin: var(--space-3xl) 0 var(--space-md);
 	}
 
 	p,

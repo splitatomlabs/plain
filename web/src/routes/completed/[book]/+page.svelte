@@ -1,7 +1,6 @@
 <script>
 	import { progress } from '$lib/stores/progress.js';
 	import { onMount } from 'svelte';
-	import { KOFI_URL } from '$lib/config.js';
 
 	let { data } = $props();
 
@@ -41,6 +40,10 @@
 		</div>
 	</section>
 
+	<p class="support-line">
+		If Plain helped you finish this, you can <a href="/support">support the project</a>.
+	</p>
+
 	{#if data.suggestion}
 		<section class="next-book">
 			<h2>What to read next</h2>
@@ -50,10 +53,6 @@
 			</a>
 		</section>
 	{/if}
-
-	<p class="support-line">
-		If Plain helped you finish this, you can <a href={KOFI_URL} target="_blank" rel="noopener">support the project</a>.
-	</p>
 
 	<a href="/" class="home-link">Back to all books</a>
 </div>
@@ -67,7 +66,7 @@
 	}
 
 	.celebration {
-		margin-bottom: var(--space-3xl);
+		margin-bottom: var(--space-md);
 	}
 
 	.author-label {
@@ -170,7 +169,7 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		margin: 0 0 var(--space-lg);
+		margin: 0 0 var(--space-3xl);
 	}
 
 	.support-line a {

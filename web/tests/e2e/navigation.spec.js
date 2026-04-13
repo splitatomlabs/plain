@@ -16,14 +16,14 @@ test.describe('Footer navigation links', () => {
 		await page.goto('/');
 		await page.locator('.site-footer').getByRole('link', { name: 'About' }).click();
 		await expect(page).toHaveURL(/\/about$/);
-		await expect(page.getByRole('heading', { name: 'About Plain' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'About', exact: true })).toBeVisible();
 	});
 
 	test('footer Support link navigates to /support', async ({ page }) => {
 		await page.goto('/');
 		await page.locator('.site-footer').getByRole('link', { name: 'Support' }).click();
 		await expect(page).toHaveURL(/\/support$/);
-		await expect(page.getByRole('heading', { name: 'Support Plain' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Support', exact: true })).toBeVisible();
 	});
 });
 
