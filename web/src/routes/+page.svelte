@@ -195,9 +195,21 @@
 	.author-rings {
 		display: flex;
 		justify-content: center;
-		gap: var(--space-xl);
+		gap: var(--space-md);
 		margin-bottom: var(--space-xl);
 		flex-wrap: wrap;
+	}
+
+	@media (min-width: 402px) {
+		.author-rings {
+			flex-wrap: nowrap;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.author-rings {
+			gap: var(--space-xl);
+		}
 	}
 
 	.ring-group {
