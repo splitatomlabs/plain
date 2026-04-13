@@ -22,9 +22,9 @@ Delete the redundant hamburger drawer; rely on header site-name and footer links
 - [x] T01: Remove `MainMenu` usage from layout — delete import on `web/src/routes/+layout.svelte:10` and `<MainMenu />` on line 60. Leave `.header-actions` wrapper in place (theme toggle still lives inside it). Accept: layout compiles, header renders site-name + theme toggle only.
 - [x] T02: Delete `web/src/lib/components/MainMenu.svelte`. Accept: file gone; `grep -r MainMenu web/src` returns nothing.
 - [x] T03: Remove `Main menu drawer` describe block from `web/tests/e2e/navigation.spec.js` (lines 30-69). Accept: file ends after `Footer navigation links` block; no references to `Open menu`, `Main menu`, or `dialog` remain in the file.
-- [ ] T04: Run unit suite — `npm test`. Accept: all 222 tests pass.
-- [ ] T05: Build and run e2e suite — `npm run build --prefix web && npm run test:e2e --prefix web`. Accept: all e2e tests pass, including the footer reachability assertions on card views.
-- [ ] T06: Manual mobile sanity check — `npx playwright screenshot --viewport-size="390,844" --full-page http://localhost:5173/meditations/book-01/1 /tmp/card-mobile.png`, Read the PNG, confirm the footer is scrollable into view on a card page. Accept: footer visible below card content on mobile viewport.
+- [x] T04: Run unit suite — `npm test`. Accept: all 222 tests pass.
+- [x] T05: Build and run e2e suite — `npm run build --prefix web && npm run test:e2e --prefix web`. Accept: all e2e tests pass, including the footer reachability assertions on card views.
+- [x] T06: Manual mobile sanity check — `npx playwright screenshot --viewport-size="390,844" --full-page http://localhost:5173/meditations/book-01/1 /tmp/card-mobile.png`, Read the PNG, confirm the footer is scrollable into view on a card page. Accept: footer visible below card content on mobile viewport.
 
 ## Verify
 ```bash
