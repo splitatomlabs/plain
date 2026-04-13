@@ -130,11 +130,11 @@
 		{/if}
 		{#if bookResumeUrl}
 			<div class="cta-row">
-				<a href={bookResumeUrl} class="cta cta-primary">Continue</a>
+				<a href={bookResumeUrl} class="cta-primary">Continue</a>
 			</div>
 		{:else}
 			<div class="cta-row">
-				<a href={firstCardUrl} class="cta">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
+				<a href={firstCardUrl} class="cta-primary">{bookCompleted ? 'Read again' : 'Start Reading'}</a>
 			</div>
 		{/if}
 
@@ -379,42 +379,8 @@
 		margin-bottom: var(--space-xs);
 	}
 
-	.cta-primary {
-		color: var(--color-surface);
-		background: var(--color-text-primary);
-		border-color: var(--color-text-primary);
-	}
-
-	.cta-primary:hover {
-		opacity: 0.85;
-		background: var(--color-text-primary);
-		border-color: var(--color-text-primary);
-	}
-
 	.gift-row {
 		text-align: center;
-	}
-
-	.cta {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 44px;
-		padding: var(--space-sm) var(--space-xl);
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		font-weight: 500;
-		color: var(--color-text-primary);
-		background: none;
-		border: 1px solid var(--color-border);
-		border-radius: 6px;
-		text-decoration: none;
-		transition: border-color var(--transition-fast), background var(--transition-fast);
-	}
-
-	.cta:hover {
-		border-color: var(--color-text-secondary);
-		background: var(--color-tag-bg);
 	}
 
 	.gift-button {

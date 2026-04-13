@@ -175,7 +175,7 @@
 	{#if !nextCard}
 		<div class="card-completion">
 			<p class="completion-text">This is the last card in {data.book.title}.</p>
-			<button class="finish-button" onclick={handleFinishBook}>Finish book</button>
+			<button class="cta-primary" onclick={handleFinishBook}>Finish book</button>
 		</div>
 	{/if}
 </div>
@@ -202,8 +202,8 @@
 
 	.card-boundary {
 		font-family: var(--font-body);
-		font-size: 1.35rem;
-		font-weight: 500;
+		font-size: clamp(1.5rem, 3vw + 0.5rem, 2rem);
+		font-weight: 400;
 		color: var(--color-text-primary);
 		text-align: center;
 		margin: 0 0 var(--space-lg);
@@ -219,26 +219,5 @@
 		font-size: 1.25rem;
 		color: var(--color-text-primary);
 		margin: 0 0 var(--space-md);
-	}
-
-	.finish-button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 44px;
-		padding: var(--space-sm) var(--space-xl);
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		font-weight: 500;
-		color: var(--color-surface);
-		background: var(--color-text-primary);
-		border: none;
-		border-radius: 6px;
-		cursor: pointer;
-		transition: opacity var(--transition-fast);
-	}
-
-	.finish-button:hover {
-		opacity: 0.85;
 	}
 </style>

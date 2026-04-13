@@ -1,12 +1,6 @@
 <script>
 	let { book, card, prevCard } = $props();
 
-	const accentVar = {
-		epictetus: 'var(--color-accent-epictetus)',
-		'marcus-aurelius': 'var(--color-accent-marcus)',
-		seneca: 'var(--color-accent-seneca)'
-	};
-
 	const showMarker = $derived(
 		book?.has_chapters &&
 		prevCard &&
@@ -21,18 +15,19 @@
 </script>
 
 {#if showMarker}
-	<p class="chapter-marker" style="color: {accentVar[book.author_slug]}">
+	<p class="chapter-marker">
 		{chapterTitle}
 	</p>
 {/if}
 
 <style>
 	.chapter-marker {
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		font-weight: 500;
+		font-family: var(--font-body);
+		font-size: clamp(1.5rem, 3vw + 0.5rem, 2rem);
+		font-weight: 400;
+		color: var(--color-text-primary);
 		text-align: center;
-		margin: 0 0 var(--space-md);
+		margin: 0 0 var(--space-lg);
 		animation: fade-in var(--transition-normal) ease-out;
 	}
 
