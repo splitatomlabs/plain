@@ -7,7 +7,6 @@
 	import { inject } from '@vercel/analytics';
 	import { trackReturnVisit } from '$lib/analytics.js';
 	import { progress } from '$lib/stores/progress.js';
-	import MainMenu from '$lib/components/MainMenu.svelte';
 
 	let { children } = $props();
 	let theme = $state(null);
@@ -57,7 +56,6 @@
 		{/if}
 	</button>
 	{/if}
-	<MainMenu />
 	</div>
 </header>
 
