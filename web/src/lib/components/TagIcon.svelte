@@ -87,7 +87,7 @@
 			viewBox="0 0 48 48"
 			fill="none"
 			stroke={tier ? tier.icon : 'currentColor'}
-			stroke-width="2.5"
+			stroke-width="1.75"
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			aria-hidden="true"

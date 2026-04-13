@@ -64,7 +64,7 @@ Brainstormed alternatives (pick one in T05):
   - Add `text-decoration: underline; text-underline-offset: 0.2em; text-decoration-color: var(--color-border);` to `.theme-cta`; darken decoration-color on hover. Applies to both `hasProgress` branches (selector is shared).
   - Acceptance: link is clearly underlined in light and dark mode; underline color deepens on hover.
 
-- [ ] T03: Lighten tag icon stroke weight
+- [x] T03: Lighten tag icon stroke weight
   - File: `web/src/lib/components/TagIcon.svelte`
   - Drop SVG `stroke-width` from `2.5` to `1.75`. Verify icons still read at mobile 3.6rem and desktop 4rem sizes. Take before/after screenshots at 402 and 1280.
   - Acceptance: icons feel lighter / more elegant while remaining legible.
