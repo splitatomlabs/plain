@@ -55,13 +55,15 @@ function createProgressStore() {
 	return {
 		subscribe: store.subscribe,
 
-		markCardRead(bookSlug, cardId, resumeUrl = null) {
+		markCardRead(bookSlug, cardId, resumeUrl = null, totalCards = null) {
 			let wasNewCard = false;
 			let wasFirstCard = false;
+			let cardsReadBefore = 0;
 
 			store.update((data) => {
 				const book = ensureBook(data, bookSlug);
 				const wasEmpty = book.cards_read.length === 0;
+				cardsReadBefore = book.cards_read.length;
 				if (!book.cards_read.includes(cardId)) {
 					book.cards_read = [...book.cards_read, cardId];
 					wasNewCard = true;
@@ -86,6 +88,16 @@ function createProgressStore() {
 				if (newCount === 2 && getFirstSessionState().firstSession === true) {
 					trackEvent('engaged_session');
 					endFirstSession();
+				}
+
+				if (totalCards !== null && totalCards > 0) {
+					const beforePct = Math.round((cardsReadBefore / totalCards) * 100);
+					const afterPct = Math.round(((cardsReadBefore + 1) / totalCards) * 100);
+					for (const threshold of [25, 50, 75, 100]) {
+						if (beforePct < threshold && afterPct >= threshold) {
+							trackEvent('milestone_reached', { book_id: bookSlug, milestone: threshold });
+						}
+					}
 				}
 			}
 		},
