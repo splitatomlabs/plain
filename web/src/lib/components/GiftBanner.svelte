@@ -1,5 +1,6 @@
 <script>
-	let { note = '', bookTitle = '', authorName = '', bookSlug = '', firstCardUrl = '' } = $props();
+	let { note = '', bookTitle = '', authorName = '' } = $props();
+
 
 	const decodedNote = (() => {
 		try {
@@ -17,16 +18,12 @@
 	<div class="gift-banner" role="complementary" aria-label="Gift message">
 		<p class="gift-note">"{decodedNote}"</p>
 		<p class="gift-context">Someone sent you <strong>{bookTitle}</strong> by {authorName}.</p>
-		<a href={firstCardUrl} class="gift-cta">Start reading</a>
 	</div>
 {/if}
 
 <style>
 	.gift-banner {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 8px;
-		padding: var(--space-lg);
+		padding: var(--space-lg) 0;
 		margin-bottom: var(--space-xl);
 		text-align: center;
 	}
@@ -47,27 +44,6 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		color: var(--color-text-secondary);
-		margin: 0 0 var(--space-md);
-	}
-
-	.gift-cta {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 44px;
-		padding: var(--space-sm) var(--space-xl);
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		font-weight: 500;
-		color: var(--color-surface);
-		background: var(--color-text-primary);
-		border: none;
-		border-radius: 6px;
-		text-decoration: none;
-		transition: opacity var(--transition-fast);
-	}
-
-	.gift-cta:hover {
-		opacity: 0.85;
+		margin: 0;
 	}
 </style>

@@ -11,16 +11,17 @@
 	async function shareCompletion() {
 		const url = `${page.url.origin}/${data.book.slug}`;
 		const title = `I just finished ${data.book.title} — In Plain English`;
+		const text = `I just read ${data.book.title} by ${data.author.name}, ${data.book.total_cards} cards — In Plain English.`;
 		if (navigator.share) {
 			try {
-				await navigator.share({ title, url });
+				await navigator.share({ title, text: `${text}\n\n${url}` });
 				trackEvent('share_clicked', { type: 'completion', book_id: data.book.slug });
 			} catch {
 				// cancelled
 			}
 		} else {
 			try {
-				await navigator.clipboard.writeText(url);
+				await navigator.clipboard.writeText(`${text} ${url}`);
 				trackEvent('share_clicked', { type: 'completion', book_id: data.book.slug });
 				shareConfirm = 'Link copied';
 				setTimeout(() => { shareConfirm = ''; }, 2000);
@@ -36,7 +37,7 @@
 		seneca: 'var(--color-accent-seneca)'
 	};
 
-	const readingMinutes = Math.ceil((data.book.total_cards * 30) / 60);
+	const readingMinutes = $derived(Math.ceil((data.book.total_cards * 30) / 60));
 
 	onMount(() => {
 		progress.markCompleted(data.book.slug);

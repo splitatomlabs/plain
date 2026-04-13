@@ -7,10 +7,9 @@
 	let copyTimeout;
 
 	async function handleShare() {
-		const shareData = { title, text, url };
 		if (navigator.share) {
 			try {
-				await navigator.share(shareData);
+				await navigator.share({ title, text: `${text}\n\n${url}` });
 				trackEvent('share_clicked', { type, book_id: bookId });
 			} catch (err) {
 				// User cancelled or share failed — do not fire event
@@ -22,7 +21,7 @@
 
 	async function copyToClipboard() {
 		try {
-			await navigator.clipboard.writeText(url);
+			await navigator.clipboard.writeText(`${text} ${url}`);
 			copied = true;
 			clearTimeout(copyTimeout);
 			copyTimeout = setTimeout(() => {

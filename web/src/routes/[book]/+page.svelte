@@ -75,12 +75,12 @@
 
 	async function shareGiftUrl() {
 		const url = generateGiftUrl();
+		const text = giftNoteInput || `Check out ${data.book.title} in plain English`;
 		if (navigator.share) {
 			try {
 				await navigator.share({
 					title: `${data.book.title} — In Plain English`,
-					text: giftNoteInput || `Check out ${data.book.title} in plain English`,
-					url
+					text: `${text}\n\n${url}`
 				});
 				trackEvent('share_clicked', { type: 'gift', book_id: data.book.slug });
 			} catch {
@@ -88,7 +88,7 @@
 			}
 		} else {
 			try {
-				await navigator.clipboard.writeText(url);
+				await navigator.clipboard.writeText(`${text} ${url}`);
 				trackEvent('share_clicked', { type: 'gift', book_id: data.book.slug });
 			} catch {
 				// unavailable
@@ -110,8 +110,6 @@
 			note={giftNote}
 			bookTitle={data.book.title}
 			authorName={data.author.name}
-			bookSlug={data.book.slug}
-			{firstCardUrl}
 		/>
 	{/if}
 

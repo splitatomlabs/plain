@@ -99,10 +99,10 @@ export async function GET({ params }) {
 
 	const accentColor = ACCENT_COLORS[card.author_slug] || '#736B62';
 	const authorName = AUTHOR_NAMES[card.author_slug] || '';
-	const plainText =
-		card.plain_english.length > 280
-			? card.plain_english.slice(0, 277) + '...'
-			: card.plain_english;
+	const plainText = card.plain_english;
+	const len = plainText.length;
+	const fontSize = len < 400 ? 32 : len < 700 ? 28 : len < 1000 ? 24 : 20;
+	const lineHeight = len < 700 ? '1.45' : '1.4';
 
 	const html = {
 		type: 'div',
@@ -142,10 +142,10 @@ export async function GET({ params }) {
 								type: 'div',
 								props: {
 									style: {
-										fontSize: '32px',
+										fontSize: `${fontSize}px`,
 										color: '#2C2520',
-										lineHeight: '1.5',
-										maxWidth: '1000px'
+										lineHeight,
+										maxWidth: '1080px'
 									},
 									children: plainText
 								}
