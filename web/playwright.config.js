@@ -23,6 +23,14 @@ export default defineConfig({
 				...devices['Pixel 5'],
 				viewport: { width: 375, height: 812 }
 			}
+		},
+		{
+			name: 'desktop-webkit',
+			testMatch: ['e2e/**/*.spec.js'],
+			use: {
+				...devices['Desktop Safari'],
+				viewport: { width: 1280, height: 720 }
+			}
 		}
 	]
 });
