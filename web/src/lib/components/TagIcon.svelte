@@ -61,7 +61,7 @@
 		}
 	};
 
-	const MILESTONES = [10, 25, 50, 100];
+	const MILESTONES = [10, 25, 50, 100, 200];
 
 	let { slug, label, cardsRead = 0, milestone = null } = $props();
 

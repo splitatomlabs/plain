@@ -72,7 +72,7 @@
 		return tagProgress.getTagProgress(tagSlug).cardsRead;
 	}
 
-	const TAG_MILESTONES = [10, 25, 50, 100];
+	const TAG_MILESTONES = [10, 25, 50, 100, 200];
 
 	function getHighestMilestone(cardsRead) {
 		let highest = null;
