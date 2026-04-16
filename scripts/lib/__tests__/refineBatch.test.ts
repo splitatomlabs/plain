@@ -398,8 +398,8 @@ describe("refineChunksBatch", () => {
   });
 
   it("applies LENGTH-SPLIT to oversized chunks after batch decisions", async () => {
-    // Create a chunk that exceeds 90s reading time (~300 words)
-    const longText = Array(400).fill("word").join(" ");
+    // Create a chunk that exceeds 60s reading time (~200 words)
+    const longText = Array(250).fill("word").join(" ");
     const inputs: BatchRefineInput[] = [
       {
         bookSlug: "enchiridion",

@@ -251,9 +251,9 @@ describe("refineChunksRealtime", () => {
     expect(result.chunks[1].text).not.toContain("\n\n");
   });
 
-  it("does not split chunks at or under 90s", async () => {
-    // 300 words = 90s exactly — should NOT be split
-    const text = Array(300).fill("word").join(" ");
+  it("does not split chunks at or under 60s", async () => {
+    // 200 words = 60s exactly — should NOT be split
+    const text = Array(200).fill("word").join(" ");
     const chunks = [makeChunk(1, text)];
 
     mockCallClaudeJSON.mockResolvedValueOnce(
@@ -301,7 +301,7 @@ describe("refineChunksRealtime", () => {
     expect(options).toBeDefined();
     expect(options!.system).toBeDefined();
     expect(options!.system).toContain("bite-sized reading cards");
-    expect(options!.system).toContain("300 words");
+    expect(options!.system).toContain("200 words");
     expect(options!.system).toContain("JSON array");
   });
 
@@ -345,8 +345,8 @@ describe("refineChunksRealtime", () => {
   });
 
   it("handles model returning oversized split via safety net", async () => {
-    // Model keeps a 400-word chunk (misses the 300-word cap)
-    const longText = Array(400).fill("word").join(" ");
+    // Model keeps a 250-word chunk (misses the 200-word cap)
+    const longText = Array(250).fill("word").join(" ");
     const chunks = [makeChunk(1, longText)];
 
     mockCallClaudeJSON.mockResolvedValueOnce(
@@ -378,9 +378,9 @@ describe("buildRefineSystem (single-chunk, legacy)", () => {
 });
 
 describe("buildBulkRefineSystem", () => {
-  it("includes 300-word cap rule", () => {
+  it("includes 200-word cap rule", () => {
     const system = buildBulkRefineSystem(testConfig);
-    expect(system).toContain("300 words");
+    expect(system).toContain("200 words");
     expect(system).toContain("MUST be split");
   });
 
@@ -423,6 +423,6 @@ describe("buildBulkRefineUser", () => {
     const chunks = [makeChunk(1, "Test.")];
     const user = buildBulkRefineUser(chunks);
     expect(user).not.toContain("bite-sized");
-    expect(user).not.toContain("300 words");
+    expect(user).not.toContain("200 words");
   });
 });

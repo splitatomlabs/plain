@@ -31,7 +31,7 @@ function buildRefinePrompt(chunk: typeof SAMPLE_REFINE_CHUNK): string {
 A good card:
 - Contains ONE coherent idea
 - Makes sense on its own to a reader with no surrounding context
-- Is roughly 50-300 words (shorter is fine if the idea is complete; longer sections with multiple ideas should be split)
+- Is roughly 50-200 words (shorter is fine if the idea is complete; longer sections with multiple ideas should be split)
 
 AUTHOR CONTEXT: Epictetus is direct and instructional. His sections are short, punchy lessons — most work well as standalone cards. Very short sections (a sentence or two) are common and may need merging.
 

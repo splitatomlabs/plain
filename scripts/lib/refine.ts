@@ -14,7 +14,7 @@ import type { Chunk } from "./chunker.js";
 import type { BookConfig } from "./constants.js";
 
 /** Hard cap: any chunk whose original text exceeds this reading time must be split. */
-export const MAX_READING_TIME_SECONDS = 90;
+export const MAX_READING_TIME_SECONDS = 60;
 
 const AUTHOR_CONTEXT: Record<string, string> = {
   epictetus:
@@ -45,7 +45,7 @@ export function buildRefineSystem(config: BookConfig): string {
 A good card:
 - Contains ONE coherent idea
 - Makes sense on its own to a reader with no surrounding context
-- Is roughly 50-300 words (shorter is fine if the idea is complete; longer sections with multiple ideas should be split)
+- Is roughly 50-200 words (shorter is fine if the idea is complete; longer sections with multiple ideas should be split)
 
 AUTHOR CONTEXT: ${authorContext}
 
@@ -121,9 +121,9 @@ export function buildBulkRefineSystem(config: BookConfig): string {
 A good card:
 - Contains ONE coherent idea
 - Makes sense on its own to a reader with no surrounding context
-- Is roughly 50-300 words (shorter is fine if the idea is complete)
+- Is roughly 50-200 words (shorter is fine if the idea is complete)
 
-HARD RULE: Any section longer than 300 words MUST be split. Each resulting segment must be under 300 words.
+HARD RULE: Any section longer than 200 words MUST be split. Each resulting segment must be under 200 words.
 
 AUTHOR CONTEXT: ${authorContext}
 
@@ -132,7 +132,7 @@ You will receive multiple sections at once. Evaluate EACH section and decide wha
 For each section, choose ONE action:
 
 1. "keep" — Single idea, stands alone. No changes needed.
-2. "split" — Multiple distinct ideas OR exceeds 300 words. Split into separate segments. Each segment must be the complete original text for that idea (do not summarize or rewrite). Preserve all original wording.
+2. "split" — Multiple distinct ideas OR exceeds 200 words. Split into separate segments. Each segment must be the complete original text for that idea (do not summarize or rewrite). Preserve all original wording.
 3. "merge_next" — Too dependent on the next section to stand alone. Combine with next.
 4. "merge_prev" — Too dependent on the previous section to stand alone. Combine with previous.
 
