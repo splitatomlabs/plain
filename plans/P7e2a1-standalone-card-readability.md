@@ -64,13 +64,13 @@ Update the translation prompt and pipeline to produce self-contained cards that 
 
 - [x] T09: Delete flagged chunks from translate caches — Run the readability audit to identify the ~66 bad cards. For each, find the corresponding entry in `content/pipeline/{book}/translate.json` and delete it from the chapter's array. The pipeline will detect the missing chunks and re-translate only those.
 
-- [ ] T10: Re-translate and assemble — Run `ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all`. Verify: (a) only ~66 chunks are sent to batch (not 1,631), (b) remaining chunks load from cache, (c) all books assemble successfully. Check cost is ~$0.20-0.30.
+- [x] T10: Re-translate and assemble — Run `ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all`. Verify: (a) only ~66 chunks are sent to batch (not 1,631), (b) remaining chunks load from cache, (c) all books assemble successfully. Check cost is ~$0.20-0.30.
 
-- [ ] T11: Validate output — Confirm no card exceeds 60s reading time. Run the mid-sentence validation. Spot-check 10-15 previously-flagged cards to verify pronouns are resolved and references are self-contained. Run `npm test`.
+- [x] T11: Validate output — Confirm no card exceeds 60s reading time. Run the mid-sentence validation. Spot-check 10-15 previously-flagged cards to verify pronouns are resolved and references are self-contained. Run `npm test`.
 
-- [ ] T12: Run e2e tests — Build app and run full e2e suite. `npm run build --prefix web && npm run test:e2e --prefix web`.
+- [x] T12: Run e2e tests — Build app and run full e2e suite. `npm run build --prefix web && npm run test:e2e --prefix web`.
 
-- [ ] T13: Re-audit standalone readability — Run the same 7-book subagent review on the new output. Compare major issue counts. Target: <10 major issues total (down from ~66). If still >10, delete the remaining bad chunks from cache and repeat T10-T12 (cost per iteration: pennies for remaining chunks).
+- [x] T13: Re-audit standalone readability — Run the same 7-book subagent review on the new output. Compare major issue counts. Target: <10 major issues total (down from ~66). If still >10, delete the remaining bad chunks from cache and repeat T10-T12 (cost per iteration: pennies for remaining chunks).
 
 ## Verify
 ```bash
