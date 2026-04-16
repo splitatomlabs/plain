@@ -160,7 +160,7 @@
 				rows="3"
 			></textarea>
 			<p class="gift-char-count">{giftNoteInput.length} / 280</p>
-			<button class="gift-send" onclick={shareGiftUrl}>Share gift link</button>
+			<button class="gift-send" onclick={shareGiftUrl}>Share</button>
 		</div>
 	{/if}
 
