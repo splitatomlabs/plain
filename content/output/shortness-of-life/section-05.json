@@ -4,15 +4,31 @@
     "book_slug": "shortness-of-life",
     "chapter_slug": "section-05",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "Look at Marcus Cicero's life. He was thrown around by Catiline and Clodius, by Pompey and Crassus — some open enemies, some unreliable friends. He fought to save the failing republic and keep it from collapse. But then he was exiled. He couldn't stay quiet when things went well, and he couldn't handle adversity with grace. How often he must have cursed that famous consulship of his — the one he never stopped bragging about, even though it did deserve praise! You can see his misery in a letter to Atticus, written after Pompey the elder was defeated and his son was trying to rebuild his broken forces in Spain. \"Do you ask what I'm doing here?\" Cicero writes. \"I'm living in my villa near Tusculum, almost like a prisoner.\" He goes on to mourn his past life, complain about the present, and despair about the future. Cicero called himself \"half a prisoner.\" But by god, a wise man would never accept such a lowly title. He would never be half a prisoner. He would always enjoy complete and total freedom — free, in control of himself, and greater than everyone else. For what can be greater than the man who is greater than Fortune?",
-    "original_excerpt": "While tossed hither and thither by Catiline and Clodius, Pompeius and Crassus, by some open enemies and some doubtful friends, while he struggled with the struggling republic and kept it from going to ruin, when at last he was banished, being neither able to keep silence in prosperity nor to endure adversity with patience, how often must Marcus Cicero have cursed that consulship of his which he never ceased to praise, and which nevertheless deserved it? What piteous expressions he uses in a letter to Atticus when Pompeius the father had been defeated, and his son was recruiting his shattered forces in Spain? “Do you ask,” writes he, “what I am doing here? I am living in my Tusculan villa almost as a prisoner.” He adds more afterwards, wherein he laments his former life, complains of the present, and despairs of the future. Cicero called himself “half a prisoner,” but, by Hercules, the wise man never would have come under so lowly a title: he never would be half a prisoner, but would always enjoy complete and entire liberty, being free, in his own power, and greater than all others: for what can be greater than the man who is greater than Fortune?",
+    "total_cards_in_chapter": 2,
+    "plain_english": "Think about Marcus Cicero. He was thrown around by Catiline and Clodius, by Pompey and Crassus — some open enemies, some questionable friends. He fought to save the struggling republic from collapse. When he was finally banished, he couldn't stay quiet when things went well or handle trouble with grace. How often must he have cursed that consulship he never stopped bragging about (even though he deserved the praise)? You can see his despair in a letter to Atticus, written after Pompey the elder was defeated and his son was trying to rebuild his broken army in Spain.",
+    "original_excerpt": "While tossed hither and thither by Catiline and Clodius, Pompeius and Crassus, by some open enemies and some doubtful friends, while he struggled with the struggling republic and kept it from going to ruin, when at last he was banished, being neither able to keep silence in prosperity nor to endure adversity with patience, how often must Marcus Cicero have cursed that consulship of his which he never ceased to praise, and which nevertheless deserved it? What piteous expressions he uses in a letter to Atticus when Pompeius the father had been defeated, and his son was recruiting his shattered forces in Spain?",
+    "source_reference": "On the Shortness of Life, Section 5",
+    "author_slug": "seneca",
+    "tags": [
+      "facing-hardship",
+      "human-nature"
+    ],
+    "reading_time_seconds": 29
+  },
+  {
+    "id": "shortness-of-life-05-002",
+    "book_slug": "shortness-of-life",
+    "chapter_slug": "section-05",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "\"Do you ask,\" Cicero writes, \"what I'm doing here? I'm living at my villa near Rome almost like a prisoner.\" Then he goes on to complain about his past life, grumble about the present, and lose hope about the future. Cicero called himself \"half a prisoner.\" But by God, a wise man would never accept such a pathetic label. He would never be half a prisoner. He would always enjoy complete freedom — free, in control of himself, and greater than everyone else. What could be greater than someone who has conquered Fortune itself?",
+    "original_excerpt": "“Do you ask,” writes he, “what I am doing here? I am living in my Tusculan villa almost as a prisoner.” He adds more afterwards, wherein he laments his former life, complains of the present, and despairs of the future. Cicero called himself “half a prisoner,” but, by Hercules, the wise man never would have come under so lowly a title: he never would be half a prisoner, but would always enjoy complete and entire liberty, being free, in his own power, and greater than all others: for what can be greater than the man who is greater than Fortune?",
     "source_reference": "On the Shortness of Life, Section 5",
     "author_slug": "seneca",
     "tags": [
       "freedom-and-control",
       "facing-hardship"
     ],
-    "reading_time_seconds": 61
+    "reading_time_seconds": 28
   }
 ]

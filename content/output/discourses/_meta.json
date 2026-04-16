@@ -5,8 +5,8 @@
   "description": "25 discourses from the four books of Epictetus's teachings, as recorded by his student Arrian. Practical lessons on what you can control, how to handle hardship, and what philosophy is actually for.",
   "tags": [
     "knowing-yourself",
-    "human-nature",
     "freedom-and-control",
+    "human-nature",
     "facing-hardship",
     "calm-your-mind",
     "doing-the-right-thing",
@@ -17,218 +17,218 @@
     {
       "slug": "of-the-things-which-are-in-our-power-and-not-in-our-power",
       "title": "Of the Things Which Are in Our Power and not in Our Power",
-      "card_count": 3,
-      "reading_time_seconds": 138
+      "card_count": 4,
+      "reading_time_seconds": 139
     },
     {
       "slug": "how-a-man-on-every-occasion-can-maintain-his-proper-character",
       "title": "How a Man on Every Occasion Can Maintain His Proper Character",
       "card_count": 2,
-      "reading_time_seconds": 63
+      "reading_time_seconds": 69
     },
     {
       "slug": "how-a-man-should-proceed-from-the-principle-of-god-being-the-father-of-all-men-to-the-rest",
       "title": "How a Man Should Proceed from the Principle of God Being the Father of All Men to the Rest",
-      "card_count": 2,
-      "reading_time_seconds": 78
+      "card_count": 3,
+      "reading_time_seconds": 77
     },
     {
       "slug": "of-progress-or-improvement",
       "title": "Of Progress or Improvement",
-      "card_count": 6,
-      "reading_time_seconds": 322
+      "card_count": 8,
+      "reading_time_seconds": 323
     },
     {
       "slug": "against-the-academics",
       "title": "Against the Academics",
       "card_count": 2,
-      "reading_time_seconds": 40
+      "reading_time_seconds": 43
     },
     {
       "slug": "of-providence",
       "title": "Of Providence",
-      "card_count": 6,
-      "reading_time_seconds": 253
+      "card_count": 7,
+      "reading_time_seconds": 251
     },
     {
       "slug": "how-from-the-fact-that-we-are-akin-to-god-a-man-may-proceed-to-the-consequences",
       "title": "How from the Fact That We Are Akin to God a Man May Proceed to the Consequences",
       "card_count": 3,
-      "reading_time_seconds": 96
+      "reading_time_seconds": 94
     },
     {
       "slug": "of-contentment",
       "title": "Of Contentment",
-      "card_count": 4,
-      "reading_time_seconds": 227
+      "card_count": 8,
+      "reading_time_seconds": 237
     },
     {
       "slug": "how-everything-may-be-done-acceptably-to-the-gods",
       "title": "How Everything May Be Done Acceptably to the Gods",
-      "card_count": 1,
-      "reading_time_seconds": 57
+      "card_count": 2,
+      "reading_time_seconds": 60
     },
     {
       "slug": "what-philosophy-promises",
       "title": "What Philosophy Promises",
       "card_count": 2,
-      "reading_time_seconds": 70
+      "reading_time_seconds": 75
     },
     {
       "slug": "that-we-ought-not-to-be-angry-with-the-errors-faults-of-others",
       "title": "That We Ought not to Be Angry with the Errors (faults) of Others",
-      "card_count": 3,
-      "reading_time_seconds": 146
+      "card_count": 4,
+      "reading_time_seconds": 152
     },
     {
       "slug": "how-we-should-behave-to-tyrants",
       "title": "How We Should Behave to Tyrants",
       "card_count": 6,
-      "reading_time_seconds": 225
+      "reading_time_seconds": 224
     },
     {
       "slug": "against-those-who-wish-to-be-admired",
       "title": "Against Those Who Wish to Be Admired",
-      "card_count": 6,
-      "reading_time_seconds": 256
+      "card_count": 7,
+      "reading_time_seconds": 252
     },
     {
       "slug": "how-we-should-struggle-with-circumstances",
       "title": "How We Should Struggle with Circumstances",
       "card_count": 3,
-      "reading_time_seconds": 93
+      "reading_time_seconds": 90
     },
     {
       "slug": "on-the-same",
       "title": "On the Same",
-      "card_count": 4,
-      "reading_time_seconds": 182
+      "card_count": 6,
+      "reading_time_seconds": 191
     },
     {
       "slug": "in-how-many-ways-appearances-exist-and-what-aids-we-should-provide-against-them",
       "title": "In How Many Ways Appearances Exist, and What Aids We Should Provide Against Them",
-      "card_count": 3,
-      "reading_time_seconds": 139
+      "card_count": 4,
+      "reading_time_seconds": 154
     },
     {
       "slug": "that-we-ought-not-to-be-angry-with-men-and-what-are-the-small-and-the-great-things-among-men",
       "title": "That We Ought not to Be Angry with Men; and What Are the Small and the Great Things Among Men",
-      "card_count": 5,
-      "reading_time_seconds": 252
+      "card_count": 8,
+      "reading_time_seconds": 262
     },
     {
       "slug": "on-constancy-or-firmness",
       "title": "On Constancy (or Firmness)",
-      "card_count": 6,
-      "reading_time_seconds": 364
+      "card_count": 11,
+      "reading_time_seconds": 375
     },
     {
       "slug": "that-confidence-courage-is-not-inconsistent-with-caution",
       "title": "That Confidence (courage) is not Inconsistent with Caution",
-      "card_count": 6,
-      "reading_time_seconds": 299
+      "card_count": 8,
+      "reading_time_seconds": 293
     },
     {
       "slug": "of-tranquillity-freedom-from-perturbation",
       "title": "Of Tranquillity (freedom from Perturbation)",
-      "card_count": 4,
-      "reading_time_seconds": 166
+      "card_count": 5,
+      "reading_time_seconds": 175
     },
     {
       "slug": "how-magnanimity-is-consistent-with-care",
       "title": "How Magnanimity is Consistent with Care",
-      "card_count": 5,
-      "reading_time_seconds": 221
+      "card_count": 6,
+      "reading_time_seconds": 230
     },
     {
       "slug": "of-indifference",
       "title": "Of Indifference",
-      "card_count": 4,
-      "reading_time_seconds": 179
+      "card_count": 5,
+      "reading_time_seconds": 178
     },
     {
       "slug": "how-we-ought-to-use-divination",
       "title": "How We Ought to Use Divination",
-      "card_count": 7,
-      "reading_time_seconds": 320
+      "card_count": 9,
+      "reading_time_seconds": 328
     },
     {
       "slug": "that-when-we-cannot-fulfil-that-which-the-character-of-a-man-promises-we-assume-the-character-of-a-philosopher",
       "title": "That When We Cannot Fulfil That Which the Character of a Man Promises, We Assume the Character of a Philosopher",
-      "card_count": 4,
-      "reading_time_seconds": 210
+      "card_count": 6,
+      "reading_time_seconds": 214
     },
     {
       "slug": "how-we-may-discover-the-duties-of-life-from-names",
       "title": "How We May Discover the Duties of Life from Names",
-      "card_count": 4,
-      "reading_time_seconds": 234
+      "card_count": 7,
+      "reading_time_seconds": 241
     },
     {
       "slug": "what-the-beginning-of-philosophy-is",
       "title": "What the Beginning of Philosophy is",
-      "card_count": 4,
-      "reading_time_seconds": 246
+      "card_count": 7,
+      "reading_time_seconds": 239
     },
     {
       "slug": "of-disputation-or-discussion",
       "title": "Of Disputation or Discussion",
       "card_count": 2,
-      "reading_time_seconds": 65
+      "reading_time_seconds": 67
     },
     {
       "slug": "on-anxiety-solicitude",
       "title": "On Anxiety (solicitude)",
-      "card_count": 6,
-      "reading_time_seconds": 258
+      "card_count": 8,
+      "reading_time_seconds": 273
     },
     {
       "slug": "to-naso",
       "title": "To Naso",
       "card_count": 3,
-      "reading_time_seconds": 123
+      "reading_time_seconds": 124
     },
     {
       "slug": "to-or-against-those-who-obstinately-persist-in-what-they-have-determined",
       "title": "To or Against Those Who Obstinately Persist in What They Have Determined",
       "card_count": 5,
-      "reading_time_seconds": 186
+      "reading_time_seconds": 187
     },
     {
       "slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
       "title": "That We Do not Strive to Use Our Opinions About Good and Evil",
-      "card_count": 7,
-      "reading_time_seconds": 305
+      "card_count": 9,
+      "reading_time_seconds": 320
     },
     {
       "slug": "how-we-must-adapt-preconceptions-to-particular-cases",
       "title": "How We Must Adapt Preconceptions to Particular Cases",
       "card_count": 2,
-      "reading_time_seconds": 93
+      "reading_time_seconds": 98
     },
     {
       "slug": "how-we-should-struggle-against-appearances",
       "title": "How We Should Struggle Against Appearances",
-      "card_count": 5,
-      "reading_time_seconds": 219
+      "card_count": 7,
+      "reading_time_seconds": 227
     },
     {
       "slug": "of-inconsistency",
       "title": "Of Inconsistency",
       "card_count": 4,
-      "reading_time_seconds": 154
+      "reading_time_seconds": 155
     },
     {
       "slug": "on-friendship",
       "title": "On Friendship",
       "card_count": 8,
-      "reading_time_seconds": 322
+      "reading_time_seconds": 335
     },
     {
       "slug": "on-the-power-of-speaking",
       "title": "On the Power of Speaking",
-      "card_count": 10,
-      "reading_time_seconds": 436
+      "card_count": 12,
+      "reading_time_seconds": 456
     },
     {
       "slug": "that-logic-is-necessary",
@@ -240,167 +240,167 @@
       "slug": "of-finery-in-dress",
       "title": "Of Finery in Dress",
       "card_count": 3,
-      "reading_time_seconds": 113
+      "reading_time_seconds": 106
     },
     {
       "slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
       "title": "In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
-      "card_count": 5,
-      "reading_time_seconds": 250
+      "card_count": 7,
+      "reading_time_seconds": 244
     },
     {
       "slug": "what-is-the-matter-on-which-a-good-man-should-be-employed-and-in-what-we-ought-chiefly-to-practise-ourselves",
       "title": "What is the Matter on Which a Good Man Should Be Employed, and in What We Ought Chiefly to Practise Ourselves",
-      "card_count": 4,
-      "reading_time_seconds": 167
+      "card_count": 5,
+      "reading_time_seconds": 165
     },
     {
       "slug": "miscellaneous",
       "title": "Miscellaneous",
       "card_count": 2,
-      "reading_time_seconds": 52
+      "reading_time_seconds": 49
     },
     {
       "slug": "to-the-administrator-of-the-free-cities-who-was-an-epicurean",
       "title": "To the Administrator of the Free Cities Who Was an Epicurean",
-      "card_count": 5,
-      "reading_time_seconds": 260
+      "card_count": 9,
+      "reading_time_seconds": 281
     },
     {
       "slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
       "title": "To a Certain Rhetorician Who Was Going up to Rome on a Suit",
-      "card_count": 5,
-      "reading_time_seconds": 217
+      "card_count": 7,
+      "reading_time_seconds": 226
     },
     {
       "slug": "in-what-manner-we-ought-to-bear-sickness",
       "title": "In What Manner We Ought to Bear Sickness",
-      "card_count": 6,
-      "reading_time_seconds": 244
+      "card_count": 7,
+      "reading_time_seconds": 246
     },
     {
       "slug": "about-exercise",
       "title": "About Exercise",
-      "card_count": 3,
-      "reading_time_seconds": 85
+      "card_count": 4,
+      "reading_time_seconds": 84
     },
     {
       "slug": "what-solitude-is-and-what-kind-of-person-a-solitary-man-is",
       "title": "What Solitude Is, and What Kind of Person a Solitary Man is",
       "card_count": 5,
-      "reading_time_seconds": 156
+      "reading_time_seconds": 150
     },
     {
       "slug": "certain-miscellaneous-matters",
       "title": "Certain Miscellaneous Matters",
-      "card_count": 7,
-      "reading_time_seconds": 245
+      "card_count": 8,
+      "reading_time_seconds": 264
     },
     {
       "slug": "that-we-ought-with-caution-to-enter-into-familiar-intercourse-with-men",
       "title": "That We Ought with Caution to Enter into Familiar Intercourse with Men",
-      "card_count": 5,
-      "reading_time_seconds": 238
+      "card_count": 8,
+      "reading_time_seconds": 250
     },
     {
       "slug": "about-cynicism",
       "title": "About Cynicism",
-      "card_count": 10,
-      "reading_time_seconds": 408
+      "card_count": 12,
+      "reading_time_seconds": 421
     },
     {
       "slug": "that-we-ought-not-to-be-moved-by-a-desire-of-those-things-which-are-not-in-our-power",
       "title": "That We Ought not to Be Moved by a Desire of Those Things Which Are not in Our Power",
-      "card_count": 14,
-      "reading_time_seconds": 658
+      "card_count": 18,
+      "reading_time_seconds": 666
     },
     {
       "slug": "to-those-who-fall-off-desist-from-their-purpose",
       "title": "To Those Who Fall Off (desist) from Their Purpose",
-      "card_count": 1,
-      "reading_time_seconds": 62
+      "card_count": 3,
+      "reading_time_seconds": 64
     },
     {
       "slug": "to-those-who-fear-want",
       "title": "To Those Who Fear Want",
-      "card_count": 4,
-      "reading_time_seconds": 189
+      "card_count": 5,
+      "reading_time_seconds": 199
     },
     {
       "slug": "about-freedom",
       "title": "About Freedom",
-      "card_count": 14,
-      "reading_time_seconds": 677
+      "card_count": 19,
+      "reading_time_seconds": 700
     },
     {
       "slug": "on-familiar-intimacy",
       "title": "On Familiar Intimacy",
       "card_count": 1,
-      "reading_time_seconds": 33
+      "reading_time_seconds": 32
     },
     {
       "slug": "what-things-we-should-exchange-for-other-things",
       "title": "What Things We Should Exchange for Other Things",
-      "card_count": 3,
-      "reading_time_seconds": 133
+      "card_count": 4,
+      "reading_time_seconds": 140
     },
     {
       "slug": "to-those-who-are-desirous-of-passing-life-in-tranquillity",
       "title": "To Those Who Are Desirous of Passing Life in Tranquillity",
-      "card_count": 6,
-      "reading_time_seconds": 288
+      "card_count": 10,
+      "reading_time_seconds": 304
     },
     {
       "slug": "against-the-quarrelsome-and-ferocious",
       "title": "Against the Quarrelsome and Ferocious",
-      "card_count": 9,
-      "reading_time_seconds": 432
+      "card_count": 13,
+      "reading_time_seconds": 458
     },
     {
       "slug": "against-those-who-lament-over-being-pitied",
       "title": "Against Those Who Lament Over Being Pitied",
-      "card_count": 3,
-      "reading_time_seconds": 142
+      "card_count": 5,
+      "reading_time_seconds": 146
     },
     {
       "slug": "on-freedom-from-fear",
       "title": "On Freedom from Fear",
-      "card_count": 5,
+      "card_count": 8,
       "reading_time_seconds": 296
     },
     {
       "slug": "to-a-person-who-had-been-changed-to-a-character-of-shamelessness",
       "title": "To a Person Who Had Been Changed to a Character of Shamelessness",
       "card_count": 1,
-      "reading_time_seconds": 21
+      "reading_time_seconds": 18
     },
     {
       "slug": "what-things-we-ought-to-despise-and-what-things-we-ought-to-value",
       "title": "What Things We Ought to Despise and What Things We Ought to Value",
-      "card_count": 4,
-      "reading_time_seconds": 205
+      "card_count": 6,
+      "reading_time_seconds": 206
     },
     {
       "slug": "about-purity-cleanliness",
       "title": "About Purity (cleanliness)",
-      "card_count": 4,
-      "reading_time_seconds": 186
+      "card_count": 6,
+      "reading_time_seconds": 189
     },
     {
       "slug": "on-attention",
       "title": "On Attention",
-      "card_count": 3,
-      "reading_time_seconds": 170
+      "card_count": 4,
+      "reading_time_seconds": 167
     },
     {
       "slug": "against-or-to-those-who-readily-tell-their-own-affairs",
       "title": "Against or to Those Who Readily Tell Their Own Affairs",
-      "card_count": 4,
-      "reading_time_seconds": 182
+      "card_count": 6,
+      "reading_time_seconds": 187
     }
   ],
-  "total_cards": 294,
-  "total_reading_time_seconds": 13170,
+  "total_cards": 390,
+  "total_reading_time_seconds": 13490,
   "source_url": "https://www.gutenberg.org/ebooks/10661",
   "has_chapters": false
 }

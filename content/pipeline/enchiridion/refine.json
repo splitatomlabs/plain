@@ -1,6 +1,6 @@
 {
-  "pipelineVersion": 1,
-  "createdAt": "2026-04-11T10:57:23.713Z",
+  "pipelineVersion": 2,
+  "createdAt": "2026-04-16T05:15:49.043Z",
   "bookSlug": "enchiridion",
   "chapters": [
     {
@@ -251,11 +251,15 @@
       "chunks": [
         {
           "sectionNumber": 24,
-          "text": "Let not such considerations as these distress you: “I shall live in\ndiscredit and be nobody anywhere.” For if discredit be an evil, you can\nno more be involved in evil through another than in baseness. Is it any\nbusiness of yours, then, to get power or to be admitted to an\nentertainment? By no means. How then, after all, is this discredit? And\nhow it is true that you will be nobody anywhere when you ought to be\nsomebody in those things only which are within your own power, in which\nyou may be of the greatest consequence? “But my friends will be\nunassisted.” What do you mean by “unassisted”? They will not have money\nfrom you, nor will you make them Roman citizens. Who told you, then, that\nthese are among the things within our own power, and not rather the\naffairs of others? And who can give to another the things which he\nhimself has not? “Well, but get them, then, that we too may have a\nshare.” If I can get them with the preservation of my own honor and\nfidelity and self-respect, show me the way and I will get them; but if\nyou require me to lose my own proper good, that you may gain what is no\ngood, consider how unreasonable and foolish you are."
+          "text": "Let not such considerations as these distress you: \"I shall live in discredit and be nobody anywhere.\" For if discredit be an evil, you can no more be involved in evil through another than in baseness. Is it any business of yours, then, to get power or to be admitted to an entertainment? By no means. How then, after all, is this discredit? And how it is true that you will be nobody anywhere when you ought to be somebody in those things only which are within your own power, in which you may be of the greatest consequence?"
         },
         {
           "sectionNumber": 24,
-          "text": "Besides, which would\nyou rather have, a sum of money or a faithful and honorable friend?\nRather assist me, then, to gain this character than require me to do\nthose things by which I may lose it. Well, but my country, say you, as\nfar as depends upon me, will be unassisted. Here, again, what assistance\nis this you mean? It will not have porticos nor baths of your providing?\nAnd what signifies that? Why, neither does a smith provide it with shoes,\nnor a shoemaker with arms. It is enough if everyone fully performs his\nown proper business. And were you to supply it with another faithful and\nhonorable citizen, would not he be of use to it? Yes. Therefore neither\nare you yourself useless to it. “What place, then,” say you, “shall I\nhold in the state?” Whatever you can hold with the preservation of your\nfidelity and honor. But if, by desiring to be useful to that, you lose\nthese, how can you serve your country when you have become faithless and\nshameless?"
+          "text": "\"But my friends will be unassisted.\" What do you mean by \"unassisted\"? They will not have money from you, nor will you make them Roman citizens. Who told you, then, that these are among the things within our own power, and not rather the affairs of others? And who can give to another the things which he himself has not? \"Well, but get them, then, that we too may have a share.\" If I can get them with the preservation of my own honor and fidelity and self-respect, show me the way and I will get them; but if you require me to lose my own proper good, that you may gain what is no good, consider how unreasonable and foolish you are. Besides, which would you rather have, a sum of money or a faithful and honorable friend? Rather assist me, then, to gain this character than require me to do those things by which I may lose it."
+        },
+        {
+          "sectionNumber": 24,
+          "text": "Well, but my country, say you, as far as depends upon me, will be unassisted. Here, again, what assistance is this you mean? It will not have porticos nor baths of your providing? And what signifies that? Why, neither does a smith provide it with shoes, nor a shoemaker with arms. It is enough if everyone fully performs his own proper business. And were you to supply it with another faithful and honorable citizen, would not he be of use to it? Yes. Therefore neither are you yourself useless to it. \"What place, then,\" say you, \"shall I hold in the state?\" Whatever you can hold with the preservation of your fidelity and honor. But if, by desiring to be useful to that, you lose these, how can you serve your country when you have become faithless and shameless?"
         }
       ]
     },
@@ -265,7 +269,11 @@
       "chunks": [
         {
           "sectionNumber": 25,
-          "text": "Is anyone preferred before you at an entertainment, or in courtesies, or\nin confidential intercourse? If these things are good, you ought to\nrejoice that he has them; and if they are evil, do not be grieved that\nyou have them not. And remember that you cannot be permitted to rival\nothers in externals without using the same means to obtain them. For how\ncan he who will not haunt the door of any man, will not attend him, will\nnot praise him, have an equal share with him who does these things? You\nare unjust, then, and unreasonable if you are unwilling to pay the price\nfor which these things are sold, and would have them for nothing. For how\nmuch are lettuces sold? An obulus, for instance. If another, then, paying\nan obulus, takes the lettuces, and you, not paying it, go without them,\ndo not imagine that he has gained any advantage over you. For as he has\nthe lettuces, so you have the obulus which you did not give. So, in the\npresent case, you have not been invited to such a person’s entertainment\nbecause you have not paid him the price for which a supper is sold. It is\nsold for praise; it is sold for attendance. Give him, then, the value if\nit be for your advantage. But if you would at the same time not pay the\none, and yet receive the other, you are unreasonable and foolish. Have\nyou nothing, then, in place of the supper? Yes, indeed, you have—not to\npraise him whom you do not like to praise; not to bear the insolence of\nhis lackeys."
+          "text": "Is anyone preferred before you at an entertainment, or in courtesies, or\nin confidential intercourse? If these things are good, you ought to\nrejoice that he has them; and if they are evil, do not be grieved that\nyou have them not. And remember that you cannot be permitted to rival\nothers in externals without using the same means to obtain them. For how\ncan he who will not haunt the door of any man, will not attend him, will\nnot praise him, have an equal share with him who does these things? You\nare unjust, then, and unreasonable if you are unwilling to pay the price\nfor which these things are sold, and would have them for nothing. For how\nmuch are lettuces sold? An obulus, for instance."
+        },
+        {
+          "sectionNumber": 25,
+          "text": "If another, then, paying\nan obulus, takes the lettuces, and you, not paying it, go without them,\ndo not imagine that he has gained any advantage over you. For as he has\nthe lettuces, so you have the obulus which you did not give. So, in the\npresent case, you have not been invited to such a person’s entertainment\nbecause you have not paid him the price for which a supper is sold. It is\nsold for praise; it is sold for attendance. Give him, then, the value if\nit be for your advantage. But if you would at the same time not pay the\none, and yet receive the other, you are unreasonable and foolish. Have\nyou nothing, then, in place of the supper? Yes, indeed, you have—not to\npraise him whom you do not like to praise; not to bear the insolence of\nhis lackeys."
         }
       ]
     },
@@ -313,7 +321,11 @@
         },
         {
           "sectionNumber": 29,
-          "text": "Thus some, when they have seen a philosopher and heard a man speaking like Euphrates—though, indeed, who can speak like him?—have a mind to be philosophers, too. Consider first, man, what the matter is, and what your own nature is able to bear. If you would be a wrestler, consider your shoulders, your back, your thighs; for different persons are made for different things. Do you think that you can act as you do and be a philosopher, that you can eat, drink, be angry, be discontented, as you are now? You must watch, you must labor, you must get the better of certain appetites, must quit your acquaintances, be despised by your servant, be laughed at by those you meet; come off worse than others in everything—in offices, in honors, before tribunals. When you have fully considered all these things, approach, if you please—that is, if, by parting with them, you have a mind to purchase serenity, freedom, and tranquillity. If not, do not come hither; do not, like children, be now a philosopher, then a publican, then an orator, and then one of Caesar's officers. These things are not consistent. You must be one man, either good or bad. You must cultivate either your own reason or else externals; apply yourself either to things within or without you—that is, be either a philosopher or one of the mob."
+          "text": "Thus some, when they have seen a philosopher and heard a man speaking like Euphrates[3]—though, indeed, who can speak like him?—have a mind to be philosophers, too. Consider first, man, what the matter is, and what your own nature is able to bear. If you would be a wrestler, consider your shoulders, your back, your thighs; for different persons are made for different things. Do you think that you can act as you do and be a philosopher, that you can eat, drink, be angry, be discontented, as you are now? You must watch, you must labor, you must get the better of certain appetites, must quit your acquaintances, be despised by your servant, be laughed at by those you meet; come off worse than others in everything—in offices, in honors, before tribunals."
+        },
+        {
+          "sectionNumber": 29,
+          "text": "When you have fully considered all these things, approach, if you please—that is, if, by parting with them, you have a mind to purchase serenity, freedom, and tranquillity. If not, do not come hither; do not, like children, be now a philosopher, then a publican, then an orator, and then one of Caesar's officers. These things are not consistent. You must be one man, either good or bad. You must cultivate either your own reason or else externals; apply yourself either to things within or without you—that is, be either a philosopher or one of the mob."
         }
       ]
     },
@@ -333,15 +345,19 @@
       "chunks": [
         {
           "sectionNumber": 31,
-          "text": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you. And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are."
+          "text": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you."
         },
         {
           "sectionNumber": 31,
-          "text": "For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors. For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles[4] mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed. So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise."
+          "text": "And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are. For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors."
         },
         {
           "sectionNumber": 31,
-          "text": "But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly."
+          "text": "For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child."
+        },
+        {
+          "sectionNumber": 31,
+          "text": "For where our interest is, there, too, is piety directed. So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise. But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly."
         }
       ]
     },
@@ -351,7 +367,11 @@
       "chunks": [
         {
           "sectionNumber": 32,
-          "text": "When you have recourse to divination, remember that you know not what the\nevent will be, and you come to learn it of the diviner; but of what\nnature it is you knew before coming; at least, if you are of philosophic\nmind. For if it is among the things not within our own power, it can by\nno means be either good or evil. Do not, therefore, bring with you to the\ndiviner either desire or aversion—else you will approach him\ntrembling—but first clearly understand that every event is indifferent\nand nothing to _you_, of whatever sort it may be; for it will be in your\npower to make a right use of it, and this no one can hinder. Then come\nwith confidence to the gods as your counselors; and afterwards, when any\ncounsel is given you, remember what counselors you have assumed, and\nwhose advice you will neglect if you disobey. Come to divination as\nSocrates prescribed, in cases of which the whole consideration relates to\nthe event, and in which no opportunities are afforded by reason or any\nother art to discover the matter in view. When, therefore, it is our duty\nto share the danger of a friend or of our country, we ought not to\nconsult the oracle as to whether we shall share it with them or not. For\nthough the diviner should forewarn you that the auspices are unfavorable,\nthis means no more than that either death or mutilation or exile is\nportended. But we have reason within us; and it directs us, even with\nthese hazards, to stand by our friend and our country. Attend, therefore,\nto the greater diviner, the Pythian God, who once cast out of the temple\nhim who neglected to save his friend.[5]"
+          "text": "When you have recourse to divination, remember that you know not what the event will be, and you come to learn it of the diviner; but of what nature it is you knew before coming; at least, if you are of philosophic mind. For if it is among the things not within our own power, it can by no means be either good or evil. Do not, therefore, bring with you to the diviner either desire or aversion—else you will approach him trembling—but first clearly understand that every event is indifferent and nothing to _you_, of whatever sort it may be; for it will be in your power to make a right use of it, and this no one can hinder. Then come with confidence to the gods as your counselors; and afterwards, when any counsel is given you, remember what counselors you have assumed, and whose advice you will neglect if you disobey."
+        },
+        {
+          "sectionNumber": 32,
+          "text": "Come to divination as Socrates prescribed, in cases of which the whole consideration relates to the event, and in which no opportunities are afforded by reason or any other art to discover the matter in view. When, therefore, it is our duty to share the danger of a friend or of our country, we ought not to consult the oracle as to whether we shall share it with them or not. For though the diviner should forewarn you that the auspices are unfavorable, this means no more than that either death or mutilation or exile is portended. But we have reason within us; and it directs us, even with these hazards, to stand by our friend and our country. Attend, therefore, to the greater diviner, the Pythian God, who once cast out of the temple him who neglected to save his friend."
         }
       ]
     },
@@ -369,11 +389,7 @@
         },
         {
           "sectionNumber": 33,
-          "text": "Let not your laughter be loud, frequent, or abundant."
-        },
-        {
-          "sectionNumber": 33,
-          "text": "Avoid taking oaths, if possible, altogether; at any rate, so far as you are able."
+          "text": "Let not your laughter be loud, frequent, or abundant. Avoid taking oaths, if possible, altogether; at any rate, so far as you are able."
         },
         {
           "sectionNumber": 33,
@@ -559,7 +575,11 @@
       "chunks": [
         {
           "sectionNumber": 48,
-          "text": "The condition and characteristic of a vulgar person is that he never\nlooks for either help or harm from himself, but only from externals. The\ncondition and characteristic of a philosopher is that he looks to himself\nfor all help or harm. The marks of a proficient are that he censures no\none, praises no one, blames no one, accuses no one; says nothing\nconcerning himself as being anybody or knowing anything. When he is in\nany instance hindered or restrained, he accuses himself; and if he is\npraised, he smiles to himself at the person who praises him; and if he is\ncensured, he makes no defense. But he goes about with the caution of a\nconvalescent, careful of interference with anything that is doing well\nbut not yet quite secure. He restrains desire; he transfers his aversion\nto those things only which thwart the proper use of our own will; he\nemploys his energies moderately in all directions; if he appears stupid\nor ignorant, he does not care; and, in a word, he keeps watch over\nhimself as over an enemy and one in ambush."
+          "text": "The condition and characteristic of a vulgar person is that he never looks for either help or harm from himself, but only from externals. The condition and characteristic of a philosopher is that he looks to himself for all help or harm."
+        },
+        {
+          "sectionNumber": 48,
+          "text": "The marks of a proficient are that he censures no one, praises no one, blames no one, accuses no one; says nothing concerning himself as being anybody or knowing anything. When he is in any instance hindered or restrained, he accuses himself; and if he is praised, he smiles to himself at the person who praises him; and if he is censured, he makes no defense. But he goes about with the caution of a convalescent, careful of interference with anything that is doing well but not yet quite secure. He restrains desire; he transfers his aversion to those things only which thwart the proper use of our own will; he employs his energies moderately in all directions; if he appears stupid or ignorant, he does not care; and, in a word, he keeps watch over himself as over an enemy and one in ambush."
         }
       ]
     },
@@ -579,7 +599,15 @@
       "chunks": [
         {
           "sectionNumber": 50,
-          "text": "Whatever rules you have adopted, abide by them as laws, and as if you\nwould be impious to transgress them; and do not regard what anyone says\nof you, for this, after all, is no concern of yours. How long, then, will\nyou delay to demand of yourself the noblest improvements, and in no\ninstance to transgress the judgments of reason? You have received the\nphilosophic principles with which you ought to be conversant; and you\nhave been conversant with them. For what other master, then, do you wait\nas an excuse for this delay in self-reformation? You are no longer a boy\nbut a grown man. If, therefore, you will be negligent and slothful, and\nalways add procrastination to procrastination, purpose to purpose, and\nfix day after day in which you will attend to yourself, you will\ninsensibly continue to accomplish nothing and, living and dying, remain\nof vulgar mind. This instant, then, think yourself worthy of living as a\nman grown up and a proficient. Let whatever appears to be the best be to\nyou an inviolable law. And if any instance of pain or pleasure, glory or\ndisgrace, be set before you, remember that now is the combat, now the\nOlympiad comes on, nor can it be put off; and that by one failure and\ndefeat honor may be lost or—won. Thus Socrates became perfect, improving\nhimself by everything, following reason alone. And though you are not yet\na Socrates, you ought, however, to live as one seeking to be a Socrates."
+          "text": "Whatever rules you have adopted, abide by them as laws, and as if you would be impious to transgress them; and do not regard what anyone says of you, for this, after all, is no concern of yours."
+        },
+        {
+          "sectionNumber": 50,
+          "text": "How long, then, will you delay to demand of yourself the noblest improvements, and in no instance to transgress the judgments of reason? You have received the philosophic principles with which you ought to be conversant; and you have been conversant with them. For what other master, then, do you wait as an excuse for this delay in self-reformation? You are no longer a boy but a grown man. If, therefore, you will be negligent and slothful, and always add procrastination to procrastination, purpose to purpose, and fix day after day in which you will attend to yourself, you will insensibly continue to accomplish nothing and, living and dying, remain of vulgar mind."
+        },
+        {
+          "sectionNumber": 50,
+          "text": "This instant, then, think yourself worthy of living as a man grown up and a proficient. Let whatever appears to be the best be to you an inviolable law. And if any instance of pain or pleasure, glory or disgrace, be set before you, remember that now is the combat, now the Olympiad comes on, nor can it be put off; and that by one failure and defeat honor may be lost or—won. Thus Socrates became perfect, improving himself by everything, following reason alone. And though you are not yet a Socrates, you ought, however, to live as one seeking to be a Socrates."
         }
       ]
     },
@@ -599,10 +627,10 @@
     }
   ],
   "cost": {
-    "inputTokens": 36637,
-    "outputTokens": 4460,
+    "inputTokens": 443372,
+    "outputTokens": 208010,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 0.0884055
+    "estimatedCost": 2.225133
   }
 }

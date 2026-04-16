@@ -5,7 +5,7 @@
     "chapter_slug": "section-04",
     "card_number": 1,
     "total_cards_in_chapter": 5,
-    "plain_english": "My dear Serenus, I think Athenodorus gave up too easily. He retreated too quickly from public life. I won't deny that sometimes you need to withdraw from politics. But you should retreat slowly, step by step. Don't abandon your principles or lose your honor as you go. Soldiers who negotiate while still holding their weapons earn more respect from their enemies. They're also safer. This is what I think virtue should do. This is what anyone practicing virtue should do. If Fortune wins and takes away your power to act, don't immediately turn and run from the enemy. Don't throw down your weapons and flee looking for somewhere to hide. There's nowhere Fortune can't follow you anyway. Instead, be more careful about taking public office. Think it through. Find some way you can still serve the state.",
+    "plain_english": "My dear Serenus, I think Athenodorus gave up too easily. He ran away too quickly. I won't deny that sometimes you need to step back from public life. But you should retreat slowly, with dignity. Keep your standards and your honor intact. Soldiers who negotiate while still holding their weapons earn more respect from their enemies. They're also safer.\n\nThis is what I think virtue should do. This is what anyone practicing virtue should do. If Fortune gets the upper hand and takes away your power to act, don't immediately turn and run. Don't throw down your weapons and scramble for a hiding place. There's nowhere Fortune can't follow you anyway. Instead, be more careful about taking public office. Think it through. Find some way you can still serve the state.",
     "original_excerpt": "To me, my dearest Serenus, Athenodorus seems to have yielded too completely to the times, to have fled too soon: I will not deny that sometimes one must retire, but one ought to retire slowly, at a foot's pace, without losing one's ensigns or one's honour as a soldier: those who make terms with arms in their hands are more respected by their enemies and more safe in their hands. This is what I think ought to be done by virtue and by one who practises virtue: if Fortune get the upper hand and deprive him of the power of action, let him not straightway turn his back to the enemy, throw away his arms, and run away seeking for a hiding-place, as if there were any place whither Fortune could not pursue him, but let him be more sparing in his acceptance of public office, and after due deliberation discover some means by which he can be of use to the state.",
     "source_reference": "On Peace of Mind, Section 4",
     "author_slug": "seneca",
@@ -13,7 +13,7 @@
       "doing-the-right-thing",
       "facing-hardship"
     ],
-    "reading_time_seconds": 41
+    "reading_time_seconds": 39
   },
   {
     "id": "peace-of-mind-04-002",
@@ -21,7 +21,7 @@
     "chapter_slug": "section-04",
     "card_number": 2,
     "total_cards_in_chapter": 5,
-    "plain_english": "Can't serve in the army? Then run for public office. Must you stay a private citizen? Then become a lawyer. Are you forced to keep quiet? Then help your fellow citizens with silent advice. Is it even dangerous to enter the public square? Then be a good companion, a loyal friend, a well-behaved guest in people's homes, at public events, and at parties. Have you lost your citizenship? Then act like a human being. We proudly refuse to limit ourselves to just one city. We reach out to connect with all nations and call ourselves citizens of the world. Why? So we can have a bigger stage on which to show our virtue.",
+    "plain_english": "Can't serve in the army? Then run for public office. Must stay out of politics? Then become a lawyer. Forbidden to speak publicly? Then give quiet advice to your fellow citizens. Too dangerous to even enter the forum? Then be a good friend, a loyal companion, a pleasant guest at dinner parties and public events. Lost your citizenship? Then act like a human being should. We proudly call ourselves citizens of the world, not just one city. We seek contact with all lands. Why? Because it gives us a bigger stage to show our virtue.",
     "original_excerpt": "He is not able to serve in the army: then let him become a candidate for civic honours: must he live in a private station? then let him be an advocate: is he condemned to keep silence? then let him help his countrymen with silent counsel. Is it dangerous for him even to enter the forum? then let him prove himself a good comrade, a faithful friend, a sober guest in people's houses, at public shows, and at wine-parties. Suppose that he has lost the status of a citizen; then let him exercise that of a man: our reason for magnanimously refusing to confine ourselves within the walls of one city, for having gone forth to enjoy intercourse with all lands and for professing ourselves to be citizens of the world is that we may thus obtain a wider theatre on which to display our virtue.",
     "source_reference": "On Peace of Mind, Section 4",
     "author_slug": "seneca",
@@ -29,7 +29,7 @@
       "doing-the-right-thing",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 34
+    "reading_time_seconds": 29
   },
   {
     "id": "peace-of-mind-04-003",
@@ -37,15 +37,15 @@
     "chapter_slug": "section-04",
     "card_number": 3,
     "total_cards_in_chapter": 5,
-    "plain_english": "Are you banned from being a judge? Forbidden from speaking to the people or running for office? Then look beyond Rome. See how much territory is out there, how many nations exist. It's impossible for every door to be closed to your ambitions — there will always be more left open. But ask yourself: is this ban really your own fault? You refuse to serve the state unless you can be consul or some other high official. What would we say if you refused to join the army unless you could be a general or tribune?",
+    "plain_english": "Are you banned from being a judge? Forbidden from speaking to the public or running for office? Then stop looking at Rome and see how big the world is. Look at all the nations out there. It's impossible for every door to your ambitions to be shut — there are always more open. But ask yourself: is this whole ban really someone else's fault, or yours?\n\nYou only want to run the government if you can be consul or governor or chief magistrate. What if someone said they'd only serve in the army as a general or top officer?",
     "original_excerpt": "Is the bench of judges closed to you, are you forbidden to address the people from the hustings, or to be a candidate at elections? then turn your eyes away from Rome, and see what a wide extent of territory, what a number of nations present themselves before you. Thus, it is never possible for so many outlets to be closed against your ambition that more will not remain open to it: but see whether the whole prohibition does not arise from your own fault. You do not choose to direct the affairs of the state except as consul or prytanis or meddix or sufes: what should we say if you refused to serve in the army save as general or military tribune?",
     "source_reference": "On Peace of Mind, Section 4",
     "author_slug": "seneca",
     "tags": [
-      "what-matters-most",
-      "knowing-yourself"
+      "freedom-and-control",
+      "what-matters-most"
     ],
-    "reading_time_seconds": 29
+    "reading_time_seconds": 30
   },
   {
     "id": "peace-of-mind-04-004",
@@ -53,7 +53,7 @@
     "chapter_slug": "section-04",
     "card_number": 4,
     "total_cards_in_chapter": 5,
-    "plain_english": "Even if others get to fight in the front line, and fate has placed you with the old soldiers in the back, do your duty where you are. Use your voice, your encouragement, your example, and your spirit. Even if a man's hands are cut off, he can still help his side in battle — if he holds his ground and cheers on his friends. Do something like that yourself. If Fortune pushes you back from the front rank, stand your ground anyway and cheer on your comrades. And if someone silences you, keep standing and help your side quietly.",
+    "plain_english": "Even if others are in the front lines and fate has placed you with the older soldiers in back, do your duty there. Use your voice, your encouragement, your example, and your spirit. Even if a man's hands are cut off, he can still help his side in battle if he holds his position and cheers on his comrades. Do something like that yourself. If Fortune pulls you from the front rank, hold your ground anyway and cheer on your comrades. And if someone silences you, still stand firm and help your side quietly.",
     "original_excerpt": "Even though others may form the first line, and your lot may have placed you among the veterans of the third, do your duty there with your voice, encouragement, example, and spirit: even though a man's hands be cut off, he may find means to help his side in a battle, if he stands his ground and cheers on his comrades. Do something of that sort yourself: if Fortune removes you from the front rank, stand your ground nevertheless and cheer on your comrades, and if somebody stops your mouth, stand nevertheless and help your side in silence.",
     "source_reference": "On Peace of Mind, Section 4",
     "author_slug": "seneca",
@@ -61,7 +61,7 @@
       "doing-the-right-thing",
       "facing-hardship"
     ],
-    "reading_time_seconds": 30
+    "reading_time_seconds": 28
   },
   {
     "id": "peace-of-mind-04-005",
@@ -69,7 +69,7 @@
     "chapter_slug": "section-04",
     "card_number": 5,
     "total_cards_in_chapter": 5,
-    "plain_english": "A good citizen never wastes their efforts. They help others just by being heard and seen — through their expression, their gestures, their quiet determination, and even how they walk. Some medicines help us through their smell as well as their taste and touch. Virtue works the same way. Even when it's hidden or far away, it spreads usefulness around. Whether virtue moves freely and enjoys its rights, or can only appear in public with permission and must trim its sails in a storm, whether it's unemployed, silent, and stuck in a small space, or openly displayed — in whatever form it appears, it always does good. Do you think the example of someone who knows how to rest nobly has no value? The best plan is to mix leisure with work whenever obstacles or public affairs prevent you from living an active life. You are never so cut off from all activities that there's no room left for honorable action.",
+    "plain_english": "A good citizen's efforts are never wasted. He helps others just by being heard and seen — through his expression, his gestures, his quiet resolve, and even the way he walks. Some medicines help us through their smell as well as their taste and touch. Virtue works the same way. Even when it's hidden or far away, it spreads usefulness around.\n\nWhether virtue moves freely and enjoys its proper rights, or can only appear in public by permission and must trim its sails against the storm, whether it sits unemployed and silent in cramped quarters, or stands openly displayed — whatever form it takes, it always does good. Do you think there's no value in the example of someone who knows how to rest nobly? \n\nThe best plan is to mix leisure with work whenever obstacles or public affairs prevent you from leading an active life. You're never so cut off from everything that there's no room left for honorable action.",
     "original_excerpt": "The services of a good citizen are never thrown away: he does good by being heard and seen, by his expression, his gestures, his silent determination, and his very walk. As some remedies benefit us by their smell as well as by their their taste and touch, so virtue even when concealed and at a distance sheds usefulness around. Whether she moves at her ease and enjoys her just rights, or can only appear abroad on sufferance and is forced to shorten sail to the tempest, whether it be unemployed, silent, and pent up in a narrow lodging, or openly displayed, in whatever guise she may appear, she always does good. What? do you think that the example of one who can rest nobly has no value? It is by far the best plan, therefore, to mingle leisure with business, whenever chance impediments or the state of public affairs forbid one's leading an active life: for one is never so cut off from all pursuits as to find no room left for honourable action.",
     "source_reference": "On Peace of Mind, Section 4",
     "author_slug": "seneca",

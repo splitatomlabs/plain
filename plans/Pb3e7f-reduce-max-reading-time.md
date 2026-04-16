@@ -31,7 +31,7 @@ Lower `MAX_READING_TIME_SECONDS` from 90 to 60 and rerun the full content pipeli
 ## Tasks
 - [x] T01: Update refine constants — Change `MAX_READING_TIME_SECONDS` from 90 to 60 in `scripts/lib/refine.ts`. Update the prompt word guidance from "roughly 50-300 words" to "roughly 50-200 words" to match the new ceiling.
 - [x] T02: Bump pipeline version — Change `PIPELINE_VERSION` from 1 to 2 in `scripts/lib/cache.ts` to invalidate all cached intermediates.
-- [ ] T03: Run full pipeline — Run `ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all`. Verify all 7 books complete successfully. Check that no output card exceeds 60s reading time.
+- [~] T03: Run full pipeline — Run `ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all`. Verify all 7 books complete successfully. Check that no output card exceeds 60s reading time.
 - [ ] T04: Validate output — Confirm total card count increased (was 1,308), spot-check split cards for coherence, verify no cards exceed 60s. Run `npm test` to confirm all tests pass.
 - [x] T05: Dynamic OG font sizing — Extract font-size logic from `web/src/routes/api/og/[cardId]/+server.js` into a pure function (e.g. `web/src/lib/utils/og.js`). Replace the character-length thresholds with a calculation that finds the largest font size where the text fits the available area (1080×~410px, Georgia at ~0.52× avg char width, line height 1.4–1.45). Import and use in the OG endpoint.
 - [x] T06: Unit test OG font sizing — Add `web/tests/unit/og.test.js` testing the pure font-size function: short text gets large font, long text gets small font, edge cases at boundary lengths, and result always stays within min/max bounds (20–36px).

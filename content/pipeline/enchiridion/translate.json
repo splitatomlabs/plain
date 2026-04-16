@@ -1,6 +1,6 @@
 {
-  "pipelineVersion": 1,
-  "createdAt": "2026-04-11T11:05:37.958Z",
+  "pipelineVersion": 2,
+  "createdAt": "2026-04-16T05:34:17.364Z",
   "bookSlug": "enchiridion",
   "chapters": {
     "enchiridion_section-01": [
@@ -22,7 +22,7 @@
       {
         "sectionNumber": 1,
         "originalText": "Now the things within our power are by nature free, unrestricted, unhindered; but those beyond our power are weak, dependent, restricted, alien. Remember, then, that if you attribute freedom to things by nature dependent and take what belongs to others for your own, you will be hindered, you will lament, you will be disturbed, you will find fault both with gods and men. But if you take for your own only that which is your own and view what belongs to others just as it really is, then no one will ever compel you, no one will restrict you; you will find fault with no one, you will accuse no one, you will do nothing against your will; no one will hurt you, you will not have an enemy, nor will you suffer any harm.",
-        "plainEnglish": "The things you control are naturally free, unrestricted, and unblocked. The things you don't control are weak, dependent, limited, and foreign to you. Here's what to remember: if you think dependent things are free and you try to claim what belongs to others as your own, you'll be blocked. You'll complain. You'll be upset. You'll blame both gods and people. But if you claim only what's truly yours and see what belongs to others for what it really is, then no one can force you to do anything. No one can limit you. You won't blame anyone or accuse anyone. You won't act against your will. No one will hurt you. You won't have enemies. You won't suffer any harm.",
+        "plainEnglish": "The things you control are naturally free, unlimited, and unblocked. The things you don't control are weak, dependent, limited, and foreign to you. Remember this: if you treat dependent things as if they're free, or claim other people's stuff as your own, you'll get blocked. You'll complain. You'll get upset. You'll blame the gods and other people. But if you only claim what's actually yours, and see other people's stuff for what it really is, then no one can force you to do anything. No one can limit you. You won't blame anyone. You won't accuse anyone. You won't act against your will. No one can hurt you. You won't have enemies. You won't suffer any harm.",
         "tags": [
           "freedom-and-control",
           "calm-your-mind"
@@ -37,7 +37,7 @@
       {
         "sectionNumber": 1,
         "originalText": "Aiming, therefore, at such great things, remember that you must not allow yourself any inclination, however slight, toward the attainment of the others; but that you must entirely quit some of them, and for the present postpone the rest. But if you would have these, and possess power and wealth likewise, you may miss the latter in seeking the former; and you will certainly fail of that by which alone happiness and freedom are procured.",
-        "plainEnglish": "You're aiming for something great. So don't let yourself want other things, even a little bit. You need to completely give up some things. Put others on hold for now. If you try to have both the great things and power and wealth too, you might lose the wealth while chasing greatness. And you'll definitely lose the one thing that actually brings happiness and freedom.",
+        "plainEnglish": "Since you're aiming for such important things, remember this: don't let yourself want other things, even a little bit. You must completely give up some goals. Put others on hold for now. If you try to have these great things AND also want power and wealth, you might lose the power and wealth while chasing greatness. But you'll definitely lose the one thing that actually brings happiness and freedom.",
         "tags": [
           "what-matters-most",
           "freedom-and-control"
@@ -52,7 +52,7 @@
       {
         "sectionNumber": 1,
         "originalText": "Seek at once, therefore, to be able to say to every unpleasing semblance, \"You are but a semblance and by no means the real thing.\" And then examine it by those rules which you have; and first and chiefly by this: whether it concerns the things which are within our own power or those which are not; and if it concerns anything beyond our power, be prepared to say that it is nothing to you.",
-        "plainEnglish": "Right away, learn to say this to every bad situation: \"You're just how things appear to me, not the actual reality.\" Then test it using your principles. Start with the most important rule: Does this involve something I control, or something I don't? If it's something beyond your control, be ready to say it doesn't concern you.",
+        "plainEnglish": "Right now, start practicing this: when something seems bad, tell it, \"You're just an appearance. You're not the real thing.\" Then test it using your principles. Ask yourself first: does this involve something I control, or something I don't? If it's something beyond your control, be ready to say, \"This is nothing to me.\"",
         "tags": [
           "freedom-and-control",
           "calm-your-mind"
@@ -69,7 +69,7 @@
       {
         "sectionNumber": 2,
         "originalText": "Remember that desire demands the attainment of that of which you are\ndesirous; and aversion demands the avoidance of that to which you are\naverse; that he who fails of the object of his desires is disappointed;\nand he who incurs the object of his aversion is wretched. If, then, you\nshun only those undesirable things which you can control, you will never\nincur anything which you shun; but if you shun sickness, or death, or\npoverty, you will run the risk of wretchedness. Remove [the habit of]\naversion, then, from all things that are not within our power, and apply\nit to things undesirable which are within our power. But for the present,\naltogether restrain desire; for if you desire any of the things not\nwithin our own power, you must necessarily be disappointed; and you are\nnot yet secure of those which are within our power, and so are legitimate\nobjects of desire. Where it is practically necessary for you to pursue or\navoid anything, do even this with discretion and gentleness and\nmoderation.",
-        "plainEnglish": "Remember what wanting and avoiding really mean. When you want something, you expect to get it. When you avoid something, you expect to stay away from it. If you don't get what you want, you're disappointed. If you run into what you're avoiding, you're miserable. So only avoid things you can actually control. You'll never run into anything you're truly avoiding that way. But if you try to avoid sickness, death, or poverty, you're setting yourself up for misery. Stop avoiding things that aren't up to you. Only avoid bad things that are up to you. For now, stop wanting things altogether. If you want something that's not up to you, you'll definitely be disappointed. And you're not even good yet at handling the things that are up to you — the things you should actually want. When you absolutely have to go after something or avoid something, do it carefully and gently. Don't go overboard.",
+        "plainEnglish": "Remember: when you want something, you expect to get it. When you hate something, you expect to avoid it. If you don't get what you want, you'll be disappointed. If you run into what you hate, you'll be miserable. So only hate things you can actually control. Don't hate sickness, death, or poverty — you'll just make yourself miserable. Stop hating things that aren't up to you. Only hate the bad things that are up to you. For now, stop wanting things altogether. If you want things that aren't up to you, you'll definitely be disappointed. And you're not even sure about the things that are up to you yet. When you absolutely have to go after something or avoid something, do it carefully and gently.",
         "tags": [
           "freedom-and-control",
           "calm-your-mind"
@@ -86,10 +86,10 @@
       {
         "sectionNumber": 3,
         "originalText": "With regard to whatever objects either delight the mind or contribute to\nuse or are tenderly beloved, remind yourself of what nature they are,\nbeginning with the merest trifles: if you have a favorite cup, that it is\nbut a cup of which you are fond of—for thus, if it is broken, you can\nbear it; if you embrace your child or your wife, that you embrace a\nmortal—and thus, if either of them dies, you can bear it.",
-        "plainEnglish": "When something brings you joy, serves a purpose, or means a lot to you, remind yourself what it really is. Start with small things. If you love a particular cup, tell yourself: \"This is just a cup that I happen to like.\" That way, if it breaks, you can handle it. If you hug your child or your spouse, remember: \"I'm hugging someone who will die someday.\" That way, if they die, you can bear it.",
+        "plainEnglish": "For anything that brings you joy, serves a purpose, or that you love deeply, remind yourself what it really is. Start with small things. If you have a favorite cup, tell yourself: \"This is just a cup that I happen to like.\" That way, if it breaks, you can handle it. When you hug your child or your spouse, remember: \"I'm hugging someone who will die someday.\" That way, if they die, you can bear it.",
         "tags": [
           "facing-hardship",
-          "death-and-mortality"
+          "freedom-and-control"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -103,7 +103,7 @@
       {
         "sectionNumber": 4,
         "originalText": "When you set about any action, remind yourself of what nature the action\nis. If you are going to bathe, represent to yourself the incidents usual\nin the bath—some persons pouring out, others pushing in, others scolding,\nothers pilfering. And thus you will more safely go about this action if\nyou say to yourself, “I will now go to bathe and keep my own will in\nharmony with nature.” And so with regard to every other action. For thus,\nif any impediment arises in bathing, you will be able to say, “It was not\nonly to bathe that I desired, but to keep my will in harmony with nature;\nand I shall not keep it thus if I am out of humor at things that happen.”",
-        "plainEnglish": "Before you do anything, remind yourself what kind of activity it is. If you're going to take a bath, picture what normally happens at the bathhouse — people splashing water everywhere, others shoving to get in, some yelling, others stealing your stuff. You'll handle this much better if you tell yourself, \"I'm going to bathe and keep my mind aligned with nature.\" Do this with everything you do. That way, if something goes wrong while you're bathing, you can say, \"I didn't just want to get clean. I wanted to keep my mind aligned with nature. And I won't do that if I get angry about what happens.\"",
+        "plainEnglish": "Before you do anything, remind yourself what kind of action it is. If you're going to take a bath, picture what usually happens at the baths — some people splashing water around, others pushing to get in, others complaining, others stealing. You'll handle this action better if you tell yourself, \"I'm going to bathe and keep my attitude in line with nature.\" Do this with every action. Then, if something gets in your way while bathing, you can say, \"I didn't just want to bathe. I wanted to keep my attitude in line with nature. I won't do that if I get upset about what happens.\"",
         "tags": [
           "calm-your-mind",
           "freedom-and-control"
@@ -120,7 +120,7 @@
       {
         "sectionNumber": 5,
         "originalText": "Men are disturbed not by things, but by the views which they take of\nthings. Thus death is nothing terrible, else it would have appeared so to\nSocrates. But the terror consists in our notion of death, that it is\nterrible. When, therefore, we are hindered or disturbed, or grieved, let\nus never impute it to others, but to ourselves—that is, to our own views.\nIt is the action of an uninstructed person to reproach others for his own\nmisfortunes; of one entering upon instruction, to reproach himself; and\none perfectly instructed, to reproach neither others nor himself.",
-        "plainEnglish": "It's not things that upset you. It's how you think about them. Death, for example, is not frightening on its own. If it were, Socrates would have been afraid of it. But the terror comes from our belief that death is terrible. So when you feel blocked, disturbed, or sad, don't blame other people. Blame yourself — your own thoughts. An uneducated person blames others for his problems. A student blames himself. A wise person blames no one.",
+        "plainEnglish": "It's not things that upset you. It's how you think about them. Death, for example, is not frightening on its own. If it were, Socrates would have been afraid of it. But the terror comes from our idea of death — that it's terrible. So when you're blocked or upset or hurt, don't blame others. Blame yourself. Blame your own thinking. Someone who hasn't learned anything blames others for his problems. Someone who's starting to learn blames himself. Someone who's fully learned blames nobody.",
         "tags": [
           "calm-your-mind",
           "knowing-yourself"
@@ -137,7 +137,7 @@
       {
         "sectionNumber": 6,
         "originalText": "Be not elated at any excellence not your own. If a horse should be\nelated, and say, “I am handsome,” it might be endurable. But when you are\nelated and say, “I have a handsome horse,” know that you are elated only\non the merit of the horse. What then is your own? The use of the\nphenomena of existence. So that when you are in harmony with nature in\nthis respect, you will be elated with some reason; for you will be elated\nat some good of your own.",
-        "plainEnglish": "Don't get excited about something that isn't really yours. If a horse got excited and said, \"I'm beautiful,\" that would make sense. But when you get excited and say, \"I have a beautiful horse,\" realize you're only excited about the horse's merit. So what actually belongs to you? How you handle what happens to you. When you're good at that — when you work with life instead of against it — then you have a real reason to be excited. You'll be excited about something that's actually your own.",
+        "plainEnglish": "Don't get excited about good things that aren't really yours. If a horse bragged and said, \"I am beautiful,\" that would make sense. But when you get excited and say, \"I have a beautiful horse,\" realize that you're only excited about the horse's quality. So what actually belongs to you? How you handle whatever life throws at you. When you're in tune with nature in this way, then you have a real reason to feel good about yourself. You'll be proud of something that's actually your own.",
         "tags": [
           "freedom-and-control",
           "knowing-yourself"
@@ -154,7 +154,7 @@
       {
         "sectionNumber": 7,
         "originalText": "As in a voyage, when the ship is at anchor, if you go on shore to get\nwater, you may amuse yourself with picking up a shellfish or a truffle in\nyour way, but your thoughts ought to be bent toward the ship, and\nperpetually attentive, lest the captain should call, and then you must\nleave all these things, that you may not have to be carried on board the\nvessel, bound like a sheep; thus likewise in life, if, instead of a\ntruffle or shellfish, such a thing as a wife or a child be granted you,\nthere is no objection; but if the captain calls, run to the ship, leave\nall these things, and never look behind. But if you are old, never go far\nfrom the ship, lest you should be missing when called for.",
-        "plainEnglish": "Think of life like a sea voyage. When your ship drops anchor and you go ashore for water, you might pick up a shell or find a mushroom along the way. That's fine. But keep your mind on the ship. Stay alert. If the captain calls, you need to drop everything and get back on board. You don't want to be dragged onto the ship like cargo.\n\nLife works the same way. Instead of shells and mushrooms, you might be given a spouse or children. Nothing wrong with that. But when the captain calls, run to the ship. Leave everything behind. Don't look back.\n\nAnd if you're old, don't wander far from the ship. You don't want to miss the call.",
+        "plainEnglish": "Life is like being on a ship that's anchored. You can go ashore to get water. You might pick up a shell or find a mushroom along the way — that's fine. But keep your mind on the ship. Stay alert. If the captain calls, you need to drop everything and go. Otherwise, you'll be dragged aboard like livestock.\n\nSame thing in life. Instead of shells or mushrooms, maybe you get a spouse or children. That's fine too. But when the captain calls, run to the ship. Leave everything behind. Don't look back.\n\nIf you're old, don't wander far from the ship. You might miss the call.",
         "tags": [
           "death-and-mortality",
           "what-matters-most"
@@ -171,7 +171,7 @@
       {
         "sectionNumber": 8,
         "originalText": "Demand not that events should happen as you wish; but wish them to happen\nas they do happen, and you will go on well.",
-        "plainEnglish": "Don't demand that things happen the way you want them to. Instead, want them to happen the way they do happen. Then you'll be fine.",
+        "plainEnglish": "Don't demand that things happen the way you want them to. Want them to happen the way they do happen. Then you'll be fine.",
         "tags": [
           "freedom-and-control",
           "calm-your-mind"
@@ -188,7 +188,7 @@
       {
         "sectionNumber": 9,
         "originalText": "Sickness is an impediment to the body, but not to the will unless itself\npleases. Lameness is an impediment to the leg, but not to the will; and\nsay this to yourself with regard to everything that happens. For you will\nfind it to be an impediment to something else, but not truly to yourself.",
-        "plainEnglish": "Sickness blocks your body, but not your will — unless you let it. A lame leg blocks your leg, but not your will. Tell yourself this about everything that happens. You'll find it blocks something else, but not truly you.",
+        "plainEnglish": "Sickness gets in the way of your body, but not your will — unless you let it. A lame leg gets in the way of walking, but not your will. Say this to yourself about everything that happens. You'll find that things get in the way of other things, but not truly in the way of you.",
         "tags": [
           "freedom-and-control",
           "facing-hardship"
@@ -205,7 +205,7 @@
       {
         "sectionNumber": 10,
         "originalText": "Upon every accident, remember to turn toward yourself and inquire what\nfaculty you have for its use. If you encounter a handsome person, you\nwill find continence the faculty needed; if pain, then fortitude; if\nreviling, then patience. And when thus habituated, the phenomena of\nexistence will not overwhelm you.",
-        "plainEnglish": "Every time something happens to you, ask yourself what strength you have to handle it. If you meet an attractive person, you'll need self-control. If you feel pain, you'll need courage. If someone insults you, you'll need patience. Once you make this a habit, life's events won't overwhelm you.",
+        "plainEnglish": "When anything happens to you, pause and ask yourself what strength you have to deal with it. If you meet an attractive person, you'll need self-control. If you feel pain, you'll need courage. If someone insults you, you'll need patience. Make this a habit. Then life's ups and downs won't knock you over.",
         "tags": [
           "facing-hardship",
           "knowing-yourself"
@@ -222,10 +222,10 @@
       {
         "sectionNumber": 11,
         "originalText": "Never say of anything, “I have lost it,” but, “I have restored it.” Has\nyour child died? It is restored. Has your wife died? She is restored. Has\nyour estate been taken away? That likewise is restored. “But it was a bad\nman who took it.” What is it to you by whose hands he who gave it has\ndemanded it again? While he permits you to possess it, hold it as\nsomething not your own, as do travelers at an inn.",
-        "plainEnglish": "Never say \"I lost it.\" Say \"I gave it back.\" Your child died? You gave them back. Your wife died? You gave her back. Someone took your property? You gave that back too. \"But the person who took it was evil.\" So what? Why does it matter whose hands were used when the original giver wanted it returned? While you're allowed to have these things, treat them like a traveler treats a hotel room — it was never really yours to begin with.",
+        "plainEnglish": "Never say you've \"lost\" something. Say you've \"returned\" it. Did your child die? You returned them. Did your wife die? You returned her. Did someone take your property? You returned that too. \"But the person who took it was evil.\" What does that matter? The one who gave it to you took it back through whatever means. While you have something, treat it like it's not really yours. Think of yourself as a traveler staying at an inn.",
         "tags": [
-          "death-and-mortality",
-          "freedom-and-control"
+          "freedom-and-control",
+          "death-and-mortality"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -239,10 +239,10 @@
       {
         "sectionNumber": 12,
         "originalText": "If you would improve, lay aside such reasonings as these: “If I neglect\nmy affairs, I shall not have a maintenance; if I do not punish my\nservant, he will be good for nothing.” For it were better to die of\nhunger, exempt from grief and fear, than to live in affluence with\nperturbation; and it is better that your servant should be bad than you\nunhappy.\n\nBegin therefore with little things. Is a little oil spilled or a little\nwine stolen? Say to yourself, “This is the price paid for peace and\ntranquillity; and nothing is to be had for nothing.” And when you call\nyour servant, consider that it is possible he may not come at your call;\nor, if he does, that he may not do what you wish. But it is not at all\ndesirable for him, and very undesirable for you, that it should be in his\npower to cause you any disturbance.",
-        "plainEnglish": "If you want to improve, stop thinking like this: \"If I don't handle my business, I'll go broke. If I don't punish my servant, he'll become worthless.\" It's better to starve without worry and fear than to be rich and anxious. It's better for your servant to be bad than for you to be miserable.\n\nSo start with small things. Did someone spill oil or steal wine? Tell yourself, \"This is the cost of peace and calm. Nothing comes free.\" When you call your servant, remember he might not come. Or if he does come, he might not do what you want. It's not good for him to have this power over you. And it's terrible for you to let him disturb your peace.",
+        "plainEnglish": "If you want to improve, stop thinking like this: \"If I neglect my business, I'll go broke. If I don't punish my servant, he'll become worthless.\" It's better to starve without worry and fear than to live rich but anxious. It's better for your servant to be bad than for you to be miserable.\n\nStart with small things. Did someone spill oil or steal wine? Tell yourself, \"This is the price of peace and calm. Nothing comes free.\" When you call your servant, remember he might not come. Or if he does come, he might not do what you want. It's not good for him to have this power over you. And it's really bad for you to let him disturb your peace.",
         "tags": [
-          "calm-your-mind",
-          "freedom-and-control"
+          "freedom-and-control",
+          "calm-your-mind"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -256,10 +256,10 @@
       {
         "sectionNumber": 13,
         "originalText": "If you would improve, be content to be thought foolish and dull with\nregard to externals. Do not desire to be thought to know anything; and\nthough you should appear to others to be somebody, distrust yourself. For\nbe assured, it is not easy at once to keep your will in harmony with\nnature and to secure externals; but while you are absorbed in the one,\nyou must of necessity neglect the other.",
-        "plainEnglish": "If you want to get better, be okay with people thinking you're foolish and clueless about external things. Don't try to seem like you know everything. And even if others think you're important, don't trust that feeling about yourself. Here's why: it's impossible to keep your will aligned with nature while also chasing external things. Focus on one, and you'll neglect the other.",
+        "plainEnglish": "If you want to get better, be okay with people thinking you're foolish and clueless about external things. Don't try to look like you know everything. Even if others think you're important, don't trust that feeling. Here's why: it's impossible to keep your will aligned with nature and chase external things at the same time. Focus on one, and you'll definitely neglect the other.",
         "tags": [
           "knowing-yourself",
-          "freedom-and-control"
+          "what-matters-most"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -273,7 +273,7 @@
       {
         "sectionNumber": 14,
         "originalText": "If you wish your children and your wife and your friends to live forever,\nyou are foolish, for you wish things to be in your power which are not\nso, and what belongs to others to be your own. So likewise, if you wish\nyour servant to be without fault, you are foolish, for you wish vice not\nto be vice but something else. But if you wish not to be disappointed in\nyour desires, that is in your own power. Exercise, therefore, what is in\nyour power. A man’s master is he who is able to confer or remove whatever\nthat man seeks or shuns. Whoever then would be free, let him wish\nnothing, let him decline nothing, which depends on others; else he must\nnecessarily be a slave.",
-        "plainEnglish": "If you want your children, your wife, and your friends to live forever, you're being foolish. You want control over things that aren't yours to control. You want what belongs to others to be yours instead. Same thing if you want your employee to be perfect — you're being foolish. You want vice not to be vice, which is impossible. But if you want to avoid disappointment in what you desire, that's actually within your power. So focus on what you can control. Your master is whoever can give or take away what you're chasing or running from. If you want to be free, don't wish for anything that depends on other people. Don't avoid anything that depends on other people either. Otherwise, you'll always be a slave.",
+        "plainEnglish": "If you want your children, your spouse, and your friends to live forever, you're being foolish. You're wishing for control over things that aren't up to you. You're treating other people's lives as if they belong to you. Same thing if you expect your employee to be perfect. You're foolish. You're wishing that human flaws weren't human flaws. But if you want to avoid disappointment in what you desire — that is up to you. So focus on what you can control. Your master is anyone who can give you or take away what you desperately want or fear. If you want to be free, don't desperately want or fear anything that depends on other people. Otherwise, you're guaranteed to be a slave.",
         "tags": [
           "freedom-and-control",
           "facing-hardship"
@@ -290,7 +290,7 @@
       {
         "sectionNumber": 15,
         "originalText": "Remember that you must behave as at a banquet. Is anything brought round\nto you? Put out your hand and take a moderate share. Does it pass by you?\nDo not stop it. Is it not yet come? Do not yearn in desire toward it, but\nwait till it reaches you. So with regard to children, wife, office,\nriches; and you will some time or other be worthy to feast with the gods.\nAnd if you do not so much as take the things which are set before you,\nbut are able even to forego them, then you will not only be worthy to\nfeast with the gods, but to rule with them also. For, by thus doing,\nDiogenes and Heraclitus, and others like them, deservedly became divine,\nand were so recognized.",
-        "plainEnglish": "Remember that you must behave like you're at a dinner party. Is something passed to you? Reach out and take a reasonable portion. Does it go by you? Don't try to stop it. Hasn't it come to you yet? Don't yearn for it with desire, but wait until it reaches you. Act this way with children, your spouse, your job, and money. Then someday you'll be worthy to dine with the gods. And if you don't even take what's offered to you — if you can pass it up entirely — then you won't just be worthy to dine with the gods, but to rule alongside them. By acting this way, Diogenes and Heraclitus and others like them rightfully became godlike, and were recognized as such.",
+        "plainEnglish": "Remember that you must behave like you're at a dinner party. Is something passed around to you? Reach out and take a reasonable portion. Does it pass you by? Don't chase after it. Hasn't it come to you yet? Don't yearn for it desperately, but wait until it reaches you. Treat children, spouse, job, and wealth the same way. Do this and you'll eventually be worthy to dine with the gods. And if you don't just take what's offered to you, but can actually pass it up entirely, then you won't just be worthy to dine with the gods — you'll be worthy to rule alongside them. By acting this way, Diogenes and Heraclitus and others like them rightfully became divine, and were recognized as such.",
         "tags": [
           "freedom-and-control",
           "what-matters-most"
@@ -307,7 +307,7 @@
       {
         "sectionNumber": 16,
         "originalText": "When you see anyone weeping for grief, either that his son has gone\nabroad or that he has suffered in his affairs, take care not to be\novercome by the apparent evil, but discriminate and be ready to say,\n“What hurts this man is not this occurrence itself—for another man might\nnot be hurt by it—but the view he chooses to take of it.” As far as\nconversation goes, however, do not disdain to accommodate yourself to him\nand, if need be, to groan with him. Take heed, however, not to groan\ninwardly, too.",
-        "plainEnglish": "When you see someone crying because their child moved away or they lost money, don't let their pain fool you. Be clear about what's really happening. Say to yourself: \"What's hurting this person isn't the event itself — someone else might not be bothered by it at all — but how they're choosing to see it.\" In conversation, though, don't be cold. Go ahead and sympathize with them. Groan along if you need to. Just make sure you don't actually start believing their pain is justified inside your own mind.",
+        "plainEnglish": "When you see someone crying because their child moved away or their business failed, don't let their pain fool you. Be clear about what's really happening. Say to yourself, \"What's hurting this person isn't the event itself — someone else might not be bothered by the same thing — but how they're choosing to see it.\" In conversation, though, don't be cold. Meet them where they are. Groan with them if you need to. Just make sure you don't actually groan on the inside too.",
         "tags": [
           "calm-your-mind",
           "human-nature"
@@ -324,10 +324,10 @@
       {
         "sectionNumber": 17,
         "originalText": "Remember that you are an actor in a drama of such sort as the Author\nchooses—if short, then in a short one; if long, then in a long one. If it\nbe his pleasure that you should enact a poor man, or a cripple, or a\nruler, or a private citizen, see that you act it well. For this is your\nbusiness—to act well the given part, but to choose it belongs to another.",
-        "plainEnglish": "Remember that you're an actor in a play. The Author decides what kind of play it is — short or long, comedy or tragedy. If the Author wants you to play a poor person, a disabled person, a leader, or an ordinary citizen, make sure you play that role well. That's your job — to act your given part well. Choosing the part belongs to someone else.",
+        "plainEnglish": "Remember that you're an actor in a play. The author decides what kind of play it is — short or long. If the author wants you to play a poor person, a disabled person, a leader, or an ordinary citizen, make sure you play that role well. This is your job — to act well in whatever part you're given. But choosing the part? That's someone else's decision.",
         "tags": [
           "freedom-and-control",
-          "what-matters-most"
+          "facing-hardship"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -341,7 +341,7 @@
       {
         "sectionNumber": 18,
         "originalText": "When a raven happens to croak unluckily, be not overcome by appearances,\nbut discriminate and say, “Nothing is portended to _me_, either to my\npaltry body, or property, or reputation, or children, or wife. But to\n_me_ all portents are lucky if I will. For whatsoever happens, it belongs\nto me to derive advantage therefrom.”",
-        "plainEnglish": "When a raven croaks at what seems like a bad time, don't let appearances fool you. Think clearly and say, \"This means nothing for me — not for my body, my stuff, my reputation, my kids, or my spouse. All omens are good omens if I choose to see them that way. Whatever happens, I can find a way to benefit from it.\"",
+        "plainEnglish": "When a raven croaks and you think it's a bad omen, don't get carried away by appearances. Think clearly and say, \"This means nothing for me — not for my body, my possessions, my reputation, my children, or my wife. All omens are good omens for me if I choose to see them that way. Whatever happens, I can find a way to benefit from it.\"",
         "tags": [
           "calm-your-mind",
           "freedom-and-control"
@@ -358,7 +358,7 @@
       {
         "sectionNumber": 19,
         "originalText": "You can be unconquerable if you enter into no combat in which it is not\nin your own power to conquer. When, therefore, you see anyone eminent in\nhonors or power, or in high esteem on any other account, take heed not to\nbe bewildered by appearances and to pronounce him happy; for if the\nessence of good consists in things within our own power, there will be no\nroom for envy or emulation. But, for your part, do not desire to be a\ngeneral, or a senator, or a consul, but to be free; and the only way to\nthis is a disregard of things which lie not within our own power.",
-        "plainEnglish": "You can be unbeatable if you only fight battles you can actually win. So when you see someone with high rank, power, or fame, don't let appearances fool you into thinking they're happy. If what's truly good comes from things you control, then there's no reason to be jealous or try to compete with them. Don't aim to be a general, senator, or consul. Aim to be free. The only way to get there is to stop caring about things you can't control.",
+        "plainEnglish": "You can be unbeatable if you only fight battles you can actually win. So when you see someone with high rank, power, or fame, don't let appearances fool you into thinking they're truly happy. If real good comes from things you control, then there's no reason to envy or compete with them. Don't try to become a general, senator, or consul. Try to become free. The only way to get there is to stop caring about things you can't control.",
         "tags": [
           "freedom-and-control",
           "what-matters-most"
@@ -375,7 +375,7 @@
       {
         "sectionNumber": 20,
         "originalText": "Remember that it is not he who gives abuse or blows, who affronts, but\nthe view we take of these things as insulting. When, therefore, anyone\nprovokes you, be assured that it is your own opinion which provokes you.\nTry, therefore, in the first place, not to be bewildered by appearances.\nFor if you once gain time and respite, you will more easily command\nyourself.",
-        "plainEnglish": "Remember: it's not the person who insults you or hits you that hurts you. It's how you see these things as hurtful. So when someone makes you angry, know that it's your own thoughts making you angry. First, don't let appearances fool you. If you can pause and give yourself time, you'll control yourself much better.",
+        "plainEnglish": "Remember: it's not the person who insults you or hits you that hurts you. It's how you see these things as offensive that hurts you. So when someone provokes you, know that it's your own thoughts provoking you. First, try not to get caught up in what seems to be happening. If you can buy yourself some time, you'll find it much easier to control yourself.",
         "tags": [
           "calm-your-mind",
           "freedom-and-control"
@@ -392,7 +392,7 @@
       {
         "sectionNumber": 21,
         "originalText": "Let death and exile, and all other things which appear terrible, be daily\nbefore your eyes, but death chiefly; and you will never entertain an\nabject thought, nor too eagerly covet anything.",
-        "plainEnglish": "Keep death and exile and all other scary things in front of your eyes every day. But especially death. Do this and you'll never think weak thoughts or desperately want things you shouldn't.",
+        "plainEnglish": "Think about death and exile every day. Think about all the things that seem scary. But especially think about death. When you do this, you won't have weak thoughts or desperately want things you shouldn't.",
         "tags": [
           "death-and-mortality",
           "what-matters-most"
@@ -409,7 +409,7 @@
       {
         "sectionNumber": 22,
         "originalText": "If you have an earnest desire toward philosophy, prepare yourself from\nthe very first to have the multitude laugh and sneer, and say, “He is\nreturned to us a philosopher all at once”; and, “Whence this supercilious\nlook?” Now, for your part, do not have a supercilious look indeed, but\nkeep steadily to those things which appear best to you, as one appointed\nby God to this particular station. For remember that, if you are\npersistent, those very persons who at first ridiculed will afterwards\nadmire you. But if you are conquered by them, you will incur a double\nridicule.",
-        "plainEnglish": "If you really want to study philosophy, get ready. People will laugh at you and mock you. They'll say, \"Look, he thinks he's a philosopher now!\" and \"Where did this arrogant attitude come from?\" Don't actually be arrogant. But stick firmly to what seems right to you, like someone God has assigned to this specific job. Remember: if you keep going, the same people who made fun of you at first will respect you later. But if you let them defeat you, you'll look twice as foolish.",
+        "plainEnglish": "If you really want to pursue philosophy, get ready. People will laugh at you and mock you from day one. They'll say, \"Look who suddenly thinks he's a philosopher!\" and \"Where did this arrogant attitude come from?\" Don't actually be arrogant. But stick to what seems right to you, like someone God assigned to this specific job. Remember: if you keep at it, the same people who mocked you at first will end up respecting you later. But if you let them defeat you, you'll be twice as ridiculous.",
         "tags": [
           "knowing-yourself",
           "facing-hardship"
@@ -426,7 +426,7 @@
       {
         "sectionNumber": 23,
         "originalText": "If you ever happen to turn your attention to externals, for the pleasure\nof anyone, be assured that you have ruined your scheme of life. Be\ncontent, then, in everything, with being a philosopher; and if you wish\nto seem so likewise to anyone, appear so to yourself, and it will suffice\nyou.",
-        "plainEnglish": "If you ever focus on external things to please someone else, know that you've wrecked your whole approach to life. Be satisfied with simply being a philosopher. And if you want to appear like one to others, just appear that way to yourself. That's enough.",
+        "plainEnglish": "If you ever focus on external things to please someone else, you've just ruined your entire plan for living well. Be satisfied with being a philosopher in everything you do. And if you want to appear philosophical to others, just appear that way to yourself. That's enough.",
         "tags": [
           "knowing-yourself",
           "freedom-and-control"
@@ -442,11 +442,11 @@
     "enchiridion_section-24": [
       {
         "sectionNumber": 24,
-        "originalText": "Let not such considerations as these distress you: “I shall live in\ndiscredit and be nobody anywhere.” For if discredit be an evil, you can\nno more be involved in evil through another than in baseness. Is it any\nbusiness of yours, then, to get power or to be admitted to an\nentertainment? By no means. How then, after all, is this discredit? And\nhow it is true that you will be nobody anywhere when you ought to be\nsomebody in those things only which are within your own power, in which\nyou may be of the greatest consequence? “But my friends will be\nunassisted.” What do you mean by “unassisted”? They will not have money\nfrom you, nor will you make them Roman citizens. Who told you, then, that\nthese are among the things within our own power, and not rather the\naffairs of others? And who can give to another the things which he\nhimself has not? “Well, but get them, then, that we too may have a\nshare.” If I can get them with the preservation of my own honor and\nfidelity and self-respect, show me the way and I will get them; but if\nyou require me to lose my own proper good, that you may gain what is no\ngood, consider how unreasonable and foolish you are.",
-        "plainEnglish": "Don't let thoughts like this bother you: \"I'll live in shame and be nobody anywhere.\" If shame is truly bad, then you can't be dragged into something bad by another person any more than you can be dragged into being immoral. Is it your job to gain power or get invited to parties? Not at all. So how is this really shame? And how are you nobody anywhere when you should only matter in the things that are up to you — where you can actually make the biggest difference? \"But my friends won't get help.\" What do you mean by \"help\"? They won't get money from you, and you won't make them Roman citizens. Who told you that these things are up to you instead of being other people's business? And who can give someone else what he doesn't have himself? \"Well then, go get those things so we can benefit too.\" If I can get them while keeping my honor, integrity, and self-respect, show me how and I'll do it. But if you're asking me to lose what's truly good about me so you can gain something that isn't even good — think about how unreasonable and foolish you're being.",
+        "originalText": "Let not such considerations as these distress you: \"I shall live in discredit and be nobody anywhere.\" For if discredit be an evil, you can no more be involved in evil through another than in baseness. Is it any business of yours, then, to get power or to be admitted to an entertainment? By no means. How then, after all, is this discredit? And how it is true that you will be nobody anywhere when you ought to be somebody in those things only which are within your own power, in which you may be of the greatest consequence?",
+        "plainEnglish": "Don't let thoughts like these upset you: \"I'll live in shame and be nobody anywhere.\" If shame is truly bad, then you can't be harmed by what another person does any more than you can be made corrupt by them. Is it your job to gain power or get invited to parties? Not at all. So how is this really shameful? And how can you be nobody anywhere when you should only matter in things that are up to you — where you can be truly important?",
         "tags": [
           "freedom-and-control",
-          "doing-the-right-thing"
+          "what-matters-most"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -457,8 +457,23 @@
       },
       {
         "sectionNumber": 24,
-        "originalText": "Besides, which would\nyou rather have, a sum of money or a faithful and honorable friend?\nRather assist me, then, to gain this character than require me to do\nthose things by which I may lose it. Well, but my country, say you, as\nfar as depends upon me, will be unassisted. Here, again, what assistance\nis this you mean? It will not have porticos nor baths of your providing?\nAnd what signifies that? Why, neither does a smith provide it with shoes,\nnor a shoemaker with arms. It is enough if everyone fully performs his\nown proper business. And were you to supply it with another faithful and\nhonorable citizen, would not he be of use to it? Yes. Therefore neither\nare you yourself useless to it. “What place, then,” say you, “shall I\nhold in the state?” Whatever you can hold with the preservation of your\nfidelity and honor. But if, by desiring to be useful to that, you lose\nthese, how can you serve your country when you have become faithless and\nshameless?",
-        "plainEnglish": "What would you rather have — money or a loyal, honest friend? Then help me build that kind of character instead of asking me to do things that would destroy it. \"But my country will suffer if I don't help,\" you say. What kind of help do you mean? Your country won't have fancy buildings or bathhouses because of you? So what? A blacksmith doesn't provide shoes. A shoemaker doesn't provide weapons. It's enough if everyone does their own job well. If you gave your country another loyal, honest citizen, wouldn't that be useful? Yes. So you're not useless either. \"But what position will I have in government?\" you ask. Whatever position you can hold while keeping your integrity and honor. If you throw those away trying to be useful, how can you serve your country once you've become dishonest and shameless?",
+        "originalText": "\"But my friends will be unassisted.\" What do you mean by \"unassisted\"? They will not have money from you, nor will you make them Roman citizens. Who told you, then, that these are among the things within our own power, and not rather the affairs of others? And who can give to another the things which he himself has not? \"Well, but get them, then, that we too may have a share.\" If I can get them with the preservation of my own honor and fidelity and self-respect, show me the way and I will get them; but if you require me to lose my own proper good, that you may gain what is no good, consider how unreasonable and foolish you are. Besides, which would you rather have, a sum of money or a faithful and honorable friend? Rather assist me, then, to gain this character than require me to do those things by which I may lose it.",
+        "plainEnglish": "\"But my friends will have no help from me.\" What do you mean by \"help\"? They won't get money from you, and you won't make them Roman citizens. Who told you these things were under your control instead of being other people's business? And how can you give someone what you don't even have yourself? \"Well then, go get these things so we can all benefit.\" If I can get them while keeping my honor, loyalty, and self-respect, show me how and I'll do it. But if you want me to lose what makes me good just so you can gain something worthless, think about how unreasonable and foolish you're being. Besides, what would you rather have — some money or a faithful and honorable friend? Help me build that kind of character instead of asking me to do things that would destroy it.",
+        "tags": [
+          "doing-the-right-thing",
+          "freedom-and-control"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 24,
+        "originalText": "Well, but my country, say you, as far as depends upon me, will be unassisted. Here, again, what assistance is this you mean? It will not have porticos nor baths of your providing? And what signifies that? Why, neither does a smith provide it with shoes, nor a shoemaker with arms. It is enough if everyone fully performs his own proper business. And were you to supply it with another faithful and honorable citizen, would not he be of use to it? Yes. Therefore neither are you yourself useless to it. \"What place, then,\" say you, \"shall I hold in the state?\" Whatever you can hold with the preservation of your fidelity and honor. But if, by desiring to be useful to that, you lose these, how can you serve your country when you have become faithless and shameless?",
+        "plainEnglish": "But you say, \"My country will suffer without my help.\" What kind of help do you mean? Your country won't have fancy buildings or public baths built by you? So what? A blacksmith doesn't provide shoes for the country. A shoemaker doesn't provide weapons. It's enough for each person to do their own job well. If you gave your country another honest and honorable citizen, wouldn't that be useful? Yes. So you're not useless to your country either. \"But what position should I hold in the government?\" you ask. Whatever position you can hold while keeping your integrity and honor. If you sacrifice those qualities just to be \"useful\" to your country, how can you really serve it once you've become dishonest and shameless?",
         "tags": [
           "doing-the-right-thing",
           "knowing-yourself"
@@ -474,11 +489,26 @@
     "enchiridion_section-25": [
       {
         "sectionNumber": 25,
-        "originalText": "Is anyone preferred before you at an entertainment, or in courtesies, or\nin confidential intercourse? If these things are good, you ought to\nrejoice that he has them; and if they are evil, do not be grieved that\nyou have them not. And remember that you cannot be permitted to rival\nothers in externals without using the same means to obtain them. For how\ncan he who will not haunt the door of any man, will not attend him, will\nnot praise him, have an equal share with him who does these things? You\nare unjust, then, and unreasonable if you are unwilling to pay the price\nfor which these things are sold, and would have them for nothing. For how\nmuch are lettuces sold? An obulus, for instance. If another, then, paying\nan obulus, takes the lettuces, and you, not paying it, go without them,\ndo not imagine that he has gained any advantage over you. For as he has\nthe lettuces, so you have the obulus which you did not give. So, in the\npresent case, you have not been invited to such a person’s entertainment\nbecause you have not paid him the price for which a supper is sold. It is\nsold for praise; it is sold for attendance. Give him, then, the value if\nit be for your advantage. But if you would at the same time not pay the\none, and yet receive the other, you are unreasonable and foolish. Have\nyou nothing, then, in place of the supper? Yes, indeed, you have—not to\npraise him whom you do not like to praise; not to bear the insolence of\nhis lackeys.",
-        "plainEnglish": "Does someone else get invited to parties before you? Do they get better treatment or more personal attention? If these things are actually good, then be happy for them. If they're bad, don't worry that you don't have them. And remember — you can't compete with others for these external things unless you're willing to do what they do to get them. How can someone who won't kiss up to powerful people, won't follow them around, and won't flatter them expect the same rewards as someone who does all that? You're being unfair and unreasonable if you want these things without paying the price for them. You want them for free. Think about it this way: lettuce costs a coin. If someone else pays the coin and gets the lettuce, while you don't pay and go without, don't think they got some advantage over you. They have the lettuce, but you still have your coin. Same thing here. You didn't get invited to that person's dinner because you didn't pay the price that dinner invitations cost. They cost praise and attention. So pay up if it's worth it to you. But if you want to keep your coin and still get the lettuce, you're being unreasonable and foolish. Don't you get anything instead of the dinner? Of course you do — you don't have to praise someone you don't want to praise, and you don't have to put up with their servants treating you badly.",
+        "originalText": "Is anyone preferred before you at an entertainment, or in courtesies, or\nin confidential intercourse? If these things are good, you ought to\nrejoice that he has them; and if they are evil, do not be grieved that\nyou have them not. And remember that you cannot be permitted to rival\nothers in externals without using the same means to obtain them. For how\ncan he who will not haunt the door of any man, will not attend him, will\nnot praise him, have an equal share with him who does these things? You\nare unjust, then, and unreasonable if you are unwilling to pay the price\nfor which these things are sold, and would have them for nothing. For how\nmuch are lettuces sold? An obulus, for instance.",
+        "plainEnglish": "Does someone else get invited to better parties than you? Do they get more attention or closer friendships? If these things are actually good, you should be happy they have them. If these things are bad, don't feel sorry that you don't have them. Remember — you can't compete with others for external things without doing what they do to get them. How can someone who won't kiss up to people, follow them around, or flatter them expect to get the same treatment as someone who does all that? You're being unfair and unreasonable if you want these things but won't pay the price for them. You want them for free. Think about it this way: how much do lettuces cost? One obulus, let's say.",
         "tags": [
           "freedom-and-control",
           "what-matters-most"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 25,
+        "originalText": "If another, then, paying\nan obulus, takes the lettuces, and you, not paying it, go without them,\ndo not imagine that he has gained any advantage over you. For as he has\nthe lettuces, so you have the obulus which you did not give. So, in the\npresent case, you have not been invited to such a person’s entertainment\nbecause you have not paid him the price for which a supper is sold. It is\nsold for praise; it is sold for attendance. Give him, then, the value if\nit be for your advantage. But if you would at the same time not pay the\none, and yet receive the other, you are unreasonable and foolish. Have\nyou nothing, then, in place of the supper? Yes, indeed, you have—not to\npraise him whom you do not like to praise; not to bear the insolence of\nhis lackeys.",
+        "plainEnglish": "Say someone pays a coin for lettuce and you don't pay, so you go without. Don't think he got something over on you. He has the lettuce, but you still have your coin. Same thing here — you didn't get invited to someone's dinner party because you didn't pay the price. Dinner invitations are sold for flattery and kissing up. Pay that price if it's worth it to you. But if you want to keep your dignity and still get the invitation, you're being unreasonable and foolish. So you miss the dinner — what do you get instead? You get to keep your self-respect. You don't have to praise someone you don't want to praise. You don't have to put up with his servants treating you badly.",
+        "tags": [
+          "freedom-and-control",
+          "knowing-yourself"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -492,10 +522,10 @@
       {
         "sectionNumber": 26,
         "originalText": "The will of nature may be learned from things upon which we are all\nagreed. As when our neighbor’s boy has broken a cup, or the like, we are\nready at once to say, “These are casualties that will happen”; be\nassured, then, that when your own cup is likewise broken, you ought to be\naffected just as when another’s cup was broken. Now apply this to greater\nthings. Is the child or wife of another dead? There is no one who would\nnot say, “This is an accident of mortality.” But if anyone’s own child\nhappens to die, it is immediately, “Alas! how wretched am I!” It should\nbe always remembered how we are affected on hearing the same thing\nconcerning others.",
-        "plainEnglish": "You can learn what's natural by looking at things everyone agrees on. When your neighbor's kid breaks a cup, you're quick to say, \"These things happen.\" So when your own cup breaks, you should react the same way you did when someone else's cup broke. Now apply this to bigger things. When another person's child or spouse dies, everyone says, \"Death is part of life.\" But when your own child dies, you immediately cry, \"How awful! Poor me!\" Always remember how you react when you hear about the same thing happening to others.",
+        "plainEnglish": "You can learn what's natural by looking at how everyone reacts to the same situations. When your neighbor's kid breaks a cup, you immediately say, \"These things happen.\" So when your own cup breaks, you should react the same way. Apply this to bigger things. When someone else's child or spouse dies, everyone says, \"That's just part of life.\" But when your own child dies, you cry, \"How terrible for me!\" Remember how you feel when you hear about other people's losses. That's how you should feel about your own.",
         "tags": [
           "facing-hardship",
-          "human-nature"
+          "calm-your-mind"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -526,7 +556,7 @@
       {
         "sectionNumber": 28,
         "originalText": "If a person had delivered up your body to some passer-by, you would\ncertainly be angry. And do you feel no shame in delivering up your own\nmind to any reviler, to be disconcerted and confounded?",
-        "plainEnglish": "If someone handed your body over to a random stranger, you'd be furious. So why aren't you ashamed when you hand your mind over to anyone who insults you? Why let them mess with your head and confuse you?",
+        "plainEnglish": "If someone handed your body over to a random stranger, you'd be furious. So why aren't you ashamed when you hand your mind over to anyone who insults you, letting them mess with your head and confuse you?",
         "tags": [
           "knowing-yourself",
           "freedom-and-control"
@@ -543,10 +573,10 @@
       {
         "sectionNumber": 29,
         "originalText": "In every affair consider what precedes and what follows, and then undertake it. Otherwise you will begin with spirit, indeed, careless of the consequences, and when these are developed, you will shamefully desist. \"I would conquer at the Olympic Games.\" But consider what precedes and what follows, and then, if it be for your advantage, engage in the affair. You must conform to rules, submit to a diet, refrain from dainties; exercise your body, whether you choose it or not, at a stated hour, in heat and cold; you must drink no cold water, and sometimes no wine—in a word, you must give yourself up to your trainer as to a physician. Then, in the combat, you may be thrown into a ditch, dislocate your arm, turn your ankle, swallow an abundance of dust, receive stripes [for negligence], and, after all, lose the victory. When you have reckoned up all this, if your inclination still holds, set about the combat.",
-        "plainEnglish": "Before you start anything, think about what it will take and what could happen. Then decide. Otherwise you'll jump in full of energy, not thinking about the consequences. When things get tough, you'll quit in shame.\n\n\"I want to win at the Olympics.\" Fine. But think about what that means. If it's worth it, then commit. You'll have to follow strict rules. You'll eat a special diet and give up treats. You'll exercise your body at set times whether you feel like it or not, in heat and cold. You can't drink cold water. Sometimes no wine at all. You basically hand your life over to your trainer like a patient to a doctor. Then in the actual competition, you might get thrown in a ditch, dislocate your arm, twist your ankle, swallow tons of dust, get beaten for mistakes, and still lose.\n\nOnce you've counted up all of this, if you still want to do it, then go fight.",
+        "plainEnglish": "Before you commit to anything, think about what comes before and what comes after. Then decide. Otherwise you'll start with excitement, ignore the consequences, and when they hit you, you'll quit in shame. \"I want to win at the Olympics.\" Fine. But think about what that really means. If it's worth it, go for it. You'll have to follow strict rules. You'll have to diet. No treats. You'll have to train your body at set times whether you feel like it or not, in blazing heat and freezing cold. No cold water. Sometimes no wine at all. You basically have to hand your life over to your trainer like you would to a doctor. Then in the actual competition, you might get thrown in a ditch, dislocate your arm, twist your ankle, swallow tons of dust, get beaten for screwing up, and lose anyway. Add all that up. If you still want to do it, then go fight.",
         "tags": [
           "knowing-yourself",
-          "what-matters-most"
+          "facing-hardship"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -558,7 +588,7 @@
       {
         "sectionNumber": 29,
         "originalText": "Otherwise, take notice, you will behave like children who sometimes play wrestlers, sometimes gladiators, sometimes blow a trumpet, and sometimes act a tragedy, when they happen to have seen and admired these shows. Thus you too will be at one time a wrestler, and another a gladiator; now a philosopher, now an orator; but nothing in earnest. Like an ape you mimic all you see, and one thing after another is sure to please you, but is out of favor as soon as it becomes familiar. For you have never entered upon anything considerately; nor after having surveyed and tested the whole matter, but carelessly, and with a halfway zeal.",
-        "plainEnglish": "Otherwise, here's what will happen. You'll act like children who play pretend. They see a wrestling match and suddenly they're wrestlers. They see gladiators and now they're gladiators. They hear a trumpet and they want to be musicians. They watch a play and they're actors. That's exactly what you'll do. One day you'll be a wrestler, the next a gladiator. Today a philosopher, tomorrow a public speaker. But you won't be serious about any of it. Like a monkey, you'll copy everything you see. You'll get excited about something new, then lose interest once the novelty wears off. Why? Because you never think things through. You don't examine what you're getting into or test whether it's right for you. You just jump in carelessly, with half-hearted effort.",
+        "plainEnglish": "If you don't watch out, you'll act like children at play. Kids see wrestlers and decide they're wrestlers. They see gladiators and become gladiators. They hear a trumpet and start playing trumpet. They watch a play and become actors. That's exactly what you'll do. One day you're a wrestler, the next a gladiator. Today a philosopher, tomorrow a public speaker. But you're never serious about any of it. Like a monkey, you copy whatever catches your eye. You get excited about something new, then lose interest as soon as the novelty wears off. You never think anything through. You never examine the whole picture or test whether it's right for you. You just jump in carelessly with half-hearted enthusiasm.",
         "tags": [
           "knowing-yourself",
           "what-matters-most"
@@ -572,8 +602,23 @@
       },
       {
         "sectionNumber": 29,
-        "originalText": "Thus some, when they have seen a philosopher and heard a man speaking like Euphrates—though, indeed, who can speak like him?—have a mind to be philosophers, too. Consider first, man, what the matter is, and what your own nature is able to bear. If you would be a wrestler, consider your shoulders, your back, your thighs; for different persons are made for different things. Do you think that you can act as you do and be a philosopher, that you can eat, drink, be angry, be discontented, as you are now? You must watch, you must labor, you must get the better of certain appetites, must quit your acquaintances, be despised by your servant, be laughed at by those you meet; come off worse than others in everything—in offices, in honors, before tribunals. When you have fully considered all these things, approach, if you please—that is, if, by parting with them, you have a mind to purchase serenity, freedom, and tranquillity. If not, do not come hither; do not, like children, be now a philosopher, then a publican, then an orator, and then one of Caesar's officers. These things are not consistent. You must be one man, either good or bad. You must cultivate either your own reason or else externals; apply yourself either to things within or without you—that is, be either a philosopher or one of the mob.",
-        "plainEnglish": "Some people hear a great philosopher speak—like Euphrates, though who could speak like him?—and suddenly want to become philosophers too. But first, consider what this actually involves. Ask yourself what your nature can handle. If you wanted to be a wrestler, you'd examine your shoulders, your back, your thighs. Different people are built for different things. Do you think you can keep living exactly as you do now and be a philosopher? Keep eating, drinking, getting angry, and complaining like before? You'll have to stay alert. You'll have to work hard. You'll have to control certain desires. You'll have to leave your friends behind. Your servant will look down on you. People you meet will laugh at you. You'll lose out to others in everything—jobs, honors, court cases. Think through all of this carefully. Then approach philosophy if you want—but only if you're willing to give up these things to gain peace of mind, freedom, and calm. If not, don't bother. Don't be like children who want to be a philosopher one day, a tax collector the next, then a public speaker, then one of Caesar's officers. These roles don't mix. You must be one person—either good or bad. Either develop your mind or chase external things. Focus on what's within you or what's outside you. Be either a philosopher or just another person in the crowd.",
+        "originalText": "Thus some, when they have seen a philosopher and heard a man speaking like Euphrates[3]—though, indeed, who can speak like him?—have a mind to be philosophers, too. Consider first, man, what the matter is, and what your own nature is able to bear. If you would be a wrestler, consider your shoulders, your back, your thighs; for different persons are made for different things. Do you think that you can act as you do and be a philosopher, that you can eat, drink, be angry, be discontented, as you are now? You must watch, you must labor, you must get the better of certain appetites, must quit your acquaintances, be despised by your servant, be laughed at by those you meet; come off worse than others in everything—in offices, in honors, before tribunals.",
+        "plainEnglish": "Some people hear a philosopher speak—someone like Euphrates (though really, who can speak like him?)—and they think, \"I want to be a philosopher too.\" Hold on. First, figure out what this actually involves. And be honest about what you can handle. If you wanted to be a wrestler, you'd check your shoulders, your back, your thighs. Different people are built for different things. Do you think you can keep living exactly like you do now and be a philosopher? Keep eating, drinking, getting angry, and complaining the way you always have? You'll need to stay alert. You'll need to work hard. You'll have to control certain desires. You'll have to leave some friends behind. Your servant will look down on you. People you meet will laugh at you. You'll lose out to others in everything—jobs, honors, court cases.",
+        "tags": [
+          "knowing-yourself",
+          "facing-hardship"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 29,
+        "originalText": "When you have fully considered all these things, approach, if you please—that is, if, by parting with them, you have a mind to purchase serenity, freedom, and tranquillity. If not, do not come hither; do not, like children, be now a philosopher, then a publican, then an orator, and then one of Caesar's officers. These things are not consistent. You must be one man, either good or bad. You must cultivate either your own reason or else externals; apply yourself either to things within or without you—that is, be either a philosopher or one of the mob.",
+        "plainEnglish": "After you've thought through all of this, then make your choice—if you want to give up those things to buy peace of mind, freedom, and calm. If not, don't bother. Don't be like children who play philosopher one day, businessman the next, then speaker, then government official. You can't have it both ways. You must be one person, either good or bad. Either work on your own thinking or chase external things. Focus on what's within you or what's outside you. Be either a philosopher or just another person in the crowd.",
         "tags": [
           "knowing-yourself",
           "what-matters-most"
@@ -590,7 +635,7 @@
       {
         "sectionNumber": 30,
         "originalText": "Duties are universally measured by relations. Is a certain man your\nfather? In this are implied taking care of him, submitting to him in all\nthings, patiently receiving his reproaches, his correction. But he is a\nbad father. Is your natural tie, then, to a _good_ father? No, but to a\nfather. Is a brother unjust? Well, preserve your own just relation toward\nhim. Consider not what _he_ does, but what _you_ are to do to keep your\nown will in a state conformable to nature, for another cannot hurt you\nunless you please. You will then be hurt when you consent to be hurt. In\nthis manner, therefore, if you accustom yourself to contemplate the\nrelations of neighbor, citizen, commander, you can deduce from each the\ncorresponding duties.",
-        "plainEnglish": "Your duties come from your relationships. Is someone your father? Then you need to take care of him, respect him, and accept his criticism patiently — even when he corrects you. But what if he's a bad father? Your natural connection isn't to a good father. It's just to a father. Is your brother unfair to you? Keep being fair to him anyway. Don't focus on what he does. Focus on what you need to do to keep your character in line with nature. Another person can't hurt you unless you let them. You only get hurt when you agree to be hurt. Practice this way of thinking with all your relationships — neighbor, fellow citizen, boss. You'll know what each relationship requires from you.",
+        "plainEnglish": "Your duties come from your relationships. Is someone your father? Then you should take care of him, respect him, and accept his criticism patiently. But what if he's a bad father? Your natural duty isn't to a good father — it's to a father, period. Is your brother unfair to you? Keep being fair to him anyway. Don't worry about what he does. Focus on what you need to do to keep your character aligned with nature. No one can hurt you unless you let them. You only get hurt when you choose to be hurt. Practice this way of thinking with all your relationships — neighbor, fellow citizen, boss. You'll figure out what you owe each person.",
         "tags": [
           "doing-the-right-thing",
           "human-nature"
@@ -606,11 +651,11 @@
     "enchiridion_section-31": [
       {
         "sectionNumber": 31,
-        "originalText": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you. And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are.",
-        "plainEnglish": "True reverence for the gods comes down to this: think correctly about them. They exist, and they run the universe justly and well. Commit to obeying them. Accept their will. Follow them willingly through whatever happens, knowing they have perfect wisdom. If you do this, you'll never blame the gods or think they've abandoned you. There's only one way to achieve this mindset: stop worrying about things outside your control. Make good and evil depend only on things that are up to you.",
+        "originalText": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you.",
+        "plainEnglish": "Here's what real devotion to the gods means: think correctly about them. They exist. They run the universe fairly and well. Commit to obeying them, giving in to them, and following them willingly through whatever happens. They rule with perfect wisdom. If you do this, you'll never blame the gods or accuse them of abandoning you.",
         "tags": [
-          "freedom-and-control",
-          "facing-hardship"
+          "facing-hardship",
+          "what-matters-most"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -621,8 +666,8 @@
       },
       {
         "sectionNumber": 31,
-        "originalText": "For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors. For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles[4] mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed. So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise.",
-        "plainEnglish": "If you think external things are good or bad, you'll inevitably get angry and blame people when things don't go your way. Every living creature naturally runs from what seems harmful and chases what seems helpful. So it's impossible for someone who thinks they're being hurt to be happy with the person they think is hurting them. It's also impossible to be happy about the hurt itself. This is why a son curses his father when the father doesn't give him what seems good. This is what made Polynices and Eteocles enemies — they both thought ruling the empire was good. This is why farmers curse the gods, and so do sailors, merchants, and people who lose their wives or children. Where your interests lie, that's where your devotion goes too. So whoever learns to control their desires and aversions properly will also learn to be properly devoted to the gods.",
+        "originalText": "And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are. For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors.",
+        "plainEnglish": "There's only one way to achieve this: stop caring about things you can't control. Only call things good or bad if they're actually up to you. If you think other things are good or bad, you'll inevitably get upset when you don't get what you want or when bad things happen. Then you'll blame whoever caused it.",
         "tags": [
           "freedom-and-control",
           "calm-your-mind"
@@ -636,10 +681,26 @@
       },
       {
         "sectionNumber": 31,
-        "originalText": "But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly.",
-        "plainEnglish": "You should also make offerings and sacrifices according to your country's customs. Do this with a pure heart. Don't be careless or lazy about it. Don't be cheap, but don't go overboard either.",
+        "originalText": "For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child.",
+        "plainEnglish": "Every living thing naturally runs from what seems harmful and chases after what seems good. So it's impossible for someone who thinks they're being hurt to feel happy about the person hurting them. You can't enjoy the hurt itself either. This is why a father gets cursed by his son when he doesn't give him what the son thinks is good. It's why Polynices and Eteocles became enemies — they both thought ruling the empire was good. This is why farmers curse the gods, and sailors do too, and merchants, and people who lose their spouse or children.",
         "tags": [
-          "doing-the-right-thing"
+          "human-nature",
+          "facing-hardship"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 31,
+        "originalText": "For where our interest is, there, too, is piety directed. So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise. But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly.",
+        "plainEnglish": "Your devotion follows your priorities. If you properly control what you want and what you avoid, you'll naturally care about being devout too. But everyone should also make offerings, sacrifices, and give first fruits according to their country's customs. Do this sincerely — not carelessly or lazily, not cheaply, and not wastefully either.",
+        "tags": [
+          "doing-the-right-thing",
+          "knowing-yourself"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -652,11 +713,26 @@
     "enchiridion_section-32": [
       {
         "sectionNumber": 32,
-        "originalText": "When you have recourse to divination, remember that you know not what the\nevent will be, and you come to learn it of the diviner; but of what\nnature it is you knew before coming; at least, if you are of philosophic\nmind. For if it is among the things not within our own power, it can by\nno means be either good or evil. Do not, therefore, bring with you to the\ndiviner either desire or aversion—else you will approach him\ntrembling—but first clearly understand that every event is indifferent\nand nothing to _you_, of whatever sort it may be; for it will be in your\npower to make a right use of it, and this no one can hinder. Then come\nwith confidence to the gods as your counselors; and afterwards, when any\ncounsel is given you, remember what counselors you have assumed, and\nwhose advice you will neglect if you disobey. Come to divination as\nSocrates prescribed, in cases of which the whole consideration relates to\nthe event, and in which no opportunities are afforded by reason or any\nother art to discover the matter in view. When, therefore, it is our duty\nto share the danger of a friend or of our country, we ought not to\nconsult the oracle as to whether we shall share it with them or not. For\nthough the diviner should forewarn you that the auspices are unfavorable,\nthis means no more than that either death or mutilation or exile is\nportended. But we have reason within us; and it directs us, even with\nthese hazards, to stand by our friend and our country. Attend, therefore,\nto the greater diviner, the Pythian God, who once cast out of the temple\nhim who neglected to save his friend.[5]",
-        "plainEnglish": "When you go to fortune tellers or oracles, remember this: You don't know what will happen, and that's why you're asking. But you already know what kind of thing it is before you go — if you think like a philosopher. If it's something outside your control, it can't be truly good or bad for you. So don't bring hope or fear with you to the fortune teller. Don't go there shaking. First understand that whatever happens is neutral. It means nothing to you, whatever it turns out to be. You'll always have the power to handle it well, and no one can take that away from you. Go confidently to the gods for advice. And when they give you counsel, remember who you're listening to. Remember whose advice you'd be ignoring if you don't follow it. Use divination like Socrates said to — only for things that are completely about the outcome, where you can't figure it out through reasoning or skill. So when it's your duty to share danger with a friend or your country, don't ask the oracle whether you should do it or not. Even if the fortune teller warns you that the signs are bad — meaning death, injury, or exile might be coming — you still have your reason. And reason tells you to stand by your friend and country, even with those risks. Listen to the greater fortune teller — your own rational mind. Remember, the Pythian God once threw someone out of his temple for failing to save his friend.",
+        "originalText": "When you have recourse to divination, remember that you know not what the event will be, and you come to learn it of the diviner; but of what nature it is you knew before coming; at least, if you are of philosophic mind. For if it is among the things not within our own power, it can by no means be either good or evil. Do not, therefore, bring with you to the diviner either desire or aversion—else you will approach him trembling—but first clearly understand that every event is indifferent and nothing to _you_, of whatever sort it may be; for it will be in your power to make a right use of it, and this no one can hinder. Then come with confidence to the gods as your counselors; and afterwards, when any counsel is given you, remember what counselors you have assumed, and whose advice you will neglect if you disobey.",
+        "plainEnglish": "When you go to someone who claims to predict the future, remember this: You don't know what will happen. That's why you're asking. But you already know what kind of thing it is — if you think like a philosopher. If the event is not under your control, then it cannot be good or bad for you. So don't bring desire or fear to the fortune teller. Don't approach them shaking with worry. First understand clearly that every event is neutral. It means nothing to you, whatever it turns out to be. You have the power to respond well to it. No one can take that away from you. Once you understand this, approach the gods confidently as advisors. And when they give you advice, remember who you chose as counselors. Remember whose guidance you're ignoring if you don't listen.",
+        "tags": [
+          "freedom-and-control",
+          "calm-your-mind"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 32,
+        "originalText": "Come to divination as Socrates prescribed, in cases of which the whole consideration relates to the event, and in which no opportunities are afforded by reason or any other art to discover the matter in view. When, therefore, it is our duty to share the danger of a friend or of our country, we ought not to consult the oracle as to whether we shall share it with them or not. For though the diviner should forewarn you that the auspices are unfavorable, this means no more than that either death or mutilation or exile is portended. But we have reason within us; and it directs us, even with these hazards, to stand by our friend and our country. Attend, therefore, to the greater diviner, the Pythian God, who once cast out of the temple him who neglected to save his friend.",
+        "plainEnglish": "Use fortune-telling the way Socrates did — only when you can't figure out what will happen through reason or skill alone. When it's your duty to share danger with a friend or your country, don't ask an oracle whether you should do it. Even if the fortune-teller warns you the signs are bad — meaning death, injury, or exile might be coming — so what? You have reason inside you. And reason tells you to stand by your friend and your country, even when it's dangerous. Listen to the greater fortune-teller — your own mind. Remember, the Pythian God once threw someone out of his temple for failing to save his friend.",
         "tags": [
           "doing-the-right-thing",
-          "freedom-and-control"
+          "knowing-yourself"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -670,7 +746,7 @@
       {
         "sectionNumber": 33,
         "originalText": "Begin by prescribing to yourself some character and demeanor, such as you may preserve both alone and in company.",
-        "plainEnglish": "Start by deciding who you want to be. Pick a character and way of acting that you can stick to whether you're alone or with other people.",
+        "plainEnglish": "Start by deciding what kind of person you want to be. Choose a character and way of acting that you can stick to whether you're alone or with others.",
         "tags": [
           "knowing-yourself"
         ],
@@ -684,7 +760,7 @@
       {
         "sectionNumber": 33,
         "originalText": "Be mostly silent, or speak merely what is needful, and in few words. We may, however, enter sparingly into discourse sometimes, when occasion calls for it; but let it not run on any of the common subjects, as gladiators, or horse races, or athletic champions, or food, or drink—the vulgar topics of conversation—and especially not on men, so as either to blame, or praise, or make comparisons. If you are able, then, by your own conversation, bring over that of your company to proper subjects; but if you happen to find yourself among strangers, be silent.",
-        "plainEnglish": "Stay quiet most of the time. When you do speak, say only what's necessary and keep it brief. You can join conversations sometimes when the situation calls for it. But don't talk about the usual stuff — gladiators, horse races, athletes, food, or drink. These are shallow topics. And especially don't gossip about people by criticizing them, praising them, or comparing them. If you can steer the conversation toward better subjects, do it. But if you're stuck with strangers who won't budge, just stay quiet.",
+        "plainEnglish": "Stay quiet most of the time. When you do speak, say only what's necessary. Keep it brief. You can join conversations sometimes when it makes sense, but don't let them drag on about the usual stuff—gladiators, horse races, athletes, food, or drink. Those are shallow topics. And especially don't talk about people in ways that criticize them, praise them, or compare them to others. If you can steer the conversation toward better subjects, do it. But if you're stuck with strangers, just stay quiet.",
         "tags": [
           "knowing-yourself",
           "human-nature"
@@ -698,8 +774,8 @@
       },
       {
         "sectionNumber": 33,
-        "originalText": "Let not your laughter be loud, frequent, or abundant.",
-        "plainEnglish": "Don't laugh too loud, too often, or too much.",
+        "originalText": "Let not your laughter be loud, frequent, or abundant. Avoid taking oaths, if possible, altogether; at any rate, so far as you are able.",
+        "plainEnglish": "Don't laugh too loud, too often, or too much. Avoid making promises and oaths if you can. At least keep them to a minimum.",
         "tags": [
           "knowing-yourself"
         ],
@@ -712,23 +788,8 @@
       },
       {
         "sectionNumber": 33,
-        "originalText": "Avoid taking oaths, if possible, altogether; at any rate, so far as you are able.",
-        "plainEnglish": "Avoid making promises or swearing oaths if you can. At the very least, avoid them as much as possible.",
-        "tags": [
-          "knowing-yourself",
-          "freedom-and-control"
-        ],
-        "meaningCheck": {
-          "faithful": true,
-          "tone_preserved": true,
-          "ideas_changed": false,
-          "over_explains": false
-        }
-      },
-      {
-        "sectionNumber": 33,
         "originalText": "Avoid public and vulgar entertainments; but if ever an occasion calls you to them, keep your attention upon the stretch, that you may not imperceptibly slide into vulgarity. For be assured that if a person be ever so pure himself, yet, if his companion be corrupted, he who converses with him will be corrupted likewise.",
-        "plainEnglish": "Stay away from crude public entertainment. But if you must attend, stay alert. Don't let yourself slip into crude behavior without noticing. Remember: even if you're a good person, spending time with corrupt people will corrupt you too.",
+        "plainEnglish": "Stay away from crude, lowbrow entertainment. But if you have to attend something like that, stay alert. Don't let yourself slip into bad behavior without noticing. Here's why: even if you're a good person, hanging around corrupt people will corrupt you too.",
         "tags": [
           "knowing-yourself",
           "human-nature"
@@ -743,7 +804,7 @@
       {
         "sectionNumber": 33,
         "originalText": "Provide things relating to the body no further than absolute need requires, as meat, drink, clothing, house, retinue. But cut off everything that looks toward show and luxury.",
-        "plainEnglish": "Give your body only what it absolutely needs: food, drink, clothes, shelter, and basic help from others. Cut out anything that's just for show or luxury.",
+        "plainEnglish": "Give your body only what it absolutely needs: food, drink, clothes, shelter, basic help. Cut out anything that's just for show or luxury.",
         "tags": [
           "what-matters-most",
           "knowing-yourself"
@@ -758,7 +819,7 @@
       {
         "sectionNumber": 33,
         "originalText": "Before marriage guard yourself with all your ability from unlawful intercourse with women; yet be not uncharitable or severe to those who are led into this, nor boast frequently that you yourself do otherwise.",
-        "plainEnglish": "Before you get married, do everything you can to avoid sleeping with women outside of marriage. But don't be harsh or judgmental toward people who do this. And don't keep bragging about how you don't do it yourself.",
+        "plainEnglish": "Before you get married, do everything you can to avoid sleeping with women you shouldn't sleep with. But don't be harsh or judgmental toward people who do this. And don't keep bragging that you're better than them.",
         "tags": [
           "doing-the-right-thing",
           "human-nature"
@@ -773,10 +834,10 @@
       {
         "sectionNumber": 33,
         "originalText": "If anyone tells you that a certain person speaks ill of you, do not make excuses about what is said of you, but answer: \"He was ignorant of my other faults, else he would not have mentioned these alone.\"",
-        "plainEnglish": "If someone tells you that a person is talking badly about you, don't defend yourself against what was said. Instead, say: \"He doesn't know about my other faults, or he wouldn't have just mentioned those ones.\"",
+        "plainEnglish": "If someone tells you that another person said bad things about you, don't defend yourself against what was said. Instead, respond: \"He doesn't know about my other faults, or he wouldn't have mentioned just these.\"",
         "tags": [
-          "calm-your-mind",
-          "knowing-yourself"
+          "knowing-yourself",
+          "human-nature"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -788,7 +849,7 @@
       {
         "sectionNumber": 33,
         "originalText": "It is not necessary for you to appear often at public spectacles; but if ever there is a proper occasion for you to be there, do not appear more solicitous for any other than for yourself—that is, wish things to be only just as they are, and only the best man to win; for thus nothing will go against you. But abstain entirely from acclamations and derision and violent emotions. And when you come away, do not discourse a great deal on what has passed and what contributes nothing to your own amendment. For it would appear by such discourse that you were dazzled by the show.",
-        "plainEnglish": "You don't need to go to public events very often. But if there's a good reason to attend, don't root for anyone except yourself. By that I mean: wish for things to happen exactly as they do, and hope the best person wins. This way, nothing will disappoint you. Don't cheer, boo, or get worked up. When you leave, don't spend a lot of time talking about what happened if it doesn't help you improve as a person. Talking too much about it shows you were impressed by the spectacle.",
+        "plainEnglish": "You don't need to go to public events very often. But when you do go, don't care more about anyone else than yourself. Just want things to happen as they happen, and want the best person to win. This way, nothing will disappoint you. Don't cheer, don't make fun of anyone, and don't get worked up. When you leave, don't spend a lot of time talking about what happened if it doesn't help you improve yourself. Talking too much about it shows you were too impressed by the spectacle.",
         "tags": [
           "calm-your-mind",
           "knowing-yourself"
@@ -803,7 +864,7 @@
       {
         "sectionNumber": 33,
         "originalText": "Be not prompt or ready to attend private recitations; but if you do attend, preserve your gravity and dignity, and yet avoid making yourself disagreeable.",
-        "plainEnglish": "Don't be eager to attend private readings or performances. But if you do go, stay serious and dignified. Just don't be unpleasant about it.",
+        "plainEnglish": "Don't be eager to attend private readings or performances. But if you do go, keep your composure and dignity. Just don't be a jerk about it.",
         "tags": [
           "knowing-yourself",
           "human-nature"
@@ -818,7 +879,7 @@
       {
         "sectionNumber": 33,
         "originalText": "When you are going to confer with anyone, and especially with one who seems your superior, represent to yourself how Socrates or Zeno would behave in such a case, and you will not be at a loss to meet properly whatever may occur.",
-        "plainEnglish": "When you're about to meet with someone — especially someone who seems more important than you — ask yourself how Socrates or Zeno would handle it. You won't be confused about how to act.",
+        "plainEnglish": "When you're about to meet with someone, especially someone who seems more important than you, ask yourself how Socrates or Zeno would handle it. You'll know what to do when things come up.",
         "tags": [
           "knowing-yourself",
           "calm-your-mind"
@@ -833,7 +894,7 @@
       {
         "sectionNumber": 33,
         "originalText": "When you are going before anyone in power, fancy to yourself that you may not find him at home, that you may be shut out, that the doors may not be opened to you, that he may not notice you. If, with all this, it be your duty to go, bear what happens and never say to yourself, \"It was not worth so much\"; for this is vulgar, and like a man bewildered by externals.",
-        "plainEnglish": "When you're going to meet someone powerful, imagine that they might not be home. You might get turned away. The doors might stay closed. They might ignore you completely. If you still have to go despite all this, accept whatever happens. Don't tell yourself afterward, \"It wasn't worth the trouble.\" That's shallow thinking. It's what people do when they get confused by things outside their control.",
+        "plainEnglish": "When you're going to meet someone powerful, imagine the worst-case scenarios first. Maybe they won't be there. Maybe you'll be turned away. Maybe the doors will be locked. Maybe they'll ignore you completely. If you still have good reason to go, then go. Accept whatever happens. Don't tell yourself afterward, 'That wasn't worth the trouble.' That kind of thinking is cheap. It's what people do when they let outside things control them.",
         "tags": [
           "freedom-and-control",
           "facing-hardship"
@@ -848,7 +909,7 @@
       {
         "sectionNumber": 33,
         "originalText": "In company, avoid a frequent and excessive mention of your own actions and dangers. For however agreeable it may be to yourself to allude to the risks you have run, it is not equally agreeable to others to hear your adventures. Avoid likewise an endeavor to excite laughter, for this may readily slide you into vulgarity, and, besides, may be apt to lower you in the esteem of your acquaintance. Approaches to indecent discourse are likewise dangerous. Therefore, when anything of this sort happens, use the first fit opportunity to rebuke him who makes advances that way, or, at least, by silence and blushing and a serious look show yourself to be displeased by such talk.",
-        "plainEnglish": "When you're with other people, don't constantly talk about yourself — your accomplishments, your close calls, your adventures. You might enjoy reliving these stories, but others get tired of hearing them. Also, don't try too hard to make people laugh. This can easily turn crude, and it makes people respect you less. Stay away from dirty jokes and inappropriate talk too. When someone starts going down that path, either call them out on it right away or show your disapproval through silence, embarrassment, and a serious expression.",
+        "plainEnglish": "When you're with other people, don't constantly talk about your own actions and dangers. You might enjoy talking about the risks you've taken, but other people don't enjoy hearing your stories as much as you think. Also avoid trying too hard to make people laugh. This can easily make you seem crude. Plus it might make people respect you less. Stay away from dirty talk too. When someone starts going down that path, speak up and shut it down if you can. If you can't, at least show you disapprove — stay quiet, look embarrassed, and give them a serious look.",
         "tags": [
           "human-nature",
           "knowing-yourself"
@@ -865,7 +926,7 @@
       {
         "sectionNumber": 34,
         "originalText": "If you are dazzled by the semblance of any promised pleasure, guard\nyourself against being bewildered by it; but let the affair wait your\nleisure, and procure yourself some delay. Then bring to your mind both\npoints of time—that in which you shall enjoy the pleasure, and that in\nwhich you will repent and reproach yourself, after you have enjoyed\nit—and set before you, in opposition to these, how you will rejoice and\napplaud yourself if you abstain. And even though it should appear to you\na seasonable gratification, take heed that its enticements and\nallurements and seductions may not subdue you, but set in opposition to\nthis how much better it is to be conscious of having gained so great a\nvictory.",
-        "plainEnglish": "When something tempting catches your eye, don't let it overwhelm you. Take a step back. Give yourself time to think. Picture two moments: the moment you'll enjoy the pleasure, and the moment afterward when you'll regret it and beat yourself up. Then picture how proud and happy you'll be if you resist. Even if the temptation seems perfectly timed and reasonable, don't let it seduce you. Remember how much better it feels to know you won such a big victory over yourself.",
+        "plainEnglish": "When something tempting catches your eye, don't let it cloud your judgment. Give yourself time to think. Don't rush into it. Picture two moments: the moment you'll enjoy the pleasure, and the moment afterward when you'll regret it and beat yourself up. Then picture how proud and happy you'll feel if you resist. Even if the temptation seems perfectly timed and reasonable, don't let it seduce you. Remember instead how much better it feels to know you won such a big battle with yourself.",
         "tags": [
           "knowing-yourself",
           "calm-your-mind"
@@ -882,7 +943,7 @@
       {
         "sectionNumber": 35,
         "originalText": "When you do anything from a clear judgment that it ought to be done,\nnever shrink from being seen to do it, even though the world should\nmisunderstand it; for if you are not acting rightly, shun the action\nitself; if you are, why fear those who wrongly censure you?",
-        "plainEnglish": "When you decide something is right and you need to do it, don't worry about people seeing you do it. Even if they don't understand. If what you're doing is wrong, then don't do it at all. But if it's right, why fear people who judge you incorrectly?",
+        "plainEnglish": "When you decide something is right and you need to do it, don't hide from doing it just because people might misunderstand. If what you're doing is wrong, then don't do it at all. But if it's right, why worry about people who criticize you unfairly?",
         "tags": [
           "doing-the-right-thing",
           "knowing-yourself"
@@ -899,7 +960,7 @@
       {
         "sectionNumber": 36,
         "originalText": "As the proposition, “either it is day or it is night,” has much force in\na disjunctive argument, but none at all in a conjunctive one, so, at a\nfeast, to choose the largest share is very suitable to the bodily\nappetite, but utterly inconsistent with the social spirit of the\nentertainment. Remember, then, when you eat with another, not only the\nvalue to the body of those things which are set before you, but also the\nvalue of proper courtesy toward your host.",
-        "plainEnglish": "Just like a logical statement works in one context but not another, choosing the biggest portion at a dinner party might satisfy your hunger, but it completely goes against the social point of the meal. So when you eat with others, don't just think about feeding your body. Think about being respectful to your host.",
+        "plainEnglish": "Just like a logical statement works in one context but not another, grabbing the biggest portion at a dinner party might satisfy your hunger, but it completely goes against the social point of sharing a meal. So when you eat with others, don't just think about feeding your body. Think about showing proper respect to your host.",
         "tags": [
           "doing-the-right-thing",
           "human-nature"
@@ -916,7 +977,7 @@
       {
         "sectionNumber": 37,
         "originalText": "If you have assumed any character beyond your strength, you have both\ndemeaned yourself ill in that and quitted one which you might have\nsupported.",
-        "plainEnglish": "If you've taken on a role that's too hard for you, you've failed at it and given up one you could have actually handled.",
+        "plainEnglish": "If you've taken on a role that's too much for you, you've done two things wrong. You've handled it badly, and you've abandoned a role you could have actually succeeded in.",
         "tags": [
           "knowing-yourself",
           "what-matters-most"
@@ -933,7 +994,7 @@
       {
         "sectionNumber": 38,
         "originalText": "As in walking you take care not to tread upon a nail, or turn your foot,\nso likewise take care not to hurt the ruling faculty of your mind. And if\nwe were to guard against this in every action, we should enter upon\naction more safely.",
-        "plainEnglish": "When you walk, you watch out for nails and uneven ground so you don't hurt your foot. Do the same with your mind — protect your ability to think clearly. If you guarded your mind this carefully in everything you do, you'd make much safer choices.",
+        "plainEnglish": "When you walk, you watch out for nails on the ground and uneven surfaces that could twist your ankle. Do the same thing with your mind — protect the part of you that makes decisions and judgments. If you guard your mind this carefully in everything you do, you'll act with much more safety.",
         "tags": [
           "knowing-yourself",
           "calm-your-mind"
@@ -950,7 +1011,7 @@
       {
         "sectionNumber": 39,
         "originalText": "The body is to everyone the proper measure of its possessions, as the\nfoot is of the shoe. If, therefore, you stop at this, you will keep the\nmeasure; but if you move beyond it, you must necessarily be carried\nforward, as down a precipice; as in the case of a shoe, if you go beyond\nits fitness to the foot, it comes first to be gilded, then purple, and\nthen studded with jewels. For to that which once exceeds the fit measure\nthere is no bound.",
-        "plainEnglish": "Your body sets the natural limit for what you need to own, just like your foot sets the limit for your shoe size. If you stick to this rule, you'll stay balanced. But if you go beyond what you actually need, you'll get carried away like you're falling off a cliff. It's like a shoe — once it's more than what your foot needs, people start making it gold, then purple, then covered in jewels. Once you go beyond what's actually necessary, there's no stopping point.",
+        "plainEnglish": "Your body is the proper measure of what you need to own, just like your foot is the measure of your shoe. If you stick to this rule, you'll stay balanced. But if you go beyond it, you'll inevitably be carried away, like falling off a cliff. Think about a shoe: once it goes beyond fitting the foot properly, it gets gilded, then dyed purple, then covered in jewels. When something goes beyond its proper limit, there's no stopping point.",
         "tags": [
           "what-matters-most",
           "knowing-yourself"
@@ -967,10 +1028,10 @@
       {
         "sectionNumber": 40,
         "originalText": "Women from fourteen years old are flattered by men with the title of\nmistresses. Therefore, perceiving that they are regarded only as\nqualified to give men pleasure, they begin to adorn themselves, and in\nthat to place all their hopes. It is worth while, therefore, to try that\nthey may perceive themselves honored only so far as they appear beautiful\nin their demeanor and modestly virtuous.",
-        "plainEnglish": "Men start calling women \"mistresses\" when they're just fourteen years old. Women notice that men only value them for pleasure. So they focus all their energy on looking attractive and put all their hopes in that. We should help them see that they're only truly honored when they act beautifully — with good character and virtue.",
+        "plainEnglish": "Men start calling women \"mistresses\" when they're just fourteen. Women notice that men only see them as sources of pleasure. So they focus on making themselves look good and put all their hopes in that. We should help them understand something better: they're only truly honored when they act with good character and modesty.",
         "tags": [
           "human-nature",
-          "what-matters-most"
+          "doing-the-right-thing"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -984,7 +1045,7 @@
       {
         "sectionNumber": 41,
         "originalText": "It is a mark of want of intellect to spend much time in things relating\nto the body, as to be immoderate in exercises, in eating and drinking,\nand in the discharge of other animal functions. These things should be\ndone incidentally and our main strength be applied to our reason.",
-        "plainEnglish": "It shows a lack of intelligence to spend too much time on bodily things. Don't overdo exercise, eating, drinking, or other animal needs. Take care of these things quickly and put your main energy into using your mind.",
+        "plainEnglish": "It shows poor judgment to spend too much time on bodily things. Don't overdo exercise, eating, drinking, or other physical activities. Handle these things quickly and put your main effort into developing your mind.",
         "tags": [
           "knowing-yourself",
           "what-matters-most"
@@ -1001,7 +1062,7 @@
       {
         "sectionNumber": 42,
         "originalText": "When any person does ill by you, or speaks ill of you, remember that he\nacts or speaks from an impression that it is right for him to do so. Now\nit is not possible that he should follow what appears right to you, but\nonly what appears so to himself. Therefore, if he judges from false\nappearances, he is the person hurt, since he, too, is the person\ndeceived. For if anyone takes a true proposition to be false, the\nproposition is not hurt, but only the man is deceived. Setting out, then,\nfrom these principles, you will meekly bear with a person who reviles\nyou, for you will say upon every occasion, “It seemed so to him.”",
-        "plainEnglish": "When someone hurts you or insults you, remember this: they're acting based on what seems right to them. They can't follow what seems right to you — only what seems right to them. So if they're judging based on false impressions, they're the one getting hurt. They're the one being deceived. Think of it this way: if someone believes a true statement is false, the statement itself isn't damaged — only the person is fooled. With this in mind, you can calmly handle anyone who attacks you. Just tell yourself, \"That's how it seemed to them.\"",
+        "plainEnglish": "When someone wrongs you or talks badly about you, remember this: they're acting based on what they think is right. They can't follow what seems right to you — only what seems right to them. So if they're working from wrong information, they're the ones getting hurt. They're the ones being fooled. Think of it this way: if someone believes a true fact is false, the fact itself isn't damaged — only the person is confused. Once you understand this, you'll handle insults calmly. You'll just say to yourself, \"That's how it looked to them.\"",
         "tags": [
           "calm-your-mind",
           "human-nature"
@@ -1018,10 +1079,10 @@
       {
         "sectionNumber": 43,
         "originalText": "Everything has two handles: one by which it may be borne, another by\nwhich it cannot. If your brother acts unjustly, do not lay hold on the\naffair by the handle of his injustice, for by that it cannot be borne,\nbut rather by the opposite—that he is your brother, that he was brought\nup with you; and thus you will lay hold on it as it is to be borne.",
-        "plainEnglish": "Everything has two handles: one you can grip, another you can't. If your brother wrongs you, don't grab the situation by focusing on his wrongdoing — that handle won't support you. Instead, grab it by remembering he's your brother and you grew up together. That's the handle you can actually hold.",
+        "plainEnglish": "Everything has two handles: one you can grab and carry, another you can't. If your brother acts unfairly, don't grab the situation by his unfairness — that handle won't hold. Instead, grab it by remembering he's your brother and you grew up together. That's the handle that works.",
         "tags": [
-          "human-nature",
-          "facing-hardship"
+          "facing-hardship",
+          "human-nature"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -1035,10 +1096,10 @@
       {
         "sectionNumber": 44,
         "originalText": "These reasonings have no logical connection: “I am richer than you,\ntherefore I am your superior.” “I am more eloquent than you, therefore I\nam your superior.” The true logical connection is rather this: “I am\nricher than you, therefore my possessions must exceed yours.” “I am more\neloquent than you, therefore my style must surpass yours.” But you, after\nall, consist neither in property nor in style.",
-        "plainEnglish": "These arguments make no sense: \"I have more money than you, so I'm better than you.\" \"I speak better than you, so I'm better than you.\" Here's what actually follows logically: \"I have more money than you, so my stuff is worth more than yours.\" \"I speak better than you, so my speaking skills are better than yours.\" But you as a person are not your possessions or your speaking ability.",
+        "plainEnglish": "These arguments make no sense: \"I have more money than you, so I'm better than you.\" \"I speak better than you, so I'm better than you.\" Here's what actually follows logically: \"I have more money than you, so my stuff is worth more than yours.\" \"I speak better than you, so my speaking style is better than yours.\" But you — the real you — are not your possessions or your speaking style.",
         "tags": [
           "knowing-yourself",
-          "human-nature"
+          "what-matters-most"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -1052,7 +1113,7 @@
       {
         "sectionNumber": 45,
         "originalText": "Does anyone bathe hastily? Do not say that he does it ill, but hastily.\nDoes anyone drink much wine? Do not say that he does ill, but that he\ndrinks a great deal. For unless you perfectly understand his motives, how\nshould you know if he acts ill? Thus you will not risk yielding to any\nappearances but such as you fully comprehend.",
-        "plainEnglish": "Does someone take a quick bath? Don't say they're doing it wrong — just say they're doing it quickly. Does someone drink a lot of wine? Don't say they're doing something bad — just say they drink a lot. Unless you completely understand why they're acting this way, how can you know if they're doing something wrong? This way, you won't jump to conclusions about things you don't fully understand.",
+        "plainEnglish": "Does someone take a quick bath? Don't say they're doing it wrong. Say they're doing it quickly. Does someone drink a lot of wine? Don't say they're doing something bad. Say they drink a lot. You don't fully understand their reasons, so how can you know if they're acting badly? This way, you won't jump to conclusions about things you don't completely understand.",
         "tags": [
           "human-nature",
           "knowing-yourself"
@@ -1069,7 +1130,7 @@
       {
         "sectionNumber": 46,
         "originalText": "Never proclaim yourself a philosopher, nor make much talk among the\nignorant about your principles, but show them by actions. Thus, at an\nentertainment, do not discourse how people ought to eat, but eat as you\nought. For remember that thus Socrates also universally avoided all\nostentation. And when persons came to him and desired to be introduced by\nhim to philosophers, he took them and introduced them; so well did he\nbear being overlooked. So if ever there should be among the ignorant any\ndiscussion of principles, be for the most part silent. For there is great\ndanger in hastily throwing out what is undigested. And if anyone tells\nyou that you know nothing, and you are not nettled at it, then you may be\nsure that you have really entered on your work. For sheep do not hastily\nthrow up the grass to show the shepherds how much they have eaten, but,\ninwardly digesting their food, they produce it outwardly in wool and\nmilk. Thus, therefore, do you not make an exhibition before the ignorant\nof your principles, but of the actions to which their digestion gives\nrise.",
-        "plainEnglish": "Don't call yourself a philosopher. Don't talk endlessly about your principles to people who don't understand. Show them through your actions instead. At a dinner party, don't lecture people about how they should eat. Just eat the right way yourself. Remember that Socrates avoided showing off completely. When people came to him wanting to meet philosophers, he simply took them to meet some. He handled being ignored perfectly well. So when ignorant people start discussing principles, stay mostly quiet. There's real danger in blurting out half-formed thoughts. And if someone tells you that you know nothing, and it doesn't bother you, then you know you're actually making progress. Sheep don't throw up grass to show shepherds how much they've eaten. They digest it quietly and produce wool and milk instead. Do the same thing. Don't put on a show of your principles for ignorant people. Show them the actions that come from digesting those principles.",
+        "plainEnglish": "Don't call yourself a philosopher. Don't lecture ignorant people about your principles. Show them through your actions instead. At a dinner party, don't give speeches about how people should eat. Just eat the right way yourself. Remember, Socrates avoided all showing off. When people came to him wanting to meet other philosophers, he took them and introduced them. He was fine being overlooked. So if ignorant people start discussing principles, stay mostly quiet. It's dangerous to blurt out half-baked ideas. And if someone tells you that you know nothing, and it doesn't bother you, then you know you're on the right track. Sheep don't throw up grass to show shepherds how much they've eaten. Instead, they digest their food quietly and produce wool and milk. Do the same. Don't show off your principles to ignorant people. Show them the actions that come from truly understanding those principles.",
         "tags": [
           "knowing-yourself",
           "doing-the-right-thing"
@@ -1086,7 +1147,7 @@
       {
         "sectionNumber": 47,
         "originalText": "When you have learned to nourish your body frugally, do not pique\nyourself upon it; nor, if you drink water, be saying upon every occasion,\n“I drink water.” But first consider how much more frugal are the poor\nthan we, and how much more patient of hardship. If at any time you would\ninure yourself by exercise to labor and privation, for your own sake and\nnot for the public, do not attempt great feats; but when you are\nviolently thirsty, just rinse your mouth with water, and tell nobody.",
-        "plainEnglish": "When you've learned to eat simply, don't brag about it. If you drink water instead of wine, don't announce it every chance you get. Remember that poor people live far more simply than you do. They handle hardship much better too. If you want to train yourself to handle discomfort and do without things, do it for yourself — not to impress others. Don't try anything extreme. When you're really thirsty, just rinse your mouth with water and keep it to yourself.",
+        "plainEnglish": "When you learn to eat simply, don't brag about it. If you drink water instead of wine, don't announce it every chance you get. Remember that poor people live with much less than you do, and they handle hardship better. If you want to train yourself to be tough through exercise and going without things, do it for yourself, not to show off. Don't try anything extreme. When you're really thirsty, just rinse your mouth with water and don't tell anyone about it.",
         "tags": [
           "knowing-yourself",
           "what-matters-most"
@@ -1102,11 +1163,26 @@
     "enchiridion_section-48": [
       {
         "sectionNumber": 48,
-        "originalText": "The condition and characteristic of a vulgar person is that he never\nlooks for either help or harm from himself, but only from externals. The\ncondition and characteristic of a philosopher is that he looks to himself\nfor all help or harm. The marks of a proficient are that he censures no\none, praises no one, blames no one, accuses no one; says nothing\nconcerning himself as being anybody or knowing anything. When he is in\nany instance hindered or restrained, he accuses himself; and if he is\npraised, he smiles to himself at the person who praises him; and if he is\ncensured, he makes no defense. But he goes about with the caution of a\nconvalescent, careful of interference with anything that is doing well\nbut not yet quite secure. He restrains desire; he transfers his aversion\nto those things only which thwart the proper use of our own will; he\nemploys his energies moderately in all directions; if he appears stupid\nor ignorant, he does not care; and, in a word, he keeps watch over\nhimself as over an enemy and one in ambush.",
-        "plainEnglish": "An ordinary person always looks outside himself for help or blame. A philosopher looks inside himself for both. Someone making real progress doesn't criticize others, praise others, blame others, or accuse others. He doesn't talk about himself like he's important or knows everything. When something blocks him or holds him back, he blames himself. If someone praises him, he quietly laughs at them. If someone criticizes him, he doesn't defend himself. He moves carefully, like someone recovering from illness. He's cautious about messing with things that are going well but aren't completely stable yet. He controls his desires. He only dislikes things that interfere with using his own will properly. He uses his energy wisely in everything. If he seems dumb or ignorant, he doesn't care. In short, he watches himself like he's watching an enemy who might attack.",
+        "originalText": "The condition and characteristic of a vulgar person is that he never looks for either help or harm from himself, but only from externals. The condition and characteristic of a philosopher is that he looks to himself for all help or harm.",
+        "plainEnglish": "A shallow person never looks to himself for help or harm. He only looks to outside things. A philosopher looks to himself for all help or harm.",
         "tags": [
           "knowing-yourself",
           "freedom-and-control"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 48,
+        "originalText": "The marks of a proficient are that he censures no one, praises no one, blames no one, accuses no one; says nothing concerning himself as being anybody or knowing anything. When he is in any instance hindered or restrained, he accuses himself; and if he is praised, he smiles to himself at the person who praises him; and if he is censured, he makes no defense. But he goes about with the caution of a convalescent, careful of interference with anything that is doing well but not yet quite secure. He restrains desire; he transfers his aversion to those things only which thwart the proper use of our own will; he employs his energies moderately in all directions; if he appears stupid or ignorant, he does not care; and, in a word, he keeps watch over himself as over an enemy and one in ambush.",
+        "plainEnglish": "A skilled person doesn't criticize anyone, praise anyone, blame anyone, or accuse anyone. They don't talk about themselves like they're important or know everything. When something blocks or stops them, they blame themselves. If someone praises them, they quietly smile to themselves. If someone criticizes them, they don't defend themselves. They move through life like someone recovering from illness — careful not to mess with anything that's going well but still fragile. They hold back their desires. They only avoid things that interfere with how they use their own will. They use their energy carefully in everything. If they look stupid or ignorant, they don't care. In short, they watch themselves like they're watching an enemy in hiding.",
+        "tags": [
+          "knowing-yourself",
+          "calm-your-mind"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -1120,7 +1196,7 @@
       {
         "sectionNumber": 49,
         "originalText": "When anyone shows himself vain on being able to understand and interpret\nthe works of Chrysippus,[7] say to yourself: “Unless Chrysippus had\nwritten obscurely, this person would have had nothing to be vain of. But\nwhat do I desire? To understand nature, and follow her. I ask, then, who\ninterprets her; and hearing that Chrysippus does, I have recourse to him.\nI do not understand his writings. I seek, therefore, one to interpret\n_them_.” So far there is nothing to value myself upon. And when I find an\ninterpreter, what remains is to make use of his instructions. This alone\nis the valuable thing. But if I admire merely the interpretation, what do\nI become more than a grammarian, instead of a philosopher, except,\nindeed, that instead of Homer I interpret Chrysippus? When anyone,\ntherefore, desires me to read Chrysippus to him, I rather blush when I\ncannot exhibit actions that are harmonious and consonant with his\ndiscourse.",
-        "plainEnglish": "When someone brags about understanding difficult philosophical texts, remind yourself: \"If the author hadn't written so unclearly, this person would have nothing to brag about. But what do I actually want? To understand nature and live according to it. I'm told this philosopher can help me understand nature, so I turn to his work. I can't understand it. So I need someone to explain it to me.\" Nothing impressive about that so far. When I find someone to explain it, what matters next is actually following the advice. That's the only valuable part. If I just admire clever interpretations, I'm nothing more than a literature teacher pretending to be a philosopher — except instead of analyzing Homer, I'm analyzing philosophy. So when someone asks me to explain philosophical texts to them, I feel embarrassed that I can't show them a life that actually matches what the texts teach.",
+        "plainEnglish": "When someone brags about understanding Chrysippus's difficult writings, tell yourself: \"If Chrysippus had written clearly, this person would have nothing to brag about. But what do I actually want? To understand nature and live according to it. I ask who can teach me this. People say Chrysippus can, so I turn to him. I don't understand his writings. So I look for someone to explain them to me.\" Nothing impressive about that so far. When I find someone to explain the ideas, what's left is to actually use what I learn. That's the only thing worth anything. If I just admire clever interpretations, I'm no better than a literature teacher instead of a philosopher — except I'm analyzing Chrysippus instead of Homer. So when someone asks me to explain Chrysippus to them, I feel embarrassed when my actions don't match what his teachings say.",
         "tags": [
           "knowing-yourself",
           "what-matters-most"
@@ -1136,8 +1212,38 @@
     "enchiridion_section-50": [
       {
         "sectionNumber": 50,
-        "originalText": "Whatever rules you have adopted, abide by them as laws, and as if you\nwould be impious to transgress them; and do not regard what anyone says\nof you, for this, after all, is no concern of yours. How long, then, will\nyou delay to demand of yourself the noblest improvements, and in no\ninstance to transgress the judgments of reason? You have received the\nphilosophic principles with which you ought to be conversant; and you\nhave been conversant with them. For what other master, then, do you wait\nas an excuse for this delay in self-reformation? You are no longer a boy\nbut a grown man. If, therefore, you will be negligent and slothful, and\nalways add procrastination to procrastination, purpose to purpose, and\nfix day after day in which you will attend to yourself, you will\ninsensibly continue to accomplish nothing and, living and dying, remain\nof vulgar mind. This instant, then, think yourself worthy of living as a\nman grown up and a proficient. Let whatever appears to be the best be to\nyou an inviolable law. And if any instance of pain or pleasure, glory or\ndisgrace, be set before you, remember that now is the combat, now the\nOlympiad comes on, nor can it be put off; and that by one failure and\ndefeat honor may be lost or—won. Thus Socrates became perfect, improving\nhimself by everything, following reason alone. And though you are not yet\na Socrates, you ought, however, to live as one seeking to be a Socrates.",
-        "plainEnglish": "Whatever rules you've chosen to follow, stick to them like laws. Act as if breaking them would be wrong. Don't worry about what other people say about you. That's not your business. How long will you keep putting off becoming your best self? How long will you ignore what reason tells you to do? You already know the principles you should live by. You've studied them. What other teacher are you waiting for? What's your excuse for delaying? You're not a kid anymore. You're a grown man. If you keep being lazy and careless, always putting things off, making plans but never acting on them, setting dates you never keep — you'll accomplish nothing. You'll live and die with an ordinary mind. Right now, decide you're worthy of living like a mature adult. Whatever seems best to you, treat it as an unbreakable law. When pain or pleasure comes your way, when you face praise or shame, remember: this is the fight. This is your Olympics. You can't postpone it. One loss or win can destroy or create your honor. That's how Socrates became perfect. He improved himself through everything, following reason alone. You're not Socrates yet. But you should live like someone trying to become him.",
+        "originalText": "Whatever rules you have adopted, abide by them as laws, and as if you would be impious to transgress them; and do not regard what anyone says of you, for this, after all, is no concern of yours.",
+        "plainEnglish": "Whatever rules you've chosen to live by, stick to them like they're sacred laws. Act as if breaking them would be a sin. Don't worry about what people say about you. That's none of your business anyway.",
+        "tags": [
+          "knowing-yourself",
+          "doing-the-right-thing"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 50,
+        "originalText": "How long, then, will you delay to demand of yourself the noblest improvements, and in no instance to transgress the judgments of reason? You have received the philosophic principles with which you ought to be conversant; and you have been conversant with them. For what other master, then, do you wait as an excuse for this delay in self-reformation? You are no longer a boy but a grown man. If, therefore, you will be negligent and slothful, and always add procrastination to procrastination, purpose to purpose, and fix day after day in which you will attend to yourself, you will insensibly continue to accomplish nothing and, living and dying, remain of vulgar mind.",
+        "plainEnglish": "How long will you keep putting off becoming your best self? How long will you ignore what reason tells you to do? You already know the principles you need to live by. You've studied them. So what are you waiting for? What excuse do you need to finally start improving yourself? You're not a kid anymore. You're a grown adult. If you keep being lazy and careless — always putting things off, making plans you don't follow, promising yourself you'll start tomorrow — you'll accomplish nothing. You'll live and die with an ordinary, unremarkable mind.",
+        "tags": [
+          "knowing-yourself",
+          "what-matters-most"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 50,
+        "originalText": "This instant, then, think yourself worthy of living as a man grown up and a proficient. Let whatever appears to be the best be to you an inviolable law. And if any instance of pain or pleasure, glory or disgrace, be set before you, remember that now is the combat, now the Olympiad comes on, nor can it be put off; and that by one failure and defeat honor may be lost or—won. Thus Socrates became perfect, improving himself by everything, following reason alone. And though you are not yet a Socrates, you ought, however, to live as one seeking to be a Socrates.",
+        "plainEnglish": "Right now, think of yourself as worthy of living like a mature, skilled person. Whatever seems best to you should be your unbreakable law. When pain or pleasure, fame or shame comes your way, remember that this is the fight. This is your Olympics. It can't be postponed. One failure or victory can lose or win your honor. This is how Socrates became perfect. He improved himself through everything, following reason alone. You're not Socrates yet. But you should live like someone trying to become Socrates.",
         "tags": [
           "knowing-yourself",
           "doing-the-right-thing"
@@ -1154,7 +1260,7 @@
       {
         "sectionNumber": 51,
         "originalText": "The first and most necessary topic in philosophy is the practical application of principles, as, _We ought not to lie_; the second is that of demonstrations as, _Why it is that we ought not to lie_; the third, that which gives strength and logical connection to the other two, as, _Why this is a demonstration_. For what is demonstration? What is a consequence? What a contradiction? What truth? What falsehood? The third point is then necessary on account of the second; and the second on account of the first. But the most necessary, and that whereon we ought to rest, is the first. But we do just the contrary. For we spend all our time on the third point and employ all our diligence about that, and entirely neglect the first. Therefore, at the same time that we lie, we are very ready to show how it is demonstrated that lying is wrong.",
-        "plainEnglish": "Philosophy has three parts. The first and most important is putting principles into practice — like \"Don't lie.\" The second is proving why those principles are true — like \"Here's why you shouldn't lie.\" The third is understanding how proof itself works — like \"Here's why this counts as proof.\" What is proof? What follows from what? What's a contradiction? What's true? What's false? You need the third part to support the second. You need the second part to support the first. But the most important part — the one you should focus on — is the first. Yet we do the opposite. We spend all our time on the third part. We work hard on understanding proof and logic. We completely ignore the first part. So we lie while being perfectly ready to explain why lying is wrong.",
+        "plainEnglish": "Philosophy has three parts, and they should be learned in order. First: how to actually live by principles like \"don't lie.\" Second: understanding why those principles are true — \"why shouldn't we lie?\" Third: the technical stuff — \"what counts as proof? What's logic? What's true or false?\" The third part supports the second. The second supports the first. The first part — actually living right — is what matters most. That's where we should focus. But we do the opposite. We spend all our time on technical arguments and logic. We ignore how to actually live well. So we end up lying while explaining very cleverly why lying is wrong.",
         "tags": [
           "doing-the-right-thing",
           "knowing-yourself"
@@ -1169,7 +1275,7 @@
       {
         "sectionNumber": 51,
         "originalText": "Upon all occasions we ought to have these maxims ready at hand:\n\nConduct me, Zeus, and thou, O Destiny,\nWherever your decrees have fixed my lot.\nI follow cheerfully; and, did I not,\nWicked and wretched, I must follow still.[8]\n\nWho'er yields properly to Fate is deemed\nWise among men, and knows the laws of Heaven.[9]\n\nAnd this third:\n\n\"O Crito, if it thus pleases the gods, thus let it be.\"[10]\n\n\"Anytus and Melitus may kill me indeed; but hurt me they cannot.\"[11]",
-        "plainEnglish": "Keep these thoughts ready for any situation:\n\nLead me, Zeus, and you, Destiny, wherever you have decided my path should go. I'll follow gladly. And if I don't? I'll still have to follow — but as someone wicked and miserable.\n\nWhoever accepts fate properly is considered wise and understands how the universe works.\n\nAnd this third one:\n\n\"Crito, if this is what the gods want, then let it be.\"\n\n\"Anytus and Melitus can kill me, sure. But they cannot harm me.\"",
+        "plainEnglish": "Keep these thoughts ready for any situation:\n\n\"Lead me, Zeus, and you, Destiny, wherever you have decided I should go. I'll follow gladly. And if I don't want to, I'll still have to follow — but I'll be miserable and wrong.\"\n\n\"Whoever accepts fate properly is considered wise and understands how the universe works.\"\n\nAnd this third one:\n\n\"Crito, if this is what the gods want, then let it be.\"\n\n\"Anytus and Melitus can kill me, but they cannot harm me.\"",
         "tags": [
           "freedom-and-control",
           "facing-hardship"
@@ -1184,10 +1290,10 @@
     ]
   },
   "cost": {
-    "inputTokens": 93152,
-    "outputTokens": 13317,
+    "inputTokens": 2080498,
+    "outputTokens": 323029,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 0.2396055
+    "estimatedCost": 5.5434645
   }
 }

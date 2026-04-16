@@ -4,72 +4,88 @@
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-03",
     "card_number": 1,
-    "total_cards_in_chapter": 5,
-    "plain_english": "You ask me what I think we should do to deal with this boredom. \"The best thing,\" as Athenodorus says, \"is to stay busy with work — managing public affairs and doing your duties as a citizen. Some people spend their days exercising in the sun and taking care of their health. Athletes find it most helpful to spend most of their time building up the muscles and strength they've devoted their lives to developing. In the same way, if you're training your mind for the struggles of political life, it's far more honorable to be working than sitting around doing nothing. A person who wants to serve his country and all humanity gets practice and does good at the same time when he throws himself into business. He works as hard as he can for both the public and private citizens.\"",
-    "original_excerpt": "You ask me what I think we had better make use of to help us to support this ennui. \"The best thing,\" as Athenodorus says, \"is to occupy oneself with business with the management of affairs of state and the duties of a citizen: for as some pass the day in exercising themselves in the sun and in taking care of their bodily health, and athletes find it most useful to spend the greater part of their time in feeding up the muscles and strength to whose cultivation they have devoted their lives; so too for you who are training your mind to take part in the struggles of political life, it is far more honourable to be thus at work than to be idle. He whose object is to be of service to his countrymen and to all mortals, exercises himself and does good at the same time when he is engrossed in business and is working to the best of his ability both in the interests of the public and of private men.",
+    "total_cards_in_chapter": 6,
+    "plain_english": "You ask me what I think we should do to fight off this restless boredom. \"The best remedy,\" as Athenodorus says, \"is to stay busy with real work — managing public affairs and doing your duties as a citizen. Some people spend their days exercising in the sun and taking care of their bodies. Athletes find it most helpful to spend most of their time building up the muscles and strength they've dedicated their lives to developing. In the same way, if you're training your mind for the struggles of political life, it's much more honorable to be working than sitting around doing nothing.",
+    "original_excerpt": "You ask me what I think we had better make use of to help us to support this ennui. \"The best thing,\" as Athenodorus says, \"is to occupy oneself with business with the management of affairs of state and the duties of a citizen: for as some pass the day in exercising themselves in the sun and in taking care of their bodily health, and athletes find it most useful to spend the greater part of their time in feeding up the muscles and strength to whose cultivation they have devoted their lives; so too for you who are training your mind to take part in the struggles of political life, it is far more honourable to be thus at work than to be idle.",
     "source_reference": "On Peace of Mind, Section 3",
     "author_slug": "seneca",
     "tags": [
       "what-matters-most",
-      "doing-the-right-thing"
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 43
+    "reading_time_seconds": 31
   },
   {
     "id": "peace-of-mind-03-002",
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-03",
     "card_number": 2,
-    "total_cards_in_chapter": 5,
-    "plain_english": "\"But,\" he continues, \"it's nearly impossible to stay innocent when you're surrounded by such fierce ambition and so many people trying to lead you astray. You'll face more obstacles than help. So we should withdraw from the courts and from public life. Even a great mind can find space to grow when it's in private. Lions and wild animals get cramped when they're locked in cages, but this doesn't apply to humans. People often do their most important work in retirement. However, a person should only withdraw in a way that still lets them help both individuals and humanity as a whole — with their mind, their words, and their guidance.\"",
-    "original_excerpt": "\"But,\" continues he, \"because innocence is hardly safe among such furious ambitions and so many men who turn one aside from the right path, and it is always sure to meet with more hindrance than help, we ought to withdraw ourselves from the forum and from public life, and a great mind even in a private station can find room wherein to expand freely. Confinement in dens restrains the springs of lions and wild creatures, but this does not apply to human beings, who often effect the most important works in retirement. Let a man, however, withdraw himself only in such a fashion that wherever he spends his leisure his wish may still be to benefit individual men and mankind alike, both with his intellect, his voice, and his advice.",
+    "total_cards_in_chapter": 6,
+    "plain_english": "The person who wants to serve his country and all people can practice virtue and do good at the same time when he's busy with public affairs. He works as hard as he can for both the public good and for private citizens. But,\" he continues, \"it's hard to stay innocent when ambitions are so fierce and so many people try to lead you off the right path. You're sure to face more obstacles than help. So we should withdraw from the forum and from public life. Even a great mind can find room to flourish in private life. Putting lions and wild animals in cages restrains their energy, but this doesn't apply to humans. People often do their most important work in retirement.",
+    "original_excerpt": "He whose object is to be of service to his countrymen and to all mortals, exercises himself and does good at the same time when he is engrossed in business and is working to the best of his ability both in the interests of the public and of private men. But,\" continues he, \"because innocence is hardly safe among such furious ambitions and so many men who turn one aside from the right path, and it is always sure to meet with more hindrance than help, we ought to withdraw ourselves from the forum and from public life, and a great mind even in a private station can find room wherein to expand freely. Confinement in dens restrains the springs of lions and wild creatures, but this does not apply to human beings, who often effect the most important works in retirement.",
     "source_reference": "On Peace of Mind, Section 3",
     "author_slug": "seneca",
     "tags": [
       "doing-the-right-thing",
-      "what-matters-most"
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 33
+    "reading_time_seconds": 37
   },
   {
     "id": "peace-of-mind-03-003",
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-03",
     "card_number": 3,
-    "total_cards_in_chapter": 5,
-    "plain_english": "The man who serves his country well isn't just someone who nominates candidates for office, defends people in court, or votes on war and peace. He also serves by encouraging young people to do right. He fills the gap left by bad teachers by teaching them virtue. He grabs hold of people who are chasing money and luxury like maniacs and stops them — or at least slows them down. This man serves the public even though he holds no office. Who does more good? The judge who settles disputes between foreigners and citizens? The one who pronounces sentences that his assistant writes for him? Or the person who teaches others what justice really means — what it means to honor your family, to endure hardship, to be brave, to accept death, and to understand the gods? Who shows them how much a clear conscience can help?",
-    "original_excerpt": "The man that does good service to the state is not only he who brings forward candidates for public office, defends accused persons, and gives his vote on questions of peace and war, but he who encourages young men in well-doing, who supplies the present dearth of good teachers by instilling into their minds the principles of virtue, who seizes and holds back those who are rushing wildly in pursuit of riches and luxury, and, if he does nothing else, at least checks their course—such a man does service to the public though in a private station. Which does the most good, he who decides between foreigners and citizens (as praetor peregrinus), or, as praetor urbanus, pronounces sentence to the suitors in his court at his assistant's dictation, or he who shows them what is meant by justice, filial feeling, endurance, courage, contempt of death and knowledge of the gods, and how much a man is helped by a good conscience?",
+    "total_cards_in_chapter": 6,
+    "plain_english": "When a man withdraws from public life, he should do it in a way that still lets him help others. Whether he's relaxing at home or traveling, he should want to benefit both individuals and all of humanity. He can use his mind, his voice, and his advice. The man who serves the state isn't just the one who nominates candidates, defends people in court, and votes on war and peace. He's also the one who encourages young people to do right. He fills the shortage of good teachers by planting virtue in their minds. He grabs hold of those who are chasing money and luxury like maniacs, and stops them in their tracks — or at least slows them down. This kind of man serves the public even though he holds no office.",
+    "original_excerpt": "Let a man, however, withdraw himself only in such a fashion that wherever he spends his leisure his wish may still be to benefit individual men and mankind alike, both with his intellect, his voice, and his advice. The man that does good service to the state is not only he who brings forward candidates for public office, defends accused persons, and gives his vote on questions of peace and war, but he who encourages young men in well-doing, who supplies the present dearth of good teachers by instilling into their minds the principles of virtue, who seizes and holds back those who are rushing wildly in pursuit of riches and luxury, and, if he does nothing else, at least checks their course—such a man does service to the public though in a private station.",
     "source_reference": "On Peace of Mind, Section 3",
     "author_slug": "seneca",
     "tags": [
       "doing-the-right-thing",
-      "what-matters-most"
+      "human-nature"
     ],
-    "reading_time_seconds": 44
+    "reading_time_seconds": 40
   },
   {
     "id": "peace-of-mind-03-004",
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-03",
     "card_number": 4,
-    "total_cards_in_chapter": 5,
-    "plain_english": "If you take the time you would have spent in public service and give it to philosophy instead, you're not abandoning your duty or running away from your responsibilities. A soldier isn't just someone who stands in formation and fights on the front lines. He's also the one who guards the gates — a job that's safer but still not easy. He keeps watch and manages the weapons. These duties don't involve bloodshed, but they're still military service. Once you commit yourself to philosophy, you'll get rid of any disgust you feel toward life. You won't wish for darkness because you're tired of the light. You won't be a burden to yourself or useless to others. You'll make many friends, and all the best people will be drawn to you. Virtue can't stay hidden, no matter how humble your position. It always shows signs of itself. Anyone who's worthy will track it down by following its trail.",
-    "original_excerpt": "If then you transfer to philosophy the time which you take away from the public service, you will not be a deserter or have refused to perform your proper task. A soldier is not merely one who stands in the ranks and defends the right or the left wing of the army, but he also who guards the gates—a service which, though less dangerous, is no sinecure—who keeps watch, and takes charge of the arsenal: though all these are bloodless duties, yet they count as military service. As soon as you have devoted yourself to philosophy, you will have overcome all disgust at life: you will not wish for darkness because you are weary of the light, nor will you be a trouble to yourself and useless to others: you will acquire many friends, and all the best men will be attracted towards you: for virtue, in however obscure a position, cannot be hidden, but gives signs of its presence: any one who is worthy will trace it out by its footsteps:",
+    "total_cards_in_chapter": 6,
+    "plain_english": "Who does more good? The judge who settles disputes between foreigners and citizens? Or the one who just repeats what his assistant tells him to say in court? Or the person who teaches others what justice really means — what it means to honor your family, endure hardship, show courage, accept death, understand the divine, and know the power of a clear conscience? If you take the time you would have spent in public office and give it to philosophy instead, you're not running away from your duties. You're not refusing to do your proper work.",
+    "original_excerpt": "Which does the most good, he who decides between foreigners and citizens (as praetor peregrinus), or, as praetor urbanus, pronounces sentence to the suitors in his court at his assistant's dictation, or he who shows them what is meant by justice, filial feeling, endurance, courage, contempt of death and knowledge of the gods, and how much a man is helped by a good conscience? If then you transfer to philosophy the time which you take away from the public service, you will not be a deserter or have refused to perform your proper task.",
     "source_reference": "On Peace of Mind, Section 3",
     "author_slug": "seneca",
     "tags": [
       "doing-the-right-thing",
       "what-matters-most"
     ],
-    "reading_time_seconds": 47
+    "reading_time_seconds": 29
   },
   {
     "id": "peace-of-mind-03-005",
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-03",
     "card_number": 5,
-    "total_cards_in_chapter": 5,
-    "plain_english": "But if we give up all company and turn our backs on everyone, living alone with just ourselves, this solitude will leave us with nothing interesting to do. We'll get restless. We'll start building things and tearing them down. We'll try to hold back the sea or force water through mountains — basically, we'll waste the time nature gave us. Some people hoard their time like misers. Others throw it away. Some spend it so carefully they can show you exactly what they got for it. Others spend it so badly they have nothing left to show. Nothing is more shameful than that. You'll often meet a very old man who has nothing to prove he lived a long life except his age.",
+    "total_cards_in_chapter": 6,
+    "plain_english": "A soldier isn't just someone who stands in formation and defends the army's flanks. He's also the one who guards the gates — a job that's less dangerous but still not easy. He keeps watch and manages the weapons. These duties don't involve bloodshed, but they still count as real military service. Once you commit yourself to philosophy, you'll overcome all disgust with life. You won't wish for darkness because you're tired of the light. You won't be a burden to yourself or useless to others. You'll gain many friends, and all the best people will be drawn to you. Virtue can't stay hidden, no matter how humble your position. It always gives signs of itself. Anyone worthy will track it down by following its trail.",
+    "original_excerpt": "A soldier is not merely one who stands in the ranks and defends the right or the left wing of the army, but he also who guards the gates—a service which, though less dangerous, is no sinecure—who keeps watch, and takes charge of the arsenal: though all these are bloodless duties, yet they count as military service. As soon as you have devoted yourself to philosophy, you will have overcome all disgust at life: you will not wish for darkness because you are weary of the light, nor will you be a trouble to yourself and useless to others: you will acquire many friends, and all the best men will be attracted towards you: for virtue, in however obscure a position, cannot be hidden, but gives signs of its presence: any one who is worthy will trace it out by its footsteps:",
+    "source_reference": "On Peace of Mind, Section 3",
+    "author_slug": "seneca",
+    "tags": [
+      "doing-the-right-thing",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 38
+  },
+  {
+    "id": "peace-of-mind-03-006",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "section-03",
+    "card_number": 6,
+    "total_cards_in_chapter": 6,
+    "plain_english": "But if we give up all social life, turn our backs on the human race, and live alone with just ourselves, this solitude without any meaningful work will leave us with nothing to do. We'll start building things and tearing them down, trying to hold back the sea, forcing water through natural barriers — basically wasting the time that nature gave us to use well. Some of us hoard time like misers. Others throw it away carelessly. Some spend it so they can show what they've accomplished. Others spend it and have nothing left to show for it — which is the most shameful thing of all. Often you'll meet a very old man who has nothing except his age to prove he's been alive for a long time.",
     "original_excerpt": "but if we give up all society, turn our backs upon the whole human race, and live communing with ourselves alone, this solitude without any interesting occupation will lead to a want of something to do: we shall begin to build up and to pull down, to dam out the sea, to cause waters to flow through natural obstacles, and generally to make a bad disposal of the time which Nature has given us to spend: some of us use it grudgingly, others wastefully; some of us spend it so that we can show a profit and loss account, others so that they have no assets remaining: than which nothing can be more shameful. Often a man who is very old in years has nothing beyond his age by which he can prove that he has lived a long time.\"",
     "source_reference": "On Peace of Mind, Section 3",
     "author_slug": "seneca",
@@ -77,6 +93,6 @@
       "what-matters-most",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 37
+    "reading_time_seconds": 39
   }
 ]

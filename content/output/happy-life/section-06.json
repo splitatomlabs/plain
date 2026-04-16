@@ -4,15 +4,31 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-06",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "\"But,\" our opponent says, \"the mind will have its own pleasures too.\" Fine, let it have them. Let the mind judge luxury and pleasure. Let it indulge completely in everything that brings sensual delight. Then let it look back on what it enjoyed before. Let it remember all those faded pleasures and feel joy. Let it eagerly look forward to other pleasures it experienced long ago and plans to experience again. While the body lies helplessly stuffed in the present, let the mind send its thoughts toward the future and count up its hopes. All of this will make it seem even more miserable, in my opinion. Why? Because it's madness to choose evil over good. No insane person can be happy. And no one can be sane if they think harmful things are the highest good and strive to get them. The happy person is someone who can judge all things correctly. They are satisfied with their present situation, whatever it may be, and on good terms with their life's conditions. That person is happy whose reason approves of their entire situation.",
-    "original_excerpt": "“But,” says our adversary, “the mind also will have pleasures of its own.” Let it have them, then, and let it sit in judgment over luxury and pleasures; let it indulge itself to the full in all those matters which give sensual delights: then let it look back upon what it enjoyed before, and with all those faded sensualities fresh in its memory let it rejoice and look eagerly forward to those other pleasures which it experienced long ago, and intends to experience again, and while the body lies in helpless repletion in the present, let it send its thoughts onward towards the future, and take stock of its hopes: all this will make it appear, in my opinion, yet more wretched, because it is insanity to choose evil instead of good: now no insane person can be happy, and no one can be sane if he regards what is injurious as the highest good and strives to obtain it. The happy man, therefore, is he who can make a right judgment in all things: he is happy who in his present circumstances, whatever they may be, is satisfied and on friendly terms with the conditions of his life. That man is happy, whose reason recommends to him the whole posture of his affairs.",
+    "total_cards_in_chapter": 2,
+    "plain_english": "\"But,\" our opponent says, \"the mind will have its own pleasures too.\" Fine, let it have them. Let the mind judge luxury and pleasure. Let it indulge completely in everything that feels good to the senses. Then let it look back at what it enjoyed before. Let it remember all those faded sensations and feel happy about them. Let it eagerly look forward to pleasures it experienced long ago and plans to experience again. While the body lies there stuffed and helpless in the present, let the mind send its thoughts toward the future and count up its hopes. All of this will make it seem even more miserable, in my opinion. Why? Because it's madness to choose evil over good. No insane person can be happy. And no one can be sane if they think harmful things are the highest good and work to get them.",
+    "original_excerpt": "“But,” says our adversary, “the mind also will have pleasures of its own.” Let it have them, then, and let it sit in judgment over luxury and pleasures; let it indulge itself to the full in all those matters which give sensual delights: then let it look back upon what it enjoyed before, and with all those faded sensualities fresh in its memory let it rejoice and look eagerly forward to those other pleasures which it experienced long ago, and intends to experience again, and while the body lies in helpless repletion in the present, let it send its thoughts onward towards the future, and take stock of its hopes: all this will make it appear, in my opinion, yet more wretched, because it is insanity to choose evil instead of good: now no insane person can be happy, and no one can be sane if he regards what is injurious as the highest good and strives to obtain it.",
     "source_reference": "On the Happy Life, Section 6",
     "author_slug": "seneca",
     "tags": [
-      "what-matters-most",
-      "knowing-yourself"
+      "knowing-yourself",
+      "what-matters-most"
     ],
-    "reading_time_seconds": 55
+    "reading_time_seconds": 44
+  },
+  {
+    "id": "happy-life-06-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-06",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "So who is the happy man? He's someone who can judge things correctly. He's happy when he accepts his current situation, whatever it is, and makes peace with his life as it stands. The happy man is the one whose reason tells him that everything in his life is as it should be.",
+    "original_excerpt": "The happy man, therefore, is he who can make a right judgment in all things: he is happy who in his present circumstances, whatever they may be, is satisfied and on friendly terms with the conditions of his life. That man is happy, whose reason recommends to him the whole posture of his affairs.",
+    "source_reference": "On the Happy Life, Section 6",
+    "author_slug": "seneca",
+    "tags": [
+      "calm-your-mind",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 16
   }
 ]

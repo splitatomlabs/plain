@@ -4,8 +4,8 @@
     "book_slug": "shortness-of-life",
     "chapter_slug": "section-13",
     "card_number": 1,
-    "total_cards_in_chapter": 5,
-    "plain_english": "It would take too long to list all the people who have wasted their lives playing board games, playing ball, or lying in the sun. These people aren't truly at leisure if their pleasures feel like work. No one would disagree that people who spend their time on pointless academic questions are just busy fools. We already have plenty of these in Rome too. This used to be a uniquely Greek mental illness — debating how many rowers Odysseus had, whether the Iliad or the Odyssey was written first, and whether the same person wrote both. Questions like these don't satisfy you when you think about them privately. And if you share them publicly, they don't make you look smarter — just more annoying.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "I could spend forever listing people who waste their lives playing board games, playing ball, or lying in the sun. These people aren't truly at leisure — their fun has become like work. And no one doubts that scholars who chase pointless questions are just busy fools. We already have plenty of them in Rome too. It used to be a distinctly Greek mental illness — studying how many rowers Odysseus had, whether the Iliad or Odyssey was written first, whether the same person wrote both, and other equally useless questions. Keep these thoughts to yourself and they bring you no joy. Share them and you don't look learned — just annoying.",
     "original_excerpt": "It would take long to describe the various individuals who have wasted their lives over playing at draughts, playing at ball, or toasting their bodies in the sun: men are not at leisure if their pleasures partake of the character of business, for no one will doubt that those persons are laborious triflers who devote themselves to the study of futile literary questions, of whom there is already a great number in Rome also. It used to be a peculiarly Greek disease of the mind to investigate how many rowers Ulysses had, whether the Iliad or the Odyssey was written first, and furthermore, whether they were written by the same author, with other matters of the same stamp, which neither please your inner consciousness if you keep them to yourself, nor make you seem more learned, but only more troublesome, if you publish them abroad.",
     "source_reference": "On the Shortness of Life, Section 13",
     "author_slug": "seneca",
@@ -13,70 +13,101 @@
       "what-matters-most",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 37
+    "reading_time_seconds": 34
   },
   {
     "id": "shortness-of-life-13-002",
     "book_slug": "shortness-of-life",
     "chapter_slug": "section-13",
     "card_number": 2,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Look, this pointless craving to learn useless facts has already infected the Romans. Just the other day I heard someone explaining who was the first Roman general to do this or that: Duillius was the first to win a sea battle, Curius Dentatus was the first to parade elephants in his triumph. These stories don't add anything to real glory, but at least they deal with great deeds by our countrymen. This knowledge isn't useful, yet it grabs our attention like some fascinating foolishness. I'll even forgive people who want to know who first convinced the Romans to get on ships. It was Claudius, who got the nickname Caudex because the ancient Romans called any carpentry made from many planks a 'caudex.' That's why public records are called 'Codices,' and by old tradition the supply ships that work the Tiber are called 'codicariae.' Let's also allow that it's worth mentioning how Valerius Corvinus was the first to conquer Messana, and the first of the Valerius family to transfer the name of the captured city to his own name, and was called Messana — though people gradually corrupted the pronunciation and called him Messalla.",
-    "original_excerpt": "See, already this vain longing to learn what is useless has taken hold of the Romans: the other day I heard somebody telling who was the first Roman general who did this or that: Duillius was the first who won a sea-fight, Curius Dentatus was the first who drove elephants in his triumph: moreover, these stories, though they add nothing to real glory, do nevertheless deal with the great deeds of our countrymen: such knowledge is not profitable, yet it claims our attention as a fascinating kind of folly. I will even pardon those who want to know who first persuaded the Romans to go on board ship. It was Claudius, who for this reason was surnamed Caudex, because any piece of carpentry formed of many planks was called _caudex_ by the ancient Romans, for which reason public records are called _Codices_, and by old custom the ships which ply on the Tiber with provisions are called _codicariae_. Let us also allow that it is to the point to tell how Valerius Corvinus was the first to conquer Messana, and first of the family of the Valerii transferred the name of the captured city to his own, and was called Messana, and how the people gradually corrupted the pronunciation and called him Messalla:",
+    "total_cards_in_chapter": 7,
+    "plain_english": "Look, this pointless desire to learn useless facts has already infected the Romans. The other day I heard someone explaining who was the first Roman general to do this or that: Duillius was the first to win a naval battle, Curius Dentatus was the first to parade elephants in his victory procession. These stories don't add anything to real glory, but at least they deal with great deeds by our countrymen. This kind of knowledge isn't useful, but it grabs our attention like an entertaining form of foolishness.",
+    "original_excerpt": "See, already this vain longing to learn what is useless has taken hold of the Romans: the other day I heard somebody telling who was the first Roman general who did this or that: Duillius was the first who won a sea-fight, Curius Dentatus was the first who drove elephants in his triumph: moreover, these stories, though they add nothing to real glory, do nevertheless deal with the great deeds of our countrymen: such knowledge is not profitable, yet it claims our attention as a fascinating kind of folly.",
     "source_reference": "On the Shortness of Life, Section 13",
     "author_slug": "seneca",
     "tags": [
       "what-matters-most",
       "human-nature"
     ],
-    "reading_time_seconds": 58
+    "reading_time_seconds": 26
   },
   {
     "id": "shortness-of-life-13-003",
     "book_slug": "shortness-of-life",
     "chapter_slug": "section-13",
     "card_number": 3,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Would you really want to know that Lucius Sulla was the first to release lions in the circus? Before him, they just kept them chained up. He had dart throwers sent by King Bocchus kill them. Fine, maybe that's interesting trivia. But what good does it do to know that Pompey was the first to put eighteen elephants in the circus and made them fight condemned criminals in a fake battle? Here was the leading man of Rome — someone who was supposedly famous for his kind heart among all the great leaders of the past. And he thought it would be entertaining to kill people in a completely new way. Regular fighting to the death? Not cruel enough. Getting torn apart? Still not cruel enough. Let's have them crushed flat by huge animals! It would be better if we forgot such things completely. Otherwise some future ruler might hear about it and try to copy this sophisticated barbarism.",
-    "original_excerpt": "or would you let any one find interest in Lucius Sulla having been the first to let lions loose in the circus, they having been previously exhibited in chains, and hurlers of darts having been sent by King Bocchus to kill them? This may be permitted to their curiosity: but can it serve any useful purpose to know that Pompeius was the first to exhibit eighteen elephants in the circus, who were matched in a mimic battle with some convicts? The leading man in the state, and one who, according to tradition, was noted among the ancient leaders of the state for his transcendent goodness of heart, thought it a notable kind of show to kill men in a manner hitherto unheard of. Do they fight to the death? that is not cruel enough: are they torn to pieces? that is not cruel enough: let them be crushed flat by animals of enormous bulk. It would be much better that such a thing should be forgotten, for fear that hereafter some potentate might hear of it and envy its refined barbarity.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "I'll even forgive people who want to know who first convinced the Romans to get on ships. It was Claudius, who got the nickname Caudex because the ancient Romans called anything made from many planks \"caudex.\" That's why public records are called \"Codices,\" and why the old supply boats on the Tiber are called \"codicariae.\" Let's also allow that it might matter to tell how Valerius Corvinus was the first to conquer Messana. He was the first of the Valerius family to take the name of a captured city for himself, calling himself Messana. Over time, people gradually changed how they said it and called him Messalla. Or would you really let someone get interested in how Lucius Sulla was the first to release lions in the circus? Before that, they had only been shown in chains. King Bocchus sent spear-throwers to kill them.",
+    "original_excerpt": "I will even pardon those who want to know who first persuaded the Romans to go on board ship. It was Claudius, who for this reason was surnamed Caudex, because any piece of carpentry formed of many planks was called _caudex_ by the ancient Romans, for which reason public records are called _Codices_, and by old custom the ships which ply on the Tiber with provisions are called _codicariae_. Let us also allow that it is to the point to tell how Valerius Corvinus was the first to conquer Messana, and first of the family of the Valerii transferred the name of the captured city to his own, and was called Messana, and how the people gradually corrupted the pronunciation and called him Messalla: or would you let any one find interest in Lucius Sulla having been the first to let lions loose in the circus, they having been previously exhibited in chains, and hurlers of darts having been sent by King Bocchus to kill them?",
     "source_reference": "On the Shortness of Life, Section 13",
     "author_slug": "seneca",
     "tags": [
-      "human-nature",
       "what-matters-most"
     ],
-    "reading_time_seconds": 48
+    "reading_time_seconds": 43
   },
   {
     "id": "shortness-of-life-13-004",
     "book_slug": "shortness-of-life",
     "chapter_slug": "section-13",
     "card_number": 4,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Oh, how success makes us blind! Pompey was throwing countless prisoners to wild animals. He was staging fights between creatures that should never meet. He was spilling blood in front of the Roman people — the same people whose blood he would soon spill even more freely. At that moment, he thought he ruled the entire world. But later, the Alexandrians tricked him. He had to offer his throat to the knife of the lowest slave. Only then did he realize how empty his nickname \"The Great\" really was.",
-    "original_excerpt": "O, how doth excessive prosperity blind our intellects! at the moment at which he was casting so many troops of wretches to be trampled on by outlandish beasts, when he was proclaiming war between such different creatures, when he was shedding so much blood before the eyes of the Roman people, whose blood he himself was soon to shed even more freely, he thought himself the master of the whole world; yet he afterwards, deceived by the treachery of the Alexandrians, had to offer himself to the dagger of the vilest of slaves, and then at last discovered what an empty boast was his surname of \"The Great.\"",
+    "total_cards_in_chapter": 7,
+    "plain_english": "People love to collect trivia like this: but what's the point of knowing that Pompey was the first to put eighteen elephants in the circus to fight condemned criminals in fake battles? Here was Rome's leading citizen, a man famous among past leaders for his kind heart. And he thought it would be entertaining to kill people in a completely new way. Regular fighting to the death? Not cruel enough. Getting torn apart? Still not cruel enough. Let's have them crushed flat by enormous animals. It would be better if we forgot such things entirely. Otherwise some future ruler might hear about it and want to copy this elegant savagery.",
+    "original_excerpt": "This may be permitted to their curiosity: but can it serve any useful purpose to know that Pompeius was the first to exhibit eighteen elephants in the circus, who were matched in a mimic battle with some convicts? The leading man in the state, and one who, according to tradition, was noted among the ancient leaders of the state for his transcendent goodness of heart, thought it a notable kind of show to kill men in a manner hitherto unheard of. Do they fight to the death? that is not cruel enough: are they torn to pieces? that is not cruel enough: let them be crushed flat by animals of enormous bulk. It would be much better that such a thing should be forgotten, for fear that hereafter some potentate might hear of it and envy its refined barbarity.",
     "source_reference": "On the Shortness of Life, Section 13",
     "author_slug": "seneca",
     "tags": [
       "human-nature",
       "what-matters-most"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 33
   },
   {
     "id": "shortness-of-life-13-005",
     "book_slug": "shortness-of-life",
     "chapter_slug": "section-13",
     "card_number": 5,
-    "total_cards_in_chapter": 5,
-    "plain_english": "But let me get back to my point. I'll show you that people waste their energy even on this kind of learning. The same historian tells us that Metellus was the only Roman who ever paraded 120 captured elephants in his triumph after defeating the Carthaginians in Sicily. He also says that Sulla was the last Roman to extend the pomoerium — something the ancients only did when they conquered Italian territory, not foreign provinces. Is it really more useful to know this than to know why Mount Aventine sits outside the pomoerium? According to him, it's either because the common people retreated there during their rebellion, or because the birds Remus saw there were bad omens. There are countless other stories like this — most of them lies, or close enough to lies. Even if these writers are honest and guarantee what they write is true, who becomes a better person from these stories? Who controls their emotions better? Who becomes braver, more fair, or more decent? My friend Fabianus used to say he wasn't sure it wouldn't be better to skip studying altogether rather than get caught up in this stuff.",
-    "original_excerpt": "But to return to the point from which I have digressed, I will prove that even on this very subject some people expend useless pains. The same author tells us that Metellus, when he triumphed after having conquered the Carthaginians in Sicily, was the only Roman who ever had a hundred and twenty captured elephants led before his car: and that Sulla was the last Roman who extended the pomoerium,[7] which it was not the custom of the ancients to extend on account of the conquest of provincial, but only of Italian territory. Is it more useful to know this, than to know that the Mount Aventine, according to him, is outside of the pomoerium, for one of two reasons, either because it was thither that the plebeians seceded, or because when Remus took his auspices on that place the birds which he saw were not propitious: and other stories without number of the like sort, which are either actual falsehoods or much the same as falsehoods? for even if you allow that these authors speak in all good faith, if they pledge themselves for the truth of what they write, still, whose mistakes will be made fewer by such stories? whose passions will be restrained? whom will they make more brave, more just, or more gentlemanly? My friend Fabianus used to say that he was not sure that it was not better not to apply oneself to any studies at all than to become interested in these.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "How prosperity blinds us! At the very moment Pompey was throwing countless prisoners to foreign beasts, staging battles between exotic animals, and spilling blood before the Roman crowds — blood he would soon spill even more freely — he believed he ruled the world. Yet later, betrayed by the Alexandrians, he had to offer his throat to the blade of the lowest slave. Only then did he learn how empty his title \"The Great\" really was.",
+    "original_excerpt": "O, how doth excessive prosperity blind our intellects! at the moment at which he was casting so many troops of wretches to be trampled on by outlandish beasts, when he was proclaiming war between such different creatures, when he was shedding so much blood before the eyes of the Roman people, whose blood he himself was soon to shed even more freely, he thought himself the master of the whole world; yet he afterwards, deceived by the treachery of the Alexandrians, had to offer himself to the dagger of the vilest of slaves, and then at last discovered what an empty boast was his surname of \"The Great.\"",
+    "source_reference": "On the Shortness of Life, Section 13",
+    "author_slug": "seneca",
+    "tags": [
+      "what-matters-most",
+      "human-nature"
+    ],
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "shortness-of-life-13-006",
+    "book_slug": "shortness-of-life",
+    "chapter_slug": "section-13",
+    "card_number": 6,
+    "total_cards_in_chapter": 7,
+    "plain_english": "But let me get back to my main point. I want to show you that people waste effort even on this very topic. The same writer tells us that Metellus was the only Roman who ever had 120 captured elephants march in front of his chariot when he celebrated his triumph over the Carthaginians in Sicily. He also says Sulla was the last Roman to extend the pomoerium — the sacred boundary around Rome. The ancients only extended it when they conquered Italian territory, not foreign provinces. Is knowing this really more useful than knowing why Mount Aventine sits outside the pomoerium? According to this writer, it's either because the common people once fled there during a revolt, or because when Remus took his bird omens on that spot, the signs were bad. There are countless other stories just like these — either outright lies or close enough to lies that it doesn't matter.",
+    "original_excerpt": "But to return to the point from which I have digressed, I will prove that even on this very subject some people expend useless pains. The same author tells us that Metellus, when he triumphed after having conquered the Carthaginians in Sicily, was the only Roman who ever had a hundred and twenty captured elephants led before his car: and that Sulla was the last Roman who extended the pomoerium,[7] which it was not the custom of the ancients to extend on account of the conquest of provincial, but only of Italian territory. Is it more useful to know this, than to know that the Mount Aventine, according to him, is outside of the pomoerium, for one of two reasons, either because it was thither that the plebeians seceded, or because when Remus took his auspices on that place the birds which he saw were not propitious: and other stories without number of the like sort, which are either actual falsehoods or much the same as falsehoods?",
     "source_reference": "On the Shortness of Life, Section 13",
     "author_slug": "seneca",
     "tags": [
       "what-matters-most",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 58
+    "reading_time_seconds": 46
+  },
+  {
+    "id": "shortness-of-life-13-007",
+    "book_slug": "shortness-of-life",
+    "chapter_slug": "section-13",
+    "card_number": 7,
+    "total_cards_in_chapter": 7,
+    "plain_english": "Even if you believe these authors are completely honest and telling the truth, what good does it do? Whose mistakes will their stories prevent? Whose passions will they control? Who will become braver, more just, or more noble from reading them? My friend Fabianus used to say he wasn't sure it wouldn't be better to avoid studying altogether than to get caught up in this stuff.",
+    "original_excerpt": "for even if you allow that these authors speak in all good faith, if they pledge themselves for the truth of what they write, still, whose mistakes will be made fewer by such stories? whose passions will be restrained? whom will they make more brave, more just, or more gentlemanly? My friend Fabianus used to say that he was not sure that it was not better not to apply oneself to any studies at all than to become interested in these.",
+    "source_reference": "On the Shortness of Life, Section 13",
+    "author_slug": "seneca",
+    "tags": [
+      "what-matters-most",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 20
   }
 ]

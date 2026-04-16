@@ -4,8 +4,8 @@
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-15",
     "card_number": 1,
-    "total_cards_in_chapter": 3,
-    "plain_english": "But getting rid of our personal reasons for sadness doesn't solve everything. Sometimes we're overwhelmed by hatred for humanity itself. Think about how rare honest people are. How few innocent people you meet. How seldom anyone keeps their word unless it benefits them. Remember all the crimes that go unpunished. All the disgusting things people do for money and sex. Think about ambition so desperate that people will do shameful things just to get ahead. When you dwell on all this, your mind feels like it's been thrown into darkness. Shadows rise up around you. It's as if all the virtues have been destroyed, and we're no longer allowed to hope we can be good — or that being good even matters.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "But even when we fix our personal problems, we still feel sad sometimes. That's because we start to hate humanity itself. Think about how rare honest people are. How few innocent people you meet. How seldom people keep their word unless it benefits them. Remember all the crimes that go unpunished. All the disgusting ways people chase money and power. Think about ambition so desperate that people will do shameful things just to stand out. When you see all this, your mind goes dark. It feels like virtue has been completely destroyed. You start to think there's no point in being good, and that good people get nothing for their efforts.",
     "original_excerpt": "Yet we gain nothing by getting rid of all personal causes of sadness, for sometimes we are possessed by hatred of the human race. When you reflect how rare simplicity is, how unknown innocence, how seldom faith is kept, unless it be to our advantage, when you remember such numbers of successful crimes, so many equally hateful losses and gains of lust, and ambition so impatient even of its own natural limits that it is willing to purchase distinction by baseness, the mind seems as it were cast into darkness, and shadows rise before it as though the virtues were all overthrown and we were no longer allowed to hope to possess them or benefited by their possession.",
     "source_reference": "On Peace of Mind, Section 15",
     "author_slug": "seneca",
@@ -13,38 +13,70 @@
       "human-nature",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 37
+    "reading_time_seconds": 33
   },
   {
     "id": "peace-of-mind-15-002",
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-15",
     "card_number": 2,
-    "total_cards_in_chapter": 3,
-    "plain_english": "We should train our minds to see the flaws of ordinary people as funny rather than hateful. We should be like Democritus, not Heraclitus. Whenever Heraclitus went out in public, he would weep. Democritus would laugh. One saw human behavior as tragic. The other saw it as foolish. We need to take a higher view of everything and put up with it more easily. It's better for a person to laugh at life than to cry over it. Besides, someone who laughs at humanity does more good than someone who mourns for it. Laughter suggests there's hope for improvement. Mourning gives up on any chance of fixing things. When you look at the whole universe and can't help but laugh, that shows a stronger mind than someone who can't stop crying. Your emotions are barely touched. You don't think any part of this whole show is truly important, serious, or tragic.",
-    "original_excerpt": "We ought therefore to bring ourselves into such a state of mind that all the vices of the vulgar may not appear hateful to us, but merely ridiculous, and we should imitate Democritus rather than Heraclitus. The latter of these, whenever be appeared in public, used to weep, the former to laugh: the one thought all human doings to be follies, the other thought them to be miseries. We must take a higher view of all things, and bear with them more easily: it better becomes a man to scoff at life than to lament over it. Add to this that he who laughs at the human race deserves better of it than he who mourns for it, for the former leaves it some good hopes of improvement, while the latter stupidly weeps over what he has given up all hopes of mending. He who after surveying the universe cannot control his laughter shows, too, a greater mind than he who cannot restrain his tears, because his mind is only affected in the slightest possible degree, and he does not think that any part of all this apparatus is either important, or serious, or unhappy.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "We should train our minds to see the common faults of people as funny rather than hateful. We should be like Democritus, not Heraclitus. Heraclitus would cry whenever he went out in public. Democritus would laugh. One saw human behavior as tragic. The other saw it as foolish. We need to take a bigger view of everything and put up with it more easily. It's better for a person to laugh at life than to cry over it.",
+    "original_excerpt": "We ought therefore to bring ourselves into such a state of mind that all the vices of the vulgar may not appear hateful to us, but merely ridiculous, and we should imitate Democritus rather than Heraclitus. The latter of these, whenever be appeared in public, used to weep, the former to laugh: the one thought all human doings to be follies, the other thought them to be miseries. We must take a higher view of all things, and bear with them more easily: it better becomes a man to scoff at life than to lament over it.",
     "source_reference": "On Peace of Mind, Section 15",
     "author_slug": "seneca",
     "tags": [
       "calm-your-mind",
       "human-nature"
     ],
-    "reading_time_seconds": 45
+    "reading_time_seconds": 23
   },
   {
     "id": "peace-of-mind-15-003",
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-15",
     "card_number": 3,
-    "total_cards_in_chapter": 3,
-    "plain_english": "Everyone can figure out for themselves what makes them happy or sad. They'll learn the truth of what Bion said: \"All human behavior is just like how it started — and there's nothing in people's lives that's any more pure or decent than their birth.\" But it's better to accept public morals and human flaws calmly. Don't burst into laughter or tears over them. Getting hurt by other people's suffering means you'll always be miserable. But enjoying other people's suffering is cruel. It's also pointless to weep and make a sad face just because someone is burying their child. When bad things happen to you, give them just as much grief as reason demands — not as much as society expects. Many people cry just for show. When no one is watching, their eyes are dry. But they think it's shameful not to cry when everyone else does. This evil of being guided by what others think has taken such deep root in us that even grief — the most natural emotion of all — becomes fake.",
-    "original_excerpt": "As for the several causes which render us happy or sorrowful, let every one describe them for himself, and learn the truth of Bion's saying, \"That all the doings of men were very like what he began with, and that there is nothing in their lives which is more holy or decent than their conception.\" Yet it is better to accept public morals and human vices calmly without bursting into either laughter or tears; for to be hurt by the sufferings of others is to be for ever miserable, while to enjoy the sufferings of others is an inhuman pleasure, just as it is a useless piece of humanity to weep and pull a long face because some one is burying his son. In one's own misfortunes, also, one ought so to conduct oneself as to bestow upon them just as much sorrow as reason, not as much as custom requires: for many shed tears in order to show them, and whenever no one is looking at them their eyes are dry, but they think it disgraceful not to weep when every one does so. So deeply has this evil of being guided by the opinion of others taken root in us, that even grief, the simplest of all emotions, begins to be counterfeited.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "There's another point worth making. Someone who laughs at the human race treats it better than someone who mourns for it. The one who laughs still has hope that things can get better. The one who mourns has foolishly given up — he's crying over something he thinks can't be fixed. When someone looks at the whole universe and can't help but laugh, he shows a bigger mind than someone who can't stop his tears. His mind is barely affected by any of it. He doesn't think any part of this whole show is important, serious, or tragic.",
+    "original_excerpt": "Add to this that he who laughs at the human race deserves better of it than he who mourns for it, for the former leaves it some good hopes of improvement, while the latter stupidly weeps over what he has given up all hopes of mending. He who after surveying the universe cannot control his laughter shows, too, a greater mind than he who cannot restrain his tears, because his mind is only affected in the slightest possible degree, and he does not think that any part of all this apparatus is either important, or serious, or unhappy.",
     "source_reference": "On Peace of Mind, Section 15",
     "author_slug": "seneca",
     "tags": [
       "human-nature",
-      "knowing-yourself"
+      "calm-your-mind"
     ],
-    "reading_time_seconds": 53
+    "reading_time_seconds": 29
+  },
+  {
+    "id": "peace-of-mind-15-004",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "section-15",
+    "card_number": 4,
+    "total_cards_in_chapter": 5,
+    "plain_english": "Everyone should look at what makes them happy or sad and decide for themselves. They'll learn the truth of what Bion said: \"All human behavior is just like how we started out. There's nothing in our lives that's more pure or decent than our birth.\" But it's better to accept society's flaws and human vices with calm. Don't burst into laughter or tears over them. If you let other people's suffering hurt you, you'll be miserable forever. But if you enjoy other people's suffering, that's cruel. And it's pointless to cry and look sad just because someone is burying their child.",
+    "original_excerpt": "As for the several causes which render us happy or sorrowful, let every one describe them for himself, and learn the truth of Bion's saying, \"That all the doings of men were very like what he began with, and that there is nothing in their lives which is more holy or decent than their conception.\" Yet it is better to accept public morals and human vices calmly without bursting into either laughter or tears; for to be hurt by the sufferings of others is to be for ever miserable, while to enjoy the sufferings of others is an inhuman pleasure, just as it is a useless piece of humanity to weep and pull a long face because some one is burying his son.",
+    "source_reference": "On Peace of Mind, Section 15",
+    "author_slug": "seneca",
+    "tags": [
+      "human-nature",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 30
+  },
+  {
+    "id": "peace-of-mind-15-005",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "section-15",
+    "card_number": 5,
+    "total_cards_in_chapter": 5,
+    "plain_english": "When bad things happen to you, you should feel only as much sadness as makes sense — not as much as everyone expects you to feel. Many people cry just for show. When no one is watching, their eyes are dry. But they think it would be shameful not to weep when everyone else does. This disease of living by other people's opinions has infected us so deeply that even grief — the most natural emotion of all — becomes fake.",
+    "original_excerpt": "In one's own misfortunes, also, one ought so to conduct oneself as to bestow upon them just as much sorrow as reason, not as much as custom requires: for many shed tears in order to show them, and whenever no one is looking at them their eyes are dry, but they think it disgraceful not to weep when every one does so. So deeply has this evil of being guided by the opinion of others taken root in us, that even grief, the simplest of all emotions, begins to be counterfeited.",
+    "source_reference": "On Peace of Mind, Section 15",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 24
   }
 ]

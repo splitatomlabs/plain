@@ -4,24 +4,40 @@
     "book_slug": "discourses",
     "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
     "card_number": 1,
-    "total_cards_in_chapter": 6,
-    "plain_english": "Some people think the philosophers' view sounds contradictory. But let's examine whether it's actually true that you can be both cautious and confident at the same time. Caution and confidence seem opposite to each other. And opposites can't both be right. Here's what seems contradictory to many people: if we said you should be cautious and confident about the same things, people would rightly say we're trying to combine things that can't go together. But where's the real problem with what we're saying? We've said this many times and proven it many times: good and evil exist only in how you handle your thoughts and judgments. Things outside your control can't be truly good or evil. So what's contradictory about the philosophers saying this: be confident about things outside your control, but be cautious about things within your control? If what's bad comes from using your will badly, then you should only be cautious about things that involve your will. But if things outside your control and beyond your power mean nothing to us, then you should be confident about those things. This way you'll be both cautious and confident. In fact, you'll be confident because you're cautious. By being cautious about things that are truly bad, you'll end up confident about things that aren't.",
-    "original_excerpt": "The opinion of the philosophers perhaps seem to some to be a paradox; but still let us examine as well as we can, if it is true that it is possible to do everything both with caution and with confidence. For caution seems to be in a manner contrary to confidence, and contraries are in no way consistent. That which seems to many to be a paradox in the matter under consideration in my opinion is of this kind; if we asserted that we ought to employ caution and confidence in the same things, men might justly accuse us of bringing together things which cannot be united. But now where is the difficulty in what is said? for if these things are true, which have been often said and often proved, that the nature of good is in the use of appearances, and the nature of evil likewise, and that things independent of our will do not admit either the nature of evil or of good, what paradox do the philosophers assert if they say that where things are not dependent on the will, there you should employ confidence, but where they are dependent on the will, there you should employ caution? For if the bad consists in the bad exercise of the will, caution ought only to be used where things are dependent on the will. But if things independent of the will and not in our power are nothing to us, with respect to these we must employ confidence; and thus we shall both be cautious and confident, and indeed confident because of our caution. For by employing caution towards things which are really bad, it will result that we shall have confidence with respect to things which are not so.",
+    "total_cards_in_chapter": 8,
+    "plain_english": "What philosophers say might sound impossible to some people. But let's look at whether it's really true that you can do everything with both caution and confidence. Caution seems like the opposite of confidence. And opposites can't work together. What seems impossible to many people is this: if we said you should use caution and confidence on the same things, people would rightly say we're trying to combine things that don't go together. But what's actually difficult about what we're saying?",
+    "original_excerpt": "The opinion of the philosophers perhaps seem to some to be a paradox; but still let us examine as well as we can, if it is true that it is possible to do everything both with caution and with confidence. For caution seems to be in a manner contrary to confidence, and contraries are in no way consistent. That which seems to many to be a paradox in the matter under consideration in my opinion is of this kind; if we asserted that we ought to employ caution and confidence in the same things, men might justly accuse us of bringing together things which cannot be united. But now where is the difficulty in what is said?",
     "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
     "author_slug": "epictetus",
     "tags": [
-      "freedom-and-control",
+      "knowing-yourself",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 65
+    "reading_time_seconds": 24
   },
   {
     "id": "discourses-19-002",
     "book_slug": "discourses",
     "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
     "card_number": 2,
-    "total_cards_in_chapter": 6,
-    "plain_english": "We're like deer that run from hunters. When deer see the colorful feathers that hunters use to scare them, where do they run? Straight into the nets. They die because they can't tell the difference between real dangers and fake ones. We do the same thing. What do we fear? Things we can't control. What do we act confident about, like there's no risk at all? Things we can control. We don't worry at all about being fooled, acting stupidly, being shameless, or wanting the wrong things — as long as we succeed with things outside our control. But when death, exile, pain, or disgrace show up, that's when we try to run. That's when we panic.",
+    "total_cards_in_chapter": 8,
+    "plain_english": "If what philosophers keep saying is true — that good and evil come from how we handle our thoughts, not from external things — then their advice makes perfect sense. They tell us to be confident about things we can't control, but careful about things we can control. What's so strange about that? If evil only comes from misusing our will, then we should only be cautious with things that involve our will. External things that we can't control don't matter to us. So we can be confident about them. This way, we're both cautious and confident at the same time. We're confident precisely because we're being cautious in the right places. When you're careful about what's actually bad — the misuse of your will — you can be confident about everything else.",
+    "original_excerpt": "for if these things are true, which have been often said and often proved, that the nature of good is in the use of appearances, and the nature of evil likewise, and that things independent of our will do not admit either the nature of evil or of good, what paradox do the philosophers assert if they say that where things are not dependent on the will, there you should employ confidence, but where they are dependent on the will, there you should employ caution? For if the bad consists in the bad exercise of the will, caution ought only to be used where things are dependent on the will. But if things independent of the will and not in our power are nothing to us, with respect to these we must employ confidence; and thus we shall both be cautious and confident, and indeed confident because of our caution. For by employing caution towards things which are really bad, it will result that we shall have confidence with respect to things which are not so.",
+    "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 40
+  },
+  {
+    "id": "discourses-19-003",
+    "book_slug": "discourses",
+    "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
+    "card_number": 3,
+    "total_cards_in_chapter": 8,
+    "plain_english": "We're like deer running from hunters. When deer see the feathers on arrows, they panic and run straight into the nets. They die because they confused what they should fear with what they shouldn't fear. We do the same thing. What do we fear? Things we can't control. What do we act confident about, like there's no danger? Things we can control. We don't worry at all about being foolish, reckless, shameless, or chasing the wrong things — as long as we succeed with things outside our control. But when we face death, exile, pain, or disgrace, we try to run away. We're terrified.",
     "original_excerpt": "We are then in the condition of deer; when they flee from the huntsmen's feathers in fright, whither do they turn and in what do they seek refuge as safe? They turn to the nets, and thus they perish by confounding things which are objects of fear with things that they ought not to fear. Thus we also act: in what cases do we fear? In things which are independent of the will. In what cases on the contrary do we behave with confidence, as if there were no danger? In things dependent on the will. To be deceived then, or to act rashly, or shamelessly, or with base desire to seek something, does not concern us at all, if we only hit the mark in things which are independent of our will. But where there is death or exile or pain or infamy, there we attempt to run away, there we are struck with terror.",
     "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
     "author_slug": "epictetus",
@@ -29,15 +45,15 @@
       "freedom-and-control",
       "facing-hardship"
     ],
-    "reading_time_seconds": 35
+    "reading_time_seconds": 31
   },
   {
-    "id": "discourses-19-003",
+    "id": "discourses-19-004",
     "book_slug": "discourses",
     "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
-    "card_number": 3,
-    "total_cards_in_chapter": 6,
-    "plain_english": "When we mess up on the big things, here's what happens. We take our natural confidence and twist it into recklessness, desperation, and shamelessness. We take our natural caution and turn it into cowardice and weakness — both full of fear and confusion. If you direct your caution toward things you actually control — your choices and actions — then you'll have the power to avoid what you want to avoid. But if you try to be cautious about things outside your control, things other people control, you'll be afraid. You'll be unstable. You'll be disturbed. Death and pain aren't scary on their own. What's scary is being afraid of death and pain. That's why we praise the poet who said: \"Death itself isn't evil — only a shameful death.\"",
+    "card_number": 4,
+    "total_cards_in_chapter": 8,
+    "plain_english": "When we mess up on the biggest things in life, here's what happens: We turn our natural confidence into recklessness, desperation, and shamelessness. We turn our natural caution into cowardice and weakness, both full of fear and confusion. If you apply caution to things you can control — your choices and actions — you'll actually be able to avoid what you want to avoid. But if you try to be cautious about things outside your control, things other people control, you'll inevitably become fearful, unstable, and disturbed. Death and pain aren't scary by themselves. What's scary is the fear of death and pain. That's why we praise the poet who said: \"Death isn't evil — only a shameful death is evil.\"",
     "original_excerpt": "Therefore, as we may expect it to happen with those who err in the greatest matters, we convert natural confidence (that is, according to nature) into audacity, desperation, rashness, shamelessness; and we convert natural caution and modesty into cowardice and meanness, which are full of fear and confusion. For if a man should transfer caution to those things in which the will may be exercised and the acts of the will, he will immediately by willing to be cautious have also the power of avoiding what he chooses; but if he transfer it to the things which are not in his power and will, and attempt to avoid the things which are in the power of others, he will of necessity fear, he will be unstable, he will be disturbed; for death or pain is not formidable, but the fear of pain or death. For this reason we commend the poet, who said: \"Not death is evil, but a shameful death.\"",
     "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
     "author_slug": "epictetus",
@@ -45,48 +61,63 @@
       "freedom-and-control",
       "facing-hardship"
     ],
-    "reading_time_seconds": 39
-  },
-  {
-    "id": "discourses-19-004",
-    "book_slug": "discourses",
-    "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
-    "card_number": 4,
-    "total_cards_in_chapter": 6,
-    "plain_english": "You should use courage against death and caution against the fear of death. But we do the opposite. We try to run from death. And we approach our thoughts about death carelessly and recklessly. Socrates called these things tragic masks. Children are scared of masks because they don't know any better. We react to life events the same way children react to masks — for the same reason. What is a child? Someone who doesn't know things. Someone who lacks knowledge. When a child learns, they're no different from us. What is death? A tragic mask. Turn it around and look at it closely. See? It doesn't bite. Your body will separate from your spirit now or later — just like it was separated before you were born. So why worry if it happens now? If not now, then later. Why does this happen? So the cycle of the universe continues. It needs the present, the future, and the past. What is pain? Another mask. Turn it and examine it. Your flesh gets shaken roughly, then smoothly again. If that doesn't satisfy you, the door is open. If it does, then endure it. The door should always be open for every situation. That way we have no real problems.",
-    "original_excerpt": "Confidence (courage) then ought to be employed against death, and caution against the fear of death. But now we do the contrary, and employ against death the attempt to escape; and to our opinion about it we employ carelessness, rashness, and indifference. These things Socrates properly used to call tragic masks; for as to children masks appear terrible and fearful from inexperience, we also are affected in like manner by events (the things which happen in life) for no other reason than children are by masks. For what is a child? Ignorance. What is a child? Want of knowledge. For when a child knows these things, he is in no way inferior to us. What is death? A tragic mask. Turn it and examine it. See, it does not bite. The poor body must be separated from the spirit either now or later as it was separated from it before. Why then are you troubled if it be separated now? for if it is not separated now, it will be separated afterwards. Why? That the period of the universe may be completed, for it has need of the present, and of the future, and of the past. What is pain? A mask. Turn it and examine it. The poor flesh is moved roughly, then on the contrary smoothly. If this does not satisfy (please) you, the door is open; if it does, bear (with things). For the door ought to be open for all occasions; and so we have no trouble.",
-    "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
-    "author_slug": "epictetus",
-    "tags": [
-      "death-and-mortality",
-      "facing-hardship",
-      "calm-your-mind"
-    ],
-    "reading_time_seconds": 63
+    "reading_time_seconds": 36
   },
   {
     "id": "discourses-19-005",
     "book_slug": "discourses",
     "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
     "card_number": 5,
-    "total_cards_in_chapter": 6,
-    "plain_english": "What do these ideas produce? They create what should be the highest achievement for truly educated people: freedom from anxiety and freedom from fear. Real freedom. Most people say only free citizens should get an education. But philosophers say only the educated are truly free. How does this work? Simple: What is freedom? It's the power to live as you choose. Nothing else. Tell me — do you want to live in ignorance? Of course not. Then no one living in ignorance is free. Do you want to live in fear? Do you want to live in sadness? Do you want to live anxious and disturbed? Absolutely not. Then no one who feels fear or sadness or anxiety is free. But whoever escapes from sadness and fears and disturbances — that person also escapes from slavery. So how can we keep believing you lawmakers when you say only free citizens should be educated?",
-    "original_excerpt": "What then is the fruit of these opinions? It is that which ought to be the most noble and the most becoming to those who are really educated, release from perturbation, release from fear. Freedom. For in these matters we must not believe the many, who say that free persons only ought to be educated, but we should rather believe the philosophers who say that the educated only are free. How is this? In this manner: Is freedom anything else than the power of living as we choose? Nothing else. Tell me then, ye men, do you wish to live in error? We do not. No one then who lives in error is free. Do you wish to live in fear? Do you wish to live in sorrow? Do you wish to live in perturbation? By no means. No one then who is in a state of fear or sorrow or perturbation is free; but whoever is delivered from sorrows and fears and perturbations, he is at the same time also delivered from servitude. How then can we continue to believe you, most dear legislators, when you say, We only allow free persons to be educated?",
+    "total_cards_in_chapter": 8,
+    "plain_english": "You should use courage when facing death, and caution when dealing with your fear of death. But we do the opposite. We try to run away from death, while we're careless and reckless with our thoughts about it. Socrates called this wearing tragic masks. Kids get scared of masks because they don't know any better. We react the same way to life events for the same reason kids fear masks. What is a child? Someone who doesn't know things. Someone who lacks knowledge. When a child learns these things, they're just as capable as we are. So what is death?",
+    "original_excerpt": "Confidence (courage) then ought to be employed against death, and caution against the fear of death. But now we do the contrary, and employ against death the attempt to escape; and to our opinion about it we employ carelessness, rashness, and indifference. These things Socrates properly used to call tragic masks; for as to children masks appear terrible and fearful from inexperience, we also are affected in like manner by events (the things which happen in life) for no other reason than children are by masks. For what is a child? Ignorance. What is a child? Want of knowledge. For when a child knows these things, he is in no way inferior to us. What is death?",
     "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
     "author_slug": "epictetus",
     "tags": [
-      "freedom-and-control",
-      "calm-your-mind"
+      "death-and-mortality",
+      "facing-hardship"
     ],
-    "reading_time_seconds": 46
+    "reading_time_seconds": 30
   },
   {
     "id": "discourses-19-006",
     "book_slug": "discourses",
     "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
     "card_number": 6,
-    "total_cards_in_chapter": 6,
-    "plain_english": "Philosophers say only the educated can be truly free. God allows no one else to be free. So when a master brings his slave before the magistrate and officially frees him, has he accomplished anything? He has done something, yes. What? He freed his slave in front of the magistrate. Nothing more? Well, he also has to pay the freedom tax — twenty percent of the slave's value. So is this person who went through the ceremony now free? No more than he's free from his emotional turmoil. You think you can free others, but don't you have a master too? Isn't money your master? Or some girl or boy? Or some tyrant or friend of a tyrant? So why do you get anxious when you face any kind of trial or danger? This is why I keep saying: study these principles and keep them ready. Use them to figure out what deserves your attention. Be brave about things outside your control. Be careful about things within your control.",
+    "total_cards_in_chapter": 8,
+    "plain_english": "A tragic mask. Turn it around and look at it. See? It doesn't bite. Your poor body must separate from your spirit either now or later — just like it was separated before you were born. So why are you upset if it separates now? If not now, then later. Why does this happen? So the universe can complete its cycle. It needs the present, the future, and the past. What is pain? A mask. Turn it around and examine it. Your flesh gets roughed up, then it gets smooth again. If this doesn't satisfy you, the door is open. If it does satisfy you, then endure things. The door should always be open for every situation. That way we have no trouble.",
+    "original_excerpt": "A tragic mask. Turn it and examine it. See, it does not bite. The poor body must be separated from the spirit either now or later as it was separated from it before. Why then are you troubled if it be separated now? for if it is not separated now, it will be separated afterwards. Why? That the period of the universe may be completed, for it has need of the present, and of the future, and of the past. What is pain? A mask. Turn it and examine it. The poor flesh is moved roughly, then on the contrary smoothly. If this does not satisfy (please) you, the door is open; if it does, bear (with things). For the door ought to be open for all occasions; and so we have no trouble.",
+    "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
+    "author_slug": "epictetus",
+    "tags": [
+      "death-and-mortality",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 37
+  },
+  {
+    "id": "discourses-19-007",
+    "book_slug": "discourses",
+    "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
+    "card_number": 7,
+    "total_cards_in_chapter": 8,
+    "plain_english": "So what's the point of all this philosophy? The best thing it can give you is what truly educated people should have: freedom from anxiety and fear. Real freedom. Don't listen to most people who say only free citizens deserve education. Listen to the philosophers instead. They say only the educated are truly free. How does that work? Simple: What is freedom? The ability to live how you choose. Nothing more. So tell me — do you want to live in ignorance? No. Then anyone living in ignorance isn't free. Do you want to live in fear? Do you want to live in sadness? Do you want to live in constant worry? Of course not. Then no one who feels fear, sadness, or worry is free. But whoever breaks free from these troubles also breaks free from slavery. So how can we keep believing lawmakers who say 'Only free citizens get to be educated'?",
+    "original_excerpt": "What then is the fruit of these opinions? It is that which ought to be the most noble and the most becoming to those who are really educated, release from perturbation, release from fear. Freedom. For in these matters we must not believe the many, who say that free persons only ought to be educated, but we should rather believe the philosophers who say that the educated only are free. How is this? In this manner: Is freedom anything else than the power of living as we choose? Nothing else. Tell me then, ye men, do you wish to live in error? We do not. No one then who lives in error is free. Do you wish to live in fear? Do you wish to live in sorrow? Do you wish to live in perturbation? By no means. No one then who is in a state of fear or sorrow or perturbation is free; but whoever is delivered from sorrows and fears and perturbations, he is at the same time also delivered from servitude. How then can we continue to believe you, most dear legislators, when you say, We only allow free persons to be educated?",
+    "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 46
+  },
+  {
+    "id": "discourses-19-008",
+    "book_slug": "discourses",
+    "chapter_slug": "that-confidence-courage-is-not-inconsistent-with-caution",
+    "card_number": 8,
+    "total_cards_in_chapter": 8,
+    "plain_english": "Philosophers say only the educated are truly free — that God only allows it for them. So when a man goes before the magistrate and officially frees his own slave, has he accomplished nothing? He's done something. What exactly? He's freed his slave in front of the magistrate. Nothing more? Well yes — he also has to pay the freedom tax. So then, has the man who went through this ceremony become free himself? No more than he's become free from his own anxieties. You who can free others — don't you have a master? Isn't money your master? Or some girl or boy? Or some tyrant or friend of a tyrant? Then why do you get worked up when you face any test like this? This is why I keep saying: study these principles and keep them ready. Use them to figure out what deserves your attention. Be bold with things outside your control. Be careful with things that are up to you.",
     "original_excerpt": "For philosophers say we allow none to be free except the educated; that is, God does not allow it. When then a man has turned round before the prætor his own slave, has he done nothing? He has done something. What? He has turned round his own slave before the prætor. Has he done nothing more? Yes: he is also bound to pay for him the tax called the twentieth. Well then, is not the man who has gone through this ceremony become free? No more than he is become free from perturbations. Have you who are able to turn round (free) others no master? is not money your master, or a girl or a boy, or some tyrant or some friend of the tyrant? Why do you trouble then when you are going off to any trial (danger) of this kind? It is for this reason that I often say, study and hold in readiness these principles by which you may determine what those things are with reference to which you ought to be cautious, courageous in that which does not depend on your will, cautious in that which does depend on it.",
     "source_reference": "Discourses, That Confidence (courage) is not Inconsistent with Caution",
     "author_slug": "epictetus",
@@ -94,6 +125,6 @@
       "freedom-and-control",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 51
+    "reading_time_seconds": 49
   }
 ]

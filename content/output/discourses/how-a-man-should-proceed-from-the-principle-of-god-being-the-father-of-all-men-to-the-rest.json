@@ -4,24 +4,40 @@
     "book_slug": "discourses",
     "chapter_slug": "how-a-man-should-proceed-from-the-principle-of-god-being-the-father-of-all-men-to-the-rest",
     "card_number": 1,
-    "total_cards_in_chapter": 2,
-    "plain_english": "If you could truly accept that we all come from God in a special way — that God is the father of both humans and gods — you would never think poorly of yourself. If Caesar adopted you as his son, no one could stand your pride. So if you know you're a child of Zeus, wouldn't you feel elevated? But we don't act this way. Here's why: humans are made of two parts. We share our bodies with animals. We share our reason and intelligence with the gods. Most people focus on the connection that's miserable and mortal. Only a few focus on the part that's divine and blessed. Since everyone treats things based on how they see them, the few who understand they're made for loyalty, decency, and clear thinking don't have low opinions of themselves. But most people do the opposite. They say, \"What am I? Just a poor, miserable person with this pathetic piece of flesh.\" Yes, your flesh is pathetic. But you have something better than flesh. So why do you ignore what's better? Why do you cling to the worse part?",
-    "original_excerpt": "If a man should be able to assent to this doctrine as he ought, that we are all sprung from God in an especial manner, and that God is the father both of men and of gods, I suppose that he would never have any ignoble or mean thoughts about himself. But if Cæsar (the emperor) should adopt you, no one could endure your arrogance; and if you know that you are the son of Zeus, will you not be elated? Yet we do not so; but since these two things are mingled in the generation of man, body in common with the animals, and reason and intelligence in common with the gods, many incline to this kinship, which is miserable and mortal; and some few to that which is divine and happy. Since then it is of necessity that every man uses everything according to the opinion which he has about it, those, the few, who think that they are formed for fidelity and modesty and a sure use of appearances have no mean or ignoble thoughts about themselves; but with the many it is quite the contrary. For they say, What am I? A poor, miserable man, with my wretched bit of flesh. Wretched, indeed; but you possess something better than your bit of flesh. Why then do you neglect that which is better, and why do you attach yourself to this?",
+    "total_cards_in_chapter": 3,
+    "plain_english": "If you could truly grasp this teaching — that we all come from God and that God is the father of both humans and gods — you'd never think poorly of yourself. If the emperor adopted you, no one could stand your pride. So if you know you're a child of Zeus, wouldn't you feel proud? But we don't act this way. Here's why: humans are made of two parts. We share our bodies with animals, but we share our reason and intelligence with the gods. Most people focus on the connection that's miserable and temporary. Only a few focus on the part that's divine and blessed.",
+    "original_excerpt": "If a man should be able to assent to this doctrine as he ought, that we are all sprung from God in an especial manner, and that God is the father both of men and of gods, I suppose that he would never have any ignoble or mean thoughts about himself. But if Cæsar (the emperor) should adopt you, no one could endure your arrogance; and if you know that you are the son of Zeus, will you not be elated? Yet we do not so; but since these two things are mingled in the generation of man, body in common with the animals, and reason and intelligence in common with the gods, many incline to this kinship, which is miserable and mortal; and some few to that which is divine and happy.",
     "source_reference": "Discourses, How a Man Should Proceed from the Principle of God Being the Father of All Men to the Rest",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
-      "human-nature"
+      "what-matters-most"
     ],
-    "reading_time_seconds": 56
+    "reading_time_seconds": 32
   },
   {
     "id": "discourses-03-002",
     "book_slug": "discourses",
     "chapter_slug": "how-a-man-should-proceed-from-the-principle-of-god-being-the-father-of-all-men-to-the-rest",
     "card_number": 2,
-    "total_cards_in_chapter": 2,
-    "plain_english": "Because we're tied to our bodies, some of us give in to that side and become like wolves — untrustworthy, backstabbing, and harmful. Some become like lions — violent, brutal, and wild. But most of us become foxes and other worse creatures. What else is a gossip or spiteful person but a fox, or some other pathetic, low animal? So watch yourself. Make sure you don't become one of these miserable creatures.",
+    "total_cards_in_chapter": 3,
+    "plain_english": "Everyone acts based on what they believe about themselves. The few people who think they're meant for loyalty, decency, and clear thinking — they don't have low or worthless thoughts about themselves. But most people are the opposite. They say, \"What am I? Just a poor, pathetic person with this lousy body.\" Yes, your body is pathetic. But you have something better than your body. So why do you ignore what's better? Why do you focus on this worthless thing instead?",
+    "original_excerpt": "Since then it is of necessity that every man uses everything according to the opinion which he has about it, those, the few, who think that they are formed for fidelity and modesty and a sure use of appearances have no mean or ignoble thoughts about themselves; but with the many it is quite the contrary. For they say, What am I? A poor, miserable man, with my wretched bit of flesh. Wretched, indeed; but you possess something better than your bit of flesh. Why then do you neglect that which is better, and why do you attach yourself to this?",
+    "source_reference": "Discourses, How a Man Should Proceed from the Principle of God Being the Father of All Men to the Rest",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 24
+  },
+  {
+    "id": "discourses-03-003",
+    "book_slug": "discourses",
+    "chapter_slug": "how-a-man-should-proceed-from-the-principle-of-god-being-the-father-of-all-men-to-the-rest",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Because we're connected to our physical bodies, some of us lean into that side and become like wolves — untrustworthy, backstabbing, and harmful. Others become like lions — brutal, savage, and wild. But most of us become foxes or even worse creatures. What is a gossip or spiteful person except a fox, or some other pathetic, lowly animal? So watch yourself. Make sure you don't become one of these miserable creatures.",
     "original_excerpt": "Through this kinship with the flesh, some of us inclining to it become like wolves, faithless and treacherous and mischievous; some become like lions, savage and bestial and untamed; but the greater part of us become foxes, and other worse animals. For what else is a slanderer and malignant man than a fox, or some other more wretched and meaner animal? See then and take care that you do not become some one of these miserable things.",
     "source_reference": "Discourses, How a Man Should Proceed from the Principle of God Being the Father of All Men to the Rest",
     "author_slug": "epictetus",
@@ -29,6 +45,6 @@
       "knowing-yourself",
       "human-nature"
     ],
-    "reading_time_seconds": 22
+    "reading_time_seconds": 21
   }
 ]

@@ -4,16 +4,31 @@
     "book_slug": "discourses",
     "chapter_slug": "how-everything-may-be-done-acceptably-to-the-gods",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "Someone asked how a person can eat in a way that pleases the gods. The answer: eat fairly, with gratitude, calmly, with self-control, and in good order. Won't that please the gods?\n\nBut say you ask for warm water and your slave doesn't hear you. Or he hears but brings lukewarm water. Or he's not even in the house. If you don't get angry or explode with rage — isn't that pleasing to the gods?\n\nHow can you put up with people like this slave? You're a slave yourself. Can't you bear with your own brother? He has Zeus as his ancestor, like a son from the same seeds, with the same divine heritage. If you've been put in a higher position, will you immediately become a tyrant? Won't you remember who you are and who you're ruling? They're your relatives. They're your brothers by nature. They're Zeus's children too.\n\n\"But I bought them, and they didn't buy me.\" Do you see where you're looking? Down at the ground, into the dirt, at these pathetic laws made by dead men. You're not looking up at the laws of the gods.",
-    "original_excerpt": "When some one asked, How may a man eat acceptably to the gods, he answered: If he can eat justly and contentedly, and with equanimity, and temperately, and orderly, will it not be also acceptable to the gods? But when you have asked for warm water and the slave has not heard, or if he did hear has brought only tepid water, or he is not even found to be in the house, then not to be vexed or to burst with passion, is not this acceptable to the gods? How then shall a man endure such persons as this slave? Slave yourself, will you not bear with your own brother, who has Zeus for his progenitor, and is like a son from the same seeds and of the same descent from above? But if you have been put in any such higher place, will you immediately make yourself a tyrant? Will you not remember who you are, and whom you rule? That they are kinsmen, that they are brethren by nature, that they are the offspring of Zeus? But I have purchased them, and they have not purchased me. Do you see in what direction you are looking, that it is towards the earth, towards the pit, that it is towards these wretched laws of dead men? but towards the laws of the gods you are not looking.",
+    "total_cards_in_chapter": 2,
+    "plain_english": "Someone asked, \"How can a person eat in a way that pleases the gods?\" He answered: \"If you can eat justly and with contentment, calmly and with self-control and good order, won't that please the gods too? But when you ask for warm water and your servant doesn't hear you, or hears you but brings lukewarm water, or isn't even in the house — not getting angry or exploding with rage, isn't that pleasing to the gods?\"",
+    "original_excerpt": "When some one asked, How may a man eat acceptably to the gods, he answered: If he can eat justly and contentedly, and with equanimity, and temperately, and orderly, will it not be also acceptable to the gods? But when you have asked for warm water and the slave has not heard, or if he did hear has brought only tepid water, or he is not even found to be in the house, then not to be vexed or to burst with passion, is not this acceptable to the gods?",
     "source_reference": "Discourses, How Everything May Be Done Acceptably to the Gods",
     "author_slug": "epictetus",
     "tags": [
-      "doing-the-right-thing",
-      "human-nature",
-      "calm-your-mind"
+      "calm-your-mind",
+      "doing-the-right-thing"
     ],
-    "reading_time_seconds": 57
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "discourses-09-002",
+    "book_slug": "discourses",
+    "chapter_slug": "how-everything-may-be-done-acceptably-to-the-gods",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "How can you put up with a person like this slave? You're a slave too — can't you tolerate your own brother? He has Zeus as his father, like a son born from the same seeds and the same heavenly bloodline. But if you've been given some higher position, will you immediately become a tyrant? Won't you remember who you are and who you're ruling? They are your relatives. They are your brothers by nature. They are Zeus's children. But you say, \"I bought them, and they didn't buy me.\" Do you see where you're looking? You're looking down at the dirt, into the grave, at these pathetic laws made by dead men. You're not looking up at the laws of the gods.",
+    "original_excerpt": "How then shall a man endure such persons as this slave? Slave yourself, will you not bear with your own brother, who has Zeus for his progenitor, and is like a son from the same seeds and of the same descent from above? But if you have been put in any such higher place, will you immediately make yourself a tyrant? Will you not remember who you are, and whom you rule? That they are kinsmen, that they are brethren by nature, that they are the offspring of Zeus? But I have purchased them, and they have not purchased me. Do you see in what direction you are looking, that it is towards the earth, towards the pit, that it is towards these wretched laws of dead men? but towards the laws of the gods you are not looking.",
+    "source_reference": "Discourses, How Everything May Be Done Acceptably to the Gods",
+    "author_slug": "epictetus",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 37
   }
 ]
