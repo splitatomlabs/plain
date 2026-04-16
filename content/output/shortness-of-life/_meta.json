@@ -22,7 +22,7 @@
     {
       "slug": "section-02",
       "title": "Section 2",
-      "card_count": 6,
+      "card_count": 5,
       "reading_time_seconds": 171
     },
     {
@@ -134,7 +134,7 @@
       "reading_time_seconds": 132
     }
   ],
-  "total_cards": 86,
+  "total_cards": 85,
   "total_reading_time_seconds": 2843,
   "source_url": "https://www.gutenberg.org/ebooks/64576",
   "has_chapters": false
