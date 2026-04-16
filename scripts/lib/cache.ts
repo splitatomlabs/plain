@@ -196,6 +196,65 @@ export async function saveTranslateCache(
   await writeFile(translatePath(bookSlug), JSON.stringify(data, null, 2) + "\n");
 }
 
+/**
+ * Diff refined chunks against cached translations to find what needs translating.
+ * Returns cached translations and uncached chunk indices.
+ */
+export function diffChunksForTranslation(
+  refined: Chunk[],
+  cached: TranslatedChunk[],
+): { cached: TranslatedChunk[]; uncached: { index: number; chunk: Chunk }[] } {
+  const uncached: { index: number; chunk: Chunk }[] = [];
+  const kept: TranslatedChunk[] = [];
+
+  for (let i = 0; i < refined.length; i++) {
+    if (i < cached.length) {
+      kept.push(cached[i]);
+    } else {
+      uncached.push({ index: i, chunk: refined[i] });
+    }
+  }
+
+  return { cached: kept, uncached };
+}
+
+/**
+ * Merge new translations into an existing translate cache, preserving already-cached chunks.
+ * If no existing cache, behaves like saveTranslateCache.
+ */
+export async function mergeTranslateCache(
+  bookSlug: string,
+  newTranslations: Map<string, TranslatedChunk[]>,
+  cost?: PhaseCost,
+): Promise<void> {
+  const existing = await loadTranslateCache(bookSlug);
+  const merged = new Map<string, TranslatedChunk[]>();
+
+  // Start with existing cache entries
+  if (existing) {
+    for (const [key, chunks] of existing) {
+      merged.set(key, [...chunks]);
+    }
+  }
+
+  // Merge in new translations
+  for (const [key, newChunks] of newTranslations) {
+    const existingChunks = merged.get(key) ?? [];
+    // Build a set of existing sectionNumbers for dedup
+    const existingSections = new Set(existingChunks.map(c => c.sectionNumber));
+    for (const chunk of newChunks) {
+      if (!existingSections.has(chunk.sectionNumber)) {
+        existingChunks.push(chunk);
+      }
+    }
+    // Sort by sectionNumber
+    existingChunks.sort((a, b) => a.sectionNumber - b.sectionNumber);
+    merged.set(key, existingChunks);
+  }
+
+  await saveTranslateCache(bookSlug, merged, cost);
+}
+
 export async function loadTranslateCache(
   bookSlug: string,
 ): Promise<Map<string, TranslatedChunk[]> | null> {
