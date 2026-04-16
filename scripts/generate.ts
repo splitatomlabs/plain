@@ -314,6 +314,7 @@ async function runTranslate(
           chapterSlug: ch.slug,
           chunks: diff.uncached.map(u => u.chunk),
           config,
+          allChapterChunks: ch.chunks,
         });
       }
     }

@@ -204,14 +204,24 @@ export function diffChunksForTranslation(
   refined: Chunk[],
   cached: TranslatedChunk[],
 ): { cached: TranslatedChunk[]; uncached: { index: number; chunk: Chunk }[] } {
-  const uncached: { index: number; chunk: Chunk }[] = [];
+  // Build lookup: sectionNumber -> list of cached translations (handles splits)
+  const cachedBySectionNumber = new Map<number, TranslatedChunk[]>();
+  for (const tc of cached) {
+    const list = cachedBySectionNumber.get(tc.sectionNumber) ?? [];
+    list.push(tc);
+    cachedBySectionNumber.set(tc.sectionNumber, list);
+  }
+
   const kept: TranslatedChunk[] = [];
+  const uncached: { index: number; chunk: Chunk }[] = [];
 
   for (let i = 0; i < refined.length; i++) {
-    if (i < cached.length) {
-      kept.push(cached[i]);
+    const chunk = refined[i];
+    const available = cachedBySectionNumber.get(chunk.sectionNumber);
+    if (available && available.length > 0) {
+      kept.push(available.shift()!);
     } else {
-      uncached.push({ index: i, chunk: refined[i] });
+      uncached.push({ index: i, chunk });
     }
   }
 
@@ -240,11 +250,13 @@ export async function mergeTranslateCache(
   // Merge in new translations
   for (const [key, newChunks] of newTranslations) {
     const existingChunks = merged.get(key) ?? [];
-    // Build a set of existing sectionNumbers for dedup
-    const existingSections = new Set(existingChunks.map(c => c.sectionNumber));
+    // Dedup by (sectionNumber, originalText) to handle split sections correctly
+    const existingKeys = new Set(existingChunks.map(c => `${c.sectionNumber}::${c.originalText}`));
     for (const chunk of newChunks) {
-      if (!existingSections.has(chunk.sectionNumber)) {
+      const chunkKey = `${chunk.sectionNumber}::${chunk.originalText}`;
+      if (!existingKeys.has(chunkKey)) {
         existingChunks.push(chunk);
+        existingKeys.add(chunkKey);
       }
     }
     // Sort by sectionNumber
