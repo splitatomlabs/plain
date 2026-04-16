@@ -532,6 +532,10 @@ export function validateRefineCoverage(
   // If the corresponding pre-refine chunk also fails the regex, the source text
   // genuinely ends that way (e.g., em-dash before inline verse) — not an error.
   const CHUNK_SENTENCE_END_RE = /[.?!;:'""\u201D)\]]$/;
+  // Strip trailing em-dashes/hyphens before checking — they often precede inline
+  // verse quotations (e.g., "verse:—") where the colon is valid sentence-ending
+  // punctuation. Actual mid-sentence breaks like "slavery, the—" still fail.
+  const stripTrailingDashes = (s: string) => s.replace(/[\u2014-]+$/, "");
   const preBySection = new Map<number, Chunk[]>();
   for (const c of preRefine) {
     const list = preBySection.get(c.sectionNumber) ?? [];
@@ -541,12 +545,14 @@ export function validateRefineCoverage(
 
   for (const chunk of postRefine) {
     const trimmed = chunk.text.trim();
-    if (trimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(trimmed)) {
+    const stripped = stripTrailingDashes(trimmed);
+    if (trimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(stripped)) {
       // Check if the pre-refine source also ends the same way
       const preChunks = preBySection.get(chunk.sectionNumber) ?? [];
       const sourceAlsoFails = preChunks.some((pc) => {
         const preTrimmed = pc.text.trim();
-        return preTrimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(preTrimmed);
+        const preStripped = stripTrailingDashes(preTrimmed);
+        return preTrimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(preStripped);
       });
       if (!sourceAlsoFails) {
         msgs.push({

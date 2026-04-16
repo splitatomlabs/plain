@@ -476,6 +476,16 @@ describe("validateRefineCoverage", () => {
     expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
   });
 
+  it("does not error when chunk ends with colon-emdash before verse quotation", () => {
+    const pre = [{ sectionNumber: 1, text: "He fought to the death, shouting the Homeric verse:\u2014\n\n\"Carry me off, or I will carry thee!\"\n\nHow great was his madness!" }];
+    const post = [
+      { sectionNumber: 1, text: "He fought to the death, shouting the Homeric verse:\u2014" },
+      { sectionNumber: 1, text: "\"Carry me off, or I will carry thee!\"\n\nHow great was his madness!" },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
   it("errors when refine introduces mid-sentence break not in source", () => {
     const pre = [{ sectionNumber: 1, text: "The wise man knows that virtue is the only good. He acts accordingly." }];
     const post = [
