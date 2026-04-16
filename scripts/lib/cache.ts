@@ -16,7 +16,7 @@ function cacheDir(): string {
   return path.resolve("content/pipeline");
 }
 
-export const PIPELINE_VERSION = 1;
+export const PIPELINE_VERSION = 2;
 
 // ---------------------------------------------------------------------------
 // Cost tracking
