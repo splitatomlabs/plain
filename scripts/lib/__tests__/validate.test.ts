@@ -254,6 +254,49 @@ describe("validateCardContent", () => {
     );
     expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
   });
+
+  it("accepts text ending with ellipsis", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "And so we go on, putting off the important things, always waiting for tomorrow..." }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("accepts text ending with semicolon", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "Some waste their time chasing fame; others chase wealth; still others chase pleasure;" }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("accepts text ending with closing parenthesis", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "This is the nature of things that are not up to us (and we must accept them as they are.)" }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("accepts text ending with curly/smart closing quote", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "The philosopher replied, \u201CThis is the only way to live a life worth living.\u201D" }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("warns when text ends with em-dash", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "They spend their whole lives preparing to live, never realizing that life is slipping away\u2014" }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(true);
+  });
+
+  it("does not warn on short text under 50 chars", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "Live according to nature and reason" }),
+    );
+    // Short text should trigger min-length error, not mid-sentence warning
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
 });
 
 describe("validateCardSequence", () => {
@@ -461,5 +504,35 @@ describe("validateRefineCoverage", () => {
     ];
     const msgs = validateRefineCoverage(pre, post);
     expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("does not error when chunk ends with ellipsis", () => {
+    const pre = [{ sectionNumber: 1, text: "And so life goes on... But we must act now." }];
+    const post = [
+      { sectionNumber: 1, text: "And so life goes on..." },
+      { sectionNumber: 1, text: "But we must act now." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("does not error on short chunks under 30 chars", () => {
+    const pre = [{ sectionNumber: 1, text: "Short text here and more" }];
+    const post = [
+      { sectionNumber: 1, text: "Short text here and more" },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("errors when chunk ends with em-dash", () => {
+    const longChunk = "They spend their whole lives preparing to live, never realizing\u2014";
+    const pre = [{ sectionNumber: 1, text: longChunk + " that life passes them by." }];
+    const post = [
+      { sectionNumber: 1, text: longChunk },
+      { sectionNumber: 1, text: "that life passes them by." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.severity === "error" && m.message.includes("mid-sentence"))).toBe(true);
   });
 });
