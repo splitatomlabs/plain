@@ -10,7 +10,7 @@
  * @param {number} [options.maxWidth=1080] - Available width in pixels
  * @param {number} [options.maxHeight=410] - Available height in pixels
  * @param {number} [options.minFont=20] - Minimum font size in pixels
- * @param {number} [options.maxFont=36] - Maximum font size in pixels
+ * @param {number} [options.maxFont=48] - Maximum font size in pixels
  * @param {number} [options.charWidthRatio=0.52] - Average character width as fraction of font size
  * @returns {{ fontSize: number, lineHeight: string }}
  */
@@ -19,7 +19,7 @@ export function calcOgFontSize(text, options = {}) {
 		maxWidth = 1080,
 		maxHeight = 410,
 		minFont = 20,
-		maxFont = 36,
+		maxFont = 48,
 		charWidthRatio = 0.52
 	} = options;
 

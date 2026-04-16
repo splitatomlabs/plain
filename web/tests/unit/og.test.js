@@ -4,18 +4,18 @@ import { calcOgFontSize } from '$lib/utils/og.js';
 describe('calcOgFontSize', () => {
 	it('returns max font size for short text', () => {
 		const { fontSize } = calcOgFontSize('Hello world');
-		expect(fontSize).toBe(36);
+		expect(fontSize).toBe(48);
 	});
 
 	it('returns smaller font size for long text', () => {
 		const longText = Array(80).fill('philosophy').join(' ');
 		const { fontSize } = calcOgFontSize(longText);
-		expect(fontSize).toBeLessThan(36);
+		expect(fontSize).toBeLessThan(48);
 	});
 
 	it('never exceeds maxFont', () => {
 		const { fontSize } = calcOgFontSize('Hi');
-		expect(fontSize).toBeLessThanOrEqual(36);
+		expect(fontSize).toBeLessThanOrEqual(48);
 	});
 
 	it('never goes below minFont', () => {
