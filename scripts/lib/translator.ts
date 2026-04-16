@@ -81,11 +81,12 @@ export async function translateChunksBatch(
     const system = buildTranslationSystem(config);
     for (let index = 0; index < chunks.length; index++) {
       const chunk = chunks[index];
+      const prevChunkText = index > 0 ? chunks[index - 1].text : undefined;
       const customId = safeCustomId(bookSlug, chapterSlug, index);
       requests.push({
         custom_id: customId,
         system,
-        messages: [{ role: "user", content: buildTranslationUser(chunk) }],
+        messages: [{ role: "user", content: buildTranslationUser(chunk, prevChunkText) }],
       });
       meta.set(customId, { bookSlug, chapterSlug, chunk });
     }
@@ -187,7 +188,9 @@ export async function translateChunksBatch(
       if (!input) continue;
 
       const system = buildTranslationSystem(input.config);
-      const prompt = buildTranslationUser(info.chunk);
+      const chunkIndex = input.chunks.indexOf(info.chunk);
+      const prevChunkText = chunkIndex > 0 ? input.chunks[chunkIndex - 1].text : undefined;
+      const prompt = buildTranslationUser(info.chunk, prevChunkText);
       try {
         const result = await callClaudeJSON<TranslationResponse>(
           prompt, undefined, { system } as CallClaudeOptions,
