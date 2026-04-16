@@ -25,7 +25,6 @@ export function calcOgFontSize(text, options = {}) {
 
 	for (let size = maxFont; size >= minFont; size--) {
 		const avgCharWidth = size * charWidthRatio;
-		const charsPerLine = Math.floor(maxWidth / avgCharWidth);
 		const lineHeight = size <= 24 ? 1.4 : 1.45;
 		const lineHeightPx = size * lineHeight;
 
