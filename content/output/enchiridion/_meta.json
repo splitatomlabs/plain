@@ -8,8 +8,8 @@
     "knowing-yourself",
     "calm-your-mind",
     "what-matters-most",
-    "facing-hardship",
     "death-and-mortality",
+    "facing-hardship",
     "human-nature",
     "doing-the-right-thing"
   ],
@@ -18,13 +18,13 @@
       "slug": "section-01",
       "title": "Section 1",
       "card_count": 4,
-      "reading_time_seconds": 89
+      "reading_time_seconds": 91
     },
     {
       "slug": "section-02",
       "title": "Section 2",
       "card_count": 1,
-      "reading_time_seconds": 38
+      "reading_time_seconds": 44
     },
     {
       "slug": "section-03",
@@ -36,55 +36,55 @@
       "slug": "section-04",
       "title": "Section 4",
       "card_count": 1,
-      "reading_time_seconds": 32
+      "reading_time_seconds": 33
     },
     {
       "slug": "section-05",
       "title": "Section 5",
       "card_count": 1,
-      "reading_time_seconds": 25
+      "reading_time_seconds": 23
     },
     {
       "slug": "section-06",
       "title": "Section 6",
       "card_count": 1,
-      "reading_time_seconds": 26
+      "reading_time_seconds": 27
     },
     {
       "slug": "section-07",
       "title": "Section 7",
       "card_count": 1,
-      "reading_time_seconds": 32
+      "reading_time_seconds": 38
     },
     {
       "slug": "section-08",
       "title": "Section 8",
       "card_count": 1,
-      "reading_time_seconds": 7
+      "reading_time_seconds": 8
     },
     {
       "slug": "section-09",
       "title": "Section 9",
       "card_count": 1,
-      "reading_time_seconds": 17
+      "reading_time_seconds": 14
     },
     {
       "slug": "section-10",
       "title": "Section 10",
       "card_count": 1,
-      "reading_time_seconds": 16
+      "reading_time_seconds": 15
     },
     {
       "slug": "section-11",
       "title": "Section 11",
       "card_count": 1,
-      "reading_time_seconds": 23
+      "reading_time_seconds": 25
     },
     {
       "slug": "section-12",
       "title": "Section 12",
       "card_count": 1,
-      "reading_time_seconds": 37
+      "reading_time_seconds": 41
     },
     {
       "slug": "section-13",
@@ -96,19 +96,19 @@
       "slug": "section-14",
       "title": "Section 14",
       "card_count": 1,
-      "reading_time_seconds": 37
+      "reading_time_seconds": 39
     },
     {
       "slug": "section-15",
       "title": "Section 15",
       "card_count": 1,
-      "reading_time_seconds": 38
+      "reading_time_seconds": 39
     },
     {
       "slug": "section-16",
       "title": "Section 16",
       "card_count": 1,
-      "reading_time_seconds": 26
+      "reading_time_seconds": 24
     },
     {
       "slug": "section-17",
@@ -120,7 +120,7 @@
       "slug": "section-18",
       "title": "Section 18",
       "card_count": 1,
-      "reading_time_seconds": 20
+      "reading_time_seconds": 19
     },
     {
       "slug": "section-19",
@@ -138,37 +138,37 @@
       "slug": "section-21",
       "title": "Section 21",
       "card_count": 1,
-      "reading_time_seconds": 11
+      "reading_time_seconds": 10
     },
     {
       "slug": "section-22",
       "title": "Section 22",
       "card_count": 1,
-      "reading_time_seconds": 27
+      "reading_time_seconds": 26
     },
     {
       "slug": "section-23",
       "title": "Section 23",
       "card_count": 1,
-      "reading_time_seconds": 14
+      "reading_time_seconds": 13
     },
     {
       "slug": "section-24",
       "title": "Section 24",
       "card_count": 3,
-      "reading_time_seconds": 106
+      "reading_time_seconds": 105
     },
     {
       "slug": "section-25",
       "title": "Section 25",
       "card_count": 2,
-      "reading_time_seconds": 76
+      "reading_time_seconds": 69
     },
     {
       "slug": "section-26",
       "title": "Section 26",
       "card_count": 1,
-      "reading_time_seconds": 27
+      "reading_time_seconds": 28
     },
     {
       "slug": "section-27",
@@ -180,43 +180,43 @@
       "slug": "section-28",
       "title": "Section 28",
       "card_count": 1,
-      "reading_time_seconds": 11
+      "reading_time_seconds": 10
     },
     {
       "slug": "section-29",
       "title": "Section 29",
       "card_count": 4,
-      "reading_time_seconds": 152
+      "reading_time_seconds": 148
     },
     {
       "slug": "section-30",
       "title": "Section 30",
       "card_count": 1,
-      "reading_time_seconds": 35
+      "reading_time_seconds": 32
     },
     {
       "slug": "section-31",
       "title": "Section 31",
       "card_count": 4,
-      "reading_time_seconds": 79
+      "reading_time_seconds": 83
     },
     {
       "slug": "section-32",
       "title": "Section 32",
       "card_count": 2,
-      "reading_time_seconds": 76
+      "reading_time_seconds": 74
     },
     {
       "slug": "section-33",
       "title": "Section 33",
-      "card_count": 12,
-      "reading_time_seconds": 180
+      "card_count": 8,
+      "reading_time_seconds": 173
     },
     {
       "slug": "section-34",
       "title": "Section 34",
       "card_count": 1,
-      "reading_time_seconds": 25
+      "reading_time_seconds": 23
     },
     {
       "slug": "section-35",
@@ -228,37 +228,37 @@
       "slug": "section-36",
       "title": "Section 36",
       "card_count": 1,
-      "reading_time_seconds": 17
+      "reading_time_seconds": 21
     },
     {
       "slug": "section-37",
       "title": "Section 37",
       "card_count": 1,
-      "reading_time_seconds": 9
+      "reading_time_seconds": 11
     },
     {
       "slug": "section-38",
       "title": "Section 38",
       "card_count": 1,
-      "reading_time_seconds": 16
+      "reading_time_seconds": 13
     },
     {
       "slug": "section-39",
       "title": "Section 39",
       "card_count": 1,
-      "reading_time_seconds": 24
+      "reading_time_seconds": 26
     },
     {
       "slug": "section-40",
       "title": "Section 40",
       "card_count": 1,
-      "reading_time_seconds": 16
+      "reading_time_seconds": 19
     },
     {
       "slug": "section-41",
       "title": "Section 41",
       "card_count": 1,
-      "reading_time_seconds": 10
+      "reading_time_seconds": 11
     },
     {
       "slug": "section-42",
@@ -270,59 +270,59 @@
       "slug": "section-43",
       "title": "Section 43",
       "card_count": 1,
-      "reading_time_seconds": 14
+      "reading_time_seconds": 18
     },
     {
       "slug": "section-44",
       "title": "Section 44",
       "card_count": 1,
-      "reading_time_seconds": 22
+      "reading_time_seconds": 21
     },
     {
       "slug": "section-45",
       "title": "Section 45",
       "card_count": 1,
-      "reading_time_seconds": 19
+      "reading_time_seconds": 21
     },
     {
       "slug": "section-46",
       "title": "Section 46",
       "card_count": 1,
-      "reading_time_seconds": 44
+      "reading_time_seconds": 45
     },
     {
       "slug": "section-47",
       "title": "Section 47",
       "card_count": 1,
-      "reading_time_seconds": 25
+      "reading_time_seconds": 26
     },
     {
       "slug": "section-48",
       "title": "Section 48",
-      "card_count": 2,
-      "reading_time_seconds": 43
+      "card_count": 1,
+      "reading_time_seconds": 44
     },
     {
       "slug": "section-49",
       "title": "Section 49",
       "card_count": 1,
-      "reading_time_seconds": 43
+      "reading_time_seconds": 42
     },
     {
       "slug": "section-50",
       "title": "Section 50",
       "card_count": 3,
-      "reading_time_seconds": 66
+      "reading_time_seconds": 68
     },
     {
       "slug": "section-51",
       "title": "Section 51",
       "card_count": 2,
-      "reading_time_seconds": 57
+      "reading_time_seconds": 59
     }
   ],
-  "total_cards": 79,
-  "total_reading_time_seconds": 1863,
+  "total_cards": 74,
+  "total_reading_time_seconds": 1875,
   "source_url": "https://www.gutenberg.org/ebooks/45109",
   "has_chapters": false
 }

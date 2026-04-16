@@ -1,6 +1,6 @@
 {
-  "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:15:49.043Z",
+  "pipelineVersion": 3,
+  "createdAt": "2026-04-16T09:02:09.162Z",
   "bookSlug": "enchiridion",
   "chapters": [
     {
@@ -353,11 +353,11 @@
         },
         {
           "sectionNumber": 31,
-          "text": "For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child."
+          "text": "For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed."
         },
         {
           "sectionNumber": 31,
-          "text": "For where our interest is, there, too, is piety directed. So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise. But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly."
+          "text": "So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise. But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly."
         }
       ]
     },
@@ -381,27 +381,15 @@
       "chunks": [
         {
           "sectionNumber": 33,
-          "text": "Begin by prescribing to yourself some character and demeanor, such as you may preserve both alone and in company."
+          "text": "Begin by prescribing to yourself some character and demeanor, such as you may preserve both alone and in company.\n\nBe mostly silent, or speak merely what is needful, and in few words. We may, however, enter sparingly into discourse sometimes, when occasion calls for it; but let it not run on any of the common subjects, as gladiators, or horse races, or athletic champions, or food, or drink—the vulgar topics of conversation—and especially not on men, so as either to blame, or praise, or make comparisons. If you are able, then, by your own conversation, bring over that of your company to proper subjects; but if you happen to find yourself among strangers, be silent.\n\nLet not your laughter be loud, frequent, or abundant."
         },
         {
           "sectionNumber": 33,
-          "text": "Be mostly silent, or speak merely what is needful, and in few words. We may, however, enter sparingly into discourse sometimes, when occasion calls for it; but let it not run on any of the common subjects, as gladiators, or horse races, or athletic champions, or food, or drink—the vulgar topics of conversation—and especially not on men, so as either to blame, or praise, or make comparisons. If you are able, then, by your own conversation, bring over that of your company to proper subjects; but if you happen to find yourself among strangers, be silent."
+          "text": "Avoid taking oaths, if possible, altogether; at any rate, so far as you are able.\n\nAvoid public and vulgar entertainments; but if ever an occasion calls you to them, keep your attention upon the stretch, that you may not imperceptibly slide into vulgarity. For be assured that if a person be ever so pure himself, yet, if his companion be corrupted, he who converses with him will be corrupted likewise."
         },
         {
           "sectionNumber": 33,
-          "text": "Let not your laughter be loud, frequent, or abundant. Avoid taking oaths, if possible, altogether; at any rate, so far as you are able."
-        },
-        {
-          "sectionNumber": 33,
-          "text": "Avoid public and vulgar entertainments; but if ever an occasion calls you to them, keep your attention upon the stretch, that you may not imperceptibly slide into vulgarity. For be assured that if a person be ever so pure himself, yet, if his companion be corrupted, he who converses with him will be corrupted likewise."
-        },
-        {
-          "sectionNumber": 33,
-          "text": "Provide things relating to the body no further than absolute need requires, as meat, drink, clothing, house, retinue. But cut off everything that looks toward show and luxury."
-        },
-        {
-          "sectionNumber": 33,
-          "text": "Before marriage guard yourself with all your ability from unlawful intercourse with women; yet be not uncharitable or severe to those who are led into this, nor boast frequently that you yourself do otherwise."
+          "text": "Provide things relating to the body no further than absolute need requires, as meat, drink, clothing, house, retinue. But cut off everything that looks toward show and luxury.\n\nBefore marriage guard yourself with all your ability from unlawful intercourse with women; yet be not uncharitable or severe to those who are led into this, nor boast frequently that you yourself do otherwise."
         },
         {
           "sectionNumber": 33,
@@ -413,11 +401,7 @@
         },
         {
           "sectionNumber": 33,
-          "text": "Be not prompt or ready to attend private recitations; but if you do attend, preserve your gravity and dignity, and yet avoid making yourself disagreeable."
-        },
-        {
-          "sectionNumber": 33,
-          "text": "When you are going to confer with anyone, and especially with one who seems your superior, represent to yourself how Socrates or Zeno would behave in such a case, and you will not be at a loss to meet properly whatever may occur."
+          "text": "Be not prompt or ready to attend private recitations; but if you do attend, preserve your gravity and dignity, and yet avoid making yourself disagreeable.\n\nWhen you are going to confer with anyone, and especially with one who seems your superior, represent to yourself how Socrates or Zeno would behave in such a case, and you will not be at a loss to meet properly whatever may occur."
         },
         {
           "sectionNumber": 33,
@@ -575,11 +559,7 @@
       "chunks": [
         {
           "sectionNumber": 48,
-          "text": "The condition and characteristic of a vulgar person is that he never looks for either help or harm from himself, but only from externals. The condition and characteristic of a philosopher is that he looks to himself for all help or harm."
-        },
-        {
-          "sectionNumber": 48,
-          "text": "The marks of a proficient are that he censures no one, praises no one, blames no one, accuses no one; says nothing concerning himself as being anybody or knowing anything. When he is in any instance hindered or restrained, he accuses himself; and if he is praised, he smiles to himself at the person who praises him; and if he is censured, he makes no defense. But he goes about with the caution of a convalescent, careful of interference with anything that is doing well but not yet quite secure. He restrains desire; he transfers his aversion to those things only which thwart the proper use of our own will; he employs his energies moderately in all directions; if he appears stupid or ignorant, he does not care; and, in a word, he keeps watch over himself as over an enemy and one in ambush."
+          "text": "The condition and characteristic of a vulgar person is that he never\nlooks for either help or harm from himself, but only from externals. The\ncondition and characteristic of a philosopher is that he looks to himself\nfor all help or harm. The marks of a proficient are that he censures no\none, praises no one, blames no one, accuses no one; says nothing\nconcerning himself as being anybody or knowing anything. When he is in\nany instance hindered or restrained, he accuses himself; and if he is\npraised, he smiles to himself at the person who praises him; and if he is\ncensured, he makes no defense. But he goes about with the caution of a\nconvalescent, careful of interference with anything that is doing well\nbut not yet quite secure. He restrains desire; he transfers his aversion\nto those things only which thwart the proper use of our own will; he\nemploys his energies moderately in all directions; if he appears stupid\nor ignorant, he does not care; and, in a word, he keeps watch over\nhimself as over an enemy and one in ambush."
         }
       ]
     },
@@ -627,10 +607,10 @@
     }
   ],
   "cost": {
-    "inputTokens": 443372,
-    "outputTokens": 208010,
+    "inputTokens": 39085,
+    "outputTokens": 5677,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 2.225133
+    "estimatedCost": 0.10120499999999999
   }
 }
