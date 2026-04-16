@@ -169,16 +169,6 @@ export async function translateChunksBatch(
       continue;
     }
 
-    // Check for mid-sentence translation (text doesn't end with sentence punctuation)
-    const trimmedTranslation = result.plain_english.trim();
-    if (trimmedTranslation.length >= 30 && !/[.?!;:'""\u201D)\]]$/.test(trimmedTranslation)) {
-      batchStats.failed++;
-      failedIds.push(item.custom_id);
-      process.stderr.write(
-        `[batch] WARNING: plain_english ends mid-sentence for ${item.custom_id} — will retry\n`,
-      );
-      continue;
-    }
 
     batchStats.succeeded++;
     addTranslatedResult(resultMap, item.custom_id, result, info);
