@@ -556,10 +556,10 @@ export function validateRefineCoverage(
     const trimmed = chunk.text.trim();
     if (trimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(trimmed)) {
       msgs.push({
-        severity: "warn",
+        severity: "error",
         card_id: `section-${chunk.sectionNumber}`,
         field: "refine",
-        message: `Section ${chunk.sectionNumber} chunk may end mid-sentence after refine (ends with: "...${trimmed.slice(-50)}")`,
+        message: `Section ${chunk.sectionNumber} chunk ends mid-sentence after refine (ends with: "...${trimmed.slice(-50)}")`,
       });
     }
   }

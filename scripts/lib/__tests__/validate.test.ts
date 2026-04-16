@@ -443,17 +443,17 @@ describe("validateRefineCoverage", () => {
     expect(msgs).toHaveLength(0);
   });
 
-  it("warns when a post-refine chunk ends mid-sentence", () => {
+  it("errors when a post-refine chunk ends mid-sentence", () => {
     const pre = [{ sectionNumber: 1, text: "Some wear away their lives in that voluntary slavery, the unrequited service of great men." }];
     const post = [
       { sectionNumber: 1, text: "Some wear away their lives in that voluntary slavery, the" },
       { sectionNumber: 1, text: "unrequited service of great men." },
     ];
     const msgs = validateRefineCoverage(pre, post);
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(true);
+    expect(msgs.some((m) => m.severity === "error" && m.message.includes("mid-sentence"))).toBe(true);
   });
 
-  it("does not warn when chunks end with punctuation", () => {
+  it("does not error when chunks end with punctuation", () => {
     const pre = [{ sectionNumber: 1, text: "First sentence. Second sentence." }];
     const post = [
       { sectionNumber: 1, text: "First sentence." },
