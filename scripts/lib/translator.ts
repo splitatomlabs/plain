@@ -159,6 +159,16 @@ export async function translateChunksBatch(
       continue;
     }
 
+    // Validate required fields — LLM occasionally omits them
+    if (!result.plain_english) {
+      batchStats.failed++;
+      failedIds.push(item.custom_id);
+      process.stderr.write(
+        `[batch] WARNING: missing plain_english for ${item.custom_id} — will retry\n`,
+      );
+      continue;
+    }
+
     batchStats.succeeded++;
     addTranslatedResult(resultMap, item.custom_id, result, info);
   }
