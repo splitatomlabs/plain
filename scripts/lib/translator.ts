@@ -40,7 +40,8 @@ interface TranslationResponse {
   verification_notes?: string | null;
 }
 
-function validateTags(tags: string[]): TagSlug[] {
+function validateTags(tags: string[] | undefined | null): TagSlug[] {
+  if (!Array.isArray(tags)) return [];
   return tags.filter((t): t is TagSlug =>
     VALID_TAG_SLUGS.includes(t as TagSlug),
   );
