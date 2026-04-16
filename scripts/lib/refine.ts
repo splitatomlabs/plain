@@ -166,7 +166,7 @@ export function buildBulkRefineUser(chunks: Chunk[]): string {
 // Reading-time cap — split oversized chunks before translation
 // ---------------------------------------------------------------------------
 
-function estimateReadingTime(text: string): number {
+export function estimateReadingTime(text: string): number {
   const words = text.split(/\s+/).filter((w) => w.length > 0).length;
   return Math.max(Math.round((words / 200) * 60), 5);
 }
@@ -176,7 +176,7 @@ function estimateReadingTime(text: string): number {
  * Prefers paragraph breaks (\n\n), falls back to sentence endings,
  * and as a last resort splits at the midpoint word boundary.
  */
-function splitTextAtBoundary(text: string): [string, string] {
+export function splitTextAtBoundary(text: string): [string, string] {
   const mid = Math.floor(text.length / 2);
 
   // Try paragraph breaks — pick the one closest to the midpoint
@@ -216,7 +216,7 @@ function splitTextAtBoundary(text: string): [string, string] {
 /**
  * Recursively split a chunk's text until every piece is under MAX_READING_TIME_SECONDS.
  */
-function splitOversizedChunk(chunk: Chunk): Chunk[] {
+export function splitOversizedChunk(chunk: Chunk): Chunk[] {
   if (estimateReadingTime(chunk.text) <= MAX_READING_TIME_SECONDS) {
     return [chunk];
   }
@@ -249,7 +249,7 @@ const REFINE_BATCH_SIZE = parseInt(process.env.REFINE_BATCH_SIZE ?? "10", 10);
  * Apply an array of refine decisions to a batch of chunks.
  * Returns the refined chunks, plus split/merge counts.
  */
-function applyDecisions(
+export function applyDecisions(
   chunks: Chunk[],
   decisions: BulkRefineResponse[],
 ): { refined: Chunk[]; splits: number; merges: number } {
