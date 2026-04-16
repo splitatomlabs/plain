@@ -89,7 +89,7 @@
 </script>
 
 <svelte:head>
-	<title>In Plain English — Ancient Stoic philosophy in words anyone can understand</title>
+	<title>Plain — Ancient philosophy, in plain English</title>
 	<meta name="description" content="Read the complete works of Epictetus, Marcus Aurelius, and Seneca — translated into clear, modern English." />
 </svelte:head>
 
