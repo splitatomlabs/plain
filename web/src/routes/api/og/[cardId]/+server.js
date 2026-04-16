@@ -1,5 +1,6 @@
 import { ImageResponse } from '@vercel/og';
 import { getAllCards, getBookMeta } from '$lib/utils/content.js';
+import { calcOgFontSize } from '$lib/utils/og.js';
 
 const ACCENT_COLORS = {
 	epictetus: '#B5704F',
@@ -100,9 +101,7 @@ export async function GET({ params }) {
 	const accentColor = ACCENT_COLORS[card.author_slug] || '#736B62';
 	const authorName = AUTHOR_NAMES[card.author_slug] || '';
 	const plainText = card.plain_english;
-	const len = plainText.length;
-	const fontSize = len < 400 ? 32 : len < 700 ? 28 : len < 1000 ? 24 : 20;
-	const lineHeight = len < 700 ? '1.45' : '1.4';
+	const { fontSize, lineHeight } = calcOgFontSize(plainText);
 
 	const html = {
 		type: 'div',
