@@ -19,6 +19,13 @@ describe("buildTranslationSystem", () => {
     expect(system).toContain("direct, instructional, and blunt");
   });
 
+  it("includes strengthened standalone readability rule", () => {
+    const system = buildTranslationSystem(enchiridion);
+    expect(system).toContain("independently comprehensible");
+    expect(system).toContain("replace the pronoun with the person's name or role");
+    expect(system).toContain("add a brief contextual clause");
+  });
+
   it("includes rules and tag list", () => {
     const system = buildTranslationSystem(enchiridion);
     expect(system).toContain("Flesch-Kincaid Grade Level 7-8");
@@ -59,10 +66,9 @@ describe("buildTranslationSystem", () => {
 });
 
 describe("buildTranslationUser", () => {
-  it("contains only the original text", () => {
+  it("contains only the original text when no previous chunk", () => {
     const user = buildTranslationUser(sampleChunk);
-    expect(user).toContain("ORIGINAL:");
-    expect(user).toContain("Some original text here.");
+    expect(user).toBe("ORIGINAL:\nSome original text here.");
   });
 
   it("does not include rules or voice guidance", () => {
@@ -70,6 +76,25 @@ describe("buildTranslationUser", () => {
     expect(user).not.toContain("Flesch-Kincaid");
     expect(user).not.toContain("VOICE GUIDANCE");
     expect(user).not.toContain("TAG ASSIGNMENT");
+  });
+
+  it("includes previous passage block when prevChunkText is provided", () => {
+    const user = buildTranslationUser(sampleChunk, "Previous passage text.");
+    expect(user).toContain("PREVIOUS PASSAGE (for context only — do NOT translate this):");
+    expect(user).toContain("Previous passage text.");
+    expect(user).toContain("ORIGINAL:\nSome original text here.");
+  });
+
+  it("previous passage block appears before original", () => {
+    const user = buildTranslationUser(sampleChunk, "Context here.");
+    const prevIndex = user.indexOf("PREVIOUS PASSAGE");
+    const origIndex = user.indexOf("ORIGINAL:");
+    expect(prevIndex).toBeLessThan(origIndex);
+  });
+
+  it("contains 'do NOT translate' in context block", () => {
+    const user = buildTranslationUser(sampleChunk, "Some context.");
+    expect(user).toContain("do NOT translate");
   });
 });
 

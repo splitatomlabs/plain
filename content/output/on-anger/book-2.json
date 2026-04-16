@@ -244,7 +244,7 @@
     "chapter_slug": "book-2",
     "card_number": 16,
     "total_cards_in_chapter": 103,
-    "plain_english": "He will collapse if he tries to feel anger every time reason tells him to. Look at all those thousands rushing to the courts at dawn. How shameful their cases are — and their lawyers are even worse. One person attacks his father's will when he should have tried to earn his inheritance. Another accuses his own mother. A third informs on someone for the exact crime he himself committed more openly. The judge condemns people for doing what he has done. And the crowd sides with whoever has the better voice.",
+    "plain_english": "The wise man will collapse if he tries to get angry every time reason demands it. Look at all those thousands rushing to the courthouses at dawn. Their cases are shameful, and their lawyers are even worse. One person contests his father's will when he should have just earned his inheritance. Another accuses his own mother of crimes. A third informs on someone for the exact crime he himself is more obviously guilty of. Even the judge is chosen to punish people for doing what he has done himself. And the audience sides with whoever has the smoothest-talking lawyer.",
     "original_excerpt": "He will faint, if he demands anger from himself as often as reason calls for it. All these thousands who are hurrying to the law courts at break of day, how base are their causes, and how much baser their advocates? One impugns his father’s will, when he would have done better to deserve it; another appears as the accuser of his mother; a third comes to inform against a man for committing the very crime of which he himself is yet more notoriously guilty. The judge, too, is chosen to condemn men for doing what he himself has done, and the audience takes the wrong side, led astray by the fine voice of the pleader.",
     "source_reference": "On Anger, Book 2, Section 7",
     "author_slug": "seneca",
@@ -252,7 +252,7 @@
       "human-nature",
       "doing-the-right-thing"
     ],
-    "reading_time_seconds": 28
+    "reading_time_seconds": 30
   },
   {
     "id": "on-anger-02-017",
@@ -707,22 +707,6 @@
     "chapter_slug": "book-2",
     "card_number": 45,
     "total_cards_in_chapter": 103,
-    "plain_english": "The same rules apply to animals and people. It makes a big difference how much moisture or heat someone has in their body. Your character will match whichever element dominates you. A warm temperament makes people quick to anger — fire is full of movement and energy. A cold mix makes people cowards — cold is slow and tight. Because of this, some of our Stoic philosophers think anger comes from blood boiling around the heart. They place anger there for one reason only: the chest is the hottest part of the body.",
-    "original_excerpt": "The same distinctions apply likewise to animals and mankind; it makes a great difference how much moisture or heat a man contains; his character will partake of whichever element has the largest share in him. A warm temper of mind will make men prone to anger; for fire is full of movement and vigour; a mixture of coldness makes men cowards, for cold is sluggish and contracted. Because of this, some of our Stoics think that anger is excited in our breasts by the boiling of the blood round the heart: indeed, that place is assigned to anger for no other reason than because the breast is the warmest part of the whole body.",
-    "source_reference": "On Anger, Book 2, Section 19",
-    "author_slug": "seneca",
-    "tags": [
-      "human-nature",
-      "facing-hardship"
-    ],
-    "reading_time_seconds": 28
-  },
-  {
-    "id": "on-anger-02-046",
-    "book_slug": "on-anger",
-    "chapter_slug": "book-2",
-    "card_number": 46,
-    "total_cards_in_chapter": 103,
     "plain_english": "People with more moisture in their bodies get angry slowly. They don't have heat ready to use, so they need movement to build it up. That's why women and children have sharp anger rather than strong anger. It flares up over small things. During the dry times of life, anger is violent and powerful, but it doesn't grow or build on itself. As heat fades, cold takes its place. Old men are cranky and full of complaints. So are sick people and those recovering from illness. Anyone whose heat has been drained by exhaustion or blood loss acts this way. People wasted by thirst or hunger are the same. So are those who are naturally bloodless and weak from poor diet. Wine stirs up anger because it increases heat. Depending on each person's nature, some explode when heavily drunk, others when just slightly drunk. This also explains why blonde, red-faced people are so hot-tempered. They naturally have the color that others turn when angry. Their blood runs hot and moves easily.",
     "original_excerpt": "Those who have more moisture in them become angry by slow degrees, because they have no heat ready at hand, but it has to be obtained by movement; wherefore the anger of women and children is sharp rather than strong, and arises on lighter provocation. At dry times of life anger is violent and powerful, yet without increase, and adding little to itself, because as heat dies away cold takes its place. Old men are testy and full of complaints, as also are sick people and convalescents, and all whose store of heat has been consumed by weariness or loss of blood. Those who are wasted by thirst or hunger are in the same condition, as also are those whose frame is naturally bloodless and faints from want of generous diet. Wine kindles anger, because it increases heat; according to each man's disposition, some fly into a passion when they are heavily drunk, some when they are slightly drunk: nor is there any other reason than this why yellow-haired, ruddy-complexioned people should be excessively passionate, seeing that they are naturally of the colour which others put on during anger; for their blood is hot and easily set in motion.",
     "source_reference": "On Anger, Book 2, Section 19",
@@ -732,6 +716,22 @@
       "facing-hardship"
     ],
     "reading_time_seconds": 51
+  },
+  {
+    "id": "on-anger-02-046",
+    "book_slug": "on-anger",
+    "chapter_slug": "book-2",
+    "card_number": 46,
+    "total_cards_in_chapter": 103,
+    "plain_english": "People with more moisture in their bodies get angry slowly. They don't have heat ready to go — it has to build up through movement. That's why women and children have sharp anger rather than strong anger. They get upset over small things. During the dry times of life, anger is violent and powerful. But it doesn't grow or build on itself, because as heat fades, cold takes its place. Old men are cranky and full of complaints. So are sick people and those recovering from illness. Anyone whose store of heat has been used up by exhaustion or blood loss acts this way. People wasted by thirst or hunger are the same. So are those whose bodies are naturally bloodless and weak from poor diet. Wine stokes anger because it increases heat. Some people fly into a rage when heavily drunk, others when just slightly drunk. It depends on their nature. This explains why blonde, red-faced people are extremely passionate. They're naturally the color that others turn when angry. Their blood runs hot and moves easily.",
+    "original_excerpt": "Those who have more moisture in them become angry by slow degrees, because they have no heat ready at hand, but it has to be obtained by movement; wherefore the anger of women and children is sharp rather than strong, and arises on lighter provocation. At dry times of life anger is violent and powerful, yet without increase, and adding little to itself, because as heat dies away cold takes its place. Old men are testy and full of complaints, as also are sick people and convalescents, and all whose store of heat has been consumed by weariness or loss of blood. Those who are wasted by thirst or hunger are in the same condition, as also are those whose frame is naturally bloodless and faints from want of generous diet. Wine kindles anger, because it increases heat; according to each man's disposition, some fly into a passion when they are heavily drunk, some when they are slightly drunk: nor is there any other reason than this why yellow-haired, ruddy-complexioned people should be excessively passionate, seeing that they are naturally of the colour which others put on during anger; for their blood is hot and easily set in motion.",
+    "source_reference": "On Anger, Book 2, Section 19",
+    "author_slug": "seneca",
+    "tags": [
+      "human-nature",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 53
   },
   {
     "id": "on-anger-02-047",
@@ -787,22 +787,6 @@
     "chapter_slug": "book-2",
     "card_number": 50,
     "total_cards_in_chapter": 103,
-    "plain_english": "He must never be treated like a slave or made to feel worthless. He should never grovel for anything or win through begging. Instead, let him receive things because of who he is, because of his past good behavior, or because he promises to do better in the future. When he competes with his friends, don't let him sulk or lose his temper. Make sure he stays on good terms with his opponents, so that even while competing he learns to want victory without wanting to hurt anyone. When he wins or does something worthy of praise, let him enjoy his success — but don't let him get carried away with excitement. Joy leads to showing off, and showing off leads to arrogance and thinking too highly of yourself.",
-    "original_excerpt": "He must undergo no servile or degrading treatment; he never must beg abjectly for anything, nor must he gain anything by begging; let him rather receive it for his own sake, for his past good behaviour, or for his promises of future good conduct. In contests with his comrades we ought not to allow him to become sulky or fly into a passion: let us see that he be on friendly terms with those whom he contends with, so that in the struggle itself he may learn to wish not to hurt his antagonist but to conquer him: whenever he has gained the day or done something praiseworthy, we should allow him to enjoy his victory, but not to rush into transports of delight: for joy leads to exultation, and exultation leads to swaggering and excessive self-esteem.",
-    "source_reference": "On Anger, Book 2, Section 21",
-    "author_slug": "seneca",
-    "tags": [
-      "knowing-yourself",
-      "human-nature"
-    ],
-    "reading_time_seconds": 39
-  },
-  {
-    "id": "on-anger-02-051",
-    "book_slug": "on-anger",
-    "chapter_slug": "book-2",
-    "card_number": 51,
-    "total_cards_in_chapter": 103,
     "plain_english": "We should give a child some freedom, but not let him become lazy. And we must keep him away from luxury. Nothing makes children more likely to get angry than being raised soft and spoiled. The more an only child gets whatever he wants, and the more freedom an orphan is given, the more damaged they become. A child who is never told \"no\" won't be able to handle rejection. If his worried mother always dries his tears, and his tutor gets punished for the child's mistakes, that child is being ruined.",
     "original_excerpt": "We ought to allow him some relaxation, yet not yield him up to laziness and sloth, and we ought to keep him far beyond the reach of luxury, for nothing makes children more prone to anger than a soft and fond bringing-up, so that the more only children are indulged, and the more liberty is given to orphans, the more they are corrupted. He to whom nothing is ever denied, will not be able to endure a rebuff, whose anxious mother always wipes away his tears, whose _paedagogus_[9] is made to pay for his shortcomings.",
     "source_reference": "On Anger, Book 2, Section 21",
@@ -814,10 +798,10 @@
     "reading_time_seconds": 28
   },
   {
-    "id": "on-anger-02-052",
+    "id": "on-anger-02-051",
     "book_slug": "on-anger",
     "chapter_slug": "book-2",
-    "card_number": 52,
+    "card_number": 51,
     "total_cards_in_chapter": 103,
     "plain_english": "Have you noticed how people get angrier as they gain power and status? This is especially true for the rich, the noble, and those in high positions. Success feeds their anger. When they're surrounded by flatterers whispering in their ears — \"How dare he talk to you like that! You're not acting with proper dignity! You're lowering yourself!\" — it stokes the fire. Even people with good hearts and strong principles can barely resist this kind of talk. That's why we must keep flatterers away from children.",
     "original_excerpt": "Do you not observe how a man's anger becomes more violent as he rises in station? This shows itself especially in those that are rich and noble, or in great place, when the favouring gale has roused all the most empty and trivial passions of their minds. Prosperity fosters anger, when a man's proud ears are surrounded by a mob of flatterers, saying, \"That man answer you! you do not act according to your dignity, you lower yourself.\" And so forth, with all the language which can hardly be resisted even by healthy and originally well-principled minds. Flattery, then, must be kept well out of the way of children.",
@@ -830,10 +814,10 @@
     "reading_time_seconds": 26
   },
   {
-    "id": "on-anger-02-053",
+    "id": "on-anger-02-052",
     "book_slug": "on-anger",
     "chapter_slug": "book-2",
-    "card_number": 53,
+    "card_number": 52,
     "total_cards_in_chapter": 103,
     "plain_english": "Let a child hear the truth, and sometimes fear it. But let him always respect it. Let him stand up when adults enter the room. Let him get nothing by throwing tantrums. Give him things when he's calm that you refused when he was screaming. Let him see his father's wealth but not use it. Correct him when he does wrong. It helps to give boys teachers and tutors who stay calm. Whatever is soft and unformed sticks to what's nearby and takes its shape. Young men copy the habits of their nurses and tutors.",
     "original_excerpt": "Let a child hear the truth, and sometimes fear it: let him always reverence it. Let him rise in the presence of his elders. Let him obtain nothing by flying into a passion: let him be given when he is quiet what was refused him when he cried for it: let him behold, but not make use of his father's wealth: let him be reproved for what he does wrong. It will be advantageous to furnish boys with even-tempered teachers and _paedagogi_: what is soft and unformed clings to what is near, and takes its shape: the habits of young men reproduce those of their nurses and _paedagogi_.",
@@ -846,10 +830,10 @@
     "reading_time_seconds": 29
   },
   {
-    "id": "on-anger-02-054",
+    "id": "on-anger-02-053",
     "book_slug": "on-anger",
     "chapter_slug": "book-2",
-    "card_number": 54,
+    "card_number": 53,
     "total_cards_in_chapter": 103,
     "plain_english": "A boy who grew up in Plato's house once went home to visit his parents. When he saw his father yelling in anger, he said, \"I never saw anyone act like that at Plato's house.\" I'm sure he learned to copy his father much faster than he learned to copy Plato. Most importantly, give your child simple food and plain clothes that match what his friends wear. If you start by treating him the same as other children, he won't get angry later when someone compares him to others.",
     "original_excerpt": "Once, a boy who was brought up in Plato's house went home to his parents, and, on seeing his father shouting with passion, said, \"I never saw any one at Plato's house act like that.\" I doubt not that he learned to imitate his father sooner than he learned to imitate Plato. Above all, let his food be scanty, his dress not costly, and of the same fashion as that of his comrades: if you begin by putting him on a level with many others, he will not be angry when some one is compared with him.",
@@ -862,20 +846,36 @@
     "reading_time_seconds": 27
   },
   {
+    "id": "on-anger-02-054",
+    "book_slug": "on-anger",
+    "chapter_slug": "book-2",
+    "card_number": 54,
+    "total_cards_in_chapter": 103,
+    "plain_english": "A boy was raised in Plato's household. When he went home to his parents and saw his father yelling angrily, he said, \"I never saw anyone act like that at Plato's house.\" I have no doubt that he learned to copy his father sooner than he learned to copy Plato. Above all, give your child simple food and plain clothes that match what his friends wear. If you start by treating him like everyone else, he won't get angry when someone compares him to others.",
+    "original_excerpt": "Once, a boy who was brought up in Plato's house went home to his parents, and, on seeing his father shouting with passion, said, \"I never saw any one at Plato's house act like that.\" I doubt not that he learned to imitate his father sooner than he learned to imitate Plato. Above all, let his food be scanty, his dress not costly, and of the same fashion as that of his comrades: if you begin by putting him on a level with many others, he will not be angry when some one is compared with him.",
+    "source_reference": "On Anger, Book 2, Section 21",
+    "author_slug": "seneca",
+    "tags": [
+      "human-nature",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 26
+  },
+  {
     "id": "on-anger-02-055",
     "book_slug": "on-anger",
     "chapter_slug": "book-2",
     "card_number": 55,
     "total_cards_in_chapter": 103,
-    "plain_english": "These lessons work for our children. But for us adults, birth and education are done — no more mistakes or advice can change that. We have to work with what comes next. We need to fight the root causes of evil. Anger starts when we believe someone has hurt us. So we shouldn't be quick to believe that.",
-    "original_excerpt": "These precepts, however, apply to our children: in ourselves the accident of birth and our education no longer admits of either mistakes or advice; we must deal with what follows. Now we ought to fight against the first causes of evil: the cause of anger is the belief that we are injured; this belief, therefore, should not be lightly entertained.",
+    "plain_english": "We shouldn't fly into a rage even when someone seems to have clearly wronged us. Some lies look exactly like the truth. We should always give it time — time reveals what really happened. Don't be quick to believe gossip. We need to watch out for this human weakness: we're eager to believe things we don't want to hear, and we get angry before we even know the facts. What's worse? We're swayed not just by rumors but by suspicions. We might rage at innocent people just because of a look or a smile that we interpret the wrong way. So we should defend the absent person against our own assumptions. Keep your anger on hold. You can always punish someone later if needed, but once you've acted, you can't take it back.",
+    "original_excerpt": "We ought not to fly into a rage even when the injury appears to be open and distinct: for some false things bear the semblance of truth. We should always allow some time to elapse, for time discloses the truth. Let not our ears be easily lent to calumnious talk: let us know and be on our guard against this fault of human nature, that we are willing to believe what we are unwilling to listen to, and that we become angry before we have formed our opinion. What shall I say? we are influenced not merely by calumnies but by suspicions, and at the very look and smile of others we may fly into a rage with innocent persons because we put the worst construction upon it. We ought, therefore, to plead the cause of the absent against ourselves, and to keep our anger in abeyance: for a punishment which has been postponed may yet be inflicted, but when once inflicted cannot be recalled.",
     "source_reference": "On Anger, Book 2, Section 22",
     "author_slug": "seneca",
     "tags": [
       "calm-your-mind",
-      "knowing-yourself"
+      "human-nature"
     ],
-    "reading_time_seconds": 17
+    "reading_time_seconds": 40
   },
   {
     "id": "on-anger-02-056",
@@ -883,7 +883,7 @@
     "chapter_slug": "book-2",
     "card_number": 56,
     "total_cards_in_chapter": 103,
-    "plain_english": "We shouldn't fly into a rage even when someone seems to have clearly wronged us. Some lies look exactly like the truth. We should always give it time — time reveals what really happened. Don't be quick to believe gossip. We need to watch out for this human weakness: we're eager to believe things we don't want to hear, and we get angry before we even know the facts. What's worse? We're swayed not just by rumors but by suspicions. We might rage at innocent people just because of a look or a smile that we interpret the wrong way. So we should defend the absent person against our own assumptions. Keep your anger on hold. You can always punish someone later if needed, but once you've acted, you can't take it back.",
+    "plain_english": "We shouldn't explode with anger even when the injury seems clear and obvious. Some false things look completely true. We should always give it time — time reveals the truth. Don't let your ears easily accept gossip and lies. Know this human flaw and guard against it: we're eager to believe what we don't want to hear, and we get angry before we even think it through. What's worse? We're influenced not just by accusations but by suspicions. We might rage at innocent people just because of a look or a smile that we interpret in the worst possible way. So we should defend the absent person against ourselves. Keep our anger on hold. A punishment that's delayed can still be given later, but once you've punished someone, you can't take it back.",
     "original_excerpt": "We ought not to fly into a rage even when the injury appears to be open and distinct: for some false things bear the semblance of truth. We should always allow some time to elapse, for time discloses the truth. Let not our ears be easily lent to calumnious talk: let us know and be on our guard against this fault of human nature, that we are willing to believe what we are unwilling to listen to, and that we become angry before we have formed our opinion. What shall I say? we are influenced not merely by calumnies but by suspicions, and at the very look and smile of others we may fly into a rage with innocent persons because we put the worst construction upon it. We ought, therefore, to plead the cause of the absent against ourselves, and to keep our anger in abeyance: for a punishment which has been postponed may yet be inflicted, but when once inflicted cannot be recalled.",
     "source_reference": "On Anger, Book 2, Section 22",
     "author_slug": "seneca",
@@ -1235,7 +1235,7 @@
     "chapter_slug": "book-2",
     "card_number": 78,
     "total_cards_in_chapter": 103,
-    "plain_english": "This same person who tattled on your friend will clam up the moment you ask him to prove it. \"Don't call me as a witness,\" he'll say. \"If you drag me into court, I'll deny everything. Unless you promise to keep me out of it, I won't tell you another word.\" He pushes you toward a fight, then runs away from the battle himself. Someone who will only whisper accusations is barely telling you anything at all. What could be more unfair than believing rumors in private, but showing your anger in public?",
+    "plain_english": "The same person who told you bad things about your friend won't repeat his story if he has to prove it. \"Don't call me as a witness,\" he says. \"If you do, I'll deny everything I told you. And unless you promise not to drag me into this, I'll never tell you anything again.\" He pushes you to get angry, then runs away from any real confrontation. Someone who will only whisper accusations is barely telling you anything at all. What could be more unfair than believing secret rumors while showing your anger in public?",
     "original_excerpt": "This very man who has informed against your friend, will say no more if he be obliged to prove what he says. \"You need not,\" says he, \"bring me forward as a witness; if I am brought forward I shall deny what I have said; unless you excuse me from appearing I shall never tell you anything.\" At the same time he spurs you on and withdraws himself from the strife and battle. The man who will tell you nothing save in secret hardly tells you anything at all. What can be more unjust than to believe in secret, and to be angry openly?",
     "source_reference": "On Anger, Book 2, Section 29",
     "author_slug": "seneca",
@@ -1243,7 +1243,7 @@
       "human-nature",
       "doing-the-right-thing"
     ],
-    "reading_time_seconds": 28
+    "reading_time_seconds": 29
   },
   {
     "id": "on-anger-02-079",

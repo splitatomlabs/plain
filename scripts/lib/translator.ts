@@ -56,6 +56,8 @@ export interface BatchTranslateInput {
   chapterSlug: string;
   chunks: Chunk[];
   config: BookConfig;
+  /** Full chapter chunks for previous-chunk context lookup (optional, defaults to chunks) */
+  allChapterChunks?: Chunk[];
 }
 
 export async function translateChunksBatch(
@@ -77,15 +79,19 @@ export async function translateChunksBatch(
     { bookSlug: string; chapterSlug: string; chunk: Chunk }
   >();
 
-  for (const { bookSlug, chapterSlug, chunks, config } of inputs) {
+  for (const { bookSlug, chapterSlug, chunks, config, allChapterChunks } of inputs) {
     const system = buildTranslationSystem(config);
+    const fullChunks = allChapterChunks ?? chunks;
     for (let index = 0; index < chunks.length; index++) {
       const chunk = chunks[index];
+      // Find previous chunk in the full chapter, not just the uncached subset
+      const fullIndex = fullChunks.indexOf(chunk);
+      const prevChunkText = fullIndex > 0 ? fullChunks[fullIndex - 1].text : undefined;
       const customId = safeCustomId(bookSlug, chapterSlug, index);
       requests.push({
         custom_id: customId,
         system,
-        messages: [{ role: "user", content: buildTranslationUser(chunk) }],
+        messages: [{ role: "user", content: buildTranslationUser(chunk, prevChunkText) }],
       });
       meta.set(customId, { bookSlug, chapterSlug, chunk });
     }
@@ -187,7 +193,10 @@ export async function translateChunksBatch(
       if (!input) continue;
 
       const system = buildTranslationSystem(input.config);
-      const prompt = buildTranslationUser(info.chunk);
+      const fullChunks = input.allChapterChunks ?? input.chunks;
+      const fullIndex = fullChunks.indexOf(info.chunk);
+      const prevChunkText = fullIndex > 0 ? fullChunks[fullIndex - 1].text : undefined;
+      const prompt = buildTranslationUser(info.chunk, prevChunkText);
       try {
         const result = await callClaudeJSON<TranslationResponse>(
           prompt, undefined, { system } as CallClaudeOptions,

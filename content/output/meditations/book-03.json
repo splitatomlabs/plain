@@ -133,22 +133,6 @@
     "chapter_slug": "book-03",
     "card_number": 9,
     "total_cards_in_chapter": 28,
-    "plain_english": "Such a person doesn't delay in reaching for what is truly best. He is like a priest serving the gods, closely connected with the divine part within himself — treating it like a sacred temple. He keeps himself clean from pleasure and unbroken by pain. He does no wrong to himself. He can't be harmed by others. He is a champion wrestler fighting for the highest prize, never thrown down by his own emotions. He is soaked through with goodness, accepting with his whole heart whatever happens or comes his way.",
-    "original_excerpt": "He that is such, is he surely that doth not put off to lay hold on that which is best indeed, a very priest and minister of the gods, well acquainted and in good correspondence with him especially that is seated and placed within himself, as in a temple and sacrary: to whom also he keeps and preserves himself unspotted by pleasure, undaunted by pain; free from any manner of wrong, or contumely, by himself offered unto himself: not capable of any evil from others: a wrestler of the best sort, and for the highest prize, that he may not be cast down by any passion or affection of his own; deeply dyed and drenched in righteousness, embracing and accepting with his whole heart whatsoever either happeneth or is allotted unto him.",
-    "source_reference": "Meditations, Book 3, Section 4",
-    "author_slug": "marcus-aurelius",
-    "tags": [
-      "doing-the-right-thing",
-      "knowing-yourself"
-    ],
-    "reading_time_seconds": 27
-  },
-  {
-    "id": "meditations-03-010",
-    "book_slug": "meditations",
-    "chapter_slug": "book-03",
-    "card_number": 10,
-    "total_cards_in_chapter": 28,
     "plain_english": "A wise person rarely pays attention to what others say, do, or plan. They only focus on others when it's truly necessary for the public good. Their thoughts stay on what belongs to them — the things they can actually control. They believe the universe gives each person exactly what they're meant to have. The things that are truly theirs, the things in their power, they work to make good. As for everything else that happens to them, they trust it's for the best. The fate assigned to each person can't be avoided. But it's always beneficial.",
     "original_excerpt": "One who not often, nor without some great necessity tending to some public good, mindeth what any other, either speaks, or doth, or purposeth: for those things only that are in his own power, or that are truly his own, are the objects of his employments, and his thoughts are ever taken up with those things, which of the whole universe are by the fates or Providence destinated and appropriated unto himself. Those things that are his own, and in his own power, he himself takes order, for that they be good: and as for those that happen unto him, he believes them to be so. For that lot and portion which is assigned to every one, as it is unavoidable and necessary, so is it always profitable.",
     "source_reference": "Meditations, Book 3, Section 4",
@@ -160,12 +144,28 @@
     "reading_time_seconds": 29
   },
   {
+    "id": "meditations-03-010",
+    "book_slug": "meditations",
+    "chapter_slug": "book-03",
+    "card_number": 10,
+    "total_cards_in_chapter": 28,
+    "plain_english": "A person like this rarely pays attention to what others say, do, or plan. They only care about such things when it serves some important public good. Instead, they focus on what is truly their own - the things within their power. Their thoughts stay busy with whatever fate or Providence has assigned to them from the whole universe. The things that belong to them and are in their control - these they make sure are good. As for the things that happen to them, they believe these are good too. The portion that is given to each person cannot be avoided. It is necessary. And it is always beneficial.",
+    "original_excerpt": "One who not often, nor without some great necessity tending to some public good, mindeth what any other, either speaks, or doth, or purposeth: for those things only that are in his own power, or that are truly his own, are the objects of his employments, and his thoughts are ever taken up with those things, which of the whole universe are by the fates or Providence destinated and appropriated unto himself. Those things that are his own, and in his own power, he himself takes order, for that they be good: and as for those that happen unto him, he believes them to be so. For that lot and portion which is assigned to every one, as it is unavoidable and necessary, so is it always profitable.",
+    "source_reference": "Meditations, Book 3, Section 4",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "freedom-and-control",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 33
+  },
+  {
     "id": "meditations-03-011",
     "book_slug": "meditations",
     "chapter_slug": "book-03",
     "card_number": 11,
     "total_cards_in_chapter": 28,
-    "plain_english": "He remembers that everyone who can think is related to him. Caring for all people fits with human nature. But honor and praise shouldn't be accepted from just anyone. Only take it from people who live according to nature. As for those who don't — he knows what they're like at home and in public, day and night. He knows what conditions they live in and what kind of people they spend time with. So he doesn't care about praise from people who can't even approve of themselves.",
+    "plain_english": "He remembers that all rational beings are his kin. To care for all people is part of human nature. But honor and praise should not be accepted from everyone — only from those who live according to nature. As for those who don't live this way, he knows what kind of people they are. He knows how they behave at home and in public, day and night. He knows what company they keep and how they waste their time. So he doesn't value praise from people who can't even approve of themselves.",
     "original_excerpt": "He remembers besides that whatsoever partakes of reason, is akin unto him, and that to care for all men generally, is agreeing to the nature of a man: but as for honour and praise, that they ought not generally to be admitted and accepted of from all, but from such only, who live according to nature. As for them that do not, what manner of men they be at home, or abroad; day or night, how conditioned themselves with what manner of conditions, or with men of what conditions they moil and pass away the time together, he knoweth, and remembers right well, he therefore regards not such praise and approbation, as proceeding from them, who cannot like and approve themselves.",
     "source_reference": "Meditations, Book 3, Section 4",
     "author_slug": "marcus-aurelius",
@@ -173,7 +173,7 @@
       "human-nature",
       "what-matters-most"
     ],
-    "reading_time_seconds": 26
+    "reading_time_seconds": 28
   },
   {
     "id": "meditations-03-012",

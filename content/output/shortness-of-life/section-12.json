@@ -116,22 +116,6 @@
     "chapter_slug": "section-12",
     "card_number": 8,
     "total_cards_in_chapter": 9,
-    "plain_english": "These people really do lose awareness of a lot of things. But they pretend to be even more oblivious than they actually are. They actually take pride in some of their flaws because they think these flaws prove how successful they are. They believe that only pathetic, worthless people pay attention to what they're doing. After seeing this, do you really think playwrights are making things up when they mock the wealthy in their comedies? I swear, they leave out more than they invent. In our age — which excels at nothing except creating new vices — so many unbelievable forms of corruption have emerged that you could actually criticize the playwrights for failing to keep up with reality.",
-    "original_excerpt": "Such people do really become unconscious of much, but they behave as though they were unconscious of much more: they delight in some failings because they consider them to be proofs of happiness: it seems the part of an utterly low and contemptible man to know what he is doing. After this, do you suppose that playwrights draw largely upon their imaginations in their burlesques upon luxury: by Hercules, they omit more than they invent; in this age, inventive in this alone, such a number of incredible vices have been produced, that already you are able to reproach the playwrights with omitting to notice them.",
-    "source_reference": "On the Shortness of Life, Section 12",
-    "author_slug": "seneca",
-    "tags": [
-      "human-nature",
-      "knowing-yourself"
-    ],
-    "reading_time_seconds": 36
-  },
-  {
-    "id": "shortness-of-life-12-009",
-    "book_slug": "shortness-of-life",
-    "chapter_slug": "section-12",
-    "card_number": 9,
-    "total_cards_in_chapter": 9,
     "plain_english": "Can you imagine someone so corrupted by luxury that they need another person to tell them whether they're sitting down or not? This person is definitely not enjoying leisure. You need a different word for him: he's sick, or actually dead. Only someone who knows they're at leisure is truly at leisure. But this poor creature is barely alive if he needs someone else to tell him what position his body is in. How could such a person possibly manage his time?",
     "original_excerpt": "To think that there should be any one who had so far lost his senses through luxury as to take some one else's opinion as to whether he was sitting or not? This man certainly is not at leisure: you must bestow a different title on him: he is sick, or rather dead: he only is at leisure who feels that he is at leisure: but this creature is only half alive, if he wants some one to tell him what position his body is in. How can such a man be able to dispose of any time?",
     "source_reference": "On the Shortness of Life, Section 12",
@@ -141,5 +125,21 @@
       "what-matters-most"
     ],
     "reading_time_seconds": 25
+  },
+  {
+    "id": "shortness-of-life-12-009",
+    "book_slug": "shortness-of-life",
+    "chapter_slug": "section-12",
+    "card_number": 9,
+    "total_cards_in_chapter": 9,
+    "plain_english": "Imagine someone so lost in luxury that they need another person to tell them whether they're sitting or standing! This man is definitely not at leisure. You need a different name for him: he's sick, or better yet, he's dead. Only someone who actually feels at leisure can truly be at leisure. But this creature is barely alive if he needs someone else to tell him what position his body is in. How could such a person possibly manage his time?",
+    "original_excerpt": "To think that there should be any one who had so far lost his senses through luxury as to take some one else's opinion as to whether he was sitting or not? This man certainly is not at leisure: you must bestow a different title on him: he is sick, or rather dead: he only is at leisure who feels that he is at leisure: but this creature is only half alive, if he wants some one to tell him what position his body is in. How can such a man be able to dispose of any time?",
+    "source_reference": "On the Shortness of Life, Section 12",
+    "author_slug": "seneca",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 24
   }
 ]

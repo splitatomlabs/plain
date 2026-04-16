@@ -53,22 +53,6 @@
     "chapter_slug": "to-or-against-those-who-obstinately-persist-in-what-they-have-determined",
     "card_number": 4,
     "total_cards_in_chapter": 5,
-    "plain_english": "This man barely agreed to change his mind. But some people right now? Impossible to convince. I think I finally understand that old saying: you can't persuade a fool or break one either. God help me if I ever have a stubborn fool for a friend. Nothing is harder to deal with. \"I've made up my mind,\" he says. So have madmen. But the crazier their beliefs about things that don't exist, the more medicine they need. Why don't you act like a sick person and call a doctor? \"I'm sick, teacher, help me. Tell me what to do. I should listen to you.\" That's how it should work here too: \"I don't know what I should do, but I came here to learn.\" But no — instead it's: \"Talk to me about other stuff. On this topic, my mind is made up.\" What other stuff?",
-    "original_excerpt": "Now this man was with difficulty persuaded to change his mind. But it is impossible to convince some persons at present; so that I seem now to know what I did not know before, the meaning of the common saying, that you can neither persuade nor break a fool. May it never be my lot to have a wise fool for my friend; nothing is more untractable. \"I am determined,\" the man says. Madmen are also, but the more firmly they form a judgment on things which do not exist, the more hellebore they require. Will you not act like a sick man and call in the physician?—I am sick, master, help me; consider what I must do: it is my duty to obey you. So it is here also: I know not what I ought to do, but I am come to learn.—Not so; but speak to me about other things: upon this I have determined.—What other things?",
-    "source_reference": "Discourses, To or Against Those Who Obstinately Persist in What They Have Determined",
-    "author_slug": "epictetus",
-    "tags": [
-      "human-nature",
-      "knowing-yourself"
-    ],
-    "reading_time_seconds": 44
-  },
-  {
-    "id": "discourses-30-005",
-    "book_slug": "discourses",
-    "chapter_slug": "to-or-against-those-who-obstinately-persist-in-what-they-have-determined",
-    "card_number": 5,
-    "total_cards_in_chapter": 5,
     "plain_english": "What could be more important than understanding this: just making a decision and refusing to change it isn't enough. This stubborn energy is madness, not health. \"I'll die before I do this!\" Why? What happened? \"I've made up my mind.\" Lucky for me you didn't decide to kill me instead. \"I won't take money.\" Why not? \"I've decided.\" Here's the thing — that same stubborn energy you're using to refuse money? Nothing stops you from flip-flopping later and taking it, then saying \"I've decided\" again. It's like a sick body where fluid moves around randomly — first here, then there. A sick soul doesn't know which way to lean either. But when you add this stubborn tone to the confusion, the problem becomes impossible to fix.",
     "original_excerpt": "for what is greater and more useful than for you to be persuaded that it is not sufficient to have made your determination and not to change it. This is the tone (energy) of madness, not of health.—I will die, if you compel me to this.—Why, man? What has happened?—I have determined—I have had a lucky escape that you have not determined to kill me—I take no money. Why?—I have determined—Be assured that with the very tone (energy) which you now use in refusing to take, there is nothing to hinder you at some time from inclining without reason to take money, and then saying, I have determined. As in a distempered body, subject to defluxions, the humor inclines sometimes to these parts, and then to those, so too a sickly soul knows not which way to incline; but if to this inclination and movement there is added a tone (obstinate resolution), then the evil becomes past help and cure.",
     "source_reference": "Discourses, To or Against Those Who Obstinately Persist in What They Have Determined",
@@ -78,5 +62,21 @@
       "calm-your-mind"
     ],
     "reading_time_seconds": 38
+  },
+  {
+    "id": "discourses-30-005",
+    "book_slug": "discourses",
+    "chapter_slug": "to-or-against-those-who-obstinately-persist-in-what-they-have-determined",
+    "card_number": 5,
+    "total_cards_in_chapter": 5,
+    "plain_english": "What's more important and useful than learning this: it's not enough to just make up your mind and refuse to change it. That's how madness sounds, not health. \"I'll die if you force me to do this.\" Why, man? What happened? \"I've made up my mind.\" Lucky for me you didn't decide to kill me. \"I won't take money.\" Why? \"I've made up my mind.\" Here's the thing: the same stubborn tone you're using to refuse money could just as easily make you want to take money later. Then you'd say \"I've made up my mind\" about that too. It's like a sick body where fluid flows to different parts at random. A sick mind doesn't know which way it will lean next. But when you add stubborn resolve to these random impulses, the problem becomes impossible to fix.",
+    "original_excerpt": "for what is greater and more useful than for you to be persuaded that it is not sufficient to have made your determination and not to change it. This is the tone (energy) of madness, not of health.—I will die, if you compel me to this.—Why, man? What has happened?—I have determined—I have had a lucky escape that you have not determined to kill me—I take no money. Why?—I have determined—Be assured that with the very tone (energy) which you now use in refusing to take, there is nothing to hinder you at some time from inclining without reason to take money, and then saying, I have determined. As in a distempered body, subject to defluxions, the humor inclines sometimes to these parts, and then to those, so too a sickly soul knows not which way to incline; but if to this inclination and movement there is added a tone (obstinate resolution), then the evil becomes past help and cure.",
+    "source_reference": "Discourses, To or Against Those Who Obstinately Persist in What They Have Determined",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 42
   }
 ]

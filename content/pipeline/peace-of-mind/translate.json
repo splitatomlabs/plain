@@ -1,6 +1,6 @@
 {
   "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:34:17.372Z",
+  "createdAt": "2026-04-16T08:55:59.018Z",
   "bookSlug": "peace-of-mind",
   "chapters": {
     "peace-of-mind_section-01": [
@@ -171,21 +171,6 @@
       },
       {
         "sectionNumber": 2,
-        "originalText": "Such men, Serenus, are not unhealthy, but they are not accustomed to being healthy; just as even a quiet sea or lake nevertheless displays a certain amount of ripple when its waters are subsiding after a storm. What you need, therefore, is, not any of those harsher remedies to which allusion has been made, not that you should in some cases check yourself, in others be angry with yourself, in others sternly reproach yourself, but that you should adopt that which comes last in the list, have confidence in yourself, and believe that you are proceeding on the right path, without being led aside by the numerous divergent tracks of wanderers which cross it in every direction, some of them circling about the right path itself.",
-        "plainEnglish": "These men, Serenus, aren't sick — they're just not used to being well. It's like a calm sea or lake that still has small waves after a storm has passed. So you don't need those harsh treatments I mentioned earlier. You don't need to hold yourself back sometimes, get angry with yourself other times, or scold yourself harshly. Instead, you need the last thing on my list: have confidence in yourself. Believe you're on the right path. Don't let yourself be pulled off course by all the different trails that cross your path — trails made by people who wander around, some of them circling the right path without ever finding it.",
-        "tags": [
-          "calm-your-mind",
-          "knowing-yourself"
-        ],
-        "meaningCheck": {
-          "faithful": true,
-          "tone_preserved": true,
-          "ideas_changed": false,
-          "over_explains": false
-        }
-      },
-      {
-        "sectionNumber": 2,
         "originalText": "What you desire, to be undisturbed, is a great thing, nay, the greatest thing of all, and one which raises a man almost to the level of a god. The Greeks call this calm steadiness of mind _euthymia_, and Democritus's treatise upon it is excellently written: I call it peace of mind: for there is no necessity for translating so exactly as to copy the words of the Greek idiom: the essential point is to mark the matter under discussion by a name which ought to have the same meaning as its Greek name, though perhaps not the same form. What we are seeking, then, is how the mind may always pursue a steady, unruffled course, may be pleased with itself, and look with pleasure upon its surroundings, and experience no interruption of this joy, but abide in a peaceful condition without being ever either elated or depressed: this will be \"peace of mind.\" Let us now consider in a general way how it may be attained: then you may apply as much as you choose of the universal remedy to your own case.",
         "plainEnglish": "What you want — to be undisturbed — is a great thing. In fact, it's the greatest thing of all. It almost raises a person to the level of a god. The Greeks call this calm steadiness of mind _euthymia_. Democritus wrote an excellent treatise about it. I call it peace of mind. There's no need to translate so exactly that we copy Greek words. The important thing is to use a name that captures the same meaning, even if it takes a different form. So what we're looking for is this: how can the mind always follow a steady, untroubled path? How can it be pleased with itself and look with pleasure at what's around it? How can it experience no interruption of this joy, but stay in a peaceful state — never getting too high or too low? This is 'peace of mind.' Let's think about how to achieve it in general terms. Then you can apply as much of this universal remedy to your own situation as you want.",
         "tags": [
@@ -206,21 +191,6 @@
         "tags": [
           "knowing-yourself",
           "human-nature"
-        ],
-        "meaningCheck": {
-          "faithful": true,
-          "tone_preserved": true,
-          "ideas_changed": false,
-          "over_explains": false
-        }
-      },
-      {
-        "sectionNumber": 2,
-        "originalText": "The same thing applies both to those who suffer from fickleness and continual changes of purpose, who always are fondest of what they have given up, and those who merely yawn and dawdle: add to these those who, like bad sleepers, turn from side to side, and settle themselves first in one manner and then in another, until at last they find rest through sheer weariness: in forming the habits of their lives they often end by adopting some to which they are not kept by any dislike of change, but in the practice of which old age, which is slow to alter, has caught them living: add also those who are by no means fickle, yet who must thank their dulness, not their consistency for being so, and who go on living not in the way they wish, but in the way they have begun to live. There are other special forms of this disease without number, but it has but one effect, that of making people dissatisfied with themselves.",
-        "plainEnglish": "This same restlessness affects many different types of people. Some are fickle and constantly change their minds. They always think the grass was greener wherever they just left. Others just yawn and waste time doing nothing. Then there are people like bad sleepers who toss and turn, trying one position after another, until they finally fall asleep from pure exhaustion. When it comes to their lives, they keep changing their habits until old age catches up with them. By then they're too tired to change anymore, so they stick with whatever they ended up doing — not because they chose it, but because they ran out of energy. There are also people who seem steady, but only because they're too dull to change, not because they're actually consistent. They don't live the way they want to live. They just live the way they started living. This disease comes in countless forms, but it always has the same result: people become dissatisfied with themselves.",
-        "tags": [
-          "knowing-yourself",
-          "calm-your-mind"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -1255,21 +1225,6 @@
       },
       {
         "sectionNumber": 14,
-        "originalText": "His friends were sad at being about to lose so great a man: \"Why,\" asked he, \"are you sorrowful? you are enquiring whether our souls are immortal, but I shall presently know.\" Nor did he up to the very end cease his search after truth, and raised arguments upon the subject of his own death. His own teacher of philosophy accompanied him, and they were not far from the hill on which the daily sacrifice to Caesar our god was offered, when he said, \"What are you thinking of now, Kanus? or what are your ideas?\" \"I have decided,\" answered Kanus, \"at that most swiftly-passing moment of all to watch whether the spirit will be conscious of the act of leaving the body.\" He promised, too, that if he made any discoveries, he would come round to his friends and tell them what the condition of the souls of the departed might be.",
-        "plainEnglish": "His friends were sad about losing such a great man. \"Why are you upset?\" he asked them. \"You spend your time wondering if souls live on after death. Well, I'm about to find out.\" Right up to the end, he kept searching for truth. He even used his own death as a chance to learn something new. His philosophy teacher walked with him to his execution. When they got close to the hill where they made daily sacrifices to Caesar, the teacher asked, \"What are you thinking about now, Kanus? What's going through your mind?\" Kanus replied, \"I've decided to use this moment — the fastest moment of all — to see if my spirit will notice itself leaving my body.\" He even promised that if he learned anything, he would somehow visit his friends and tell them what it's like for souls after death.",
-        "tags": [
-          "death-and-mortality",
-          "knowing-yourself"
-        ],
-        "meaningCheck": {
-          "faithful": true,
-          "tone_preserved": true,
-          "ideas_changed": false,
-          "over_explains": false
-        }
-      },
-      {
-        "sectionNumber": 14,
         "originalText": "Here was peace in the very midst of the storm: here was a soul worthy of eternal life, which used its own fate as a proof of truth, which when at the last step of life experimented upon his fleeting breath, and did not merely continue to learn until he died, but learned something even from death itself. No man has carried the life of a philosopher further. I will not hastily leave the subject of a great man, and one who deserves to be spoken of with respect: I will hand thee down to all posterity, thou most noble heart, chief among the many victims of Gaius.",
         "plainEnglish": "Here was peace in the middle of chaos. Here was a soul that deserved to live forever — one who used his own suffering as proof of what he believed. Even at death's door, he kept experimenting with his last breaths. He didn't just keep learning until he died. He learned something from death itself. No one has lived the philosopher's life more completely. I won't quickly move on from talking about such a great man — one who deserves our respect. I will pass your memory down to future generations, you most noble heart, greatest among all the many victims of Gaius.",
         "tags": [
@@ -1577,10 +1532,10 @@
     ]
   },
   "cost": {
-    "inputTokens": 2080498,
-    "outputTokens": 323029,
+    "inputTokens": 51209,
+    "outputTokens": 7139,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 5.5434645
+    "estimatedCost": 0.130356
   }
 }

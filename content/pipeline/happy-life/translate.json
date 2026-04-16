@@ -1,6 +1,6 @@
 {
   "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:34:17.371Z",
+  "createdAt": "2026-04-16T08:55:59.016Z",
   "bookSlug": "happy-life",
   "chapters": {
     "happy-life_section-01": [
@@ -1141,21 +1141,6 @@
       },
       {
         "sectionNumber": 21,
-        "originalText": "His answer is, that these things ought to be despised, not that he should not possess them, but that he should not possess them with fear and trembling: he does not drive them away from him, but when they leave him he follows after them unconcernedly. Where, indeed, can fortune invest riches more securely than in a place from whence they can always be recovered without any squabble with their trustee?",
-        "plainEnglish": "His answer is that we should despise these things — not avoid having them, but avoid being afraid of losing them. He doesn't push wealth away, but when it leaves him, he doesn't chase after it anxiously. Really, where could fortune place riches more safely than with someone who can lose them without fighting to get them back?",
-        "tags": [
-          "freedom-and-control",
-          "what-matters-most"
-        ],
-        "meaningCheck": {
-          "faithful": true,
-          "tone_preserved": true,
-          "ideas_changed": false,
-          "over_explains": false
-        }
-      },
-      {
-        "sectionNumber": 21,
         "originalText": "Marcus Cato, when he was praising Curius and Coruncanius and that century in which the possession of a few small silver coins were an offence which was punished by the Censor, himself owned four million sesterces; a less fortune no doubt, than that of Crassus, but larger than of Cato the Censor. If the amounts be compared, he had outstripped his great-grandfather further than he himself was outdone by Crassus, and if still greater riches had fallen to his lot, he would not have spurned them: for the wise man does not think himself unworthy of any chance presents: he does not love riches, but he prefers to have them; he does not receive them into his spirit, but only into his house: nor does he cast away from him what he already possesses, but keeps them, and is willing that his virtue should receive a larger subject-matter for its exercise.",
         "plainEnglish": "Marcus Cato used to praise the old heroes Curius and Coruncanius. He'd talk about that ancient time when owning a few silver coins was scandalous enough to get you censured. But Cato himself owned four million sesterces. Sure, that was less than Crassus had, but it was way more than his ancestor Cato the Censor ever had. If you compare the amounts, Cato had outpaced his great-grandfather by more than Crassus had outpaced him. And if even greater wealth had come his way, he wouldn't have turned it down. A wise person doesn't think he's unworthy of good fortune. He doesn't love money, but he'd rather have it than not. He doesn't let wealth into his heart, just into his house. He doesn't throw away what he already has. He keeps it and welcomes the chance for his virtue to work with more material.",
         "tags": [
@@ -1281,7 +1266,7 @@
       {
         "sectionNumber": 23,
         "originalText": "He will not allow it to be a burden either to himself or to any one else: he will give it—why do you prick up your ears? why do you open your pockets?—he will give it either to good men or to those whom it may make into good men. He will give it after having taken the utmost pains to choose those who are fittest to receive it, as becomes one who bears in mind that he ought to give an account of what he spends as well as of what he receives. He will give for good and commendable reasons, for a gift ill bestowed counts as a shameful loss: he will have an easily opened pocket, but not one with a hole in it, so that much may be taken out of it, yet nothing may fall out of it.",
-        "plainEnglish": "He won't let his wealth burden himself or anyone else. He will give it away—why are you perking up? Why are you opening your wallet?—he will give it to good people or to those who might become good because of it. He will choose very carefully who deserves to receive it. He knows he must account for what he spends just as much as what he earns. He will give for worthy and honorable reasons. A bad gift is just a shameful waste. His pocket will open easily, but it won't have holes in it. Plenty can be taken out when it should be, but nothing will fall out by accident.",
+        "plainEnglish": "The wise man won't let wealth become a burden to himself or anyone else. He will give it away — why are you getting excited? Why are you reaching for your wallet? — he will give it to good people or to those who might become good because of it. He will take great care choosing who deserves his gifts. He remembers that he must account for what he spends just as much as what he receives. He will give for good and worthy reasons. A gift given to the wrong person is just a shameful waste. His pocket will open easily when it should, but it won't have holes in it. Plenty can be taken out when needed, but nothing will fall out by accident.",
         "tags": [
           "doing-the-right-thing",
           "what-matters-most"
@@ -1635,10 +1620,10 @@
     ]
   },
   "cost": {
-    "inputTokens": 2080498,
-    "outputTokens": 323029,
+    "inputTokens": 51209,
+    "outputTokens": 7139,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 5.5434645
+    "estimatedCost": 0.130356
   }
 }

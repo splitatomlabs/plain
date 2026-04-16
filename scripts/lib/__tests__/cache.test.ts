@@ -21,6 +21,8 @@ import {
   loadRefineCache,
   saveTranslateCache,
   loadTranslateCache,
+  mergeTranslateCache,
+  diffChunksForTranslation,
   snapshotTokenUsage,
   computePhaseCost,
   PIPELINE_VERSION,
@@ -338,6 +340,197 @@ describe("pipeline version checking", () => {
     const translateFilePath = path.join(tempDir, "content", "pipeline", "enchiridion", "translate.json");
     const translateData = JSON.parse(await readFile(translateFilePath, "utf-8"));
     expect(new Date(translateData.createdAt).toISOString()).toBe(translateData.createdAt);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// diffChunksForTranslation
+// ---------------------------------------------------------------------------
+
+describe("diffChunksForTranslation", () => {
+  const refined: Chunk[] = [
+    { sectionNumber: 1, text: "Chunk one" },
+    { sectionNumber: 2, text: "Chunk two" },
+    { sectionNumber: 3, text: "Chunk three" },
+    { sectionNumber: 4, text: "Chunk four" },
+    { sectionNumber: 5, text: "Chunk five" },
+  ];
+
+  const makeTranslated = (sectionNumber: number): TranslatedChunk => ({
+    sectionNumber,
+    originalText: `Chunk ${sectionNumber}`,
+    plainEnglish: `Translated ${sectionNumber}`,
+    tags: ["freedom-and-control"],
+  });
+
+  it("all chunks cached — returns empty uncached list", () => {
+    const cached = refined.map((_, i) => makeTranslated(i + 1));
+    const result = diffChunksForTranslation(refined, cached);
+    expect(result.cached).toHaveLength(5);
+    expect(result.uncached).toHaveLength(0);
+  });
+
+  it("no cache — all chunks in uncached list", () => {
+    const result = diffChunksForTranslation(refined, []);
+    expect(result.cached).toHaveLength(0);
+    expect(result.uncached).toHaveLength(5);
+    expect(result.uncached[0].index).toBe(0);
+    expect(result.uncached[4].index).toBe(4);
+  });
+
+  it("cache shorter than refined — extra chunks in uncached list", () => {
+    const cached = [makeTranslated(1), makeTranslated(2), makeTranslated(3)];
+    const result = diffChunksForTranslation(refined, cached);
+    expect(result.cached).toHaveLength(3);
+    expect(result.uncached).toHaveLength(2);
+    expect(result.uncached[0].index).toBe(3);
+    expect(result.uncached[0].chunk.sectionNumber).toBe(4);
+    expect(result.uncached[1].index).toBe(4);
+  });
+
+  it("empty refined — returns empty results", () => {
+    const result = diffChunksForTranslation([], []);
+    expect(result.cached).toHaveLength(0);
+    expect(result.uncached).toHaveLength(0);
+  });
+
+  it("matches by sectionNumber, not array index", () => {
+    const refinedSubset: Chunk[] = [
+      { sectionNumber: 2, text: "Chunk two" },
+      { sectionNumber: 4, text: "Chunk four" },
+    ];
+    const cached = [makeTranslated(2), makeTranslated(4)];
+    const result = diffChunksForTranslation(refinedSubset, cached);
+    expect(result.cached).toHaveLength(2);
+    expect(result.cached[0].sectionNumber).toBe(2);
+    expect(result.cached[1].sectionNumber).toBe(4);
+    expect(result.uncached).toHaveLength(0);
+  });
+
+  it("handles split sections with duplicate sectionNumbers", () => {
+    const splitRefined: Chunk[] = [
+      { sectionNumber: 1, text: "Part A" },
+      { sectionNumber: 1, text: "Part B" },
+      { sectionNumber: 2, text: "Chunk two" },
+    ];
+    const cached = [makeTranslated(1), makeTranslated(1), makeTranslated(2)];
+    const result = diffChunksForTranslation(splitRefined, cached);
+    expect(result.cached).toHaveLength(3);
+    expect(result.uncached).toHaveLength(0);
+  });
+
+  it("detects missing split chunks correctly", () => {
+    const splitRefined: Chunk[] = [
+      { sectionNumber: 1, text: "Part A" },
+      { sectionNumber: 1, text: "Part B" },
+      { sectionNumber: 2, text: "Chunk two" },
+    ];
+    // Only first split chunk cached
+    const cached = [makeTranslated(1)];
+    const result = diffChunksForTranslation(splitRefined, cached);
+    expect(result.cached).toHaveLength(1);
+    expect(result.uncached).toHaveLength(2);
+    expect(result.uncached[0].chunk.text).toBe("Part B");
+    expect(result.uncached[1].chunk.sectionNumber).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// mergeTranslateCache
+// ---------------------------------------------------------------------------
+
+describe("mergeTranslateCache", () => {
+  const makeTranslated = (sectionNumber: number, text: string): TranslatedChunk => ({
+    sectionNumber,
+    originalText: `Original ${sectionNumber}`,
+    plainEnglish: text,
+    tags: ["freedom-and-control"],
+  });
+
+  it("merging into empty cache creates new file", async () => {
+    const newTranslations = new Map<string, TranslatedChunk[]>();
+    newTranslations.set("test-book_ch-01", [makeTranslated(1, "Hello")]);
+
+    await mergeTranslateCache("test-book", newTranslations);
+    const loaded = await loadTranslateCache("test-book");
+
+    expect(loaded).not.toBeNull();
+    expect(loaded!.get("test-book_ch-01")).toHaveLength(1);
+    expect(loaded!.get("test-book_ch-01")![0].plainEnglish).toBe("Hello");
+  });
+
+  it("merging new chunks into existing cache preserves old and adds new", async () => {
+    // Save initial cache
+    const initial = new Map<string, TranslatedChunk[]>();
+    initial.set("test-book_ch-01", [makeTranslated(1, "First"), makeTranslated(2, "Second")]);
+    await saveTranslateCache("test-book", initial);
+
+    // Merge new chunk
+    const newTranslations = new Map<string, TranslatedChunk[]>();
+    newTranslations.set("test-book_ch-01", [makeTranslated(3, "Third")]);
+    await mergeTranslateCache("test-book", newTranslations);
+
+    const loaded = await loadTranslateCache("test-book");
+    const chunks = loaded!.get("test-book_ch-01")!;
+    expect(chunks).toHaveLength(3);
+    expect(chunks[0].plainEnglish).toBe("First");
+    expect(chunks[1].plainEnglish).toBe("Second");
+    expect(chunks[2].plainEnglish).toBe("Third");
+  });
+
+  it("chunks are sorted by sectionNumber after merge", async () => {
+    const initial = new Map<string, TranslatedChunk[]>();
+    initial.set("test-book_ch-01", [makeTranslated(1, "First"), makeTranslated(3, "Third")]);
+    await saveTranslateCache("test-book", initial);
+
+    const newTranslations = new Map<string, TranslatedChunk[]>();
+    newTranslations.set("test-book_ch-01", [makeTranslated(2, "Second")]);
+    await mergeTranslateCache("test-book", newTranslations);
+
+    const loaded = await loadTranslateCache("test-book");
+    const chunks = loaded!.get("test-book_ch-01")!;
+    expect(chunks.map(c => c.sectionNumber)).toEqual([1, 2, 3]);
+  });
+
+  it("does not duplicate chunks with same sectionNumber and originalText", async () => {
+    const initial = new Map<string, TranslatedChunk[]>();
+    initial.set("test-book_ch-01", [makeTranslated(1, "First")]);
+    await saveTranslateCache("test-book", initial);
+
+    const newTranslations = new Map<string, TranslatedChunk[]>();
+    newTranslations.set("test-book_ch-01", [makeTranslated(1, "Duplicate")]);
+    await mergeTranslateCache("test-book", newTranslations);
+
+    const loaded = await loadTranslateCache("test-book");
+    const chunks = loaded!.get("test-book_ch-01")!;
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0].plainEnglish).toBe("First"); // original preserved
+  });
+
+  it("allows split sections with same sectionNumber but different originalText", async () => {
+    const initial = new Map<string, TranslatedChunk[]>();
+    initial.set("test-book_ch-01", [{
+      sectionNumber: 1,
+      originalText: "Part A of section 1",
+      plainEnglish: "Translated A",
+      tags: ["freedom-and-control"],
+    }]);
+    await saveTranslateCache("test-book", initial);
+
+    const newTranslations = new Map<string, TranslatedChunk[]>();
+    newTranslations.set("test-book_ch-01", [{
+      sectionNumber: 1,
+      originalText: "Part B of section 1",
+      plainEnglish: "Translated B",
+      tags: ["freedom-and-control"],
+    }]);
+    await mergeTranslateCache("test-book", newTranslations);
+
+    const loaded = await loadTranslateCache("test-book");
+    const chunks = loaded!.get("test-book_ch-01")!;
+    expect(chunks).toHaveLength(2);
+    expect(chunks[0].plainEnglish).toBe("Translated A");
+    expect(chunks[1].plainEnglish).toBe("Translated B");
   });
 });
 

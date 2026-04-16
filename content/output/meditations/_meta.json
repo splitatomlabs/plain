@@ -8,8 +8,8 @@
     "human-nature",
     "what-matters-most",
     "facing-hardship",
-    "doing-the-right-thing",
     "calm-your-mind",
+    "doing-the-right-thing",
     "freedom-and-control",
     "death-and-mortality"
   ],
@@ -18,7 +18,7 @@
       "slug": "book-01",
       "title": "Book 1",
       "card_count": 31,
-      "reading_time_seconds": 866
+      "reading_time_seconds": 883
     },
     {
       "slug": "book-02",
@@ -30,7 +30,7 @@
       "slug": "book-03",
       "title": "Book 3",
       "card_count": 28,
-      "reading_time_seconds": 749
+      "reading_time_seconds": 757
     },
     {
       "slug": "book-04",
@@ -48,13 +48,13 @@
       "slug": "book-06",
       "title": "Book 6",
       "card_count": 66,
-      "reading_time_seconds": 1279
+      "reading_time_seconds": 1253
     },
     {
       "slug": "book-07",
       "title": "Book 7",
       "card_count": 58,
-      "reading_time_seconds": 1329
+      "reading_time_seconds": 1330
     },
     {
       "slug": "book-08",
@@ -72,7 +72,7 @@
       "slug": "book-10",
       "title": "Book 10",
       "card_count": 59,
-      "reading_time_seconds": 1416
+      "reading_time_seconds": 1415
     },
     {
       "slug": "book-11",
@@ -88,7 +88,7 @@
     }
   ],
   "total_cards": 575,
-  "total_reading_time_seconds": 13190,
+  "total_reading_time_seconds": 13189,
   "source_url": "https://www.gutenberg.org/ebooks/2680",
   "has_chapters": true
 }

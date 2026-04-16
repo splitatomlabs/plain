@@ -71,7 +71,7 @@ RULES:
 6. Replace archaic words ("thou", "thee", "hast", "doth", "forbear") with modern equivalents.
 7. Use active voice. Use second person ("you") where it feels natural.
 8. Do not over-explain. Do not patronize. Trust the reader.
-9. Each passage should make sense on its own to someone who hasn't read the surrounding text.
+9. Each passage must be independently comprehensible. If it opens with a pronoun (he, she, they, it, this, that) or a transitional phrase (This is why, And so, But, Therefore) that depends on a prior passage, replace the pronoun with the person's name or role, or restate the premise briefly. If the passage is mid-narrative, add a brief contextual clause (5-10 words) to orient the reader.
 
 TAG ASSIGNMENT:
 Assign 1-3 tags from this fixed list that best describe the passage's theme:
@@ -109,14 +109,18 @@ Respond with ONLY this JSON (no other text):
 Set booleans accordingly. Use verification_notes (one sentence) only if there is an issue you could not fully resolve.`;
 }
 
-/** Per-chunk user message — only the original text */
-export function buildTranslationUser(chunk: Chunk): string {
+/** Per-chunk user message — original text with optional previous chunk for context */
+export function buildTranslationUser(chunk: Chunk, prevChunkText?: string): string {
+  if (prevChunkText) {
+    return `PREVIOUS PASSAGE (for context only — do NOT translate this):\n${prevChunkText}\n\nORIGINAL:\n${chunk.text}`;
+  }
   return `ORIGINAL:\n${chunk.text}`;
 }
 
 export function buildTranslationPrompt(
   chunk: Chunk,
   bookConfig: BookConfig,
+  prevChunkText?: string,
 ): string {
-  return `${buildTranslationSystem(bookConfig)}\n\n${buildTranslationUser(chunk)}`;
+  return `${buildTranslationSystem(bookConfig)}\n\n${buildTranslationUser(chunk, prevChunkText)}`;
 }
