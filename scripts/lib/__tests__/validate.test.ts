@@ -217,11 +217,11 @@ describe("validateCardContent", () => {
     expect(msgs.some((m) => m.message.includes("HTML"))).toBe(true);
   });
 
-  it("warns on markdown in text fields", () => {
+  it("errors on markdown in text fields", () => {
     const msgs = validateCardContent(
       makeCard({ plain_english: "This has **bold** text and is long enough to pass the minimum length check easily." }),
     );
-    expect(msgs.some((m) => m.message.includes("Markdown"))).toBe(true);
+    expect(msgs.some((m) => m.severity === "error" && m.message.includes("Markdown"))).toBe(true);
   });
 
   it("errors on empty original_excerpt", () => {
@@ -229,74 +229,6 @@ describe("validateCardContent", () => {
     expect(msgs.some((m) => m.field === "original_excerpt")).toBe(true);
   });
 
-  it("warns when plain_english ends mid-sentence", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "Others waste their lives in voluntary slavery, the" }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence") && m.field === "plain_english")).toBe(true);
-  });
-
-  it("does not warn when plain_english ends with punctuation", () => {
-    const msgs = validateCardContent(makeCard());
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
-  });
-
-  it("warns when original_excerpt ends mid-sentence", () => {
-    const msgs = validateCardContent(
-      makeCard({ original_excerpt: "some wear away their lives in that voluntary slavery, the" }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence") && m.field === "original_excerpt")).toBe(true);
-  });
-
-  it("accepts text ending with closing quote", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "The wise man said, \"This is the way to live well and find true happiness.\"" }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
-  });
-
-  it("accepts text ending with ellipsis", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "And so we go on, putting off the important things, always waiting for tomorrow..." }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
-  });
-
-  it("accepts text ending with semicolon", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "Some waste their time chasing fame; others chase wealth; still others chase pleasure;" }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
-  });
-
-  it("accepts text ending with closing parenthesis", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "This is the nature of things that are not up to us (and we must accept them as they are.)" }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
-  });
-
-  it("accepts text ending with curly/smart closing quote", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "The philosopher replied, \u201CThis is the only way to live a life worth living.\u201D" }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
-  });
-
-  it("warns when text ends with em-dash", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "They spend their whole lives preparing to live, never realizing that life is slipping away\u2014" }),
-    );
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(true);
-  });
-
-  it("does not warn on short text under 50 chars", () => {
-    const msgs = validateCardContent(
-      makeCard({ plain_english: "Live according to nature and reason" }),
-    );
-    // Short text should trigger min-length error, not mid-sentence warning
-    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
-  });
 });
 
 describe("validateCardSequence", () => {
@@ -525,12 +457,30 @@ describe("validateRefineCoverage", () => {
     expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
   });
 
-  it("errors when chunk ends with em-dash", () => {
+  it("errors when refine introduces em-dash ending not in source", () => {
     const longChunk = "They spend their whole lives preparing to live, never realizing\u2014";
     const pre = [{ sectionNumber: 1, text: longChunk + " that life passes them by." }];
     const post = [
       { sectionNumber: 1, text: longChunk },
       { sectionNumber: 1, text: "that life passes them by." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.severity === "error" && m.message.includes("mid-sentence"))).toBe(true);
+  });
+
+  it("does not error when source also ends with em-dash", () => {
+    const emDashText = "Some people let their tempers control everything they do\u2014";
+    const pre = [{ sectionNumber: 1, text: emDashText }];
+    const post = [{ sectionNumber: 1, text: emDashText }];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("errors when refine introduces mid-sentence break not in source", () => {
+    const pre = [{ sectionNumber: 1, text: "The wise man knows that virtue is the only good. He acts accordingly." }];
+    const post = [
+      { sectionNumber: 1, text: "The wise man knows that virtue is the only" },
+      { sectionNumber: 1, text: "good. He acts accordingly." },
     ];
     const msgs = validateRefineCoverage(pre, post);
     expect(msgs.some((m) => m.severity === "error" && m.message.includes("mid-sentence"))).toBe(true);
