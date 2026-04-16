@@ -457,7 +457,7 @@ describe("validateRefineCoverage", () => {
     expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
   });
 
-  it("errors when refine introduces em-dash ending not in source", () => {
+  it("does not error when refine splits at em-dash", () => {
     const longChunk = "They spend their whole lives preparing to live, never realizing\u2014";
     const pre = [{ sectionNumber: 1, text: longChunk + " that life passes them by." }];
     const post = [
@@ -465,7 +465,7 @@ describe("validateRefineCoverage", () => {
       { sectionNumber: 1, text: "that life passes them by." },
     ];
     const msgs = validateRefineCoverage(pre, post);
-    expect(msgs.some((m) => m.severity === "error" && m.message.includes("mid-sentence"))).toBe(true);
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
   });
 
   it("does not error when source also ends with em-dash", () => {
