@@ -4,25 +4,9 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-09",
     "card_number": 1,
-    "total_cards_in_chapter": 2,
-    "plain_english": "\"But,\" our opponent says, \"you only practice virtue because you hope to get some pleasure from it.\" First, even if virtue does give us pleasure, that's not why we pursue it. Virtue doesn't exist to give pleasure — pleasure just comes along with it. That's not virtue's goal, but it's a bonus we get while aiming for something else. Think of a farmer plowing a field to grow grain. He might find some wildflowers growing there too. Those flowers might be beautiful, but he didn't do all that work just to grow flowers. He had another purpose in mind — the flowers were just extra. That's how it is with virtue and pleasure. Pleasure isn't the reward or the reason for virtue. It just comes along for the ride. We don't choose virtue because it makes us feel good. We choose virtue for its own sake, and then it happens to make us feel good too.",
-    "original_excerpt": "“But,” says our adversary, “you yourself only practise virtue because you hope to obtain some pleasure from it.” In the first place, even though virtue may afford us pleasure, still we do not seek after her on that account: for she does not bestow this, but bestows this to boot, nor is this the end for which she labours, but her labour wins this also, although it be directed to another end. As in a tilled-field, when ploughed for corn, some flowers are found amongst it, and yet, though these posies may charm the eye, all this labour was not spent in order to produce them—the man who sowed the field had another object in view, he gained this over and above it—so pleasure is not the reward or the cause of virtue, but comes in addition to it; nor do we choose virtue because she gives us pleasure, but she gives us pleasure also if we choose her.",
-    "source_reference": "On the Happy Life, Section 9",
-    "author_slug": "seneca",
-    "tags": [
-      "doing-the-right-thing",
-      "what-matters-most"
-    ],
-    "reading_time_seconds": 47
-  },
-  {
-    "id": "happy-life-09-002",
-    "book_slug": "happy-life",
-    "chapter_slug": "section-09",
-    "card_number": 2,
-    "total_cards_in_chapter": 2,
-    "plain_english": "The highest good lies in choosing virtue itself. It lies in the attitude of the noblest minds. Once a mind has done its work and settled within its proper bounds, it has reached the highest good. It needs nothing more. There is nothing outside the whole, just as there is nothing beyond the end. You are wrong when you ask me why I seek virtue. You're looking for something above the highest thing there is. You ask what I want from virtue? I answer: virtue herself. She has nothing better to offer. She is her own reward. Isn't this great enough? The highest good is an unshakeable strength of mind, wisdom, magnanimity, sound judgment, freedom, harmony, beauty. Do you still ask for something greater? Why do you talk to me about pleasures? I'm trying to find what is good for man, not for his belly. Cattle and whales have bigger bellies than we do.",
-    "original_excerpt": "The highest good lies in the act of choosing her, and in the attitude of the noblest minds, which when once it has fulfilled its function and established itself within its own limits has attained to the highest good, and needs nothing more: for there is nothing outside of the whole, any more than there is anything beyond the end. You are mistaken, therefore, when you ask me what it is on account of which I seek after virtue: for you are seeking for something above the highest. Do you ask what I seek from virtue? I answer. Herself: for she has nothing better; she is her own reward. Does this not appear great enough, when I tell you that the highest good is an unyielding strength of mind, wisdom, magnanimity, sound judgment, freedom, harmony, beauty? Do you still ask me for something greater, of which these may be regarded as the attributes? Why do you talk of pleasures to me? I am seeking to find what is good for man, not for his belly; why, cattle and whales have larger ones than he.",
+    "total_cards_in_chapter": 3,
+    "plain_english": "\"But,\" our opponent says, \"you yourself only practice virtue because you hope to get some pleasure from it.\" First, even if virtue does give us pleasure, that's still not why we pursue her. She doesn't offer pleasure as her main gift — she throws it in as a bonus. This isn't her goal, but her work happens to win this too, even though she's aimed at something else. It's like a plowed field planted for grain. You might find some flowers growing among the crops. These flowers may be beautiful, but all that hard work wasn't done to grow them. The farmer had a different goal in mind — he got the flowers as an extra. So pleasure isn't the reward or the reason for virtue. It just comes along with it. We don't choose virtue because she gives us pleasure. But if we do choose her, she gives us pleasure too.",
+    "original_excerpt": "\"But,\" says our adversary, \"you yourself only practise virtue because you hope to obtain some pleasure from it.\" In the first place, even though virtue may afford us pleasure, still we do not seek after her on that account: for she does not bestow this, but bestows this to boot, nor is this the end for which she labours, but her labour wins this also, although it be directed to another end. As in a tilled-field, when ploughed for corn, some flowers are found amongst it, and yet, though these posies may charm the eye, all this labour was not spent in order to produce them—the man who sowed the field had another object in view, he gained this over and above it—so pleasure is not the reward or the cause of virtue, but comes in addition to it; nor do we choose virtue because she gives us pleasure, but she gives us pleasure also if we choose her.",
     "source_reference": "On the Happy Life, Section 9",
     "author_slug": "seneca",
     "tags": [
@@ -30,5 +14,37 @@
       "what-matters-most"
     ],
     "reading_time_seconds": 46
+  },
+  {
+    "id": "happy-life-09-002",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-09",
+    "card_number": 2,
+    "total_cards_in_chapter": 3,
+    "plain_english": "The highest good lies in choosing virtue itself, and in the mindset of the noblest people. Once this mindset has done its job and settled within its proper bounds, it has reached the highest good and needs nothing more. There is nothing outside of the whole, just as there is nothing beyond the end. You are mistaken when you ask me why I pursue virtue. You're looking for something above the highest point. Do you ask what I seek from virtue? I answer: virtue herself. She has nothing better than herself. She is her own reward.",
+    "original_excerpt": "The highest good lies in the act of choosing her, and in the attitude of the noblest minds, which when once it has fulfilled its function and established itself within its own limits has attained to the highest good, and needs nothing more: for there is nothing outside of the whole, any more than there is anything beyond the end. You are mistaken, therefore, when you ask me what it is on account of which I seek after virtue: for you are seeking for something above the highest. Do you ask what I seek from virtue? I answer. Herself: for she has nothing better; she is her own reward.",
+    "source_reference": "On the Happy Life, Section 9",
+    "author_slug": "seneca",
+    "tags": [
+      "doing-the-right-thing",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 29
+  },
+  {
+    "id": "happy-life-09-003",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-09",
+    "card_number": 3,
+    "total_cards_in_chapter": 3,
+    "plain_english": "Isn't this impressive enough? I'm telling you that the highest good is unshakeable mental strength, wisdom, courage, sound judgment, freedom, harmony, and beauty. Do you still want something more? These are already the greatest qualities possible. Why do you keep talking to me about pleasures? I'm trying to find what's good for human beings, not for their stomachs. Animals have bigger bellies than we do.",
+    "original_excerpt": "Does this not appear great enough, when I tell you that the highest good is an unyielding strength of mind, wisdom, magnanimity, sound judgment, freedom, harmony, beauty? Do you still ask me for something greater, of which these may be regarded as the attributes? Why do you talk of pleasures to me? I am seeking to find what is good for man, not for his belly; why, cattle and whales have larger ones than he.",
+    "source_reference": "On the Happy Life, Section 9",
+    "author_slug": "seneca",
+    "tags": [
+      "what-matters-most",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 20
   }
 ]

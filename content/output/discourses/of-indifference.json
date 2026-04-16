@@ -4,24 +4,24 @@
     "book_slug": "discourses",
     "chapter_slug": "of-indifference",
     "card_number": 1,
-    "total_cards_in_chapter": 4,
-    "plain_english": "A logical statement by itself doesn't matter. But your judgment about it does matter — it's either knowledge, opinion, or error. Life itself doesn't matter. But how you use your life does matter. So when someone tells you that these important things don't matter, don't get careless. And when someone urges you to worry about material things, don't become pathetic and amazed by possessions. It's good to know what you're prepared for and what you can handle. In areas where you're not prepared, stay quiet. Don't get upset if others beat you there. You'll have the advantage over them in logic puzzles. If they get upset about that, comfort them by saying, 'I learned this stuff. You didn't.' The same goes for any skill. Don't expect instant results just because you need them. Let the experienced people handle it. Be content with staying mentally strong.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "A logical statement might be neutral. But your judgment about it isn't neutral — it's either knowledge, opinion, or error. Life itself is neutral. How you use it isn't neutral. When someone tells you that everything is neutral, don't get lazy. And when someone urges you to worry about external things, don't become pathetic and amazed by material stuff. It's good to know your own skills and abilities. In areas where you're not prepared, stay quiet. Don't get upset if others are better than you there. You'll have the advantage over them in logic. If they get upset about that, comfort them by saying, \"I learned this stuff. You didn't.\" Same thing when you need practice at something. Don't demand respect just because you need the practice. Let the experienced people handle it. Be content with having a strong mind.",
     "original_excerpt": "The hypothetical proposition is indifferent: the judgment about it is not indifferent, but it is either knowledge or opinion or error. Thus life is indifferent: the use is not indifferent. When any man then tells you that these things also are indifferent, do not become negligent; and when a man invites you to be careful (about such things), do not become abject and struck with admiration of material things. And it is good for you to know your own preparation and power, that in those matters where you have not been prepared, you may keep quiet, and not be vexed, if others have the advantage over you. For you too in syllogisms will claim to have the advantage over them; and if others should be vexed at this, you will console them by saying, \"I have learned them, and you have not.\" Thus also where there is need of any practice, seek not that which is acquired from the need (of such practice), but yield in that matter to those who have had practice, and be yourself content with firmness of mind.",
     "source_reference": "Discourses, Of Indifference",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
-      "freedom-and-control"
+      "what-matters-most"
     ],
-    "reading_time_seconds": 44
+    "reading_time_seconds": 42
   },
   {
     "id": "discourses-22-002",
     "book_slug": "discourses",
     "chapter_slug": "of-indifference",
     "card_number": 2,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Go greet someone. How should you do it? Without groveling. But what if they shut the door on you? Well, you never learned to climb through windows. When you find the door closed, you either go back or find another way in. Still talk to them. How? Without groveling. But what if you don't get what you wanted? Was getting that thing your job or theirs? Why are you demanding something that belongs to someone else? Always remember what's yours and what belongs to others. Then you won't be upset.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "Go greet someone. How? Don't grovel. But what if they shut me out? That's because I never learned to sneak through the window. When I find the door closed, I either go back or climb through the window. But still talk to him. How? Don't grovel. But what if you don't get what you wanted? Was that your job or his? Why are you demanding something that belongs to someone else? Always remember what's yours and what belongs to others. Then you won't be upset.",
     "original_excerpt": "Go and salute a certain person. How? Not meanly. But I have been shut out, for I have not learned to make my way through the window; and when I have found the door shut, I must either come back or enter through the window. But still speak to him. In what way? Not meanly. But suppose that you have not got what you wanted. Was this your business, and not his? Why then do you claim that which belongs to another? Always remember what is your own, and what belongs to another; and you will not be disturbed.",
     "source_reference": "Discourses, Of Indifference",
     "author_slug": "epictetus",
@@ -29,39 +29,55 @@
       "freedom-and-control",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 26
   },
   {
     "id": "discourses-22-003",
     "book_slug": "discourses",
     "chapter_slug": "of-indifference",
     "card_number": 3,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Chrysippus had a good point. As long as the future is uncertain, I stick with choices that help preserve what's natural. God gave me the ability to choose this way. But if I knew for certain that I was destined to get sick, I'd even move toward sickness. Think about it — if your foot could think, it would step into mud when it needed to. Why do ears of corn grow? So they can dry out. Why do they dry out? So they can be harvested. They're not cut off from everything else. If corn could feel, should it wish never to be harvested? That would be a curse — corn that's never harvested. The same goes for people. It's a curse not to die, just like it's a curse for corn not to ripen or get harvested. We have to be harvested, and we know we will be. But we get upset about it. Why? Because we don't know what we really are. We haven't studied what it means to be human the way horse experts study what it means to be a horse.",
-    "original_excerpt": "Chrysippus therefore said well, So long as future things are uncertain, I always cling to those which are more adapted to the conservation of that which is according to nature; for God himself has given me the faculty of such choice. But if I knew that it was fated (in the order of things) for me to be sick, I would even move towards it; for the foot also, if it had intelligence, would move to go into the mud. For why are ears of corn produced? Is it not that they may become dry? And do they not become dry that they may be reaped? for they are not separated from communion with other things. If then they had perception, ought they to wish never to be reaped? But this is a curse upon ears of corn to be never reaped. So we must know that in the case of men too it is a curse not to die, just the same as not to be ripened and not to be reaped. But since we must be reaped, and we also know that we are reaped, we are vexed at it; for we neither know what we are nor have we studied what belongs to man, as those who have studied horses know what belongs to horses.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "Chrysippus put it well: As long as the future is uncertain, I stick with what helps preserve my natural self. God gave me the ability to choose this way. But if I knew for certain I was destined to get sick, I would actually move toward sickness. Even a foot, if it could think, would step into mud when that's where it needs to go. Why do ears of corn grow? So they can dry out. And why do they dry out? So they can be harvested. They're not cut off from everything else. If corn could feel and think, should it wish never to be harvested? That would be a curse — corn that's never reaped. We need to understand that for humans too, it's a curse not to die. Just like it would be a curse for corn never to ripen and never to be harvested.",
+    "original_excerpt": "Chrysippus therefore said well, So long as future things are uncertain, I always cling to those which are more adapted to the conservation of that which is according to nature; for God himself has given me the faculty of such choice. But if I knew that it was fated (in the order of things) for me to be sick, I would even move towards it; for the foot also, if it had intelligence, would move to go into the mud. For why are ears of corn produced? Is it not that they may become dry? And do they not become dry that they may be reaped? for they are not separated from communion with other things. If then they had perception, ought they to wish never to be reaped? But this is a curse upon ears of corn to be never reaped. So we must know that in the case of men too it is a curse not to die, just the same as not to be ripened and not to be reaped.",
     "source_reference": "Discourses, Of Indifference",
     "author_slug": "epictetus",
     "tags": [
       "death-and-mortality",
-      "human-nature"
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 56
+    "reading_time_seconds": 44
   },
   {
     "id": "discourses-22-004",
     "book_slug": "discourses",
     "chapter_slug": "of-indifference",
     "card_number": 4,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Chrysantas was about to strike an enemy when he heard the trumpet signal retreat. He stopped himself. He thought it was better to obey his general's command than follow his own urge to fight. But none of us chooses to obey necessity willingly, even when it calls. Instead, we cry and complain as we suffer. We call these things \"circumstances.\" What kind of circumstances, friend? If you call everything around you \"circumstances,\" then everything is circumstances. But if you only call hardships by this name, what hardship is there in the death of something that was born to die? The thing that destroys you might be a sword, a wheel, the sea, a falling tile, or a tyrant. Why do you care how you go down to Hades? All paths are equal. But if you want the truth, the path the tyrant sends you down is shorter. A tyrant never took six months to kill someone. But a fever often takes a year. All these things are just noise and empty words.",
-    "original_excerpt": "But Chrysantas when he was going to strike the enemy checked himself when he heard the trumpet sounding a retreat: so it seemed better to him to obey the general's command than to follow his own inclination. But not one of us chooses, even when necessity summons, readily to obey it, but weeping and groaning we suffer what we do suffer, and we call them \"circumstances.\" What kind of circumstances, man? If you give the name of circumstances to the things which are around you, all things are circumstances; but if you call hardships by this name, what hardship is there in the dying of that which has been produced? But that which destroys is either a sword, or a wheel, or the sea, or a tile, or a tyrant. Why do you care about the way of going down to Hades? All ways are equal. But if you will listen to the truth, the way which the tyrant sends you is shorter. A tyrant never killed a man in six months: but a fever is often a year about it. All these things are only sound and the noise of empty names.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "We all must die, and we know we must die. But we get upset about it. Why? Because we don't know what we really are. We haven't studied what it means to be human the way horse trainers study what it means to be a horse. Chrysantas was about to strike his enemy when he heard the trumpet call for retreat. He stopped. It seemed better to obey his general's command than follow his own desire to fight. But none of us does this. Even when necessity calls, we don't obey willingly. We cry and complain as we suffer what we must suffer. And we call these things \"circumstances.\" What kind of circumstances, man?",
+    "original_excerpt": "But since we must be reaped, and we also know that we are reaped, we are vexed at it; for we neither know what we are nor have we studied what belongs to man, as those who have studied horses know what belongs to horses. But Chrysantas when he was going to strike the enemy checked himself when he heard the trumpet sounding a retreat: so it seemed better to him to obey the general's command than to follow his own inclination. But not one of us chooses, even when necessity summons, readily to obey it, but weeping and groaning we suffer what we do suffer, and we call them \"circumstances.\" What kind of circumstances, man?",
     "source_reference": "Discourses, Of Indifference",
     "author_slug": "epictetus",
     "tags": [
-      "facing-hardship",
       "death-and-mortality",
-      "freedom-and-control"
+      "knowing-yourself",
+      "facing-hardship"
     ],
-    "reading_time_seconds": 52
+    "reading_time_seconds": 34
+  },
+  {
+    "id": "discourses-22-005",
+    "book_slug": "discourses",
+    "chapter_slug": "of-indifference",
+    "card_number": 5,
+    "total_cards_in_chapter": 5,
+    "plain_english": "If you call everything around you \"circumstances,\" then everything is a circumstance. But if you call them \"hardships,\" what's really hard about something that was created eventually dying? The thing that destroys might be a sword, a wheel, the sea, a falling tile, or a tyrant. Why do you care how you die? All ways of dying are the same. But if you want the truth, the way a tyrant kills you is actually faster. A tyrant never takes six months to kill someone. But a fever often drags it out for a year. All these distinctions are just noise — empty words that mean nothing.",
+    "original_excerpt": "If you give the name of circumstances to the things which are around you, all things are circumstances; but if you call hardships by this name, what hardship is there in the dying of that which has been produced? But that which destroys is either a sword, or a wheel, or the sea, or a tile, or a tyrant. Why do you care about the way of going down to Hades? All ways are equal. But if you will listen to the truth, the way which the tyrant sends you is shorter. A tyrant never killed a man in six months: but a fever is often a year about it. All these things are only sound and the noise of empty names.",
+    "source_reference": "Discourses, Of Indifference",
+    "author_slug": "epictetus",
+    "tags": [
+      "death-and-mortality",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 32
   }
 ]

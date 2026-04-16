@@ -5,7 +5,7 @@
     "chapter_slug": "section-51",
     "card_number": 1,
     "total_cards_in_chapter": 2,
-    "plain_english": "Philosophy has three parts. The first and most important is putting principles into practice — like \"Don't lie.\" The second is proving why those principles are true — like \"Here's why you shouldn't lie.\" The third is understanding how proof itself works — like \"Here's why this counts as proof.\" What is proof? What follows from what? What's a contradiction? What's true? What's false? You need the third part to support the second. You need the second part to support the first. But the most important part — the one you should focus on — is the first. Yet we do the opposite. We spend all our time on the third part. We work hard on understanding proof and logic. We completely ignore the first part. So we lie while being perfectly ready to explain why lying is wrong.",
+    "plain_english": "Philosophy has three levels. First: practicing principles like \"don't lie.\" Second: understanding why — \"here's why you shouldn't lie.\" Third: understanding the logic itself — \"here's why this proof works.\" What is proof? What follows from what? What's a contradiction? What's true or false? The third level supports the second. The second supports the first. The most important level — the one we should focus on — is the first. But we do the opposite. We spend all our time on the third level. We work hard to understand logic and theory. We completely ignore the first level. So we lie while being ready to prove that lying is wrong.",
     "original_excerpt": "The first and most necessary topic in philosophy is the practical application of principles, as, _We ought not to lie_; the second is that of demonstrations as, _Why it is that we ought not to lie_; the third, that which gives strength and logical connection to the other two, as, _Why this is a demonstration_. For what is demonstration? What is a consequence? What a contradiction? What truth? What falsehood? The third point is then necessary on account of the second; and the second on account of the first. But the most necessary, and that whereon we ought to rest, is the first. But we do just the contrary. For we spend all our time on the third point and employ all our diligence about that, and entirely neglect the first. Therefore, at the same time that we lie, we are very ready to show how it is demonstrated that lying is wrong.",
     "source_reference": "The Enchiridion, Section 51",
     "author_slug": "epictetus",
@@ -13,7 +13,7 @@
       "doing-the-right-thing",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 42
+    "reading_time_seconds": 33
   },
   {
     "id": "enchiridion-51-002",
@@ -21,14 +21,14 @@
     "chapter_slug": "section-51",
     "card_number": 2,
     "total_cards_in_chapter": 2,
-    "plain_english": "Keep these thoughts ready for any situation:\n\nLead me, Zeus, and you, Destiny, wherever you have decided my path should go. I'll follow gladly. And if I don't? I'll still have to follow — but as someone wicked and miserable.\n\nWhoever accepts fate properly is considered wise and understands how the universe works.\n\nAnd this third one:\n\n\"Crito, if this is what the gods want, then let it be.\"\n\n\"Anytus and Melitus can kill me, sure. But they cannot harm me.\"",
+    "plain_english": "Keep these sayings ready for any situation:\n\n\"Lead me, Zeus, and you, Destiny, wherever you have decided my path should go. I'll follow willingly. And if I don't want to follow, I'll still have to — but then I'd be miserable and wrong.\"\n\n\"Anyone who accepts fate properly is considered wise and understands how the universe works.\"\n\nAnd this third one:\n\n\"Crito, if this is what the gods want, then let it be.\"\n\n\"Anytus and Melitus can kill me, but they cannot truly harm me.\"",
     "original_excerpt": "Upon all occasions we ought to have these maxims ready at hand:\n\nConduct me, Zeus, and thou, O Destiny, Wherever your decrees have fixed my lot. I follow cheerfully; and, did I not, Wicked and wretched, I must follow still.[8]\n\nWho'er yields properly to Fate is deemed Wise among men, and knows the laws of Heaven.[9]\n\nAnd this third:\n\n\"O Crito, if it thus pleases the gods, thus let it be.\"[10]\n\n\"Anytus and Melitus may kill me indeed; but hurt me they cannot.\"[11]",
     "source_reference": "The Enchiridion, Section 51",
     "author_slug": "epictetus",
     "tags": [
-      "freedom-and-control",
-      "facing-hardship"
+      "facing-hardship",
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 24
+    "reading_time_seconds": 26
   }
 ]

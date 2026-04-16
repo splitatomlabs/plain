@@ -4,24 +4,40 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-22",
     "card_number": 1,
-    "total_cards_in_chapter": 3,
-    "plain_english": "Who can doubt that a wise man has more room to show his wisdom when he's rich than when he's poor? When poor, he can only prove that poverty hasn't corrupted him or broken his spirit. But when rich, he has a wide field to display restraint, generosity, hard work, good planning, and nobility. A wise man won't hate himself for being short, but he'd still prefer to be tall. Even if he's weak and one-eyed but healthy, he'd rather have physical strength — knowing all the while that he has something far more powerful. He'll bear illness patiently but hope for good health. Some things may be small compared to what really matters. They can be taken away without destroying the chief good. But they do add something to that steady happiness that comes from virtue.",
-    "original_excerpt": "Who can doubt, however, that the wise man, if he is rich, has a wider field for the development of his powers than if he is poor, seeing that in the latter case the only virtue which he can display is that of neither being perverted nor crushed by his poverty, whereas if he has riches, he will have a wide field for the exhibition of temperance, generosity, laboriousness, methodical arrangement, and grandeur. The wise man will not despise himself, however short of stature he may be, but nevertheless he will wish to be tall: even though he be feeble and one-eyed he may be in good health, yet he would prefer to have bodily strength, and that too, while he knows all the while that he has something which is even more powerful: he will endure illness, and will hope for good health: for some things, though they may be trifles compared with the sum total, and though they may be taken away without destroying the chief good, yet add somewhat to that constant cheerfulness which arises from virtue.",
+    "total_cards_in_chapter": 4,
+    "plain_english": "Who can doubt that a wise person with money has more ways to develop their character than someone who's poor? When you're poor, the only virtue you can really show is not letting poverty corrupt you or break your spirit. But if you have wealth, you get to practice temperance, generosity, hard work, good planning, and greatness of spirit.",
+    "original_excerpt": "Who can doubt, however, that the wise man, if he is rich, has a wider field for the development of his powers than if he is poor, seeing that in the latter case the only virtue which he can display is that of neither being perverted nor crushed by his poverty, whereas if he has riches, he will have a wide field for the exhibition of temperance, generosity, laboriousness, methodical arrangement, and grandeur.",
     "source_reference": "On the Happy Life, Section 22",
     "author_slug": "seneca",
     "tags": [
-      "what-matters-most",
-      "facing-hardship"
+      "knowing-yourself",
+      "what-matters-most"
     ],
-    "reading_time_seconds": 41
+    "reading_time_seconds": 18
   },
   {
     "id": "happy-life-22-002",
     "book_slug": "happy-life",
     "chapter_slug": "section-22",
     "card_number": 2,
-    "total_cards_in_chapter": 3,
-    "plain_english": "Wealth can cheer up and energize a wise person, just like a sailor feels joy when a good wind fills his sails, or like anyone enjoys a beautiful day or finding a warm, sunny spot when it's cold outside. What wise person from our school — who believes virtue is the only true good — would deny that these things we call 'neither good nor bad' still have some value? Some are clearly better than others. We give some things a little respect, and others quite a lot. So don't be confused: wealth belongs in the category of things worth wanting.",
+    "total_cards_in_chapter": 4,
+    "plain_english": "A wise person won't hate himself for being short, but he'll still wish he were taller. Even if he's weak and has only one eye, he might be content with his health, but he'd rather be strong. He knows he has something more important than physical strength. He'll bear illness patiently, but still hope to get well. Some things don't matter much compared to what's really important. You can lose them without losing the main good in life. But they do add a little something to the steady happiness that comes from virtue.",
+    "original_excerpt": "The wise man will not despise himself, however short of stature he may be, but nevertheless he will wish to be tall: even though he be feeble and one-eyed he may be in good health, yet he would prefer to have bodily strength, and that too, while he knows all the while that he has something which is even more powerful: he will endure illness, and will hope for good health: for some things, though they may be trifles compared with the sum total, and though they may be taken away without destroying the chief good, yet add somewhat to that constant cheerfulness which arises from virtue.",
+    "source_reference": "On the Happy Life, Section 22",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 28
+  },
+  {
+    "id": "happy-life-22-003",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-22",
+    "card_number": 3,
+    "total_cards_in_chapter": 4,
+    "plain_english": "Wealth makes a person like this happy and energetic. It's like a sailor who feels great when a good wind pushes his ship forward. Or like people who enjoy a beautiful day or find a warm, sunny spot when it's cold outside. What wise person from our school — who believes that virtue is the only true good — would deny this? Even the things we call neither good nor bad have some value. Some are better than others. We respect some of them a little, others a lot. So don't be confused about this: wealth belongs in the category of things worth wanting.",
     "original_excerpt": "Riches encourage and brighten up such a man just as a sailor is delighted at a favourable wind that bears him on his way, or as people feel pleasure at a fine day or at a sunny spot in the cold weather. What wise man, I mean of our school, whose only good is virtue, can deny that even these matters which we call neither good nor bad have in themselves a certain value, and that some of them are preferable to others? to some of them we show a certain amount of respect, and to some a great deal. Do not, then, make any mistake: riches belong to the class of desirable things.",
     "source_reference": "On the Happy Life, Section 22",
     "author_slug": "seneca",
@@ -29,15 +45,15 @@
       "what-matters-most",
       "doing-the-right-thing"
     ],
-    "reading_time_seconds": 30
+    "reading_time_seconds": 31
   },
   {
-    "id": "happy-life-22-003",
+    "id": "happy-life-22-004",
     "book_slug": "happy-life",
     "chapter_slug": "section-22",
-    "card_number": 3,
-    "total_cards_in_chapter": 3,
-    "plain_english": "\"So why,\" you ask, \"are you laughing at me when you value wealth just like I do?\" Want to know the difference in how we see money? If I lose my wealth, it takes nothing with it except itself. But if you lose yours, you'll be lost and confused — like you've lost your very identity. For me, money has its place. For you, money is everything. In short: I own my wealth. Your wealth owns you.",
+    "card_number": 4,
+    "total_cards_in_chapter": 4,
+    "plain_english": "\"Why then,\" you ask, \"do you laugh at me if you value riches the same way I do?\" Do you want to know how our positions are actually different? If my wealth disappears, it only takes itself with it. But if your wealth disappears, you'll be lost and confused — like you've lost part of yourself. For me, money has a place in my life. For you, it has the most important place. In short, I own my riches. Your riches own you.",
     "original_excerpt": "\"Why then,\" say you, \"do you laugh at me, since you place them in the same position that I do?\" Do you wish to know how different the position is in which we place them? If my riches leave me, they will carry away with them nothing except themselves: you will be bewildered and will seem to be left without yourself if they should pass away from you: with me riches occupy a certain place, but with you they occupy the highest place of all. In fine, my riches belong to me, you belong to your riches.",
     "source_reference": "On the Happy Life, Section 22",
     "author_slug": "seneca",
@@ -45,6 +61,6 @@
       "freedom-and-control",
       "what-matters-most"
     ],
-    "reading_time_seconds": 23
+    "reading_time_seconds": 25
   }
 ]

@@ -4,24 +4,40 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-24",
     "card_number": 1,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Anyone who thinks giving is easy is wrong. It's actually very hard if you want to give wisely instead of just throwing money around randomly. I help this person because he deserves it. I pay back that person because he helped me first. I give to someone else because I feel sorry for him. And I teach another person skills so poverty can't crush him anymore. Some people I won't give anything to, even though they need help. Why? Because even if I give them money, they'll still be poor. With some people, I'll offer my help. With others, I'll force it on them whether they want it or not. While I'm doing all this, I can't ignore my own needs. I'm never more in people's debt than when I'm giving things away. \"What?\" you say. \"You give so people will give back to you?\" Well, I don't give just to waste my money. What I give should be placed where I can't demand it back, but it might come back to me anyway. Think of a good deed like treasure buried deep underground. You wouldn't dig it up unless you absolutely had to.",
-    "original_excerpt": "He who believes giving to be an easy matter, is mistaken: it offers very great difficulties, if we bestow our bounty rationally, and do not scatter it impulsively and at random. I do this man a service, I requite a good turn done me by that one: I help this other, because I pity him: this man, again, I teach to be no fit object for poverty to hold down or degrade. I shall not give some men anything, although they are in want, because, even if I do give to them they will still be in want: I shall proffer my bounty to some, and shall forcibly thrust it upon others: I cannot be neglecting my own interests while I am doing this: at no time do I make more people in my debt than when I am giving things away. \"What?\" say you, \"do you give that you may receive again?\" At any rate I do not give that I may throw my bounty away: what I give should be so placed that although I cannot ask for its return, yet it may be given back to me. A benefit should be invested in the same manner as a treasure buried deep in the earth, which you would not dig up unless actually obliged.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "Anyone who thinks giving is easy is wrong. It's actually very difficult if you want to give wisely instead of just throwing money around randomly. I help this person because he did me a favor. I help that one because I feel sorry for him. And I teach this other person so he won't let poverty defeat him or drag him down.",
+    "original_excerpt": "He who believes giving to be an easy matter, is mistaken: it offers very great difficulties, if we bestow our bounty rationally, and do not scatter it impulsively and at random. I do this man a service, I requite a good turn done me by that one: I help this other, because I pity him: this man, again, I teach to be no fit object for poverty to hold down or degrade.",
     "source_reference": "On the Happy Life, Section 24",
     "author_slug": "seneca",
     "tags": [
       "doing-the-right-thing",
-      "human-nature"
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 58
+    "reading_time_seconds": 19
   },
   {
     "id": "happy-life-24-002",
     "book_slug": "happy-life",
     "chapter_slug": "section-24",
     "card_number": 2,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Think about it — even a rich person's house is full of chances to help people. Who says you can only be generous to citizens? Nature tells me to do good for all people. What does it matter if they're slaves or free, born free or freed later? What does it matter how they got their freedom — legally or through some private deal between friends? Wherever you find a human being, you find a chance to help them. You can give money right at your own doorstep. You can practice generosity in your own home. And generosity isn't called that because it's only for free people — it's called that because it comes from a free spirit. For the wise person, this generosity never goes to worthless people. And it never runs dry. When it finds someone who deserves help, it flows as if the supply was endless.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "I won't give anything to some people, even though they need it. Why? Because even if I give to them, they'll still be needy. To others, I'll offer my help freely. To still others, I'll force my help on them whether they want it or not. I can't neglect my own interests while doing all this. I'm never more popular than when I'm giving things away. \"What?\" you say. \"Do you give so you can get something back?\" Well, I don't give just to waste my generosity. What I give should be placed where I can't demand it back, but it might still come back to me. A favor should work like buried treasure — you wouldn't dig it up unless you absolutely had to.",
+    "original_excerpt": "I shall not give some men anything, although they are in want, because, even if I do give to them they will still be in want: I shall proffer my bounty to some, and shall forcibly thrust it upon others: I cannot be neglecting my own interests while I am doing this: at no time do I make more people in my debt than when I am giving things away. \"What?\" say you, \"do you give that you may receive again?\" At any rate I do not give that I may throw my bounty away: what I give should be so placed that although I cannot ask for its return, yet it may be given back to me. A benefit should be invested in the same manner as a treasure buried deep in the earth, which you would not dig up unless actually obliged.",
+    "source_reference": "On the Happy Life, Section 24",
+    "author_slug": "seneca",
+    "tags": [
+      "human-nature",
+      "doing-the-right-thing"
+    ],
+    "reading_time_seconds": 38
+  },
+  {
+    "id": "happy-life-24-003",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-24",
+    "card_number": 3,
+    "total_cards_in_chapter": 5,
+    "plain_english": "Think about all the chances to help people that exist right in a rich person's house. Who says generous behavior is only for citizens? Nature tells me to do good for all mankind. What difference does it make if they're slaves or free people, born free or freed later, whether their freedom is legal or just arranged between friends? Wherever there's a human being, there's a chance to help them. So you can share your wealth even within your own home. You can practice generosity right there. We call it generosity not because it's our duty to free people, but because it comes from a free mind. For a wise person, this generosity never goes to unworthy people. It never runs dry either — whenever it finds someone worthy, it flows as if nothing was ever given away.",
     "original_excerpt": "Why, what opportunities of conferring benefits the mere house of a rich man affords? for who considers generous behaviour due only to those who wear the toga? Nature bids me do good to mankind—what difference does it make whether they be slaves or freemen, free-born or emancipated, whether their freedom be legally acquired or betowed by arrangement among friends? Wherever there is a human being, there is an opportunity for a benefit: consequently, money may be distributed even within one's own threshold, and a field may be found there for the practice of freehandedness, which is not so called because it is our duty towards free men, but because it takes its rise in a free-born mind. In the case of the wise man, this never falls upon base and unworthy recipients, and never becomes so exhausted as not, whenever it finds a worthy object, to flow as if its store was undiminished.",
     "source_reference": "On the Happy Life, Section 24",
     "author_slug": "seneca",
@@ -29,31 +45,30 @@
       "doing-the-right-thing",
       "human-nature"
     ],
-    "reading_time_seconds": 45
-  },
-  {
-    "id": "happy-life-24-003",
-    "book_slug": "happy-life",
-    "chapter_slug": "section-24",
-    "card_number": 3,
-    "total_cards_in_chapter": 4,
-    "plain_english": "So you have no reason to misunderstand the noble, brave, and passionate words you hear from people studying philosophy. But first, notice this important difference: someone learning wisdom is not the same as someone who has already perfected it. The student will tell you, \"I talk about wonderful ideas, but I'm still drowning in countless problems. Don't expect me to live up to everything I say just yet. Right now I'm still working on myself, shaping my character, trying to reach the level of great role models. If I ever manage to do everything I've set out to do, then you can demand that my actions match my words.\"",
-    "original_excerpt": "You have, therefore, no grounds for misunderstanding the honourable, brave, and spirited language which you hear from those who are studying wisdom: and first of all observe this, that a student of wisdom is not the same thing as a man who has made himself perfect in wisdom. The former will say to you, \"In my talk I express the most admirable sentiments, yet I am still weltering amid countless ills. You must not force me to act up to my rules: at the present time I am forming myself, moulding my character, and striving to rise myself to the height of a great example. If I should ever succeed in carrying out all that I have set myself to accomplish, you may then demand that my words and deeds should correspond,\"",
-    "source_reference": "On the Happy Life, Section 24",
-    "author_slug": "seneca",
-    "tags": [
-      "knowing-yourself",
-      "doing-the-right-thing"
-    ],
-    "reading_time_seconds": 33
+    "reading_time_seconds": 41
   },
   {
     "id": "happy-life-24-004",
     "book_slug": "happy-life",
     "chapter_slug": "section-24",
     "card_number": 4,
-    "total_cards_in_chapter": 4,
-    "plain_english": "But someone who has reached the peak of human excellence will handle you differently. He'll say: \"First off, you have no right to judge people who are better than you. I already have proof that I'm on the right path — bad people hate me. But I'll give you a fair answer, which I don't mind doing for anyone. Listen to what I believe and how I value things. I say riches are not truly good. If they were, they would make people good. But since you find wealth even among bad people, it can't be called good. Still, I admit that riches are useful and desirable. They bring real comfort to our lives.\"",
+    "total_cards_in_chapter": 5,
+    "plain_english": "So you have no reason to misunderstand the noble, brave, and passionate words you hear from people who are studying wisdom. But first, notice this important difference: someone who is learning wisdom is not the same as someone who has already mastered it. The student will tell you, \"I talk about wonderful ideals, but I'm still struggling with countless problems. Don't expect me to live up to everything I say just yet. Right now I'm working on myself, shaping my character, and trying to reach the level of the great examples I admire. If I ever manage to accomplish everything I've set out to do, then you can demand that my actions match my words.\"",
+    "original_excerpt": "You have, therefore, no grounds for misunderstanding the honourable, brave, and spirited language which you hear from those who are studying wisdom: and first of all observe this, that a student of wisdom is not the same thing as a man who has made himself perfect in wisdom. The former will say to you, \"In my talk I express the most admirable sentiments, yet I am still weltering amid countless ills. You must not force me to act up to my rules: at the present time I am forming myself, moulding my character, and striving to rise myself to the height of a great example. If I should ever succeed in carrying out all that I have set myself to accomplish, you may then demand that my words and deeds should correspond,\"",
+    "source_reference": "On the Happy Life, Section 24",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 35
+  },
+  {
+    "id": "happy-life-24-005",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-24",
+    "card_number": 5,
+    "total_cards_in_chapter": 5,
+    "plain_english": "But someone who has reached the peak of human wisdom will handle you differently. He'll say: \"First, you have no right to judge your superiors. I already have one proof that I'm on the right path — bad people hate me. But I'll give you a reasonable answer, because I don't refuse to explain myself to anyone. Listen to what I believe and how I value everything. I say riches are not truly good. If they were good, they would make people good. But since even bad people can have wealth, it can't be called truly good. Still, I admit that money is desirable and useful. It does make life much more comfortable.\"",
     "original_excerpt": "But he who has reached the summit of human perfection will deal otherwise with you, and will say, \"In the first place, you have no business to allow yourself to sit in judgment upon your betters:\" I have already obtained one proof of my righteousness in having become an object of dislike to bad men: however, to make you a rational answer, which I grudge to no man, listen to what I declare, and at what price I value all things. Riches, I say, are not a good thing; for if they were, they would make men good: now since that which is found even among bad men cannot be termed good, I do not allow them to be called so: nevertheless I admit that they are desirable and useful and contribute great comforts to our lives.",
     "source_reference": "On the Happy Life, Section 24",
     "author_slug": "seneca",

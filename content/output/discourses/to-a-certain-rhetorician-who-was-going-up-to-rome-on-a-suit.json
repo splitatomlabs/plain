@@ -4,72 +4,104 @@
     "book_slug": "discourses",
     "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
     "card_number": 1,
-    "total_cards_in_chapter": 5,
-    "plain_english": "A man came to Epictetus who was heading to Rome for a lawsuit about his political rank. Epictetus asked why he was going, then the man asked what Epictetus thought about his case. Epictetus said: If you're asking whether you'll win or lose in Rome, I can't predict that. But if you're asking how things will go for you personally, I can tell you this: if your thinking is sound, you'll do well. If your thinking is wrong, you'll do badly. Everything you do comes from your opinions. Why did you want to be governor of Cnossus in the first place? Because of your opinion. Why are you going to Rome now? Your opinion. Why are you traveling in winter, with danger and cost? \"I have to go.\" What makes you think that? Your opinion. So if opinions drive everything we do, and someone has bad opinions, then bad results follow. Do we all have good opinions — you and your opponent? How are you different from him? Do you have better opinions than your opponent? Why? Because you think so. Well, he thinks his opinions are better too. Even crazy people think their opinions are right. That's not a reliable way to judge.",
-    "original_excerpt": "When a certain person came to him, who was going up to Rome on account of a suit which had regard to his rank, Epictetus inquired the reason of his going to Rome, and the man then asked what he thought about the matter. Epictetus replied: If you ask me what you will do in Rome, whether you will succeed or fail, I have no rule ([Greek: theoraema]) about this. But if you ask me how you will fare, I can tell you: if you have right opinions ([Greek: dogmata]), you will fare well; if they are false, you will fare ill. For to every man the cause of his acting is opinion. For what is the reason why you desired to be elected governor of the Cnossians? Your opinion. What is the reason that you are now going up to Rome? Your opinion. And going in winter, and with danger and expense? I must go. What tells you this? Your opinion. Then if opinions are the causes of all actions, and a man has bad opinions, such as the cause may be, such also is the effect! Have we then all sound opinions, both you and your adversary? And how do you differ? But have you sounder opinions than your adversary? Why? You think so. And so does he think that his opinions are better; and so do madmen. This is a bad criterion.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "A man came to see Epictetus. He was heading to Rome for a lawsuit about his social status. Epictetus asked why he was going. The man asked what Epictetus thought about his case. Epictetus said: \"If you're asking me what will happen in Rome — whether you'll win or lose — I have no system for predicting that. But if you're asking me how you'll handle whatever happens, I can tell you: If your thinking is right, you'll be fine. If your thinking is wrong, you'll suffer. Because what a person believes is what drives their actions.\"",
+    "original_excerpt": "When a certain person came to him, who was going up to Rome on account of a suit which had regard to his rank, Epictetus inquired the reason of his going to Rome, and the man then asked what he thought about the matter. Epictetus replied: If you ask me what you will do in Rome, whether you will succeed or fail, I have no rule ([Greek: theoraema]) about this. But if you ask me how you will fare, I can tell you: if you have right opinions ([Greek: dogmata]), you will fare well; if they are false, you will fare ill. For to every man the cause of his acting is opinion.",
     "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
     "author_slug": "epictetus",
     "tags": [
-      "knowing-yourself",
-      "human-nature"
+      "freedom-and-control",
+      "calm-your-mind"
     ],
-    "reading_time_seconds": 61
+    "reading_time_seconds": 29
   },
   {
     "id": "discourses-43-002",
     "book_slug": "discourses",
     "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
     "card_number": 2,
-    "total_cards_in_chapter": 5,
-    "plain_english": "But show me that you've actually examined your beliefs and put some real effort into it. Look, you're sailing to Rome right now to become governor of the Cnossians. You're not happy staying home with the honors you already have. You want something bigger and more impressive. So when did you ever take a trip to examine your own beliefs and throw out the bad ones? Who did you go to for this? What time did you set aside for it? At what age? Go through your whole life yourself — if you're too embarrassed to do it with me watching. When you were a boy, did you examine your beliefs? Or did you just do what you always do now — the same old thing? When you became a young man and studied with the rhetoric teachers and practiced speaking, what did you think you were missing?",
-    "original_excerpt": "But show to me that you have made some inquiry into your opinions and have taken some pains about them. And as now you are sailing to Rome in order to become governor of the Cnossians, and you are not content to stay at home with the honors which you had, but you desire something greater and more conspicuous, so when did you ever make a voyage for the purpose of examining your own opinions, and casting them out, if you have any that are bad? Whom have you approached for this purpose? What time have you fixed for it? What age? Go over the times of your life by yourself, if you are ashamed of me (knowing the fact) when you were a boy, did you examine your own opinions? and did you not then, as you do all things now, do as you did do? and when you were become a youth and attended the rhetoricians, and yourself practised rhetoric, what did you imagine that you were deficient in?",
-    "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
-    "author_slug": "epictetus",
-    "tags": [
-      "knowing-yourself",
-      "what-matters-most"
-    ],
-    "reading_time_seconds": 44
-  },
-  {
-    "id": "discourses-43-003",
-    "book_slug": "discourses",
-    "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
-    "card_number": 3,
-    "total_cards_in_chapter": 5,
-    "plain_english": "When you were young and involved in politics, arguing cases and building your reputation, who did you think was your equal? When would you have let anyone examine your opinions and show you they were wrong? So what do you want me to tell you now? Help me with this problem. I don't have a formula for that. And if that's why you came to me, you didn't come to a philosopher. You came to a vegetable seller or a shoemaker. So what are philosophical principles really for? They're for this: so that no matter what happens, your mind stays aligned with nature. Does that seem like a small thing to you? No, it's the biggest thing there is. So what then? Does it only take a short time? Can you just grab it as you walk by? If you can, then grab it.",
-    "original_excerpt": "And when you were a young man and engaged in public matters, and pleaded causes yourself, and were gaining reputation, who then seemed your equal? And when would you have submitted to any man examining and showing that your opinions are bad? What then do you wish me to say to you? Help me in this matter. I have no theorem (rule) for this. Nor have you, if you came to me for this purpose, come to me as a philosopher, but as to a seller of vegetables or a shoemaker. For what purpose then have philosophers theorems? For this purpose, that whatever may happen, our ruling faculty may be and continue to be conformable to nature. Does this seem to you a small thing? No; but the greatest. What then? does it need only a short time? and is it possible to seize it as you pass by? If you can, seize it.",
-    "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
-    "author_slug": "epictetus",
-    "tags": [
-      "knowing-yourself",
-      "what-matters-most"
-    ],
-    "reading_time_seconds": 43
-  },
-  {
-    "id": "discourses-43-004",
-    "book_slug": "discourses",
-    "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
-    "card_number": 4,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Then you'll say, \"I met Epictetus the same way I'd meet a rock or a statue. I saw him and that's it.\" But a real meeting between people means learning what someone thinks and sharing what you think. Learn my ideas. Show me yours. Then you can say you actually visited me. Let's challenge each other. If I have a bad idea, help me get rid of it. If you have one, let me see it. That's what meeting with a philosopher means. But no — you say, \"This is just a quick stop. While we're booking passage on the ship, we might as well check out Epictetus. Let's see what he has to say.\" Then you leave and say, \"Epictetus was nothing special. He made grammar mistakes and spoke like a barbarian.\" What else did you come here to judge?",
-    "original_excerpt": "Then you will say, I met with Epictetus as I should meet with a stone or a statue: for you saw me and nothing more. But he meets with a man as a man, who learns his opinions, and in his turn shows his own. Learn my opinions: show me yours; and then say that you have visited me. Let us examine one another: if I have any bad opinion, take it away; if you have any, show it. This is the meaning of meeting with a philosopher. Not so (you say): but this is only a passing visit, and while we are hiring the vessel, we can also see Epictetus. Let us see what he says. Then you go away and say: Epictetus was nothing; he used solecisms and spoke in a barbarous way. For of what else do you come as judges?",
+    "total_cards_in_chapter": 7,
+    "plain_english": "Why did you want to be elected governor of the Cnossians? Because of your opinion. Why are you going to Rome now? Your opinion. Why are you traveling in winter, facing danger and expense? \"I have to go.\" What tells you that? Your opinion again. So if opinions drive all our actions, and someone has bad opinions, then bad actions follow. Do we all have good opinions — you and your opponent? How are you different from him? Do you have better opinions than your opponent? Why? Because you think so. Well, he thinks his opinions are better too. So do crazy people. That's not a good way to judge.",
+    "original_excerpt": "For what is the reason why you desired to be elected governor of the Cnossians? Your opinion. What is the reason that you are now going up to Rome? Your opinion. And going in winter, and with danger and expense? I must go. What tells you this? Your opinion. Then if opinions are the causes of all actions, and a man has bad opinions, such as the cause may be, such also is the effect! Have we then all sound opinions, both you and your adversary? And how do you differ? But have you sounder opinions than your adversary? Why? You think so. And so does he think that his opinions are better; and so do madmen. This is a bad criterion.",
     "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
       "human-nature"
     ],
-    "reading_time_seconds": 42
+    "reading_time_seconds": 33
+  },
+  {
+    "id": "discourses-43-003",
+    "book_slug": "discourses",
+    "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
+    "card_number": 3,
+    "total_cards_in_chapter": 7,
+    "plain_english": "But show me that you've actually examined your beliefs and put some real effort into it. Look — you're sailing to Rome right now to become governor of Cnossus. You weren't satisfied staying home with the honors you already had. You wanted something bigger and more impressive. So when did you ever take a trip to examine your own opinions and throw out the bad ones? Who did you go to for help with this? What time did you set aside for it? At what age?",
+    "original_excerpt": "But show to me that you have made some inquiry into your opinions and have taken some pains about them. And as now you are sailing to Rome in order to become governor of the Cnossians, and you are not content to stay at home with the honors which you had, but you desire something greater and more conspicuous, so when did you ever make a voyage for the purpose of examining your own opinions, and casting them out, if you have any that are bad? Whom have you approached for this purpose? What time have you fixed for it? What age?",
+    "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 26
+  },
+  {
+    "id": "discourses-43-004",
+    "book_slug": "discourses",
+    "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
+    "card_number": 4,
+    "total_cards_in_chapter": 7,
+    "plain_english": "Think back through your whole life. If you're embarrassed by me pointing this out — when you were a boy, did you ever examine your own beliefs? Didn't you just do whatever you felt like doing, the same way you do everything now? When you became a young man and studied with the rhetoric teachers and practiced speaking, what did you think you were missing? When you got older and entered public life, arguing cases in court and building your reputation, who did you think was your equal? And when would you have let anyone examine your beliefs and show you they were wrong?",
+    "original_excerpt": "Go over the times of your life by yourself, if you are ashamed of me (knowing the fact) when you were a boy, did you examine your own opinions? and did you not then, as you do all things now, do as you did do? and when you were become a youth and attended the rhetoricians, and yourself practised rhetoric, what did you imagine that you were deficient in? And when you were a young man and engaged in public matters, and pleaded causes yourself, and were gaining reputation, who then seemed your equal? And when would you have submitted to any man examining and showing that your opinions are bad?",
+    "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 31
   },
   {
     "id": "discourses-43-005",
     "book_slug": "discourses",
     "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
     "card_number": 5,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Someone might say to me: \"If I focus on the things you focus on, I won't have any land like you. I won't have silver cups like you. I won't have fine animals like you.\" Here's my answer: I don't need those things. But when you own many things, you need even more things. Like it or not, you're poorer than I am. So what do I need? Things you don't have. I need steadiness. I need a mind that works with nature. I need to be free from worry.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "So what do you want me to tell you? 'Help me with this problem.' I don't have a rule for that. And if that's why you came to me, you didn't come to a philosopher. You came to a vegetable seller or a shoemaker. So why do philosophers have rules at all? For this: so that whatever happens, your mind stays calm and works the way it should. Think that's a small thing? No. It's the biggest thing there is. So what — does it only take a little time? Can you just grab it as you walk by? If you can, go ahead and grab it.",
+    "original_excerpt": "What then do you wish me to say to you? Help me in this matter. I have no theorem (rule) for this. Nor have you, if you came to me for this purpose, come to me as a philosopher, but as to a seller of vegetables or a shoemaker. For what purpose then have philosophers theorems? For this purpose, that whatever may happen, our ruling faculty may be and continue to be conformable to nature. Does this seem to you a small thing? No; but the greatest. What then? does it need only a short time? and is it possible to seize it as you pass by? If you can, seize it.",
+    "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 32
+  },
+  {
+    "id": "discourses-43-006",
+    "book_slug": "discourses",
+    "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
+    "card_number": 6,
+    "total_cards_in_chapter": 7,
+    "plain_english": "Then you'll say, \"I met Epictetus the same way I'd meet a rock or a statue. I saw him and that's it.\" But a real person meets another person as a human being. They learn what the other thinks. They share their own thoughts in return. Learn what I believe. Show me what you believe. Then you can say you actually visited me. Let's challenge each other. If I have a wrong idea, help me get rid of it. If you have one, admit it. That's what it means to meet with a philosopher. But no — you think this is just a quick tourist stop. \"While we're renting the boat, we might as well go see Epictetus. Let's hear what he has to say.\" Then you leave and complain: \"Epictetus was nothing special. He made grammar mistakes and talked like a barbarian.\" What else did you come here to judge?",
+    "original_excerpt": "Then you will say, I met with Epictetus as I should meet with a stone or a statue: for you saw me and nothing more. But he meets with a man as a man, who learns his opinions, and in his turn shows his own. Learn my opinions: show me yours; and then say that you have visited me. Let us examine one another: if I have any bad opinion, take it away; if you have any, show it. This is the meaning of meeting with a philosopher. Not so (you say): but this is only a passing visit, and while we are hiring the vessel, we can also see Epictetus. Let us see what he says. Then you go away and say: Epictetus was nothing; he used solecisms and spoke in a barbarous way. For of what else do you come as judges?",
+    "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
+    "author_slug": "epictetus",
+    "tags": [
+      "human-nature",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 45
+  },
+  {
+    "id": "discourses-43-007",
+    "book_slug": "discourses",
+    "chapter_slug": "to-a-certain-rhetorician-who-was-going-up-to-rome-on-a-suit",
+    "card_number": 7,
+    "total_cards_in_chapter": 7,
+    "plain_english": "Someone might say to me: \"If I focus on the things you focus on, I won't have any land like you. I won't have silver cups like you. I won't have fine animals like you.\" Here's my answer: I don't need those things. But if you own a lot of stuff, you need even more stuff. Whether you want to admit it or not, you're poorer than I am. So what do I need? Things you don't have. I need strength of character. I need a mind that works with nature, not against it. I need freedom from worry and anxiety.",
     "original_excerpt": "Well, but a man may say to me, if I attend to such matters (as you do), I shall have no land as you have none; I shall have no silver cups as you have none, nor fine beasts as you have none. In answer to tins it is perhaps sufficient to say: I have no need of such things; but if you possess many things you have need of others: whether you choose or not, you are poorer than I am. What then have I need of? Of that which you have not? of firmness, of a mind which is conformable to nature, of being free from perturbation.",
     "source_reference": "Discourses, To a Certain Rhetorician Who Was Going up to Rome on a Suit",
     "author_slug": "epictetus",
@@ -77,6 +109,6 @@
       "freedom-and-control",
       "what-matters-most"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 30
   }
 ]

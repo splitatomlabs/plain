@@ -4,8 +4,8 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-03",
     "card_number": 1,
-    "total_cards_in_chapter": 3,
-    "plain_english": "Let's find something truly good — not something that just looks impressive on the surface, but something solid and beautiful all the way through, even in the hidden parts. This treasure isn't far away. It can be found. You just need to know where to reach for it. But instead, we act like we're stumbling around in the dark. We reach past what's right in front of us and end up knocking over the very things we want.",
+    "total_cards_in_chapter": 4,
+    "plain_english": "Let's look for something truly good — not just something that looks impressive, but something that is solid and genuine all the way through. Something most beautiful in the hidden parts that no one else sees. Let's dig this up. It's not far from us. It can be found. You just need to know where to reach for it. But instead, we act like we're stumbling around in the dark. We reach past what's right in front of us, and we end up knocking over the very things we actually want.",
     "original_excerpt": "Let us seek for some blessing, which does not merely look fine, but is sound and good throughout alike, and most beautiful in the parts which are least seen: let us unearth this. It is not far distant from us; it can be discovered: all that is necessary is to know whither to stretch out your hand: but, as it is, we behave as though we were in the dark, and reach out beyond what is nearest to us, striking as we do so against the very things that we want.",
     "source_reference": "On the Happy Life, Section 3",
     "author_slug": "seneca",
@@ -13,39 +13,53 @@
       "knowing-yourself",
       "what-matters-most"
     ],
-    "reading_time_seconds": 23
+    "reading_time_seconds": 27
   },
   {
     "id": "happy-life-03-002",
     "book_slug": "happy-life",
     "chapter_slug": "section-03",
     "card_number": 2,
-    "total_cards_in_chapter": 3,
-    "plain_english": "But I don't want to get sidetracked, so I'll skip the opinions of other philosophers. It would take forever to list and argue against them all. Let's focus on ours instead. When I say \"ours,\" I don't mean I'm tied to any single leader of the Stoic school. I have a right to think for myself too. I'll follow some of their teachings, but I'll ask others to clarify what they mean. Maybe after I've shared all their views, someone will ask for mine. If they do, I won't attack my predecessors' ideas. I'll just say, \"Let me add something to what they've said.\" For now, I follow nature — something every Stoic philosopher agrees on. True wisdom means not going against nature. It means shaping how we live according to her laws and her example.",
-    "original_excerpt": "However, that I may not draw you into digressions, I will pass over the opinions of other philosophers, because it would take a long time to state and confute them all: take ours. When, however, I say \"ours,\" I do not bind myself to any one of the chiefs of the Stoic school, for I too have a right to form my own opinion. I shall, therefore, follow the authority of some of them, but shall ask some others to discriminate their meaning: perhaps, when after having reported all their opinions, I am asked for my own, I shall impugn none of my predecessors' decisions, and shall say, \"I will also add somewhat to them.\" Meanwhile I follow nature, which is a point upon which every one of the Stoic philosophers are agreed: true wisdom consists in not departing from nature and in moulding our conduct according to her laws and model.",
+    "total_cards_in_chapter": 4,
+    "plain_english": "But I don't want to drag you through endless side topics. I'll skip over what other philosophers think, since it would take forever to list and argue against all their views. Let's focus on our school instead. When I say 'our school,' I don't mean I'm locked into following any single Stoic leader. I have the right to think for myself too. I'll follow some of their ideas, but I'll ask others to clarify what they really mean. Maybe after I've shared all their views and you ask for mine, I won't attack any of my predecessors. Instead, I'll say, 'Let me add something to what they've said.'",
+    "original_excerpt": "However, that I may not draw you into digressions, I will pass over the opinions of other philosophers, because it would take a long time to state and confute them all: take ours. When, however, I say \"ours,\" I do not bind myself to any one of the chiefs of the Stoic school, for I too have a right to form my own opinion. I shall, therefore, follow the authority of some of them, but shall ask some others to discriminate their meaning: perhaps, when after having reported all their opinions, I am asked for my own, I shall impugn none of my predecessors' decisions, and shall say, \"I will also add somewhat to them.\"",
     "source_reference": "On the Happy Life, Section 3",
     "author_slug": "seneca",
     "tags": [
-      "knowing-yourself",
-      "what-matters-most"
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 41
+    "reading_time_seconds": 32
   },
   {
     "id": "happy-life-03-003",
     "book_slug": "happy-life",
     "chapter_slug": "section-03",
     "card_number": 3,
-    "total_cards_in_chapter": 3,
-    "plain_english": "A happy life follows its own nature. This only happens when your mind is healthy and stays that way without interruption. Your mind must also be bold and strong, enduring everything with remarkable courage. It should fit the times you live in. Care for your body and what it needs, but don't fuss over it too much. You must value the things that make life beautiful, but don't overvalue any of them. You should enjoy Fortune's gifts without becoming her slave. You know without me saying it that this brings unbroken calm and freedom. This happens when you drive away everything that excites or alarms you. Instead of physical pleasures and those small, temporary things that lead to terrible crimes, you gain something immense, unchangeable, and steady: joy, peace, calmness, greatness of mind, and kindness. All cruelty is a sign of weakness.",
-    "original_excerpt": "A happy life, therefore, is one which is in accordance with its own nature, and cannot be brought about unless in the first place the mind be sound and remain so without interruption, and next, be bold and vigorous, enduring all things with most admirable courage, suited to the times in which it lives, careful of the body and its appurtenances, yet not troublesomely careful. It must also set due value upon all the things which adorn our lives, without over-estimating any one of them, and must be able to enjoy the bounty of Fortune without becoming her slave. You understand without my mentioning it that an unbroken calm and freedom ensue, when we have driven away all those things which either excite us or alarm us: for in the place of sensual pleasures and those slight perishable matters which are connected with the basest crimes, we thus gain an immense, unchangeable, equable joy, together with peace, calmness and greatness of mind, and kindliness: for all savageness is a sign of weakness.",
+    "total_cards_in_chapter": 4,
+    "plain_english": "I follow nature, which all Stoic philosophers agree is the right path. True wisdom means staying close to nature and living by her rules. A happy life is one that fits with your own nature. But this can only happen if your mind is healthy and stays that way. Your mind must also be bold and strong, facing everything with courage. You need to adapt to your times. Care for your body and what it needs, but don't obsess over it. Value the good things in life without thinking any one thing is everything. And enjoy what fortune gives you without becoming its slave.",
+    "original_excerpt": "Meanwhile I follow nature, which is a point upon which every one of the Stoic philosophers are agreed: true wisdom consists in not departing from nature and in moulding our conduct according to her laws and model. A happy life, therefore, is one which is in accordance with its own nature, and cannot be brought about unless in the first place the mind be sound and remain so without interruption, and next, be bold and vigorous, enduring all things with most admirable courage, suited to the times in which it lives, careful of the body and its appurtenances, yet not troublesomely careful. It must also set due value upon all the things which adorn our lives, without over-estimating any one of them, and must be able to enjoy the bounty of Fortune without becoming her slave.",
+    "source_reference": "On the Happy Life, Section 3",
+    "author_slug": "seneca",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 31
+  },
+  {
+    "id": "happy-life-03-004",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-03",
+    "card_number": 4,
+    "total_cards_in_chapter": 4,
+    "plain_english": "You already know what happens when we push away everything that excites us or scares us. We find an unbroken calm and freedom. Instead of chasing physical pleasures and those cheap, temporary things that come with terrible crimes, we gain something huge: a joy that never changes or wavers. We also get peace, calmness, and greatness of mind. Plus kindliness — because all cruelty comes from weakness.",
+    "original_excerpt": "You understand without my mentioning it that an unbroken calm and freedom ensue, when we have driven away all those things which either excite us or alarm us: for in the place of sensual pleasures and those slight perishable matters which are connected with the basest crimes, we thus gain an immense, unchangeable, equable joy, together with peace, calmness and greatness of mind, and kindliness: for all savageness is a sign of weakness.",
     "source_reference": "On the Happy Life, Section 3",
     "author_slug": "seneca",
     "tags": [
       "calm-your-mind",
-      "freedom-and-control",
       "what-matters-most"
     ],
-    "reading_time_seconds": 43
+    "reading_time_seconds": 20
   }
 ]

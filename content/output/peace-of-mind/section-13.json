@@ -4,15 +4,31 @@
     "book_slug": "peace-of-mind",
     "chapter_slug": "section-13",
     "card_number": 1,
-    "total_cards_in_chapter": 1,
-    "plain_english": "I think this is why Democritus taught that \"anyone who wants peace of mind shouldn't take on too much business, either public or private.\" He meant unnecessary business, of course. When duty calls, we should handle as much business as needed — even endless amounts, both public and private. But when no serious obligation requires us to act, we're better off staying quiet. The person who does many things often puts himself at fortune's mercy. It's safest not to tempt fortune too often, but always to remember she exists and never to promise ourselves anything based on her favor. \"I will set sail unless something prevents me. I'll become praetor if nothing stops me. My business deals will succeed unless something goes wrong.\" This is why we say nothing happens to the wise person that he didn't expect. We don't make him immune to life's chances, just to life's mistakes. Not everything happens as he wished, but as he thought it would. His first thought was always that his plans might face resistance. The pain of disappointed hopes hits a person's mind less hard when he was never completely confident of success.",
-    "original_excerpt": "It was, I imagine, following out this principle that Democritis taught that “he who would live at peace must not do much business either public or private,” referring of course to unnecessary business: for if there be any necessity for it we ought to transact not only much but endless business, both public and private; in cases, however, where no solemn duty invites us to act, we had better keep ourselves quiet: for he who does many things often puts himself in Fortune’s power, and it is safest not to tempt her often, but always to remember her existence, and never to promise oneself anything on her security. I will set sail unless anything happens to prevent me, I shall be praetor, if nothing hinders me, my financial operations will succeed, unless anything goes wrong with them. This is why we say that nothing befals the wise man which he did not expect—we do not make him exempt from the chances of human life, but from its mistakes, nor does everything happen to him as he wished it would, but as he thought it would: now his first thought was that his purpose might meet with some resistance, and the pain of disappointed wishes must affect a man’s mind less severely if he has not been at all events confident of success.",
+    "total_cards_in_chapter": 2,
+    "plain_english": "I think this is what Democritus meant when he said, \"Anyone who wants to live peacefully shouldn't do too much business, whether public or private.\" He was talking about unnecessary business, of course. When duty calls, we should handle not just a lot of business, but endless amounts — both public and private. But when no serious obligation requires us to act, we're better off staying quiet. The person who does many things often puts himself at Fortune's mercy. It's safest not to tempt her too often. Always remember she exists, and never promise yourself anything based on her favor.",
+    "original_excerpt": "It was, I imagine, following out this principle that Democritis taught that “he who would live at peace must not do much business either public or private,” referring of course to unnecessary business: for if there be any necessity for it we ought to transact not only much but endless business, both public and private; in cases, however, where no solemn duty invites us to act, we had better keep ourselves quiet: for he who does many things often puts himself in Fortune’s power, and it is safest not to tempt her often, but always to remember her existence, and never to promise oneself anything on her security.",
     "source_reference": "On Peace of Mind, Section 13",
     "author_slug": "seneca",
     "tags": [
-      "calm-your-mind",
-      "freedom-and-control"
+      "freedom-and-control",
+      "calm-your-mind"
     ],
-    "reading_time_seconds": 58
+    "reading_time_seconds": 30
+  },
+  {
+    "id": "peace-of-mind-13-002",
+    "book_slug": "peace-of-mind",
+    "chapter_slug": "section-13",
+    "card_number": 2,
+    "total_cards_in_chapter": 2,
+    "plain_english": "I will set sail unless something stops me. I'll become praetor if nothing gets in my way. My business deals will work out unless something goes wrong. This is why we say nothing happens to a wise person that they didn't expect. We don't make them immune to life's random events, but we do protect them from life's mistakes. Not everything happens as they wished, but it happens as they thought it would. Their first thought was always that their plans might hit some resistance. The pain of failed hopes hurts much less when you weren't completely confident of success in the first place.",
+    "original_excerpt": "I will set sail unless anything happens to prevent me, I shall be praetor, if nothing hinders me, my financial operations will succeed, unless anything goes wrong with them. This is why we say that nothing befals the wise man which he did not expect—we do not make him exempt from the chances of human life, but from its mistakes, nor does everything happen to him as he wished it would, but as he thought it would: now his first thought was that his purpose might meet with some resistance, and the pain of disappointed wishes must affect a man’s mind less severely if he has not been at all events confident of success.",
+    "source_reference": "On Peace of Mind, Section 13",
+    "author_slug": "seneca",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 31
   }
 ]

@@ -4,24 +4,40 @@
     "book_slug": "discourses",
     "chapter_slug": "on-freedom-from-fear",
     "card_number": 1,
-    "total_cards_in_chapter": 5,
-    "plain_english": "What makes a tyrant scary? His guards, you say, with their swords and all the people who keep others away. But if you bring a child to the tyrant when he's surrounded by guards, is the child afraid? No, because the child doesn't understand what guards are for. Now imagine a man who does understand what guards are and that they carry swords. He comes to the tyrant specifically because he wants to die for some reason and thinks this is an easy way to do it. Is he afraid of the guards? No, because he wants exactly what makes the guards dangerous. What if a man doesn't particularly want to die, but doesn't desperately need to live either? He's fine with whatever happens. What stops him from approaching the tyrant without fear? Nothing. Now imagine someone who feels the same way about his property as that suicidal man feels about his body. He feels the same about his children and wife too. Some kind of madness or despair has made him not care whether he keeps these things or loses them. He's like children playing with shells — they might fight over the game, but they don't really care about the shells themselves. He doesn't value the things themselves, just the pleasure and activity they bring him. What tyrant could possibly scare a man like that? What guards or swords could frighten him?",
-    "original_excerpt": "What makes the tyrant formidable? The guards, you say, and their swords, and the men of the bedchamber, and those who exclude them who would enter. Why then if you bring a boy (child) to the tyrant when he is with his guards, is he not afraid; or is it because the child does not understand these things? If then any man does understand what guards are and that they have swords, and comes to the tyrant for this very purpose because he wishes to die on account of some circumstance and seeks to die easily by the hand of another, is he afraid of the guards? No, for he wishes for the thing which makes the guards formidable. If then any man neither wishing to die nor to live by all means, but only as it may be permitted, approaches the tyrant what hinders him from approaching the tyrant without fear? Nothing. If then a man has the same opinion about his property as the man whom I have instanced has about his body; and also about his children and his wife, and in a word is so affected by some madness or despair that he cares not whether he possesses them or not, but like children who are playing with shells (quarrel) about the play, but do not trouble themselves about the shells, so he too has set no value on the materials (things), but values the pleasure that he has with them and the occupation, what tyrant is then formidable to him, or what guards or what swords?",
+    "total_cards_in_chapter": 8,
+    "plain_english": "What makes a tyrant scary? His guards, you say. Their swords. His servants. The people who keep visitors away. But if you bring a child to the tyrant when he's surrounded by guards, is the child afraid? No — because the child doesn't understand what these things mean. Now imagine a man who does understand what guards are. He knows they have swords. But he comes to the tyrant precisely because he wants to die. Maybe life has become unbearable and he's looking for an easy way out. Is this man afraid of the guards? Of course not. He wants exactly what makes the guards frightening.",
+    "original_excerpt": "What makes the tyrant formidable? The guards, you say, and their swords, and the men of the bedchamber, and those who exclude them who would enter. Why then if you bring a boy (child) to the tyrant when he is with his guards, is he not afraid; or is it because the child does not understand these things? If then any man does understand what guards are and that they have swords, and comes to the tyrant for this very purpose because he wishes to die on account of some circumstance and seeks to die easily by the hand of another, is he afraid of the guards? No, for he wishes for the thing which makes the guards formidable.",
     "source_reference": "Discourses, On Freedom from Fear",
     "author_slug": "epictetus",
     "tags": [
-      "freedom-and-control",
-      "facing-hardship"
+      "facing-hardship",
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 70
+    "reading_time_seconds": 32
   },
   {
     "id": "discourses-59-002",
     "book_slug": "discourses",
     "chapter_slug": "on-freedom-from-fear",
     "card_number": 2,
-    "total_cards_in_chapter": 5,
-    "plain_english": "What stops someone who clearly understands these distinctions from living with a light heart? Why can't they handle anything calmly and expect whatever might happen while enduring what already has happened? You want me to experience poverty? Bring it on. You'll see what poverty really looks like when it meets someone who knows how to play the part of a poor person well. You want me to have power? Give me power — and all the problems that come with it. What about exile? Wherever I go, I'll be fine. Even here where I am now, things weren't good because of this place. They were good because of my way of thinking, which I'll take with me wherever I go. No one can steal that from me. My thoughts are mine alone. They can't be taken away. As long as I have them, I'm content — no matter where I am or what I'm doing. But now suppose it's time to die. Why do you say \"to die\" like that? Don't make it into some tragic drama. Just call it what it is.",
+    "total_cards_in_chapter": 8,
+    "plain_english": "Say a man doesn't desperately want to live or die — he's fine with whatever happens. If he approaches a tyrant with this attitude, what could possibly scare him? Nothing. Now imagine he feels the same way about his possessions, his children, his wife, and everything else. Maybe it's madness or despair, but he just doesn't care whether he keeps these things or loses them. He's like children playing with seashells — they fight over the game itself, but they don't really care about the shells. He doesn't value the things themselves. He only values the pleasure and activity they give him. What tyrant could frighten a man like this? What guards or swords could threaten him?",
+    "original_excerpt": "If then any man neither wishing to die nor to live by all means, but only as it may be permitted, approaches the tyrant what hinders him from approaching the tyrant without fear? Nothing. If then a man has the same opinion about his property as the man whom I have instanced has about his body; and also about his children and his wife, and in a word is so affected by some madness or despair that he cares not whether he possesses them or not, but like children who are playing with shells (quarrel) about the play, but do not trouble themselves about the shells, so he too has set no value on the materials (things), but values the pleasure that he has with them and the occupation, what tyrant is then formidable to him, or what guards or what swords?",
+    "source_reference": "Discourses, On Freedom from Fear",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 35
+  },
+  {
+    "id": "discourses-59-003",
+    "book_slug": "discourses",
+    "chapter_slug": "on-freedom-from-fear",
+    "card_number": 3,
+    "total_cards_in_chapter": 8,
+    "plain_english": "What stops someone who clearly understands these things from living with a light heart? Someone who handles responsibilities easily and calmly expects whatever might happen? Who bears whatever has already happened? You want me to handle poverty? Bring it on. You'll see what poverty looks like when someone knows how to play the part of a poor person well. You want me to have power? Give me power, and all the problems that come with it. What about exile? Wherever I go, I'll be fine. Even here where I am now, I wasn't doing well because of the place. I was doing well because of my opinions, which I'll take with me. No one can rob me of those. My opinions are mine alone. They can't be stolen from me. As long as I have them, I'm satisfied — no matter where I am or what I'm doing. But now it's time to die. Why do you say \"to die\"? Don't make it into some tragic drama. Just call it what it is.",
     "original_excerpt": "What hinders a man, who has clearly separated (comprehended) these things, from living with a light heart and bearing easily the reins, quietly expecting everything which can happen, and enduring that which has already happened? Would you have me to bear poverty? Come and you will know what poverty is when it has found one who can act well the part of a poor man. Would you have me to possess power? Let me have power, and also the trouble of it. Well, banishment? Wherever I shall go, there it will be well with me; for here also where I am, it was not because of the place that it was well with me, but because of my opinions which I shall carry off with me, for neither can any man deprive me of them; but my opinions alone are mine and they cannot be taken from me, and I am satisfied while I have them, wherever I may be and whatever I am doing. But now it is time to die. Why do you say to die? Make no tragedy show of the thing, but speak of it as it is.",
     "source_reference": "Discourses, On Freedom from Fear",
     "author_slug": "epictetus",
@@ -29,55 +45,86 @@
       "freedom-and-control",
       "facing-hardship"
     ],
-    "reading_time_seconds": 55
-  },
-  {
-    "id": "discourses-59-003",
-    "book_slug": "discourses",
-    "chapter_slug": "on-freedom-from-fear",
-    "card_number": 3,
-    "total_cards_in_chapter": 5,
-    "plain_english": "It's time for the body to break down into the parts it came from. What's so scary about that? What's actually going to be lost from the universe? What strange new thing will happen? Is this why a tyrant seems frightening? Is this why his guards carry big, sharp swords? Go tell that to other people. I've thought all this through. No one has power over me. I've been set free. I know what his commands are worth — no one can drag me around like a slave anymore. I have the right person to defend my freedom. I have the right judges. You say you're the master of my body? So what? You say you're the master of my property? So what? You say you can exile me or chain me? Fine. I'll leave all these things behind — even this poor body — whenever you want me to. Go ahead. Test your power. You'll see how far it really goes.",
-    "original_excerpt": "It is now time for the matter (of the body) to be resolved into the things out of which it was composed. And what is the formidable thing here? what is going to perish of the things which are in the universe? what new thing or wondrous is going to happen? Is it for this reason that a tyrant is formidable? Is it for this reason that the guards appear to have swords which are large and sharp? Say this to others; but I have considered about all these things; no man has power over me. I have been made free; I know his commands, no man can now lead me as a slave. I have a proper person to assert my freedom; I have proper judges. (I say) are you not the master of my body? What then is that to me? Are you not the master of my property? What then is that to me? Are you not the master of my exile or of my chains? Well, from all these things and all the poor body itself I depart at your bidding, when you please. Make trial of your power, and you will know how far it reaches.",
-    "source_reference": "Discourses, On Freedom from Fear",
-    "author_slug": "epictetus",
-    "tags": [
-      "freedom-and-control",
-      "facing-hardship",
-      "death-and-mortality"
-    ],
-    "reading_time_seconds": 49
+    "reading_time_seconds": 52
   },
   {
     "id": "discourses-59-004",
     "book_slug": "discourses",
     "chapter_slug": "on-freedom-from-fear",
     "card_number": 4,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Who should I fear then? The people who control access to power? What can they do — lock me out? If they see that I want to get in, let them lock me out. So why do you even approach their doors? Because I think it's proper to play along while this game lasts. But how are you not locked out? Because unless someone lets me in, I choose not to enter. I'm always content with whatever happens. I think what God chooses is better than what I choose. I attach myself to him as his servant and follower. I have the same goals he has, the same desires. In short, I have the same will. There's no shutting out for me — only for those who try to force their way in. Then why don't I force my way in? Because I know that nothing good gets handed out inside to those who enter. When I hear someone called lucky because Caesar honors him, I ask: what does he actually get? A province to govern. Does he also get the right kind of thinking? The job of Prefect.",
-    "original_excerpt": "Whom then can I still fear? Those who are over the bedchamber? Lest they should do, what? Shut me out? If they find that I wish to enter, let them shut me out. Why then do you go to the doors? Because I think it befits me, while the play (sport) lasts, to join in it. How then are you not shut out? Because unless some one allows me to go in, I do not choose to go in, but am always content with that which happens; for I think that what God chooses is better than what I choose. I will attach myself as a minister and follower to him; I have the same movements (pursuits) as he has, I have the same desires; in a word, I have the same will ([Greek: sunthelo]). There is no shutting out for me, but for those who would force their way in. Why then do not I force my way in? Because I know that nothing good is distributed within to those who enter. But when I hear any man called fortunate because he is honored by Cæsar, I say what does he happen to get? A province (the government of a province). Does he also obtain an opinion such as he ought? The office of a Prefect.",
+    "total_cards_in_chapter": 8,
+    "plain_english": "It's time for the body to break down into whatever it was made from. What's so scary about that? What part of the universe is really going to be lost? What new or amazing thing is about to happen? Is this why tyrants seem so frightening? Is this why their guards carry big, sharp swords? Go tell that to other people. I've thought all this through. No one has power over me. I've been set free. I know what his commands are worth — no one can drag me around like a slave anymore. I have the right person to defend my freedom. I have the right judges. So you're the master of my body? So what? You're the master of my property? So what? You're the master of whether I get exiled or chained up? Fine. I'll leave all these things behind — including this pathetic body itself — whenever you want me to. Go ahead, test your power. You'll see how far it actually reaches.",
+    "original_excerpt": "It is now time for the matter (of the body) to be resolved into the things out of which it was composed. And what is the formidable thing here? what is going to perish of the things which are in the universe? what new thing or wondrous is going to happen? Is it for this reason that a tyrant is formidable? Is it for this reason that the guards appear to have swords which are large and sharp? Say this to others; but I have considered about all these things; no man has power over me. I have been made free; I know his commands, no man can now lead me as a slave. I have a proper person to assert my freedom; I have proper judges. (I say) are you not the master of my body? What then is that to me? Are you not the master of my property? What then is that to me? Are you not the master of my exile or of my chains? Well, from all these things and all the poor body itself I depart at your bidding, when you please. Make trial of your power, and you will know how far it reaches.",
     "source_reference": "Discourses, On Freedom from Fear",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
-      "what-matters-most"
+      "facing-hardship"
     ],
-    "reading_time_seconds": 57
+    "reading_time_seconds": 50
   },
   {
     "id": "discourses-59-005",
     "book_slug": "discourses",
     "chapter_slug": "on-freedom-from-fear",
     "card_number": 5,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Does he also get the skill to use his office well? Why do I still try to get into Caesar's inner circle? A man throws dried figs and nuts around. Children grab them and fight over them. Adults don't — they know these things don't matter much. But if someone threw shells around, even children wouldn't bother. Government positions get handed out — let the children scramble for those. Money gets handed out — let the children fight over that. High offices get distributed — let children push and shove for them, get locked out, get beaten up, kiss the hands of whoever's giving them out, even kiss the hands of his slaves. To me, these are just dried figs and nuts. So what happens if you don't get them while Caesar is tossing them around? Don't worry about it. If a dried fig falls in your lap, take it and eat it. You can value a fig that much. But if I have to bend down and push someone else over, or get pushed over myself, and flatter the people who made it into Caesar's inner circle — well, no dried fig is worth that trouble. And neither is anything else that isn't actually good, which the philosophers have convinced me not to think of as good.",
-    "original_excerpt": "Does he also obtain the power of using his office well? Why do I still strive to enter (Cæsar's chamber)? A man scatters dried figs and nuts: the children seize them, and fight with one another; men do not, for they think them to be a small matter. But if a man should throw about shells, even the children do not seize them. Provinces are distributed: let children look to that. Money is distributed; let children look to that. Prætorships, consulships, are distributed; let children scramble for them, let them be shut out, beaten, kiss the hands of the giver, of the slaves: but to me these are only dried figs and nuts. What then? If you fail to get them, while Cæsar is scattering them about, do not be troubled; if a dried fig come into your lap, take it and eat it; for so far you may value even a fig. But if I shall stoop down and turn another over, or be turned over by another, and shall flatter those who have got into (Cæsar's) chamber, neither is a dried fig worth the trouble, nor anything else of the things which are not good, which the philosophers have persuaded me not to think good.",
+    "total_cards_in_chapter": 8,
+    "plain_english": "Who should I fear then? The people who control the palace doors? What are they going to do — lock me out? If they see that I want to enter, let them lock me out. Then why do you even go to the doors? Because while this game is still going on, I think it's right for me to play my part. So how are you not locked out? Because unless someone lets me in, I don't try to force my way in. I'm always content with whatever happens. I think what God chooses is better than what I choose.",
+    "original_excerpt": "Whom then can I still fear? Those who are over the bedchamber? Lest they should do, what? Shut me out? If they find that I wish to enter, let them shut me out. Why then do you go to the doors? Because I think it befits me, while the play (sport) lasts, to join in it. How then are you not shut out? Because unless some one allows me to go in, I do not choose to go in, but am always content with that which happens; for I think that what God chooses is better than what I choose.",
+    "source_reference": "Discourses, On Freedom from Fear",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "calm-your-mind"
+    ],
+    "reading_time_seconds": 30
+  },
+  {
+    "id": "discourses-59-006",
+    "book_slug": "discourses",
+    "chapter_slug": "on-freedom-from-fear",
+    "card_number": 6,
+    "total_cards_in_chapter": 8,
+    "plain_english": "I will join him as his servant and follower. I share his pursuits. I want what he wants. In short, I want the same things he does. There's no keeping me out — only those who try to force their way in get shut out. So why don't I force my way in? Because I know that nothing good is handed out inside to those who enter. But when I hear someone called lucky because Caesar honors him, I ask: what does he actually get? A province to govern. Does he also get the right kind of judgment? The job of Prefect.",
+    "original_excerpt": "I will attach myself as a minister and follower to him; I have the same movements (pursuits) as he has, I have the same desires; in a word, I have the same will ([Greek: sunthelo]). There is no shutting out for me, but for those who would force their way in. Why then do not I force my way in? Because I know that nothing good is distributed within to those who enter. But when I hear any man called fortunate because he is honored by Cæsar, I say what does he happen to get? A province (the government of a province). Does he also obtain an opinion such as he ought? The office of a Prefect.",
     "source_reference": "Discourses, On Freedom from Fear",
     "author_slug": "epictetus",
     "tags": [
       "what-matters-most",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 65
+    "reading_time_seconds": 31
+  },
+  {
+    "id": "discourses-59-007",
+    "book_slug": "discourses",
+    "chapter_slug": "on-freedom-from-fear",
+    "card_number": 7,
+    "total_cards_in_chapter": 8,
+    "plain_english": "But does he also get the skill to use his position well? Why do I still try to get into Caesar's inner circle? A man throws dried figs and nuts on the ground. Children grab them and fight over them. Adults don't — they think it's not worth it. But if someone threw seashells around, even children wouldn't bother picking them up. Government positions get handed out? Let children worry about that. Money gets distributed? Let children worry about that. High offices and consulships get given away? Let children scramble for them. Let them get locked out, beaten up, kiss the hands of whoever's giving them out — even kiss the hands of his slaves. To me, these things are just dried figs and nuts.",
+    "original_excerpt": "Does he also obtain the power of using his office well? Why do I still strive to enter (Cæsar's chamber)? A man scatters dried figs and nuts: the children seize them, and fight with one another; men do not, for they think them to be a small matter. But if a man should throw about shells, even the children do not seize them. Provinces are distributed: let children look to that. Money is distributed; let children look to that. Prætorships, consulships, are distributed; let children scramble for them, let them be shut out, beaten, kiss the hands of the giver, of the slaves: but to me these are only dried figs and nuts.",
+    "source_reference": "Discourses, On Freedom from Fear",
+    "author_slug": "epictetus",
+    "tags": [
+      "what-matters-most",
+      "freedom-and-control"
+    ],
+    "reading_time_seconds": 38
+  },
+  {
+    "id": "discourses-59-008",
+    "book_slug": "discourses",
+    "chapter_slug": "on-freedom-from-fear",
+    "card_number": 8,
+    "total_cards_in_chapter": 8,
+    "plain_english": "So what if you don't get these favors while Caesar is handing them out? Don't worry about it. If a dried fig happens to fall in your lap, take it and eat it. A fig is worth that much effort. But should I bow down and push others aside, or let them push me? Should I flatter the people who got into Caesar's inner circle? No. A dried fig isn't worth that kind of trouble. Neither is anything else that isn't truly good — things the philosophers have taught me not to consider good.",
+    "original_excerpt": "What then? If you fail to get them, while Cæsar is scattering them about, do not be troubled; if a dried fig come into your lap, take it and eat it; for so far you may value even a fig. But if I shall stoop down and turn another over, or be turned over by another, and shall flatter those who have got into (Cæsar's) chamber, neither is a dried fig worth the trouble, nor anything else of the things which are not good, which the philosophers have persuaded me not to think good.",
+    "source_reference": "Discourses, On Freedom from Fear",
+    "author_slug": "epictetus",
+    "tags": [
+      "what-matters-most",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 28
   }
 ]

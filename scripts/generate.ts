@@ -3,7 +3,7 @@ import { parseArgs } from "node:util";
 import { BOOK_CONFIGS, VALID_BOOK_SLUGS, type BookConfig } from "./lib/constants.js";
 import { parseSourceText } from "./lib/parser.js";
 import { chunkSections, type Chunk } from "./lib/chunker.js";
-import { refineChunksBatch, type BatchRefineInput } from "./lib/refine.js";
+import { refineChunksBatch, refineChunksRealtime, type BatchRefineInput } from "./lib/refine.js";
 import { translateChunksBatch, type TranslatedChunk, type BatchTranslateInput } from "./lib/translator.js";
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
 import { validateSectionCoverage, validateRefineCoverage, validateParseContent } from "./lib/validate.js";
@@ -15,6 +15,8 @@ import {
   loadRefineCache,
   saveTranslateCache,
   loadTranslateCache,
+  mergeTranslateCache,
+  diffChunksForTranslation,
   snapshotTokenUsage,
   computePhaseCost,
 } from "./lib/cache.js";
@@ -209,33 +211,62 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
     const after = snapshotTokenUsage(tokenUsage);
     const cost = computePhaseCost(before, after);
 
+    const MAX_REFINE_RETRIES = 2;
     const validationErrors: string[] = [];
     for (const { config, parsed: p } of uncached) {
-      const chapters: ParsedChapter[] = p.chapters.map((ch) => {
+      const chapters: ParsedChapter[] = [];
+
+      for (const ch of p.chapters) {
         const key = `${config.slug}_${ch.slug}`;
-        const result = refineResultMap.get(key);
-        if (!result) return { slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: ch.chunks };
+        let result = refineResultMap.get(key);
+        if (!result) {
+          chapters.push({ slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: ch.chunks });
+          continue;
+        }
 
         if (result.splits > 0 || result.merges > 0) {
           console.log(`  ${config.slug}/${ch.slug}: ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`);
         }
 
-        const refineMsgs = validateRefineCoverage(ch.chunks, result.chunks);
-        const refineErrors = refineMsgs.filter((m) => m.severity === "error");
+        // Validate and retry failing chapters via realtime API
+        let refineMsgs = validateRefineCoverage(ch.chunks, result.chunks);
+        let refineErrors = refineMsgs.filter((m) => m.severity === "error");
+        let retries = 0;
+
+        while (refineErrors.length > 0 && retries < MAX_REFINE_RETRIES) {
+          retries++;
+          console.error(`  Refine coverage errors in ${config.slug}/${ch.slug} — retrying (${retries}/${MAX_REFINE_RETRIES})...`);
+          for (const e of refineErrors) console.error(`    ${e.message}`);
+
+          result = await refineChunksRealtime(ch.chunks, config);
+
+          if (result.splits > 0 || result.merges > 0) {
+            console.log(`  ${config.slug}/${ch.slug} (retry ${retries}): ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`);
+          }
+
+          refineMsgs = validateRefineCoverage(ch.chunks, result.chunks);
+          refineErrors = refineMsgs.filter((m) => m.severity === "error");
+        }
+
         if (refineErrors.length > 0) {
-          console.error(`  Refine coverage errors in ${config.slug}/${ch.slug}:`);
+          console.error(`  Refine coverage errors in ${config.slug}/${ch.slug} (after ${MAX_REFINE_RETRIES} retries):`);
           for (const e of refineErrors) console.error(`    ${e.message}`);
           validationErrors.push(`${config.slug}/${ch.slug}: refine dropped content`);
         }
 
-        return { slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: result.chunks };
-      });
+        chapters.push({ slug: ch.slug, title: ch.title, bookNumber: ch.bookNumber, chunks: result.chunks });
+      }
 
       const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
       console.log(`  ${config.slug}: ${totalChunks} chunks after refine`);
 
-      await saveRefineCache(config.slug, chapters, cost);
-      console.log(`  Cached refine results for ${config.slug}`);
+      // Only cache after all chapters pass validation
+      if (!validationErrors.some((e) => e.startsWith(`${config.slug}/`))) {
+        await saveRefineCache(config.slug, chapters, cost);
+        console.log(`  Cached refine results for ${config.slug}`);
+      } else {
+        console.error(`  Skipping cache for ${config.slug} — has validation errors`);
+      }
 
       refined.push({ config, refined: { bookSlug: config.slug, chapters } });
     }
@@ -258,55 +289,71 @@ async function runTranslate(
   const translatedMap = new Map<string, TranslatedChunk[]>();
   const batchInputs: BatchTranslateInput[] = [];
   let cachedChunks = 0;
+  let totalChunks = 0;
 
   for (const { config, refined: r } of refined) {
     const cached = await loadTranslateCache(config.slug);
-    if (cached) {
-      for (const [key, chunks] of cached) {
-        translatedMap.set(key, chunks);
-        cachedChunks += chunks.length;
-      }
-      console.log(`  ${config.slug}: translate cache hit (${cached.size} chapters)`);
-      continue;
-    }
-    for (const ch of r.chapters) {
-      batchInputs.push({
-        bookSlug: config.slug,
-        chapterSlug: ch.slug,
-        chunks: ch.chunks,
-        config,
-      });
-    }
-  }
 
-  if (cachedChunks > 0) {
-    console.log(`  ${cachedChunks} chunks loaded from translate cache`);
+    for (const ch of r.chapters) {
+      const chapterKey = `${config.slug}_${ch.slug}`;
+      const cachedChapter = cached?.get(chapterKey) ?? [];
+      totalChunks += ch.chunks.length;
+
+      const diff = diffChunksForTranslation(ch.chunks, cachedChapter);
+      cachedChunks += diff.cached.length;
+
+      // Store cached chunks in the result map
+      if (diff.cached.length > 0) {
+        translatedMap.set(chapterKey, [...diff.cached]);
+      }
+
+      // Queue uncached chunks for batch translation
+      if (diff.uncached.length > 0) {
+        batchInputs.push({
+          bookSlug: config.slug,
+          chapterSlug: ch.slug,
+          chunks: diff.uncached.map(u => u.chunk),
+          config,
+          allChapterChunks: ch.chunks,
+        });
+      }
+    }
+
+    const bookUncached = batchInputs
+      .filter(i => i.bookSlug === config.slug)
+      .reduce((s, i) => s + i.chunks.length, 0);
+    const bookTotal = r.chapters.reduce((s, ch) => s + ch.chunks.length, 0);
+    console.log(`  ${config.slug}: ${bookTotal - bookUncached}/${bookTotal} chunks cached, translating ${bookUncached}`);
   }
 
   if (batchInputs.length > 0) {
+    const uncachedCount = batchInputs.reduce((s, i) => s + i.chunks.length, 0);
     const before = snapshotTokenUsage(tokenUsage);
-    console.log(`\nBatch translating ${batchInputs.reduce((s, i) => s + i.chunks.length, 0)} chunks across ${new Set(batchInputs.map(i => i.bookSlug)).size} books...`);
+    console.log(`\nBatch translating ${uncachedCount} chunks across ${new Set(batchInputs.map(i => i.bookSlug)).size} books...`);
     const batchResults = await translateChunksBatch(batchInputs);
     const after = snapshotTokenUsage(tokenUsage);
     const cost = computePhaseCost(before, after);
 
     for (const [key, chunks] of batchResults) {
-      translatedMap.set(key, chunks);
+      const existing = translatedMap.get(key) ?? [];
+      existing.push(...chunks);
+      existing.sort((a, b) => a.sectionNumber - b.sectionNumber);
+      translatedMap.set(key, existing);
     }
 
-    // Save translate cache for batch-translated books
+    // Merge new translations into cache for batch-translated books
     const batchedBooks = new Set(batchInputs.map(i => i.bookSlug));
     for (const { config } of refined) {
       if (!batchedBooks.has(config.slug)) continue;
-      const bookTranslations = new Map<string, TranslatedChunk[]>();
-      for (const [key, chunks] of translatedMap) {
+      const bookNewTranslations = new Map<string, TranslatedChunk[]>();
+      for (const [key, chunks] of batchResults) {
         if (key.startsWith(`${config.slug}_`)) {
-          bookTranslations.set(key, chunks);
+          bookNewTranslations.set(key, chunks);
         }
       }
-      if (bookTranslations.size > 0) {
-        await saveTranslateCache(config.slug, bookTranslations, cost);
-        console.log(`  Cached translate results for ${config.slug}`);
+      if (bookNewTranslations.size > 0) {
+        await mergeTranslateCache(config.slug, bookNewTranslations, cost);
+        console.log(`  Merged translate results for ${config.slug}`);
       }
     }
   } else {

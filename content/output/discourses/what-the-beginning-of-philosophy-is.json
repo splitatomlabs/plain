@@ -4,63 +4,110 @@
     "book_slug": "discourses",
     "chapter_slug": "what-the-beginning-of-philosophy-is",
     "card_number": 1,
-    "total_cards_in_chapter": 4,
-    "plain_english": "The start of real philosophy — if you approach it the right way — is realizing how weak and clueless you are about the things that matter most. We aren't born knowing what a right triangle is, or what a quarter-tone in music sounds like, or what a half-tone is. We learn these things through proper teaching. And because we don't naturally know them, we don't pretend we do. But when it comes to good and evil, beautiful and ugly, right and wrong behavior, happiness and misfortune, what's proper and improper, what we should and shouldn't do — who was ever born without thinking they already understood these things? That's why we all throw around these words so confidently. We try to match our gut feelings to whatever situation we're facing: \"He did the right thing.\" \"He screwed up.\" \"He acted properly.\" \"He didn't.\" \"He got lucky.\" \"He got unlucky.\" \"He's unfair.\" \"He's fair.\" Everyone talks this way. Who waits to learn about justice and virtue the way they wait to learn geometry or music?",
-    "original_excerpt": "The beginning of philosophy, to him at least who enters on it in the right way and by the door is a consciousness of his own weakness and inability about necessary things; for we come into the world with no natural notion of a right-angled triangle, or of a diesis (a quarter tone), or of a half-tone; but we learn each of these things by a certain transmission according to art; and for this reason those who do not know them do not think that they know them. But as to good and evil, and beautiful and ugly, and becoming and unbecoming, and happiness and misfortune, and proper and improper, and what we ought to do and what we ought not to do, who ever came into the world without having an innate idea of them? Wherefore we all use these names, and we endeavor to fit the preconceptions to the several cases (things) thus: he has done well; he has not done well; he has done as he ought, not as he ought; he has been unfortunate, he has been fortunate; he is unjust, he is just; who does not use these names? who among us defers the use of them till he has learned them, as he defers the use of the words about lines (geometrical figures) or sounds?",
+    "total_cards_in_chapter": 7,
+    "plain_english": "Philosophy starts with recognizing how little you actually know about what matters most. You weren't born knowing geometry or musical theory. You had to learn these through careful instruction. People who don't know these subjects admit they don't know them. But when it comes to good and evil, beautiful and ugly, right and wrong, happiness and misery, proper behavior — who doesn't think they already know all about these things? Everyone acts like they were born with perfect understanding of what matters most in life.",
+    "original_excerpt": "The beginning of philosophy, to him at least who enters on it in the right way and by the door is a consciousness of his own weakness and inability about necessary things; for we come into the world with no natural notion of a right-angled triangle, or of a diesis (a quarter tone), or of a half-tone; but we learn each of these things by a certain transmission according to art; and for this reason those who do not know them do not think that they know them. But as to good and evil, and beautiful and ugly, and becoming and unbecoming, and happiness and misfortune, and proper and improper, and what we ought to do and what we ought not to do, who ever came into the world without having an innate idea of them?",
     "source_reference": "Discourses, What the Beginning of Philosophy is",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
       "human-nature"
     ],
-    "reading_time_seconds": 53
+    "reading_time_seconds": 26
   },
   {
     "id": "discourses-26-002",
     "book_slug": "discourses",
     "chapter_slug": "what-the-beginning-of-philosophy-is",
     "card_number": 2,
-    "total_cards_in_chapter": 4,
-    "plain_english": "The problem starts here: we're born with natural ideas about some things. But then we pile our own arrogance on top of these ideas. A person says, \"Don't I know what's beautiful and what's ugly? Don't I have a sense for it?\" Yes, you do. \"Don't I apply this sense to specific situations?\" Yes, you do. \"Don't I apply it correctly?\" That's the whole question. And that's where arrogance creeps in. People start with these basic ideas everyone agrees on. Then they jump to disputed conclusions through bad reasoning. If they could reason properly on top of their basic ideas, what would stop them from being perfect? But you think you apply your basic concepts correctly. Tell me — how do you know this? \"Because I think so.\" But someone else disagrees. He thinks he applies them correctly too. Can you both be right when you have opposite views? No, you can't. So can you show me anything better for applying these concepts than just \"I think I'm right\"? Does a crazy person do anything other than what seems right to him? Is \"it seems right to me\" good enough for him too? No, it's not good enough. So we need something better than just \"seeming right.\" What is that?",
-    "original_excerpt": "And the cause of this is that we come into the world already taught as it were by nature some things on this matter ([Greek: topon]), and proceeding from these we have added to them self-conceit ([Greek: oiaesin]). For why, a man says, do I not know the beautiful and the ugly? Have I not the notion of it? You have. Do I not adapt it to particulars? You do. Do I not then adapt it properly? In that lies the whole question; and conceit is added here; for beginning from these things which are admitted men proceed to that which is matter of dispute by means of unsuitable adaptation; for if they possessed this power of adaptation in addition to those things, what would hinder them from being perfect? But now since you think that you properly adapt the preconceptions to the particulars, tell me whence you derive this (assume that you do so). Because I think so. But it does not seem so to another, and he thinks that he also makes a proper adaptation; or does he not think so? He does think so. Is it possible then that both of you can properly apply the preconceptions to things about which you have contrary opinions? It is not possible. Can you then show us anything better towards adapting the preconceptions beyond your thinking that you do? Does the madman do any other things than the things which seem to him right? Is then this criterion sufficient for him also? It is not sufficient. Come then to something which is superior to seeming ([Greek: tou dochein]). What is this?",
+    "total_cards_in_chapter": 7,
+    "plain_english": "That's why we all use these words. We try to match our basic ideas to specific situations: \"He did well.\" \"He did badly.\" \"He did the right thing.\" \"He didn't do what he should have.\" \"He got unlucky.\" \"He got lucky.\" \"He's unfair.\" \"He's fair.\" Who doesn't use these words? Who waits to learn them first, like we do with geometry or music? Nobody. The reason is simple: we come into the world already knowing some things about right and wrong — like nature taught us. Then we build on that foundation and add our own opinions.",
+    "original_excerpt": "Wherefore we all use these names, and we endeavor to fit the preconceptions to the several cases (things) thus: he has done well; he has not done well; he has done as he ought, not as he ought; he has been unfortunate, he has been fortunate; he is unjust, he is just; who does not use these names? who among us defers the use of them till he has learned them, as he defers the use of the words about lines (geometrical figures) or sounds? And the cause of this is that we come into the world already taught as it were by nature some things on this matter ([Greek: topon]), and proceeding from these we have added to them self-conceit ([Greek: oiaesin]).",
     "source_reference": "Discourses, What the Beginning of Philosophy is",
     "author_slug": "epictetus",
     "tags": [
-      "knowing-yourself",
-      "human-nature"
+      "human-nature",
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 63
+    "reading_time_seconds": 29
   },
   {
     "id": "discourses-26-003",
     "book_slug": "discourses",
     "chapter_slug": "what-the-beginning-of-philosophy-is",
     "card_number": 3,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Look, this is how philosophy starts. First, you notice that people disagree with each other. Then you ask why they disagree. You start to distrust things that just \"seem\" true. You investigate whether something that \"seems\" true actually is true. You look for some standard to judge by — just like we use scales to weigh things and rulers to tell if something is straight.\n\nThis is the beginning of philosophy. Should we say that everything is right just because it seems right to everyone? How can contradictory things both be right? Well then, not everything that seems right to everyone — just what seems right to us. But why should what seems right to you matter more than what seems right to Syrians? Why more than what seems right to Egyptians? Why more than what seems right to me or anyone else? It doesn't matter more at all.\n\nSo what \"seems\" right to any person isn't enough to determine what actually \"is\" right. We don't just trust appearances when we weigh things or measure them — we use standards for those. So shouldn't there be some standard higher than what just \"seems\" right? How could the most important human matters have no clear sign and be impossible to figure out? There must be some standard.",
-    "original_excerpt": "Observe, this is the beginning of philosophy, a perception of the disagreement of men with one another, and an inquiry into the cause of the disagreement, and a condemnation and distrust of that which only \"seems,\" and a certain investigation of that which \"seems\" whether it \"seems\" rightly, and a discovery of some rule ([Greek: chanonos]), as we have discovered a balance in the determination of weights, and a carpenter's rule (or square) in the case of straight and crooked things.—This is the beginning of philosophy. Must we say that all things are right which seem so to all? And how is it possible that contradictions can be right?—Not all then, but all which seem to us to be right.—How more to you than those which seem right to the Syrians? why more than what seem right to the Egyptians? why more than what seems right to me or to any other man? Not at all more. What then \"seems\" to every man is not sufficient for determining what \"is\"; for neither in the case of weights nor measures are we satisfied with the bare appearance, but in each case we have discovered a certain rule. In this matter then is there no rule superior to what \"seems\"? And how is it possible that the most necessary things among men should have no sign (mark), and be incapable of being discovered? There is then some rule.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "A person says, \"Why don't I know what's beautiful and what's ugly? Don't I have some idea about it?\" Yes, you do. \"Don't I apply this idea to specific things?\" Yes, you do. \"Don't I apply it correctly?\" That's the whole question right there. And this is where arrogance creeps in. People start with things everyone agrees on, then jump to disputed topics using bad logic. If they actually knew how to apply their ideas correctly, what would stop them from being perfect? But since you think you're applying your basic concepts correctly to specific cases, tell me — where do you get this confidence that you're doing it right?",
+    "original_excerpt": "For why, a man says, do I not know the beautiful and the ugly? Have I not the notion of it? You have. Do I not adapt it to particulars? You do. Do I not then adapt it properly? In that lies the whole question; and conceit is added here; for beginning from these things which are admitted men proceed to that which is matter of dispute by means of unsuitable adaptation; for if they possessed this power of adaptation in addition to those things, what would hinder them from being perfect? But now since you think that you properly adapt the preconceptions to the particulars, tell me whence you derive this (assume that you do so).",
     "source_reference": "Discourses, What the Beginning of Philosophy is",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
-      "doing-the-right-thing"
+      "human-nature"
     ],
-    "reading_time_seconds": 65
+    "reading_time_seconds": 33
   },
   {
     "id": "discourses-26-004",
     "book_slug": "discourses",
     "chapter_slug": "what-the-beginning-of-philosophy-is",
     "card_number": 4,
-    "total_cards_in_chapter": 4,
-    "plain_english": "So why don't we look for the rule and find it? Then we could use it consistently, never varying from it. We wouldn't even lift a finger without it. This rule, once discovered, would cure the madness of people who rely on mere appearances as their guide and misuse them. From that point on, we could start with clear, known principles and apply our well-defined ideas to specific cases.\n\nWhat's the issue we're looking at? Let's say pleasure. Put it to the test. Throw it on the scale. Should something good be trustworthy? Yes. Should we be able to rely on it? Yes. Should we trust anything that's unstable? No. Is pleasure stable? No. Then take it and throw it off the scale. Drive it far away from good things.\n\nBut if you're not sharp enough and one test isn't enough for you, try another. Should we get excited about what's good? Yes. Is it right to get excited about immediate pleasure? Think carefully before you say yes. If you do say yes, I won't think you're even worth testing.\n\nThis is how we test and weigh things when we have our rules ready. Philosophy means examining and confirming these rules. Using them once we know them — that's what a wise and good person does.",
-    "original_excerpt": "And why then do we not seek the rule and discover it, and afterwards use it without varying from it, not even stretching out the finger without it? For this, I think, is that which when it is discovered cures of their madness those who use mere \"seeming\" as a measure, and misuse it; so that for the future proceeding from certain things (principles) known and made clear we may use in the case of particular things the preconceptions which are distinctly fixed. What is the matter presented to us about which we are inquiring? Pleasure (for example). Subject it to the rule, throw it into the balance. Ought the good to be such a thing that it is fit that we have confidence in it? Yes. And in which we ought to confide? It ought to be. Is it fit to trust to anything which is insecure? No. Is then pleasure anything secure? No. Take it then and throw it out of the scale, and drive it far away from the place of good things. But if you are not sharp-sighted, and one balance is not enough for you, bring another. Is it fit to be elated over what is good? Yes. Is it proper then to be elated over present pleasure? See that you do not say that it is proper; but if you do, I shall then not think you worthy even of the balance. Thus things are tested and weighed when the rules are ready. And to philosophize is this, to examine and confirm the rules; and then to use them when they are known is the act of a wise and good man.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "Because I think so. But someone else disagrees, and he thinks his view is right too. Doesn't he think so? Yes, he does. So can both of you be right when you have opposite opinions about the same thing? No, you can't. Can you show me anything better for getting the right view than just \"because I think so\"? A crazy person also does what seems right to him. Is \"it seems right to me\" good enough for him too? No, it's not. So we need something better than just what seems right. What is that?",
+    "original_excerpt": "Because I think so. But it does not seem so to another, and he thinks that he also makes a proper adaptation; or does he not think so? He does think so. Is it possible then that both of you can properly apply the preconceptions to things about which you have contrary opinions? It is not possible. Can you then show us anything better towards adapting the preconceptions beyond your thinking that you do? Does the madman do any other things than the things which seem to him right? Is then this criterion sufficient for him also? It is not sufficient. Come then to something which is superior to seeming ([Greek: tou dochein]). What is this?",
+    "source_reference": "Discourses, What the Beginning of Philosophy is",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 29
+  },
+  {
+    "id": "discourses-26-005",
+    "book_slug": "discourses",
+    "chapter_slug": "what-the-beginning-of-philosophy-is",
+    "card_number": 5,
+    "total_cards_in_chapter": 7,
+    "plain_english": "Here's where philosophy begins. You notice that people disagree with each other. You ask why they disagree. You become suspicious of what only \"appears\" to be true. You investigate whether these appearances are actually right. You try to find some standard to measure by — like we use scales for weight and rulers for straight lines.\n\nThis is how philosophy starts. Should we say that everything is right just because it seems right to everyone? But how can contradictory things both be right? Well then, maybe only the things that seem right to us are actually right. But why should what seems right to you matter more than what seems right to Syrians? Why more than what seems right to Egyptians? Why more than what seems right to me or anyone else? It doesn't matter more at all.",
+    "original_excerpt": "Observe, this is the beginning of philosophy, a perception of the disagreement of men with one another, and an inquiry into the cause of the disagreement, and a condemnation and distrust of that which only \"seems,\" and a certain investigation of that which \"seems\" whether it \"seems\" rightly, and a discovery of some rule ([Greek: chanonos]), as we have discovered a balance in the determination of weights, and a carpenter's rule (or square) in the case of straight and crooked things.—This is the beginning of philosophy. Must we say that all things are right which seem so to all? And how is it possible that contradictions can be right?—Not all then, but all which seem to us to be right.—How more to you than those which seem right to the Syrians? why more than what seem right to the Egyptians? why more than what seems right to me or to any other man? Not at all more.",
+    "source_reference": "Discourses, What the Beginning of Philosophy is",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 41
+  },
+  {
+    "id": "discourses-26-006",
+    "book_slug": "discourses",
+    "chapter_slug": "what-the-beginning-of-philosophy-is",
+    "card_number": 6,
+    "total_cards_in_chapter": 7,
+    "plain_english": "What something \"seems\" like to each person isn't enough to determine what it actually \"is.\" We don't trust appearances when we're weighing or measuring things — we use reliable standards instead. So why would there be no reliable standard for more important matters? How could the most essential questions in human life have no clear signs and be impossible to figure out? There must be some standard. So why don't we look for this standard and find it? Why don't we use it consistently afterwards, not even lifting a finger without it? I think this standard, once we find it, will cure the madness of people who rely only on how things \"seem\" and use that badly. Then we can start from clear, known principles and apply our well-defined concepts to specific situations.",
+    "original_excerpt": "What then \"seems\" to every man is not sufficient for determining what \"is\"; for neither in the case of weights nor measures are we satisfied with the bare appearance, but in each case we have discovered a certain rule. In this matter then is there no rule superior to what \"seems\"? And how is it possible that the most necessary things among men should have no sign (mark), and be incapable of being discovered? There is then some rule. And why then do we not seek the rule and discover it, and afterwards use it without varying from it, not even stretching out the finger without it? For this, I think, is that which when it is discovered cures of their madness those who use mere \"seeming\" as a measure, and misuse it; so that for the future proceeding from certain things (principles) known and made clear we may use in the case of particular things the preconceptions which are distinctly fixed.",
     "source_reference": "Discourses, What the Beginning of Philosophy is",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
       "what-matters-most"
     ],
-    "reading_time_seconds": 65
+    "reading_time_seconds": 40
+  },
+  {
+    "id": "discourses-26-007",
+    "book_slug": "discourses",
+    "chapter_slug": "what-the-beginning-of-philosophy-is",
+    "card_number": 7,
+    "total_cards_in_chapter": 7,
+    "plain_english": "What are we examining here? Let's say pleasure. Put it to the test. Weigh it carefully. Should something good be trustworthy? Yes. Should we be able to rely on it? Absolutely. Can you trust something that's unreliable? No. Is pleasure reliable? No. Then throw it out. Kick it far away from the list of good things. If you're still not seeing clearly and one test isn't enough, try another. Should good things make you feel proud? Yes. So should present pleasure make you feel proud? Think carefully before you answer. If you say yes, you're not even worth giving a scale to. This is how you test and weigh things when you have solid rules. Philosophy means examining and proving these rules. Then using them once you know them — that's what a wise and good person does.",
+    "original_excerpt": "What is the matter presented to us about which we are inquiring? Pleasure (for example). Subject it to the rule, throw it into the balance. Ought the good to be such a thing that it is fit that we have confidence in it? Yes. And in which we ought to confide? It ought to be. Is it fit to trust to anything which is insecure? No. Is then pleasure anything secure? No. Take it then and throw it out of the scale, and drive it far away from the place of good things. But if you are not sharp-sighted, and one balance is not enough for you, bring another. Is it fit to be elated over what is good? Yes. Is it proper then to be elated over present pleasure? See that you do not say that it is proper; but if you do, I shall then not think you worthy even of the balance. Thus things are tested and weighed when the rules are ready. And to philosophize is this, to examine and confirm the rules; and then to use them when they are known is the act of a wise and good man.",
+    "source_reference": "Discourses, What the Beginning of Philosophy is",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 41
   }
 ]

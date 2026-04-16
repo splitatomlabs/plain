@@ -4,10 +4,10 @@
   "author_slug": "seneca",
   "description": "Seneca dissects anger from every angle — what causes it, why it's destructive, and how to prevent it. Full of concrete examples and psychological insight.",
   "tags": [
-    "facing-hardship",
     "calm-your-mind",
-    "knowing-yourself",
+    "facing-hardship",
     "human-nature",
+    "knowing-yourself",
     "doing-the-right-thing",
     "freedom-and-control",
     "what-matters-most",
@@ -17,24 +17,24 @@
     {
       "slug": "book-1",
       "title": "Book 1",
-      "card_count": 45,
-      "reading_time_seconds": 2431
+      "card_count": 69,
+      "reading_time_seconds": 2464
     },
     {
       "slug": "book-2",
       "title": "Book 2",
-      "card_count": 66,
-      "reading_time_seconds": 3546
+      "card_count": 103,
+      "reading_time_seconds": 3612
     },
     {
       "slug": "book-3",
       "title": "Book 3",
-      "card_count": 82,
-      "reading_time_seconds": 4371
+      "card_count": 121,
+      "reading_time_seconds": 4483
     }
   ],
-  "total_cards": 193,
-  "total_reading_time_seconds": 10348,
+  "total_cards": 293,
+  "total_reading_time_seconds": 10559,
   "source_url": "https://www.gutenberg.org/ebooks/64576",
   "has_chapters": true
 }

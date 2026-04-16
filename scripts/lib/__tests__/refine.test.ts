@@ -218,7 +218,7 @@ describe("refineChunksRealtime", () => {
     expect(result.splits).toBe(0);
   });
 
-  it("splits chunks that exceed 90s reading time cap (safety net)", async () => {
+  it("splits chunks that exceed 60s reading time cap (safety net)", async () => {
     // 400 words ≈ 120s at 200wpm — should be split into two chunks
     const longText = Array(400).fill("word").join(" ");
     const chunks = [makeChunk(1, longText)];
@@ -233,6 +233,25 @@ describe("refineChunksRealtime", () => {
     expect(result.splits).toBe(1);
     expect(result.chunks[0].sectionNumber).toBe(1);
     expect(result.chunks[1].sectionNumber).toBe(1);
+  });
+
+  it("recursively splits very large chunks into 3+ pieces", async () => {
+    // 700 words ≈ 210s — should split into at least 3 chunks (each ≤ 200 words)
+    const longText = Array(700).fill("word").join(" ");
+    const chunks = [makeChunk(1, longText)];
+
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
+
+    const result = await refineChunksRealtime(chunks, testConfig);
+
+    expect(result.chunks.length).toBeGreaterThanOrEqual(3);
+    // Each piece should be under ~200 words (60s)
+    for (const chunk of result.chunks) {
+      const words = chunk.text.split(/\s+/).filter((w) => w.length > 0).length;
+      expect(words).toBeLessThanOrEqual(210); // small margin for rounding
+    }
   });
 
   it("splits at paragraph boundaries when available", async () => {
@@ -251,9 +270,46 @@ describe("refineChunksRealtime", () => {
     expect(result.chunks[1].text).not.toContain("\n\n");
   });
 
-  it("does not split chunks at or under 90s", async () => {
-    // 300 words = 90s exactly — should NOT be split
-    const text = Array(300).fill("word").join(" ");
+  it("splits at sentence boundaries when no paragraphs available", async () => {
+    // 300 words with sentence breaks but no paragraph breaks
+    const sentence = Array(30).fill("word").join(" ") + ".";
+    const longText = Array(10).fill(sentence).join(" ");
+    const chunks = [makeChunk(1, longText)];
+
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
+
+    const result = await refineChunksRealtime(chunks, testConfig);
+
+    expect(result.chunks.length).toBe(2);
+    // Both halves should end at a sentence boundary (with period)
+    expect(result.chunks[0].text).toMatch(/\.$/);
+    expect(result.chunks[1].text).toMatch(/\.$/);
+  });
+
+  it("splits at word boundary as last resort when no sentences or paragraphs", async () => {
+    // 300 words with no sentence-ending punctuation or paragraph breaks
+    const longText = Array(300).fill("word").join(" ");
+    const chunks = [makeChunk(1, longText)];
+
+    mockCallClaudeJSON.mockResolvedValueOnce(
+      bulkResponse([{ section: 1, action: "keep" }]),
+    );
+
+    const result = await refineChunksRealtime(chunks, testConfig);
+
+    expect(result.chunks.length).toBe(2);
+    // Neither half should start or end with a partial word (no leading/trailing spaces)
+    expect(result.chunks[0].text).not.toMatch(/^\s/);
+    expect(result.chunks[0].text).not.toMatch(/\s$/);
+    expect(result.chunks[1].text).not.toMatch(/^\s/);
+    expect(result.chunks[1].text).not.toMatch(/\s$/);
+  });
+
+  it("does not split chunks at or under 60s", async () => {
+    // 200 words = 60s exactly — should NOT be split
+    const text = Array(200).fill("word").join(" ");
     const chunks = [makeChunk(1, text)];
 
     mockCallClaudeJSON.mockResolvedValueOnce(
@@ -301,7 +357,7 @@ describe("refineChunksRealtime", () => {
     expect(options).toBeDefined();
     expect(options!.system).toBeDefined();
     expect(options!.system).toContain("bite-sized reading cards");
-    expect(options!.system).toContain("300 words");
+    expect(options!.system).toContain("200 words");
     expect(options!.system).toContain("JSON array");
   });
 
@@ -345,8 +401,8 @@ describe("refineChunksRealtime", () => {
   });
 
   it("handles model returning oversized split via safety net", async () => {
-    // Model keeps a 400-word chunk (misses the 300-word cap)
-    const longText = Array(400).fill("word").join(" ");
+    // Model keeps a 250-word chunk (misses the 200-word cap)
+    const longText = Array(250).fill("word").join(" ");
     const chunks = [makeChunk(1, longText)];
 
     mockCallClaudeJSON.mockResolvedValueOnce(
@@ -378,9 +434,9 @@ describe("buildRefineSystem (single-chunk, legacy)", () => {
 });
 
 describe("buildBulkRefineSystem", () => {
-  it("includes 300-word cap rule", () => {
+  it("includes 200-word cap rule", () => {
     const system = buildBulkRefineSystem(testConfig);
-    expect(system).toContain("300 words");
+    expect(system).toContain("200 words");
     expect(system).toContain("MUST be split");
   });
 
@@ -423,6 +479,6 @@ describe("buildBulkRefineUser", () => {
     const chunks = [makeChunk(1, "Test.")];
     const user = buildBulkRefineUser(chunks);
     expect(user).not.toContain("bite-sized");
-    expect(user).not.toContain("300 words");
+    expect(user).not.toContain("200 words");
   });
 });

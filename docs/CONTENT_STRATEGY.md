@@ -101,6 +101,10 @@ This is the central narrative framing for the product. Stoicism's most powerful 
 
 ## Card Design
 
+### Reading Time
+
+Every card must be readable in **60 seconds or less** (approximately 200 words at 200 wpm). This ceiling is enforced automatically by the content pipeline's refine phase — oversized sections are split at natural idea boundaries.
+
 ### What a Card Is
 
 A card is NOT a single quote or sentence. It is a meaningful chunk — typically a full paragraph, a short passage, or a self-contained idea — carrying enough context that the reader gains genuine understanding.

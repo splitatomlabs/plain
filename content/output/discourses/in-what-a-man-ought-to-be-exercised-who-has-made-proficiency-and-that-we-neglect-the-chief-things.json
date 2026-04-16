@@ -4,57 +4,88 @@
     "book_slug": "discourses",
     "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
     "card_number": 1,
-    "total_cards_in_chapter": 5,
-    "plain_english": "There are three areas you need to work on if you want to be wise and good. First, manage your desires and what you want to avoid. Don't fail to get what you truly want, and don't end up with what you don't want. Second, handle your actions properly. Move toward things and away from things the right way. Do what you should do with order and reason, not carelessly. Third, avoid being fooled and making rash judgments. Be careful about what you agree with and accept as true. The first area is the most important and urgent. It deals with your emotions. You get upset only when you fail to get what you want or when you get what you're trying to avoid. This is what causes all your troubles — disorder, bad luck, misfortune, sadness, complaints, and envy. It makes you envious and jealous. When you're caught up in these feelings, you can't even listen to reason. The second area deals with your duties. You shouldn't be emotionless like a statue. You need to maintain your natural and learned relationships. Be a good person, a good son, a good father, a good citizen.",
-    "original_excerpt": "There are three things (topics, [Greek: topoi]) in which a man ought to exercise himself who would be wise and good. The first concerns the desires and the aversions, that a man may not fail to get what he desires, and that he may not fall into that which he does not desire. The second concerns the movements towards an object and the movements from an object, and generally in doing what a man ought to do, that he may act according to order, to reason, and not carelessly. The third thing concerns freedom from deception and rashness in judgment, and generally it concerns the assents ([Greek: sugchatatheseis]). Of these topics the chief and the most urgent is that which relates to the affects ([Greek: ta pathae] perturbations); for an affect is produced in no other way than by a failing to obtain that which a man desires or falling into that which a man would wish to avoid. This is that which brings in perturbations, disorders, bad fortune, misfortunes, sorrows, lamentations, and envy; that which makes men envious and jealous; and by these causes we are unable even to listen to the precepts of reason. The second topic concerns the duties of a man; for I ought not to be free from affects ([Greek: apathae]) like a statue, but I ought to maintain the relations ([Greek: scheseis]) natural and acquired, as a pious man, as a son, as a father, as a citizen.",
-    "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
-    "author_slug": "epictetus",
-    "tags": [
-      "knowing-yourself",
-      "calm-your-mind",
-      "doing-the-right-thing"
-    ],
-    "reading_time_seconds": 59
-  },
-  {
-    "id": "discourses-39-002",
-    "book_slug": "discourses",
-    "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
-    "card_number": 2,
-    "total_cards_in_chapter": 5,
-    "plain_english": "The third area of training deals with securing the first two areas. It's about making sure no untested thought catches you off guard — not when you're asleep, drunk, or depressed. People say this is beyond our power. But today's philosophers skip the first two areas (emotions and duties) and jump straight to the third. They use clever tricks, draw conclusions from questions, and work with hypotheticals. They're basically lying. They say a person working on these matters must be careful not to get deceived. Who must? The wise and good person. So that's all you need, right? Have you mastered everything else? Are you free from deception about money? When you see a beautiful woman, do you resist the urge? When your neighbor inherits wealth, are you not bothered? Is the only thing you lack an unshakeable mind?",
-    "original_excerpt": "The third topic is that which immediately concerns those who are making proficiency, that which concerns the security of the other two, so that not even in sleep any appearance unexamined may surprise us, nor in intoxication, nor in melancholy. This, it may be said, is above our power. But the present philosophers neglecting the first topic and the second (the affects and duties), employ themselves on the third, using sophistical arguments ([Greek: metapiptontas]), making conclusions from questioning, employing hypotheses, lying. For a man must, it is said, when employed on these matters, take care that he is not deceived. Who must? The wise and good man. This then is all that is wanting to you. Have you successfully worked out the rest? Are you free from deception in the matter of money? If you see a beautiful girl do you resist the appearance? If your neighbor obtains an estate by will, are you not vexed? Now is there nothing else wanting to you except unchangeable firmness of mind ([Greek: ametaptosia])?",
+    "total_cards_in_chapter": 7,
+    "plain_english": "There are three areas you need to work on if you want to be wise and good. First, manage your desires and what you want to avoid. Learn to get what you truly want and stay away from what you don't want. Second, control your actions and impulses. Do what you should do in the right way, with reason, not carelessly. Third, avoid being fooled or making hasty judgments. Be careful about what you agree with or believe.",
+    "original_excerpt": "There are three things (topics, [Greek: topoi]) in which a man ought to exercise himself who would be wise and good. The first concerns the desires and the aversions, that a man may not fail to get what he desires, and that he may not fall into that which he does not desire. The second concerns the movements towards an object and the movements from an object, and generally in doing what a man ought to do, that he may act according to order, to reason, and not carelessly. The third thing concerns freedom from deception and rashness in judgment, and generally it concerns the assents ([Greek: sugchatatheseis]).",
     "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 42
+    "reading_time_seconds": 23
+  },
+  {
+    "id": "discourses-39-002",
+    "book_slug": "discourses",
+    "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
+    "card_number": 2,
+    "total_cards_in_chapter": 7,
+    "plain_english": "The most important and urgent topic is dealing with strong emotions. You get upset only when you fail to get what you want or when you end up with what you're trying to avoid. This is what causes disturbances, chaos, bad luck, misfortunes, grief, complaints, and envy. It makes people envious and jealous. When you're caught up in all this, you can't even listen to reason. The second topic is about your duties as a person. You shouldn't be emotionless like a statue. You need to fulfill your natural and social relationships — as a religious person, as a child, as a parent, as a citizen.",
+    "original_excerpt": "Of these topics the chief and the most urgent is that which relates to the affects ([Greek: ta pathae] perturbations); for an affect is produced in no other way than by a failing to obtain that which a man desires or falling into that which a man would wish to avoid. This is that which brings in perturbations, disorders, bad fortune, misfortunes, sorrows, lamentations, and envy; that which makes men envious and jealous; and by these causes we are unable even to listen to the precepts of reason. The second topic concerns the duties of a man; for I ought not to be free from affects ([Greek: apathae]) like a statue, but I ought to maintain the relations ([Greek: scheseis]) natural and acquired, as a pious man, as a son, as a father, as a citizen.",
+    "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
+    "author_slug": "epictetus",
+    "tags": [
+      "calm-your-mind",
+      "human-nature"
+    ],
+    "reading_time_seconds": 32
   },
   {
     "id": "discourses-39-003",
     "book_slug": "discourses",
     "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
     "card_number": 3,
-    "total_cards_in_chapter": 5,
-    "plain_english": "You pathetic fool, you listen to these teachings with fear and worry that someone might look down on you. You fret about what people say about you. If someone comes and tells you that in some conversation about who the best philosopher is, someone said a certain person was the greatest philosopher, your tiny soul — which was only finger-sized — suddenly swells up to enormous proportions. But if someone else who was there says, \"You're wrong. That person isn't worth listening to. What does he really know? He only has the basics, nothing more,\" then you're thrown into chaos. You turn pale. You immediately cry out, \"I'll show him who I am! I'm a great philosopher!\" These very reactions reveal the truth about you. Why do you want to prove it through other means? Don't you know how Diogenes exposed one of the sophists? He just held up his middle finger at him. When the man flew into a rage, Diogenes said, \"There — that's the person you're asking about. I've pointed him out to you.\" You can't show what a person is by pointing at them like you would a rock or piece of wood. When you reveal someone's principles, then you show them as they really are.",
-    "original_excerpt": "Wretch, you hear these very things with fear and anxiety that some person may despise you, and with inquiries about what any person may say about you. And if a man come and tell you that in a certain conversation in which the question was, Who is the best philosopher, a man who was present said that a certain person was the chief philosopher, your little soul which was only a finger's length stretches out to two cubits. But if another who is present says, You are mistaken; it is not worth while to listen to a certain person, for what does he know? he has only the first principles, and no more? then you are confounded, you grow pale, you cry out immediately, I will show him who I am, that I am a great philosopher. It is seen by these very things: why do you wish to show it by others? Do you not know that Diogenes pointed out one of the sophists in this way by stretching out his middle finger? And then when the man was wild with rage, This, he said, is the certain person: I have pointed him out to you. For a man is not shown by the finger, as a stone or a piece of wood; but when any person shows the man's principles, then he shows him as a man.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "The third area of study is for those who are already making progress. It's about securing the first two areas so that not even in sleep or when drunk or depressed can any false impression catch us off guard. You might say this is beyond our power. But today's philosophers ignore the first and second topics (emotions and duties). Instead, they focus on the third, using tricky arguments, drawing conclusions from questions, and working with assumptions — basically lying. They say a person working on these things must be careful not to be deceived. Who must? The wise and good person. So that's all you need, right? Have you mastered everything else? Are you free from being fooled about money? When you see a beautiful woman, do you resist the temptation? When your neighbor inherits an estate, are you not bothered? Is the only thing you're missing an unshakeable mind?",
+    "original_excerpt": "The third topic is that which immediately concerns those who are making proficiency, that which concerns the security of the other two, so that not even in sleep any appearance unexamined may surprise us, nor in intoxication, nor in melancholy. This, it may be said, is above our power. But the present philosophers neglecting the first topic and the second (the affects and duties), employ themselves on the third, using sophistical arguments ([Greek: metapiptontas]), making conclusions from questioning, employing hypotheses, lying. For a man must, it is said, when employed on these matters, take care that he is not deceived. Who must? The wise and good man. This then is all that is wanting to you. Have you successfully worked out the rest? Are you free from deception in the matter of money? If you see a beautiful girl do you resist the appearance? If your neighbor obtains an estate by will, are you not vexed? Now is there nothing else wanting to you except unchangeable firmness of mind ([Greek: ametaptosia])?",
     "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
-      "human-nature"
+      "what-matters-most"
     ],
-    "reading_time_seconds": 63
+    "reading_time_seconds": 45
   },
   {
     "id": "discourses-39-004",
     "book_slug": "discourses",
     "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
     "card_number": 4,
-    "total_cards_in_chapter": 5,
-    "plain_english": "Let's look at your principles too. Isn't it obvious that you don't care about your own choices at all? Instead, you focus on things outside your control. Like: what will someone say about you? What will people think? Will they see you as educated? Have you read Chrysippus or Antipater? If you've also read Archedamus, then you think you have everything you need. Why are you still worried that you haven't shown us who you really are? Want me to tell you what kind of person you've actually shown us? You've shown yourself to be petty, whiny, angry, cowardly — always complaining about everything, blaming everyone, never at peace, totally vain. That's what you've shown us. Go read Archedamus now. Then when a mouse jumps down and makes a noise, you'll be scared to death. That's the kind of death waiting for you — just like what's-his-name, Crinis. He was proud too because he understood Archedamus.",
+    "total_cards_in_chapter": 7,
+    "plain_english": "You pathetic fool, you listen to these teachings with fear and worry that someone might look down on you. You obsess over what people might say about you. If someone comes and tells you that in some conversation about who the best philosopher is, someone mentioned a particular person as the top philosopher, your tiny soul that was only finger-sized suddenly swells to arm's length. But if someone else who was there says, 'You're wrong — that person isn't worth listening to. What does he really know? He only has the basics and nothing more,' what happens then?",
+    "original_excerpt": "Wretch, you hear these very things with fear and anxiety that some person may despise you, and with inquiries about what any person may say about you. And if a man come and tell you that in a certain conversation in which the question was, Who is the best philosopher, a man who was present said that a certain person was the chief philosopher, your little soul which was only a finger's length stretches out to two cubits. But if another who is present says, You are mistaken; it is not worth while to listen to a certain person, for what does he know? he has only the first principles, and no more?",
+    "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 29
+  },
+  {
+    "id": "discourses-39-005",
+    "book_slug": "discourses",
+    "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
+    "card_number": 5,
+    "total_cards_in_chapter": 7,
+    "plain_english": "Then you get confused, you turn pale, you immediately shout, \"I'll show him who I am — I'm a great philosopher!\" But this very reaction shows who you are. Why do you need to prove it with other things? Don't you know how Diogenes exposed one of the sophists? He just held up his middle finger. When the sophist flew into a rage, Diogenes said, \"There he is — that's the man. I've pointed him out to you.\" You can't show a person's true nature by pointing at them like you would at a stone or a piece of wood. But when someone reveals a person's principles, then they show who that person really is.",
+    "original_excerpt": "then you are confounded, you grow pale, you cry out immediately, I will show him who I am, that I am a great philosopher. It is seen by these very things: why do you wish to show it by others? Do you not know that Diogenes pointed out one of the sophists in this way by stretching out his middle finger? And then when the man was wild with rage, This, he said, is the certain person: I have pointed him out to you. For a man is not shown by the finger, as a stone or a piece of wood; but when any person shows the man's principles, then he shows him as a man.",
+    "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "human-nature"
+    ],
+    "reading_time_seconds": 35
+  },
+  {
+    "id": "discourses-39-006",
+    "book_slug": "discourses",
+    "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
+    "card_number": 6,
+    "total_cards_in_chapter": 7,
+    "plain_english": "Let's look at your principles too. Isn't it obvious that you don't value your own choices at all? Instead, you look outside to things you can't control. For example: What will someone say? What will people think of you? Will they think you're learned? Have you read Chrysippus or Antipater? If you've also read Archedamus, you think you have everything you need. Why are you still anxious about proving to us who you are? Want me to tell you what kind of person you've already shown us? You've shown yourself to be petty, whining, angry, cowardly, criticizing everything, blaming everyone, never at peace, and vain. That's what you've shown us. Go read Archedamus now. Then when a mouse jumps down and makes a noise, you'll drop dead from fear. That's the kind of death waiting for you — just like what's-his-name, Crinis. He was proud too because he understood Archedamus.",
     "original_excerpt": "Let us look at your principles also. For is it not plain that you value not at all your own will ([Greek: proairesis]), but you look externally to things which are independent of your will? For instance, what will a certain person say? and what will people think of you? Will you be considered a man of learning; have you read Chrysippus or Antipater? for if you have read Archedamus also, you have every thing (that you can desire). Why you are still uneasy lest you should not show us who you are? Would you let me tell you what manner of man you have shown us that you are? You have exhibited yourself to us as a mean fellow, querulous, passionate, cowardly, finding fault with everything, blaming everybody, never quiet, vain: this is what you have exhibited to us. Go away now and read Archedamus; then if a mouse should leap down and make a noise, you are a dead man. For such a death awaits you as it did—what was the man's name—Crinis; and he too was proud, because he understood Archedamus.",
     "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
     "author_slug": "epictetus",
@@ -62,22 +93,22 @@
       "knowing-yourself",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 47
+    "reading_time_seconds": 45
   },
   {
-    "id": "discourses-39-005",
+    "id": "discourses-39-007",
     "book_slug": "discourses",
     "chapter_slug": "in-what-a-man-ought-to-be-exercised-who-has-made-proficiency-and-that-we-neglect-the-chief-things",
-    "card_number": 5,
-    "total_cards_in_chapter": 5,
-    "plain_english": "You fool, stop worrying about things that don't matter to you at all! These academic exercises are for people who can learn them without getting worked up. They're for people who can say: \"I don't get angry, sad, or jealous. Nothing blocks me or holds me back. What's left for me to do? I have free time and I'm calm. Let me figure out how to handle tricky arguments. Let me see how someone can accept a premise without being led to something ridiculous.\" That stuff is for them. When people are happy, it makes sense for them to light a fire and eat dinner. If they want, they can sing and dance too. But when the ship is sinking, you come to me asking to put up the sails.",
+    "card_number": 7,
+    "total_cards_in_chapter": 7,
+    "plain_english": "You fool, stop wasting time on things that don't matter to you at all! These fancy debates are for people who can handle them without getting upset. They can say: \"I don't get angry, sad, or jealous. Nothing blocks me or holds me back. What's left for me to do? I have free time and I'm calm. Let's see how to handle tricky arguments. Let's see how someone can accept an idea without being led to something ridiculous.\" That stuff is for them. Happy people can light a fire and eat dinner. If they want, they can sing and dance. But when the ship is going down, you come to me wanting to raise the sails.",
     "original_excerpt": "Wretch, will you not dismiss these things that do not concern you at all? These things are suitable to those who are able to learn them without perturbation, to those who can say: \"I am not subject to anger, to grief, to envy: I am not hindered, I am not restrained. What remains for me? I have leisure, I am tranquil: let us see how we must deal with sophistical arguments; let us see how when a man has accepted an hypothesis he shall not be led away to any thing absurd.\" To them such things belong. To those who are happy it is appropriate to light a fire, to dine; if they choose, both to sing and to dance. But when the vessel is sinking, you come to me and hoist the sails.",
     "source_reference": "Discourses, In What a Man Ought to Be Exercised Who Has Made Proficiency; and That We Neglect the Chief Things",
     "author_slug": "epictetus",
     "tags": [
       "what-matters-most",
-      "facing-hardship"
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 39
+    "reading_time_seconds": 35
   }
 ]

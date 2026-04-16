@@ -5,15 +5,15 @@
     "chapter_slug": "miscellaneous",
     "card_number": 1,
     "total_cards_in_chapter": 2,
-    "plain_english": "Someone asked Epictetus: \"Why did people make more progress in the old days, when we've gotten so much better at reasoning now?\" He answered: \"Better at what kind of reasoning? And what kind of progress are you talking about? You'll make progress in whatever you actually work on. Today we use reasoning to solve logical puzzles, and sure enough, we get good at that. But back then, people used reasoning to keep their minds in harmony with nature, and they got good at that. Don't mix up different goals. Don't expect to get better at one thing when you're working on something else entirely. Show me someone today who focuses on living according to nature — really focuses on it — and I'll show you someone making real progress. But you won't find anyone like that.\"",
-    "original_excerpt": "When some person asked him how it happened that since reason has been more cultivated by the men of the present age, the progress made in former times was greater. In what respect, he answered, has it been more cultivated now, and in what respect was the progress greater then? For in that in which it has now been more cultivated, in that also the progress will now be found. At present it has been cultivated for the purpose of resolving syllogisms, and progress is made. But in former times it was cultivated for the purpose of maintaining the governing faculty in a condition conformable to nature, and progress was made. Do not then mix things which are different, and do not expect, when you are laboring at one thing to make progress in another. But see if any man among us when he is intent upon this, the keeping himself in a state conformable to nature and living so always, does not make progress. For you will not find such a man.",
+    "plain_english": "It's hard to motivate weak young men. You can't grab soft cheese with a hook. But those with good character will stick to reason even more when you try to pull them away from it.",
+    "original_excerpt": "It is not easy to exhort weak young men; for neither is it easy to hold (soft) cheese with a hook. But those who have a good natural disposition, even if you try to turn them aside, cling still more to reason.",
     "source_reference": "Discourses, Miscellaneous",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
-      "what-matters-most"
+      "human-nature"
     ],
-    "reading_time_seconds": 41
+    "reading_time_seconds": 11
   },
   {
     "id": "discourses-41-002",
@@ -21,7 +21,7 @@
     "chapter_slug": "miscellaneous",
     "card_number": 2,
     "total_cards_in_chapter": 2,
-    "plain_english": "It's not easy to encourage weak young men. You can't hold soft cheese with a hook. But those with good character will stick to reason even more when you try to pull them away from it.",
+    "plain_english": "It's not easy to motivate weak young men. It's like trying to hold soft cheese with a hook. But those who have a good natural character will stick to reason even more when you try to pull them away from it.",
     "original_excerpt": "It is not easy to exhort weak young men; for neither is it easy to hold (soft) cheese with a hook. But those who have a good natural disposition, even if you try to turn them aside, cling still more to reason.",
     "source_reference": "Discourses, Miscellaneous",
     "author_slug": "epictetus",
@@ -29,6 +29,6 @@
       "human-nature",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 11
+    "reading_time_seconds": 12
   }
 ]
