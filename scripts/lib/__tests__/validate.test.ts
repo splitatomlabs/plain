@@ -228,6 +228,32 @@ describe("validateCardContent", () => {
     const msgs = validateCardContent(makeCard({ original_excerpt: "" }));
     expect(msgs.some((m) => m.field === "original_excerpt")).toBe(true);
   });
+
+  it("warns when plain_english ends mid-sentence", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "Others waste their lives in voluntary slavery, the" }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence") && m.field === "plain_english")).toBe(true);
+  });
+
+  it("does not warn when plain_english ends with punctuation", () => {
+    const msgs = validateCardContent(makeCard());
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
+
+  it("warns when original_excerpt ends mid-sentence", () => {
+    const msgs = validateCardContent(
+      makeCard({ original_excerpt: "some wear away their lives in that voluntary slavery, the" }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence") && m.field === "original_excerpt")).toBe(true);
+  });
+
+  it("accepts text ending with closing quote", () => {
+    const msgs = validateCardContent(
+      makeCard({ plain_english: "The wise man said, \"This is the way to live well and find true happiness.\"" }),
+    );
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
+  });
 });
 
 describe("validateCardSequence", () => {
@@ -415,5 +441,25 @@ describe("validateRefineCoverage", () => {
   it("returns no errors for empty input", () => {
     const msgs = validateRefineCoverage([], []);
     expect(msgs).toHaveLength(0);
+  });
+
+  it("warns when a post-refine chunk ends mid-sentence", () => {
+    const pre = [{ sectionNumber: 1, text: "Some wear away their lives in that voluntary slavery, the unrequited service of great men." }];
+    const post = [
+      { sectionNumber: 1, text: "Some wear away their lives in that voluntary slavery, the" },
+      { sectionNumber: 1, text: "unrequited service of great men." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(true);
+  });
+
+  it("does not warn when chunks end with punctuation", () => {
+    const pre = [{ sectionNumber: 1, text: "First sentence. Second sentence." }];
+    const post = [
+      { sectionNumber: 1, text: "First sentence." },
+      { sectionNumber: 1, text: "Second sentence." },
+    ];
+    const msgs = validateRefineCoverage(pre, post);
+    expect(msgs.some((m) => m.message.includes("mid-sentence"))).toBe(false);
   });
 });

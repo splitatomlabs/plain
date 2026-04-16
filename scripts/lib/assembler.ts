@@ -1,8 +1,9 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { BookConfig, TagSlug } from "./constants.js";
-import type { Card, BookMeta, ChapterInfo } from "./types.js";
+import type { Card, BookMeta, ChapterInfo, ValidationMessage } from "./types.js";
 import type { TranslatedChunk } from "./translator.js";
+import { validateCardContent, validateCardSequence } from "./validate.js";
 
 /**
  * Normalize newlines: collapse single newlines to spaces (Gutenberg line wraps),
@@ -106,6 +107,22 @@ export function assembleBook(
         reading_time_seconds: estimateReadingTime(chunk.plainEnglish),
       };
     });
+
+    // Validate cards
+    for (const card of cards) {
+      const contentMsgs = validateCardContent(card);
+      for (const msg of contentMsgs) {
+        if (msg.severity === "error") {
+          process.stderr.write(`  ERROR [${card.id}]: ${msg.message}\n`);
+        } else if (msg.severity === "warn") {
+          process.stderr.write(`  WARN [${card.id}]: ${msg.message}\n`);
+        }
+      }
+    }
+    const seqMsgs = validateCardSequence(cards, chapterSlug);
+    for (const msg of seqMsgs) {
+      process.stderr.write(`  ${msg.severity.toUpperCase()} [${chapterSlug}]: ${msg.message}\n`);
+    }
 
     chapters.set(chapterSlug, cards);
     chapterInfos.push({

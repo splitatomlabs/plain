@@ -298,6 +298,20 @@ export function validateCardContent(card: Card): ValidationMessage[] {
     });
   }
 
+  // Check that text fields end with sentence-ending punctuation (not mid-sentence)
+  const SENTENCE_END_RE = /[.?!;:'""\u201D)\]]$/;
+  for (const field of ["plain_english", "original_excerpt"] as const) {
+    const text = card[field]?.trim();
+    if (text && text.length >= 50 && !SENTENCE_END_RE.test(text)) {
+      msgs.push({
+        severity: "warn",
+        card_id: card.id,
+        field,
+        message: `${field} may end mid-sentence (ends with: "...${text.slice(-40)}")`,
+      });
+    }
+  }
+
   // No HTML in text fields
   for (const field of ["plain_english", "original_excerpt"] as const) {
     const text = card[field];
@@ -531,6 +545,21 @@ export function validateRefineCoverage(
         card_id: `section-${chunk.sectionNumber}`,
         field: "refine",
         message: `Section ${chunk.sectionNumber} closing text not found after refine (ends with: "...${tail.slice(-50)}")`,
+      });
+    }
+  }
+
+  // Check that each post-refine chunk ends with sentence-ending punctuation
+  // (catches mid-sentence splits before expensive translation)
+  const CHUNK_SENTENCE_END_RE = /[.?!;:'""\u201D)\]]$/;
+  for (const chunk of postRefine) {
+    const trimmed = chunk.text.trim();
+    if (trimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(trimmed)) {
+      msgs.push({
+        severity: "warn",
+        card_id: `section-${chunk.sectionNumber}`,
+        field: "refine",
+        message: `Section ${chunk.sectionNumber} chunk may end mid-sentence after refine (ends with: "...${trimmed.slice(-50)}")`,
       });
     }
   }
