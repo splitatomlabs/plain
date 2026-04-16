@@ -1,6 +1,6 @@
 {
   "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:34:17.370Z",
+  "createdAt": "2026-04-16T08:55:59.013Z",
   "bookSlug": "shortness-of-life",
   "chapters": {
     "shortness-of-life_section-01": [
@@ -1291,10 +1291,10 @@
     ]
   },
   "cost": {
-    "inputTokens": 2080498,
-    "outputTokens": 323029,
+    "inputTokens": 51209,
+    "outputTokens": 7139,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 5.5434645
+    "estimatedCost": 0.130356
   }
 }

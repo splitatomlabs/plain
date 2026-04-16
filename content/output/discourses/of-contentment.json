@@ -5,22 +5,36 @@
     "chapter_slug": "of-contentment",
     "card_number": 1,
     "total_cards_in_chapter": 7,
-    "plain_english": "People have different views about the gods. Some say no divine being exists at all. Others say divine beings exist but are lazy and don't care about anything. A third group says they exist and pay attention to things, but only big cosmic matters — nothing that happens on earth. A fourth group says divine beings watch over both earthly and heavenly things, but only in general terms, not individual cases. Then there's a fifth group that includes Ulysses and Socrates, who say: \"I move not without thy knowledge.\" — Homer, Iliad\n\nBefore anything else, we need to examine each of these beliefs. Is it true or false? If there are no gods, how can our proper goal be to follow them? If gods exist but don't care about anything, how can it be right to follow them? And even if they do exist and watch over things, but they don't communicate anything to people — or to me personally — how can it still be right to follow them?",
-    "original_excerpt": "With respect to gods, there are some who say that a divine being does not exist; others say that it exists, but is inactive and careless, and takes no forethought about anything; a third class say that such a being exists and exercises forethought, but only about great things and heavenly things, and about nothing on the earth; a fourth class say that a divine being exercises forethought both about things on the earth and heavenly things, but in a general way only, and not about things severally. There is a fifth class to whom Ulysses and Socrates belong, who say: I move not without thy knowledge.—Iliad, x., 278.\n\nBefore all other things then it is necessary to inquire about each of these opinions, whether it is affirmed truly or not truly. For if there are no gods, how is it our proper end to follow them? And if they exist, but take no care of anything, in this case also how will it be right to follow them? But if indeed they do exist and look after things, still if there is nothing communicated from them to men, nor in fact to myself, how even so is it right (to follow them)?",
+    "plain_english": "People have different views about the gods. Some say no divine being exists at all. Others say divine beings exist but are lazy and don't care about anything. A third group says they exist and pay attention to things, but only big cosmic matters — nothing that happens on earth. A fourth group says divine beings watch over both earthly and heavenly things, but only in general terms, not individual cases. Then there's a fifth group that includes Ulysses and Socrates, who say:",
+    "original_excerpt": "With respect to gods, there are some who say that a divine being does not exist; others say that it exists, but is inactive and careless, and takes no forethought about anything; a third class say that such a being exists and exercises forethought, but only about great things and heavenly things, and about nothing on the earth; a fourth class say that a divine being exercises forethought both about things on the earth and heavenly things, but in a general way only, and not about things severally. There is a fifth class to whom Ulysses and Socrates belong, who say:",
     "source_reference": "Discourses, Of Contentment",
     "author_slug": "epictetus",
     "tags": [
-      "human-nature",
+      "human-nature"
+    ],
+    "reading_time_seconds": 25
+  },
+  {
+    "id": "discourses-08-002",
+    "book_slug": "discourses",
+    "chapter_slug": "of-contentment",
+    "card_number": 2,
+    "total_cards_in_chapter": 7,
+    "plain_english": "\"I move not without thy knowledge.\" — Homer, Iliad\n\nBefore anything else, we need to examine each of these beliefs. Is it true or false? If there are no gods, how can our proper goal be to follow them? If gods exist but don't care about anything, how can it be right to follow them? And even if they do exist and watch over things, but they don't communicate anything to people — or to me personally — how can it still be right to follow them?",
+    "original_excerpt": "I move not without thy knowledge.—Iliad, x., 278.\n\nBefore all other things then it is necessary to inquire about each of these opinions, whether it is affirmed truly or not truly. For if there are no gods, how is it our proper end to follow them? And if they exist, but take no care of anything, in this case also how will it be right to follow them? But if indeed they do exist and look after things, still if there is nothing communicated from them to men, nor in fact to myself, how even so is it right (to follow them)?",
+    "source_reference": "Discourses, Of Contentment",
+    "author_slug": "epictetus",
+    "tags": [
       "doing-the-right-thing",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 51
+    "reading_time_seconds": 26
   },
   {
     "id": "discourses-08-003",
     "book_slug": "discourses",
     "chapter_slug": "of-contentment",
-    "card_number": 2,
+    "card_number": 3,
     "total_cards_in_chapter": 7,
     "plain_english": "The wise and good person thinks about all this and then submits their mind to whoever runs the universe, just like good citizens follow the law. When you come to learn, you should have this goal: How can I follow the gods in everything? How can I be content with how the divine runs things? How can I become free? You are free when everything happens the way you want it to, and no one can stop you. So wait — does this mean freedom is madness? Of course not. Madness and freedom are completely different things.",
     "original_excerpt": "The wise and good man then, after considering all these things, submits his own mind to him who administers the whole, as good citizens do to the law of the state. He who is receiving instruction ought to come to be instructed with this intention, How shall I follow the gods in all things, how shall I be contented with the divine administration, and how can I become free? For he is free to whom everything happens according to his will, and whom no man can hinder. What then, is freedom madness? Certainly not; for madness and freedom do not consist.",
@@ -36,7 +50,7 @@
     "id": "discourses-08-004",
     "book_slug": "discourses",
     "chapter_slug": "of-contentment",
-    "card_number": 3,
+    "card_number": 4,
     "total_cards_in_chapter": 7,
     "plain_english": "You say, \"I want everything to turn out exactly how I want it.\" You're crazy. You've lost your mind. Don't you know that freedom is precious and valuable? But wishing for things to happen however I feel like it — that's not noble. It's actually disgraceful. Think about writing. Do I get to write the name \"Dion\" however I want? No. I'm taught to write it correctly. What about music? Same thing. What about every art and skill? Exactly the same. If it weren't this way, knowledge would be worthless. If knowledge bent to everyone's personal whims, it would mean nothing.",
     "original_excerpt": "But, you say, I would have everything result just as I like, and in whatever way I like. You are mad, you are beside yourself. Do you not know that freedom is a noble and valuable thing? But for me inconsiderately to wish for things to happen as I inconsiderately like, this appears to be not only not noble, but even most base. For how do we proceed in the matter of writing? Do I wish to write the name of Dion as I choose? No, but I am taught to choose to write it as it ought to be written. And how with respect to music? In the same manner. And what universally in every art or science? Just the same. If it were not so, it would be of no value to know anything, if knowledge were adapted to every man's whim.",
@@ -52,7 +66,7 @@
     "id": "discourses-08-005",
     "book_slug": "discourses",
     "chapter_slug": "of-contentment",
-    "card_number": 4,
+    "card_number": 5,
     "total_cards_in_chapter": 7,
     "plain_english": "So in this one area — the most important area of all, I mean freedom — am I allowed to act carelessly? Absolutely not. Here's what it means to be educated: learning to want things to happen exactly as they do. And how do things happen? However the one in charge has arranged them. He has set up summer and winter, plenty and scarcity, virtue and vice, and all these opposites to create harmony in the whole system. And to each of us he has given a body, body parts, possessions, and companions.",
     "original_excerpt": "Is it then in this alone, in this which is the greatest and the chief thing, I mean freedom, that I am permitted to will inconsiderately? By no means; but to be instructed is this, to learn to wish that everything may happen as it does. And how do things happen? As the disposer has disposed them? And he has appointed summer and winter, and abundance and scarcity, and virtue and vice, and all such opposites for the harmony of the whole; and to each of us he has given a body, and parts of the body, and possessions, and companions.",
@@ -68,7 +82,7 @@
     "id": "discourses-08-006",
     "book_slug": "discourses",
     "chapter_slug": "of-contentment",
-    "card_number": 5,
+    "card_number": 6,
     "total_cards_in_chapter": 7,
     "plain_english": "So what's left? How can we deal with other people? Is there a way for them to do what they think is right while we still stay true to our nature? But you won't put up with it. You're always unhappy. When you're alone, you call it loneliness. When you're with people, you call them crooks and thieves. You complain about your parents, your kids, your brothers, your neighbors. Here's what you should do instead: When you're alone, call it peace and freedom. Think of yourself as being like the gods. When you're with a crowd, don't call it a mob or a hassle or stress. Call it a celebration, a gathering. Accept it all with contentment.",
     "original_excerpt": "What then remains, or what method is discovered of holding commerce with them? Is there such a method by which they shall do what seems fit to them, and we not the less shall be in a mood which is conformable to nature? But you are unwilling to endure, and are discontented; and if you are alone, you call it solitude; and if you are with men, you call them knaves and robbers; and you find fault with your own parents and children, and brothers and neighbors. But you ought when you are alone to call this condition by the name of tranquillity and freedom, and to think yourself like to the gods; and when you are with many, you ought not to call it crowd, nor trouble, nor uneasiness, but festival and assembly, and so accept all contentedly.",
@@ -84,7 +98,7 @@
     "id": "discourses-08-007",
     "book_slug": "discourses",
     "chapter_slug": "of-contentment",
-    "card_number": 6,
+    "card_number": 7,
     "total_cards_in_chapter": 7,
     "plain_english": "What happens to people who refuse to accept reality? They become exactly what they are. Are you unhappy being alone? Then stay alone. Are you dissatisfied with your parents? Then be a bad son and complain. Are you unhappy with your children? Then be a bad father. Throw him in prison. What prison? The one he's already in. He's there against his will, and wherever you are against your will, that's your prison. Socrates wasn't in prison because he chose to be there.",
     "original_excerpt": "What then is the punishment of those who do not accept? It is to be what they are. Is any person dissatisfied with being alone? Let him be alone. Is a man dissatisfied with his parents? Let him be a bad son, and lament. Is he dissatisfied with his children? Let him be a bad father. Cast him into prison. What prison? Where he is already, for he is there against his will; and where a man is against his will, there he is in prison. So Socrates was not in prison, for he was there willingly.",
@@ -95,21 +109,5 @@
       "facing-hardship"
     ],
     "reading_time_seconds": 25
-  },
-  {
-    "id": "discourses-08-008",
-    "book_slug": "discourses",
-    "chapter_slug": "of-contentment",
-    "card_number": 7,
-    "total_cards_in_chapter": 7,
-    "plain_english": "Must my leg be injured? You fool, will you complain about the whole world because of one measly leg? Won't you give it up willingly for the sake of everything else? Won't you let it go? Won't you gladly hand it back to the one who gave it to you? And will you be angry and bitter about the way Zeus set things up — the way he and the Fates planned and arranged your life when they were spinning your thread at birth? Don't you know how tiny you are compared to the whole universe? I'm talking about your body, because when it comes to your mind, you're not inferior to the gods. The size of your intelligence isn't measured by length or height, but by your thoughts.",
-    "original_excerpt": "Must my leg then be lamed? Wretch, do you then on account of one poor leg find fault with the world? Will you not willingly surrender it for the whole? Will you not withdraw from it? Will you not gladly part with it to him who gave it? And will you be vexed and discontented with the things established by Zeus, which he, with the Moirae (fates) who were present and spinning the thread of your generation, defined and put in order? Know you not how small a part you are compared with the whole. I mean with respect to the body, for as to intelligence you are not inferior to the gods nor less; for the magnitude of intelligence is not measured by length nor yet by height, but by thoughts.",
-    "source_reference": "Discourses, Of Contentment",
-    "author_slug": "epictetus",
-    "tags": [
-      "facing-hardship",
-      "freedom-and-control"
-    ],
-    "reading_time_seconds": 39
   }
 ]

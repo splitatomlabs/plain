@@ -1,6 +1,6 @@
 {
   "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:34:17.371Z",
+  "createdAt": "2026-04-16T08:55:59.016Z",
   "bookSlug": "happy-life",
   "chapters": {
     "happy-life_section-01": [
@@ -1262,6 +1262,21 @@
           "ideas_changed": false,
           "over_explains": false
         }
+      },
+      {
+        "sectionNumber": 23,
+        "originalText": "He will not allow it to be a burden either to himself or to any one else: he will give it—why do you prick up your ears? why do you open your pockets?—he will give it either to good men or to those whom it may make into good men. He will give it after having taken the utmost pains to choose those who are fittest to receive it, as becomes one who bears in mind that he ought to give an account of what he spends as well as of what he receives. He will give for good and commendable reasons, for a gift ill bestowed counts as a shameful loss: he will have an easily opened pocket, but not one with a hole in it, so that much may be taken out of it, yet nothing may fall out of it.",
+        "plainEnglish": "The wise man won't let wealth become a burden to himself or anyone else. He will give it away — why are you getting excited? Why are you reaching for your wallet? — he will give it to good people or to those who might become good because of it. He will take great care choosing who deserves his gifts. He remembers that he must account for what he spends just as much as what he receives. He will give for good and worthy reasons. A gift given to the wrong person is just a shameful waste. His pocket will open easily when it should, but it won't have holes in it. Plenty can be taken out when needed, but nothing will fall out by accident.",
+        "tags": [
+          "doing-the-right-thing",
+          "what-matters-most"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
       }
     ],
     "happy-life_section-24": [
@@ -1605,10 +1620,10 @@
     ]
   },
   "cost": {
-    "inputTokens": 2080498,
-    "outputTokens": 323029,
+    "inputTokens": 51209,
+    "outputTokens": 7139,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 5.5434645
+    "estimatedCost": 0.130356
   }
 }

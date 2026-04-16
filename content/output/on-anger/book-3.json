@@ -758,15 +758,15 @@
     "chapter_slug": "book-3",
     "card_number": 48,
     "total_cards_in_chapter": 121,
-    "plain_english": "He did not curse the king. He didn't even let slip a single unlucky word, even though his heart was wounded just as deeply as his son's. You could say he did well to hold back his words. If he had spoken as an angry man, he could never have expressed what he truly felt as a father. He may have shown more wisdom in that moment than when he tried to control the drinking of someone who was better off drinking wine than drinking blood — someone who kept the peace while his hands were busy with his wine cup. So he joined the ranks of those who learned the hard way how little kings care for good advice from their friends.",
+    "plain_english": "The father didn't curse the king. He didn't even let slip a single harsh word, though his heart was wounded as deeply as his son's body. You could say he did well to hold back his words. Even if he had spoken in anger, he could never have expressed what he truly felt as a father. I think he showed more wisdom in that moment than when he tried to control the drinking of a man who was better suited to drinking wine than drinking blood — a man who only granted peace when his hands were busy with his wine cup. By staying silent, the father joined the ranks of those who learned the hard way how little kings care about good advice from their friends.",
     "original_excerpt": "He did not curse the king, he did not so much as let fall a single inauspicious word, though he felt his own heart as deeply wounded as that of his son. He may be said to have done well in choking down his words; for though he might have spoken as an angry man, yet he could not have expressed what he felt as a father. He may, I repeat, be thought to have behaved with greater wisdom on that occasion than when he tried to regulate the drink of one who was better employed in drinking wine than in drinking blood, and who granted men peace while his hands were busy with the winecup. He, therefore, added one more to the number of those who have shown to their bitter cost how little kings care for their friends’ good advice.",
     "source_reference": "On Anger, Book 3, Section 14",
     "author_slug": "seneca",
     "tags": [
       "facing-hardship",
-      "human-nature"
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 37
+    "reading_time_seconds": 38
   },
   {
     "id": "on-anger-03-049",
@@ -790,22 +790,6 @@
     "chapter_slug": "book-3",
     "card_number": 50,
     "total_cards_in_chapter": 121,
-    "plain_english": "He made sure he was never invited to dinner again, to eat what was left of them. I'm not saying a father shouldn't condemn his king's actions or seek revenge against such a bloodthirsty monster. But what I learn from this story is important: even anger from the most shocking crimes can be hidden. It can be forced to speak in words that mean the opposite of what you feel. This kind of self-control is necessary — at least for people who choose this kind of life and get invited to eat at a king's table. This is how they must eat and drink. This is how they must answer questions and laugh at their own deaths.",
-    "original_excerpt": "He avoided being invited a second time to dinner, to eat what was left of them. I do not forbid a father to blame the act of his king, or to seek for some revenge worthy of so bloodthirsty a monster, but in the meanwhile I gather from the tale this fact, that even the anger which arises from unheard of outrages can be concealed, and forced into using language which is the very reverse of its meaning. This way of curbing anger is necessary, at least for those who have chosen this sort of life and who are admitted to dine at a king’s table; this is how they must eat and drink, this is how they must answer, and how they must laugh at their own deaths.",
-    "source_reference": "On Anger, Book 3, Section 15",
-    "author_slug": "seneca",
-    "tags": [
-      "facing-hardship",
-      "freedom-and-control"
-    ],
-    "reading_time_seconds": 35
-  },
-  {
-    "id": "on-anger-03-051",
-    "book_slug": "on-anger",
-    "chapter_slug": "book-3",
-    "card_number": 51,
-    "total_cards_in_chapter": 121,
     "plain_english": "Whether life is worth living under such conditions — well, that's a different question for another time. Let's not comfort these miserable people or tell them to obey their torturers. Instead, let's show them that no matter how enslaved a person might be, there's always a path to freedom open — unless their mind is sick. It's your own fault if you suffer when you could end your misery by ending yourself. To the man whose king shot arrows at his friends' chests, and to the man whose master forced fathers to eat their children's hearts, I would say: 'You fool, why are you moaning? What are you waiting for?'",
     "original_excerpt": "Whether life is worth having at such a price, we shall see hereafter; that is another question. Let us not console so sorry a crew, or encourage them to submit to the orders of their butchers; let us point out that however slavish a man’s condition may be, there is always a path to liberty open to him, unless his mind be diseased. It is a man’s own fault if he suffers, when by putting an end to himself he can put an end to his misery. To him whose king aimed arrows at the breasts of his friends, and to him whose master gorged fathers with the hearts of their children, I would say “Madman, why do you groan? for what are you waiting?",
     "source_reference": "On Anger, Book 3, Section 15",
@@ -817,10 +801,10 @@
     "reading_time_seconds": 33
   },
   {
-    "id": "on-anger-03-052",
+    "id": "on-anger-03-051",
     "book_slug": "on-anger",
     "chapter_slug": "book-3",
-    "card_number": 52,
+    "card_number": 51,
     "total_cards_in_chapter": 121,
     "plain_english": "Are you waiting for some enemy to free you by destroying your whole country? For some powerful king to come from far away? Look around you — everywhere you look, you can see a way to end your suffering. You see that cliff? That's a path to freedom. You see that ocean? That river? That well? Freedom waits at the bottom of each one. You see that tree? Stunted, diseased, withered as it is — freedom still hangs from its branches. You see your own throat, your own neck, your own heart? Each one is a way to escape slavery. Are the methods I'm showing you too hard? Do they need too much strength and courage? You ask what path leads to freedom? Any vein in your body.",
     "original_excerpt": "for some enemy to avenge you by the destruction of your entire nation, or for some powerful king to arrive from a distant land? Wherever you turn your eyes you may see an end to your woes. Do you see that precipice? down that lies the road to liberty; do you see that sea? that river? that well? Liberty sits at the bottom of them. Do you see that tree? stunted, blighted, dried up though it be, yet liberty hangs from its branches. Do you see your own throat, your own neck, your own heart? they are so many ways of escape from slavery. Are these modes which I point out too laborious, and needing much strength and courage? do you ask what path leads to liberty? I answer, any vein[3] in your body.",
@@ -831,6 +815,22 @@
       "facing-hardship"
     ],
     "reading_time_seconds": 38
+  },
+  {
+    "id": "on-anger-03-052",
+    "book_slug": "on-anger",
+    "chapter_slug": "book-3",
+    "card_number": 52,
+    "total_cards_in_chapter": 121,
+    "plain_english": "Are you waiting for some enemy to destroy your entire nation and free you? Or for some powerful king to march in from far away? Look around you — wherever you turn, you can see a way to end your suffering. Do you see that cliff? That's a road to freedom. Do you see that ocean? That river? That well? Freedom waits at the bottom of each one. Do you see that tree? Even though it's stunted and dying, freedom still hangs from its branches. Do you see your own throat, your own neck, your own heart? Each one offers a way to escape slavery. Are the methods I'm showing you too hard? Do they require too much strength and courage? Do you ask what path leads to freedom? I'll tell you — any vein in your body.",
+    "original_excerpt": "for some enemy to avenge you by the destruction of your entire nation, or for some powerful king to arrive from a distant land? Wherever you turn your eyes you may see an end to your woes. Do you see that precipice? down that lies the road to liberty; do you see that sea? that river? that well? Liberty sits at the bottom of them. Do you see that tree? stunted, blighted, dried up though it be, yet liberty hangs from its branches. Do you see your own throat, your own neck, your own heart? they are so many ways of escape from slavery. Are these modes which I point out too laborious, and needing much strength and courage? do you ask what path leads to liberty? I answer, any vein[3] in your body.",
+    "source_reference": "On Anger, Book 3, Section 15",
+    "author_slug": "seneca",
+    "tags": [
+      "freedom-and-control",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 41
   },
   {
     "id": "on-anger-03-053",
@@ -887,12 +887,12 @@
     "chapter_slug": "book-3",
     "card_number": 56,
     "total_cards_in_chapter": 121,
-    "plain_english": "He would have been cruel if he had taken all of them to war. How much kinder Xerxes was! When Pythias, who had five sons, begged for one to be excused from military service, Xerxes graciously let him choose which son to spare. Then he cut the chosen son in half, placed one piece on each side of the road, and used this sacrifice to purify his army before they marched through. So he got exactly what he deserved — total defeat. His army was scattered and destroyed, and he walked among his soldiers' corpses, seeing the wreckage of his own downfall everywhere he looked.",
+    "plain_english": "Darius would have been cruel if he had taken all three sons to war. But how much more 'generous' was Xerxes! When Pythias, a father of five sons, begged for one to be excused from military service, Xerxes allowed him to choose which one. Then Xerxes tore the chosen son in half, placed one piece on each side of the road, and used this as a ritual sacrifice to purify his army. He got exactly what he deserved. His forces were crushed in battle and scattered everywhere in complete defeat. Xerxes himself walked among the corpses of his soldiers, seeing proof of his own downfall on all sides.",
     "original_excerpt": "He would have been harsh, had he taken them all to the war with him. How much more good-natured was Xerxes,[5] who, when Pythias, the father of five sons, begged for one to be excused from service, permitted him to choose which he wished for. He then tore the son whom the father had chosen into two halves, placed one on each side of the road, and, as it were, purified his army by means of this propitiatory victim. He therefore had the end which he deserved, being defeated, and his army scattered far and wide in utter rout, while he in the midst of it walked among the corpses of his soldiers, seeing on all sides the signs of his own overthrow.",
     "source_reference": "On Anger, Book 3, Section 16",
     "author_slug": "seneca",
     "tags": [
-      "human-nature",
+      "facing-hardship",
       "doing-the-right-thing"
     ],
     "reading_time_seconds": 32
@@ -903,22 +903,6 @@
     "chapter_slug": "book-3",
     "card_number": 57,
     "total_cards_in_chapter": 121,
-    "plain_english": "Those ancient kings I mentioned were savage in their anger because they had no education or culture. Now let me tell you about King Alexander the Great, who was taught by Aristotle himself. While eating dinner, Alexander stabbed his dear friend Clitus with his own hand. Clitus had grown up with him, but Alexander killed him because Clitus wouldn't flatter him enough. Clitus was too slow to stop being a free Macedonian and start acting like a Persian slave. Alexander also threw another close friend, Lysimachus, into a cage with a lion. Lysimachus barely escaped with his life. But did this terrible experience make Lysimachus any kinder when he later became king himself? Not at all.",
-    "original_excerpt": "So ferocious in their anger were those kings who had no learning, no tincture of polite literature: now I will show you King Alexander (the Great), fresh from the lap of Aristotle, who with his own hand while at table stabbed Clitus, his dearest friend, who had been brought up with him, because he did not flatter him enough, and was too slow in transforming himself from a free man and a Macedonian into a Persian slave. Indeed he shut up Lysimachus,[6] who was no less his friend than Clitus, in a cage with a lion; yet did this make Lysimachus, who escaped by some happy chance from the lion’s teeth, any gentler when he became a king?",
-    "source_reference": "On Anger, Book 3, Section 17",
-    "author_slug": "seneca",
-    "tags": [
-      "facing-hardship",
-      "human-nature"
-    ],
-    "reading_time_seconds": 35
-  },
-  {
-    "id": "on-anger-03-058",
-    "book_slug": "on-anger",
-    "chapter_slug": "book-3",
-    "card_number": 58,
-    "total_cards_in_chapter": 121,
     "plain_english": "Look what he did to his own friend, Telesphorus from Rhodes. He cut off his nose and ears and kept him locked in a cell like some bizarre new animal. The man's hacked and ruined face made him barely look human anymore. Add starvation and the filthy squalor of wallowing in his own waste. His hands and knees grew hard and callused because the tiny space forced him to crawl instead of walk. His sides were covered in sores from scraping against the walls. He looked so horrifying and pitiful that his punishment had turned him into something monstrous — something you couldn't even feel sorry for. But as inhuman as the victim had become, the man who did this to him was even less human.",
     "original_excerpt": "Why, he mutilated his own friend, Telesphorus the Rhodian, cutting off his nose and ears, and kept him for a long while in a den, like some new and strange animal, after the hideousness of his hacked and disfigured face had made him no longer appear to be human, assisted by starvation and the squalid filth of a body left to wallow in its own dung! Besides this, his hands and knees, which the narrowness of his abode forced him to use instead of his feet, became hard and callous, while his sides were covered with sores by rubbing against the walls, so that his appearance was no less shocking than frightful, and his punishment turned him into so monstrous a creature that he was not even pitied. Yet, however unlike a man he was who suffered this, even more unlike was he who inflicted it.",
     "source_reference": "On Anger, Book 3, Section 17",
@@ -928,6 +912,22 @@
       "facing-hardship"
     ],
     "reading_time_seconds": 38
+  },
+  {
+    "id": "on-anger-03-058",
+    "book_slug": "on-anger",
+    "chapter_slug": "book-3",
+    "card_number": 58,
+    "total_cards_in_chapter": 121,
+    "plain_english": "Lysimachus mutilated his own friend, Telesphorus from Rhodes. He cut off his nose and ears and kept him locked in a tiny cell like some strange wild animal. The man's hacked and disfigured face no longer looked human. Starvation and filth made it even worse — he was forced to wallow in his own waste. The cell was so small that he had to crawl on his hands and knees instead of walking. His hands and knees became hard and callused. His sides were covered with sores from rubbing against the walls. He looked so shocking and frightening that his punishment had turned him into something monstrous — so monstrous that people couldn't even feel pity for him. But however inhuman the victim had become, the man who did this to him was even more inhuman.",
+    "original_excerpt": "Why, he mutilated his own friend, Telesphorus the Rhodian, cutting off his nose and ears, and kept him for a long while in a den, like some new and strange animal, after the hideousness of his hacked and disfigured face had made him no longer appear to be human, assisted by starvation and the squalid filth of a body left to wallow in its own dung! Besides this, his hands and knees, which the narrowness of his abode forced him to use instead of his feet, became hard and callous, while his sides were covered with sores by rubbing against the walls, so that his appearance was no less shocking than frightful, and his punishment turned him into so monstrous a creature that he was not even pitied. Yet, however unlike a man he was who suffered this, even more unlike was he who inflicted it.",
+    "source_reference": "On Anger, Book 3, Section 17",
+    "author_slug": "seneca",
+    "tags": [
+      "human-nature",
+      "facing-hardship"
+    ],
+    "reading_time_seconds": 41
   },
   {
     "id": "on-anger-03-059",
@@ -1048,22 +1048,6 @@
     "chapter_slug": "book-3",
     "card_number": 66,
     "total_cards_in_chapter": 121,
-    "plain_english": "This man was angry with a nation he'd never met, a people who had done him no harm. They could still feel his rage. But Cyrus was angry with a river. He was rushing to attack Babylon — and in war, timing is everything. He tried to cross the wide river Gyndes, which is dangerous even when summer heat has dried it to its lowest level. One of the white horses pulling the royal chariot was swept away. This loss sent the king into such a fury that he swore to drain the river that had stolen part of his royal convoy. He would make it so shallow that even women could walk across it and stomp on it.",
-    "original_excerpt": "This man was angry with an unknown and inoffensive nation, which nevertheless was able to feel his wrath; but Cyrus[8] was angry with a river. When hurrying to besiege Babylon, since in making war it is above all things important to seize one’s opportunity, he tried to ford the wide-spread river Gyndes, which it is hardly safe to attempt even when the river has been dried up by the summer heat and is at its lowest. Here one of the white horses which drew the royal chariot was washed away, and his loss moved the king to such violent rage, that he swore to reduce the river which had carried off his royal retinue to so low an ebb that even women should walk across it and trample upon it.",
-    "source_reference": "On Anger, Book 3, Section 21",
-    "author_slug": "seneca",
-    "tags": [
-      "facing-hardship",
-      "calm-your-mind"
-    ],
-    "reading_time_seconds": 36
-  },
-  {
-    "id": "on-anger-03-067",
-    "book_slug": "on-anger",
-    "chapter_slug": "book-3",
-    "card_number": 67,
-    "total_cards_in_chapter": 121,
     "plain_english": "So he used his entire army for this project. He kept working until he cut 180 channels across the riverbed and divided it into 360 streams. He left the original bed completely dry, with all the water flowing through new channels. This cost him time — which is crucial in major operations. It also broke his soldiers' courage through pointless labor. And he lost the chance to attack his unprepared enemy while he was fighting the river instead of his actual foes. This madness — what else can you call it? — has happened to Romans too. Gaius Caesar destroyed a beautiful villa at Herculaneum because his mother was once imprisoned there. He made the place famous for its tragedy. When the villa still stood, we used to sail past without even noticing it. Now people ask why it lies in ruins.",
     "original_excerpt": "He thereupon devoted all the resources of his army to this object, and remained working until by cutting one hundred and eighty channels across the bed of the river he divided it into three hundred and sixty brooks, and left the bed dry, the waters flowing through other channels. Thus he lost time, which is very important in great operations, and lost, also, the soldiers’ courage, which was broken by useless labour, and the opportunity of falling upon his enemy unprepared, while he was waging against the river the war which he had declared against his foes. This frenzy, for what else can you call it, has befallen Romans also, for G. Caesar destroyed a most beautiful villa at Herculaneum because his mother was once imprisoned in it, and has thus made the place notorious by its misfortune; for while it stood, we used to sail past it without noticing it, but now people inquire why it is in ruins.",
     "source_reference": "On Anger, Book 3, Section 21",
@@ -1073,6 +1057,22 @@
       "human-nature"
     ],
     "reading_time_seconds": 43
+  },
+  {
+    "id": "on-anger-03-067",
+    "book_slug": "on-anger",
+    "chapter_slug": "book-3",
+    "card_number": 67,
+    "total_cards_in_chapter": 121,
+    "plain_english": "Cyrus devoted his entire army to this pointless task. He stayed there working until he had cut one hundred and eighty channels across the riverbed. He divided the river into three hundred and sixty little streams and left the original bed completely dry. The water now flowed through other channels instead. By doing this, he lost precious time — which is crucial in major military campaigns. He also broke his soldiers' morale with pointless labor. And he missed his chance to attack his enemies while they were unprepared. All because he was fighting a war against a river instead of the war he had declared against actual people. This kind of madness — what else can you call it? — has struck Romans too. Gaius Caesar destroyed a beautiful villa at Herculaneum just because his mother had once been imprisoned there. He made the place famous for all the wrong reasons. When the villa still stood, we used to sail past it without even noticing it. Now people ask why it lies in ruins.",
+    "original_excerpt": "He thereupon devoted all the resources of his army to this object, and remained working until by cutting one hundred and eighty channels across the bed of the river he divided it into three hundred and sixty brooks, and left the bed dry, the waters flowing through other channels. Thus he lost time, which is very important in great operations, and lost, also, the soldiers’ courage, which was broken by useless labour, and the opportunity of falling upon his enemy unprepared, while he was waging against the river the war which he had declared against his foes. This frenzy, for what else can you call it, has befallen Romans also, for G. Caesar destroyed a most beautiful villa at Herculaneum because his mother was once imprisoned in it, and has thus made the place notorious by its misfortune; for while it stood, we used to sail past it without noticing it, but now people inquire why it is in ruins.",
+    "source_reference": "On Anger, Book 3, Section 21",
+    "author_slug": "seneca",
+    "tags": [
+      "facing-hardship",
+      "human-nature"
+    ],
+    "reading_time_seconds": 52
   },
   {
     "id": "on-anger-03-068",
@@ -1128,22 +1128,6 @@
     "chapter_slug": "book-3",
     "card_number": 71,
     "total_cards_in_chapter": 121,
-    "plain_english": "This man's grandson was Alexander, who would throw spears at his dinner guests. Remember those two friends I mentioned earlier? Alexander threw one to a wild beast and the other to himself. The one who faced the lion actually survived. Alexander didn't get this cruelty from his grandfather or even his father. Philip had a special talent for enduring insults patiently — it was one of his kingdom's greatest strengths.\n\nDemochares was nicknamed \"the Frank Speaker\" because of his reckless, shameless tongue. He came to Philip as part of an embassy from Athens. After Philip listened graciously to what they had to say, he asked them, \"Tell me, what can I do that will please the Athenians?\" Demochares jumped in and answered, \"Hang yourself.\" Everyone there was outraged by such a brutal response, but Philip told them to be quiet and let this fool leave safely. \"But you,\" he said to the other ambassadors, \"tell the Athenians that people who say such things are far more arrogant than those who hear them without taking revenge.\"",
-    "original_excerpt": "This man’s grandson[9] was Alexander, who used to hurl his lance at his guests, who, of the two friends which I have mentioned above, exposed one to the rage of a wild beast, and the other to his own; yet of these two men, he who was exposed to the lion survived. He did not derive this vice from his grandfather, nor even from his father; for it was an especial virtue of Philip’s to endure insults patiently, and was a great safeguard of his kingdom. Demochares, who was surnamed Parrhesiastes on account of his unbridled and impudent tongue, came on an embassy to him with other ambassadors from Athens. After graciously listening to what they had to say, Philip said to them, “Tell me, what can I do that will please the Athenians? “Demochares took him up, and answered, “Hang yourself.” All the bystanders expressed their indignation at so brutal an answer, but Philip bade them be silent, and let this Thersites depart safe and sound. “But do you,” said he, “you other ambassadors, tell the Athenians that those who say such things are much more arrogant than those who hear them without revenging themselves.”",
-    "source_reference": "On Anger, Book 3, Section 23",
-    "author_slug": "seneca",
-    "tags": [
-      "calm-your-mind",
-      "human-nature"
-    ],
-    "reading_time_seconds": 53
-  },
-  {
-    "id": "on-anger-03-072",
-    "book_slug": "on-anger",
-    "chapter_slug": "book-3",
-    "card_number": 72,
-    "total_cards_in_chapter": 121,
     "plain_english": "The late Emperor Augustus also did and said many memorable things that prove he wasn't ruled by anger. Timagenes, a history writer, made some nasty remarks about Augustus, his wife, and his whole family. His jokes didn't fall flat — nothing spreads faster or gets repeated more than reckless humor. Caesar often warned him to tone down his talk. When Timagenes kept offending, Augustus banned him from his house. After this, Timagenes spent his later years as a guest of Asinius Pollio and became the favorite of the whole city. Just because Caesar's door closed to him didn't mean other doors did. He read aloud the history he wrote after this incident, but burned all the books that told the story of Augustus Caesar.",
     "original_excerpt": "The late Emperor Augustus also did and said many memorable things, which prove that he was not under the dominion of anger. Timagenes, the historical writer, made some remarks upon him, his wife, and his whole family: nor did his jests fall to the ground, for nothing spreads more widely or is more in people’s mouths than reckless wit. Caesar often warned him to be less audacious in his talk, and as he continued to offend, forbade him his house. Timagenes after this passed the later years of his life as the guest of Asinius Pollio, and was the favourite of the whole city: the closing of Caesar’s door did not close any other door against him. He read aloud the history which he wrote after this, but burned the books which contained the doings of Augustus Caesar.",
     "source_reference": "On Anger, Book 3, Section 23",
@@ -1155,10 +1139,10 @@
     "reading_time_seconds": 37
   },
   {
-    "id": "on-anger-03-073",
+    "id": "on-anger-03-072",
     "book_slug": "on-anger",
     "chapter_slug": "book-3",
-    "card_number": 73,
+    "card_number": 72,
     "total_cards_in_chapter": 121,
     "plain_english": "Timagenes was Caesar's enemy, but no one was afraid to be his friend. No one avoided him as if he were cursed by the gods. Even though he had fallen from such a high position, someone was still willing to take him in. Caesar handled this patiently. He wasn't even angry that this historian had attacked his own achievements and reputation in his writing. Caesar never complained about the man who gave his enemy shelter. He simply said to Asinius Pollio, \"You're keeping a wild beast.\" When Pollio tried to defend himself, Caesar stopped him and said, \"Enjoy his friendship, my Pollio. Enjoy it.\" When Pollio said, \"If you command it, Caesar, I'll ban him from my house immediately,\" Caesar replied, \"Do you think I would do that, after I've made you two friends again?\" You see, Pollio had been angry with Timagenes before. But he stopped being angry for no other reason than that Caesar had started being angry with him.",
     "original_excerpt": "He was at enmity with Caesar, but yet no one feared to be his friend, no one shrank from him as though he were blasted by lightning: although he fell from so high a place, yet some one was found to catch him in his lap. Caesar, I say, bore this with patience, and was not even irritated by the historian’s having laid violent hands upon his own glories and acts: he never complained of the man who afforded his enemy shelter, but merely said to Asinius Pollio “You are keeping a wild beast:” then, when the other would have excused his conduct, he stopped him, and said “Enjoy, my Pollio, enjoy his friendship.” When Pollio said, “If you order me, Caesar, I will straightway forbid him my house,” he answered, “Do you think that I am likely to do this, after having made you friends again?” for formerly Pollio had been angry with Timagenes, and ceased to be angry with him for no other reason than that Caesar began to be so.",
@@ -1169,6 +1153,22 @@
       "doing-the-right-thing"
     ],
     "reading_time_seconds": 49
+  },
+  {
+    "id": "on-anger-03-073",
+    "book_slug": "on-anger",
+    "chapter_slug": "book-3",
+    "card_number": 73,
+    "total_cards_in_chapter": 121,
+    "plain_english": "Timagenes was Caesar's enemy, but no one was afraid to befriend him. No one avoided him as if he'd been struck by lightning. Even though he fell from such a high position, someone was ready to catch him. Caesar bore this patiently. He wasn't even upset that the historian had attacked his own achievements and reputation. Caesar never complained about Asinius Pollio sheltering his enemy. He simply said to Pollio, \"You are keeping a wild beast.\" When Pollio tried to defend himself, Caesar cut him off: \"Enjoy his friendship, my Pollio, enjoy it.\" When Pollio said, \"If you command it, Caesar, I'll ban him from my house immediately,\" Caesar replied, \"Do you think I would do that, now that I've made you two friends again?\" Pollio had been angry with Timagenes before, but stopped being angry for no other reason than that Caesar started being angry with him.",
+    "original_excerpt": "He was at enmity with Caesar, but yet no one feared to be his friend, no one shrank from him as though he were blasted by lightning: although he fell from so high a place, yet some one was found to catch him in his lap. Caesar, I say, bore this with patience, and was not even irritated by the historian’s having laid violent hands upon his own glories and acts: he never complained of the man who afforded his enemy shelter, but merely said to Asinius Pollio “You are keeping a wild beast:” then, when the other would have excused his conduct, he stopped him, and said “Enjoy, my Pollio, enjoy his friendship.” When Pollio said, “If you order me, Caesar, I will straightway forbid him my house,” he answered, “Do you think that I am likely to do this, after having made you friends again?” for formerly Pollio had been angry with Timagenes, and ceased to be angry with him for no other reason than that Caesar began to be so.",
+    "source_reference": "On Anger, Book 3, Section 23",
+    "author_slug": "seneca",
+    "tags": [
+      "calm-your-mind",
+      "human-nature"
+    ],
+    "reading_time_seconds": 44
   },
   {
     "id": "on-anger-03-074",
@@ -1596,15 +1596,15 @@
     "chapter_slug": "book-3",
     "card_number": 100,
     "total_cards_in_chapter": 121,
-    "plain_english": "This man tried to steal my inheritance. That one accused me in front of people I'd been working hard to impress. That other one wants my lover. When people want the same things, it should bring them together as friends. Instead, it turns them into enemies. A narrow path makes travelers fight with each other. But a wide road lets whole tribes pass without bumping into anyone. The things you desire cause fights and arguments among people who want them. That's because these desires are small and petty. You can't give something to one person without taking it away from another.",
+    "plain_english": "This man wanted to steal my inheritance. That one accused me in front of people I had been trying to impress for years. Another one wanted my lover. When we want the same things, it should bring us together as friends. Instead, it makes us enemies. A narrow path causes fights between people walking on it. But a wide road can handle whole tribes without anyone bumping into each other. The things you desire cause fights because they are small. You can't give them to one person without taking them away from someone else.",
     "original_excerpt": "This man wanted to rob me of my inheritance, that one has brought a charge against me before persons[14] whom I had long courted with great expectations, that one has coveted my mistress. A wish for the same things, which ought to have been a bond of friendship, becomes a source of quarrels and hatred. A narrow path causes quarrels among those who pass up and down it; a wide and broadly spread road may be used by whole tribes without jostling. Those objects of desire of yours cause strife and disputes among those who covet the same things, because they are petty, and cannot be given to one man without being taken away from another.",
     "source_reference": "On Anger, Book 3, Section 34",
     "author_slug": "seneca",
     "tags": [
       "human-nature",
-      "what-matters-most"
+      "facing-hardship"
     ],
-    "reading_time_seconds": 30
+    "reading_time_seconds": 28
   },
   {
     "id": "on-anger-03-101",

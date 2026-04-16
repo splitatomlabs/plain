@@ -533,22 +533,6 @@
     "chapter_slug": "book-06",
     "card_number": 34,
     "total_cards_in_chapter": 66,
-    "plain_english": "He was not a gossip. He didn't scare easily or get suspicious. His speech was simple and natural — no show-off words or fancy talk. He was happy with basic things: a simple room, plain bed, ordinary clothes, simple food, and basic help. He could work hard and be patient. He ate so little that he could go from morning to evening without needing to step away for bathroom breaks before his usual times. He was steady and loyal as a friend. When people boldly disagreed with him, he listened well. He was even happy when someone gave him better advice. And he was deeply religious, but not superstitious.",
-    "original_excerpt": "Again, how he was no backbiter, nor easily frightened, nor suspicious, and in his language free from all affectation and curiosity: and how easily he would content himself with few things, as lodging, bedding, clothing, and ordinary nourishment, and attendance. How able to endure labour, how patient; able through his spare diet to continue from morning to evening without any necessity of withdrawing before his accustomed hours to the necessities of nature: his uniformity and constancy in matter of friendship. How he would bear with them that with all boldness and liberty opposed his opinions; and even rejoice if any man could better advise him: and lastly, how religious he was without superstition.",
-    "source_reference": "Meditations, Book 6, Section 28",
-    "author_slug": "marcus-aurelius",
-    "tags": [
-      "knowing-yourself",
-      "what-matters-most"
-    ],
-    "reading_time_seconds": 33
-  },
-  {
-    "id": "meditations-06-035",
-    "book_slug": "meditations",
-    "chapter_slug": "book-06",
-    "card_number": 35,
-    "total_cards_in_chapter": 66,
     "plain_english": "Remember all these things about him, so that when your last hour comes, it will find you ready for it with a clear conscience, just as it found him.",
     "original_excerpt": "All these things of him remember, that whensoever thy last hour shall come upon thee, it may find thee, as it did him, ready for it in the possession of a good conscience.",
     "source_reference": "Meditations, Book 6, Section 28",
@@ -558,6 +542,22 @@
       "knowing-yourself"
     ],
     "reading_time_seconds": 9
+  },
+  {
+    "id": "meditations-06-035",
+    "book_slug": "meditations",
+    "chapter_slug": "book-06",
+    "card_number": 35,
+    "total_cards_in_chapter": 66,
+    "plain_english": "Remember all these things about him. When your last hour comes, let it find you ready like he was — with a clear conscience.",
+    "original_excerpt": "All these things of him remember, that whensoever thy last hour shall come upon thee, it may find thee, as it did him, ready for it in the possession of a good conscience.",
+    "source_reference": "Meditations, Book 6, Section 28",
+    "author_slug": "marcus-aurelius",
+    "tags": [
+      "death-and-mortality",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 7
   },
   {
     "id": "meditations-06-036",

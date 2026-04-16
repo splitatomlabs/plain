@@ -1,6 +1,6 @@
 {
   "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:34:17.373Z",
+  "createdAt": "2026-04-16T08:55:59.021Z",
   "bookSlug": "discourses",
   "chapters": {
     "discourses_of-the-things-which-are-in-our-power-and-not-in-our-power": [
@@ -598,6 +598,21 @@
         "tags": [
           "freedom-and-control",
           "human-nature"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 1,
+        "originalText": "When the man who was consulting him said, I seek to know this, How, even if my brother is not reconciled to me, shall I maintain myself in a state conformable to nature? Nothing great, said Epictetus, is produced suddenly, since not even the grape or the fig is. If you say to me now that you want a fig, I will answer to you that it requires time: let it flower first, then put forth fruit, and then ripen. Is then the fruit of a fig-tree not perfected suddenly and in one hour, and would you possess the fruit of a man's mind in so short a time and so easily? Do not expect it, even if I tell you.",
+        "plainEnglish": "When the man asking for advice said, \"I want to know this: How can I stay true to my nature even if my brother won't make up with me?\" Epictetus said, \"Nothing great happens overnight. Not even grapes or figs. If you told me right now that you wanted a fig, I'd tell you it takes time. First it has to flower, then grow the fruit, then ripen. If a fig tree can't make perfect fruit suddenly in one hour, do you really think you can get the fruit of someone's mind that quickly and easily? Don't expect it, even if I promise you it's possible.\"",
+        "tags": [
+          "facing-hardship",
+          "knowing-yourself"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -3915,6 +3930,21 @@
           "ideas_changed": false,
           "over_explains": false
         }
+      },
+      {
+        "sectionNumber": 1,
+        "originalText": "A person said to Rufus when Galba was murdered: Is the world now governed by Providence? But Rufus replied: Did I ever incidentally form an argument from Galba that the world is governed by Providence?",
+        "plainEnglish": "Someone asked Rufus after Emperor Galba was murdered: \"Is the world still governed by Providence?\" Rufus replied: \"Did I ever use Galba as proof that Providence governs the world in the first place?\"",
+        "tags": [
+          "freedom-and-control",
+          "calm-your-mind"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
       }
     ],
     "discourses_that-we-ought-with-caution-to-enter-into-familiar-intercourse-with-men": [
@@ -5860,10 +5890,10 @@
     ]
   },
   "cost": {
-    "inputTokens": 2080498,
-    "outputTokens": 323029,
+    "inputTokens": 51209,
+    "outputTokens": 7139,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 5.5434645
+    "estimatedCost": 0.130356
   }
 }

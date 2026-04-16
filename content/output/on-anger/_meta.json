@@ -18,23 +18,23 @@
       "slug": "book-1",
       "title": "Book 1",
       "card_count": 69,
-      "reading_time_seconds": 2470
+      "reading_time_seconds": 2464
     },
     {
       "slug": "book-2",
       "title": "Book 2",
       "card_count": 103,
-      "reading_time_seconds": 3574
+      "reading_time_seconds": 3612
     },
     {
       "slug": "book-3",
       "title": "Book 3",
       "card_count": 121,
-      "reading_time_seconds": 4465
+      "reading_time_seconds": 4483
     }
   ],
   "total_cards": 293,
-  "total_reading_time_seconds": 10509,
+  "total_reading_time_seconds": 10559,
   "source_url": "https://www.gutenberg.org/ebooks/64576",
   "has_chapters": true
 }

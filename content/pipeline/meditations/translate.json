@@ -1,6 +1,6 @@
 {
   "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:34:17.365Z",
+  "createdAt": "2026-04-16T08:55:59.005Z",
   "bookSlug": "meditations",
   "chapters": {
     "meditations_book-01": [
@@ -125,6 +125,21 @@
         }
       },
       {
+        "sectionNumber": 6,
+        "originalText": "who also had a proper happiness and faculty, rationally and methodically to find out, and set in order all necessary determinations and instructions for a man's life. A man without ever the least appearance of anger, or any other passion; able at the same time most exactly to observe the Stoic _Apathia_, or unpassionateness, and yet to be most tender-hearted: ever of good credit; and yet almost without any noise, or rumour: very learned, and yet making little show.",
+        "plainEnglish": "Sextus also had a special gift for thinking through life's problems step by step and organizing the guidance a person needs. He never showed anger or any other strong emotion. He could follow the Stoic ideal of being unshaken by feelings, while still being kind and caring. People always trusted him, but he never made a big show of himself. He was very learned, but he didn't flaunt it.",
+        "tags": [
+          "knowing-yourself",
+          "calm-your-mind"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
         "sectionNumber": 7,
         "originalText": "From Alexander the Grammarian, to be un-reprovable myself, and not\nreproachfully to reprehend any man for a barbarism, or a solecism, or\nany false pronunciation, but dextrously by way of answer, or testimony,\nor confirmation of the same matter (taking no notice of the word) to\nutter it as it should have been spoken; or by some other such close and\nindirect admonition, handsomely and civilly to tell him of it.",
         "plainEnglish": "From Alexander the Grammarian I learned not to make mistakes myself, and not to harshly correct others for their poor grammar or mispronunciations. Instead, I learned to gently guide them by speaking the word correctly in my response, or by finding some other tactful way to show them the right way without embarrassing them.",
@@ -236,6 +251,36 @@
         "tags": [
           "knowing-yourself",
           "calm-your-mind"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 13,
+        "originalText": "Again, how he was not easily moved and tossed up and down, but loved to be constant, both in the same places and businesses; and how after his great fits of headache he would return fresh and vigorous to his wonted affairs. Again, that secrets he neither had many, nor often, and such only as concerned public matters: his discretion and moderation, in exhibiting of the public sights and shows for the pleasure and pastime of the people: in public buildings. congiaries, and the like. In all these things, having a respect unto men only as men, and to the equity of the things themselves, and not unto the glory that might follow. Never wont to use the baths at unseasonable hours; no builder; never curious, or solicitous, either about his meat, or about the workmanship, or colour of his clothes, or about anything that belonged to external beauty.",
+        "plainEnglish": "Also, how steady he was. He didn't get thrown around by every little thing. He loved to stay consistent in his places and his work. After terrible headaches, he would come back fresh and ready for his usual duties. He kept very few secrets, and only about public matters. He was wise and moderate when putting on public shows and entertainment for the people. Same with public buildings and gifts to citizens. In all of this, he thought of people simply as people. He cared about fairness, not about the glory he might get. He never took baths at strange hours. He wasn't obsessed with building projects. He didn't fuss over his food, or the quality and color of his clothes, or anything else about how he looked.",
+        "tags": [
+          "knowing-yourself",
+          "what-matters-most"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 13,
+        "originalText": "Moreover, how much he did honour all true philosophers, without upbraiding those that were not so; his sociableness, his gracious and delightful conversation, but never unto satiety; his care of his body within bounds and measure, not as one that desired to live long, or over-studious of neatness, and elegancy; and yet not as one that did not regard it: so that through his own care and providence, he seldom needed any inward physic, or outward applications: but especially how ingeniously he would yield to any that had obtained any peculiar faculty, as either eloquence, or the knowledge of the laws, or of ancient customs, or the like; and how he concurred with them, in his best care and endeavour that every one of them might in his kind, for that wherein he excelled, be regarded and esteemed: and although he did all things carefully after the ancient customs of his forefathers, yet even of this was he not desirous that men should take notice, that he did imitate ancient customs.",
+        "plainEnglish": "He honored all true philosophers without putting down those who weren't. He was friendly and charming to talk with, but never too much. He took care of his body in a balanced way — not trying to live forever or obsessing over appearance, but not neglecting it either. Because of this, he rarely needed medicine or treatments. Most of all, he graciously stepped back when someone else had a special skill — whether speaking, law, or old customs. He worked hard to make sure each person got respect for what they did best. And though he carefully followed the old ways of his ancestors, he never made a show of it or wanted people to notice he was following tradition.",
+        "tags": [
+          "human-nature",
+          "knowing-yourself"
         ],
         "meaningCheck": {
           "faithful": true,
@@ -578,6 +623,22 @@
         }
       },
       {
+        "sectionNumber": 11,
+        "originalText": "His service doth consist in this, that a man keep himself pure from all violent passion and evil affection, from all rashness and vanity, and from all manner of discontent, either in regard of the gods or men. For indeed whatsoever proceeds from the gods, deserves respect for their worth and excellency; and whatsoever proceeds from men, as they are our kinsmen, should by us be entertained, with love, always; sometimes, as proceeding from their ignorance, of that which is truly good and bad, (a blindness no less, than that by which we are not able to discern between white and black:) with a kind of pity and compassion also.",
+        "plainEnglish": "This service means keeping yourself pure from violent emotions and evil feelings. Stay away from rashness and vanity. Don't be discontent with the gods or with people. Whatever comes from the gods deserves respect because of their worth and excellence. Whatever comes from people — since they are our family — should be met with love. Sometimes we should feel pity and compassion too, because their actions come from not knowing what is truly good and bad. This blindness is like not being able to tell white from black.",
+        "tags": [
+          "calm-your-mind",
+          "human-nature",
+          "knowing-yourself"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
         "sectionNumber": 12,
         "originalText": "If thou shouldst live three thousand, or as many as ten thousands of years, yet remember this, that man can part with no life properly, save with that little part of life, which he now lives: and that which he lives, is no other, than that which at every instant he parts with. That then which is longest of duration, and that which is shortest, come both to one effect. For although in regard of that which is already past there may be some inequality, yet that time which is now present and in being, is equal unto all men. And that being it which we part with whensoever we die, it doth manifestly appear, that it can be but a moment of time, that we then part with. For as for that which is either past or to come, a man cannot be said properly to part with it. For how should a man part with that which he hath not?",
         "plainEnglish": "Even if you lived three thousand years or ten thousand years, remember this: you can only lose the life you are living right now. The life you live is nothing more than what you lose at each moment. The longest life and the shortest life end the same way. There may be differences in what has already passed, but the present moment is equal for everyone. Since this present moment is what we lose when we die, it's clear that we only lose an instant. You can't really lose what is past or future. How can you lose what you don't have?",
@@ -811,6 +872,21 @@
         "plainEnglish": "A wise person rarely pays attention to what others say, do, or plan. They only focus on others when it's truly necessary for the public good. Their thoughts stay on what belongs to them — the things they can actually control. They believe the universe gives each person exactly what they're meant to have. The things that are truly theirs, the things in their power, they work to make good. As for everything else that happens to them, they trust it's for the best. The fate assigned to each person can't be avoided. But it's always beneficial.",
         "tags": [
           "freedom-and-control",
+          "what-matters-most"
+        ],
+        "meaningCheck": {
+          "faithful": true,
+          "tone_preserved": true,
+          "ideas_changed": false,
+          "over_explains": false
+        }
+      },
+      {
+        "sectionNumber": 4,
+        "originalText": "He remembers besides that whatsoever partakes of reason, is akin unto him, and that to care for all men generally, is agreeing to the nature of a man: but as for honour and praise, that they ought not generally to be admitted and accepted of from all, but from such only, who live according to nature. As for them that do not, what manner of men they be at home, or abroad; day or night, how conditioned themselves with what manner of conditions, or with men of what conditions they moil and pass away the time together, he knoweth, and remembers right well, he therefore regards not such praise and approbation, as proceeding from them, who cannot like and approve themselves.",
+        "plainEnglish": "He remembers that all rational beings are his kin. To care for all people is part of human nature. But honor and praise should not be accepted from everyone — only from those who live according to nature. As for those who don't live this way, he knows what kind of people they are. He knows how they behave at home and in public, day and night. He knows what company they keep and how they waste their time. So he doesn't value praise from people who can't even approve of themselves.",
+        "tags": [
+          "human-nature",
           "what-matters-most"
         ],
         "meaningCheck": {
@@ -4130,7 +4206,7 @@
       {
         "sectionNumber": 28,
         "originalText": "He hath a stronger body, and is a better wrestler than I. What\nthen? Is he more bountiful? is he more modest? Doth he bear all adverse\nchances with more equanimity: or with his neighbour's offences with more\nmeekness and gentleness than I?",
-        "plainEnglish": "He has a stronger body and is a better wrestler than I am. So what? Is he more generous? Is he more humble? Does he handle bad luck with more calm? Does he deal with other people's wrongs with more patience and kindness than I do?",
+        "plainEnglish": "He has a stronger body and is a better wrestler than I am. So what? Is he more generous? Is he more humble? Does he handle bad luck with more calm than I do? Does he deal with his neighbor's mistakes with more patience and kindness than I do?",
         "tags": [
           "knowing-yourself",
           "what-matters-most"
@@ -6715,7 +6791,7 @@
       {
         "sectionNumber": 12,
         "originalText": "He hath got loose from the bonds of his body, and perceiving that\nwithin a very little while he must of necessity bid the world farewell,\nand leave all these things behind him, he wholly applied himself, as to\nrighteousness in all his actions, so to the common nature in all things\nthat should happen unto him. And contenting himself with these two\nthings, to do all things justly, and whatsoever God doth send to like\nwell of it: what others shall either say or think of him, or shall do\nagainst him, he doth not so much as trouble his thoughts with it. To go\non straight, whither right and reason directed him, and by so doing to\nfollow God, was the only thing that he did mind, that, his only business\nand occupation.",
-        "plainEnglish": "He broke free from his body's hold on him. He saw that soon he would have to say goodbye to the world and leave everything behind. So he focused completely on two things: doing what was right in everything he did, and accepting whatever nature brought his way. He was content with just these two goals — to act justly and to welcome whatever God sent him. What other people might say or think about him, or do against him — he didn't even bother thinking about it. His only concern was to keep moving forward where right and reason led him. By doing this, he was following God. That was his only focus, his only work.",
+        "plainEnglish": "A person has freed himself from the prison of his body. He knows that very soon he must leave this world and everything in it behind. So he focuses completely on two things: doing what is right in all his actions, and accepting whatever nature brings his way. He is content with these two goals - to act justly, and to welcome whatever God sends. What others say or think about him, or what they do against him - he doesn't even bother thinking about it. His only concern is to move forward where right and reason point him. By doing this, he follows God. This was his only focus, his only work.",
         "tags": [
           "doing-the-right-thing",
           "freedom-and-control"
@@ -8518,10 +8594,10 @@
     ]
   },
   "cost": {
-    "inputTokens": 2080498,
-    "outputTokens": 323029,
+    "inputTokens": 51209,
+    "outputTokens": 7139,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 5.5434645
+    "estimatedCost": 0.130356
   }
 }

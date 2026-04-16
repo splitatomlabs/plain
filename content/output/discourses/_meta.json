@@ -60,19 +60,19 @@
       "slug": "of-contentment",
       "title": "Of Contentment",
       "card_count": 7,
-      "reading_time_seconds": 237
+      "reading_time_seconds": 198
     },
     {
       "slug": "how-everything-may-be-done-acceptably-to-the-gods",
       "title": "How Everything May Be Done Acceptably to the Gods",
       "card_count": 2,
-      "reading_time_seconds": 60
+      "reading_time_seconds": 75
     },
     {
       "slug": "what-philosophy-promises",
       "title": "What Philosophy Promises",
       "card_count": 2,
-      "reading_time_seconds": 75
+      "reading_time_seconds": 79
     },
     {
       "slug": "that-we-ought-not-to-be-angry-with-the-errors-faults-of-others",
@@ -180,7 +180,7 @@
       "slug": "on-anxiety-solicitude",
       "title": "On Anxiety (solicitude)",
       "card_count": 7,
-      "reading_time_seconds": 271
+      "reading_time_seconds": 223
     },
     {
       "slug": "to-naso",
@@ -192,7 +192,7 @@
       "slug": "to-or-against-those-who-obstinately-persist-in-what-they-have-determined",
       "title": "To or Against Those Who Obstinately Persist in What They Have Determined",
       "card_count": 5,
-      "reading_time_seconds": 187
+      "reading_time_seconds": 185
     },
     {
       "slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
@@ -210,7 +210,7 @@
       "slug": "how-we-should-struggle-against-appearances",
       "title": "How We Should Struggle Against Appearances",
       "card_count": 7,
-      "reading_time_seconds": 227
+      "reading_time_seconds": 272
     },
     {
       "slug": "of-inconsistency",
@@ -258,7 +258,7 @@
       "slug": "miscellaneous",
       "title": "Miscellaneous",
       "card_count": 2,
-      "reading_time_seconds": 49
+      "reading_time_seconds": 23
     },
     {
       "slug": "to-the-administrator-of-the-free-cities-who-was-an-epicurean",
@@ -330,7 +330,7 @@
       "slug": "about-freedom",
       "title": "About Freedom",
       "card_count": 19,
-      "reading_time_seconds": 700
+      "reading_time_seconds": 710
     },
     {
       "slug": "on-familiar-intimacy",
@@ -400,7 +400,7 @@
     }
   ],
   "total_cards": 388,
-  "total_reading_time_seconds": 13488,
+  "total_reading_time_seconds": 13447,
   "source_url": "https://www.gutenberg.org/ebooks/10661",
   "has_chapters": false
 }
