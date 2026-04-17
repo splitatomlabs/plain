@@ -9,8 +9,7 @@
 
 ## Tools
 
-- **Primary:** Vercel Analytics (free, no cookies, integrated with hosting, supports custom events)
-- **Optional backup:** Cloudflare Web Analytics (free, unlimited, for basic traffic data)
+- **Primary:** Umami Cloud (free tier: 100k events/mo; cookieless; custom events included at every tier; GDPR/ePrivacy-friendly — no consent banner required)
 - **Never:** Google Analytics, Mixpanel, Segment, Hotjar, session recording tools
 
 ## Events
@@ -59,13 +58,13 @@ The core measurement. Segment every stage by traffic source.
 
 ## Implementation Notes
 
-1. Install `@vercel/analytics`, inject at root layout
-2. Create `src/lib/analytics.ts` with a `trackEvent(name, properties)` wrapper
-3. Fire events from the progress layer when state crosses milestone boundaries
-4. Track first-session state in localStorage: `plain:first_session` flag + `plain:session_card_count`. Fire `engaged_session` when count reaches 2, then flip the flag false permanently
-5. Track `plain:books_started` array for `is_first_book` property
-6. Skip all tracking if `navigator.doNotTrack === '1'`
-7. Gate tracking behind environment check to exclude local dev
+1. Umami script tag injected in `web/src/routes/+layout.svelte` via `<svelte:head>`, gated on `PUBLIC_UMAMI_WEBSITE_ID` (from `$env/static/public`) and `!dev`. Set the env var in Vercel → Settings → Environment Variables for Production + Preview.
+2. `web/src/lib/analytics.js` exposes a `trackEvent(name, properties)` wrapper that calls `window.umami?.track(name, properties)`.
+3. Fire events from the progress layer when state crosses milestone boundaries.
+4. Track first-session state in localStorage: `plain:first_session` flag + `plain:session_card_count` (sessionStorage). Fire `engaged_session` when count reaches 2, then flip the flag false permanently.
+5. Track `plain:books_started` array for `is_first_book` property.
+6. DNT is honoured at the script tag via `data-do-not-track="true"` — Umami drops tracking for visitors with DNT set; no JS-level check needed.
+7. `analyticsEnabled = browser && !dev` gates `trackEvent` to exclude local dev; the script tag itself is also omitted in dev.
 
 ## Review Cadence
 
