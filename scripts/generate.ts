@@ -8,6 +8,7 @@ import { translateChunksBatch, type TranslatedChunk, type BatchTranslateInput } 
 import { assembleBook, writeContentFiles, type ChapterChunks } from "./lib/assembler.js";
 import { validateSectionCoverage, validateRefineCoverage, validateParseContent } from "./lib/validate.js";
 import { tokenUsage, batchStats } from "./lib/claude.js";
+import { logger } from "./lib/logger.js";
 import {
   saveParseCache,
   loadParseCache,
@@ -31,21 +32,21 @@ type Phase = (typeof VALID_PHASES)[number];
 const { values: args } = parseArgs({
   options: {
     book: { type: "string" },
-    all: { type: "boolean", default: false },
     phase: { type: "string" },
     output: { type: "string", default: "content/output" },
+    verbose: { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
 });
 
 if (args.help) {
-  console.log(`Usage: npx tsx scripts/generate.ts [options]
+  console.log(`Usage: npx tsx scripts/generate.ts --book <slug> [options]
 
 Options:
-  --book <slug>      Generate a single book (${VALID_BOOK_SLUGS.join(", ")})
-  --all              Generate all books
+  --book <slug>      Book to generate (${VALID_BOOK_SLUGS.join(", ")})
   --phase <phase>    Run a single phase: ${VALID_PHASES.join(", ")}
   --output <dir>     Output directory (default: content/output)
+  --verbose          Print all log messages to stderr (log file always written)
   --help             Show this help
 
 Environment:
@@ -54,12 +55,14 @@ Environment:
 Pipeline: parse → refine → translate → assemble
 
 When --phase is omitted, runs all four phases end-to-end.
-When --phase is specified, runs only that phase using persisted intermediates.`);
+When --phase is specified, runs only that phase using persisted intermediates.
+
+Logs are written to content/pipeline/<slug>/pipeline.log on every run.`);
   process.exit(0);
 }
 
-if (!args.book && !args.all) {
-  console.error("Specify --book <slug> or --all");
+if (!args.book) {
+  console.error("Specify --book <slug>");
   process.exit(1);
 }
 
@@ -102,7 +105,10 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   console.log(`\nParsing ${config.slug}...`);
 
   const text = await readFile(config.source_file, "utf-8");
+  logger.info(`parse: loaded ${config.source_file} (${text.length} chars)`);
   const parsed = parseSourceText(text, config);
+  const totalSections = parsed.chapters.reduce((s, ch) => s + ch.sections.length, 0);
+  logger.info(`parse: ${parsed.chapters.length} chapters, ${totalSections} sections`);
 
   // Validate parsed content before chunking (catches source artifacts
   // like inter-book preamble before we spend money on refine/translate).
@@ -116,15 +122,18 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
     }
   }
   if (parseContentErrors.length > 0) {
+    for (const e of parseContentErrors) logger.error(`parse: content error — ${e}`);
     console.error(`\nParse content errors in ${config.slug}:`);
     for (const e of parseContentErrors) console.error(`  ${e}`);
     throw new Error(`${config.slug}: ${parseContentErrors.length} parse content error(s)`);
   }
+  logger.info("parse: content validation passed");
 
   const coverageErrors: string[] = [];
 
   const chapters = parsed.chapters.map((ch) => {
     const chunks = chunkSections(ch.sections, config.speakerLabels);
+    logger.info(`parse: ${ch.slug} — ${ch.sections.length} sections → ${chunks.length} chunks`);
     console.log(`  ${ch.slug}: ${chunks.length} chunks`);
 
     // Verify no sections were dropped during parse → chunk
@@ -144,10 +153,12 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   });
 
   if (coverageErrors.length > 0) {
+    for (const e of coverageErrors) logger.error(`parse: coverage error — ${e}`);
     console.error(`\nSection coverage errors in ${config.slug}:`);
     for (const e of coverageErrors) console.error(`  ${e}`);
     throw new Error(`${config.slug}: ${coverageErrors.length} section coverage error(s)`);
   }
+  logger.info("parse: section coverage validation passed");
 
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
@@ -264,6 +275,8 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
             }
           }
 
+          logger.warn(`refine: validation errors in ${config.slug}/${ch.slug} — retry ${retries}/${MAX_REFINE_RETRIES}, retrying ${retryChunks.length} sections (batches: ${[...failingBatchIndices].join(",")})`);
+          for (const e of refineErrors) logger.error(`refine: ${e.message}`);
           console.error(`  Refine errors in ${config.slug}/${ch.slug} — retrying ${retryChunks.length}/${ch.chunks.length} sections (${retries}/${MAX_REFINE_RETRIES})...`);
           for (const e of refineErrors) console.error(`    ${e.message}`);
 
@@ -293,6 +306,8 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
         }
 
         if (refineErrors.length > 0) {
+          logger.error(`refine: coverage errors persist in ${config.slug}/${ch.slug} after ${MAX_REFINE_RETRIES} retries`);
+          for (const e of refineErrors) logger.error(`refine: ${e.message}`);
           console.error(`  Refine coverage errors in ${config.slug}/${ch.slug} (after ${MAX_REFINE_RETRIES} retries):`);
           for (const e of refineErrors) console.error(`    ${e.message}`);
           validationErrors.push(`${config.slug}/${ch.slug}: refine dropped content`);
@@ -309,6 +324,7 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
         await saveRefineCache(config.slug, chapters, cost);
         console.log(`  Cached refine results for ${config.slug}`);
       } else {
+        logger.error(`refine: skipping cache for ${config.slug} — has validation errors`);
         console.error(`  Skipping cache for ${config.slug} — has validation errors`);
       }
 
@@ -433,16 +449,16 @@ async function runAssemble(
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  const configs = args.all
-    ? BOOK_CONFIGS
-    : [BOOK_CONFIGS.find((b) => b.slug === args.book)];
+  const config = BOOK_CONFIGS.find((b) => b.slug === args.book);
 
-  if (!configs[0]) {
+  if (!config) {
     console.error(`Unknown book "${args.book}". Valid: ${VALID_BOOK_SLUGS.join(", ")}`);
     process.exit(1);
   }
 
-  const validConfigs = configs as BookConfig[];
+  await logger.init(config.slug, !!args.verbose);
+
+  const validConfigs = [config];
   const phase = args.phase as Phase | undefined;
 
   if (phase) {
@@ -551,9 +567,11 @@ async function main(): Promise<void> {
   }
 
   console.log("\nDone.");
+  await logger.close();
 }
 
-main().catch((e) => {
+main().catch(async (e) => {
   console.error("Generation failed:", e);
+  await logger.close();
   process.exit(1);
 });

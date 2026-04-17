@@ -84,17 +84,19 @@ TypeScript CLI that turns plain-text source books into card JSON via the Anthrop
 # Run full pipeline for one book (requires ANTHROPIC_API_KEY)
 ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book shortness-of-life
 
-# Run full pipeline for all books
-ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all
-
 # Run individual phases against persisted intermediates
-npx tsx scripts/generate.ts --all --phase parse         # no AI calls
-ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all --phase refine
-ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all --phase translate
-npx tsx scripts/generate.ts --all --phase assemble      # no AI calls
+npx tsx scripts/generate.ts --book shortness-of-life --phase parse         # no AI calls
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book shortness-of-life --phase refine
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book shortness-of-life --phase translate
+npx tsx scripts/generate.ts --book shortness-of-life --phase assemble      # no AI calls
+
+# Verbose mode — stream pipeline log messages to stderr
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book shortness-of-life --verbose
 ```
 
-Flags: `--book <slug>`, `--all`, `--phase <parse|refine|translate|assemble>`, `--output <dir>` (default: `content/output`), `--help`.
+Flags: `--book <slug>` (required), `--phase <parse|refine|translate|assemble>`, `--verbose`, `--output <dir>` (default: `content/output`), `--help`.
+
+Each run writes a diagnostic log to `content/pipeline/<slug>/pipeline.log` with LLM decisions, validation errors, retries, and cache status. Use `--verbose` to also print these to stderr.
 
 ## Testing
 

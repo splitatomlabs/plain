@@ -11,6 +11,7 @@ import path from "node:path";
 import type { Chunk } from "./chunker.js";
 import type { ParsedChapter } from "./parser.js";
 import type { TranslatedChunk } from "./translator.js";
+import { logger } from "./logger.js";
 
 function cacheDir(): string {
   return path.resolve("content/pipeline");
@@ -128,6 +129,7 @@ export async function saveParseCache(
   await ensureBookDir(bookSlug);
   const data: CachedParse = { pipelineVersion: PIPELINE_VERSION, createdAt: new Date().toISOString(), bookSlug, chapters };
   await writeFile(parsePath(bookSlug), JSON.stringify(data, null, 2) + "\n");
+  logger.info(`cache: saved parse for ${bookSlug} (${chapters.length} chapters)`);
 }
 
 export async function loadParseCache(
@@ -137,11 +139,14 @@ export async function loadParseCache(
     const raw = await readFile(parsePath(bookSlug), "utf-8");
     const data = JSON.parse(raw) as CachedParse;
     if (data.pipelineVersion !== PIPELINE_VERSION) {
+      logger.info(`cache: miss for ${bookSlug} parse (pipeline version changed: ${data.pipelineVersion} → ${PIPELINE_VERSION})`);
       console.log(`  Cache miss (pipeline version changed) for ${bookSlug} parse`);
       return null;
     }
+    logger.info(`cache: hit for ${bookSlug} parse (${data.chapters.length} chapters)`);
     return data.chapters;
   } catch {
+    logger.info(`cache: miss for ${bookSlug} parse (file not found)`);
     return null;
   }
 }
@@ -159,6 +164,7 @@ export async function saveRefineCache(
   const data: CachedRefine = { pipelineVersion: PIPELINE_VERSION, createdAt: new Date().toISOString(), bookSlug, chapters };
   if (cost) data.cost = cost;
   await writeFile(refinePath(bookSlug), JSON.stringify(data, null, 2) + "\n");
+  logger.info(`cache: saved refine for ${bookSlug} (${chapters.length} chapters)`);
 }
 
 export async function loadRefineCache(
@@ -168,11 +174,15 @@ export async function loadRefineCache(
     const raw = await readFile(refinePath(bookSlug), "utf-8");
     const data = JSON.parse(raw) as CachedRefine;
     if (data.pipelineVersion !== PIPELINE_VERSION) {
+      logger.info(`cache: miss for ${bookSlug} refine (pipeline version changed: ${data.pipelineVersion} → ${PIPELINE_VERSION})`);
       console.log(`  Cache miss (pipeline version changed) for ${bookSlug} refine`);
       return null;
     }
+    const totalChunks = data.chapters.reduce((s, ch) => s + ch.chunks.length, 0);
+    logger.info(`cache: hit for ${bookSlug} refine (${data.chapters.length} chapters, ${totalChunks} chunks)`);
     return data.chapters;
   } catch {
+    logger.info(`cache: miss for ${bookSlug} refine (file not found)`);
     return null;
   }
 }
@@ -194,6 +204,8 @@ export async function saveTranslateCache(
   const data: CachedTranslate = { pipelineVersion: PIPELINE_VERSION, createdAt: new Date().toISOString(), bookSlug, chapters };
   if (cost) data.cost = cost;
   await writeFile(translatePath(bookSlug), JSON.stringify(data, null, 2) + "\n");
+  const totalChunks = [...translated.values()].reduce((s, chunks) => s + chunks.length, 0);
+  logger.info(`cache: saved translate for ${bookSlug} (${totalChunks} chunks)`);
 }
 
 /**
@@ -225,6 +237,9 @@ export function diffChunksForTranslation(
     }
   }
 
+  if (kept.length > 0 || uncached.length > 0) {
+    logger.info(`cache: translate diff — ${kept.length} cached, ${uncached.length} uncached`);
+  }
   return { cached: kept, uncached };
 }
 
@@ -274,6 +289,7 @@ export async function loadTranslateCache(
     const raw = await readFile(translatePath(bookSlug), "utf-8");
     const data = JSON.parse(raw) as CachedTranslate;
     if (data.pipelineVersion !== PIPELINE_VERSION) {
+      logger.info(`cache: miss for ${bookSlug} translate (pipeline version changed: ${data.pipelineVersion} → ${PIPELINE_VERSION})`);
       console.log(`  Cache miss (pipeline version changed) for ${bookSlug} translate`);
       return null;
     }
@@ -281,8 +297,11 @@ export async function loadTranslateCache(
     for (const [key, chunks] of Object.entries(data.chapters)) {
       map.set(key, chunks);
     }
+    const totalChunks = [...map.values()].reduce((s, chunks) => s + chunks.length, 0);
+    logger.info(`cache: hit for ${bookSlug} translate (${map.size} chapters, ${totalChunks} chunks)`);
     return map;
   } catch {
+    logger.info(`cache: miss for ${bookSlug} translate (file not found)`);
     return null;
   }
 }

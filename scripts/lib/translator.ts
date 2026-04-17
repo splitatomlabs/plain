@@ -13,6 +13,7 @@ import {
 import { VALID_TAG_SLUGS, type BookConfig, type TagSlug } from "./constants.js";
 import type { Chunk } from "./chunker.js";
 import { buildTranslationSystem, buildTranslationUser } from "./prompt.js";
+import { logger } from "./logger.js";
 
 export interface MeaningCheck {
   faithful: boolean;
@@ -99,12 +100,14 @@ export async function translateChunksBatch(
 
   if (requests.length === 0) return new Map();
 
+  logger.info(`translate-batch: submitting ${requests.length} requests`);
   process.stderr.write(
     `[batch] Submitting ${requests.length} translation requests...\n`,
   );
 
   // 2. Submit batch
   const batch = await createMessageBatch(requests);
+  logger.info(`translate-batch: created batch ${batch.id}`);
   process.stderr.write(`[batch] Created batch ${batch.id}\n`);
 
   // 3. Poll until done
@@ -127,6 +130,7 @@ export async function translateChunksBatch(
     if (item.result.type === "errored") {
       batchStats.failed++;
       failedIds.push(item.custom_id);
+      logger.error(`translate-batch: request ${item.custom_id} errored: ${JSON.stringify(item.result.error)}`);
       process.stderr.write(
         `[batch] WARNING: request ${item.custom_id} failed: ${JSON.stringify(item.result.error)}\n`,
       );
@@ -139,6 +143,7 @@ export async function translateChunksBatch(
     if (!textBlock || textBlock.type !== "text") {
       batchStats.failed++;
       failedIds.push(item.custom_id);
+      logger.error(`translate-batch: no text content for ${item.custom_id}`);
       process.stderr.write(
         `[batch] WARNING: no text content in result for ${item.custom_id}\n`,
       );
@@ -159,6 +164,7 @@ export async function translateChunksBatch(
     } catch {
       batchStats.failed++;
       failedIds.push(item.custom_id);
+      logger.error(`translate-batch: failed to parse JSON for ${item.custom_id}`);
       process.stderr.write(
         `[batch] WARNING: failed to parse JSON for ${item.custom_id}\n`,
       );
@@ -169,6 +175,7 @@ export async function translateChunksBatch(
     if (!result.plain_english) {
       batchStats.failed++;
       failedIds.push(item.custom_id);
+      logger.error(`translate-batch: missing plain_english for ${item.custom_id}`);
       process.stderr.write(
         `[batch] WARNING: missing plain_english for ${item.custom_id} — will retry\n`,
       );
@@ -182,6 +189,7 @@ export async function translateChunksBatch(
 
   // 5. Retry failed chunks via real-time API
   if (failedIds.length > 0) {
+    logger.warn(`translate-batch: retrying ${failedIds.length} failed chunks via real-time API`);
     process.stderr.write(
       `[batch] Retrying ${failedIds.length} failed chunks via real-time API...\n`,
     );
@@ -204,10 +212,13 @@ export async function translateChunksBatch(
         batchStats.succeeded++;
         batchStats.failed = Math.max(0, batchStats.failed - 1);
         addTranslatedResult(resultMap, customId, result, info);
+        logger.info(`translate-batch: retry succeeded for ${customId}`);
         process.stderr.write(`[batch] Retry succeeded for ${customId}\n`);
       } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        logger.error(`translate-batch: retry also failed for ${customId}: ${msg}`);
         process.stderr.write(
-          `[batch] Retry also failed for ${customId}: ${e instanceof Error ? e.message : String(e)}\n`,
+          `[batch] Retry also failed for ${customId}: ${msg}\n`,
         );
       }
     }
@@ -229,6 +240,11 @@ function addTranslatedResult(
   info: { bookSlug: string; chapterSlug: string; chunk: Chunk },
 ): void {
   let validTags = validateTags(result.tags);
+  const originalTagCount = result.tags?.length ?? 0;
+  const filteredOut = originalTagCount - validTags.length;
+  if (filteredOut > 0) {
+    logger.info(`translate: ${customId} — filtered ${filteredOut} invalid tags (${JSON.stringify(result.tags)} → ${JSON.stringify(validTags)})`);
+  }
   if (validTags.length === 0) validTags = ["what-matters-most"];
   if (validTags.length > 3) validTags = validTags.slice(0, 3);
 
@@ -241,21 +257,25 @@ function addTranslatedResult(
   };
 
   if (!meaningCheck.faithful) {
+    logger.warn(`translate: meaning not preserved (${customId}). ${meaningCheck.verification_notes ?? ""}`);
     process.stderr.write(
       `  WARNING: Meaning not preserved (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
     );
   }
   if (!meaningCheck.tone_preserved) {
+    logger.warn(`translate: tone drift (${customId}). ${meaningCheck.verification_notes ?? ""}`);
     process.stderr.write(
       `  WARNING: Tone drift (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
     );
   }
   if (meaningCheck.ideas_changed) {
+    logger.warn(`translate: ideas changed (${customId}). ${meaningCheck.verification_notes ?? ""}`);
     process.stderr.write(
       `  WARNING: Ideas changed (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
     );
   }
   if (meaningCheck.over_explains) {
+    logger.info(`translate: over-explains (${customId}). ${meaningCheck.verification_notes ?? ""}`);
     process.stderr.write(
       `  INFO: Over-explains (${customId}). ${meaningCheck.verification_notes ?? ""}\n`,
     );
