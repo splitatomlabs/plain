@@ -48,19 +48,21 @@ TypeScript CLI that turns plain-text source books into card JSON. Uses the Anthr
 # Run full pipeline for one book
 ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book enchiridion
 
-# Run full pipeline for all books
-ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --all
-
 # Run a single phase against persisted intermediates
 npx tsx scripts/generate.ts --book enchiridion --phase parse
 ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book enchiridion --phase refine
 ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book enchiridion --phase translate
 npx tsx scripts/generate.ts --book enchiridion --phase assemble
+
+# Verbose mode — prints all log messages to stderr
+ANTHROPIC_API_KEY=... npx tsx scripts/generate.ts --book enchiridion --verbose
 ```
 
-Flags: `--book <slug>`, `--all`, `--phase <parse|refine|translate|assemble>`, `--output <dir>` (default: `content/output`), `--help`.
+Flags: `--book <slug>` (required), `--phase <parse|refine|translate|assemble>`, `--verbose`, `--output <dir>` (default: `content/output`), `--help`.
 
 Directory layout: source texts in `content/source/`, pipeline cache in `content/pipeline/` (parse.json, refine.json, translate.json per book), fixtures in `content/fixtures/`, output card JSON in `content/output/`.
+
+**Pipeline logs:** Every run writes a human-readable log to `content/pipeline/<slug>/pipeline.log`. This captures LLM decisions (split/keep/merge), validation errors, retries, cache hits/misses, and batch API progress. When troubleshooting, read this file first. Use `--verbose` to also stream these messages to stderr in real time.
 
 **Cache invalidation:** Bump `PIPELINE_VERSION` in `scripts/lib/cache.ts` when pipeline logic changes — this auto-invalidates all cached intermediates.
 
