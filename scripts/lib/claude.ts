@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { logger } from "./logger.js";
 
 export class ClaudeCliError extends Error {
   constructor(message: string, public readonly rawOutput?: string) {
@@ -113,6 +114,7 @@ async function rateLimit(): Promise<void> {
   }
   if (callTimestamps.length >= MAX_RPM) {
     const waitMs = callTimestamps[0] - windowStart + 100; // wait until oldest exits window + buffer
+    logger.info(`rate-limit: waiting ${Math.round(waitMs / 1000)}s (${MAX_RPM} RPM limit)`);
     process.stderr.write(`[rate-limit] Waiting ${Math.round(waitMs / 1000)}s...\n`);
     await new Promise<void>((resolve) => setTimeout(resolve, waitMs));
   }
@@ -207,6 +209,7 @@ export async function createMessageBatch(
       },
     };
   });
+  logger.info(`batch-api: creating batch with ${sdkRequests.length} requests`);
   return client.messages.batches.create({ requests: sdkRequests });
 }
 
@@ -238,6 +241,7 @@ export async function pollBatchUntilDone(
     } catch (err) {
       consecutiveErrors++;
       const msg = err instanceof Error ? err.message : String(err);
+      logger.warn(`batch-api: poll error for ${batchId} (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}): ${msg}`);
       process.stderr.write(
         `[batch] ${batchId} poll error (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}): ${msg}\n`,
       );
@@ -260,10 +264,12 @@ export async function pollBatchUntilDone(
     const progress = total > 0
       ? ` (${counts.succeeded}/${total} succeeded${counts.errored ? `, ${counts.errored} errored` : ""}, ${elapsedStr} elapsed)`
       : ` (${elapsedStr} elapsed)`;
+    logger.info(`batch-api: ${batchId} status=${batch.processing_status}${progress}`);
     process.stderr.write(
       `[batch] ${batchId} status=${batch.processing_status}${progress}\n`,
     );
     if (batch.processing_status === "ended") {
+      logger.info(`batch-api: ${batchId} completed`);
       return batch;
     }
     await new Promise<void>((resolve) => setTimeout(resolve, intervalMs));
@@ -307,6 +313,7 @@ export async function callClaudeJSON<T>(
   try {
     return JSON.parse(extractJSON(output)) as T;
   } catch {
+    logger.warn("api: JSON parse failed, retrying with explicit instruction");
     // Retry once with explicit JSON instruction
     const retryOutput = await callClaudeAPI(
       `${fullPrompt}\n\nRespond with only valid JSON, no other text.`,
@@ -316,6 +323,7 @@ export async function callClaudeJSON<T>(
     try {
       return JSON.parse(extractJSON(retryOutput)) as T;
     } catch {
+      logger.error("api: JSON parse failed after retry");
       throw new ClaudeCliError(
         "Failed to parse JSON from API after retry",
         retryOutput,
