@@ -125,6 +125,8 @@ A good card:
 
 HARD RULE: Any section longer than 200 words MUST be split. Each resulting segment must be under 200 words.
 
+SPLIT RULE: Always split at sentence boundaries. Never split mid-sentence.
+
 AUTHOR CONTEXT: ${authorContext}
 
 You will receive multiple sections at once. Evaluate EACH section and decide what to do with it.
@@ -173,10 +175,10 @@ function estimateReadingTime(text: string): number {
 
 /**
  * Split text into two halves at the best available boundary.
- * Prefers paragraph breaks (\n\n), falls back to sentence endings,
- * and as a last resort splits at the midpoint word boundary.
+ * Prefers paragraph breaks (\n\n), falls back to sentence endings.
+ * Returns null if no clean boundary exists (caller should keep chunk intact).
  */
-function splitTextAtBoundary(text: string): [string, string] {
+export function splitTextAtBoundary(text: string): [string, string] | null {
   const mid = Math.floor(text.length / 2);
 
   // Try paragraph breaks — pick the one closest to the midpoint
@@ -193,12 +195,14 @@ function splitTextAtBoundary(text: string): [string, string] {
     return [text.slice(0, best).trimEnd(), text.slice(best).trimStart()];
   }
 
-  // Try sentence boundaries (". ", "? ", "! ")
-  const sentenceRe = /[.?!]\s/g;
+  // Try sentence boundaries — includes closing quotes after punctuation (e.g., `." `)
+  // and semicolons/colons which are valid chunk endings per CHUNK_SENTENCE_END_RE
+  const sentenceRe = /[.?!;:]['""\u201D)\]]*\s/g;
   const sentSplits: number[] = [];
   let m: RegExpExecArray | null;
   while ((m = sentenceRe.exec(text)) !== null) {
-    sentSplits.push(m.index + 1);
+    // Split after the punctuation and any closing quotes, before the whitespace
+    sentSplits.push(m.index + m[0].length - 1);
   }
   if (sentSplits.length > 0) {
     const best = sentSplits.reduce((a, b) =>
@@ -207,22 +211,27 @@ function splitTextAtBoundary(text: string): [string, string] {
     return [text.slice(0, best).trimEnd(), text.slice(best).trimStart()];
   }
 
-  // Last resort: split at midpoint word boundary
-  const spaceAfter = text.indexOf(" ", mid);
-  const splitAt = spaceAfter !== -1 ? spaceAfter : mid;
-  return [text.slice(0, splitAt).trimEnd(), text.slice(splitAt).trimStart()];
+  // No clean boundary found — caller should keep chunk intact
+  return null;
 }
 
 /**
  * Recursively split a chunk's text until every piece is under MAX_READING_TIME_SECONDS.
+ * Keeps the chunk intact if no clean boundary (paragraph or sentence) exists —
+ * a long card is better than a mid-sentence break.
  */
-function splitOversizedChunk(chunk: Chunk): Chunk[] {
+export function splitOversizedChunk(chunk: Chunk): Chunk[] {
   if (estimateReadingTime(chunk.text) <= MAX_READING_TIME_SECONDS) {
     return [chunk];
   }
 
-  const [textA, textB] = splitTextAtBoundary(chunk.text);
+  const result = splitTextAtBoundary(chunk.text);
+  if (!result) {
+    // No clean boundary — keep as-is rather than splitting mid-sentence
+    return [chunk];
+  }
 
+  const [textA, textB] = result;
   return [
     ...splitOversizedChunk({ sectionNumber: chunk.sectionNumber, text: textA }),
     ...splitOversizedChunk({ sectionNumber: chunk.sectionNumber, text: textB }),

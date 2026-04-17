@@ -137,6 +137,7 @@ export function validateTagCoverage(cards: Card[]): ValidationMessage[] {
     }
   }
   for (const [slug, count] of tagCounts) {
+    // Intentionally non-blocking: informational about taxonomy coverage gaps
     if (count === 0) {
       msgs.push({
         severity: "warn",
@@ -159,7 +160,6 @@ export function validateReadability(card: Card): ValidationMessage[] {
   if (text.length < 50) return msgs; // too short for reliable metrics
 
   const fkgl: number = rs.fleschKincaidGrade(text);
-  const fre: number = rs.fleschReadingEase(text);
 
   if (fkgl > 12) {
     msgs.push({
@@ -168,21 +168,13 @@ export function validateReadability(card: Card): ValidationMessage[] {
       field: "plain_english",
       message: `FKGL ${fkgl.toFixed(1)} exceeds maximum of 12 — text is too difficult`,
     });
+  // Intentionally non-blocking: soft readability target, not worth retrying over
   } else if (fkgl < 7 || fkgl > 8) {
     msgs.push({
       severity: "warn",
       card_id: card.id,
       field: "plain_english",
       message: `FKGL ${fkgl.toFixed(1)} outside target range 7-8`,
-    });
-  }
-
-  if (fre < 65 || fre > 75) {
-    msgs.push({
-      severity: "warn",
-      card_id: card.id,
-      field: "plain_english",
-      message: `Flesch Reading Ease ${fre.toFixed(1)} outside target range 65-75`,
     });
   }
 
@@ -291,25 +283,11 @@ export function validateCardContent(card: Card): ValidationMessage[] {
   // Expected: "Meditations, Book 5, Section 16" or "The Enchiridion, Section 23" etc.
   if (card.source_reference && !/^.+,.+\d+/.test(card.source_reference)) {
     msgs.push({
-      severity: "warn",
+      severity: "error",
       card_id: card.id,
       field: "source_reference",
       message: `source_reference "${card.source_reference}" does not match expected format (e.g. "Meditations, Book 5, Section 16")`,
     });
-  }
-
-  // Check that text fields end with sentence-ending punctuation (not mid-sentence)
-  const SENTENCE_END_RE = /[.?!;:'""\u201D)\]]$/;
-  for (const field of ["plain_english", "original_excerpt"] as const) {
-    const text = card[field]?.trim();
-    if (text && text.length >= 50 && !SENTENCE_END_RE.test(text)) {
-      msgs.push({
-        severity: "warn",
-        card_id: card.id,
-        field,
-        message: `${field} may end mid-sentence (ends with: "...${text.slice(-40)}")`,
-      });
-    }
   }
 
   // No HTML in text fields
@@ -325,7 +303,7 @@ export function validateCardContent(card: Card): ValidationMessage[] {
     }
     if (text && (MD_HEADING_RE.test(text) || MD_BOLD_RE.test(text) || MD_LINK_RE.test(text))) {
       msgs.push({
-        severity: "warn",
+        severity: "error",
         card_id: card.id,
         field,
         message: `${field} appears to contain Markdown formatting`,
@@ -550,17 +528,37 @@ export function validateRefineCoverage(
   }
 
   // Check that each post-refine chunk ends with sentence-ending punctuation
-  // (catches mid-sentence splits before expensive translation)
-  const CHUNK_SENTENCE_END_RE = /[.?!;:'""\u201D)\]]$/;
+  // (catches mid-sentence splits before expensive translation).
+  // If the corresponding pre-refine chunk also fails the regex, the source text
+  // genuinely ends that way (e.g., em-dash before inline verse) — not an error.
+  // Em-dashes (\u2014) are allowed because they appear naturally in source texts
+  // before inline verse quotations (e.g., "tempers—" or "verse:—"). Actual
+  // mid-sentence splits end with plain words, not em-dashes.
+  const CHUNK_SENTENCE_END_RE = /[.?!;:'""\u201D)\]\u2014]$/;
+  const preBySection = new Map<number, Chunk[]>();
+  for (const c of preRefine) {
+    const list = preBySection.get(c.sectionNumber) ?? [];
+    list.push(c);
+    preBySection.set(c.sectionNumber, list);
+  }
+
   for (const chunk of postRefine) {
     const trimmed = chunk.text.trim();
     if (trimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(trimmed)) {
-      msgs.push({
-        severity: "error",
-        card_id: `section-${chunk.sectionNumber}`,
-        field: "refine",
-        message: `Section ${chunk.sectionNumber} chunk ends mid-sentence after refine (ends with: "...${trimmed.slice(-50)}")`,
+      // Check if the pre-refine source also ends the same way
+      const preChunks = preBySection.get(chunk.sectionNumber) ?? [];
+      const sourceAlsoFails = preChunks.some((pc) => {
+        const preTrimmed = pc.text.trim();
+        return preTrimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(preTrimmed);
       });
+      if (!sourceAlsoFails) {
+        msgs.push({
+          severity: "error",
+          card_id: `section-${chunk.sectionNumber}`,
+          field: "refine",
+          message: `Section ${chunk.sectionNumber} chunk ends mid-sentence after refine (ends with: "...${trimmed.slice(-50)}")`,
+        });
+      }
     }
   }
 

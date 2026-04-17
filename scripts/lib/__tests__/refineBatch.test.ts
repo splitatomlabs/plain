@@ -398,8 +398,9 @@ describe("refineChunksBatch", () => {
   });
 
   it("applies LENGTH-SPLIT to oversized chunks after batch decisions", async () => {
-    // Create a chunk that exceeds 60s reading time (~200 words)
-    const longText = Array(250).fill("word").join(" ");
+    // Create a chunk that exceeds 60s reading time with sentence boundaries
+    const sentence = Array(50).fill("word").join(" ") + ".";
+    const longText = Array(5).fill(sentence).join(" ");
     const inputs: BatchRefineInput[] = [
       {
         bookSlug: "enchiridion",
@@ -418,7 +419,7 @@ describe("refineChunksBatch", () => {
     const result = await refineChunksBatch(inputs);
     const r = result.get("enchiridion_section-01")!;
 
-    // Should have been LENGTH-SPLIT
+    // Should have been LENGTH-SPLIT at sentence boundary
     expect(r.chunks.length).toBeGreaterThan(1);
     expect(r.splits).toBeGreaterThan(0);
   });

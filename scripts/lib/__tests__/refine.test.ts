@@ -8,7 +8,7 @@ vi.mock("../claude.js", () => ({
   ClaudeCliError: class ClaudeCliError extends Error {},
 }));
 
-import { refineChunksRealtime, buildRefineSystem, buildBulkRefineSystem, buildBulkRefineUser } from "../refine.js";
+import { refineChunksRealtime, buildRefineSystem, buildBulkRefineSystem, buildBulkRefineUser, splitTextAtBoundary, splitOversizedChunk } from "../refine.js";
 import { callClaudeJSON } from "../claude.js";
 
 const mockCallClaudeJSON = vi.mocked(callClaudeJSON);
@@ -219,8 +219,9 @@ describe("refineChunksRealtime", () => {
   });
 
   it("splits chunks that exceed 60s reading time cap (safety net)", async () => {
-    // 400 words ≈ 120s at 200wpm — should be split into two chunks
-    const longText = Array(400).fill("word").join(" ");
+    // 400 words ≈ 120s at 200wpm — with sentence boundaries, should split
+    const sentence = Array(40).fill("word").join(" ") + ".";
+    const longText = Array(10).fill(sentence).join(" ");
     const chunks = [makeChunk(1, longText)];
 
     mockCallClaudeJSON.mockResolvedValueOnce(
@@ -236,8 +237,9 @@ describe("refineChunksRealtime", () => {
   });
 
   it("recursively splits very large chunks into 3+ pieces", async () => {
-    // 700 words ≈ 210s — should split into at least 3 chunks (each ≤ 200 words)
-    const longText = Array(700).fill("word").join(" ");
+    // 700 words ≈ 210s — with sentence boundaries, should split into 3+
+    const sentence = Array(30).fill("word").join(" ") + ".";
+    const longText = Array(24).fill(sentence).join(" ");
     const chunks = [makeChunk(1, longText)];
 
     mockCallClaudeJSON.mockResolvedValueOnce(
@@ -288,7 +290,7 @@ describe("refineChunksRealtime", () => {
     expect(result.chunks[1].text).toMatch(/\.$/);
   });
 
-  it("splits at word boundary as last resort when no sentences or paragraphs", async () => {
+  it("keeps chunk intact when no sentences or paragraphs to split at", async () => {
     // 300 words with no sentence-ending punctuation or paragraph breaks
     const longText = Array(300).fill("word").join(" ");
     const chunks = [makeChunk(1, longText)];
@@ -299,12 +301,9 @@ describe("refineChunksRealtime", () => {
 
     const result = await refineChunksRealtime(chunks, testConfig);
 
-    expect(result.chunks.length).toBe(2);
-    // Neither half should start or end with a partial word (no leading/trailing spaces)
-    expect(result.chunks[0].text).not.toMatch(/^\s/);
-    expect(result.chunks[0].text).not.toMatch(/\s$/);
-    expect(result.chunks[1].text).not.toMatch(/^\s/);
-    expect(result.chunks[1].text).not.toMatch(/\s$/);
+    // No clean boundary — chunk should be kept as-is rather than split mid-word
+    expect(result.chunks.length).toBe(1);
+    expect(result.chunks[0].text).toBe(longText);
   });
 
   it("does not split chunks at or under 60s", async () => {
@@ -401,8 +400,9 @@ describe("refineChunksRealtime", () => {
   });
 
   it("handles model returning oversized split via safety net", async () => {
-    // Model keeps a 250-word chunk (misses the 200-word cap)
-    const longText = Array(250).fill("word").join(" ");
+    // Model keeps a 250-word chunk with sentence boundaries — safety net splits it
+    const sentence = Array(50).fill("word").join(" ") + ".";
+    const longText = Array(5).fill(sentence).join(" ");
     const chunks = [makeChunk(1, longText)];
 
     mockCallClaudeJSON.mockResolvedValueOnce(
@@ -411,7 +411,7 @@ describe("refineChunksRealtime", () => {
 
     const result = await refineChunksRealtime(chunks, testConfig);
 
-    // Safety net should catch it
+    // Safety net should catch it and split at sentence boundary
     expect(result.chunks.length).toBeGreaterThan(1);
     expect(result.splits).toBe(1);
   });
@@ -480,5 +480,62 @@ describe("buildBulkRefineUser", () => {
     const user = buildBulkRefineUser(chunks);
     expect(user).not.toContain("bite-sized");
     expect(user).not.toContain("200 words");
+  });
+});
+
+describe("splitTextAtBoundary", () => {
+  it("splits at paragraph break closest to midpoint", () => {
+    const text = "First paragraph here.\n\nSecond paragraph here.";
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toBe("First paragraph here.");
+    expect(result![1]).toBe("Second paragraph here.");
+  });
+
+  it("splits at closing-quote sentence boundary", () => {
+    const text = 'He said "Go further off, for fear the king should hear you." He also heard soldiers cursing.';
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toMatch(/\."/);
+    expect(result![1]).toMatch(/^He also/);
+  });
+
+  it("splits at semicolon boundary", () => {
+    const text = "We should pardon many slaves; as it is we obey our first impulse.";
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toMatch(/;$/);
+  });
+
+  it("splits at colon boundary", () => {
+    const text = "We ought to make a distinction: whether a man cannot or will not do it.";
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toMatch(/:$/);
+  });
+
+  it("returns null when no clean boundary exists", () => {
+    const text = Array(300).fill("word").join(" ");
+    const result = splitTextAtBoundary(text);
+    expect(result).toBeNull();
+  });
+});
+
+describe("splitOversizedChunk", () => {
+  it("keeps chunk intact when no clean boundary exists", () => {
+    const text = Array(300).fill("word").join(" ");
+    const result = splitOversizedChunk({ sectionNumber: 1, text });
+    expect(result).toHaveLength(1);
+    expect(result[0].text).toBe(text);
+  });
+
+  it("splits oversized chunk with sentence boundaries", () => {
+    const sentence = Array(50).fill("word").join(" ") + ".";
+    const text = Array(5).fill(sentence).join(" ");
+    const result = splitOversizedChunk({ sectionNumber: 1, text });
+    expect(result.length).toBeGreaterThan(1);
+    for (const chunk of result) {
+      expect(chunk.text).toMatch(/\.$/);
+    }
   });
 });
