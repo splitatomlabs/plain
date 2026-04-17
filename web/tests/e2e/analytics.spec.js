@@ -43,7 +43,7 @@ test.describe('Analytics event wiring', () => {
 		expect(landingCall[1]).toMatchObject({ book_id: 'enchiridion' });
 	});
 
-	test('book_started and engaged_session fire after reading 2 cards', async ({ page }) => {
+	test('book_started and first_engagement fire after reading 2 cards', async ({ page }) => {
 		// Visit the landing first (matches real user flow).
 		await page.goto('/enchiridion');
 
@@ -67,7 +67,7 @@ test.describe('Analytics event wiring', () => {
 		await page.waitForURL(/\/enchiridion\/section-01\/2/);
 		await page.waitForSelector('[data-keyboard-ready]');
 
-		// Advance to card 3 — this marks card 2 as read and should fire engaged_session
+		// Advance to card 3 — this marks card 2 as read and should fire first_engagement
 		// (session_card_count hits 2 on a first session).
 		await page.click('a[aria-label="Next card"]');
 		await page.waitForURL(/\/enchiridion\/section-01\/[34]|\/(section-02)\/1/);
@@ -86,7 +86,7 @@ test.describe('Analytics event wiring', () => {
 		// is_first_book should be a boolean (true since localStorage was cleared).
 		expect(typeof startedCall[1].is_first_book).toBe('boolean');
 
-		// engaged_session fired when session card count reached 2.
-		expect(eventNames).toContain('engaged_session');
+		// first_engagement fired when session card count reached 2.
+		expect(eventNames).toContain('first_engagement');
 	});
 });

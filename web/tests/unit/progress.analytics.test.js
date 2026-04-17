@@ -135,21 +135,21 @@ describe('progress store — analytics events', () => {
 	});
 
 	// -----------------------------------------------------------------------
-	// 2. engaged_session
+	// 2. first_engagement
 	// -----------------------------------------------------------------------
-	describe('engaged_session', () => {
+	describe('first_engagement', () => {
 		it('fires exactly once after 2 distinct cards are marked read in a single session', () => {
 			progress.markCardRead('meditations', 'meditations-01-001');
 			progress.markCardRead('meditations', 'meditations-01-002');
 
-			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'engaged_session');
+			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'first_engagement');
 			expect(engagedCalls).toHaveLength(1);
 		});
 
 		it('does NOT fire after only 1 distinct card', () => {
 			progress.markCardRead('meditations', 'meditations-01-001');
 
-			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'engaged_session');
+			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'first_engagement');
 			expect(engagedCalls).toHaveLength(0);
 		});
 
@@ -165,7 +165,7 @@ describe('progress store — analytics events', () => {
 			}
 			progress.markCardRead('enchiridion', 'enchiridion-01-001');
 
-			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'engaged_session');
+			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'first_engagement');
 			expect(engagedCalls).toHaveLength(0);
 		});
 
@@ -176,7 +176,7 @@ describe('progress store — analytics events', () => {
 			// Re-read same card — should not increment session count
 			progress.markCardRead('meditations', 'meditations-01-001');
 
-			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'engaged_session');
+			const engagedCalls = trackEventSpy.mock.calls.filter((c) => c[0] === 'first_engagement');
 			expect(engagedCalls).toHaveLength(0);
 		});
 	});

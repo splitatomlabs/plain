@@ -98,7 +98,7 @@ function createProgressStore() {
 
 				const newCount = incrementSessionCardCount();
 				if (newCount === 2 && getFirstSessionState().firstSession === true) {
-					trackEvent('engaged_session');
+					trackEvent('first_engagement');
 					endFirstSession();
 				}
 
