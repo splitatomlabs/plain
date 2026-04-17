@@ -229,6 +229,21 @@ describe("validateCardContent", () => {
     expect(msgs.some((m) => m.field === "original_excerpt")).toBe(true);
   });
 
+  it("accepts numbered source_reference format", () => {
+    const msgs = validateCardContent(makeCard({ source_reference: "Meditations, Book 5, Section 16" }));
+    expect(msgs.some((m) => m.field === "source_reference")).toBe(false);
+  });
+
+  it("accepts titled chapter source_reference format", () => {
+    const msgs = validateCardContent(makeCard({ source_reference: "Discourses, About Cynicism" }));
+    expect(msgs.some((m) => m.field === "source_reference")).toBe(false);
+  });
+
+  it("errors on source_reference missing comma separator", () => {
+    const msgs = validateCardContent(makeCard({ source_reference: "JustATitle" }));
+    expect(msgs.some((m) => m.field === "source_reference" && m.severity === "error")).toBe(true);
+  });
+
 });
 
 describe("validateCardSequence", () => {

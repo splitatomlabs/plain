@@ -281,13 +281,17 @@ export function validateCardContent(card: Card): ValidationMessage[] {
   }
 
   // Check source_reference format
-  // Expected: "Meditations, Book 5, Section 16" or "The Enchiridion, Section 23" etc.
-  if (card.source_reference && !/^.+,.+\d+/.test(card.source_reference)) {
+  // Expected: "Meditations, Book 5, Section 16" or "The Enchiridion, Section 23"
+  // or titled chapters like "Discourses, About Cynicism"
+  if (
+    card.source_reference &&
+    !/^.+, .+/.test(card.source_reference)
+  ) {
     msgs.push({
       severity: "error",
       card_id: card.id,
       field: "source_reference",
-      message: `source_reference "${card.source_reference}" does not match expected format (e.g. "Meditations, Book 5, Section 16")`,
+      message: `source_reference "${card.source_reference}" does not match expected format (e.g. "Meditations, Book 5, Section 16" or "Discourses, About Cynicism")`,
     });
   }
 
