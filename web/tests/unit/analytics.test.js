@@ -57,7 +57,7 @@ const {
 	incrementSessionCardCount,
 	markFirstBookStarted,
 	isFirstBook,
-	endFirstSession,
+	markFirstEngagementFired,
 	trackReturnVisit
 } = await import('$lib/analytics.js');
 
@@ -75,17 +75,17 @@ describe('analytics first-session helpers', () => {
 	describe('getFirstSessionState', () => {
 		it('returns defaults when keys are absent', () => {
 			const state = getFirstSessionState();
-			expect(state.firstSession).toBe(true);
+			expect(state.firstEngagementFired).toBe(false);
 			expect(state.sessionCardCount).toBe(0);
 			expect(state.booksStarted).toEqual([]);
 		});
 
 		it('reflects persisted values', () => {
-			localStorageMock._getStore()['plain:first_session'] = 'false';
+			localStorageMock._getStore()['plain:first_engagement_fired'] = 'true';
 			sessionStorageMock._getStore()['plain:session_card_count'] = '3';
 			localStorageMock._getStore()['plain:books_started'] = JSON.stringify(['enchiridion']);
 			const state = getFirstSessionState();
-			expect(state.firstSession).toBe(false);
+			expect(state.firstEngagementFired).toBe(true);
 			expect(state.sessionCardCount).toBe(3);
 			expect(state.booksStarted).toEqual(['enchiridion']);
 		});
@@ -139,15 +139,15 @@ describe('analytics first-session helpers', () => {
 		});
 	});
 
-	describe('endFirstSession', () => {
-		it('sets the first_session flag to false', () => {
-			endFirstSession();
-			expect(localStorageMock._getStore()['plain:first_session']).toBe('false');
+	describe('markFirstEngagementFired', () => {
+		it('sets the first_engagement_fired flag to true', () => {
+			markFirstEngagementFired();
+			expect(localStorageMock._getStore()['plain:first_engagement_fired']).toBe('true');
 		});
 
 		it('getFirstSessionState reflects the flip', () => {
-			endFirstSession();
-			expect(getFirstSessionState().firstSession).toBe(false);
+			markFirstEngagementFired();
+			expect(getFirstSessionState().firstEngagementFired).toBe(true);
 		});
 	});
 

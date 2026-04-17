@@ -5,7 +5,7 @@ import {
 	incrementSessionCardCount,
 	markFirstBookStarted,
 	isFirstBook,
-	endFirstSession,
+	markFirstEngagementFired,
 	getFirstSessionState
 } from '$lib/analytics.js';
 
@@ -97,9 +97,9 @@ function createProgressStore() {
 				}
 
 				const newCount = incrementSessionCardCount();
-				if (newCount === 2 && getFirstSessionState().firstSession === true) {
+				if (newCount === 2 && !getFirstSessionState().firstEngagementFired) {
 					trackEvent('first_engagement');
-					endFirstSession();
+					markFirstEngagementFired();
 				}
 
 				if (totalCards !== null && totalCards > 0) {

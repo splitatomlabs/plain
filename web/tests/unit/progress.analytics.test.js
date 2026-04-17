@@ -29,7 +29,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 // trackEvent spy plus in-memory stub implementations of first-session helpers.
 // Using an object so the beforeEach reset can mutate in place without re-creating references.
 const analyticsState = {
-	firstSession: true,
+	firstEngagementFired: false,
 	sessionCardCount: 0,
 	booksStarted: []
 };
@@ -40,7 +40,7 @@ vi.mock('$lib/analytics.js', () => {
 	return {
 		trackEvent: (...args) => trackEventSpy(...args),
 		getFirstSessionState: () => ({
-			firstSession: analyticsState.firstSession,
+			firstEngagementFired: analyticsState.firstEngagementFired,
 			sessionCardCount: analyticsState.sessionCardCount,
 			booksStarted: [...analyticsState.booksStarted]
 		}),
@@ -54,8 +54,8 @@ vi.mock('$lib/analytics.js', () => {
 			}
 		},
 		isFirstBook: () => analyticsState.booksStarted.length === 0,
-		endFirstSession: () => {
-			analyticsState.firstSession = false;
+		markFirstEngagementFired: () => {
+			analyticsState.firstEngagementFired = true;
 		}
 	};
 });
@@ -78,7 +78,7 @@ describe('progress store — analytics events', () => {
 		trackEventSpy.mockClear();
 
 		// Reset in-memory analytics state
-		analyticsState.firstSession = true;
+		analyticsState.firstEngagementFired = false;
 		analyticsState.sessionCardCount = 0;
 		analyticsState.booksStarted = [];
 	});

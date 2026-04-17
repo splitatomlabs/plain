@@ -61,7 +61,7 @@ The core measurement. Segment every stage by traffic source.
 1. Umami script tag injected in `web/src/routes/+layout.svelte` via `<svelte:head>`, gated on `PUBLIC_UMAMI_WEBSITE_ID` (from `$env/static/public`) and `!dev`. Set the env var in Vercel → Settings → Environment Variables for Production + Preview.
 2. `web/src/lib/analytics.js` exposes a `trackEvent(name, properties)` wrapper that calls `window.umami?.track(name, properties)`.
 3. Fire events from the progress layer when state crosses milestone boundaries.
-4. Track first-session state in localStorage: `plain:first_session` flag + `plain:session_card_count` (sessionStorage). Fire `first_engagement` when count reaches 2, then flip the flag false permanently.
+4. Track first-engagement state in localStorage: `plain:first_engagement_fired` flag (absent until fired, then `'true'`) + `plain:session_card_count` (sessionStorage). Fire `first_engagement` when count reaches 2 and the flag is not yet set; then set the flag to `'true'` permanently.
 5. Track `plain:books_started` array for `is_first_book` property.
 6. DNT is honoured at the script tag via `data-do-not-track="true"` — Umami drops tracking for visitors with DNT set; no JS-level check needed.
 7. `analyticsEnabled = browser && !dev` gates `trackEvent` to exclude local dev; the script tag itself is also omitted in dev.

@@ -18,23 +18,23 @@ export function trackEvent(name, properties = {}) {
 // "plain-progress" so they never collide with the progress store.
 // ---------------------------------------------------------------------------
 
-const KEY_FIRST_SESSION = 'plain:first_session';
+const KEY_FIRST_ENGAGEMENT_FIRED = 'plain:first_engagement_fired';
 const KEY_SESSION_CARD_COUNT = 'plain:session_card_count';
 const KEY_BOOKS_STARTED = 'plain:books_started';
 const KEY_LAST_VISIT_AT = 'plain:last_visit_at';
 
 /** Returns the current first-session state, using safe defaults when absent. */
 export function getFirstSessionState() {
-	if (!browser) return { firstSession: true, sessionCardCount: 0, booksStarted: [] };
+	if (!browser) return { firstEngagementFired: false, sessionCardCount: 0, booksStarted: [] };
 	try {
-		const firstSession = localStorage.getItem(KEY_FIRST_SESSION) !== 'false';
+		const firstEngagementFired = localStorage.getItem(KEY_FIRST_ENGAGEMENT_FIRED) === 'true';
 		const rawCount = sessionStorage.getItem(KEY_SESSION_CARD_COUNT);
 		const sessionCardCount = rawCount !== null ? parseInt(rawCount, 10) : 0;
 		const rawBooks = localStorage.getItem(KEY_BOOKS_STARTED);
 		const booksStarted = rawBooks ? JSON.parse(rawBooks) : [];
-		return { firstSession, sessionCardCount, booksStarted };
+		return { firstEngagementFired, sessionCardCount, booksStarted };
 	} catch {
-		return { firstSession: true, sessionCardCount: 0, booksStarted: [] };
+		return { firstEngagementFired: false, sessionCardCount: 0, booksStarted: [] };
 	}
 }
 
@@ -79,11 +79,11 @@ export function isFirstBook() {
 	}
 }
 
-/** Permanently ends the first session by setting the flag to false. */
-export function endFirstSession() {
+/** Marks first_engagement as fired so it never fires again for this visitor. */
+export function markFirstEngagementFired() {
 	if (!browser) return;
 	try {
-		localStorage.setItem(KEY_FIRST_SESSION, 'false');
+		localStorage.setItem(KEY_FIRST_ENGAGEMENT_FIRED, 'true');
 	} catch {
 		// localStorage unavailable
 	}
