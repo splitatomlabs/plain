@@ -90,7 +90,7 @@
 
 <svelte:head>
 	<title>Plain — Ancient philosophy, in plain English</title>
-	<meta name="description" content="Read the complete works of Epictetus, Marcus Aurelius, and Seneca — translated into clear, modern English." />
+	<meta name="description" content="Plain turns ancient philosophy books into bite-sized cards written in plain English." />
 </svelte:head>
 
 {#snippet themesSection(showProgress)}
