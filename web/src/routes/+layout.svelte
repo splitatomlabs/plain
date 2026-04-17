@@ -3,6 +3,8 @@
 	import '@fontsource-variable/dm-sans';
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { dev } from '$app/environment';
+	import { PUBLIC_UMAMI_WEBSITE_ID } from '$env/static/public';
 	import { trackReturnVisit } from '$lib/analytics.js';
 	import { progress } from '$lib/stores/progress.js';
 
@@ -20,6 +22,12 @@
 		try { localStorage.setItem('plain-theme', theme); } catch (e) {}
 	}
 </script>
+
+<svelte:head>
+	{#if !dev && PUBLIC_UMAMI_WEBSITE_ID}
+		<script async defer src="https://cloud.umami.is/script.js" data-website-id={PUBLIC_UMAMI_WEBSITE_ID} data-do-not-track="true"></script>
+	{/if}
+</svelte:head>
 
 <a href="#main-content" class="skip-link">Skip to content</a>
 
