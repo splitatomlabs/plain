@@ -183,17 +183,14 @@ describe("refineChunksRealtime", () => {
     expect(result.chunks[0].text).toBe("Last section that says merge_next.");
   });
 
-  it("keeps chunks unchanged on bulk API failure", async () => {
+  it("throws on bulk API failure", async () => {
     const chunks = [
-      makeChunk(1, "This chunk will survive a failure gracefully."),
+      makeChunk(1, "This chunk will not survive a failure."),
     ];
 
     mockCallClaudeJSON.mockRejectedValueOnce(new Error("API timeout"));
 
-    const result = await refineChunksRealtime(chunks, testConfig);
-
-    expect(result.chunks).toHaveLength(1);
-    expect(result.chunks[0].text).toBe("This chunk will survive a failure gracefully.");
+    await expect(refineChunksRealtime(chunks, testConfig)).rejects.toThrow("API timeout");
     expect(mockCallClaudeJSON).toHaveBeenCalledTimes(1);
   });
 
