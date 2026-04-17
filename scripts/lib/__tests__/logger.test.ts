@@ -70,7 +70,7 @@ describe("PipelineLogger", () => {
       expect(log).toContain("[DECISION] keep section 3");
     });
 
-    it("truncates the log file on each init", async () => {
+    it("appends across runs with a separator", async () => {
       await logger.init("enchiridion", false);
       logger.info("first run");
       await logger.close();
@@ -83,8 +83,31 @@ describe("PipelineLogger", () => {
         path.join(tempDir, "content/pipeline/enchiridion/pipeline.log"),
         "utf-8"
       );
-      expect(log).not.toContain("first run");
+      expect(log).toContain("first run");
       expect(log).toContain("second run");
+      expect(log).toContain("--- Run ");
+    });
+
+    it("truncates to 100KB keeping the tail on init", async () => {
+      // Write a file larger than 100KB
+      const dir = path.join(tempDir, "content", "pipeline", "enchiridion");
+      const { mkdir, writeFile } = await import("node:fs/promises");
+      await mkdir(dir, { recursive: true });
+      const logPath = path.join(dir, "pipeline.log");
+      const bigContent = "x".repeat(50) + "\n";
+      // ~150KB of lines
+      await writeFile(logPath, bigContent.repeat(3000));
+
+      await logger.init("enchiridion", false);
+      logger.info("after truncate");
+      await logger.close();
+
+      const { stat } = await import("node:fs/promises");
+      const stats = await stat(logPath);
+      // Should be around 100KB + the new run header + log line
+      expect(stats.size).toBeLessThan(105 * 1024);
+      const log = await readFile(logPath, "utf-8");
+      expect(log).toContain("after truncate");
     });
 
     it("creates the book directory if it does not exist", async () => {
@@ -124,8 +147,8 @@ describe("PipelineLogger", () => {
         path.join(tempDir, "content/pipeline/enchiridion/pipeline.log"),
         "utf-8"
       );
-      const lines = log.split("\n").filter((l) => l.length > 0);
-      expect(lines).toHaveLength(2);
+      const logLines = log.split("\n").filter((l) => l.startsWith("["));
+      expect(logLines).toHaveLength(2);
     });
   });
 
