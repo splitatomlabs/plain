@@ -45,9 +45,9 @@ Allow the refine phase to pass validation for source texts that legitimately end
 - [x] T09c: Improve refine prompt split guidance — Update `buildBulkRefineSystem` to instruct the LLM to always split at sentence boundaries, never mid-sentence. Mention that each segment must end with sentence-ending punctuation (`.`, `?`, `!`, `;`, `:`, or a closing quote after one of these). This reduces how often the mechanical safety net triggers.
 - [x] T09d: Add tests for expanded split boundaries and prompt — Test that `splitTextAtBoundary` splits at `." `, `; `, and `: ` boundaries. Test that oversized chunks with no clean boundary are kept intact.
 - [x] T09f: Retry only failing batches, not entire chapters — In generate.ts, when `validateRefineCoverage` finds errors, extract the section numbers from the error messages, determine which batch(es) contain those sections, and retry only those batches via `refineChunksRealtime`. Splice the retried results back into the full chapter's refined chunks before re-validating. This reduces API calls (e.g., 1 batch instead of 5 for a 43-section chapter).
-- [ ] T09e: Re-run on-anger full pipeline — Verify all 3 books pass refine without mid-sentence retries, translate completes, and assemble succeeds.
-- [ ] T10: Validate on-anger output — Check no cards exceed 60s reading time. Run standalone readability audit on on-anger. Run `npm test`.
-- [ ] T11: Run e2e tests — `npm run build --prefix web && npm run test:e2e --prefix web`.
+- [!] T09e: Re-run on-anger full pipeline — skipped: deferred until pipeline diagnostics are added
+- [!] T10: Validate on-anger output — skipped: depends on T09e
+- [!] T11: Run e2e tests — skipped: depends on T09e
 
 ## Verify
 ```bash
