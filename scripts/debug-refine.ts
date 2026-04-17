@@ -215,12 +215,8 @@ function simulateSplitBoundary(chunk: Chunk, indent = "  ") {
     return;
   }
 
-  // Last resort
-  const spaceAfter = text.indexOf(" ", mid);
-  const splitAt = spaceAfter !== -1 ? spaceAfter : mid;
-  console.log(`${indent}  ⚠ LAST RESORT: split at midpoint word boundary (char ${splitAt}/${text.length})`);
-  console.log(`${indent}    piece 1 ends: "...${text.slice(Math.max(0, splitAt - 60), splitAt).trim()}"`);
-  console.log(`${indent}    piece 2 starts: "${text.slice(splitAt, splitAt + 60).trim()}..."`);
+  // No clean boundary — chunk will be kept intact
+  console.log(`${indent}  ⚠ NO CLEAN BOUNDARY: chunk will be kept as-is (exceeds cap but no safe split point)`);
 }
 
 async function debugBatch(batchId: string, dryRun: boolean) {
