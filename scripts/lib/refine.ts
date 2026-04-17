@@ -486,6 +486,7 @@ export async function refineChunksBatch(
         custom_id: customId,
         system,
         messages: [{ role: "user", content: prompt }],
+        max_tokens: 8096,
       });
       meta.set(customId, { bookSlug, chapterSlug, batch, batchIndex: b, config });
     }
