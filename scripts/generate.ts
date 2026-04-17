@@ -228,20 +228,67 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
           console.log(`  ${config.slug}/${ch.slug}: ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`);
         }
 
-        // Validate and retry failing chapters via realtime API
+        // Validate and retry only the failing batches (not the entire chapter)
         let refineMsgs = validateRefineCoverage(ch.chunks, result.chunks);
         let refineErrors = refineMsgs.filter((m) => m.severity === "error");
         let retries = 0;
+        const BATCH_SIZE = parseInt(process.env.REFINE_BATCH_SIZE ?? "10", 10);
 
         while (refineErrors.length > 0 && retries < MAX_REFINE_RETRIES) {
           retries++;
-          console.error(`  Refine coverage errors in ${config.slug}/${ch.slug} — retrying (${retries}/${MAX_REFINE_RETRIES})...`);
+
+          // Extract failing section numbers from error messages
+          const failingSections = new Set<number>();
+          for (const e of refineErrors) {
+            const match = e.card_id?.match(/section-(\d+)/);
+            if (match) failingSections.add(parseInt(match[1], 10));
+          }
+
+          // Determine which batch indices contain failing sections
+          const failingBatchIndices = new Set<number>();
+          for (let i = 0; i < ch.chunks.length; i++) {
+            if (failingSections.has(ch.chunks[i].sectionNumber)) {
+              failingBatchIndices.add(Math.floor(i / BATCH_SIZE));
+            }
+          }
+
+          // Collect pre-refine chunks for failing batches
+          const retryChunks: Chunk[] = [];
+          const retrySections = new Set<number>();
+          for (const batchIdx of failingBatchIndices) {
+            const start = batchIdx * BATCH_SIZE;
+            const end = Math.min(start + BATCH_SIZE, ch.chunks.length);
+            for (let i = start; i < end; i++) {
+              retryChunks.push(ch.chunks[i]);
+              retrySections.add(ch.chunks[i].sectionNumber);
+            }
+          }
+
+          console.error(`  Refine errors in ${config.slug}/${ch.slug} — retrying ${retryChunks.length}/${ch.chunks.length} sections (${retries}/${MAX_REFINE_RETRIES})...`);
           for (const e of refineErrors) console.error(`    ${e.message}`);
 
-          result = await refineChunksRealtime(ch.chunks, config);
+          const retryResult = await refineChunksRealtime(retryChunks, config);
 
-          if (result.splits > 0 || result.merges > 0) {
-            console.log(`  ${config.slug}/${ch.slug} (retry ${retries}): ${result.originalCount} → ${result.refinedCount} chunks (${result.splits} splits, ${result.merges} merges)`);
+          // Splice retried chunks back: remove old chunks for retried sections, insert new ones
+          const kept = result.chunks.filter((c) => !retrySections.has(c.sectionNumber));
+          // Find insertion point: position of first retried section in the kept array
+          const firstRetrySection = Math.min(...retrySections);
+          const insertIdx = kept.findIndex((c) => c.sectionNumber > firstRetrySection);
+          const spliced = insertIdx === -1
+            ? [...kept, ...retryResult.chunks]
+            : [...kept.slice(0, insertIdx), ...retryResult.chunks, ...kept.slice(insertIdx)];
+
+          result = {
+            ...result,
+            chunks: spliced,
+            refinedCount: spliced.length,
+            splits: result.splits + retryResult.splits,
+            merges: result.merges + retryResult.merges,
+            apiCalls: result.apiCalls + retryResult.apiCalls,
+          };
+
+          if (retryResult.splits > 0 || retryResult.merges > 0) {
+            console.log(`  ${config.slug}/${ch.slug} (retry ${retries}): retried ${retryChunks.length} sections → ${retryResult.chunks.length} chunks (${retryResult.splits} splits, ${retryResult.merges} merges)`);
           }
 
           refineMsgs = validateRefineCoverage(ch.chunks, result.chunks);
