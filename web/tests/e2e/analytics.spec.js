@@ -2,17 +2,19 @@ import { test, expect } from '@playwright/test';
 
 // Smoke test: verifies analytics events fire through the real app wiring.
 // The built app runs with dev=false, so trackEvent() is active.
-// window.va is stubbed before any app code runs via addInitScript.
+// window.umami is stubbed before any app code runs via addInitScript.
 
 test.describe('Analytics event wiring', () => {
 	test.beforeEach(async ({ page }) => {
-		// Install the stub before the page loads so app code finds window.va.
+		// Install the stub before the page loads so app code finds window.umami.
 		// Persist captured calls in sessionStorage so they survive navigations.
 		await page.addInitScript(() => {
-			window.va = (...args) => {
-				const stored = JSON.parse(sessionStorage.getItem('__vaCalls') || '[]');
-				stored.push(args);
-				sessionStorage.setItem('__vaCalls', JSON.stringify(stored));
+			window.umami = {
+				track: (name, data) => {
+					const stored = JSON.parse(sessionStorage.getItem('__umamiCalls') || '[]');
+					stored.push([name, data]);
+					sessionStorage.setItem('__umamiCalls', JSON.stringify(stored));
+				}
 			};
 		});
 
@@ -30,17 +32,15 @@ test.describe('Analytics event wiring', () => {
 		await expect
 			.poll(async () =>
 				page.evaluate(() => {
-					const calls = JSON.parse(sessionStorage.getItem('__vaCalls') || '[]');
-					return calls.some((c) => c[0] === 'event' && c[1]?.name === 'book_landing_viewed');
+					const calls = JSON.parse(sessionStorage.getItem('__umamiCalls') || '[]');
+					return calls.some((c) => c[0] === 'book_landing_viewed');
 				})
 			)
 			.toBe(true);
 
-		const calls = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__vaCalls') || '[]'));
-		const landingCall = calls.find(
-			(c) => c[0] === 'event' && c[1]?.name === 'book_landing_viewed'
-		);
-		expect(landingCall[1]).toMatchObject({ name: 'book_landing_viewed', book_id: 'enchiridion' });
+		const calls = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__umamiCalls') || '[]'));
+		const landingCall = calls.find((c) => c[0] === 'book_landing_viewed');
+		expect(landingCall[1]).toMatchObject({ book_id: 'enchiridion' });
 	});
 
 	test('book_started and engaged_session fire after reading 2 cards', async ({ page }) => {
@@ -52,8 +52,8 @@ test.describe('Analytics event wiring', () => {
 		await expect
 			.poll(async () =>
 				page.evaluate(() => {
-					const calls = JSON.parse(sessionStorage.getItem('__vaCalls') || '[]');
-					return calls.some((c) => c[0] === 'event' && c[1]?.name === 'book_landing_viewed');
+					const calls = JSON.parse(sessionStorage.getItem('__umamiCalls') || '[]');
+					return calls.some((c) => c[0] === 'book_landing_viewed');
 				})
 			)
 			.toBe(true);
@@ -72,10 +72,8 @@ test.describe('Analytics event wiring', () => {
 		await page.click('a[aria-label="Next card"]');
 		await page.waitForURL(/\/enchiridion\/section-01\/[34]|\/(section-02)\/1/);
 
-		const calls = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__vaCalls') || '[]'));
-		const eventNames = calls
-			.filter((c) => c[0] === 'event' && c[1]?.name)
-			.map((c) => c[1].name);
+		const calls = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__umamiCalls') || '[]'));
+		const eventNames = calls.map((c) => c[0]);
 
 		// book_landing_viewed from the landing visit.
 		expect(eventNames).toContain('book_landing_viewed');
@@ -83,13 +81,8 @@ test.describe('Analytics event wiring', () => {
 		// book_started fired when first card was marked read.
 		expect(eventNames).toContain('book_started');
 
-		const startedCall = calls.find(
-			(c) => c[0] === 'event' && c[1]?.name === 'book_started'
-		);
-		expect(startedCall[1]).toMatchObject({
-			name: 'book_started',
-			book_id: 'enchiridion'
-		});
+		const startedCall = calls.find((c) => c[0] === 'book_started');
+		expect(startedCall[1]).toMatchObject({ book_id: 'enchiridion' });
 		// is_first_book should be a boolean (true since localStorage was cleared).
 		expect(typeof startedCall[1].is_first_book).toBe('boolean');
 

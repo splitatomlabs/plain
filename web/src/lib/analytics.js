@@ -1,18 +1,12 @@
 import { browser, dev } from '$app/environment';
 
-let analyticsEnabled = false;
-
-if (browser && !dev) {
-	analyticsEnabled = navigator.doNotTrack !== '1';
-}
+const analyticsEnabled = browser && !dev;
 
 export function trackEvent(name, properties = {}) {
 	if (!analyticsEnabled) return;
 	try {
-		// @vercel/analytics track function is injected via the Analytics component
-		if (typeof window !== 'undefined' && window.va) {
-			window.va('event', { name, ...properties });
-		}
+		// Umami script tag handles DNT; window.umami is injected by the Umami snippet
+		window.umami?.track(name, properties);
 	} catch {
 		// Analytics unavailable
 	}
@@ -113,7 +107,7 @@ export function trackReturnVisit({ hasProgress } = {}) {
 				trackEvent('return_visit');
 			}
 		}
-		if (analyticsEnabled) {
+		if (analyticsEnabled && navigator.doNotTrack !== '1') {
 			localStorage.setItem(KEY_LAST_VISIT_AT, now.toISOString());
 		}
 	} catch {

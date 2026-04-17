@@ -44,10 +44,10 @@ const sessionStorageMock = (() => {
 })();
 Object.defineProperty(globalThis, 'sessionStorage', { value: sessionStorageMock });
 
-// Stub window.va so trackEvent calls are observable without relying on real Vercel
-const vaSpy = vi.fn();
+// Stub window.umami.track so trackEvent calls are observable without loading the real Umami script
+const umamiTrackSpy = vi.fn();
 Object.defineProperty(globalThis, 'window', {
-	value: { va: vaSpy },
+	value: { umami: { track: umamiTrackSpy } },
 	writable: true
 });
 
@@ -69,7 +69,7 @@ describe('analytics first-session helpers', () => {
 		sessionStorageMock.clear();
 		sessionStorageMock.getItem.mockClear();
 		sessionStorageMock.setItem.mockClear();
-		vaSpy.mockClear();
+		umamiTrackSpy.mockClear();
 	});
 
 	describe('getFirstSessionState', () => {
@@ -154,7 +154,7 @@ describe('analytics first-session helpers', () => {
 	describe('trackReturnVisit', () => {
 		it('does nothing on first visit (no last_visit_at key)', () => {
 			trackReturnVisit({ hasProgress: true });
-			expect(vaSpy).not.toHaveBeenCalled();
+			expect(umamiTrackSpy).not.toHaveBeenCalled();
 		});
 
 		it('writes last_visit_at even on first call', () => {
@@ -166,21 +166,21 @@ describe('analytics first-session helpers', () => {
 			const past = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
 			localStorageMock._getStore()['plain:last_visit_at'] = past;
 			trackReturnVisit({ hasProgress: false });
-			expect(vaSpy).not.toHaveBeenCalled();
+			expect(umamiTrackSpy).not.toHaveBeenCalled();
 		});
 
 		it('does not fire when last visit is within 24h', () => {
 			const recent = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
 			localStorageMock._getStore()['plain:last_visit_at'] = recent;
 			trackReturnVisit({ hasProgress: true });
-			expect(vaSpy).not.toHaveBeenCalled();
+			expect(umamiTrackSpy).not.toHaveBeenCalled();
 		});
 
 		it('fires return_visit when last visit is >24h ago and hasProgress is true', () => {
 			const past = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
 			localStorageMock._getStore()['plain:last_visit_at'] = past;
 			trackReturnVisit({ hasProgress: true });
-			expect(vaSpy).toHaveBeenCalledWith('event', { name: 'return_visit' });
+			expect(umamiTrackSpy).toHaveBeenCalledWith('return_visit', {});
 		});
 
 		it('updates last_visit_at to now on every call', () => {
