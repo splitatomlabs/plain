@@ -5,15 +5,15 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 1,
     "total_cards_in_chapter": 13,
-    "plain_english": "The wise and good person doesn't fight with anyone. And as much as they can, they don't let others fight either. Socrates shows us how to do this. He avoided arguments himself, and he stopped others from arguing too. Look at Xenophon's Symposium — see how many fights he settled. See how he put up with Thrasymachus and Polus and Callicles. See how he tolerated his wife and his son, who tried to prove him wrong and pick fights with him. He remembered something important: you can't control another person's mind. So he only wanted what was actually his. And what is that?",
-    "original_excerpt": "The wise and good man neither himself fights with any person, nor does he allow another, so far as he can prevent it. And an example of this as well as of all other things is proposed to us in the life of Socrates, who not only himself on all occasions avoided fights (quarrels), but would not allow even others to quarrel. See in Xenophon's Symposium how many quarrels he settled, how further he endured Thrasymachus and Polus and Callicles; how he tolerated his wife, and how he tolerated his son who attempted to confute him and to cavil with him. For he remembered well that no man has in his power another man's ruling principle. He wished therefore for nothing else than that which was his own. And what is this?",
+    "plain_english": "The wise and good person doesn't pick fights with anyone. And as much as possible, he doesn't let others fight either. Socrates gives us a perfect example of this and everything else we should do. He avoided quarrels at every turn. But he also stopped other people from quarreling. Look at Xenophon's Symposium — see how many fights he settled. See how he put up with Thrasymachus and Polus and Callicles. See how he tolerated his wife and his son, even when his son tried to prove him wrong and nitpick with him. Socrates understood something important: you can't control another person's mind. So he only wanted what was actually his to control. And what is that? Not whether this person or that person acts according to their nature — that belongs to them, not you.",
+    "original_excerpt": "The wise and good man neither himself fights with any person, nor does he allow another, so far as he can prevent it. And an example of this as well as of all other things is proposed to us in the life of Socrates, who not only himself on all occasions avoided fights (quarrels), but would not allow even others to quarrel. See in Xenophon's Symposium how many quarrels he settled, how further he endured Thrasymachus and Polus and Callicles; how he tolerated his wife, and how he tolerated his son who attempted to confute him and to cavil with him. For he remembered well that no man has in his power another man's ruling principle. He wished therefore for nothing else than that which was his own. And what is this? Not that this or that man may act according to nature, for that is a thing which belongs to another;",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
-      "calm-your-mind",
-      "freedom-and-control"
+      "freedom-and-control",
+      "human-nature"
     ],
-    "reading_time_seconds": 31
+    "reading_time_seconds": 41
   },
   {
     "id": "discourses-57-002",
@@ -21,15 +21,15 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 2,
     "total_cards_in_chapter": 13,
-    "plain_english": "Your job isn't to make other people act according to nature — that's their business. Your job is to stay true to your own nature while others do whatever they choose. You focus only on what's yours to do, so that others might also find their way to living naturally. This is what wise and good people always aim for. Do you want to be a military commander? That's not the point. But if you get that role, your real goal is to keep your character intact. Do you want to get married? That's not the point either. But if marriage happens, your goal is to stay true to your nature within it. If you want your son to behave well or your wife to act right, you're trying to control what belongs to them, not to you. Learning means figuring out what's truly yours and what belongs to others.",
-    "original_excerpt": "Not that this or that man may act according to nature, for that is a thing which belongs to another; but that while others are doing their own acts, as they choose, he may nevertheless be in a condition conformable to nature and live in it, only doing what is his own to the end that others also may be in a state conformable to nature. For this is the object always set before him by the wise and good man. Is it to be commander (a prætor) of an army? No; but if it is permitted him, his object is in this matter to maintain his own ruling principle. Is it to marry? No; but if marriage is allowed to him, in this matter his object is to maintain himself in a condition conformable to nature. But if he would have his son not to do wrong or his wife, he would have what belongs to another not to belong to another: and to be instructed is this, to learn what things are a man's own and what belongs to another.",
+    "plain_english": "His goal is simple: while others do their own thing however they want, he stays true to his nature and lives according to it. He just does what's his to do so that others can also live according to their nature. This is what a wise and good person always aims for. Does he want to be a military commander? No. But if he's given that role, his goal is to keep his mind right while doing it. Does he want to get married? No. But if marriage happens, his goal is to stay true to his nature within it. But if he wants his son to behave or his wife to act right, then he's wanting something that belongs to someone else to not belong to them. The whole point of learning is this: figure out what's yours and what belongs to other people.",
+    "original_excerpt": "but that while others are doing their own acts, as they choose, he may nevertheless be in a condition conformable to nature and live in it, only doing what is his own to the end that others also may be in a state conformable to nature. For this is the object always set before him by the wise and good man. Is it to be commander (a prætor) of an army? No; but if it is permitted him, his object is in this matter to maintain his own ruling principle. Is it to marry? No; but if marriage is allowed to him, in this matter his object is to maintain himself in a condition conformable to nature. But if he would have his son not to do wrong or his wife, he would have what belongs to another not to belong to another: and to be instructed is this, to learn what things are a man's own and what belongs to another.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 45
+    "reading_time_seconds": 44
   },
   {
     "id": "discourses-57-003",
@@ -37,7 +37,7 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 3,
     "total_cards_in_chapter": 13,
-    "plain_english": "So how can someone with the right mindset ever get into fights or arguments? Does anything really surprise him? Does anything seem new? Doesn't he expect bad people to be even worse and more awful than what actually happens? Doesn't he see it as pure profit when they do less damage than they could? Someone insults you. Great — at least he didn't hit you. But he did hit me. Great — at least he didn't wound you. But he did wound me too. Great — at least he didn't kill you.",
+    "plain_english": "So how can someone with the right mindset ever get into fights or arguments? Does anything really surprise him? Does anything seem new? Doesn't he expect bad people to do bad things — and worse things than what actually happens? Doesn't he count it as a win whenever they do less harm than they could? Someone insults you. Be grateful he didn't hit you. But he did hit me. Be grateful he didn't stab you. But he did stab me. Be grateful he didn't kill you.",
     "original_excerpt": "How then is there left any place for fighting (quarrelling) to a man who has this opinion (which he ought to have)? Is he surprised at any thing which happens, and does it appear new to him? Does he not expect that which comes from the bad to be worse and more grievous than that what actually befalls him? And does he not reckon as pure gain whatever they (the bad) may do which falls short of extreme wickedness? Such a person has reviled you. Great thanks to him for not having struck you. But he has struck me also. Great thanks that he did not wound you. But he wounded me also. Great thanks that he did not kill you.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
@@ -45,7 +45,7 @@
       "facing-hardship",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 28
+    "reading_time_seconds": 26
   },
   {
     "id": "discourses-57-004",
@@ -53,13 +53,14 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 4,
     "total_cards_in_chapter": 13,
-    "plain_english": "When did your neighbor learn that humans are meant to live peacefully together? What school taught him that people should love each other? Where did he discover that doing wrong hurts the person who does it? He never learned these things. He's not convinced they're true. So why wouldn't he do what seems good for him? Your neighbor threw stones at you. Did you do something wrong? No. Some things in your house got broken. Are you just a piece of furniture? No. You're a free human being with the power to choose. So what should you do about this? If you're like a wild animal, you'll bite back and throw more stones. But if you want to act like a human being, look inside yourself. Remember what abilities you were born with.",
+    "plain_english": "When did this person learn that humans are social creatures? In what school did they study that people should love each other? Where were they taught that doing wrong harms the wrongdoer most of all? They never learned these lessons. They don't believe them. So why wouldn't they do what seems best for themselves? Your neighbor threw stones at your house. Did you do something wrong? No. Your windows got broken. Are you just a piece of property? No. You're a free human being with the power to choose. So what should you do? If you act like a wild animal, you'll bite back and throw more stones. But if you want to act like a human being, think about what you're capable of. Check your toolkit. Remember what abilities you were born with.",
     "original_excerpt": "For when did he learn or in what school that man is a tame animal, that men love one another, that an act of injustice is a great harm to him who does it. Since then he has not learned this and is not convinced of it, why shall he not follow that which seems to be for his own interest? Your neighbor has thrown stones. Have you then done anything wrong? But the things in the house have been broken. Are you then a utensil? No; but a free power of will. What then is given to you (to do) in answer to this? If you are like a wolf, you must bite in return, and throw more stones. But, if you consider what is proper for a man, examine your storehouse, see with what faculties you came into the world.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
-      "doing-the-right-thing",
-      "human-nature"
+      "human-nature",
+      "knowing-yourself",
+      "doing-the-right-thing"
     ],
     "reading_time_seconds": 40
   },
@@ -69,15 +70,15 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 5,
     "total_cards_in_chapter": 13,
-    "plain_english": "Do you have the nature of a wild animal? Do you seek revenge when someone hurts you? When is a horse miserable? When it loses its natural abilities. Not when it can't crow like a rooster, but when it can't run. When is a dog miserable? Not when it can't fly, but when it can't track prey. So is a person unhappy the same way? Not because he can't strangle lions or hug statues — he wasn't born with those powers anyway. He's unhappy because he's lost his honesty and loyalty.",
-    "original_excerpt": "Have you the disposition of a wild beast, have you the disposition of revenge for an injury? When is a horse wretched? When he is deprived of his natural faculties, not when he cannot crow like a cock, but when he cannot run. When is a dog wretched? Not when he cannot fly, but when he cannot track his game. Is then a man also unhappy in this way, not because he cannot strangle lions or embrace statues, for he did not come into the world in the possession of certain powers from nature for this purpose, but because he has lost his probity and his fidelity?",
+    "plain_english": "Do you have the instincts of a wild animal? Do you feel driven to get revenge when someone hurts you? When is a horse miserable? When it loses its natural abilities. Not when it can't crow like a rooster, but when it can't run. When is a dog miserable? Not when it can't fly, but when it can't hunt. A person becomes unhappy the same way. Not because he can't strangle lions or hug statues — he wasn't born with those powers anyway. He becomes unhappy when he loses his honesty and trustworthiness. People should gather around such a person and mourn for the tragedy that has befallen him.",
+    "original_excerpt": "Have you the disposition of a wild beast, have you the disposition of revenge for an injury? When is a horse wretched? When he is deprived of his natural faculties, not when he cannot crow like a cock, but when he cannot run. When is a dog wretched? Not when he cannot fly, but when he cannot track his game. Is then a man also unhappy in this way, not because he cannot strangle lions or embrace statues, for he did not come into the world in the possession of certain powers from nature for this purpose, but because he has lost his probity and his fidelity? People ought to meet and lament such a man for the misfortunes into which he has fallen;",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
       "human-nature",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 33
   },
   {
     "id": "discourses-57-006",
@@ -85,15 +86,15 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 6,
     "total_cards_in_chapter": 13,
-    "plain_english": "When you see someone who has truly lost their way, you should feel sorry for them. But not because they were born or because they'll die — that's natural. Feel sorry because they've lost what actually belongs to them during their lifetime. I don't mean the things they inherited from their father. Not their land, house, business, or slaves. None of those things really belong to anyone. They all belong to others. They're temporary and can be taken away. Different people get them at different times, depending on who's in power. I'm talking about the things that belong to them as human beings — the character traits stamped in their mind from birth. These are like the official marks we look for on coins. When we find those marks, we accept the coin. When we don't find them, we reject it.",
-    "original_excerpt": "People ought to meet and lament such a man for the misfortunes into which he has fallen; not indeed to lament because a man has been born or has died, but because it has happened to him in his lifetime to have lost the things which are his own, not that which he received from his father, not his land and house, and his inn, and his slaves; for not one of these things is a man's own, but all belong to others, are servile, and subject to account ([Greek: hupeithuna]), at different times given to different persons by those who have them in their power: but I mean the things which belong to him as a man, the marks (stamps) in his mind with which he came into the world, such as we seek also on coins, and if we find them we approve of the coins, and if we do not find the marks we reject them.",
+    "plain_english": "We shouldn't mourn because someone was born or died. We should mourn because they lost what truly belonged to them during their lifetime. Not the things they inherited from their father. Not their land, house, business, or slaves. None of those things actually belong to anyone. They all belong to others. They're temporary and can be taken away. Different people get them at different times from whoever has the power to give them. I'm talking about the things that belong to someone as a human being. The character traits stamped in their mind when they were born. We look for these same marks on coins. If we find them, we accept the coins. If the marks aren't there, we reject them.",
+    "original_excerpt": "not indeed to lament because a man has been born or has died, but because it has happened to him in his lifetime to have lost the things which are his own, not that which he received from his father, not his land and house, and his inn, and his slaves; for not one of these things is a man's own, but all belong to others, are servile, and subject to account ([Greek: hupeithuna]), at different times given to different persons by those who have them in their power: but I mean the things which belong to him as a man, the marks (stamps) in his mind with which he came into the world, such as we seek also on coins, and if we find them we approve of the coins, and if we do not find the marks we reject them.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
-      "knowing-yourself",
-      "what-matters-most"
+      "what-matters-most",
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 42
+    "reading_time_seconds": 36
   },
   {
     "id": "discourses-57-007",
@@ -101,15 +102,15 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 7,
     "total_cards_in_chapter": 13,
-    "plain_english": "What's stamped on this coin? Trajan's mark. Show it to me. Actually, it's Nero's mark. Throw it away. It's fake and worthless. The same goes for people. What's stamped on someone's character? Is it gentleness, friendliness, patience, and love for others? Show me these qualities. Good — I accept this person. I'll call him a citizen. I'll welcome him as a neighbor and traveling companion. Just make sure he doesn't have Nero's stamp on him. Is he angry and bitter? Does he criticize everyone? When he gets upset, does he hurt whoever gets in his way?",
+    "plain_english": "What stamp is on this coin? Trajan's stamp. Show it to me. Wait, it's Nero's stamp. Throw it away. I can't accept it — it's fake. The same thing applies to people. What stamp do his opinions carry? Is it gentleness? A friendly nature? Tolerance? A loving disposition? Show me these qualities. If they're there, I accept them. I'll consider this person a citizen. I'll accept him as a neighbor and traveling companion. Just make sure he doesn't carry Nero's stamp. Is he hot-tempered? Full of anger? Always finding fault? When he gets upset, does he hurt anyone who gets in his way?",
     "original_excerpt": "What is the stamp on this sestertius? The stamp of Trajan. Present it. It is the stamp of Nero. Throw it away; it cannot be accepted, it is counterfeit. So also in this case: What is the stamp of his opinions? It is gentleness, a sociable disposition, a tolerant temper, a disposition to mutual affections. Produce these qualities. I accept them: I consider this man a citizen, I accept him as a neighbor, a companion in my voyages. Only see that he has not Nero's stamp. Is he passionate, is he full of resentment, is he fault-finding? If the whim seizes him, does he break the heads of those who come in his way?",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
       "human-nature",
-      "knowing-yourself"
+      "doing-the-right-thing"
     ],
-    "reading_time_seconds": 29
+    "reading_time_seconds": 31
   },
   {
     "id": "discourses-57-008",
@@ -117,7 +118,7 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 8,
     "total_cards_in_chapter": 13,
-    "plain_english": "If that's true, why did you call him a man? Do we judge everything just by how it looks? If so, then you could take a wax shape that looks like an apple and say it really is an apple with the smell and taste of an apple. But the outer appearance isn't enough. Having a nose and eyes doesn't make someone a man either. He must have the thoughts of a man. Here's someone who won't listen to reason and doesn't know when he's been proven wrong — he's a donkey. Here's another person whose sense of shame has died — he's worthless, anything but a man. This person looks for someone to kick or bite. He's not even a sheep or donkey, but some kind of wild animal.",
+    "plain_english": "If so, why did you call him a man? Do we judge everything by looks alone? If that's how it works, then we could say a wax figure is an apple just because it looks like one and smells like one. But appearance isn't enough. Having a nose and eyes doesn't make someone a man — he must think like a man. Here's someone who won't listen to reason and can't tell when he's wrong: he's a donkey. Here's another person whose sense of shame has died: he's worthless, anything but a man. This person looks for people to attack and hurt, so he's not even a sheep or donkey — he's more like a wild animal.",
     "original_excerpt": "(If so), why then did you say that he is a man? Is everything judged (determined) by the bare form? If that is so, say that the form in wax is an apple and has the smell and the taste of an apple. But the external figure is not enough: neither then is the nose enough and the eyes to make the man, but he must have the opinions of a man. Here is a man who does not listen to reason, who does not know when he is refuted: he is an ass; in another man the sense of shame is become dead: he is good for nothing, he is anything rather than a man. This man seeks whom he may meet and kick or bite, so that he is not even a sheep or an ass, but a kind of wild beast.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
@@ -125,7 +126,7 @@
       "human-nature",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 39
+    "reading_time_seconds": 35
   },
   {
     "id": "discourses-57-009",
@@ -133,13 +134,13 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 9,
     "total_cards_in_chapter": 13,
-    "plain_english": "What then? Do you want me to be looked down on? By who? By people who know you? How could people who know you despise someone who is gentle and modest? Maybe you mean by people who don't know you? What does that matter to you? No other craftsman cares what people think when they don't understand his craft. But they'll be more hostile to me because of this. Why do you say \"me\"? Can anyone damage your will? Can they stop you from thinking clearly about what happens to you? They can't. So why are you still upset? Why do you choose to act afraid? Why don't you step forward and announce that you're at peace with everyone, no matter what they do? Laugh at the people who think they can hurt you. You can tell them: these slaves don't know who I am. They don't know where my good and bad come from. They can't touch the things that are truly mine.",
+    "plain_english": "What then? Do you want me to be looked down on? By who? By people who know you? How could people who know you look down on someone who is gentle and modest? Maybe you mean people who don't know you? What does that matter to you? No craftsman cares what people think when those people don't understand his craft. But they'll be more hostile to me because of this. Why do you say \"me\"? Can anyone damage your will? Can anyone stop you from dealing naturally with what comes your way? No one can. Then why are you still worried? Why do you choose to act afraid? Why don't you come out and announce that you're at peace with everyone, no matter what they do? Laugh especially at those who think they can hurt you. You can say: These slaves don't know who I am or where my good and bad really lie, because they can't reach the things that are truly mine.",
     "original_excerpt": "What then? would you have me to be despised?—By whom? by those who know you? and how shall those who know you despise a man who is gentle and modest? Perhaps you mean by those who do not know you? What is that to you? For no other artisan cares for the opinion of those who know not his art. But they will be more hostile to me for this reason. Why do you say \"me\"? Can any man injure your will, or prevent you from using in a natural way the appearances which are presented to you? In no way can he. Why then are you still disturbed and why do you choose to show yourself afraid? And why do you not come forth and proclaim that you are at peace with all men whatever they may do, and laugh at those chiefly who think that they can harm you? These slaves, you can say, know not either who I am, nor where lies my good or my evil, because they have no access to the things which are mine.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
-      "knowing-yourself"
+      "calm-your-mind"
     ],
     "reading_time_seconds": 49
   },
@@ -149,15 +150,15 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 10,
     "total_cards_in_chapter": 13,
-    "plain_english": "Think of soldiers defending a strong city. They laugh at the enemy outside and say: \"Look at these fools wasting their time. Our walls are solid. We have plenty of food and supplies.\" That's what makes a city impossible to conquer. But for your soul, only your opinions can make you unbreakable. What wall is stronger? What body is tougher? What possession is safer? What reputation is more secure than your own thoughts?",
+    "plain_english": "Think of people defending a strong city. They mock the enemy soldiers trying to attack them: \"Look at those fools wasting their time. Our walls are solid. We have plenty of food. We have everything we need.\" That's what makes a city impossible to conquer. For you, it's your opinions that make your soul impossible to conquer. What wall is stronger? What body is tougher? What possession is safer? What reputation is more secure than your own thoughts?",
     "original_excerpt": "In this way also those who occupy a strong city mock the besiegers (and say): What trouble these men are now taking for nothing; our wall is secure, we have food for a very long time, and all other resources. These are the things which make a city strong and impregnable; but nothing else than his opinions makes a man's soul impregnable. For what wall is so strong, or what body is so hard, or what possession is so safe, or what honor (rank, character) so free from assault (as a man's opinions)?",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
-      "knowing-yourself"
+      "facing-hardship"
     ],
-    "reading_time_seconds": 22
+    "reading_time_seconds": 23
   },
   {
     "id": "discourses-57-011",
@@ -165,7 +166,7 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 11,
     "total_cards_in_chapter": 13,
-    "plain_english": "Everything else in this world can be destroyed. It can be taken from you easily. If you get attached to any of it, you're going to be miserable. You'll worry about bad things happening. You'll grieve when you lose things. You won't get what you want. You'll end up with what you don't want. So why don't we choose to focus on the only real security we have? Why don't we pull back from things that can be destroyed and that make us slaves? Why don't we work on things that can't be destroyed and that make us truly free? And why don't we remember this: no one can actually hurt you or help you. It's your thoughts about what happens that hurt you. It's your thoughts that defeat you. This is what real fighting is. This is what real conflict is. This is war.",
+    "plain_english": "Everything else in the world can be destroyed or stolen. If you get attached to these things, you're bound to be upset. You'll worry, you'll cry when you lose them, you won't get what you want, and you'll end up with what you're trying to avoid. So why don't we choose to secure the only real safety we have? Why don't we stop clinging to things that can be lost or taken away? Why don't we work on the things that last forever and are naturally free? Remember this: no one can actually hurt you or help you. It's your opinions about what happens that hurt you. Your opinions are what knock you down. This is where the real fight is. This is where the real conflict happens. This is war.",
     "original_excerpt": "All (other) things everywhere are perishable, easily taken by assault, and if any man in any way is attached to them, he must be disturbed, except what is bad, he must fear, lament, find his desires disappointed, and fall into things which he would avoid. Then do we not choose to make secure the only means of safety which are offered to us, and do we not choose to withdraw ourselves from that which is perishable and servile and to labor at the things which are imperishable and by nature free; and do we not remember that no man either hurts another or does good to another, but that a man's opinions about each thing, is that which hurts him, is that which overturns him; this is fighting, this is civil discord, this is war?",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
@@ -173,7 +174,7 @@
       "freedom-and-control",
       "facing-hardship"
     ],
-    "reading_time_seconds": 44
+    "reading_time_seconds": 39
   },
   {
     "id": "discourses-57-012",
@@ -181,7 +182,7 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 12,
     "total_cards_in_chapter": 13,
-    "plain_english": "What turned Eteocles and Polynices into enemies? Their opinions about royal power. Their opinions about exile. They believed one was the worst possible evil, the other the greatest good. This is human nature: we chase what we think is good and run from what we think is bad. Anyone who takes away our 'good' or gives us our 'bad' becomes our enemy. Even if it's our brother, our son, or our father. Nothing matters more to us than what we think is good. So if you believe external things are truly good and evil, then no father can really be a friend to his sons. No brother to his brother. The whole world becomes full of enemies, backstabbers, and flatterers.",
+    "plain_english": "What made Eteocles and Polynices enemies? Nothing but their opinions about royal power and exile. They believed one was the worst evil and the other the greatest good. This is human nature: we seek what's good and avoid what's bad. We see anyone who takes away our good or gives us something bad as an enemy and a traitor — even if that person is our brother, son, or father. Nothing matters more to us than what we think is good. So if you believe external things are truly good and evil, then fathers won't be friends to their sons. Brothers won't be friends to brothers. The whole world becomes full of enemies, traitors, and flatterers.",
     "original_excerpt": "That which made Eteocles and Polynices enemies was nothing else than this opinion which they had about royal power, their opinion about exile, that the one is the extreme of evils, the other the greatest good. Now this is the nature of every man to seek the good, to avoid the bad; to consider him who deprives us of the one and involves us in the other an enemy and treacherous, even if he be a brother, or a son, or a father. For nothing is more akin to us than the good; therefore, if these things (externals) are good and evil, neither is a father a friend to sons, nor a brother to a brother, but all the world is everywhere full of enemies, treacherous men, and sycophants.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
@@ -189,7 +190,7 @@
       "human-nature",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 36
+    "reading_time_seconds": 35
   },
   {
     "id": "discourses-57-013",
@@ -197,14 +198,14 @@
     "chapter_slug": "against-the-quarrelsome-and-ferocious",
     "card_number": 13,
     "total_cards_in_chapter": 13,
-    "plain_english": "If having the right intentions is the only real good, and having wrong intentions is the only real evil, then what is there to fight about? What is there to argue over? We'd only be fighting about things that don't really matter. And who would we be fighting with? Just people who don't know better — unhappy people who are confused about what's actually important. When Socrates remembered this, he was able to manage his own household. He put up with his bad-tempered wife and his foolish son.",
+    "plain_english": "But what if good intentions are the only real good? And what if bad intentions are the only real evil? Then where's the conflict? What would you even fight about? You'd be fighting over things that don't matter to you. And who would you fight with? With people who don't know better — unhappy people who are wrong about what really matters. Socrates remembered this. That's how he managed his household and put up with his very difficult wife and ungrateful son.",
     "original_excerpt": "But if the will ([Greek: proairesis], the purpose, the intention) being what it ought to be, is the only good; and if the will being such as it ought not to be, is the only evil, where is there any strife, where is there reviling? about what? about the things which do not concern us? and strife with whom? with the ignorant, the unhappy, with those who are deceived about the chief things? Remembering this Socrates managed his own house and endured a very ill-tempered wife and a foolish (ungrateful?) son.",
     "source_reference": "Discourses, Against the Quarrelsome and Ferocious",
     "author_slug": "epictetus",
     "tags": [
-      "calm-your-mind",
+      "freedom-and-control",
       "human-nature"
     ],
-    "reading_time_seconds": 26
+    "reading_time_seconds": 25
   }
 ]

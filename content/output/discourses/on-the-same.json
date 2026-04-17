@@ -5,7 +5,7 @@
     "chapter_slug": "on-the-same",
     "card_number": 1,
     "total_cards_in_chapter": 6,
-    "plain_english": "If all this is true, and we're not being foolish or fake when we say that good and evil come from our choices — and everything else doesn't matter to us — then why are we still upset? Why are we still afraid? The things we've been worrying about are outside everyone's control. The things that are in other people's control don't concern us. So what's left to trouble us?",
+    "plain_english": "If these things are true, and if we're not being foolish or fake when we say that what's good or bad for people comes from their choices — and that everything else doesn't matter to us — then why are we still upset? Why are we still afraid? The things we've been worried about are beyond anyone's control. The things that other people control don't concern us. So what's left to trouble us?",
     "original_excerpt": "If these things are true, and if we are not silly, and are not acting hypocritically when we say that the good of man is in the will, and the evil too, and that everything else does not concern us, why are we still disturbed, why are we still afraid? The things about which we have been busied are in no man's power; and the things which are in the power of others, we care not for. What kind of trouble have we still?",
     "source_reference": "Discourses, On the Same",
     "author_slug": "epictetus",
@@ -13,7 +13,7 @@
       "freedom-and-control",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 21
+    "reading_time_seconds": 22
   },
   {
     "id": "discourses-15-002",
@@ -21,24 +21,8 @@
     "chapter_slug": "on-the-same",
     "card_number": 2,
     "total_cards_in_chapter": 6,
-    "plain_english": "But give me directions. Why should I give you directions? Hasn't Zeus already given you directions? Hasn't he given you what's truly yours — free from any obstacles? And what's not truly yours — subject to obstacles? So what directions did you bring when you came from him? Keep what's yours by any means necessary. Don't desire what belongs to others. Your integrity is yours. Your sense of honor is yours. Who can take these things from you? Who else but you will stop yourself from using them? But how do you actually act?",
+    "plain_english": "But give me directions. Why should I give you directions? Hasn't Zeus already given you directions? Hasn't he given you what is truly yours — free from interference and obstacles — and made what isn't yours subject to interference and obstacles? What directions, what orders did you bring with you when you came from him? Keep what is yours by all means. Don't desire what belongs to others. Your integrity is yours. Your sense of honor is yours. Who can take these things from you? Who else but you can stop yourself from using them? But how do you actually behave?",
     "original_excerpt": "But give me directions. Why should I give you directions? Has not Zeus given you directions? Has he not given to you what is your own free from hindrance and free from impediment, and what is not your own subject to hindrance and impediment? What directions then, what kind of orders did you bring when you came from him? Keep by every means what is your own; do not desire what belongs to others. Fidelity (integrity) is your own, virtuous shame is your own; who then can take these things from you? who else than yourself will hinder you from using them? But how do you act?",
-    "source_reference": "Discourses, On the Same",
-    "author_slug": "epictetus",
-    "tags": [
-      "freedom-and-control",
-      "knowing-yourself"
-    ],
-    "reading_time_seconds": 28
-  },
-  {
-    "id": "discourses-15-003",
-    "book_slug": "discourses",
-    "chapter_slug": "on-the-same",
-    "card_number": 3,
-    "total_cards_in_chapter": 6,
-    "plain_english": "When you chase after things that aren't yours, you lose what actually belongs to you. If Zeus himself gives you these rules and commands, what more do you need from me? Am I more powerful than he is? Am I more trustworthy? If you follow these commands, do you really need any others? \"But he never gave me these orders,\" you'll say. Then bring out your basic ideas. Bring out your philosophical proofs. Bring out what you've heard so many times, what you've said yourself, what you've read, what you've thought about. You'll see that all these things come from God.",
-    "original_excerpt": "When you seek what is not your own, you lose that which is your own. Having such promptings and commands from Zeus, what kind do you still ask from me? Am I more powerful than he, am I more worthy of confidence? But if you observe these, do you want any others besides? \"Well, but he has not given these orders,\" you will say. Produce your præcognitions ([Greek: prolaepseis]), produce these proofs of philosophers, produce what you have often heard, and produce what you have said yourself, produce what you have read, produce what you have meditated on; and you will then see that all these things are from God.",
     "source_reference": "Discourses, On the Same",
     "author_slug": "epictetus",
     "tags": [
@@ -48,12 +32,28 @@
     "reading_time_seconds": 30
   },
   {
+    "id": "discourses-15-003",
+    "book_slug": "discourses",
+    "chapter_slug": "on-the-same",
+    "card_number": 3,
+    "total_cards_in_chapter": 6,
+    "plain_english": "When you chase after what isn't yours, you lose what is yours. Zeus has already given you these clear instructions and impulses. So what more do you need from me? Am I stronger than Zeus? Am I more trustworthy than he is? If you follow his guidance, do you really need anything else? \"But he hasn't given me clear orders,\" you'll say. Then look at your natural concepts. Look at the philosophical proofs you know. Think about what you've heard many times, what you've said yourself, what you've read, what you've thought deeply about. When you do this, you'll see that all these insights come from God.",
+    "original_excerpt": "When you seek what is not your own, you lose that which is your own. Having such promptings and commands from Zeus, what kind do you still ask from me? Am I more powerful than he, am I more worthy of confidence? But if you observe these, do you want any others besides? \"Well, but he has not given these orders,\" you will say. Produce your præcognitions ([Greek: prolaepseis]), produce these proofs of philosophers, produce what you have often heard, and produce what you have said yourself, produce what you have read, produce what you have meditated on; and you will then see that all these things are from God.",
+    "source_reference": "Discourses, On the Same",
+    "author_slug": "epictetus",
+    "tags": [
+      "freedom-and-control",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 32
+  },
+  {
     "id": "discourses-15-004",
     "book_slug": "discourses",
     "chapter_slug": "on-the-same",
     "card_number": 4,
     "total_cards_in_chapter": 6,
-    "plain_english": "If you place too much value on your body, you become a slave to it. If you place too much value on your possessions, you become a slave to them too. You immediately show others your weak spot — your vulnerability. It's like a snake pulling its head back to protect it. That just tells you exactly where to strike. Be sure of this: whatever you desperately try to protect is exactly what someone else will use to control you. Remember this truth. Who will you still try to please or fear?",
+    "plain_english": "If you admire your body too much, you become its slave. If you admire your possessions too much, you become their slave. You're basically showing everyone your weak spot. It's like a snake pulling in its head — you're telling people exactly where to strike. And you can be sure that whatever you try hardest to protect is exactly what someone will attack. Remember this, and ask yourself: who will you still try to please or fear?",
     "original_excerpt": "If I have set my admiration on the poor body, I have given myself up to be a slave; if on my poor possessions, I also make myself a slave. For I immediately make it plain with what I may be caught; as if the snake draws in his head, I tell you to strike that part of him which he guards; and do you be assured that whatever part you choose to guard, that part your master will attack. Remembering this, whom will you still flatter or fear?",
     "source_reference": "Discourses, On the Same",
     "author_slug": "epictetus",
@@ -61,7 +61,7 @@
       "freedom-and-control",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 28
+    "reading_time_seconds": 23
   },
   {
     "id": "discourses-15-005",
@@ -69,7 +69,7 @@
     "chapter_slug": "on-the-same",
     "card_number": 5,
     "total_cards_in_chapter": 6,
-    "plain_english": "But I want to sit where the Senators sit. Do you see what you're doing to yourself? You're putting yourself in a tight spot. You're squeezing yourself. How else can I get a good view at the amphitheater? Listen — don't go to the show at all, and you won't get squeezed. Why are you making trouble for yourself? Or just wait a little. When the show is over, go sit in the Senators' seats and enjoy the sun. Remember this basic truth: we squeeze ourselves. We put ourselves in tight spots. Our opinions do this to us. What does it mean to be insulted? Go stand by a rock and insult it. What do you accomplish? Nothing. If a person listens like a rock, what good does it do the insulter? But if the insulter can use the weakness of the insulted person as a stepping stone, then he gets somewhere. Strip him naked. What do you mean, strip him? Grab his clothes and pull them off. \"I have insulted you.\" Good for you.",
+    "plain_english": "\"But I want to sit where the Senators sit.\" Do you see what you're doing to yourself? You're putting yourself in a tight spot. You're squeezing yourself into a corner. \"But how else can I get a good view in the amphitheatre?\" Man, don't be a spectator at all. Then you won't get squeezed. Why are you making trouble for yourself? Or just wait a little. When the show is over, go sit in the Senators' section and enjoy the sun. Remember this basic truth: we squeeze ourselves. We put ourselves in tight spots. Our opinions do this to us. What does it mean to be insulted? Go stand by a stone and insult it. What will you accomplish? Nothing. If a person listens like a stone, what does the insulter gain? Nothing. But if the insulter can use the weakness of the person being insulted as a stepping-stone, then he gets somewhere. \"Strip him.\" What do you mean by \"him\"? \"Grab his clothes and strip them off.\" \"I have insulted you.\" Good for you.",
     "original_excerpt": "But I should like to sit where the Senators sit. Do you see that you are putting yourself in straits, you are squeezing yourself? How then shall I see well in any other way in the amphitheatre? Man, do not be a spectator at all, and you will not be squeezed. Why do you give yourself trouble? Or wait a little, and when the spectacle is over, seat yourself in the place reserved for the Senators and sun yourself. For remember this general truth, that it is we who squeeze ourselves, who put ourselves in straits; that is, our opinions squeeze us and put us in straits. For what is it to be reviled? Stand by a stone and revile it, and what will you gain? If then a man listens like a stone, what profit is there to the reviler? But if the reviler has as a stepping-stone (or ladder) the weakness of him who is reviled, then he accomplishes something. Strip him. What do you mean by him? Lay hold of his garment, strip it off. I have insulted you. Much good may it do you.",
     "source_reference": "Discourses, On the Same",
     "author_slug": "epictetus",
@@ -85,7 +85,7 @@
     "chapter_slug": "on-the-same",
     "card_number": 6,
     "total_cards_in_chapter": 6,
-    "plain_english": "This is how Socrates lived. This is why he always had the same calm expression on his face. But we choose to practice and study everything except the one thing that would make us truly free and unimpeded. You complain: \"Philosophers say things that don't make sense.\" But don't other fields have things that sound crazy too? What sounds more insane than cutting into someone's eye so they can see better? If you said that to someone who knew nothing about surgery, wouldn't they laugh at you? So why are you surprised that in philosophy, many true things sound strange to beginners?",
+    "plain_english": "This was how Socrates lived. This is why his expression never changed. But we choose to practice and study everything except what would make us free and unblocked. You say: \"Philosophers talk in riddles.\" But don't other fields have riddles too? What's more backwards than cutting someone's eye to help them see? If you told this to someone who knew nothing about surgery, wouldn't they laugh at you? So why be surprised that in philosophy, many true things sound backwards to beginners?",
     "original_excerpt": "This was the practice of Socrates; this was the reason why he always had one face. But we choose to practise and study anything rather than the means by which we shall be unimpeded and free. You say: \"Philosophers talk paradoxes.\" But are there no paradoxes in the other arts? And what is more paradoxical than to puncture a man's eye in order that he may see? If any one said this to a man ignorant of the surgical art, would he not ridicule the speaker? Where is the wonder, then, if in philosophy also many things which are true appear paradoxical to the inexperienced?",
     "source_reference": "Discourses, On the Same",
     "author_slug": "epictetus",
@@ -93,6 +93,6 @@
       "knowing-yourself",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 31
+    "reading_time_seconds": 25
   }
 ]

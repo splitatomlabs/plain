@@ -4,23 +4,24 @@
     "book_slug": "discourses",
     "chapter_slug": "certain-miscellaneous-matters",
     "card_number": 1,
-    "total_cards_in_chapter": 8,
-    "plain_english": "Bad actors in tragedies can't sing solo — they need a whole chorus to hide behind. Some people are the same way. They can't walk around alone. But if you're worth anything, you should be able to walk by yourself and talk to yourself. Don't hide in the crowd. Take some time to examine yourself. Look around. Wake yourself up. Figure out who you really are.",
+    "total_cards_in_chapter": 9,
+    "plain_english": "Bad actors in tragedies can't sing by themselves. They need a whole group around them. Some people are like this — they can't walk around alone. But you, if you're worth anything, should be able to walk by yourself and talk to yourself. Don't hide in the crowd. Take some time to examine yourself. Look around. Wake yourself up. Figure out who you are.",
     "original_excerpt": "As bad tragic actors cannot sing alone, but in company with many, so some persons cannot walk about alone. Man, if you are anything, both walk alone and talk to yourself, and do not hide yourself in the chorus. Examine a little at last, look around, stir yourself up, that you may know who you are.",
     "source_reference": "Discourses, Certain Miscellaneous Matters",
     "author_slug": "epictetus",
     "tags": [
-      "knowing-yourself"
+      "knowing-yourself",
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 20
+    "reading_time_seconds": 19
   },
   {
     "id": "discourses-47-002",
     "book_slug": "discourses",
     "chapter_slug": "certain-miscellaneous-matters",
     "card_number": 2,
-    "total_cards_in_chapter": 8,
-    "plain_english": "You must pull out two things from people: arrogance and distrust. Arrogance is thinking you don't need anything. Distrust is thinking you can't be happy because of all the difficult things around you. You get rid of arrogance by proving it wrong. Socrates was the first to do this well. To know that happiness isn't impossible, ask questions and search for answers. This searching won't hurt you. In fact, this is what philosophy is — figuring out how to want things and avoid things without getting blocked.",
+    "total_cards_in_chapter": 9,
+    "plain_english": "You must root out two things from people: arrogance and distrust. Arrogance is thinking you need nothing — that you're not lacking anything. Distrust is thinking you can't be happy because so many things are working against you. You eliminate arrogance by proving it wrong. Socrates was the first to practice this. To know that happiness is not impossible, investigate and search for it. This search won't harm you. In fact, this searching is what philosophy is — figuring out how to want and avoid things without being blocked.",
     "original_excerpt": "You must root out of men these two things, arrogance (pride) and distrust. Arrogance then is the opinion that you want nothing (are deficient in nothing); but distrust is the opinion that you cannot be happy when so many circumstances surround you. Arrogance is removed by confutation; and Socrates was the first who practised this. And (to know) that the thing is not impossible inquire and seek. This search will do you no harm; and in a manner this is philosophizing, to seek how it is possible to employ desire and aversion ([Greek: echchlisis]) without impediment.",
     "source_reference": "Discourses, Certain Miscellaneous Matters",
     "author_slug": "epictetus",
@@ -28,63 +29,79 @@
       "knowing-yourself",
       "calm-your-mind"
     ],
-    "reading_time_seconds": 26
+    "reading_time_seconds": 27
   },
   {
     "id": "discourses-47-003",
     "book_slug": "discourses",
     "chapter_slug": "certain-miscellaneous-matters",
     "card_number": 3,
-    "total_cards_in_chapter": 8,
-    "plain_english": "\"I'm better than you because my father was a consul.\" Another person says, \"I was a tribune, but you weren't.\" If we were horses, would you say, \"My father was faster? I have lots of barley and feed, or fancy decorations around my neck?\" If you said that, I'd respond, \"Fine, let's race then.\" Well, isn't there something in a human being like speed in a horse that shows who is superior and who is inferior? Isn't there respect, loyalty, and justice? Show yourself superior in these things if you want to be superior as a human being. If you tell me you can kick hard, I'll tell you that you're bragging about something that makes you like a donkey.",
+    "total_cards_in_chapter": 9,
+    "plain_english": "\"I'm better than you because my father was a consul.\" Another person says, \"I was a tribune, but you weren't.\" If we were horses, would you say, \"My father was faster\"? Or \"I have lots of barley and feed, plus fancy decorations for my neck\"? If you said that, I'd respond: \"Fine, let's race then.\" Well, isn't there something in humans — like speed in horses — that shows who's truly superior? What about respect, loyalty, and justice? Show that you're better in these things if you want to be superior as a human being. If you tell me you can kick hard, I'll just say you're bragging about something any donkey can do.",
     "original_excerpt": "I am superior to you, for my father is a man of consular rank. Another says, I have been a tribune, but you have not. If we were horses, would you say, My father was swifter? I have much barley and fodder, or elegant neck ornaments. If then you were saying this, I said, Be it so: let us run then. Well, is there nothing in a man such as running in a horse, by which it will be known which is superior and inferior? Is there not modesty ([Greek: aidos]), fidelity, justice? Show yourself superior in these, that you may be superior as a man. If you tell me that you can kick violently, I also will say to you, that you are proud of that which is the act of an ass.",
     "source_reference": "Discourses, Certain Miscellaneous Matters",
     "author_slug": "epictetus",
     "tags": [
       "doing-the-right-thing",
-      "what-matters-most"
+      "human-nature"
     ],
-    "reading_time_seconds": 36
+    "reading_time_seconds": 34
   },
   {
     "id": "discourses-47-004",
     "book_slug": "discourses",
     "chapter_slug": "certain-miscellaneous-matters",
     "card_number": 4,
-    "total_cards_in_chapter": 8,
-    "plain_english": "Think carefully before you do anything. In every action, consider what comes before and what comes after. Then act. If you don't think it through, you'll start with enthusiasm because you haven't thought about the consequences. But when those consequences show up, you'll quit in shame.\n\n\"I want to win at the Olympic games.\" (And I do too, by the gods — it's a great thing.) But think about what comes before and after. Then, if it's good for you, go for it. You must follow strict rules. You must diet strictly. No fancy foods. You must train at set times whether you want to or not — in heat, in cold. No cold water or wine when you want them. You must give yourself completely to your trainer, like you would to a doctor. In competition, you'll get covered in sand. You might dislocate your hand or sprain your ankle. You'll swallow dust. You'll get whipped. After all that, you might still lose.",
-    "original_excerpt": "THAT WE OUGHT TO PROCEED WITH CIRCUMSPECTION TO EVERYTHING.—In every act consider what precedes and what follows, and then proceed to the act. If you do not consider, you will at first begin with spirit, since you have not thought at all of the things which follow; but afterwards when some consequences have shown themselves, you will basely desist (from that which you have begun).—I wish to conquer at the Olympic games.—(And I too, by the gods; for it is a fine thing.) But consider here what precedes and what follows; and then, if it is for your good, undertake the thing. You must act according to rules, follow strict diet, abstain from delicacies, exercise yourself by compulsion at fixed times, in heat, in cold; drink no cold water, nor wine, when there is opportunity of drinking it. In a word, you must surrender yourself to the trainer, as you do to a physician. Next in the contest, you must be covered with sand, sometimes dislocate a hand, sprain an ankle, swallow a quantity of dust, be scourged with the whip; and after undergoing all this, you must sometimes be conquered.",
-    "source_reference": "Discourses, Certain Miscellaneous Matters",
-    "author_slug": "epictetus",
-    "tags": [
-      "knowing-yourself",
-      "facing-hardship"
-    ],
-    "reading_time_seconds": 49
-  },
-  {
-    "id": "discourses-47-005",
-    "book_slug": "discourses",
-    "chapter_slug": "certain-miscellaneous-matters",
-    "card_number": 5,
-    "total_cards_in_chapter": 8,
-    "plain_english": "After you've thought through all this, if you still want to go into athletic training, go ahead. But if you don't think it through first, watch what happens. You'll act like children who play wrestler one day, then gladiator the next, then pretend to blow trumpets, then act out plays — just copying whatever they've seen and thought was cool. That's exactly what you do. One day you're an athlete, then a fighter, then a philosopher, then a speaker. But deep down, you're nothing. Like a monkey, you just copy whatever you see. Something new always catches your eye, but once it becomes familiar, you get bored with it. You never commit to anything after real thought. You never explore it fully or examine it carefully. You just jump in randomly with lukewarm interest. Some people hear a philosopher speak — someone like Euphrates, though who could speak like him? — and suddenly they want to be philosophers too.",
-    "original_excerpt": "After reckoning all these things, if you have still an inclination, go to the athletic practice. If you do not reckon them, observe you will behave like children who at one time play as wrestlers, then as gladiators, then blow a trumpet, then act a tragedy, when they have seen and admired such things. So you also do: you are at one time a wrestler (athlete), then a gladiator, then a philosopher, then a rhetorician; but with your whole soul you are nothing: like the ape you imitate all that you see; and always one thing after another pleases you, but that which becomes familiar displeases you. For you have never undertaken anything after consideration, nor after having explored the whole matter and put it to a strict examination; but you have undertaken it at hazard and with a cold desire. Thus some persons having seen a philosopher and having heard one speak like Euphrates—and yet who can speak like him?—wish to be philosophers themselves.",
+    "total_cards_in_chapter": 9,
+    "plain_english": "APPROACH EVERYTHING WITH CAREFUL THOUGHT. For every action, think about what comes before it and what comes after. Then act. If you don't think it through, you'll start with great enthusiasm because you haven't considered the consequences. But when the results show up, you'll quit shamefully. \"I want to win at the Olympic games.\" (And I do too, by the gods — it's a wonderful thing.) But think about what comes before and after. Then, if it's good for you, go for it.",
+    "original_excerpt": "THAT WE OUGHT TO PROCEED WITH CIRCUMSPECTION TO EVERYTHING.[Footnote: Compare Encheiridion, 29.]—In every act consider what precedes and what follows, and then proceed to the act. If you do not consider, you will at first begin with spirit, since you have not thought at all of the things which follow; but afterwards when some consequences have shown themselves, you will basely desist (from that which you have begun).—I wish to conquer at the Olympic games.—(And I too, by the gods; for it is a fine thing.) But consider here what precedes and what follows; and then, if it is for your good, undertake the thing.",
     "source_reference": "Discourses, Certain Miscellaneous Matters",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
       "what-matters-most"
     ],
-    "reading_time_seconds": 48
+    "reading_time_seconds": 25
+  },
+  {
+    "id": "discourses-47-005",
+    "book_slug": "discourses",
+    "chapter_slug": "certain-miscellaneous-matters",
+    "card_number": 5,
+    "total_cards_in_chapter": 9,
+    "plain_english": "You must follow strict rules. You must stick to a rigid diet. No fancy foods. You must exercise when you're told to — in the heat, in the cold. No cold water when you want it. No wine when it's available. You surrender yourself completely to your trainer, like you would to a doctor. Then in the actual competition, you'll get covered in sand. You might dislocate your hand or sprain your ankle. You'll swallow dust. You'll get whipped. After all this suffering, you might still lose. Think through all of this first. If you still want to do it after considering everything, then go train. If you don't think it through, you'll act like children who pretend to be wrestlers one minute, gladiators the next, then trumpet players, then actors — just because they saw something cool and got excited about it.",
+    "original_excerpt": "You must act according to rules, follow strict diet, abstain from delicacies, exercise yourself by compulsion at fixed times, in heat, in cold; drink no cold water, nor wine, when there is opportunity of drinking it. In a word, you must surrender yourself to the trainer, as you do to a physician. Next in the contest, you must be covered with sand, sometimes dislocate a hand, sprain an ankle, swallow a quantity of dust, be scourged with the whip; and after undergoing all this, you must sometimes be conquered. After reckoning all these things, if you have still an inclination, go to the athletic practice. If you do not reckon them, observe you will behave like children who at one time play as wrestlers, then as gladiators, then blow a trumpet, then act a tragedy, when they have seen and admired such things.",
+    "source_reference": "Discourses, Certain Miscellaneous Matters",
+    "author_slug": "epictetus",
+    "tags": [
+      "facing-hardship",
+      "knowing-yourself"
+    ],
+    "reading_time_seconds": 43
   },
   {
     "id": "discourses-47-006",
     "book_slug": "discourses",
     "chapter_slug": "certain-miscellaneous-matters",
     "card_number": 6,
-    "total_cards_in_chapter": 8,
-    "plain_english": "Listen, first figure out what you're trying to do. Then look at yourself honestly — what can you actually handle? If you want to be a wrestler, check your shoulders, your thighs, your back. Different people are built for different things. Do you think you can keep living exactly like you do now and also be a philosopher? Do you think you can eat the same way, drink the same way, get angry the same way, and still make progress? You'll have to stay alert, work hard, and beat certain desires. You'll have to leave your family behind. Your servants will look down on you. People you meet will laugh at you. In every way, you'll be worse off when it comes to government jobs, honors, and court cases.",
+    "total_cards_in_chapter": 9,
+    "plain_english": "You do the same thing. One day you're an athlete. The next day you're a gladiator. Then a philosopher. Then a public speaker. But deep down, you're nothing. You're like a monkey that copies whatever it sees. You always want the next new thing. But once you get used to something, you don't want it anymore. You never think things through. You never fully explore what you're getting into or examine it carefully. You just jump in randomly with half-hearted interest. It's like people who hear a philosopher speak — someone like Euphrates, who is truly gifted — and suddenly they want to be philosophers too.",
+    "original_excerpt": "So you also do: you are at one time a wrestler (athlete), then a gladiator, then a philosopher, then a rhetorician; but with your whole soul you are nothing: like the ape you imitate all that you see; and always one thing after another pleases you, but that which becomes familiar displeases you. For you have never undertaken anything after consideration, nor after having explored the whole matter and put it to a strict examination; but you have undertaken it at hazard and with a cold desire. Thus some persons having seen a philosopher and having heard one speak like Euphrates—and yet who can speak like him?—wish to be philosophers themselves.",
+    "source_reference": "Discourses, Certain Miscellaneous Matters",
+    "author_slug": "epictetus",
+    "tags": [
+      "knowing-yourself",
+      "what-matters-most"
+    ],
+    "reading_time_seconds": 32
+  },
+  {
+    "id": "discourses-47-007",
+    "book_slug": "discourses",
+    "chapter_slug": "certain-miscellaneous-matters",
+    "card_number": 7,
+    "total_cards_in_chapter": 9,
+    "plain_english": "Listen, first figure out what you're actually trying to do. Then be honest about your own nature and what you can handle. If you're a wrestler, look at your shoulders, your thighs, your back — different people are built for different things. Do you think you can keep doing what you do every day and still be a philosopher? Do you think you can eat the same way, drink the same way, get angry and moody the same way? You'll have to stay alert, work hard, and conquer certain desires. You'll have to leave your family behind, be looked down on by your servants, and be laughed at by people you meet. In everything, you'll be at a disadvantage — no political office, no honors, no influence in court.",
     "original_excerpt": "Man, consider first what the matter is (which you propose to do), then your own nature also, what it is able to bear. If you are a wrestler, look at your shoulders, your thighs, your loins: for different men are naturally formed for different things. Do you think that, if you do (what you are doing daily), you can be a philosopher? Do you think that you can eat as you do now, drink as you do now, and in the same way be angry and out of humor? You must watch, labor, conquer certain desires, you must depart from your kinsmen, be despised by your slaves, laughed at by those who meet you, in everything you must be in an inferior condition, as to magisterial office, in honors, in courts of justice.",
     "source_reference": "Discourses, Certain Miscellaneous Matters",
     "author_slug": "epictetus",
@@ -95,12 +112,12 @@
     "reading_time_seconds": 39
   },
   {
-    "id": "discourses-47-007",
+    "id": "discourses-47-008",
     "book_slug": "discourses",
     "chapter_slug": "certain-miscellaneous-matters",
-    "card_number": 7,
-    "total_cards_in_chapter": 8,
-    "plain_english": "Think through all of this completely first. Then, if you decide it's right for you, approach philosophy. You'll gain freedom from worry, liberty, and peace of mind in return. But if you haven't thought it through, don't approach philosophy at all. Don't act like children who play pretend — philosopher one day, tax collector the next, then public speaker, then Caesar's officer. These roles don't fit together. You must be one person, either good or bad. You must either work on your own mind or on external things. You must either work on what's within your control or on external things. In other words, you must either take the place of a philosopher or take the place of an ordinary person.",
+    "card_number": 8,
+    "total_cards_in_chapter": 9,
+    "plain_english": "Think through all of this carefully. Then, if you still want to pursue philosophy, go ahead — if you're willing to trade everything else for peace of mind, freedom, and calm. But if you haven't thought it through, stay away from philosophy. Don't be like children who play pretend — one day a philosopher, the next day a tax collector, then a public speaker, then a government official. These roles don't mix. You must be one person, either good or bad. You must either work on your own character or chase external things. You must focus either on what's within your control or on external matters. In other words, you're either a philosopher or you're just another person in the crowd.",
     "original_excerpt": "When you have considered all these things completely, then, if you think proper, approach to philosophy, if you would gain in exchange for these things freedom from perturbations, liberty, tranquillity. If you have not considered these things, do not approach philosophy: do not act like children, at one time a philosopher, then a tax collector, then a rhetorician, then a procurator (officer) of Cæsar. These things are not consistent. You must be one man either good or bad; you must either labor at your own ruling faculty or at external things; you must either labor at things within or at external things; that is, you must either occupy the place of a philosopher or that of one of the vulgar.",
     "source_reference": "Discourses, Certain Miscellaneous Matters",
     "author_slug": "epictetus",
@@ -111,18 +128,18 @@
     "reading_time_seconds": 36
   },
   {
-    "id": "discourses-47-008",
+    "id": "discourses-47-009",
     "book_slug": "discourses",
     "chapter_slug": "certain-miscellaneous-matters",
-    "card_number": 8,
-    "total_cards_in_chapter": 8,
-    "plain_english": "Someone asked Rufus after Emperor Galba was murdered: \"Is the world still governed by Providence?\" Rufus replied: \"Did I ever use Galba as proof that Providence governs the world in the first place?\"",
+    "card_number": 9,
+    "total_cards_in_chapter": 9,
+    "plain_english": "Someone said to Rufus when Emperor Galba was murdered: \"Is the world still governed by Providence?\" But Rufus replied: \"Did I ever use Galba as proof that the world is governed by Providence?\"",
     "original_excerpt": "A person said to Rufus when Galba was murdered: Is the world now governed by Providence? But Rufus replied: Did I ever incidentally form an argument from Galba that the world is governed by Providence?",
     "source_reference": "Discourses, Certain Miscellaneous Matters",
     "author_slug": "epictetus",
     "tags": [
-      "freedom-and-control",
-      "calm-your-mind"
+      "calm-your-mind",
+      "freedom-and-control"
     ],
     "reading_time_seconds": 10
   }

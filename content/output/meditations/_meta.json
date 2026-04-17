@@ -7,54 +7,54 @@
     "knowing-yourself",
     "human-nature",
     "what-matters-most",
-    "facing-hardship",
     "calm-your-mind",
     "doing-the-right-thing",
     "freedom-and-control",
-    "death-and-mortality"
+    "death-and-mortality",
+    "facing-hardship"
   ],
   "chapters": [
     {
       "slug": "book-01",
       "title": "Book 1",
-      "card_count": 31,
-      "reading_time_seconds": 883
+      "card_count": 30,
+      "reading_time_seconds": 894
     },
     {
       "slug": "book-02",
       "title": "Book 2",
       "card_count": 20,
-      "reading_time_seconds": 506
+      "reading_time_seconds": 496
     },
     {
       "slug": "book-03",
       "title": "Book 3",
       "card_count": 28,
-      "reading_time_seconds": 757
+      "reading_time_seconds": 765
     },
     {
       "slug": "book-04",
       "title": "Book 4",
       "card_count": 54,
-      "reading_time_seconds": 1253
+      "reading_time_seconds": 1257
     },
     {
       "slug": "book-05",
       "title": "Book 5",
-      "card_count": 48,
-      "reading_time_seconds": 1228
+      "card_count": 52,
+      "reading_time_seconds": 1215
     },
     {
       "slug": "book-06",
       "title": "Book 6",
-      "card_count": 66,
-      "reading_time_seconds": 1253
+      "card_count": 64,
+      "reading_time_seconds": 1267
     },
     {
       "slug": "book-07",
       "title": "Book 7",
       "card_count": 58,
-      "reading_time_seconds": 1330
+      "reading_time_seconds": 1310
     },
     {
       "slug": "book-08",
@@ -66,29 +66,29 @@
       "slug": "book-09",
       "title": "Book 9",
       "card_count": 60,
-      "reading_time_seconds": 1250
+      "reading_time_seconds": 1243
     },
     {
       "slug": "book-10",
       "title": "Book 10",
-      "card_count": 59,
-      "reading_time_seconds": 1415
+      "card_count": 57,
+      "reading_time_seconds": 1389
     },
     {
       "slug": "book-11",
       "title": "Book 11",
-      "card_count": 48,
-      "reading_time_seconds": 1039
+      "card_count": 45,
+      "reading_time_seconds": 1036
     },
     {
       "slug": "book-12",
       "title": "Book 12",
-      "card_count": 36,
-      "reading_time_seconds": 870
+      "card_count": 41,
+      "reading_time_seconds": 890
     }
   ],
-  "total_cards": 575,
-  "total_reading_time_seconds": 13189,
+  "total_cards": 576,
+  "total_reading_time_seconds": 13167,
   "source_url": "https://www.gutenberg.org/ebooks/2680",
   "has_chapters": true
 }

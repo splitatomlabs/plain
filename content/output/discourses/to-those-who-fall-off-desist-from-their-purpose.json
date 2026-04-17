@@ -5,7 +5,7 @@
     "chapter_slug": "to-those-who-fall-off-desist-from-their-purpose",
     "card_number": 1,
     "total_cards_in_chapter": 3,
-    "plain_english": "Think about the goals you set for yourself at the start. Which ones did you achieve? Which ones didn't you achieve? Notice how remembering your successes makes you happy, while thinking about your failures hurts. If you can, try to recover what you failed at. Don't back down when you're fighting the biggest battle of your life. You have to be willing to take some hits.",
+    "plain_english": "Think about the goals you set for yourself at the start. Which ones did you achieve? Which ones did you miss? Notice how good it feels to remember your successes. Notice how much it hurts to think about your failures. If you can, go back and tackle the things where you fell short. We can't back down when we're fighting the most important battle of our lives. We have to be willing to take some hits.",
     "original_excerpt": "Consider as to the things which you proposed to yourself at first, which you have secured, and which you have not; and how you are pleased when you recall to memory the one, and are pained about the other; and if it is possible, recover the things wherein you failed. For we must not shrink when we are engaged in the greatest combat, but we must even take blows.",
     "source_reference": "Discourses, To Those Who Fall Off (desist) from Their Purpose",
     "author_slug": "epictetus",
@@ -13,7 +13,7 @@
       "knowing-yourself",
       "facing-hardship"
     ],
-    "reading_time_seconds": 20
+    "reading_time_seconds": 23
   },
   {
     "id": "discourses-51-002",
@@ -21,15 +21,15 @@
     "chapter_slug": "to-those-who-fall-off-desist-from-their-purpose",
     "card_number": 2,
     "total_cards_in_chapter": 3,
-    "plain_english": "The fight we're facing isn't like wrestling or mixed martial arts, where winners and losers can both be highly skilled or completely worthless, and where luck plays a huge role. Our fight is for good fortune and happiness itself.",
+    "plain_english": "The fight we're in isn't like wrestling or mixed martial arts. In those sports, you can win or lose and still be a good person. You might get lucky or unlucky. But our fight is different. We're fighting for our actual well-being and happiness.",
     "original_excerpt": "For the combat before us is not in wrestling and the Pancration, in which both the successful and the unsuccessful may have the greatest merit, or may have little, and in truth may be very fortunate or very unfortunate; but the combat is for good fortune and happiness themselves.",
     "source_reference": "Discourses, To Those Who Fall Off (desist) from Their Purpose",
     "author_slug": "epictetus",
     "tags": [
-      "what-matters-most",
-      "facing-hardship"
+      "facing-hardship",
+      "what-matters-most"
     ],
-    "reading_time_seconds": 12
+    "reading_time_seconds": 13
   },
   {
     "id": "discourses-51-003",
@@ -37,7 +37,7 @@
     "chapter_slug": "to-those-who-fall-off-desist-from-their-purpose",
     "card_number": 3,
     "total_cards_in_chapter": 3,
-    "plain_english": "So what if you've given up the fight for a good life and happiness? Nobody's stopping you from starting again. You don't have to wait four years for the next Olympic Games. As soon as you've recovered your strength and found your passion again, you can jump back into the fight. If you quit again, you can start again. If you finally win, you're just like someone who never quit in the first place. Just don't make quitting a habit. Don't start enjoying it. Don't become like a lousy athlete who gets beaten at every competition and runs around like a coward who fled the fight.",
+    "plain_english": "So what if you've given up on this fight for happiness and good fortune? No one stops you from starting the fight again. You don't have to wait four years for the next Olympics. As soon as you recover your strength and bring back your passion, you can start fighting again. If you give up again, you can start again after that. Once you win, it's like you never gave up at all. Just don't make giving up a habit. Don't start enjoying it. Don't be like a bad athlete who gets beaten at every competition and runs around defeated like escaped fighting birds.",
     "original_excerpt": "Well then, even if we have renounced the contest in this matter (for good fortune and happiness), no man hinders us from renewing the combat again, and we are not compelled to wait for another four years that the games at Olympia may come again; but as soon as you have recovered and restored yourself, and employ the same zeal, you may renew the combat again; and if again you renounce it, you may again renew it; and if you once gain the victory, you are like him who has never renounced the combat. Only do not through a habit of doing the same thing (renouncing the combat), begin to do it with pleasure, and then like a bad athlete go about after being conquered in all the circuit of the games like quails who have run away.",
     "source_reference": "Discourses, To Those Who Fall Off (desist) from Their Purpose",
     "author_slug": "epictetus",
@@ -45,6 +45,6 @@
       "facing-hardship",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 32
+    "reading_time_seconds": 31
   }
 ]

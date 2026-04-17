@@ -5,15 +5,15 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 1,
     "total_cards_in_chapter": 9,
-    "plain_english": "Where is good found? In your will. Where is evil found? In your will. Where is neither good nor evil? In things that have nothing to do with your will. So here's my question: does anyone actually think about these lessons outside of class? Does anyone practice giving answers to real situations the way they do with test questions? Like: Is it day? Yes. Is it night? No. Is the number of stars even? I don't know. But when someone offers you money, have you practiced giving the right answer — that money isn't actually good? Have you drilled yourself on these real answers, or only on clever arguments? So why are you surprised that you've gotten better at the things you've practiced, but stayed the same at the things you haven't?",
+    "plain_english": "Where is good? In your choices. Where is evil? In your choices. Where is neither good nor evil? In everything that doesn't depend on your choices. So then — does anyone think about these lessons outside the classroom? Does anyone practice answering life's questions the way they'd answer test questions? 'Is it day?' 'Yes.' 'Is it night?' 'No.' 'Is the number of stars even?' 'I can't tell.' When someone offers you money, have you trained yourself to give the right answer — that money isn't actually good? Have you practiced these real answers, or only academic puzzles? Why are you surprised that you improve in areas you've studied, but stay the same in areas you've ignored?",
     "original_excerpt": "Where is the good? In the will. Where is the evil? In the will. Where is neither of them? In those things which are independent of the will. Well then? Does any one among us think of these lessons out of the schools? Does any one meditate (strive) by himself to give an answer to things as in the case of questions?—Is it day?—Yes.—Is it night?—No.—Well, is the number of stars even?—I cannot say.—When money is shown (offered) to you, have you studied to make the proper answer, that money is not a good thing? Have you practised yourself in these answers, or only against sophisms? Why do you wonder then if in the cases which you have studied, in those you have improved; but in those which you have not studied, in those you remain the same?",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
     "tags": [
-      "knowing-yourself",
-      "freedom-and-control"
+      "freedom-and-control",
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 40
+    "reading_time_seconds": 35
   },
   {
     "id": "discourses-31-002",
@@ -21,7 +21,7 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 2,
     "total_cards_in_chapter": 9,
-    "plain_english": "A public speaker knows he's written a good speech. He's memorized it. He has a pleasant voice. So why is he still nervous? Because he's not satisfied with just having studied. What does he really want? He wants the audience to praise him. Here's the thing: he's been trained to give speeches, but he's never been trained to handle praise and criticism. When did anyone ever teach him what praise really is? What criticism really is? What kind of praise is worth seeking? What kind of criticism should he ignore? When did he ever practice dealing with these things? So why are you surprised that he excels at what he's learned but struggles with what he's never been taught, just like everyone else?",
+    "plain_english": "A public speaker knows he has written well. He has memorized his speech and has a pleasant voice. So why is he still nervous? Because he hasn't studied what really matters. What does he want? He wants the audience to praise him. He has trained himself to give speeches, but he has never trained himself to handle praise and criticism. When did anyone ever teach him what praise really is? What blame really is? What the nature of each one is? What kind of praise is worth seeking? What kind of blame should be avoided? When did he ever practice dealing with these things? So why are you surprised? In areas where someone has studied, they do better than others. In areas where they haven't trained themselves, they're just like everyone else.",
     "original_excerpt": "When the rhetorician knows that he has written well, that he has committed to memory what he has written, and brings an agreeable voice, why is he still anxious? Because he is not satisfied with having studied. What then does he want? To be praised by the audience? For the purpose then of being able to practise declamation he has been disciplined; but with respect to praise and blame he has not been disciplined. For when did he hear from any one what praise is, what blame is, what the nature of each is, what kind of praise should be sought, or what kind of blame should be shunned? And when did he practise this discipline which follows these words (things)? Why then do you still wonder, if in the matters which a man has learned, there he surpasses others, and in those in which he has not been disciplined, there he is the same with the many.",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
@@ -29,7 +29,7 @@
       "calm-your-mind",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 37
+    "reading_time_seconds": 40
   },
   {
     "id": "discourses-31-003",
@@ -37,7 +37,7 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 3,
     "total_cards_in_chapter": 9,
-    "plain_english": "Take a musician who knows how to play, sings beautifully, and dresses well. But he still shakes with fear when he walks on stage. He understands music, but he doesn't understand what a crowd really is. He doesn't know what shouting means, or what mockery actually is. He doesn't know what anxiety is — whether it comes from him or from outside forces, whether he can control it or not. So when people praise him, he leaves the theater feeling blown up with pride. But when they mock him, his ego gets punctured like a balloon and deflates completely.",
+    "plain_english": "The lute player knows how to play. He sings well and has fine clothes. But he still trembles when he walks on stage. He understands music, but he doesn't understand what a crowd is. He doesn't know what shouting means or what ridicule is. He doesn't know what anxiety is — whether it's his doing or someone else's, whether he can stop it or not. So if the crowd praises him, he leaves the theater all puffed up. But if they make fun of him, he deflates like a punctured balloon.",
     "original_excerpt": "So the lute player knows how to play, sings well, and has a fine dress, and yet he trembles when he enters on the stage; for these matters he understands, but he does not know what a crowd is, nor the shouts of a crowd, nor what ridicule is. Neither does he know what anxiety is, whether it is our work or the work of another, whether it is possible to stop it or not. For this reason if he has been praised, he leaves the theatre puffed up, but if he has been ridiculed, the swollen bladder has been punctured and subsides.",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
@@ -45,7 +45,7 @@
       "calm-your-mind",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 30
+    "reading_time_seconds": 27
   },
   {
     "id": "discourses-31-004",
@@ -53,15 +53,15 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 4,
     "total_cards_in_chapter": 9,
-    "plain_english": "We do the same thing ourselves. What do we admire? External things. What keeps us busy? External things. So why are we surprised that we feel fear and anxiety? What happens when we think the things coming at us are bad? We can't help but be afraid. We can't help but be anxious. Then we say, \"God, how can I not be anxious?\" You fool, don't you have hands? Didn't God give them to you? Don't sit there praying that your nose won't run. Wipe it yourself and stop blaming him. So has he given you nothing to deal with your current situation? Hasn't he given you endurance? Hasn't he given you courage? Hasn't he given you strength? When you have such hands, do you still look for someone else to wipe your nose?",
+    "plain_english": "We do the same thing. What do we admire? External things. What are we busy with? External things. So why are we surprised that we feel fear and anxiety? When we think bad things are about to happen to us, what's the result? We can't help being afraid. We can't help being anxious. Then we say, \"God, how can I not be anxious?\" You fool! Don't you have hands? Didn't God give them to you? Are you going to sit there and pray that your nose stops running? Just wipe it yourself and stop blaming God. So has God given you nothing to help with your situation? Hasn't he given you endurance? Hasn't he given you courage? Hasn't he given you strength? When you have hands like that, are you still looking for someone else to wipe your nose?",
     "original_excerpt": "This is the case also with ourselves. What do we admire? Externals. About what things are we busy? Externals. And have we any doubt then why we fear or why we are anxious? What then happens when we think the things, which are coming on us, to be evils? It is not in our power not to be afraid, it is not in our power not to be anxious. Then we say, Lord God, how shall I not be anxious? Fool, have you not hands, did not God make them for you? Sit down now and pray that your nose may not run. Wipe yourself rather and do not blame him. Well then, has he given to you nothing in the present case? Has he not given to you endurance? Has he not given to you magnanimity? Has he not given to you manliness? When you have such hands do you still look for one who shall wipe your nose?",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
-      "knowing-yourself"
+      "facing-hardship"
     ],
-    "reading_time_seconds": 40
+    "reading_time_seconds": 42
   },
   {
     "id": "discourses-31-005",
@@ -69,13 +69,13 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 5,
     "total_cards_in_chapter": 9,
-    "plain_english": "But we don't study these things or care about them. Show me someone who cares about how he does something — not about getting what he wants, but about his own effort and character. When someone is walking around, does he care about his own energy? When he's making a decision, does he care about how well he thinks it through? Or does he only care about getting what he's deciding about? If he succeeds, he gets excited and says, \"Look how well we planned this! Didn't I tell you, friend, that when we think something through, it has to work out?\" But if things go wrong, the poor guy is crushed. He doesn't even know what to say about what happened. Who among us has ever consulted a fortune-teller about this kind of thing? Who hasn't been careless about his own actions? Who? Give me one name so I can see the person I've been looking for so long — someone who is truly noble and honest, whether young or old. Name him.",
+    "plain_english": "But we don't study these things or care about them. Show me someone who cares about how he does something — not about getting what he wants, but about his own effort and character. When someone is walking around, does he care about his own energy? When he's making a decision, does he care about his own process of deciding? No — he only cares about getting what he's deciding about. If he succeeds, he gets excited and says, \"Look how well we thought this through! Didn't I tell you, brother, that when we really think about something, it has to work out?\" But if it goes wrong, the poor fool is crushed. He doesn't even know what to say about what happened. Who among us has consulted a fortune-teller about this? Who among us hasn't been careless about his own actions? Who? Give me one name so I can see the person I've been looking for all this time — someone who is truly noble and honest, whether young or old. Name him.",
     "original_excerpt": "But we neither study these things nor care for them. Give me a man who cares how he shall do anything, not for the obtaining of a thing, but who cares about his own energy. What man, when he is walking about, cares for his own energy? Who, when he is deliberating, cares about his own deliberation, and not about obtaining that about which he deliberates? And if he succeeds, he is elated and says, How well we have deliberated; did I not tell you, brother, that it is impossible, when we have thought about anything, that it should not turn out thus? But if the thing should turn out otherwise, the wretched man is humbled; he knows not even what to say about what has taken place. Who among us for the sake of this matter has consulted a seer? Who among us as to his actions has not slept in indifference? Who? Give (name) to me one that I may see the man whom I have long been looking for, who is truly noble and ingenuous, whether young or old; name him.",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
     "tags": [
       "knowing-yourself",
-      "what-matters-most"
+      "doing-the-right-thing"
     ],
     "reading_time_seconds": 52
   },
@@ -85,15 +85,15 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 6,
     "total_cards_in_chapter": 9,
-    "plain_english": "What weighs on us and upsets us? What else but our opinions? What else but opinions burden someone who has to leave their friends and familiar places and old habits? Look at little children. When their nurse leaves for a bit, they cry. But give them a cookie and they forget all about it. Do you want us to compare you to little children? No way. I don't want you pacified by a cookie, but by correct thinking. And what does that mean? It means you should spend all day learning what belongs to you and what doesn't. Don't let yourself get rattled by things that aren't yours — not your friends, not your location, not the gym, not even your own body. Remember the law of nature and keep it in front of you.",
+    "plain_english": "What weighs us down and disturbs us? Nothing but our opinions. What else weighs down the person who leaves his friends and familiar places and old habits? Look at little children. When their nurse leaves them for a while, they cry. But give them a small cake and they forget their sadness. Do you want me to compare you to little children? No, by Zeus. I don't want you pacified by a small cake, but by right opinions. And what are these right opinions? The kind a person should study all day long. Don't let anything that isn't yours affect you — not your friends, not your location, not your gym, not even your own body. Remember the law of nature and keep it in front of your eyes.",
     "original_excerpt": "What then are the things which are heavy on us and disturb us? What else than opinions? What else than opinions lies heavy upon him who goes away and leaves his companions and friends and places and habits of life? Now little children, for instance, when they cry on the nurse leaving them for a short time, forget their sorrow if they receive a small cake. Do you choose then that we should compare you to little children? No, by Zeus, for I do not wish to be pacified by a small cake, but by right opinions. And what are these? Such as a man ought to study all day, and not to be affected by anything that is not his own, neither by companion nor place nor gymnasia, and not even by his own body, but to remember the law and to have it before his eyes.",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
     "tags": [
-      "freedom-and-control",
-      "calm-your-mind"
+      "calm-your-mind",
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 41
+    "reading_time_seconds": 39
   },
   {
     "id": "discourses-31-007",
@@ -101,15 +101,15 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 7,
     "total_cards_in_chapter": 9,
-    "plain_english": "What is the divine law? Keep what's truly yours. Don't claim what belongs to others. Use what you're given. When you're not given something, don't crave it. When something is taken away, let it go quickly and willingly. Be grateful for the time you had it — if you don't want to be like a child crying for his nurse and mama. What difference does it make what controls you or what you depend on? How are you any better than someone who cries over losing a girlfriend, if you're grieving over losing access to a little gym, some porticos, young people, and other fun places?",
-    "original_excerpt": "And what is the divine law? To keep a man's own, not to claim that which belongs to others, but to use what is given, and when it is not given, not to desire it; and when a thing is taken away, to give it up readily and immediately, and to be thankful for the time that a man has had the use of it, if you would not cry for your nurse and mamma. For what matter does it make by what thing a man is subdued, and on what he depends? In what respect are you better than he who cries for a girl, if you grieve for a little gymnasium, and little porticos, and young men, and such places of amusement?",
+    "plain_english": "And what is this divine law? Keep what is truly yours. Don't claim what belongs to others. Use what is given to you. When it's not given, don't want it. When something is taken away, let it go quickly and willingly. Be grateful for the time you had it. Otherwise, you're no different from a child crying for their nurse or mother. What does it matter what controls you or what you depend on?",
+    "original_excerpt": "And what is the divine law? To keep a man's own, not to claim that which belongs to others, but to use what is given, and when it is not given, not to desire it; and when a thing is taken away, to give it up readily and immediately, and to be thankful for the time that a man has had the use of it, if you would not cry for your nurse and mamma. For what matter does it make by what thing a man is subdued, and on what he depends?",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
-      "what-matters-most"
+      "facing-hardship"
     ],
-    "reading_time_seconds": 32
+    "reading_time_seconds": 22
   },
   {
     "id": "discourses-31-008",
@@ -117,15 +117,15 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 8,
     "total_cards_in_chapter": 9,
-    "plain_english": "Another person complains that he won't be able to drink from his favorite spring anymore. Is the new water source really worse than the old one? \"But I was used to my old water,\" he says. Well, you'll get used to the new water too. Then if you get attached to that water, you'll cry about losing it as well. You'll make up dramatic poetry like Euripides: \"Oh, the hot baths of Nero and the pure spring water!\" See how people turn ordinary things into tragedies when they're being foolish.",
-    "original_excerpt": "Another comes and laments that he shall no longer drink the water of Dirce. Is the Marcian water worse than that of Dirce? But I was used to the water of Dirce. And you in turn will be used to the other. Then if you become attached to this also, cry for this too, and try to make a verse like the verse of Euripides, The hot baths of Nero and the Marcian water. See how tragedy is made when common things happen to silly men.",
+    "plain_english": "How are you any better than someone who cries over losing a girlfriend? You grieve for a small gym, some walkways, young people, and places where you used to have fun. Another person complains that he can no longer drink the water from Dirce. Is the Marcian water really worse than Dirce water? \"But I was used to Dirce water.\" And you'll get used to the other water too. Then if you get attached to that water as well, you'll cry about losing it too. You might as well write dramatic poetry like Euripides: \"The hot baths of Nero and the Marcian water.\" See how people turn ordinary events into tragedies when they act foolishly?",
+    "original_excerpt": "In what respect are you better than he who cries for a girl, if you grieve for a little gymnasium, and little porticos, and young men, and such places of amusement? Another comes and laments that he shall no longer drink the water of Dirce. Is the Marcian water worse than that of Dirce? But I was used to the water of Dirce. And you in turn will be used to the other. Then if you become attached to this also, cry for this too, and try to make a verse like the verse of Euripides, The hot baths of Nero and the Marcian water. See how tragedy is made when common things happen to silly men.",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
     "tags": [
-      "calm-your-mind",
-      "facing-hardship"
+      "freedom-and-control",
+      "calm-your-mind"
     ],
-    "reading_time_seconds": 27
+    "reading_time_seconds": 35
   },
   {
     "id": "discourses-31-009",
@@ -133,13 +133,13 @@
     "chapter_slug": "that-we-do-not-strive-to-use-our-opinions-about-good-and-evil",
     "card_number": 9,
     "total_cards_in_chapter": 9,
-    "plain_english": "\"When will I see Athens again? When will I see the Acropolis?\" You fool, aren't you satisfied with what you see every day? Do you have anything better or greater to see than the sun, the moon, the stars, the whole earth, the sea? But if you truly understand the one who runs everything, and you carry him inside yourself, do you still crave little stones and a pretty rock?",
+    "plain_english": "\"When will I see Athens again? When will I see the Acropolis?\" Are you serious? You're not satisfied with what you see every day? Is there anything better or greater than the sun, the moon, the stars, the whole earth, the sea? If you truly understand the power that runs everything — and if you carry that understanding within yourself — do you really still crave little stones and pretty rocks?",
     "original_excerpt": "When then shall I see Athens again and the Acropolis? Wretch, are you not content with what you see daily? Have you anything better or greater to see than the sun, the moon, the stars, the whole earth, the sea? But if indeed you comprehend Him who administers the whole, and carry him about in yourself, do you still desire small stones and a beautiful rock?",
     "source_reference": "Discourses, That We Do not Strive to Use Our Opinions About Good and Evil",
     "author_slug": "epictetus",
     "tags": [
       "what-matters-most",
-      "knowing-yourself"
+      "calm-your-mind"
     ],
     "reading_time_seconds": 21
   }

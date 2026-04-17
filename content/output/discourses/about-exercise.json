@@ -4,8 +4,8 @@
     "book_slug": "discourses",
     "chapter_slug": "about-exercise",
     "card_number": 1,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Don't make your training about doing weird, unnatural things just to impress people. If we do that, we philosophers will be no different from circus performers. Sure, walking on a tightrope is hard. It's also dangerous. But should we practice tightrope walking for that reason? Should we practice climbing palm trees or hugging statues? Of course not. Not everything difficult and dangerous is worth practicing. Only practice what helps you work toward your actual goals.",
+    "total_cards_in_chapter": 3,
+    "plain_english": "Don't make your training about unnatural stunts that impress people. If you do that, you're no different from circus performers — even though you call yourself a philosopher. Walking on a tightrope is hard and dangerous. Should you practice tightrope walking because of that? Should you practice climbing palm trees or hugging statues? Of course not. Just because something is difficult and dangerous doesn't make it good practice. Good practice is what helps you achieve your actual goal.",
     "original_excerpt": "We ought not to make our exercises consist in means contrary to nature and adapted to cause admiration, for if we do so, we who call ourselves philosophers, shall not differ at all from jugglers. For it is difficult even to walk on a rope; and not only difficult, but it is also dangerous. Ought we for this reason to practice walking on a rope, or setting up a palm-tree, or embracing statues? By no means. Every thing which is difficult and dangerous is not suitable for practice; but that is suitable which conduces to the working out of that which is proposed to us.",
     "source_reference": "Discourses, About Exercise",
     "author_slug": "epictetus",
@@ -20,40 +20,24 @@
     "book_slug": "discourses",
     "chapter_slug": "about-exercise",
     "card_number": 2,
-    "total_cards_in_chapter": 4,
-    "plain_english": "So what's the goal we're working toward? To live without being controlled by our desires and fears. What does that mean? Never being disappointed when you want something, and never ending up with what you're trying to avoid. That's what all your practice should aim for.",
-    "original_excerpt": "And what is that which is proposed to us as a thing to be worked out? To live with desire and aversion (avoidance of certain things) free from restraint. And what is this? Neither to be disappointed in that which you desire, nor to fall into anything which you would avoid. Towards this object then exercise (practice) ought to tend.",
+    "total_cards_in_chapter": 3,
+    "plain_english": "What are we actually trying to accomplish? We want to live with our desires and fears under control. What does that mean? It means not being disappointed when you want something, and not falling into what you're trying to avoid. That's what your practice should focus on. You can't achieve unshakeable desire and fear-free avoidance without serious, constant practice. Here's the key: if you let your desires and fears focus on things outside your control, you'll fail on both counts. Your desires won't be satisfied, and you won't avoid what you fear.",
+    "original_excerpt": "And what is that which is proposed to us as a thing to be worked out? To live with desire and aversion (avoidance of certain things) free from restraint. And what is this? Neither to be disappointed in that which you desire, nor to fall into anything which you would avoid. Towards this object then exercise (practice) ought to tend. For since it is not possible to have your desire not disappointed and your aversion free from falling into that which you would avoid, without great and constant practice, you must know that if you allow your desire and aversion to turn to things which are not within the power of the will, you will neither have your desire capable of attaining your object, nor your aversion free from the power of avoiding that which you would avoid.",
     "source_reference": "Discourses, About Exercise",
     "author_slug": "epictetus",
     "tags": [
       "freedom-and-control",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 14
+    "reading_time_seconds": 28
   },
   {
     "id": "discourses-45-003",
     "book_slug": "discourses",
     "chapter_slug": "about-exercise",
     "card_number": 3,
-    "total_cards_in_chapter": 4,
-    "plain_english": "You need lots of practice to get what you want and avoid what you don't want. But here's the thing: if you focus your desires and fears on things outside your control, you'll fail. You won't get what you want, and you won't avoid what you're trying to escape.",
-    "original_excerpt": "For since it is not possible to have your desire not disappointed and your aversion free from falling into that which you would avoid, without great and constant practice, you must know that if you allow your desire and aversion to turn to things which are not within the power of the will, you will neither have your desire capable of attaining your object, nor your aversion free from the power of avoiding that which you would avoid.",
-    "source_reference": "Discourses, About Exercise",
-    "author_slug": "epictetus",
-    "tags": [
-      "freedom-and-control",
-      "knowing-yourself"
-    ],
-    "reading_time_seconds": 15
-  },
-  {
-    "id": "discourses-45-004",
-    "book_slug": "discourses",
-    "chapter_slug": "about-exercise",
-    "card_number": 4,
-    "total_cards_in_chapter": 4,
-    "plain_english": "We have strong habits. We're used to wanting and avoiding things that are outside our control. We need to build opposite habits to fight this. When appearances are really tempting, that's where we need to practice the most. Once you've trained enough, you can test yourself at the right time. Then you'll enter the arena to see if appearances still overpower you like they used to. But at first, stay far away from what's too strong for you. It's not a fair fight between a charming young woman and a philosophy beginner. As the saying goes, the clay pot and the rock don't get along.",
+    "total_cards_in_chapter": 3,
+    "plain_english": "Strong habits control us. We're used to wanting and avoiding things that aren't up to us. We need to fight this habit with a different habit. When something looks really tempting, that's when you need to practice the most. Later, when you're ready, you can test yourself at the right moment. You'll enter the arena to see if appearances still overpower you like they used to. But first, stay far away from anything stronger than you are. It's not a fair fight between a beautiful young woman and a beginning philosopher. As the saying goes, the clay pot and the rock don't get along.",
     "original_excerpt": "And since strong habit leads (prevails), and we are accustomed to employ desire and aversion only to things which are not within the power of our will, we ought to oppose to this habit a contrary habit, and where there is great slipperiness in the appearances, there to oppose the habit of exercise. Then at last, if occasion presents itself, for the purpose of trying yourself at a proper time you will descend into the arena to know if appearances overpower you as they did formerly. But at first fly far from that which is stronger than yourself; the contest is unequal between a charming young girl and a beginner in philosophy. The earthen pitcher, as the saying is, and the rock do not agree.",
     "source_reference": "Discourses, About Exercise",
     "author_slug": "epictetus",
@@ -61,6 +45,6 @@
       "knowing-yourself",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 32
+    "reading_time_seconds": 31
   }
 ]

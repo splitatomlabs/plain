@@ -5,15 +5,15 @@
     "chapter_slug": "how-a-man-on-every-occasion-can-maintain-his-proper-character",
     "card_number": 1,
     "total_cards_in_chapter": 2,
-    "plain_english": "If you're a thinking person, only unreasonable things are truly unbearable. Reasonable things you can handle. Physical pain isn't naturally unbearable. Look at how the Spartans endure whipping once they learn that whipping serves a reasonable purpose. Even hanging yourself isn't unbearable. When you believe it's the rational thing to do, you go and do it. Here's the point: if you watch people carefully, you'll see that nothing bothers humans more than things that seem unreasonable. And nothing attracts us more than things that make sense.",
+    "plain_english": "For rational beings like humans, only the irrational is unbearable. What seems rational becomes bearable. Physical blows aren't naturally unbearable. How do we know? Look at how the Spartans endure whipping once they learn that whipping serves a rational purpose. Even hanging yourself isn't unbearable. Once you believe it's rational, you'll do it. In short, if we pay attention, we'll see that humans suffer most from what seems irrational. And we're drawn most to what seems rational.",
     "original_excerpt": "To the rational animal only is the irrational intolerable; but that which is rational is tolerable. Blows are not naturally intolerable. How is that? See how the Lacedaemonians endure whipping when they have learned that whipping is consistent with reason. To hang yourself is not intolerable. When then you have the opinion that it is rational, you go and hang yourself. In short, if we observe, we shall find that the animal man is pained by nothing so much as by that which is irrational; and, on the contrary, attracted to nothing so much as to that which is rational.",
     "source_reference": "Discourses, How a Man on Every Occasion Can Maintain His Proper Character",
     "author_slug": "epictetus",
     "tags": [
-      "calm-your-mind",
-      "human-nature"
+      "human-nature",
+      "calm-your-mind"
     ],
-    "reading_time_seconds": 26
+    "reading_time_seconds": 23
   },
   {
     "id": "discourses-02-002",
@@ -21,7 +21,7 @@
     "chapter_slug": "how-a-man-on-every-occasion-can-maintain-his-proper-character",
     "card_number": 2,
     "total_cards_in_chapter": 2,
-    "plain_english": "Think about what price you're willing to sell your freedom of choice for. If for no other reason, at least make sure you don't sell it cheap. But being truly great — that maybe belongs to people like Socrates and others like him. So why, if we're naturally capable of this, aren't more of us like him? Is it true that all horses are fast? That all dogs are good at tracking? No. So what — just because I'm naturally slow, should I stop trying? I hope not. Epictetus isn't better than Socrates. But if he's not worse, that's enough for me. I'll never be Milo the strongman, but I still take care of my body. I'll never be rich like Croesus, but I still manage my money. We don't give up on something just because we can't be the absolute best at it.",
+    "plain_english": "Think about what you're giving up when you sell out your will. If nothing else, don't sell it cheap. The great and superior qualities might belong to Socrates and people like him. So why, if we're naturally capable of this, aren't more of us like him? Is it true that all horses become fast runners? That all dogs become expert trackers? So what if I'm naturally slow — should I give up trying because of that? I hope not. Epictetus is not better than Socrates. But if he's not worse, that's good enough for me. I'll never be Milo the athlete, but I still take care of my body. I'll never be Croesus the rich king, but I still manage my money. We don't stop working on something just because we can't be the absolute best at it.",
     "original_excerpt": "Only consider at what price you sell your own will: if for no other reason, at least for this, that you sell it not for a small sum. But that which is great and superior perhaps belongs to Socrates and such as are like him. Why then, if we are naturally such, are not a very great number of us like him? Is it true then that all horses become swift, that all dogs are skilled in tracking footprints? What then, since I am naturally dull, shall I, for this reason, take no pains? I hope not. Epictetus is not superior to Socrates; but if he is not inferior, this is enough for me; for I shall never be a Milo, and yet I do not neglect my body; nor shall I be a Croesus, and yet I do not neglect my property; nor, in a word, do we neglect looking after anything because we despair of reaching the highest degree.",
     "source_reference": "Discourses, How a Man on Every Occasion Can Maintain His Proper Character",
     "author_slug": "epictetus",
@@ -29,6 +29,6 @@
       "knowing-yourself",
       "doing-the-right-thing"
     ],
-    "reading_time_seconds": 43
+    "reading_time_seconds": 41
   }
 ]
