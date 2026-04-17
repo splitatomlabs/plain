@@ -105,7 +105,10 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   console.log(`\nParsing ${config.slug}...`);
 
   const text = await readFile(config.source_file, "utf-8");
+  logger.info(`parse: loaded ${config.source_file} (${text.length} chars)`);
   const parsed = parseSourceText(text, config);
+  const totalSections = parsed.chapters.reduce((s, ch) => s + ch.sections.length, 0);
+  logger.info(`parse: ${parsed.chapters.length} chapters, ${totalSections} sections`);
 
   // Validate parsed content before chunking (catches source artifacts
   // like inter-book preamble before we spend money on refine/translate).
@@ -119,15 +122,18 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
     }
   }
   if (parseContentErrors.length > 0) {
+    for (const e of parseContentErrors) logger.error(`parse: content error — ${e}`);
     console.error(`\nParse content errors in ${config.slug}:`);
     for (const e of parseContentErrors) console.error(`  ${e}`);
     throw new Error(`${config.slug}: ${parseContentErrors.length} parse content error(s)`);
   }
+  logger.info("parse: content validation passed");
 
   const coverageErrors: string[] = [];
 
   const chapters = parsed.chapters.map((ch) => {
     const chunks = chunkSections(ch.sections, config.speakerLabels);
+    logger.info(`parse: ${ch.slug} — ${ch.sections.length} sections → ${chunks.length} chunks`);
     console.log(`  ${ch.slug}: ${chunks.length} chunks`);
 
     // Verify no sections were dropped during parse → chunk
@@ -147,10 +153,12 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
   });
 
   if (coverageErrors.length > 0) {
+    for (const e of coverageErrors) logger.error(`parse: coverage error — ${e}`);
     console.error(`\nSection coverage errors in ${config.slug}:`);
     for (const e of coverageErrors) console.error(`  ${e}`);
     throw new Error(`${config.slug}: ${coverageErrors.length} section coverage error(s)`);
   }
+  logger.info("parse: section coverage validation passed");
 
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
