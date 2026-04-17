@@ -8,7 +8,7 @@ vi.mock("../claude.js", () => ({
   ClaudeCliError: class ClaudeCliError extends Error {},
 }));
 
-import { refineChunksRealtime, buildRefineSystem, buildBulkRefineSystem, buildBulkRefineUser } from "../refine.js";
+import { refineChunksRealtime, buildRefineSystem, buildBulkRefineSystem, buildBulkRefineUser, splitTextAtBoundary, splitOversizedChunk } from "../refine.js";
 import { callClaudeJSON } from "../claude.js";
 
 const mockCallClaudeJSON = vi.mocked(callClaudeJSON);
@@ -480,5 +480,62 @@ describe("buildBulkRefineUser", () => {
     const user = buildBulkRefineUser(chunks);
     expect(user).not.toContain("bite-sized");
     expect(user).not.toContain("200 words");
+  });
+});
+
+describe("splitTextAtBoundary", () => {
+  it("splits at paragraph break closest to midpoint", () => {
+    const text = "First paragraph here.\n\nSecond paragraph here.";
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toBe("First paragraph here.");
+    expect(result![1]).toBe("Second paragraph here.");
+  });
+
+  it("splits at closing-quote sentence boundary", () => {
+    const text = 'He said "Go further off, for fear the king should hear you." He also heard soldiers cursing.';
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toMatch(/\."/);
+    expect(result![1]).toMatch(/^He also/);
+  });
+
+  it("splits at semicolon boundary", () => {
+    const text = "We should pardon many slaves; as it is we obey our first impulse.";
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toMatch(/;$/);
+  });
+
+  it("splits at colon boundary", () => {
+    const text = "We ought to make a distinction: whether a man cannot or will not do it.";
+    const result = splitTextAtBoundary(text);
+    expect(result).not.toBeNull();
+    expect(result![0]).toMatch(/:$/);
+  });
+
+  it("returns null when no clean boundary exists", () => {
+    const text = Array(300).fill("word").join(" ");
+    const result = splitTextAtBoundary(text);
+    expect(result).toBeNull();
+  });
+});
+
+describe("splitOversizedChunk", () => {
+  it("keeps chunk intact when no clean boundary exists", () => {
+    const text = Array(300).fill("word").join(" ");
+    const result = splitOversizedChunk({ sectionNumber: 1, text });
+    expect(result).toHaveLength(1);
+    expect(result[0].text).toBe(text);
+  });
+
+  it("splits oversized chunk with sentence boundaries", () => {
+    const sentence = Array(50).fill("word").join(" ") + ".";
+    const text = Array(5).fill(sentence).join(" ");
+    const result = splitOversizedChunk({ sectionNumber: 1, text });
+    expect(result.length).toBeGreaterThan(1);
+    for (const chunk of result) {
+      expect(chunk.text).toMatch(/\.$/);
+    }
   });
 });
