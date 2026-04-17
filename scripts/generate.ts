@@ -271,12 +271,9 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
 
           // Splice retried chunks back: remove old chunks for retried sections, insert new ones
           const kept = result.chunks.filter((c) => !retrySections.has(c.sectionNumber));
-          // Find insertion point: position of first retried section in the kept array
-          const firstRetrySection = Math.min(...retrySections);
-          const insertIdx = kept.findIndex((c) => c.sectionNumber > firstRetrySection);
-          const spliced = insertIdx === -1
-            ? [...kept, ...retryResult.chunks]
-            : [...kept.slice(0, insertIdx), ...retryResult.chunks, ...kept.slice(insertIdx)];
+          const spliced = [...kept, ...retryResult.chunks].sort(
+            (a, b) => a.sectionNumber - b.sectionNumber,
+          );
 
           result = {
             ...result,
