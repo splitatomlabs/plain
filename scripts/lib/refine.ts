@@ -12,6 +12,7 @@ import {
 } from "./claude.js";
 import type { Chunk } from "./chunker.js";
 import type { BookConfig } from "./constants.js";
+import { logger } from "./logger.js";
 
 /** Hard cap: any chunk whose original text exceeds this reading time must be split. */
 export const MAX_READING_TIME_SECONDS = 60;
@@ -290,6 +291,7 @@ function applyDecisions(
     }
 
     if (decision.action === "split" && decision.segments && decision.segments.length > 1) {
+      logger.decision(`SPLIT section ${chunk.sectionNumber} → ${decision.segments.length} segments`);
       process.stderr.write(
         `  SPLIT section ${chunk.sectionNumber} into ${decision.segments.length} chunks\n`,
       );
@@ -298,6 +300,7 @@ function applyDecisions(
         refined.push({ sectionNumber: chunk.sectionNumber, text: segment.trim() });
       }
     } else if (decision.action === "merge_next" && next) {
+      logger.decision(`MERGE section ${chunk.sectionNumber} + ${next.sectionNumber}: ${decision.reason ?? "no reason"}`);
       process.stderr.write(
         `  MERGE section ${chunk.sectionNumber} + ${next.sectionNumber}: ${decision.reason ?? ""}\n`,
       );
@@ -308,6 +311,7 @@ function applyDecisions(
       });
       skipNext = true;
     } else if (decision.action === "merge_prev" && refined.length > 0) {
+      logger.decision(`MERGE section ${chunk.sectionNumber} into previous: ${decision.reason ?? "no reason"}`);
       process.stderr.write(
         `  MERGE section ${chunk.sectionNumber} into previous: ${decision.reason ?? ""}\n`,
       );
@@ -315,6 +319,7 @@ function applyDecisions(
       const last = refined[refined.length - 1];
       last.text = last.text + "\n\n" + chunk.text;
     } else {
+      logger.decision(`KEEP section ${chunk.sectionNumber}`);
       refined.push(chunk);
     }
   }
@@ -361,11 +366,13 @@ export async function refineChunksRealtime(
       ];
       deferredMergeChunk = null;
       totalMerges++;
+      logger.decision(`MERGE (cross-batch) section ${batch[0].sectionNumber} with next batch`);
       process.stderr.write(
         `  MERGE (cross-batch) section ${batch[0].sectionNumber} with next batch\n`,
       );
     }
 
+    logger.info(`refine-rt: batch ${b + 1}/${batches.length} — ${batch.length} chunks (sections ${batch[0].sectionNumber}-${batch[batch.length - 1].sectionNumber})`);
     process.stderr.write(
       `  Batch ${b + 1}/${batches.length}: ${batch.length} chunks (sections ${batch[0].sectionNumber}-${batch[batch.length - 1].sectionNumber})...\n`,
     );
@@ -376,8 +383,10 @@ export async function refineChunksRealtime(
       decisions = await callClaudeJSON<BulkRefineResponse[]>(prompt, undefined, { system });
       apiCalls++;
     } catch (e) {
+      const msg = e instanceof ClaudeCliError ? e.message : String(e);
+      logger.warn(`refine-rt: bulk refine failed, keeping chunks as-is — ${msg}`);
       process.stderr.write(
-        `  Bulk refine failed, falling back to single-chunk: ${e instanceof ClaudeCliError ? e.message : String(e)}\n`,
+        `  Bulk refine failed, falling back to single-chunk: ${msg}\n`,
       );
       // On bulk failure, keep chunks as-is rather than calling single-chunk API
       allRefined.push(...batch);
@@ -415,12 +424,15 @@ export async function refineChunksRealtime(
     const pieces = splitOversizedChunk(chunk);
     if (pieces.length > 1) {
       totalSplits++;
+      logger.decision(`LENGTH-SPLIT section ${chunk.sectionNumber} → ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)`);
       process.stderr.write(
         `  LENGTH-SPLIT section ${chunk.sectionNumber} into ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)\n`,
       );
     }
     capped.push(...pieces);
   }
+
+  logger.info(`refine-rt: complete — ${chunks.length} → ${capped.length} chunks (${totalSplits} splits, ${totalMerges} merges)`);
 
   return {
     originalCount: chunks.length,
@@ -481,12 +493,14 @@ export async function refineChunksBatch(
 
   if (requests.length === 0) return new Map();
 
+  logger.info(`refine-batch: submitting ${requests.length} requests`);
   process.stderr.write(
     `[batch-refine] Submitting ${requests.length} refine requests...\n`,
   );
 
   // 2. Submit batch
   const batch = await createMessageBatch(requests);
+  logger.info(`refine-batch: created batch ${batch.id}`);
   process.stderr.write(`[batch-refine] Created batch ${batch.id}\n`);
 
   // 3. Poll until done
@@ -515,6 +529,7 @@ export async function refineChunksBatch(
     if (item.result.type === "errored") {
       batchStats.failed++;
       failedChapters.add(chapterKey);
+      logger.error(`refine-batch: request ${item.custom_id} errored: ${JSON.stringify(item.result.error)}`);
       process.stderr.write(
         `[batch-refine] WARNING: request ${item.custom_id} failed: ${JSON.stringify(item.result.error)}\n`,
       );
@@ -526,6 +541,7 @@ export async function refineChunksBatch(
     if (!textBlock || textBlock.type !== "text") {
       batchStats.failed++;
       failedChapters.add(chapterKey);
+      logger.error(`refine-batch: no text content for ${item.custom_id}`);
       process.stderr.write(
         `[batch-refine] WARNING: no text content for ${item.custom_id}\n`,
       );
@@ -545,6 +561,7 @@ export async function refineChunksBatch(
     } catch {
       batchStats.failed++;
       failedChapters.add(chapterKey);
+      logger.error(`refine-batch: failed to parse JSON for ${item.custom_id}`);
       process.stderr.write(
         `[batch-refine] WARNING: failed to parse JSON for ${item.custom_id}\n`,
       );
@@ -565,6 +582,7 @@ export async function refineChunksBatch(
 
     // If any batch for this chapter failed, fall back to real-time refine
     if (failedChapters.has(chapterKey)) {
+      logger.warn(`refine-batch: falling back to real-time for ${chapterKey} (batch errors)`);
       process.stderr.write(
         `[batch-refine] Falling back to real-time refine for ${chapterKey}\n`,
       );
@@ -575,7 +593,7 @@ export async function refineChunksBatch(
 
     const batchEntries = chapterDecisions.get(chapterKey);
     if (!batchEntries) {
-      // No results at all — fall back
+      logger.warn(`refine-batch: no results for ${chapterKey}, falling back to real-time`);
       process.stderr.write(
         `[batch-refine] No results for ${chapterKey}, falling back to real-time\n`,
       );
@@ -615,6 +633,7 @@ export async function refineChunksBatch(
         }
         deferredMergeChunk = null;
         totalMerges++;
+        logger.decision(`MERGE (cross-batch) section ${mergedSectionNumber} with next batch`);
         process.stderr.write(
           `  MERGE (cross-batch) section ${mergedSectionNumber} with next batch\n`,
         );
@@ -649,12 +668,15 @@ export async function refineChunksBatch(
       const pieces = splitOversizedChunk(chunk);
       if (pieces.length > 1) {
         totalSplits++;
+        logger.decision(`LENGTH-SPLIT section ${chunk.sectionNumber} → ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)`);
         process.stderr.write(
           `  LENGTH-SPLIT section ${chunk.sectionNumber} into ${pieces.length} chunks (exceeded ${MAX_READING_TIME_SECONDS}s cap)\n`,
         );
       }
       capped.push(...pieces);
     }
+
+    logger.info(`refine-batch: ${chapterKey} complete — ${chunks.length} → ${capped.length} chunks (${totalSplits} splits, ${totalMerges} merges)`);
 
     resultMap.set(chapterKey, {
       originalCount: chunks.length,

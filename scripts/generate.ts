@@ -275,6 +275,8 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
             }
           }
 
+          logger.warn(`refine: validation errors in ${config.slug}/${ch.slug} — retry ${retries}/${MAX_REFINE_RETRIES}, retrying ${retryChunks.length} sections (batches: ${[...failingBatchIndices].join(",")})`);
+          for (const e of refineErrors) logger.error(`refine: ${e.message}`);
           console.error(`  Refine errors in ${config.slug}/${ch.slug} — retrying ${retryChunks.length}/${ch.chunks.length} sections (${retries}/${MAX_REFINE_RETRIES})...`);
           for (const e of refineErrors) console.error(`    ${e.message}`);
 
@@ -304,6 +306,8 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
         }
 
         if (refineErrors.length > 0) {
+          logger.error(`refine: coverage errors persist in ${config.slug}/${ch.slug} after ${MAX_REFINE_RETRIES} retries`);
+          for (const e of refineErrors) logger.error(`refine: ${e.message}`);
           console.error(`  Refine coverage errors in ${config.slug}/${ch.slug} (after ${MAX_REFINE_RETRIES} retries):`);
           for (const e of refineErrors) console.error(`    ${e.message}`);
           validationErrors.push(`${config.slug}/${ch.slug}: refine dropped content`);
@@ -320,6 +324,7 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
         await saveRefineCache(config.slug, chapters, cost);
         console.log(`  Cached refine results for ${config.slug}`);
       } else {
+        logger.error(`refine: skipping cache for ${config.slug} — has validation errors`);
         console.error(`  Skipping cache for ${config.slug} — has validation errors`);
       }
 
