@@ -125,6 +125,8 @@ A good card:
 
 HARD RULE: Any section longer than 200 words MUST be split. Each resulting segment must be under 200 words.
 
+SPLIT RULE: Always split at sentence boundaries. Never split mid-sentence.
+
 AUTHOR CONTEXT: ${authorContext}
 
 You will receive multiple sections at once. Evaluate EACH section and decide what to do with it.
