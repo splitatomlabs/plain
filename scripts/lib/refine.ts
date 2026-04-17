@@ -168,7 +168,7 @@ export function buildBulkRefineUser(chunks: Chunk[]): string {
 // Reading-time cap — split oversized chunks before translation
 // ---------------------------------------------------------------------------
 
-export function estimateReadingTime(text: string): number {
+function estimateReadingTime(text: string): number {
   const words = text.split(/\s+/).filter((w) => w.length > 0).length;
   return Math.max(Math.round((words / 200) * 60), 5);
 }
@@ -258,7 +258,7 @@ const REFINE_BATCH_SIZE = parseInt(process.env.REFINE_BATCH_SIZE ?? "10", 10);
  * Apply an array of refine decisions to a batch of chunks.
  * Returns the refined chunks, plus split/merge counts.
  */
-export function applyDecisions(
+function applyDecisions(
   chunks: Chunk[],
   decisions: BulkRefineResponse[],
 ): { refined: Chunk[]; splits: number; merges: number } {
