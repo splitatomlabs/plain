@@ -3,8 +3,6 @@
 	import '@fontsource-variable/dm-sans';
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { dev } from '$app/environment';
-	import { inject } from '@vercel/analytics';
 	import { trackReturnVisit } from '$lib/analytics.js';
 	import { progress } from '$lib/stores/progress.js';
 
@@ -13,9 +11,6 @@
 
 	onMount(() => {
 		theme = document.documentElement.getAttribute('data-theme') || 'light';
-		if (!dev && navigator.doNotTrack !== '1') {
-			inject();
-		}
 		trackReturnVisit({ hasProgress: progress.hasAnyProgress() });
 	});
 

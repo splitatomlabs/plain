@@ -1,11 +1,11 @@
+<script>
+	let { slug, label, progress = null } = $props();
+</script>
+
 <a href="/tags/{slug}" class="tag-pill">
 	{label}
 	{#if progress}<span class="tag-badge">{progress}</span>{/if}
 </a>
-
-<script>
-	let { slug, label, progress = null } = $props();
-</script>
 
 <style>
 	.tag-pill {

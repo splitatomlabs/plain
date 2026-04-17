@@ -27,13 +27,16 @@ test.describe('Analytics event wiring', () => {
 	test('book_landing_viewed fires on book landing visit', async ({ page }) => {
 		await page.goto('/enchiridion');
 
+		await expect
+			.poll(async () =>
+				page.evaluate(() => {
+					const calls = JSON.parse(sessionStorage.getItem('__vaCalls') || '[]');
+					return calls.some((c) => c[0] === 'event' && c[1]?.name === 'book_landing_viewed');
+				})
+			)
+			.toBe(true);
+
 		const calls = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__vaCalls') || '[]'));
-		const names = calls
-			.filter((c) => c[0] === 'event' && c[1]?.name)
-			.map((c) => c[1].name);
-
-		expect(names).toContain('book_landing_viewed');
-
 		const landingCall = calls.find(
 			(c) => c[0] === 'event' && c[1]?.name === 'book_landing_viewed'
 		);
