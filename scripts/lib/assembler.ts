@@ -4,6 +4,7 @@ import type { BookConfig, TagSlug } from "./constants.js";
 import type { Card, BookMeta, ChapterInfo, ValidationMessage } from "./types.js";
 import type { TranslatedChunk } from "./translator.js";
 import { validateCardContent, validateCardSequence } from "./validate.js";
+import { logger } from "./logger.js";
 
 /**
  * Normalize newlines: collapse single newlines to spaces (Gutenberg line wraps),
@@ -109,10 +110,12 @@ export function assembleBook(
     });
 
     // Validate cards
+    let chapterErrors = 0;
     for (const card of cards) {
       const contentMsgs = validateCardContent(card);
       for (const msg of contentMsgs) {
         if (msg.severity === "error") {
+          chapterErrors++;
           process.stderr.write(`  ERROR [${card.id}]: ${msg.message}\n`);
         } else if (msg.severity === "warn") {
           process.stderr.write(`  WARN [${card.id}]: ${msg.message}\n`);
@@ -121,7 +124,12 @@ export function assembleBook(
     }
     const seqMsgs = validateCardSequence(cards, chapterSlug);
     for (const msg of seqMsgs) {
+      if (msg.severity === "error") chapterErrors++;
       process.stderr.write(`  ${msg.severity.toUpperCase()} [${chapterSlug}]: ${msg.message}\n`);
+    }
+
+    if (chapterErrors === 0) {
+      logger.info(`assemble: ${chapterSlug} validation passed (content, source-ref, html/markdown, sequence — ${cards.length} cards)`);
     }
 
     chapters.set(chapterSlug, cards);

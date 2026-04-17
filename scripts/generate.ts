@@ -127,7 +127,7 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
     for (const e of parseContentErrors) console.error(`  ${e}`);
     throw new Error(`${config.slug}: ${parseContentErrors.length} parse content error(s)`);
   }
-  logger.info("parse: content validation passed");
+  logger.info("parse: content validation passed (source-artifacts, dialogue-headers, footnotes)");
 
   const coverageErrors: string[] = [];
 
@@ -158,7 +158,7 @@ async function runParse(config: BookConfig): Promise<ParsedOutput> {
     for (const e of coverageErrors) console.error(`  ${e}`);
     throw new Error(`${config.slug}: ${coverageErrors.length} section coverage error(s)`);
   }
-  logger.info("parse: section coverage validation passed");
+  logger.info(`parse: section coverage validation passed (contiguous numbering, text roundtrip — ${totalSections} sections)`);
 
   const totalChunks = chapters.reduce((sum, ch) => sum + ch.chunks.length, 0);
   console.log(`  Total: ${totalChunks} chunks across ${chapters.length} chapters`);
@@ -321,6 +321,7 @@ async function runRefine(configs: BookConfig[]): Promise<{ config: BookConfig; r
 
       // Only cache after all chapters pass validation
       if (!validationErrors.some((e) => e.startsWith(`${config.slug}/`))) {
+        logger.info(`refine: coverage validation passed for ${config.slug} (head/tail text roundtrip across ${chapters.length} chapters)`);
         await saveRefineCache(config.slug, chapters, cost);
         console.log(`  Cached refine results for ${config.slug}`);
       } else {
