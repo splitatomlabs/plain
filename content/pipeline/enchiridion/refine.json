@@ -1,6 +1,6 @@
 {
   "pipelineVersion": 3,
-  "createdAt": "2026-04-16T09:02:09.162Z",
+  "createdAt": "2026-04-17T07:03:21.900Z",
   "bookSlug": "enchiridion",
   "chapters": [
     {
@@ -321,11 +321,11 @@
         },
         {
           "sectionNumber": 29,
-          "text": "Thus some, when they have seen a philosopher and heard a man speaking like Euphrates[3]—though, indeed, who can speak like him?—have a mind to be philosophers, too. Consider first, man, what the matter is, and what your own nature is able to bear. If you would be a wrestler, consider your shoulders, your back, your thighs; for different persons are made for different things. Do you think that you can act as you do and be a philosopher, that you can eat, drink, be angry, be discontented, as you are now? You must watch, you must labor, you must get the better of certain appetites, must quit your acquaintances, be despised by your servant, be laughed at by those you meet; come off worse than others in everything—in offices, in honors, before tribunals."
+          "text": "Thus some, when they have seen a philosopher and heard a man speaking like Euphrates—though, indeed, who can speak like him?—have a mind to be philosophers, too. Consider first, man, what the matter is, and what your own nature is able to bear. If you would be a wrestler, consider your shoulders, your back, your thighs; for different persons are made for different things. Do you think that you can act as you do and be a philosopher, that you can eat, drink, be angry, be discontented, as you are now? You must watch, you must labor, you must get the better of certain appetites, must quit your acquaintances, be despised by your servant, be laughed at by those you meet;"
         },
         {
           "sectionNumber": 29,
-          "text": "When you have fully considered all these things, approach, if you please—that is, if, by parting with them, you have a mind to purchase serenity, freedom, and tranquillity. If not, do not come hither; do not, like children, be now a philosopher, then a publican, then an orator, and then one of Caesar's officers. These things are not consistent. You must be one man, either good or bad. You must cultivate either your own reason or else externals; apply yourself either to things within or without you—that is, be either a philosopher or one of the mob."
+          "text": "come off worse than others in everything—in offices, in honors, before tribunals. When you have fully considered all these things, approach, if you please—that is, if, by parting with them, you have a mind to purchase serenity, freedom, and tranquillity. If not, do not come hither; do not, like children, be now a philosopher, then a publican, then an orator, and then one of Caesar's officers. These things are not consistent. You must be one man, either good or bad. You must cultivate either your own reason or else externals; apply yourself either to things within or without you—that is, be either a philosopher or one of the mob."
         }
       ]
     },
@@ -345,19 +345,15 @@
       "chunks": [
         {
           "sectionNumber": 31,
-          "text": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you."
+          "text": "Be assured that the essence of piety toward the gods lies in this—to form right opinions concerning them, as existing and as governing the universe justly and well. And fix yourself in this resolution, to obey them, and yield to them, and willingly follow them amidst all events, as being ruled by the most perfect wisdom. For thus you will never find fault with the gods, nor accuse them of neglecting you. And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are."
         },
         {
           "sectionNumber": 31,
-          "text": "And it is not possible for this to be affected in any other way than by withdrawing yourself from things which are not within our own power, and by making good or evil to consist only in those which are. For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors."
+          "text": "For if you suppose any other things to be either good or evil, it is inevitable that, when you are disappointed of what you wish or incur what you would avoid, you should reproach and blame their authors. For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed. So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise."
         },
         {
           "sectionNumber": 31,
-          "text": "For every creature is naturally formed to flee and abhor things that appear hurtful and that which causes them; and to pursue and admire those which appear beneficial and that which causes them. It is impracticable, then, that one who supposes himself to be hurt should rejoice in the person who, as he thinks, hurts him, just as it is impossible to rejoice in the hurt itself. Hence, also, a father is reviled by his son when he does not impart the things which seem to be good; and this made Polynices and Eteocles mutually enemies—that empire seemed good to both. On this account the husbandman reviles the gods; [and so do] the sailor, the merchant, or those who have lost wife or child. For where our interest is, there, too, is piety directed."
-        },
-        {
-          "sectionNumber": 31,
-          "text": "So that whoever is careful to regulate his desires and aversions as he ought is thus made careful of piety likewise. But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly."
+          "text": "But it also becomes incumbent on everyone to offer libations and sacrifices and first fruits, according to the customs of his country, purely, and not heedlessly nor negligently; not avariciously, nor yet extravagantly."
         }
       ]
     },
@@ -381,31 +377,19 @@
       "chunks": [
         {
           "sectionNumber": 33,
-          "text": "Begin by prescribing to yourself some character and demeanor, such as you may preserve both alone and in company.\n\nBe mostly silent, or speak merely what is needful, and in few words. We may, however, enter sparingly into discourse sometimes, when occasion calls for it; but let it not run on any of the common subjects, as gladiators, or horse races, or athletic champions, or food, or drink—the vulgar topics of conversation—and especially not on men, so as either to blame, or praise, or make comparisons. If you are able, then, by your own conversation, bring over that of your company to proper subjects; but if you happen to find yourself among strangers, be silent.\n\nLet not your laughter be loud, frequent, or abundant."
+          "text": "Begin by prescribing to yourself some character and demeanor, such as you may preserve both alone and in company.\n\nBe mostly silent, or speak merely what is needful, and in few words. We may, however, enter sparingly into discourse sometimes, when occasion calls for it; but let it not run on any of the common subjects, as gladiators, or horse races, or athletic champions, or food, or drink—the vulgar topics of conversation—and especially not on men, so as either to blame, or praise, or make comparisons. If you are able, then, by your own conversation, bring over that of your company to proper subjects; but if you happen to find yourself among strangers, be silent.\n\nLet not your laughter be loud, frequent, or abundant.\n\nAvoid taking oaths, if possible, altogether; at any rate, so far as you are able."
         },
         {
           "sectionNumber": 33,
-          "text": "Avoid taking oaths, if possible, altogether; at any rate, so far as you are able.\n\nAvoid public and vulgar entertainments; but if ever an occasion calls you to them, keep your attention upon the stretch, that you may not imperceptibly slide into vulgarity. For be assured that if a person be ever so pure himself, yet, if his companion be corrupted, he who converses with him will be corrupted likewise."
+          "text": "Avoid public and vulgar entertainments; but if ever an occasion calls you to them, keep your attention upon the stretch, that you may not imperceptibly slide into vulgarity. For be assured that if a person be ever so pure himself, yet, if his companion be corrupted, he who converses with him will be corrupted likewise.\n\nProvide things relating to the body no further than absolute need requires, as meat, drink, clothing, house, retinue. But cut off everything that looks toward show and luxury.\n\nBefore marriage guard yourself with all your ability from unlawful intercourse with women; yet be not uncharitable or severe to those who are led into this, nor boast frequently that you yourself do otherwise."
         },
         {
           "sectionNumber": 33,
-          "text": "Provide things relating to the body no further than absolute need requires, as meat, drink, clothing, house, retinue. But cut off everything that looks toward show and luxury.\n\nBefore marriage guard yourself with all your ability from unlawful intercourse with women; yet be not uncharitable or severe to those who are led into this, nor boast frequently that you yourself do otherwise."
+          "text": "If anyone tells you that a certain person speaks ill of you, do not make excuses about what is said of you, but answer: \"He was ignorant of my other faults, else he would not have mentioned these alone.\"\n\nIt is not necessary for you to appear often at public spectacles; but if ever there is a proper occasion for you to be there, do not appear more solicitous for any other than for yourself—that is, wish things to be only just as they are, and only the best man to win; for thus nothing will go against you. But abstain entirely from acclamations and derision and violent emotions. And when you come away, do not discourse a great deal on what has passed and what contributes nothing to your own amendment. For it would appear by such discourse that you were dazzled by the show."
         },
         {
           "sectionNumber": 33,
-          "text": "If anyone tells you that a certain person speaks ill of you, do not make excuses about what is said of you, but answer: \"He was ignorant of my other faults, else he would not have mentioned these alone.\""
-        },
-        {
-          "sectionNumber": 33,
-          "text": "It is not necessary for you to appear often at public spectacles; but if ever there is a proper occasion for you to be there, do not appear more solicitous for any other than for yourself—that is, wish things to be only just as they are, and only the best man to win; for thus nothing will go against you. But abstain entirely from acclamations and derision and violent emotions. And when you come away, do not discourse a great deal on what has passed and what contributes nothing to your own amendment. For it would appear by such discourse that you were dazzled by the show."
-        },
-        {
-          "sectionNumber": 33,
-          "text": "Be not prompt or ready to attend private recitations; but if you do attend, preserve your gravity and dignity, and yet avoid making yourself disagreeable.\n\nWhen you are going to confer with anyone, and especially with one who seems your superior, represent to yourself how Socrates or Zeno would behave in such a case, and you will not be at a loss to meet properly whatever may occur."
-        },
-        {
-          "sectionNumber": 33,
-          "text": "When you are going before anyone in power, fancy to yourself that you may not find him at home, that you may be shut out, that the doors may not be opened to you, that he may not notice you. If, with all this, it be your duty to go, bear what happens and never say to yourself, \"It was not worth so much\"; for this is vulgar, and like a man bewildered by externals."
+          "text": "Be not prompt or ready to attend private recitations; but if you do attend, preserve your gravity and dignity, and yet avoid making yourself disagreeable.\n\nWhen you are going to confer with anyone, and especially with one who seems your superior, represent to yourself how Socrates or Zeno would behave in such a case, and you will not be at a loss to meet properly whatever may occur.\n\nWhen you are going before anyone in power, fancy to yourself that you may not find him at home, that you may be shut out, that the doors may not be opened to you, that he may not notice you. If, with all this, it be your duty to go, bear what happens and never say to yourself, \"It was not worth so much\"; for this is vulgar, and like a man bewildered by externals."
         },
         {
           "sectionNumber": 33,
@@ -607,10 +591,10 @@
     }
   ],
   "cost": {
-    "inputTokens": 39085,
-    "outputTokens": 5677,
+    "inputTokens": 40003,
+    "outputTokens": 5646,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 0.10120499999999999
+    "estimatedCost": 0.1023495
   }
 }
