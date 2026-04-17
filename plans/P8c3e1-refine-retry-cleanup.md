@@ -25,7 +25,7 @@ Increase refine max_tokens to 8096, remove callClaudeJSON retry logic, and simpl
 - [x] T02: Bump max_tokens for refine batch — `scripts/lib/refine.ts` L485-489: add `max_tokens: 8096` to batch request objects. Realtime path stays at default 4096.
 - [x] T03: Simplify refine realtime fallback — `scripts/lib/refine.ts` L380-394: on callClaudeJSON failure, log error and throw (fatal) instead of silently keeping chunks as-is. The batch fallback at L584-591 already logs a warning before calling refineChunksRealtime, which is correct.
 - [x] T04: Make translate realtime retry fatal — `scripts/lib/translator.ts` L217-223: re-throw error instead of swallowing it. Currently logs but silently drops the chunk, producing a book with gaps.
-- [~] T05: Run tests — `npm test` must pass. Update any broken assertions.
+- [x] T05: Run tests — `npm test` must pass. Update any broken assertions.
 
 ## Verify
 ```bash
