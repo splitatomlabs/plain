@@ -64,6 +64,8 @@ Directory layout: source texts in `content/source/`, pipeline cache in `content/
 
 **Pipeline logs:** Every run writes a human-readable log to `content/pipeline/<slug>/pipeline.log`. This captures LLM decisions (split/keep/merge), validation errors, retries, cache hits/misses, and batch API progress. When troubleshooting, read this file first. Use `--verbose` to also stream these messages to stderr in real time.
 
+**Batch debugging:** Anthropic Batch API results remain accessible after a batch completes. Batch IDs are logged to both `pipeline.log` and stderr (e.g., `Created batch msgbatch_...`). To re-read results from a past run, use the SDK's `client.messages.batches.results(batchId)` — no need to resubmit the batch.
+
 **Cache invalidation:** Bump `PIPELINE_VERSION` in `scripts/lib/cache.ts` when pipeline logic changes — this auto-invalidates all cached intermediates.
 
 ## Screenshots
