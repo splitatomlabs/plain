@@ -4,8 +4,8 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-01",
     "card_number": 1,
-    "total_cards_in_chapter": 4,
-    "plain_english": "All people, brother Gallio, want to live happily. But they're terrible at figuring out what actually makes life happy. It's so hard to reach happiness that the harder you chase it, the further away you get — if you're going the wrong way. When you're on the wrong road, your speed just carries you further from where you want to be. So first we need to define clearly what we're aiming for. Then we need to figure out the best path to get there. Once we're on the right path, we'll be able to see our daily progress and how much closer we're getting to the goal that our nature pushes us toward.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "Everyone wants to be happy, Gallio. But most people have no clear idea what actually makes life happy. Getting true happiness is so hard that the more desperately you chase it, the further you get from it — especially if you're going the wrong way. When you're on the wrong path, your speed just carries you further in the wrong direction. So first we need to figure out exactly what we're aiming for. Then we need to find the best route to get there. Once we're on the right path, we'll be able to see how much progress we make each day. We'll know how much closer we're getting to what we naturally want most.",
     "original_excerpt": "All men, brother Gallio, wish to live happily, but are dull at perceiving exactly what it is that makes life happy: and so far is it from being easy to attain to happiness that the more eagerly a man struggles to reach it the further he departs from it, if he takes the wrong road; for, since this leads in the opposite direction, his very swiftness carries him all the further away. We must therefore first define clearly what it is at which we aim: next we must consider by what path we may most speedily reach it, for on our journey itself, provided it be made in the right direction, we shall learn how much progress we have made each day, and how much nearer we are to the goal towards which our natural desires urge us.",
     "source_reference": "On the Happy Life, Section 1",
     "author_slug": "seneca",
@@ -13,15 +13,15 @@
       "what-matters-most",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 34
+    "reading_time_seconds": 35
   },
   {
     "id": "happy-life-01-002",
     "book_slug": "happy-life",
     "chapter_slug": "section-01",
     "card_number": 2,
-    "total_cards_in_chapter": 4,
-    "plain_english": "As long as we wander around without direction, following nothing but the shouting and conflicting noise of people pulling us in different directions, we'll waste our short lives in pointless wandering. This happens even when we work day and night to understand things better. So we shouldn't decide where to go or what path to take without advice from someone experienced — someone who has already explored the territory we're about to enter. This journey isn't like other trips. On regular trips, you can follow clear roads and ask locals for directions to avoid getting lost. But in life, the most popular and crowded paths are exactly the ones that lead us furthest astray.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "But as long as we wander around randomly, following no guide except the shouting of people who pull us in different directions, we'll waste our short lives on pointless wandering. This is true even if we work day and night trying to understand what makes us happy. So let's not decide where to go or which path to take without getting advice from someone experienced — someone who has already explored the territory we're about to enter. This journey isn't like other trips. On regular journeys, you can find clear roads and ask locals for directions. You won't get lost. But when it comes to happiness, the most popular and crowded paths are exactly the ones that lead you furthest astray.",
     "original_excerpt": "But as long as we wander at random, not following any guide except the shouts and discordant clamours of those who invite us to proceed in different directions, our short life will be wasted in useless roamings, even if we labour both day and night to get a good understanding. Let us not therefore decide whither we must tend, and by what path, without the advice of some experienced person who has explored the region which we are about to enter, because this journey is not subject to the same conditions as others; for in them some distinctly understood track and inquiries made of the natives make it impossible for us to go wrong, but here the most beaten and frequented tracks are those which lead us most astray.",
     "source_reference": "On the Happy Life, Section 1",
     "author_slug": "seneca",
@@ -29,38 +29,54 @@
       "what-matters-most",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 34
+    "reading_time_seconds": 36
   },
   {
     "id": "happy-life-01-003",
     "book_slug": "happy-life",
     "chapter_slug": "section-01",
     "card_number": 3,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Nothing is more important than this: don't follow the crowd like sheep. Don't go where everyone else is going instead of where you should go. Nothing causes more trouble than listening to popular opinion. We think something must be good just because most people say it is. We mistake fake things for real ones. We live by copying others instead of using our own minds. This is why people pile up in great heaps, rushing forward until they're crushed together. In a mob, when the crowd presses in on itself, no one can fall without pulling someone else down. The people in front destroy the ones following behind.",
-    "original_excerpt": "Nothing, therefore, is more important than that we should not, like sheep, follow the flock that has gone before us, and thus proceed not whither we ought, but whither the rest are going. Now nothing gets us into greater troubles than our subservience to common rumour, and our habit of thinking that those things are best which are most generally received as such, of taking many counterfeits for truly good things, and of living not by reason but by imitation of others. This is the cause of those great heaps into which men rush till they are piled one upon another. In a great crush of people, when the crowd presses upon itself, no one can fall without drawing some one else down upon him, and those who go before cause the destruction of those who follow them.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "Nothing is more important than this: we must not be like sheep following the flock ahead of us. We shouldn't go where we ought to go, but where everyone else is going. Nothing causes us more trouble than listening to popular opinion. We think the best things are whatever most people accept as best. We mistake fake goods for real ones. We live by copying others instead of using our own reason. This is why people pile up in great heaps, rushing and crushing each other.",
+    "original_excerpt": "Nothing, therefore, is more important than that we should not, like sheep, follow the flock that has gone before us, and thus proceed not whither we ought, but whither the rest are going. Now nothing gets us into greater troubles than our subservience to common rumour, and our habit of thinking that those things are best which are most generally received as such, of taking many counterfeits for truly good things, and of living not by reason but by imitation of others. This is the cause of those great heaps into which men rush till they are piled one upon another.",
     "source_reference": "On the Happy Life, Section 1",
     "author_slug": "seneca",
     "tags": [
       "freedom-and-control",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 32
+    "reading_time_seconds": 26
   },
   {
     "id": "happy-life-01-004",
     "book_slug": "happy-life",
     "chapter_slug": "section-01",
     "card_number": 4,
-    "total_cards_in_chapter": 4,
-    "plain_english": "You can see the same pattern in human life: no one just makes mistakes alone. They end up causing others to go wrong and encouraging them to do it too. It's dangerous to follow the crowd that marches ahead of us. Since everyone would rather believe someone else than think for themselves, we never make careful judgments about how to live. Instead, some inherited mistake always traps us and destroys us. We die because we copy other people's examples. We could cure this problem if we broke away from the herd. But instead, the crowd is ready to fight reason itself to defend its own errors. The same thing happens in elections. When the fickle wind of popular opinion shifts, the very people who elected the consuls and praetors suddenly admire them. That we all approve and disapprove of the same things — this is what happens with every decision made by majority vote.",
-    "original_excerpt": "You may observe the same thing in human life: no one can merely go wrong by himself, but he must become both the cause and adviser of another's wrongdoing. It is harmful to follow the march of those who go before us, and since every one had rather believe another than form his own opinion, we never pass a deliberate judgment upon life, but some traditional error always entangles us and brings us to ruin, and we perish because we follow other men's examples: we should be cured of this if we were to disengage ourselves from the herd; but as it is, the mob is ready to fight against reason in defence of its own mistake. Consequently the same thing happens as at elections, where, when the fickle breeze of popular favour has veered round, those who have been chosen consuls and praetors are viewed with admiration by the very men who made them so. That we should all approve and disapprove of the same things is the end of every decision which is given according to the voice of the majority.",
+    "total_cards_in_chapter": 5,
+    "plain_english": "Picture a huge crowd where people are pressed together tightly. When someone falls, they can't help but pull others down with them. The people in front cause the people behind them to get hurt. The same thing happens in life. No one makes mistakes alone. When you go wrong, you end up causing others to go wrong too, and you become someone who leads them astray. It's dangerous to follow the people ahead of us. Since everyone would rather believe someone else than think for themselves, we never make careful decisions about our lives. Instead, some old mistake always trips us up and destroys us. We die because we copy what other people do.",
+    "original_excerpt": "In a great crush of people, when the crowd presses upon itself, no one can fall without drawing some one else down upon him, and those who go before cause the destruction of those who follow them. You may observe the same thing in human life: no one can merely go wrong by himself, but he must become both the cause and adviser of another's wrongdoing. It is harmful to follow the march of those who go before us, and since every one had rather believe another than form his own opinion, we never pass a deliberate judgment upon life, but some traditional error always entangles us and brings us to ruin, and we perish because we follow other men's examples:",
     "source_reference": "On the Happy Life, Section 1",
     "author_slug": "seneca",
     "tags": [
       "human-nature",
       "freedom-and-control"
     ],
-    "reading_time_seconds": 46
+    "reading_time_seconds": 34
+  },
+  {
+    "id": "happy-life-01-005",
+    "book_slug": "happy-life",
+    "chapter_slug": "section-01",
+    "card_number": 5,
+    "total_cards_in_chapter": 5,
+    "plain_english": "We could cure ourselves of this problem if we broke away from the crowd. But instead, the mob is ready to fight against reason to defend its own mistakes. The same thing happens in elections. When the fickle wind of popular opinion changes direction, the very people who voted for the consuls and praetors suddenly view them with wonder and admiration. When we make decisions based on majority vote, we all end up approving and disapproving of the same things.",
+    "original_excerpt": "we should be cured of this if we were to disengage ourselves from the herd; but as it is, the mob is ready to fight against reason in defence of its own mistake. Consequently the same thing happens as at elections, where, when the fickle breeze of popular favour has veered round, those who have been chosen consuls and praetors are viewed with admiration by the very men who made them so. That we should all approve and disapprove of the same things is the end of every decision which is given according to the voice of the majority.",
+    "source_reference": "On the Happy Life, Section 1",
+    "author_slug": "seneca",
+    "tags": [
+      "freedom-and-control",
+      "human-nature"
+    ],
+    "reading_time_seconds": 24
   }
 ]

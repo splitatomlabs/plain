@@ -5,15 +5,15 @@
     "chapter_slug": "section-19",
     "card_number": 1,
     "total_cards_in_chapter": 3,
-    "plain_english": "They say that Diodorus, the Epicurean philosopher, killed himself just a few days ago by cutting his throat. People claim this went against Epicurus's teachings. Some call it madness, others call it recklessness. But Diodorus himself was happy and confident in his own goodness. By the way he chose to die, he showed what he believed about himself. He praised the calm of a life lived safely in harbor. And he said something you don't want to hear — because you should do it too: \"I have lived. I have run the race that Fortune gave me.\"",
+    "plain_english": "They say that Diodorus, the Epicurean philosopher, killed himself just a few days ago by cutting his own throat. Some people claim this went against Epicurus's teachings. Some call it madness. Others call it reckless. But Diodorus himself was happy and confident in his own goodness. The way he chose to die was his testimony about himself. He praised the peace of a life spent safely anchored in harbor. And he said something you don't want to hear — because you should be able to say it too: \"I have lived. I have run the race that Fortune set for me.\"",
     "original_excerpt": "They say that Diodorus, the Epicurean philosopher, who within these last few days put an end to his life with his own hand, did not act according to the precepts of Epicurus, in cutting his throat: some choose to regard this act as the result of madness, others of recklessness; he, meanwhile, happy and filled with the consciousness of his own goodness, has borne testimony to himself by his manner of departing from life, has commended the repose of a life spent at anchor in a safe harbour, and has said what you do not like to hear, because you too ought to do it:\n\n\"I've lived, I've run the race which Fortune set me.\"",
     "source_reference": "On the Happy Life, Section 19",
     "author_slug": "seneca",
     "tags": [
       "death-and-mortality",
-      "knowing-yourself"
+      "freedom-and-control"
     ],
-    "reading_time_seconds": 29
+    "reading_time_seconds": 30
   },
   {
     "id": "happy-life-19-002",
@@ -21,15 +21,15 @@
     "chapter_slug": "section-19",
     "card_number": 2,
     "total_cards_in_chapter": 3,
-    "plain_english": "You argue about whether other people are good or bad, and you bark at the names of men who became great through some noble quality. You're like little dogs yapping at strangers. It serves your purpose that no one should appear to be good — because if someone else is virtuous, it makes all your crimes look worse. You jealously compare other people's achievements with your own dirty deeds. You don't realize how badly this comparison makes you look. If people who actually try to be virtuous still struggle with greed, lust, and power — what does that make you, someone who hates the very idea of virtue?",
+    "plain_english": "You argue about how other people live and die. You bark at the names of people who became great through some noble quality. You act like tiny dogs yapping at strangers. You want no one to appear good, because virtue in others makes all your crimes look worse. You compare other people's achievements with your own dirty deeds. You don't realize how badly this comparison makes you look. If people who pursue virtue are still greedy, lustful, and power-hungry, what does that make you — someone who hates the very idea of virtue?",
     "original_excerpt": "You argue about the life and death of another, and yelp at the name of men whom some peculiarly noble quality has rendered great, just as tiny curs do at the approach of strangers: for it is to your interest that no one should appear to be good, as if virtue in another were a reproach to all your crimes. You enviously compare the glories of others with your own dirty actions, and do not understand how greatly to your disadvantage it is to venture to do so: for if they who follow after virtue be greedy, lustful, and fond of power, what must you be, who hate the very name of virtue?",
     "source_reference": "On the Happy Life, Section 19",
     "author_slug": "seneca",
     "tags": [
-      "doing-the-right-thing",
-      "human-nature"
+      "human-nature",
+      "doing-the-right-thing"
     ],
-    "reading_time_seconds": 32
+    "reading_time_seconds": 28
   },
   {
     "id": "happy-life-19-003",
@@ -37,14 +37,14 @@
     "chapter_slug": "section-19",
     "card_number": 3,
     "total_cards_in_chapter": 3,
-    "plain_english": "You say that no one lives up to their own words or follows the high standards they preach. What's so surprising about that? Their words are bold and grand — strong enough to survive any storm that destroys ordinary people. But they themselves are struggling to escape from crosses that they've nailed themselves to. At least criminals on crosses hang from just one beam. But these self-torturers are stretched across as many crosses as they have desires. And yet they still trash-talk others and act so superior about other people's vices. You'd think they were perfect, except that even criminals hanging on the gallows sometimes spit on the crowd below.",
+    "plain_english": "You say that no one lives up to their own teachings or follows the standards they preach. But why is that surprising? The words they speak are brave and strong — words that could survive any storm that destroys people. Yet the speakers themselves are struggling to escape from crosses where they've hammered in their own nails. At least people who are crucified hang from just one cross. But those who torture themselves are stretched across as many crosses as they have desires. Still, they love to criticize others. They act so superior when judging other people's faults that you'd think they had no faults of their own — except that even criminals on the gallows sometimes spit on the crowd watching them die.",
     "original_excerpt": "You say that no one acts up to his professions, or lives according to the standard which he sets up in his discourses: what wonder, seeing that the words which they speak are brave, gigantic, and able to weather all the storms which wreck mankind, whereas they themselves are struggling to tear themselves away from crosses into which each one of you is driving his own nail. Yet men who are crucified hang from one single pole, but these who punish themselves are divided between as many crosses as they have lusts, but yet are given to evil speaking, and are so magnificent in their contempt of the vices of others that I should suppose that they had none of their own, were it not that some criminals when on the gibbet spit upon the spectators.",
     "source_reference": "On the Happy Life, Section 19",
     "author_slug": "seneca",
     "tags": [
-      "knowing-yourself",
-      "human-nature"
+      "human-nature",
+      "knowing-yourself"
     ],
-    "reading_time_seconds": 33
+    "reading_time_seconds": 37
   }
 ]

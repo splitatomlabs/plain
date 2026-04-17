@@ -4,63 +4,31 @@
     "book_slug": "happy-life",
     "chapter_slug": "section-10",
     "card_number": 1,
-    "total_cards_in_chapter": 4,
-    "plain_english": "\"You're deliberately twisting my words,\" he says. \"I also say that no one can live pleasantly unless they live honorably too. Animals can't do this — they measure their happiness only by how much food they get. I loudly and publicly declare that what I call a pleasant life cannot exist without virtue.\"",
-    "original_excerpt": "\"You purposely misunderstand what I say,\" says he, \"for I too say that no one can live pleasantly unless he lives honorably also, and this cannot be the case with dumb animals who measure the extent of their happiness by that of their food. I loudly and publicly proclaim that what I call a pleasant life cannot exist without the addition of virtue.\"",
+    "total_cards_in_chapter": 2,
+    "plain_english": "\"You're twisting my words on purpose,\" he says. \"I also believe that no one can live pleasantly unless they live honorably too. Animals can't do this — they measure their happiness only by how much food they get. I declare loudly and publicly that the pleasant life I'm talking about requires virtue.\" But doesn't everyone know that the biggest fools drink most deeply from these pleasures you mention? Vice is packed with enjoyments. The mind creates all kinds of twisted, corrupt pleasures for itself. Take arrogance, for example. Or thinking too highly of yourself. Or pushing ahead of others. Or blindly focusing only on your own interests. Or wasteful luxury. Or getting ridiculously excited about trivial, childish things. Or endless talking. Or the kind of pride that enjoys insulting others. Or laziness. Or the decay of a dull mind that falls asleep on itself.",
+    "original_excerpt": "\"You purposely misunderstand what I say,\" says he, \"for I too say that no one can live pleasantly unless he lives honorably also, and this cannot be the case with dumb animals who measure the extent of their happiness by that of their food. I loudly and publicly proclaim that what I call a pleasant life cannot exist without the addition of virtue.\" Yet who does not know that the greatest fools drink the deepest of those pleasures of yours? or that vice is full of enjoyments, and that the mind itself suggests to itself many perverted, vicious forms of pleasure?—in the first place arrogance, excessive self-esteem, swaggering precedence over other men, a shortsighted, nay, a blind devotion to his own interests, dissolute luxury, excessive delight springing from the most trifling and childish causes, and also talkativeness, pride that takes a pleasure in insulting others, sloth, and the decay of a dull mind which goes to sleep over itself.",
     "source_reference": "On the Happy Life, Section 10",
     "author_slug": "seneca",
     "tags": [
       "doing-the-right-thing",
-      "what-matters-most"
+      "human-nature"
     ],
-    "reading_time_seconds": 16
+    "reading_time_seconds": 43
   },
   {
     "id": "happy-life-10-002",
     "book_slug": "happy-life",
     "chapter_slug": "section-10",
     "card_number": 2,
-    "total_cards_in_chapter": 4,
-    "plain_english": "But everyone knows that the biggest fools indulge most deeply in these pleasures you're talking about. Vice is packed with enjoyments. The mind comes up with all kinds of twisted, corrupt pleasures on its own. Like arrogance and thinking too highly of yourself. Like pushing ahead of others and caring only about yourself in the most narrow-minded, blind way. Like wasteful luxury and getting excited over the most trivial, childish things. And also endless talking, the kind of pride that enjoys insulting people, laziness, and letting your mind rot by doing nothing with it.",
-    "original_excerpt": "Yet who does not know that the greatest fools drink the deepest of those pleasures of yours? or that vice is full of enjoyments, and that the mind itself suggests to itself many perverted, vicious forms of pleasure?—in the first place arrogance, excessive self-esteem, swaggering precedence over other men, a shortsighted, nay, a blind devotion to his own interests, dissolute luxury, excessive delight springing from the most trifling and childish causes, and also talkativeness, pride that takes a pleasure in insulting others, sloth, and the decay of a dull mind which goes to sleep over itself.",
+    "total_cards_in_chapter": 2,
+    "plain_english": "Virtue sweeps all these vices away. It grabs us by the ear and makes us think carefully about pleasures before we chase them. Virtue doesn't even value the pleasures it does allow — it just permits them. Its happiness doesn't come from using these pleasures, but from using them with restraint. \"But if moderation reduces pleasure, doesn't it damage the highest good?\" You throw yourself into pleasures — I hold them in check. You indulge in pleasure — I use it sparingly. You think pleasure is the highest good — I don't even think it's good at all. You do everything for pleasure's sake. I do nothing for it.",
+    "original_excerpt": "All these are dissipated by virtue, which plucks a man by the ear, and measures the value of pleasures before she permits them to be used; nor does she set much store by those which she allows to pass current, for she merely allows their use, and her cheerfulness is not due to her use of them, but to her moderation in using them. \"Yet when moderation lessens pleasure, it impairs the highest good.\" You devote yourself to pleasures, I check them; you indulge in pleasure, I use it; you think that it is the highest good, I do not even think it to be good: for the sake of pleasure I do nothing, you do everything.",
     "source_reference": "On the Happy Life, Section 10",
     "author_slug": "seneca",
     "tags": [
-      "human-nature",
+      "doing-the-right-thing",
       "knowing-yourself"
     ],
-    "reading_time_seconds": 28
-  },
-  {
-    "id": "happy-life-10-003",
-    "book_slug": "happy-life",
-    "chapter_slug": "section-10",
-    "card_number": 3,
-    "total_cards_in_chapter": 4,
-    "plain_english": "Virtue sweeps all these problems away. It grabs you by the ear and makes you think about whether pleasures are actually worth it before you indulge. And even the pleasures virtue approves? It doesn't think much of them. It just allows them. Virtue's happiness doesn't come from using these pleasures — it comes from using them wisely.",
-    "original_excerpt": "All these are dissipated by virtue, which plucks a man by the ear, and measures the value of pleasures before she permits them to be used; nor does she set much store by those which she allows to pass current, for she merely allows their use, and her cheerfulness is not due to her use of them, but to her moderation in using them.",
-    "source_reference": "On the Happy Life, Section 10",
-    "author_slug": "seneca",
-    "tags": [
-      "knowing-yourself",
-      "what-matters-most"
-    ],
-    "reading_time_seconds": 17
-  },
-  {
-    "id": "happy-life-10-004",
-    "book_slug": "happy-life",
-    "chapter_slug": "section-10",
-    "card_number": 4,
-    "total_cards_in_chapter": 4,
-    "plain_english": "\"But when moderation reduces pleasure, it damages the highest good.\" You chase after pleasures, I hold them back. You dive into pleasure, I just sample it. You think pleasure is the ultimate goal, I don't even think it's good. I won't do anything just for pleasure, but you'll do anything for it.",
-    "original_excerpt": "\"Yet when moderation lessens pleasure, it impairs the highest good.\" You devote yourself to pleasures, I check them; you indulge in pleasure, I use it; you think that it is the highest good, I do not even think it to be good: for the sake of pleasure I do nothing, you do everything.",
-    "source_reference": "On the Happy Life, Section 10",
-    "author_slug": "seneca",
-    "tags": [
-      "freedom-and-control",
-      "what-matters-most"
-    ],
-    "reading_time_seconds": 16
+    "reading_time_seconds": 33
   }
 ]

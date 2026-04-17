@@ -17,174 +17,174 @@
     {
       "slug": "section-01",
       "title": "Section 1",
-      "card_count": 4,
-      "reading_time_seconds": 146
+      "card_count": 5,
+      "reading_time_seconds": 155
     },
     {
       "slug": "section-02",
       "title": "Section 2",
       "card_count": 3,
-      "reading_time_seconds": 126
+      "reading_time_seconds": 128
     },
     {
       "slug": "section-03",
       "title": "Section 3",
       "card_count": 4,
-      "reading_time_seconds": 110
+      "reading_time_seconds": 115
     },
     {
       "slug": "section-04",
       "title": "Section 4",
       "card_count": 4,
-      "reading_time_seconds": 139
+      "reading_time_seconds": 147
     },
     {
       "slug": "section-05",
       "title": "Section 5",
-      "card_count": 3,
-      "reading_time_seconds": 70
+      "card_count": 2,
+      "reading_time_seconds": 69
     },
     {
       "slug": "section-06",
       "title": "Section 6",
       "card_count": 2,
-      "reading_time_seconds": 60
+      "reading_time_seconds": 56
     },
     {
       "slug": "section-07",
       "title": "Section 7",
       "card_count": 4,
-      "reading_time_seconds": 117
+      "reading_time_seconds": 124
     },
     {
       "slug": "section-08",
       "title": "Section 8",
       "card_count": 5,
-      "reading_time_seconds": 145
+      "reading_time_seconds": 144
     },
     {
       "slug": "section-09",
       "title": "Section 9",
       "card_count": 3,
-      "reading_time_seconds": 95
+      "reading_time_seconds": 100
     },
     {
       "slug": "section-10",
       "title": "Section 10",
-      "card_count": 4,
-      "reading_time_seconds": 77
+      "card_count": 2,
+      "reading_time_seconds": 76
     },
     {
       "slug": "section-11",
       "title": "Section 11",
       "card_count": 3,
-      "reading_time_seconds": 110
+      "reading_time_seconds": 106
     },
     {
       "slug": "section-12",
       "title": "Section 12",
       "card_count": 3,
-      "reading_time_seconds": 110
+      "reading_time_seconds": 112
     },
     {
       "slug": "section-13",
       "title": "Section 13",
-      "card_count": 5,
-      "reading_time_seconds": 141
+      "card_count": 3,
+      "reading_time_seconds": 135
     },
     {
       "slug": "section-14",
       "title": "Section 14",
       "card_count": 3,
-      "reading_time_seconds": 94
+      "reading_time_seconds": 96
     },
     {
       "slug": "section-15",
       "title": "Section 15",
-      "card_count": 6,
-      "reading_time_seconds": 166
+      "card_count": 5,
+      "reading_time_seconds": 160
     },
     {
       "slug": "section-16",
       "title": "Section 16",
       "card_count": 3,
-      "reading_time_seconds": 84
+      "reading_time_seconds": 86
     },
     {
       "slug": "section-17",
       "title": "Section 17",
       "card_count": 3,
-      "reading_time_seconds": 113
+      "reading_time_seconds": 119
     },
     {
       "slug": "section-18",
       "title": "Section 18",
       "card_count": 2,
-      "reading_time_seconds": 66
+      "reading_time_seconds": 70
     },
     {
       "slug": "section-19",
       "title": "Section 19",
       "card_count": 3,
-      "reading_time_seconds": 94
+      "reading_time_seconds": 95
     },
     {
       "slug": "section-20",
       "title": "Section 20",
       "card_count": 5,
-      "reading_time_seconds": 188
+      "reading_time_seconds": 192
     },
     {
       "slug": "section-21",
       "title": "Section 21",
-      "card_count": 3,
-      "reading_time_seconds": 125
+      "card_count": 2,
+      "reading_time_seconds": 96
     },
     {
       "slug": "section-22",
       "title": "Section 22",
       "card_count": 4,
-      "reading_time_seconds": 102
+      "reading_time_seconds": 104
     },
     {
       "slug": "section-23",
       "title": "Section 23",
       "card_count": 4,
-      "reading_time_seconds": 157
+      "reading_time_seconds": 156
     },
     {
       "slug": "section-24",
       "title": "Section 24",
       "card_count": 5,
-      "reading_time_seconds": 167
+      "reading_time_seconds": 172
     },
     {
       "slug": "section-25",
       "title": "Section 25",
       "card_count": 6,
-      "reading_time_seconds": 219
+      "reading_time_seconds": 217
     },
     {
       "slug": "section-26",
       "title": "Section 26",
-      "card_count": 6,
+      "card_count": 8,
       "reading_time_seconds": 213
     },
     {
       "slug": "section-27",
       "title": "Section 27",
       "card_count": 4,
-      "reading_time_seconds": 124
+      "reading_time_seconds": 123
     },
     {
       "slug": "section-28",
       "title": "Section 28",
       "card_count": 1,
-      "reading_time_seconds": 30
+      "reading_time_seconds": 32
     }
   ],
-  "total_cards": 105,
-  "total_reading_time_seconds": 3388,
+  "total_cards": 101,
+  "total_reading_time_seconds": 3398,
   "source_url": "https://www.gutenberg.org/ebooks/64576",
   "has_chapters": false
 }

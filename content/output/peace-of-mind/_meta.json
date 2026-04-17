@@ -6,97 +6,97 @@
   "tags": [
     "knowing-yourself",
     "facing-hardship",
-    "human-nature",
-    "what-matters-most",
-    "calm-your-mind",
-    "freedom-and-control",
     "doing-the-right-thing",
-    "death-and-mortality"
+    "what-matters-most",
+    "freedom-and-control",
+    "calm-your-mind",
+    "death-and-mortality",
+    "human-nature"
   ],
   "chapters": [
     {
       "slug": "section-01",
       "title": "Section 1",
       "card_count": 10,
-      "reading_time_seconds": 395
+      "reading_time_seconds": 408
     },
     {
       "slug": "section-02",
       "title": "Section 2",
       "card_count": 12,
-      "reading_time_seconds": 421
+      "reading_time_seconds": 434
     },
     {
       "slug": "section-03",
       "title": "Section 3",
       "card_count": 6,
-      "reading_time_seconds": 214
+      "reading_time_seconds": 206
     },
     {
       "slug": "section-04",
       "title": "Section 4",
       "card_count": 5,
-      "reading_time_seconds": 174
+      "reading_time_seconds": 181
     },
     {
       "slug": "section-05",
       "title": "Section 5",
       "card_count": 3,
-      "reading_time_seconds": 123
+      "reading_time_seconds": 127
     },
     {
       "slug": "section-06",
       "title": "Section 6",
-      "card_count": 3,
-      "reading_time_seconds": 81
+      "card_count": 2,
+      "reading_time_seconds": 84
     },
     {
       "slug": "section-07",
       "title": "Section 7",
       "card_count": 6,
-      "reading_time_seconds": 165
+      "reading_time_seconds": 158
     },
     {
       "slug": "section-08",
       "title": "Section 8",
       "card_count": 6,
-      "reading_time_seconds": 200
+      "reading_time_seconds": 194
     },
     {
       "slug": "section-09",
       "title": "Section 9",
-      "card_count": 5,
-      "reading_time_seconds": 193
+      "card_count": 4,
+      "reading_time_seconds": 188
     },
     {
       "slug": "section-10",
       "title": "Section 10",
       "card_count": 6,
-      "reading_time_seconds": 185
+      "reading_time_seconds": 194
     },
     {
       "slug": "section-11",
       "title": "Section 11",
       "card_count": 9,
-      "reading_time_seconds": 342
+      "reading_time_seconds": 354
     },
     {
       "slug": "section-12",
       "title": "Section 12",
       "card_count": 4,
-      "reading_time_seconds": 156
+      "reading_time_seconds": 151
     },
     {
       "slug": "section-13",
       "title": "Section 13",
       "card_count": 2,
-      "reading_time_seconds": 61
+      "reading_time_seconds": 57
     },
     {
       "slug": "section-14",
       "title": "Section 14",
-      "card_count": 7,
-      "reading_time_seconds": 209
+      "card_count": 6,
+      "reading_time_seconds": 225
     },
     {
       "slug": "section-15",
@@ -108,17 +108,17 @@
       "slug": "section-16",
       "title": "Section 16",
       "card_count": 4,
-      "reading_time_seconds": 102
+      "reading_time_seconds": 103
     },
     {
       "slug": "section-17",
       "title": "Section 17",
       "card_count": 10,
-      "reading_time_seconds": 338
+      "reading_time_seconds": 336
     }
   ],
-  "total_cards": 103,
-  "total_reading_time_seconds": 3498,
+  "total_cards": 100,
+  "total_reading_time_seconds": 3539,
   "source_url": "https://www.gutenberg.org/ebooks/64576",
   "has_chapters": false
 }

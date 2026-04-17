@@ -1,6 +1,6 @@
 {
-  "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:15:49.085Z",
+  "pipelineVersion": 3,
+  "createdAt": "2026-04-17T08:10:14.381Z",
   "bookSlug": "happy-life",
   "chapters": [
     {
@@ -17,11 +17,15 @@
         },
         {
           "sectionNumber": 1,
-          "text": "Nothing, therefore, is more important than that we should not, like sheep, follow the flock that has gone before us, and thus proceed not whither we ought, but whither the rest are going. Now nothing gets us into greater troubles than our subservience to common rumour, and our habit of thinking that those things are best which are most generally received as such, of taking many counterfeits for truly good things, and of living not by reason but by imitation of others. This is the cause of those great heaps into which men rush till they are piled one upon another. In a great crush of people, when the crowd presses upon itself, no one can fall without drawing some one else down upon him, and those who go before cause the destruction of those who follow them."
+          "text": "Nothing, therefore, is more important than that we should not, like sheep, follow the flock that has gone before us, and thus proceed not whither we ought, but whither the rest are going. Now nothing gets us into greater troubles than our subservience to common rumour, and our habit of thinking that those things are best which are most generally received as such, of taking many counterfeits for truly good things, and of living not by reason but by imitation of others. This is the cause of those great heaps into which men rush till they are piled one upon another."
         },
         {
           "sectionNumber": 1,
-          "text": "You may observe the same thing in human life: no one can merely go wrong by himself, but he must become both the cause and adviser of another's wrongdoing. It is harmful to follow the march of those who go before us, and since every one had rather believe another than form his own opinion, we never pass a deliberate judgment upon life, but some traditional error always entangles us and brings us to ruin, and we perish because we follow other men's examples: we should be cured of this if we were to disengage ourselves from the herd; but as it is, the mob is ready to fight against reason in defence of its own mistake. Consequently the same thing happens as at elections, where, when the fickle breeze of popular favour has veered round, those who have been chosen consuls and praetors are viewed with admiration by the very men who made them so. That we should all approve and disapprove of the same things is the end of every decision which is given according to the voice of the majority."
+          "text": "In a great crush of people, when the crowd presses upon itself, no one can fall without drawing some one else down upon him, and those who go before cause the destruction of those who follow them. You may observe the same thing in human life: no one can merely go wrong by himself, but he must become both the cause and adviser of another's wrongdoing. It is harmful to follow the march of those who go before us, and since every one had rather believe another than form his own opinion, we never pass a deliberate judgment upon life, but some traditional error always entangles us and brings us to ruin, and we perish because we follow other men's examples:"
+        },
+        {
+          "sectionNumber": 1,
+          "text": "we should be cured of this if we were to disengage ourselves from the herd; but as it is, the mob is ready to fight against reason in defence of its own mistake. Consequently the same thing happens as at elections, where, when the fickle breeze of popular favour has veered round, those who have been chosen consuls and praetors are viewed with admiration by the very men who made them so. That we should all approve and disapprove of the same things is the end of every decision which is given according to the voice of the majority."
         }
       ]
     },
@@ -35,11 +39,11 @@
         },
         {
           "sectionNumber": 2,
-          "text": "If a man ever allows his mind some breathing space and has leisure for communing with himself, what truths he will confess to himself, after having been put to the torture by his own self! He will say, \"Whatever I have hitherto done I wish were undone: when I think over what I have said, I envy dumb people: whatever I have longed for seems to have been what my enemies would pray might befall me: good heaven, how far more endurable what I have feared seems to be than what I have lusted after. I have been at enmity with many men, and have changed my dislike of them into friendship, if friendship can exist between bad men: yet I have not yet become reconciled to myself."
+          "text": "If a man ever allows his mind some breathing space and has leisure for communing with himself, what truths he will confess to himself, after having been put to the torture by his own self! He will say, \"Whatever I have hitherto done I wish were undone: when I think over what I have said, I envy dumb people: whatever I have longed for seems to have been what my enemies would pray might befall me: good heaven, how far more endurable what I have feared seems to be than what I have lusted after. I have been at enmity with many men, and have changed my dislike of them into friendship, if friendship can exist between bad men: yet I have not yet become reconciled to myself. I have striven with all my strength to raise myself above the common herd, and to make myself remarkable for some talent:"
         },
         {
           "sectionNumber": 2,
-          "text": "I have striven with all my strength to raise myself above the common herd, and to make myself remarkable for some talent: what have I effected save to make myself a mark for the arrows of my enemies, and show those who hate me where to wound me? Do you see those who praise your eloquence, who covet your wealth, who court your favour, or who vaunt your power? All these either are, or, which comes to the same thing, may be your enemies: the number of those who envy you is as great as that of those who admire you; why do I not rather seek for some good thing which I can use and feel, not one which I can show? these good things which men gaze at in wonder, which they crowd to see, which one points out to another with speechless admiration, are outwardly brilliant, but within are miseries to those who possess them.\""
+          "text": "what have I effected save to make myself a mark for the arrows of my enemies, and show those who hate me where to wound me? Do you see those who praise your eloquence, who covet your wealth, who court your favour, or who vaunt your power? All these either are, or, which comes to the same thing, may be your enemies: the number of those who envy you is as great as that of those who admire you; why do I not rather seek for some good thing which I can use and feel, not one which I can show? these good things which men gaze at in wonder, which they crowd to see, which one points out to another with speechless admiration, are outwardly brilliant, but within are miseries to those who possess them.\""
         }
       ]
     },
@@ -97,11 +101,7 @@
         },
         {
           "sectionNumber": 5,
-          "text": "For no one can be styled happy who is beyond the influence of truth: and consequently a happy life is unchangeable, and is founded upon a true and trustworthy discernment; for the mind is uncontaminated and freed from all evils only when it is able to escape not merely from wounds but also from scratches, when it will always be able to maintain the position which it has taken up, and defend it even against the angry assaults of Fortune:"
-        },
-        {
-          "sectionNumber": 5,
-          "text": "for with regard to sensual pleasures, though they were to surround one on every side, and use every means of assault, trying to win over the mind by caresses and making trial of every conceivable stratagem to attract either our entire selves or our separate parts, yet what mortal that retains any traces of human origin would wish to be tickled day and night, and, neglecting his mind, to devote himself to bodily enjoyments?"
+          "text": "For no one can be styled happy who is beyond the influence of truth: and consequently a happy life is unchangeable, and is founded upon a true and trustworthy discernment; for the mind is uncontaminated and freed from all evils only when it is able to escape not merely from wounds but also from scratches, when it will always be able to maintain the position which it has taken up, and defend it even against the angry assaults of Fortune: for with regard to sensual pleasures, though they were to surround one on every side, and use every means of assault, trying to win over the mind by caresses and making trial of every conceivable stratagem to attract either our entire selves or our separate parts, yet what mortal that retains any traces of human origin would wish to be tickled day and night, and, neglecting his mind, to devote himself to bodily enjoyments?"
         }
       ]
     },
@@ -111,11 +111,11 @@
       "chunks": [
         {
           "sectionNumber": 6,
-          "text": "“But,” says our adversary, “the mind also will have pleasures\nof its own.” Let it have them, then, and let it sit in judgment\nover luxury and pleasures; let it indulge itself to the full in all\nthose matters which give sensual delights: then let it look back\nupon what it enjoyed before, and with all those faded sensualities\nfresh in its memory let it rejoice and look eagerly forward to those\nother pleasures which it experienced long ago, and intends to\nexperience again, and while the body lies in helpless repletion in\nthe present, let it send its thoughts onward towards the future,\nand take stock of its hopes: all this will make it appear, in my\nopinion, yet more wretched, because it is insanity to choose evil\ninstead of good: now no insane person can be happy, and no one can\nbe sane if he regards what is injurious as the highest good and\nstrives to obtain it."
+          "text": "“But,” says our adversary, “the mind also will have pleasures\nof its own.” Let it have them, then, and let it sit in judgment\nover luxury and pleasures; let it indulge itself to the full in all\nthose matters which give sensual delights: then let it look back\nupon what it enjoyed before, and with all those faded sensualities\nfresh in its memory let it rejoice and look eagerly forward to those\nother pleasures which it experienced long ago, and intends to\nexperience again, and while the body lies in helpless repletion in\nthe present, let it send its thoughts onward towards the future,\nand take stock of its hopes:"
         },
         {
           "sectionNumber": 6,
-          "text": "The happy man, therefore, is he who can make\na right judgment in all things: he is happy who in his present\ncircumstances, whatever they may be, is satisfied and on friendly\nterms with the conditions of his life. That man is happy, whose\nreason recommends to him the whole posture of his affairs."
+          "text": "all this will make it appear, in my\nopinion, yet more wretched, because it is insanity to choose evil\ninstead of good: now no insane person can be happy, and no one can\nbe sane if he regards what is injurious as the highest good and\nstrives to obtain it. The happy man, therefore, is he who can make\na right judgment in all things: he is happy who in his present\ncircumstances, whatever they may be, is satisfied and on friendly\nterms with the conditions of his life. That man is happy, whose\nreason recommends to him the whole posture of his affairs."
         }
       ]
     },
@@ -191,19 +191,11 @@
       "chunks": [
         {
           "sectionNumber": 10,
-          "text": "\"You purposely misunderstand what I say,\" says he, \"for I too say that no one can live pleasantly unless he lives honorably also, and this cannot be the case with dumb animals who measure the extent of their happiness by that of their food. I loudly and publicly proclaim that what I call a pleasant life cannot exist without the addition of virtue.\""
+          "text": "\"You purposely misunderstand what I say,\" says he, \"for I too say that no one can live pleasantly unless he lives honorably also, and this cannot be the case with dumb animals who measure the extent of their happiness by that of their food. I loudly and publicly proclaim that what I call a pleasant life cannot exist without the addition of virtue.\" Yet who does not know that the greatest fools drink the deepest of those pleasures of yours? or that vice is full of enjoyments, and that the mind itself suggests to itself many perverted, vicious forms of pleasure?—in the first place arrogance, excessive self-esteem, swaggering precedence over other men, a shortsighted, nay, a blind devotion to his own interests, dissolute luxury, excessive delight springing from the most trifling and childish causes, and also talkativeness, pride that takes a pleasure in insulting others, sloth, and the decay of a dull mind which goes to sleep over itself."
         },
         {
           "sectionNumber": 10,
-          "text": "Yet who does not know that the greatest fools drink the deepest of those pleasures of yours? or that vice is full of enjoyments, and that the mind itself suggests to itself many perverted, vicious forms of pleasure?—in the first place arrogance, excessive self-esteem, swaggering precedence over other men, a shortsighted, nay, a blind devotion to his own interests, dissolute luxury, excessive delight springing from the most trifling and childish causes, and also talkativeness, pride that takes a pleasure in insulting others, sloth, and the decay of a dull mind which goes to sleep over itself."
-        },
-        {
-          "sectionNumber": 10,
-          "text": "All these are dissipated by virtue, which plucks a man by the ear, and measures the value of pleasures before she permits them to be used; nor does she set much store by those which she allows to pass current, for she merely allows their use, and her cheerfulness is not due to her use of them, but to her moderation in using them."
-        },
-        {
-          "sectionNumber": 10,
-          "text": "\"Yet when moderation lessens pleasure, it impairs the highest good.\" You devote yourself to pleasures, I check them; you indulge in pleasure, I use it; you think that it is the highest good, I do not even think it to be good: for the sake of pleasure I do nothing, you do everything."
+          "text": "All these are dissipated by virtue, which plucks a man by the ear, and measures the value of pleasures before she permits them to be used; nor does she set much store by those which she allows to pass current, for she merely allows their use, and her cheerfulness is not due to her use of them, but to her moderation in using them. \"Yet when moderation lessens pleasure, it impairs the highest good.\" You devote yourself to pleasures, I check them; you indulge in pleasure, I use it; you think that it is the highest good, I do not even think it to be good: for the sake of pleasure I do nothing, you do everything."
         }
       ]
     },
@@ -213,15 +205,15 @@
       "chunks": [
         {
           "sectionNumber": 11,
-          "text": "When I say that I do nothing for the sake of pleasure, I allude to that wise man, whom alone you admit to be capable of pleasure: now I do not call a man wise who is overcome by anything, let alone by pleasure: yet, if engrossed by pleasure, how will he resist toil, danger, want, and all the ills which surround and threaten the life of man? How will he bear the sight of death or of pain? How will he endure the tumult of the world, and make head against so many most active foes, if he be conquered by so effeminate an antagonist? He will do whatever pleasure advises him: well, do you not see how many things it will advise him to do?"
+          "text": "When I say that I do nothing for the sake of pleasure, I allude to that wise man, whom alone you admit to be capable of pleasure: now I do not call a man wise who is overcome by anything, let alone by pleasure: yet, if engrossed by pleasure, how will he resist toil, danger, want, and all the ills which surround and threaten the life of man? How will he bear the sight of death or of pain? How will he endure the tumult of the world, and make head against so many most active foes, if he be conquered by so effeminate an antagonist?"
         },
         {
           "sectionNumber": 11,
-          "text": "\"It will not,\" says our adversary, \"be able to give him any bad advice, because it is combined with virtue?\" Again, do you not see what a poor kind of highest good that must be which requires a guardian to ensure its being good at all? and how is virtue to rule pleasure if she follows it, seeing that to follow is the duty of a subordinate, to rule that of a commander? do you put that which commands in the background? According to your school, virtue has the dignified office of preliminary taster of pleasures. We shall, however, see whether virtue still remains virtue among those who treat her with such contempt, for if she leaves her proper station she can no longer keep her proper name:"
+          "text": "He will do whatever pleasure advises him: well, do you not see how many things it will advise him to do? \"It will not,\" says our adversary, \"be able to give him any bad advice, because it is combined with virtue?\" Again, do you not see what a poor kind of highest good that must be which requires a guardian to ensure its being good at all? and how is virtue to rule pleasure if she follows it, seeing that to follow is the duty of a subordinate, to rule that of a commander? do you put that which commands in the background? According to your school, virtue has the dignified office of preliminary taster of pleasures."
         },
         {
           "sectionNumber": 11,
-          "text": "in the meanwhile, to keep to the point, I will show you many men beset by pleasures, men upon whom Fortune has showered all her gifts, whom you must needs admit to be bad men. Look at Nomentanus and Apicius, who digest all the good things, as they call them, of the sea and land, and review upon their tables the whole animal kingdom. Look at them as they lie on beds of roses gloating over their banquet, delighting their ears with music, their eyes with exhibitions, their palates with flavours: their whole bodies are titillated with soft and soothing applications, and lest even their nostrils should be idle, the very place in which, they solemnize the rites of luxury is scented with various perfumes. You will say that these men live in the midst of pleasures. Yet they are ill at ease, because they take pleasure in what is not good."
+          "text": "We shall, however, see whether virtue still remains virtue among those who treat her with such contempt, for if she leaves her proper station she can no longer keep her proper name: in the meanwhile, to keep to the point, I will show you many men beset by pleasures, men upon whom Fortune has showered all her gifts, whom you must needs admit to be bad men. Look at Nomentanus and Apicius, who digest all the good things, as they call them, of the sea and land, and review upon their tables the whole animal kingdom. Look at them as they lie on beds of roses gloating over their banquet, delighting their ears with music, their eyes with exhibitions, their palates with flavours: their whole bodies are titillated with soft and soothing applications, and lest even their nostrils should be idle, the very place in which, they solemnize the rites of luxury is scented with various perfumes. You will say that these men live in the midst of pleasures. Yet they are ill at ease, because they take pleasure in what is not good."
         }
       ]
     },
@@ -235,11 +227,11 @@
         },
         {
           "sectionNumber": 12,
-          "text": "Let them no longer, then, join incongruous matters together, or connect pleasure with virtue, a mistake whereby they court the worst of men. The reckless profligate, always in liquor and belching out the fumes of wine, believes that he lives with virtue, because he knows that he lives with pleasure, for he hears it said that pleasure cannot exist apart from virtue; consequently he dubs his vices with the title of wisdom and parades all that he ought to conceal. So, men are not encouraged by Epicurus to run riot, but the vicious hide their excesses in the lap of philosophy, and flock to the schools in which they hear the praises of pleasure."
+          "text": "Let them no longer, then, join incongruous matters together, or connect pleasure with virtue, a mistake whereby they court the worst of men. The reckless profligate, always in liquor and belching out the fumes of wine, believes that he lives with virtue, because he knows that he lives with pleasure, for he hears it said that pleasure cannot exist apart from virtue; consequently he dubs his vices with the title of wisdom and parades all that he ought to conceal. So, men are not encouraged by Epicurus to run riot, but the vicious hide their excesses in the lap of philosophy, and flock to the schools in which they hear the praises of pleasure. They do not consider how sober and temperate—for so, by Hercules, I believe it to be—that \"pleasure\" of Epicurus is, but they rush at his mere name, seeking to obtain some protection and cloak for their vices."
         },
         {
           "sectionNumber": 12,
-          "text": "They do not consider how sober and temperate—for so, by Hercules, I believe it to be—that \"pleasure\" of Epicurus is, but they rush at his mere name, seeking to obtain some protection and cloak for their vices. They lose, therefore, the one virtue which their evil life possessed, that of being ashamed of doing wrong: for they praise what they used to blush at, and boast of their vices. Thus modesty can never reassert itself, when shameful idleness is dignified with an honourable name. The reason why that praise which your school lavishes upon pleasure is so hurtful, is because the honourable part of its teaching passes unnoticed, but the degrading part is seen by all."
+          "text": "They lose, therefore, the one virtue which their evil life possessed, that of being ashamed of doing wrong: for they praise what they used to blush at, and boast of their vices. Thus modesty can never reassert itself, when shameful idleness is dignified with an honourable name. The reason why that praise which your school lavishes upon pleasure is so hurtful, is because the honourable part of its teaching passes unnoticed, but the degrading part is seen by all."
         }
       ]
     },
@@ -249,23 +241,15 @@
       "chunks": [
         {
           "sectionNumber": 13,
-          "text": "I myself believe, though my Stoic comrades would be unwilling to hear me say so, that the teaching of Epicurus was upright and holy, and even, if you examine it narrowly, stern: for this much talked of pleasure is reduced to a very narrow compass, and he bids pleasure submit to the same law which we bid virtue do—I mean, to obey nature. Luxury, however, is not satisfied with what is enough for nature."
+          "text": "I myself believe, though my Stoic comrades would be unwilling to hear me say so, that the teaching of Epicurus was upright and holy, and even, if you examine it narrowly, stern: for this much talked of pleasure is reduced to a very narrow compass, and he bids pleasure submit to the same law which we bid virtue do—I mean, to obey nature. Luxury, however, is not satisfied with what is enough for nature. What is the consequence? Whoever thinks that happiness consists in lazy sloth, and alternations of gluttony and profligacy, requires a good patron for a bad action, and when he has become an Epicurean, having been led to do so by the attractive name of that school, he follows, not the pleasure which he there hears spoken of, but that which he brought thither with him, and, haying learned to think that his vices coincide with the maxims of that philosophy, he indulges in them no longer timidly and in dark corners, but boldly in the face of day."
         },
         {
           "sectionNumber": 13,
-          "text": "What is the consequence? Whoever thinks that happiness consists in lazy sloth, and alternations of gluttony and profligacy, requires a good patron for a bad action, and when he has become an Epicurean, having been led to do so by the attractive name of that school, he follows, not the pleasure which he there hears spoken of, but that which he brought thither with him, and, haying learned to think that his vices coincide with the maxims of that philosophy, he indulges in them no longer timidly and in dark corners, but boldly in the face of day."
+          "text": "I will not, therefore, like most of our school, say that the sect of Epicurus is the teacher of crime, but what I say is: it is ill spoken of, it has a bad reputation, and yet it does not deserve it. \"Who can know this without having been admitted to its inner mysteries?\" Its very outside gives opportunity for scandal, and encourages men's baser desires: it is like a brave man dressed in a woman's gown: your chastity is assured, your manhood is safe, your body is submitted to nothing disgraceful, but your hand holds a drum (like a priest of Cybele). Choose, then, some honourable superscription for your school, some writing which shall in itself arouse the mind: that which at present stands over your door has been invented by the vices."
         },
         {
           "sectionNumber": 13,
-          "text": "I will not, therefore, like most of our school, say that the sect of Epicurus is the teacher of crime, but what I say is: it is ill spoken of, it has a bad reputation, and yet it does not deserve it. \"Who can know this without having been admitted to its inner mysteries?\" Its very outside gives opportunity for scandal, and encourages men's baser desires: it is like a brave man dressed in a woman's gown: your chastity is assured, your manhood is safe, your body is submitted to nothing disgraceful, but your hand holds a drum (like a priest of Cybele)."
-        },
-        {
-          "sectionNumber": 13,
-          "text": "Choose, then, some honourable superscription for your school, some writing which shall in itself arouse the mind: that which at present stands over your door has been invented by the vices. He who ranges himself on the side of virtue gives thereby a proof of a noble disposition: he who follows pleasure appears to be weakly, worn out, degrading his manhood, likely to fall into infamous vices unless someone discriminates his pleasures for him, so that he may know which remain within the bounds of natural desire, which are frantic and boundless, and become all the more insatiable the more they are satisfied."
-        },
-        {
-          "sectionNumber": 13,
-          "text": "But come! let virtue lead the way: then every step will be safe. Too much pleasure is hurtful: but with virtue we need fear no excess of any kind, because moderation is contained in virtue herself. That which is injured by its own extent cannot be a good thing: besides, what better guide can there be than reason for beings endowed with a reasoning nature? so if this combination pleases you, if you are willing to proceed to a happy life thus accompanied, let virtue lead the way, let pleasure follow and hang about the body like a shadow: it is the part of a mind incapable of great things to hand over virtue, the highest of all qualities, as a handmaid to pleasure."
+          "text": "He who ranges himself on the side of virtue gives thereby a proof of a noble disposition: he who follows pleasure appears to be weakly, worn out, degrading his manhood, likely to fall into infamous vices unless someone discriminates his pleasures for him, so that he may know which remain within the bounds of natural desire, which are frantic and boundless, and become all the more insatiable the more they are satisfied. But come! let virtue lead the way: then every step will be safe. Too much pleasure is hurtful: but with virtue we need fear no excess of any kind, because moderation is contained in virtue herself. That which is injured by its own extent cannot be a good thing: besides, what better guide can there be than reason for beings endowed with a reasoning nature? so if this combination pleases you, if you are willing to proceed to a happy life thus accompanied, let virtue lead the way, let pleasure follow and hang about the body like a shadow: it is the part of a mind incapable of great things to hand over virtue, the highest of all qualities, as a handmaid to pleasure."
         }
       ]
     },
@@ -309,11 +293,7 @@
         },
         {
           "sectionNumber": 15,
-          "text": "On the other hand, he who grumbles and complains and bemoans himself is nevertheless forcibly obliged to obey orders, and is dragged away, however much against his will, to carry them out: yet what madness is it to be dragged rather than to follow? as great, by Hercules, as it is folly and ignorance of one's true position to grieve because one has not got something or because something has caused us rough treatment, or to be surprised or indignant at those ills which befall good men as well as bad ones, I mean diseases, deaths, illnesses, and the other cross accidents of human life."
-        },
-        {
-          "sectionNumber": 15,
-          "text": "Let us bear with magnanimity whatever the system of the universe makes it needful for us to bear: we are all bound by this oath: \"To bear the ills of mortal life, and to submit with a good grace to what we cannot avoid.\" We have been born into a monarchy: our liberty is to obey God."
+          "text": "On the other hand, he who grumbles and complains and bemoans himself is nevertheless forcibly obliged to obey orders, and is dragged away, however much against his will, to carry them out: yet what madness is it to be dragged rather than to follow? as great, by Hercules, as it is folly and ignorance of one's true position to grieve because one has not got something or because something has caused us rough treatment, or to be surprised or indignant at those ills which befall good men as well as bad ones, I mean diseases, deaths, illnesses, and the other cross accidents of human life. Let us bear with magnanimity whatever the system of the universe makes it needful for us to bear: we are all bound by this oath: \"To bear the ills of mortal life, and to submit with a good grace to what we cannot avoid.\" We have been born into a monarchy: our liberty is to obey God."
         }
       ]
     },
@@ -359,11 +339,11 @@
       "chunks": [
         {
           "sectionNumber": 18,
-          "text": "“You talk one way,” objects our adversary, “and live another.”\nYou most spiteful of creatures, you who always show the bitterest\nhatred to the best of men, this reproach was flung at Plato, at\nEpicurus, at Zeno: for all these declared how they ought to live,\nnot how they did live. I speak of virtue, not of myself, and when\nI blame vices, I blame my own first of all: when I have the power,\nI shall live as I ought to do: spite, however deeply steeped in\nvenom, shall not keep me back from what is best: that poison itself\nwith which you bespatter others, with which you choke yourselves,\nshall not hinder me from continuing to praise that life which\nI do not, indeed, lead, but which I know I ought to lead, from\nloving virtue and from following after her, albeit a long way behind\nher and with halting gait."
+          "text": "\"You talk one way,\" objects our adversary, \"and live another.\" You most spiteful of creatures, you who always show the bitterest hatred to the best of men, this reproach was flung at Plato, at Epicurus, at Zeno: for all these declared how they ought to live, not how they did live. I speak of virtue, not of myself, and when I blame vices, I blame my own first of all: when I have the power, I shall live as I ought to do: spite, however deeply steeped in venom, shall not keep me back from what is best: that poison itself with which you bespatter others, with which you choke yourselves, shall not hinder me from continuing to praise that life which I do not, indeed, lead, but which I know I ought to lead, from loving virtue and from following after her, albeit a long way behind her and with halting gait."
         },
         {
           "sectionNumber": 18,
-          "text": "Am I to expect that evil speaking will\nrespect anything, seeing that it respected neither Rutilius nor\nCato? Will any one care about being thought too rich by men for\nwhom Diogenes the Cynic was not poor enough? That most energetic\nphilosopher fought against all the desires of the body, and was\npoorer even than the other Cynics, in that besides haying given up\npossessing anything he had also given up asking for anything: yet\nthey reproached him for not being sufficiently in want: as though\nforsooth it were poverty, not virtue, of which he professed knowledge."
+          "text": "Am I to expect that evil speaking will respect anything, seeing that it respected neither Rutilius nor Cato? Will any one care about being thought too rich by men for whom Diogenes the Cynic was not poor enough? That most energetic philosopher fought against all the desires of the body, and was poorer even than the other Cynics, in that besides haying given up possessing anything he had also given up asking for anything: yet they reproached him for not being sufficiently in want: as though forsooth it were poverty, not virtue, of which he professed knowledge."
         }
       ]
     },
@@ -399,15 +379,15 @@
         },
         {
           "sectionNumber": 20,
-          "text": "Whatever I may\npossess, I will neither hoard it greedily nor squander it recklessly.\nI will think that I have no possessions so real as those which I\nhave given away to deserving people: I will not reckon benefits by\ntheir magnitude or number, or by anything except the value set upon\nthem by the receiver: I never will consider a gift to be a large\none if it be bestowed upon a worthy object. I will do nothing because\nof public opinion, but everything because of conscience: whenever\nI do anything alone by myself I will believe that the eyes of the\nRoman people are upon me while I do it. In eating and drinking my\nobject shall be to quench the desires of Nature, not to fill and\nempty my belly. I will be agreeable with my friends, gentle and\nmild to my foes: I will grant pardon before I am asked for it, and\nwill meet the wishes of honourable men half way: I will bear in\nmind that the world is my native city, that its governors are the\ngods, and that they stand above and around me, criticizing whatever\nI do or say."
+          "text": "Whatever I may\npossess, I will neither hoard it greedily nor squander it recklessly.\nI will think that I have no possessions so real as those which I\nhave given away to deserving people: I will not reckon benefits by\ntheir magnitude or number, or by anything except the value set upon\nthem by the receiver: I never will consider a gift to be a large\none if it be bestowed upon a worthy object. I will do nothing because\nof public opinion, but everything because of conscience: whenever\nI do anything alone by myself I will believe that the eyes of the\nRoman people are upon me while I do it."
         },
         {
           "sectionNumber": 20,
-          "text": "Whenever either Nature demands my breath again, or\nreason bids me dismiss it, I will quit this life, calling all to\nwitness that I have loved a good conscience, and good pursuits;\nthat no one's freedom, my own least of all, has been impaired through\nme.\" He who sets up these as the rules of his life will soar aloft\nand strive to make his way to the gods: of a truth, even though he\nfails, yet he\n\n\"Fails in a high emprise.\"[4]"
+          "text": "In eating and drinking my\nobject shall be to quench the desires of Nature, not to fill and\nempty my belly. I will be agreeable with my friends, gentle and\nmild to my foes: I will grant pardon before I am asked for it, and\nwill meet the wishes of honourable men half way: I will bear in\nmind that the world is my native city, that its governors are the\ngods, and that they stand above and around me, criticizing whatever\nI do or say. Whenever either Nature demands my breath again, or\nreason bids me dismiss it, I will quit this life, calling all to\nwitness that I have loved a good conscience, and good pursuits;\nthat no one's freedom, my own least of all, has been impaired through\nme.\""
         },
         {
           "sectionNumber": 20,
-          "text": "But you, who hate both virtue and those who practise it, do nothing\nat which we need be surprised, for sickly lights cannot bear the\nsun, nocturnal creatures avoid the brightness of day, and at its\nfirst dawning become bewildered and all betake themselves to their\ndens together: creatures that fear the light hide themselves in\ncrevices. So croak away, and exercise your miserable tongues in\nreproaching good men: open wide your jaws, bite hard: you will break\nmany teeth before you make any impression."
+          "text": "He who sets up these as the rules of his life will soar aloft\nand strive to make his way to the gods: of a truth, even though he\nfails, yet he\n\n\"Fails in a high emprise.\"[4]\n\nBut you, who hate both virtue and those who practise it, do nothing\nat which we need be surprised, for sickly lights cannot bear the\nsun, nocturnal creatures avoid the brightness of day, and at its\nfirst dawning become bewildered and all betake themselves to their\ndens together: creatures that fear the light hide themselves in\ncrevices. So croak away, and exercise your miserable tongues in\nreproaching good men: open wide your jaws, bite hard: you will break\nmany teeth before you make any impression."
         }
       ]
     },
@@ -417,11 +397,7 @@
       "chunks": [
         {
           "sectionNumber": 21,
-          "text": "\"But how is it that this man studies philosophy and nevertheless lives the life of a rich man? Why does he say that wealth ought to be despised and yet possess it? that life should be despised, and yet live? that health should be despised, and yet guard it with the utmost care, and wish it to be as good as possible? Does he consider banishment to be an empty name, and say, \"What evil is there in changing one country for another?\" and yet, if permitted, does he not grow old in his native land? does he declare that there is no difference between a longer and a shorter time, and yet, if he be not prevented, lengthen out his life and flourish in a green old age?\""
-        },
-        {
-          "sectionNumber": 21,
-          "text": "His answer is, that these things ought to be despised, not that he should not possess them, but that he should not possess them with fear and trembling: he does not drive them away from him, but when they leave him he follows after them unconcernedly. Where, indeed, can fortune invest riches more securely than in a place from whence they can always be recovered without any squabble with their trustee?"
+          "text": "\"But how is it that this man studies philosophy and nevertheless lives the life of a rich man? Why does he say that wealth ought to be despised and yet possess it? that life should be despised, and yet live? that health should be despised, and yet guard it with the utmost care, and wish it to be as good as possible? Does he consider banishment to be an empty name, and say, \"What evil is there in changing one country for another?\" and yet, if permitted, does he not grow old in his native land? does he declare that there is no difference between a longer and a shorter time, and yet, if he be not prevented, lengthen out his life and flourish in a green old age?\" His answer is, that these things ought to be despised, not that he should not possess them, but that he should not possess them with fear and trembling: he does not drive them away from him, but when they leave him he follows after them unconcernedly. Where, indeed, can fortune invest riches more securely than in a place from whence they can always be recovered without any squabble with their trustee?"
         },
         {
           "sectionNumber": 21,
@@ -465,11 +441,11 @@
         },
         {
           "sectionNumber": 23,
-          "text": "The wise man will not allow a single ill-won penny to cross his threshold: yet he will not refuse or close his door against great riches, if they are the gift of fortune and the product of virtue: what reason has he for grudging them good quarters: let them come and be his guests: he will neither brag of them nor hide them away: the one is the part of a silly, the other of a cowardly and paltry spirit, which, as it were, muffles up a good thing in its lap. Neither will he, as I said before, turn them out of his house: for what will he say? will he say, \"You are useless,\" or \"I do not know how to use riches?\" As he is capable of performing a journey upon his own feet, but yet would prefer to mount a carriage, just so he will be capable of being poor, yet will wish to be rich; he will own wealth, but will view it as an uncertain possession which will some day fly away from him."
+          "text": "The wise man will not allow a single ill-won penny to cross his threshold: yet he will not refuse or close his door against great riches, if they are the gift of fortune and the product of virtue: what reason has he for grudging them good quarters: let them come and be his guests: he will neither brag of them nor hide them away: the one is the part of a silly, the other of a cowardly and paltry spirit, which, as it were, muffles up a good thing in its lap. Neither will he, as I said before, turn them out of his house: for what will he say? will he say, \"You are useless,\" or \"I do not know how to use riches?\""
         },
         {
           "sectionNumber": 23,
-          "text": "He will not allow it to be a burden either to himself or to any one else: he will give it—why do you prick up your ears? why do you open your pockets?—he will give it either to good men or to those whom it may make into good men. He will give it after having taken the utmost pains to choose those who are fittest to receive it, as becomes one who bears in mind that he ought to give an account of what he spends as well as of what he receives. He will give for good and commendable reasons, for a gift ill bestowed counts as a shameful loss: he will have an easily opened pocket, but not one with a hole in it, so that much may be taken out of it, yet nothing may fall out of it."
+          "text": "As he is capable of performing a journey upon his own feet, but yet would prefer to mount a carriage, just so he will be capable of being poor, yet will wish to be rich; he will own wealth, but will view it as an uncertain possession which will some day fly away from him. He will not allow it to be a burden either to himself or to any one else: he will give it—why do you prick up your ears? why do you open your pockets?—he will give it either to good men or to those whom it may make into good men. He will give it after having taken the utmost pains to choose those who are fittest to receive it, as becomes one who bears in mind that he ought to give an account of what he spends as well as of what he receives. He will give for good and commendable reasons, for a gift ill bestowed counts as a shameful loss: he will have an easily opened pocket, but not one with a hole in it, so that much may be taken out of it, yet nothing may fall out of it."
         }
       ]
     },
@@ -479,11 +455,11 @@
       "chunks": [
         {
           "sectionNumber": 24,
-          "text": "He who believes giving to be an easy matter, is mistaken: it offers very great difficulties, if we bestow our bounty rationally, and do not scatter it impulsively and at random. I do this man a service, I requite a good turn done me by that one: I help this other, because I pity him: this man, again, I teach to be no fit object for poverty to hold down or degrade."
+          "text": "He who believes giving to be an easy matter, is mistaken: it offers very great difficulties, if we bestow our bounty rationally, and do not scatter it impulsively and at random. I do this man a service, I requite a good turn done me by that one: I help this other, because I pity him: this man, again, I teach to be no fit object for poverty to hold down or degrade. I shall not give some men anything, although they are in want, because, even if I do give to them they will still be in want: I shall proffer my bounty to some, and shall forcibly thrust it upon others:"
         },
         {
           "sectionNumber": 24,
-          "text": "I shall not give some men anything, although they are in want, because, even if I do give to them they will still be in want: I shall proffer my bounty to some, and shall forcibly thrust it upon others: I cannot be neglecting my own interests while I am doing this: at no time do I make more people in my debt than when I am giving things away. \"What?\" say you, \"do you give that you may receive again?\" At any rate I do not give that I may throw my bounty away: what I give should be so placed that although I cannot ask for its return, yet it may be given back to me. A benefit should be invested in the same manner as a treasure buried deep in the earth, which you would not dig up unless actually obliged."
+          "text": "I cannot be neglecting my own interests while I am doing this: at no time do I make more people in my debt than when I am giving things away. \"What?\" say you, \"do you give that you may receive again?\" At any rate I do not give that I may throw my bounty away: what I give should be so placed that although I cannot ask for its return, yet it may be given back to me. A benefit should be invested in the same manner as a treasure buried deep in the earth, which you would not dig up unless actually obliged."
         },
         {
           "sectionNumber": 24,
@@ -505,27 +481,27 @@
       "chunks": [
         {
           "sectionNumber": 25,
-          "text": "Learn, then, since we both agree that they are desirable, what my reason is amongst counting them among good things, and in what respects I should behave differently to you if I possessed them. Place me as master in the house of a very rich man: place me where gold and silver plate is used for the commonest purposes; I shall not think more of myself because of things which even though they are in my house are yet no part of me. Take me away to the wooden bridge and put me down there among the beggars: I shall not despise myself because I am sitting among those who hold out their hands for alms: for what can the lack of a piece of bread matter to one who does not lack the power of dying? Well, then? I prefer the magnificent house to the beggar's bridge."
+          "text": "Learn, then, since we both agree that they are desirable, what my reason is amongst counting them among good things, and in what respects I should behave differently to you if I possessed them. Place me as master in the house of a very rich man: place me where gold and silver plate is used for the commonest purposes; I shall not think more of myself because of things which even though they are in my house are yet no part of me. Take me away to the wooden bridge[5] and put me down there among the beggars: I shall not despise myself because I am sitting among those who hold out their hands for alms: for what can the lack of a piece of bread matter to one who does not lack the power of dying? Well, then? I prefer the magnificent house to the beggar's bridge. Place me among magnificent furniture and all the appliances of luxury: I shall not think myself any happier because my cloak is soft, because my guests rest upon purple."
         },
         {
           "sectionNumber": 25,
-          "text": "Place me among magnificent furniture and all the appliances of luxury: I shall not think myself any happier because my cloak is soft, because my guests rest upon purple. Change the scene: I shall be no more miserable if my weary head rests upon a bundle of hay, if I lie upon a cushion from the circus, with all the stuffing on the point of coming out through its patches of threadbare cloth. Well, then? I prefer, as far as my feelings go, to show myself in public dressed in woollen and in robes of office, rather than with naked or half-covered shoulders: I should like every day's business to turn out just as I wish it to do, and new congratulations to be constantly following upon the former ones: yet I will not pride myself upon this: change all this good fortune for its opposite, let my spirit be distracted by losses, grief, various kinds of attacks: let no hour pass without some dispute: I shall not on this account, though beset by the greatest miseries, call myself the most miserable of beings, nor shall I curse any particular day, for I have taken care to have no unlucky days."
+          "text": "Change the scene: I shall be no more miserable if my weary head rests upon a bundle of hay, if I lie upon a cushion from the circus, with all the stuffing on the point of coming out through its patches of threadbare cloth. Well, then? I prefer, as far as my feelings go, to show myself in public dressed in woollen and in robes of office, rather than with naked or half-covered shoulders: I should like every day's business to turn out just as I wish it to do, and new congratulations to be constantly following upon the former ones: yet I will not pride myself upon this: change all this good fortune for its opposite, let my spirit be distracted by losses, grief, various kinds of attacks: let no hour pass without some dispute: I shall not on this account, though beset by the greatest miseries, call myself the most miserable of beings, nor shall I curse any particular day, for I have taken care to have no unlucky days."
         },
         {
           "sectionNumber": 25,
-          "text": "What, then, is the upshot of all this? it is that I prefer to have to regulate joys than to stifle sorrows. The great Socrates would say the same thing to you. \"Make me,\" he would say, \"the conqueror of all nations: let the voluptuous car of Bacchus bear me in triumph to Thebes from the rising of the sun: let the kings of the Persians receive laws from me: yet I shall feel myself to be a man at the very moment when all around salute me as a God. Straightway connect this lofty height with a headlong fall into misfortune: let me be placed upon a foreign chariot that I may grace the triumph of a proud and savage conqueror: I will follow another's car with no more humility than I showed when I stood in my own. What then? In spite of all this, I had rather be a conqueror than a captive.\""
+          "text": "What, then, is the upshot of all this? it is that I prefer to have to regulate joys than to stifle sorrows. The great Socrates would say the same thing to you. \"Make me,\" he would say, \"the conqueror of all nations: let the voluptuous car of Bacchus bear me in triumph to Thebes from the rising of the sun: let the kings of the Persians receive laws from me: yet I shall feel myself to be a man at the very moment when all around salute me as a God. Straightway connect this lofty height with a headlong fall into misfortune: let me be placed upon a foreign chariot that I may grace the triumph of a proud and savage conqueror:"
         },
         {
           "sectionNumber": 25,
-          "text": "I despise the whole dominion of Fortune, but still, if I were given my choice, I would choose its better parts. I shall make whatever befals me become a good thing, but I prefer that what befals me should be comfortable and pleasant and unlikely to cause me annoyance: for you need not suppose that any virtue exists without labour, but some virtues need spurs, while others need the curb. As we have to check our body on a downward path, and to urge it to climb a steep one; so also the path of some virtues leads down hill, that of others uphill."
+          "text": "I will follow another's car with no more humility than I showed when I stood in my own. What then? In spite of all this, I had rather be a conqueror than a captive. I despise the whole dominion of Fortune, but still, if I were given my choice, I would choose its better parts. I shall make whatever befals me become a good thing, but I prefer that what befals me should be comfortable and pleasant and unlikely to cause me annoyance: for you need not suppose that any virtue exists without labour, but some virtues need spurs, while others need the curb.\""
         },
         {
           "sectionNumber": 25,
-          "text": "Can we doubt that patience, courage, constancy, and all the other virtues which have to meet strong opposition, and to trample Fortune under their feet, are climbing, struggling, winning their way up a steep ascent? Why! is it not equally evident that generosity, moderation, and gentleness glide easily downhill? With the latter we must hold in our spirit, lest it run away with us: with the former we must urge and spur it on. We ought, therefore, to apply these energetic, combative virtues to poverty, and to riches those other more thrifty ones which trip lightly along, and merely support their own weight."
+          "text": "As we have to check our body on a downward path, and to urge it to climb a steep one; so also the path of some virtues leads down hill, that of others uphill. Can we doubt that patience, courage, constancy, and all the other virtues which have to meet strong opposition, and to trample Fortune under their feet, are climbing, struggling, winning their way up a steep ascent? Why! is it not equally evident that generosity, moderation, and gentleness glide easily downhill? With the latter we must hold in our spirit, lest it run away with us: with the former we must urge and spur it on."
         },
         {
           "sectionNumber": 25,
-          "text": "This being the distinction between them, I would rather have to deal with those which I could practise in comparative quiet, than those of which one can only make trial through blood and sweat. \"Wherefore,\" says the sage, \"I do not talk one way and live another: but you do not rightly understand what I say: the sound of my words alone reaches your ears, you do not try to find out their meaning.\""
+          "text": "We ought, therefore, to apply these energetic, combative virtues to poverty, and to riches those other more thrifty ones which trip lightly along, and merely support their own weight. This being the distinction between them, I would rather have to deal with those which I could practise in comparative quiet, than those of which one can only make trial through blood and sweat. \"Wherefore,\" says the sage, \"I do not talk one way and live another: but you do not rightly understand what I say: the sound of my words alone reaches your ears, you do not try to find out their meaning.\""
         }
       ]
     },
@@ -535,7 +511,11 @@
       "chunks": [
         {
           "sectionNumber": 26,
-          "text": "\"What difference, then, is there between me, who am a fool, and you, who are a wise man?\" \"All the difference in the world: for riches are slaves in the house of a wise man, but masters in that of a fool. You accustom yourself to them and cling to them as if somebody had promised that they should be yours for ever, but a wise man never thinks so much about poverty as when he is surrounded by riches. No general ever trusts so implicitly in the maintenance of peace as not to make himself ready for a war, which, though it may not actually be waged, has nevertheless been declared; you are rendered over-proud by a fine house, as though it could never be burned or fall down, and your heads are turned by riches as though they were beyond the reach of all dangers and were so great that Fortune has not sufficient strength to swallow them up."
+          "text": "\"What difference, then, is there between me, who am a fool, and you, who are a wise man?\" \"All the difference in the world: for riches are slaves in the house of a wise man, but masters in that of a fool. You accustom yourself to them and cling to them as if somebody had promised that they should be yours for ever, but a wise man never thinks so much about poverty as when he is surrounded by riches."
+        },
+        {
+          "sectionNumber": 26,
+          "text": "No general ever trusts so implicitly in the maintenance of peace as not to make himself ready for a war, which, though it may not actually be waged, has nevertheless been declared; you are rendered over-proud by a fine house, as though it could never be burned or fall down, and your heads are turned by riches as though they were beyond the reach of all dangers and were so great that Fortune has not sufficient strength to swallow them up."
         },
         {
           "sectionNumber": 26,
@@ -543,19 +523,23 @@
         },
         {
           "sectionNumber": 26,
-          "text": "The great Socrates, or any one else who had the same superiority to and power to withstand the things of this life, would say, 'I have no more fixed principle than that of not altering the course of my life to suit your prejudices: you may pour your accustomed talk upon me from all sides: I shall not think that you are abusing me, but that you are merely wailing like poor little babies.' This is what the man will say who possesses wisdom, whose mind, being free from vices, bids him reproach others, not because he hates them, but in order to improve them:"
+          "text": "The great Socrates, or any one else who had the same superiority to and power to withstand the things of this life, would say, 'I have no more fixed principle than that of not altering the course of my life to suit your prejudices: you may pour your accustomed talk upon me from all sides: I shall not think that you are abusing me, but that you are merely wailing like poor little babies.'\""
         },
         {
           "sectionNumber": 26,
-          "text": "and to this he will add, \"Your opinion of me affects me with pain, not for my own sake but for yours, because to hate perfection and to assail virtue is in itself a resignation of all hope of doing well. You do me no harm; neither do men harm the gods when they overthrow their altars: but it is clear that your intention is an evil one and that you will wish to do harm even where you are not able. I bear with your prating in the same spirit in which Jupiter, best and greatest, bears with the idle tales of the poets, one of whom represents him with wings, another with horns, another as an adulterer staying out all night, another is dealing harshly with the gods, another as unjust to men, another as the seducer of noble youths whom he carries off by force, and those, too, his own relatives, another as a parricide and the conqueror of another's kingdom, and that his father's. The only result of such tales is that men feel less shame at committing sin if they believe the gods to be guilty of such actions."
+          "text": "This is what the man will say who possesses wisdom, whose mind, being free from vices, bids him reproach others, not because he hates them, but in order to improve them: and to this he will add, \"Your opinion of me affects me with pain, not for my own sake but for yours, because to hate perfection and to assail virtue is in itself a resignation of all hope of doing well. You do me no harm; neither do men harm the gods when they overthrow their altars: but it is clear that your intention is an evil one and that you will wish to do harm even where you are not able."
         },
         {
           "sectionNumber": 26,
-          "text": "But although this conduct of yours does not hurt me, yet, for your own sakes, I advise you, respect virtue: believe those who having long followed her cry aloud that what they follow is a thing of might, and daily appears mightier. Reverence her as you would the gods, and reverence her followers as you would the priests of the gods: and whenever any mention of sacred writings is made, _favete linguis_, favour us with silence: this word is not derived, as most people imagine, from _favour_, but commands silence, that divine service may be performed without being interrupted by any words of evil omen. It is much more necessary that you should be ordered to do this, in order that whenever utterance is made by that oracle, you may listen to it with attention and in silence."
+          "text": "I bear with your prating in the same spirit in which Jupiter, best and greatest, bears with the idle tales of the poets, one of whom represents him with wings, another with horns, another as an adulterer staying out all night, another is dealing harshly with the gods, another as unjust to men, another as the seducer of noble youths whom he carries off by force, and those, too, his own relatives, another as a parricide and the conqueror of another's kingdom, and that his father's. The only result of such tales is that men feel less shame at committing sin if they believe the gods to be guilty of such actions."
         },
         {
           "sectionNumber": 26,
-          "text": "Whenever any one beats a sistrum,[6] pretending to do so by divine command, any proficient in grazing his own skin covers his arms and shoulders with blood from light cuts, any one crawls on his knees howling along the street, or any old man clad in linen comes forth in daylight with a lamp and laurel branch and cries out that one of the gods is angry, you crowd round him and listen to his words, and each increases the other's wonderment by declaring him to be divinely inspired."
+          "text": "But although this conduct of yours does not hurt me, yet, for your own sakes, I advise you, respect virtue: believe those who having long followed her cry aloud that what they follow is a thing of might, and daily appears mightier. Reverence her as you would the gods, and reverence her followers as you would the priests of the gods: and whenever any mention of sacred writings is made, _favete linguis_, favour us with silence: this word is not derived, as most people imagine, from _favour_, but commands silence, that divine service may be performed without being interrupted by any words of evil omen."
+        },
+        {
+          "sectionNumber": 26,
+          "text": "It is much more necessary that you should be ordered to do this, in order that whenever utterance is made by that oracle, you may listen to it with attention and in silence. Whenever any one beats a sistrum,[6] pretending to do so by divine command, any proficient in grazing his own skin covers his arms and shoulders with blood from light cuts, any one crawls on his knees howling along the street, or any old man clad in linen comes forth in daylight with a lamp and laurel branch and cries out that one of the gods is angry, you crowd round him and listen to his words, and each increases the other's wonderment by declaring him to be divinely inspired."
         }
       ]
     },
@@ -573,11 +557,11 @@
         },
         {
           "sectionNumber": 27,
-          "text": "Wherefore, seek some soft and yielding object to pierce with your darts. But have you leisure to peer into other men's evil deeds and to sit in judgment upon anybody? to ask how it is that this philosopher has so roomy a house, or that one so good a dinner? Do you look at other people's pimples while you yourselves are covered with countless ulcers? This is as though one who was eaten up by the mange were to point with scorn at the moles and warts on the bodies of the handsomest men."
+          "text": "Wherefore, seek some soft and yielding object to pierce with your darts. But have you leisure to peer into other men's evil deeds and to sit in judgment upon anybody? to ask how it is that this philosopher has so roomy a house, or that one so good a dinner? Do you look at other people's pimples while you yourselves are covered with countless ulcers? This is as though one who was eaten up by the mange were to point with scorn at the moles and warts on the bodies of the handsomest men. Reproach Plato with having sought for money, reproach Aristotle with having obtained it, Democritus with having disregarded it, Epicurus with having spent it: cast Phaedrus and Alcibiades in my own teeth, you who reach the height of enjoyment whenever you get an opportunity of imitating our vices!"
         },
         {
           "sectionNumber": 27,
-          "text": "Reproach Plato with having sought for money, reproach Aristotle with having obtained it, Democritus with having disregarded it, Epicurus with having spent it: cast Phaedrus and Alcibiades in my own teeth, you who reach the height of enjoyment whenever you get an opportunity of imitating our vices! Why do you not rather cast your eyes around yourselves at the ills which tear you to pieces on every side, some attacking you from without, some burning in your own bosoms? However little you know your own place, mankind has not yet come to such a pass that you can have leisure to wag your tongues to the reproach of your betters."
+          "text": "Why do you not rather cast your eyes around yourselves at the ills which tear you to pieces on every side, some attacking you from without, some burning in your own bosoms? However little you know your own place, mankind has not yet come to such a pass that you can have leisure to wag your tongues to the reproach of your betters."
         }
       ]
     },
@@ -593,10 +577,10 @@
     }
   ],
   "cost": {
-    "inputTokens": 443372,
-    "outputTokens": 208010,
+    "inputTokens": 32659,
+    "outputTokens": 16711,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 2.225133
+    "estimatedCost": 0.174321
   }
 }
