@@ -193,12 +193,14 @@ export function splitTextAtBoundary(text: string): [string, string] {
     return [text.slice(0, best).trimEnd(), text.slice(best).trimStart()];
   }
 
-  // Try sentence boundaries (". ", "? ", "! ")
-  const sentenceRe = /[.?!]\s/g;
+  // Try sentence boundaries — includes closing quotes after punctuation (e.g., `." `)
+  // and semicolons/colons which are valid chunk endings per CHUNK_SENTENCE_END_RE
+  const sentenceRe = /[.?!;:]['""\u201D)\]]*\s/g;
   const sentSplits: number[] = [];
   let m: RegExpExecArray | null;
   while ((m = sentenceRe.exec(text)) !== null) {
-    sentSplits.push(m.index + 1);
+    // Split after the punctuation and any closing quotes, before the whitespace
+    sentSplits.push(m.index + m[0].length - 1);
   }
   if (sentSplits.length > 0) {
     const best = sentSplits.reduce((a, b) =>

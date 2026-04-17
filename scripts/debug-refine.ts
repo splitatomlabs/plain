@@ -198,12 +198,12 @@ function simulateSplitBoundary(chunk: Chunk, indent = "  ") {
     return;
   }
 
-  // Check sentence boundaries
-  const sentenceRe = /[.?!]\s/g;
+  // Check sentence boundaries (matches splitTextAtBoundary in refine.ts)
+  const sentenceRe = /[.?!;:]['""\u201D)\]]*\s/g;
   const sentSplits: number[] = [];
   let m: RegExpExecArray | null;
   while ((m = sentenceRe.exec(text)) !== null) {
-    sentSplits.push(m.index + 1);
+    sentSplits.push(m.index + m[0].length - 1);
   }
   if (sentSplits.length > 0) {
     const best = sentSplits.reduce((a, b) =>
