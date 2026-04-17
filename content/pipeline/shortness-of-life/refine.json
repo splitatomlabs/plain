@@ -1,6 +1,6 @@
 {
-  "pipelineVersion": 2,
-  "createdAt": "2026-04-16T05:15:49.080Z",
+  "pipelineVersion": 3,
+  "createdAt": "2026-04-17T07:16:10.027Z",
   "bookSlug": "shortness-of-life",
   "chapters": [
     {
@@ -23,23 +23,27 @@
       "chunks": [
         {
           "sectionNumber": 2,
-          "text": "Why do we complain of Nature? she has dealt kindly with us. Life is long enough, if you know how to use it."
+          "text": "Why do we complain of Nature? she has dealt kindly with us. Life is long enough, if you know how to use it. One man is possessed by an avarice which nothing can satisfy, another by a laborious diligence in doing what is totally useless: another is sodden by wine: another is benumbed by sloth: one man is exhausted by an ambition which makes him court the good will of others: another, through his eagerness as a merchant, is led to visit every land and every sea by the hope of gain: some are plagued by the love of soldiering, and are always either endangering other men's lives or in trembling for their own:"
         },
         {
           "sectionNumber": 2,
-          "text": "One man is possessed by an avarice which nothing can satisfy, another by a laborious diligence in doing what is totally useless: another is sodden by wine: another is benumbed by sloth: one man is exhausted by an ambition which makes him court the good will of others: another, through his eagerness as a merchant, is led to visit every land and every sea by the hope of gain: some are plagued by the love of soldiering, and are always either endangering other men's lives or in trembling for their own: some wear away their lives in that voluntary slavery, the unrequited service of great men: many are occupied either in laying claim to other men's fortune or in complaining of their own: a great number have no settled purpose, and are tossed from one new scheme to another by a rambling, inconsistent, dissatisfied, fickle habit of mind: some care for no object sufficiently to try to attain it, but lie lazily yawning until their fate comes upon them: so that I cannot doubt the truth of that verse which the greatest of poets has dressed in the guise of an oracular response— \"We live a small part only of our lives.\""
+          "text": "some wear away their lives in that voluntary slavery, the unrequited service of great men: many are occupied either in laying claim to other men's fortune or in complaining of their own: a great number have no settled purpose, and are tossed from one new scheme to another by a rambling, inconsistent, dissatisfied, fickle habit of mind: some care for no object sufficiently to try to attain it, but lie lazily yawning until their fate comes upon them: so that I cannot doubt the truth of that verse which the greatest of poets has dressed in the guise of an oracular response—"
         },
         {
           "sectionNumber": 2,
-          "text": "But all duration is time, not life: vices press upon us and surround us on every side, and do not permit us to regain our feet, or to raise our eyes and gaze upon truth, but when we are down keep us prostrate and chained to low desires. Men who are in this condition are never allowed to come to themselves: if ever by chance they obtain any rest, they roll to and fro like the deep sea, which heaves and tosses after a gale, and they never have any respite from their lusts."
+          "text": "\"We live a small part only of our lives.\""
         },
         {
           "sectionNumber": 2,
-          "text": "Do you suppose that I speak of those whose ills are notorious? Nay, look at those whose prosperity all men run to see: they are choked by their own good things. To how many men do riches prove a heavy burden? how many men's eloquence and continual desire to display their own cleverness has cost them their lives? how many are sallow with constant sensual indulgence? how many have no freedom left them by the tribe of clients that surges around them? Look through all these, from the lowest to the highest:—this man calls his friends to support him, this one is present in court, this one is the defendant, this one pleads for him, this one is on the jury: but no one lays claim to his own self, every one wastes his time over some one else."
+          "text": "But all duration is time, not life: vices press upon us and surround us on every side, and do not permit us to regain our feet, or to raise our eyes and gaze upon truth, but when we are down keep us prostrate and chained to low desires. Men who are in this condition are never allowed to come to themselves: if ever by chance they obtain any rest, they roll to and fro like the deep sea, which heaves and tosses after a gale, and they never have any respite from their lusts. Do you suppose that I speak of those whose ills are notorious? Nay, look at those whose prosperity all men run to see: they are choked by their own good things. To how many men do riches prove a heavy burden? how many men's eloquence and continual desire to display their own cleverness has cost them their lives? how many are sallow with constant sensual indulgence? how many have no freedom left them by the tribe of clients that surges around them?"
         },
         {
           "sectionNumber": 2,
-          "text": "Investigate those men, whose names are in every one's mouth: you will find that they bear just the same marks: A is devoted to B, and B to C: no one belongs to himself. Moreover some men are full of most irrational anger: they complain of the insolence of their chiefs, because they have not granted them an audience when they wished for it; as if a man had any right to complain of being so haughtily shut out by another, when he never has leisure to give his own conscience a hearing. This chief of yours, whoever he is, though he may look at you in an offensive manner, still will some day look at you, open his ears to your words, and give you a seat by his side: but you never design to look upon yourself, to listen to your own grievances. You ought not, then, to claim these services from another, especially since while you yourself were doing so, you did not wish for an interview with another man, but were not able to obtain one with yourself."
+          "text": "Look through all these, from the lowest to the highest:—this man calls his friends to support him, this one is present in court, this one is the defendant, this one pleads for him, this one is on the jury: but no one lays claim to his own self, every one wastes his time over some one else. Investigate those men, whose names are in every one's mouth: you will find that they bear just the same marks: A is devoted to B, and B to C: no one belongs to himself. Moreover some men are full of most irrational anger: they complain of the insolence of their chiefs, because they have not granted them an audience when they wished for it;"
+        },
+        {
+          "sectionNumber": 2,
+          "text": "as if a man had any right to complain of being so haughtily shut out by another, when he never has leisure to give his own conscience a hearing. This chief of yours, whoever he is, though he may look at you in an offensive manner, still will some day look at you, open his ears to your words, and give you a seat by his side: but you never design to look upon yourself, to listen to your own grievances. You ought not, then, to claim these services from another, especially since while you yourself were doing so, you did not wish for an interview with another man, but were not able to obtain one with yourself."
         }
       ]
     },
@@ -53,11 +57,11 @@
         },
         {
           "sectionNumber": 3,
-          "text": "Let us take one of the elders, and say to him, \"We perceive that you have arrived at the extreme limits of human life: you are in your hundredth year, or even older. Come now, reckon up your whole life in black and white: tell us how much of your time has been spent upon your creditors, how much on your mistress, how much on your king, how much on your clients, how much in quarrelling with your wife, how much in keeping your slaves in order, how much in running up and down the city on business. Add to this the diseases which we bring upon us with our own hands, and the time which has laid idle without any use having been made of it; you will see that you have not lived as many years as you count."
+          "text": "Let us take one of the elders, and say to him, \"We perceive that you have arrived at the extreme limits of human life: you are in your hundredth year, or even older. Come now, reckon up your whole life in black and white: tell us how much of your time has been spent upon your creditors, how much on your mistress, how much on your king, how much on your clients, how much in quarrelling with your wife, how much in keeping your slaves in order, how much in running up and down the city on business. Add to this the diseases which we bring upon us with our own hands, and the time which has laid idle without any use having been made of it;"
         },
         {
           "sectionNumber": 3,
-          "text": "Look back in your memory and see how often you have been consistent in your projects, how many days passed as you intended them to do when you were at your own disposal, how often you did not change colour and your spirit did not quail, how much work you have done in so long a time, how many people have without your knowledge stolen parts of your life from you, how much you have lost, how large a part has been taken up by useless grief, foolish gladness, greedy desire, or polite conversation; how little of yourself is left to you: you will then perceive that you will die prematurely.\""
+          "text": "you will see that you have not lived as many years as you count. Look back in your memory and see how often you have been consistent in your projects, how many days passed as you intended them to do when you were at your own disposal, how often you did not change colour and your spirit did not quail, how much work you have done in so long a time, how many people have without your knowledge stolen parts of your life from you, how much you have lost, how large a part has been taken up by useless grief, foolish gladness, greedy desire, or polite conversation; how little of yourself is left to you: you will then perceive that you will die prematurely.\""
         },
         {
           "sectionNumber": 3,
@@ -111,11 +115,11 @@
       "chunks": [
         {
           "sectionNumber": 6,
-          "text": "When Livius Drusus, a vigorous and energetic man, brought forward bills for new laws and radical measures of the Gracchus pattern, being the centre of a vast mob of all the peoples of Italy, and seeing no way to solve the question, since he was not allowed to deal with it as he wished, and yet was not free to throw it up after having once taken part in it, complained bitterly of his life, which had been one of unrest from the very cradle, and said, we are told, that \"he was the only person who had never had any holidays even when he was a boy.\" Indeed, while he was still under age and wearing the praetexta, he had the courage to plead the cause of accused persons in court, and to make use of his influence so powerfully that it is well known that in some causes his exertions gained a verdict."
+          "text": "When Livius Drusus, a vigorous and energetic man, brought forward bills for new laws and radical measures of the Gracchus pattern, being the centre of a vast mob of all the peoples of Italy, and seeing no way to solve the question, since he was not allowed to deal with it as he wished, and yet was not free to throw it up after having once taken part in it, complained bitterly of his life, which had been one of unrest from the very cradle, and said, we are told, that \"he was the only person who had never had any holidays even when he was a boy.\""
         },
         {
           "sectionNumber": 6,
-          "text": "Where would such precocious ambition stop? You may be sure that one who showed such boldness as a child would end by becoming a great pest both in public and in private life: it was too late for him to complain that he had had no holidays, when from his boyhood he had been a firebrand and a nuisance in the courts."
+          "text": "Indeed, while he was still under age and wearing the praetexta, he had the courage to plead the cause of accused persons in court, and to make use of his influence so powerfully that it is well known that in some causes his exertions gained a verdict. Where would such precocious ambition stop? You may be sure that one who showed such boldness as a child would end by becoming a great pest both in public and in private life: it was too late for him to complain that he had had no holidays, when from his boyhood he had been a firebrand and a nuisance in the courts."
         },
         {
           "sectionNumber": 6,
@@ -149,11 +153,11 @@
         },
         {
           "sectionNumber": 7,
-          "text": "Balance your account, and run over all the days of your life; you will see that only a very few days, and only those which were useless for any other purpose, have been left to you."
+          "text": "Balance your account, and run over all the days of your life; you will see that only a very few days, and only those which were useless for any other purpose, have been left to you. He who has obtained the _fasces_[6] for which he longed, is eager to get rid of them, and is constantly saying, \"When will this year be over?\" another exhibits public games, and once would have given a great deal for the chance of doing so, but now \"when,\" says he, \"shall I escape from this?\""
         },
         {
           "sectionNumber": 7,
-          "text": "He who has obtained the _fasces_[6] for which he longed, is eager to get rid of them, and is constantly saying, \"When will this year be over?\" another exhibits public games, and once would have given a great deal for the chance of doing so, but now \"when,\" says he, \"shall I escape from this?\" another is an advocate who is fought for in all the courts, and who draws immense audiences, who crowd all the forum to a far greater distance than they can hear him; \"When,\" says he, \"will vacation-time come?\" Every man hurries through his life, and suffers from a yearning for the future, and a weariness of the present: but he who disposes of all his time for his own purposes, who arranges all his days as though he were arranging the plan of his life, neither wishes for nor fears the morrow: for what new pleasure can any hour now bestow upon him? he knows it all, and has indulged in it all even to satiety."
+          "text": "another is an advocate who is fought for in all the courts, and who draws immense audiences, who crowd all the forum to a far greater distance than they can hear him; \"When,\" says he, \"will vacation-time come?\" Every man hurries through his life, and suffers from a yearning for the future, and a weariness of the present: but he who disposes of all his time for his own purposes, who arranges all his days as though he were arranging the plan of his life, neither wishes for nor fears the morrow: for what new pleasure can any hour now bestow upon him? he knows it all, and has indulged in it all even to satiety."
         },
         {
           "sectionNumber": 7,
@@ -193,15 +197,11 @@
         },
         {
           "sectionNumber": 9,
-          "text": "See how the greatest of bards cries to you and sings in wholesome verse as though inspired with celestial fire:— \"The best of wretched mortals' days is that Which is the first to fly.\" Why do you hesitate, says he, why do you stand back? unless you seize it it will have fled: and even if you do seize it, it will still fly. Our swiftness in making use of our time ought therefore to vie with the swiftness of time itself, and we ought to drink of it as we should of a fast-running torrent which will not be always running."
+          "text": "See how the greatest of bards cries to you and sings in wholesome verse as though inspired with celestial fire:— \"The best of wretched mortals' days is that Which is the first to fly.\" Why do you hesitate, says he, why do you stand back? unless you seize it it will have fled: and even if you do seize it, it will still fly. Our swiftness in making use of our time ought therefore to vie with the swiftness of time itself, and we ought to drink of it as we should of a fast-running torrent which will not be always running. The poet, too, admirably satirizes our boundless thoughts, when he says, not \"the first age,\" but \"the first day.\" Why are you careless and slow while time is flying so fast, and why do you spread out before yourself a vision of long months and years, as many as your greediness requires? he talks with you about one day, and that a fast-fleeting one."
         },
         {
           "sectionNumber": 9,
-          "text": "The poet, too, admirably satirizes our boundless thoughts, when he says, not \"the first age,\" but \"the first day.\" Why are you careless and slow while time is flying so fast, and why do you spread out before yourself a vision of long months and years, as many as your greediness requires? he talks with you about one day, and that a fast-fleeting one. There can, then, be no doubt that the best days are those which fly first for wretched, that is, for busy mortals, whose minds are still in their childhood when old age comes upon them, and they reach it unprepared and without arms to combat it."
-        },
-        {
-          "sectionNumber": 9,
-          "text": "They have never looked forward: they have all of a sudden stumbled upon old age: they never noticed that it was stealing upon them day by day. As conversation, or reading, or deep thought deceives travellers, and they find themselves at their journey's end before they knew that it was drawing near, so in this fast and never-ceasing journey of life, which we make at the same pace whether we are asleep or awake, busy people never notice that they are moving till they are at the end of it."
+          "text": "There can, then, be no doubt that the best days are those which fly first for wretched, that is, for busy mortals, whose minds are still in their childhood when old age comes upon them, and they reach it unprepared and without arms to combat it. They have never looked forward: they have all of a sudden stumbled upon old age: they never noticed that it was stealing upon them day by day. As conversation, or reading, or deep thought deceives travellers, and they find themselves at their journey's end before they knew that it was drawing near, so in this fast and never-ceasing journey of life, which we make at the same pace whether we are asleep or awake, busy people never notice that they are moving till they are at the end of it."
         }
       ]
     },
@@ -251,7 +251,11 @@
       "chunks": [
         {
           "sectionNumber": 12,
-          "text": "Perhaps you will ask me whom I mean by \"busy men\"? you need not think that I allude only to those who are hunted out of the courts of justice with dogs at the close of the proceedings, those whom you see either honourably jostled by a crowd of their own clients or contemptuously hustled in visits of ceremony by strangers, who call them away from home to hang about their patron's doors, or who make use of the praetor's sales by auction to acquire infamous gains which some day will prove their own ruin. Some men's leisure is busy: in their country house or on their couch, in complete solitude, even though they have retired from all men's society, they still continue to worry themselves: we ought not to say that such men's life is one of leisure, but their very business is sloth."
+          "text": "Perhaps you will ask me whom I mean by \"busy men\"? you need not think that I allude only to those who are hunted out of the courts of justice with dogs at the close of the proceedings, those whom you see either honourably jostled by a crowd of their own clients or contemptuously hustled in visits of ceremony by strangers, who call them away from home to hang about their patron's doors, or who make use of the praetor's sales by auction to acquire infamous gains which some day will prove their own ruin."
+        },
+        {
+          "sectionNumber": 12,
+          "text": "Some men's leisure is busy: in their country house or on their couch, in complete solitude, even though they have retired from all men's society, they still continue to worry themselves: we ought not to say that such men's life is one of leisure, but their very business is sloth."
         },
         {
           "sectionNumber": 12,
@@ -297,19 +301,19 @@
         },
         {
           "sectionNumber": 13,
-          "text": "See, already this vain longing to learn what is useless has taken hold of the Romans: the other day I heard somebody telling who was the first Roman general who did this or that: Duillius was the first who won a sea-fight, Curius Dentatus was the first who drove elephants in his triumph: moreover, these stories, though they add nothing to real glory, do nevertheless deal with the great deeds of our countrymen: such knowledge is not profitable, yet it claims our attention as a fascinating kind of folly."
+          "text": "See, already this vain longing to learn what is useless has taken hold of the Romans: the other day I heard somebody telling who was the first Roman general who did this or that: Duillius was the first who won a sea-fight, Curius Dentatus was the first who drove elephants in his triumph: moreover, these stories, though they add nothing to real glory, do nevertheless deal with the great deeds of our countrymen: such knowledge is not profitable, yet it claims our attention as a fascinating kind of folly. I will even pardon those who want to know who first persuaded the Romans to go on board ship. It was Claudius, who for this reason was surnamed Caudex, because any piece of carpentry formed of many planks was called _caudex_ by the ancient Romans, for which reason public records are called _Codices_, and by old custom the ships which ply on the Tiber with provisions are called _codicariae_."
         },
         {
           "sectionNumber": 13,
-          "text": "I will even pardon those who want to know who first persuaded the Romans to go on board ship. It was Claudius, who for this reason was surnamed Caudex, because any piece of carpentry formed of many planks was called _caudex_ by the ancient Romans, for which reason public records are called _Codices_, and by old custom the ships which ply on the Tiber with provisions are called _codicariae_. Let us also allow that it is to the point to tell how Valerius Corvinus was the first to conquer Messana, and first of the family of the Valerii transferred the name of the captured city to his own, and was called Messana, and how the people gradually corrupted the pronunciation and called him Messalla: or would you let any one find interest in Lucius Sulla having been the first to let lions loose in the circus, they having been previously exhibited in chains, and hurlers of darts having been sent by King Bocchus to kill them?"
+          "text": "Let us also allow that it is to the point to tell how Valerius Corvinus was the first to conquer Messana, and first of the family of the Valerii transferred the name of the captured city to his own, and was called Messana, and how the people gradually corrupted the pronunciation and called him Messalla: or would you let any one find interest in Lucius Sulla having been the first to let lions loose in the circus, they having been previously exhibited in chains, and hurlers of darts having been sent by King Bocchus to kill them? This may be permitted to their curiosity: but can it serve any useful purpose to know that Pompeius was the first to exhibit eighteen elephants in the circus, who were matched in a mimic battle with some convicts?"
         },
         {
           "sectionNumber": 13,
-          "text": "This may be permitted to their curiosity: but can it serve any useful purpose to know that Pompeius was the first to exhibit eighteen elephants in the circus, who were matched in a mimic battle with some convicts? The leading man in the state, and one who, according to tradition, was noted among the ancient leaders of the state for his transcendent goodness of heart, thought it a notable kind of show to kill men in a manner hitherto unheard of. Do they fight to the death? that is not cruel enough: are they torn to pieces? that is not cruel enough: let them be crushed flat by animals of enormous bulk. It would be much better that such a thing should be forgotten, for fear that hereafter some potentate might hear of it and envy its refined barbarity."
+          "text": "The leading man in the state, and one who, according to tradition, was noted among the ancient leaders of the state for his transcendent goodness of heart, thought it a notable kind of show to kill men in a manner hitherto unheard of. Do they fight to the death? that is not cruel enough: are they torn to pieces? that is not cruel enough: let them be crushed flat by animals of enormous bulk. It would be much better that such a thing should be forgotten, for fear that hereafter some potentate might hear of it and envy its refined barbarity. O, how doth excessive prosperity blind our intellects!"
         },
         {
           "sectionNumber": 13,
-          "text": "O, how doth excessive prosperity blind our intellects! at the moment at which he was casting so many troops of wretches to be trampled on by outlandish beasts, when he was proclaiming war between such different creatures, when he was shedding so much blood before the eyes of the Roman people, whose blood he himself was soon to shed even more freely, he thought himself the master of the whole world; yet he afterwards, deceived by the treachery of the Alexandrians, had to offer himself to the dagger of the vilest of slaves, and then at last discovered what an empty boast was his surname of \"The Great.\""
+          "text": "at the moment at which he was casting so many troops of wretches to be trampled on by outlandish beasts, when he was proclaiming war between such different creatures, when he was shedding so much blood before the eyes of the Roman people, whose blood he himself was soon to shed even more freely, he thought himself the master of the whole world; yet he afterwards, deceived by the treachery of the Alexandrians, had to offer himself to the dagger of the vilest of slaves, and then at last discovered what an empty boast was his surname of \"The Great.\""
         },
         {
           "sectionNumber": 13,
@@ -327,11 +331,11 @@
       "chunks": [
         {
           "sectionNumber": 14,
-          "text": "The only persons who are really at leisure are those who devote themselves to philosophy: and they alone really live: for they do not merely enjoy their own lifetime, but they annex every century to their own: all the years which have passed before them belong to them."
+          "text": "The only persons who are really at leisure are those who devote themselves to philosophy: and they alone really live: for they do not merely enjoy their own lifetime, but they annex every century to their own: all the years which have passed before them belong to them. Unless we are the most ungrateful creatures in the world, we shall regard these noblest of men, the founders of divine schools of thought, as having been born for us, and having prepared life for us: we are led by the labour of others to behold most beautiful things which have been brought out of darkness into light;"
         },
         {
           "sectionNumber": 14,
-          "text": "Unless we are the most ungrateful creatures in the world, we shall regard these noblest of men, the founders of divine schools of thought, as having been born for us, and having prepared life for us: we are led by the labour of others to behold most beautiful things which have been brought out of darkness into light; we are not shut out from any period, we can make our way into every subject, and, if only we can summon up sufficient strength of mind to overstep the narrow limit of human weakness, we have a vast extent of time wherein to disport ourselves: we may argue with Socrates, doubt with Carneades, repose with Epicurus, overcome human nature with the Stoics, out-herod it with the Cynics. Since Nature allows us to commune with every age, why do we not abstract ourselves from our own petty fleeting span of time, and give ourselves up with our whole mind to what is vast, what is eternal, what we share with better men than ourselves?"
+          "text": "we are not shut out from any period, we can make our way into every subject, and, if only we can summon up sufficient strength of mind to overstep the narrow limit of human weakness, we have a vast extent of time wherein to disport ourselves: we may argue with Socrates, doubt with Carneades, repose with Epicurus, overcome human nature with the Stoics, out-herod it with the Cynics. Since Nature allows us to commune with every age, why do we not abstract ourselves from our own petty fleeting span of time, and give ourselves up with our whole mind to what is vast, what is eternal, what we share with better men than ourselves?"
         },
         {
           "sectionNumber": 14,
@@ -357,11 +361,7 @@
         },
         {
           "sectionNumber": 15,
-          "text": "By this means alone can you prolong your mortal life, nay, even turn it into an immortal one. High office, monuments, all that ambition records in decrees or piles up in stone, soon passes away: lapse of time casts down and ruins everything; but those things on which Philosophy has set its seal are beyond the reach of injury: no age will discard them or lessen their force, each succeeding century will add somewhat to the respect in which they are held: for we look upon what is near us with jealous eyes, but we admire what is further off with less prejudice."
-        },
-        {
-          "sectionNumber": 15,
-          "text": "The wise man's life, therefore, includes much: he is not hedged in by the same limits which confine others: he alone is exempt from the laws by which mankind is governed: all ages serve him like a god. If any time be past, he recals it by his memory; if it be present, he uses it; if it be future, he anticipates it: his life is a long one because he concentrates all times into it."
+          "text": "By this means alone can you prolong your mortal life, nay, even turn it into an immortal one. High office, monuments, all that ambition records in decrees or piles up in stone, soon passes away: lapse of time casts down and ruins everything; but those things on which Philosophy has set its seal are beyond the reach of injury: no age will discard them or lessen their force, each succeeding century will add somewhat to the respect in which they are held: for we look upon what is near us with jealous eyes, but we admire what is further off with less prejudice. The wise man's life, therefore, includes much: he is not hedged in by the same limits which confine others: he alone is exempt from the laws by which mankind is governed: all ages serve him like a god. If any time be past, he recals it by his memory; if it be present, he uses it; if it be future, he anticipates it: his life is a long one because he concentrates all times into it."
         }
       ]
     },
@@ -415,15 +415,15 @@
         },
         {
           "sectionNumber": 18,
-          "text": "You manage the revenues of the entire world, as unselfishly as though they belonged to another, as laboriously as if they were your own, as scrupulously as though they belonged to the public: you win love in an office in which it is hard to avoid incurring hatred; yet, believe me, it is better to understand your own mind than to understand the corn-market. Take away that keen intellect of yours, so well capable of grappling with the greatest subjects, from a post which may be dignified, but which is hardly fitted to render life happy, and reflect that you did not study from childhood all the branches of a liberal education merely in order that many thousand tons of corn might safely be entrusted to your charge: you have given us promise of something greater and nobler than this."
+          "text": "You manage the revenues of the entire world, as unselfishly as though they belonged to another, as laboriously as if they were your own, as scrupulously as though they belonged to the public: you win love in an office in which it is hard to avoid incurring hatred; yet, believe me, it is better to understand your own mind than to understand the corn-market. Take away that keen intellect of yours, so well capable of grappling with the greatest subjects, from a post which may be dignified, but which is hardly fitted to render life happy, and reflect that you did not study from childhood all the branches of a liberal education merely in order that many thousand tons of corn might safely be entrusted to your charge: you have given us promise of something greater and nobler than this. There will never be any want of strict economists or of laborious workers: slow-going beasts of burden are better suited for carrying loads than well-bred horses, whose generous swiftness no one would encumber with a heavy pack."
         },
         {
           "sectionNumber": 18,
-          "text": "There will never be any want of strict economists or of laborious workers: slow-going beasts of burden are better suited for carrying loads than well-bred horses, whose generous swiftness no one would encumber with a heavy pack. Think, moreover, how full of risk is the great task which you have undertaken: you have to deal with the human stomach: a hungry people will not endure reason, will not be appeased by justice, and will not hearken to any prayers."
+          "text": "Think, moreover, how full of risk is the great task which you have undertaken: you have to deal with the human stomach: a hungry people will not endure reason, will not be appeased by justice, and will not hearken to any prayers. Only just a few days ago, when G. Caesar perished, grieving for nothing so much (if those in the other world can feel grief) as that the Roman people did not die with him, there was said to be only enough corn for seven or eight days' consumption: while he was making bridges with ships and playing with the resources of the empire, want of provisions, the worst evil that can befall even a besieged city, was at hand:"
         },
         {
           "sectionNumber": 18,
-          "text": "Only just a few days ago, when G. Caesar perished, grieving for nothing so much (if those in the other world can feel grief) as that the Roman people did not die with him, there was said to be only enough corn for seven or eight days' consumption: while he was making bridges with ships[9] and playing with the resources of the empire, want of provisions, the worst evil that can befall even a besieged city, was at hand: his imitation of a crazy outlandish and misproud king very nearly ended in ruin, famine, and the general revolution which follows famine. What must then have been the feelings of those who had the charge of supplying the city with corn, who were in danger of stoning, of fire and sword, of Gaius himself? With consummate art they concealed the vast internal evil by which the state was menaced, and were quite right in so doing; for some diseases must be cured without the patient's knowledge: many have died through discovering what was the matter with them."
+          "text": "his imitation of a crazy outlandish and misproud king very nearly ended in ruin, famine, and the general revolution which follows famine. What must then have been the feelings of those who had the charge of supplying the city with corn, who were in danger of stoning, of fire and sword, of Gaius himself? With consummate art they concealed the vast internal evil by which the state was menaced, and were quite right in so doing; for some diseases must be cured without the patient's knowledge: many have died through discovering what was the matter with them."
         }
       ]
     },
@@ -437,7 +437,11 @@
         },
         {
           "sectionNumber": 19,
-          "text": "In this course of life there await you many good things, such as love and practice of the virtues, forgetfulness of passions, knowledge of how to live and die, deep repose. The position of all busy men is unhappy, but most unhappy of all is that of those who do not even labour at their own affairs, but have to regulate their rest by another man's sleep, their walk by another man's pace, and whose very love and hate, the freest things in the world, are at another's bidding. If such men wish to know how short their lives are, let them think how small a fraction of them is their own."
+          "text": "In this course of life there await you many good things, such as love and practice of the virtues, forgetfulness of passions, knowledge of how to live and die, deep repose."
+        },
+        {
+          "sectionNumber": 19,
+          "text": "The position of all busy men is unhappy, but most unhappy of all is that of those who do not even labour at their own affairs, but have to regulate their rest by another man's sleep, their walk by another man's pace, and whose very love and hate, the freest things in the world, are at another's bidding. If such men wish to know how short their lives are, let them think how small a fraction of them is their own."
         }
       ]
     },
@@ -455,20 +459,24 @@
         },
         {
           "sectionNumber": 20,
-          "text": "I cannot pass over an an instance which occurs to me: Turannius was an old man of the most painstaking exactitude, who after entering upon his ninetieth year, when he had by G. Caesar's own act been relieved of his duties as collector of the revenue, ordered himself to be laid out on his bed and mourned for as though he were dead. The whole house mourned for the leisure of its old master, and did not lay aside its mourning until his work was restored to him. Can men find such pleasure in dying in harness? Yet many are of the same mind: they retain their wish for labour longer than their capacity for it, and fight against their bodily weakness; they think old age an evil for no other reason than because it lays them on the shelf."
+          "text": "I cannot pass over an an instance which occurs to me: Turannius was an old man of the most painstaking exactitude, who after entering upon his ninetieth year, when he had by G. Caesar's own act been relieved of his duties as collector of the revenue, ordered himself to be laid out on his bed and mourned for as though he were dead. The whole house mourned for the leisure of its old master, and did not lay aside its mourning until his work was restored to him. Can men find such pleasure in dying in harness?"
         },
         {
           "sectionNumber": 20,
-          "text": "The law does not enrol a soldier after his fiftieth year, or require a senator's attendance after his sixtieth: but men have more difficulty in obtaining their own consent than that of the law to a life of leisure. Meanwhile, while they are plundering and being plundered, while one is disturbing another's repose, and all are being made wretched alike, life remains without profit, without pleasure, without any intellectual progress: no one keeps death well before his eyes, no one refrains from far-reaching hopes. Some even arrange things which lie beyond their own lives, such as huge sepulchral buildings, the dedication of public works, and exhibitions to be given at their funeral-pyre, and ostentatious processions: but, by Hercules, the funerals of such men ought to be conducted by the light of torches and wax tapers, as though they had lived but a few days."
+          "text": "Yet many are of the same mind: they retain their wish for labour longer than their capacity for it, and fight against their bodily weakness; they think old age an evil for no other reason than because it lays them on the shelf. The law does not enrol a soldier after his fiftieth year, or require a senator's attendance after his sixtieth: but men have more difficulty in obtaining their own consent than that of the law to a life of leisure."
+        },
+        {
+          "sectionNumber": 20,
+          "text": "Meanwhile, while they are plundering and being plundered, while one is disturbing another's repose, and all are being made wretched alike, life remains without profit, without pleasure, without any intellectual progress: no one keeps death well before his eyes, no one refrains from far-reaching hopes. Some even arrange things which lie beyond their own lives, such as huge sepulchral buildings, the dedication of public works, and exhibitions to be given at their funeral-pyre, and ostentatious processions: but, by Hercules, the funerals of such men ought to be conducted by the light of torches and wax tapers, as though they had lived but a few days."
         }
       ]
     }
   ],
   "cost": {
-    "inputTokens": 443372,
-    "outputTokens": 208010,
+    "inputTokens": 26840,
+    "outputTokens": 14552,
     "cacheReadTokens": 0,
     "cacheCreationTokens": 0,
-    "estimatedCost": 2.225133
+    "estimatedCost": 0.1494
   }
 }

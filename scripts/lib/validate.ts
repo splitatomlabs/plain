@@ -262,12 +262,12 @@ const MD_LINK_RE = /\[[^\]]+\]\([^)]+\)/;
 export function validateCardContent(card: Card): ValidationMessage[] {
   const msgs: ValidationMessage[] = [];
 
-  if (!card.plain_english || card.plain_english.length < 50) {
+  if (!card.plain_english || card.plain_english.length < 20) {
     msgs.push({
       severity: "error",
       card_id: card.id,
       field: "plain_english",
-      message: `plain_english is empty or too short (${card.plain_english?.length ?? 0} chars, min 50)`,
+      message: `plain_english is empty or too short (${card.plain_english?.length ?? 0} chars, min 20)`,
     });
   }
 
