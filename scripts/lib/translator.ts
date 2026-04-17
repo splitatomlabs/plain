@@ -220,6 +220,7 @@ export async function translateChunksBatch(
         process.stderr.write(
           `[batch] Retry also failed for ${customId}: ${msg}\n`,
         );
+        throw e;
       }
     }
   }

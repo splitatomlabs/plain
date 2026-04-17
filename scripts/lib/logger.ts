@@ -1,6 +1,8 @@
-import { mkdir, open } from "node:fs/promises";
+import { mkdir, open, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { FileHandle } from "node:fs/promises";
+
+const MAX_LOG_BYTES = 100 * 1024; // 100 KB
 
 type Level = "INFO" | "WARN" | "ERROR" | "DECISION";
 
@@ -18,8 +20,33 @@ class PipelineLogger {
     await mkdir(dir, { recursive: true });
 
     const logPath = path.join(dir, "pipeline.log");
-    // "w" flag truncates the file on open
-    this.fileHandle = await open(logPath, "w");
+
+    // Truncate to last MAX_LOG_BYTES if the file is too large
+    await this.truncateIfNeeded(logPath);
+
+    // Append mode — preserves previous runs
+    this.fileHandle = await open(logPath, "a");
+
+    // Write a run separator
+    const now = new Date();
+    const ts = now.toISOString().replace("T", " ").slice(0, 19);
+    await this.fileHandle.write(`\n--- Run ${ts} ---\n`);
+  }
+
+  private async truncateIfNeeded(logPath: string): Promise<void> {
+    let content: Buffer;
+    try {
+      content = await readFile(logPath);
+    } catch {
+      return; // File doesn't exist yet
+    }
+    if (content.length <= MAX_LOG_BYTES) return;
+
+    // Keep the last MAX_LOG_BYTES, trimming to the next full line
+    const tail = content.subarray(content.length - MAX_LOG_BYTES);
+    const firstNewline = tail.indexOf(0x0a);
+    const trimmed = firstNewline >= 0 ? tail.subarray(firstNewline + 1) : tail;
+    await writeFile(logPath, trimmed);
   }
 
   async close(): Promise<void> {

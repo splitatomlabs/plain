@@ -384,14 +384,9 @@ export async function refineChunksRealtime(
       apiCalls++;
     } catch (e) {
       const msg = e instanceof ClaudeCliError ? e.message : String(e);
-      logger.warn(`refine-rt: bulk refine failed, keeping chunks as-is — ${msg}`);
-      process.stderr.write(
-        `  Bulk refine failed, falling back to single-chunk: ${msg}\n`,
-      );
-      // On bulk failure, keep chunks as-is rather than calling single-chunk API
-      allRefined.push(...batch);
-      apiCalls++;
-      continue;
+      logger.error(`refine-rt: bulk refine failed — ${msg}`);
+      process.stderr.write(`  Bulk refine failed: ${msg}\n`);
+      throw e;
     }
 
     const { refined, splits, merges } = applyDecisions(batch, decisions);
@@ -486,6 +481,7 @@ export async function refineChunksBatch(
         custom_id: customId,
         system,
         messages: [{ role: "user", content: prompt }],
+        max_tokens: 8096,
       });
       meta.set(customId, { bookSlug, chapterSlug, batch, batchIndex: b, config });
     }
