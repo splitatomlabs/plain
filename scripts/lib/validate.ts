@@ -11,6 +11,7 @@ import type {
   BookMeta,
   ValidationMessage,
 } from "./types.js";
+import { logger } from "./logger.js";
 
 // @ts-expect-error — text-readability has no type declarations
 import rs from "text-readability";
@@ -362,10 +363,12 @@ export function validateParseContent(
   for (const section of sections) {
     for (const { pattern, label } of SOURCE_ARTIFACT_PATTERNS) {
       if (pattern.test(section.text)) {
+        const msg = `${chapterSlug} section ${section.number} contains ${label} — source text not cleanly separated`;
+        logger.error(`validate: parse content — ${msg}`);
         msgs.push({
           severity: "error",
           field: "parse",
-          message: `${chapterSlug} section ${section.number} contains ${label} — source text not cleanly separated`,
+          message: msg,
         });
       }
     }
@@ -439,10 +442,12 @@ export function validateSectionCoverage(
   for (let i = 0; i < parsedNums.length; i++) {
     const expected = minNum + i;
     if (parsedNums[i] !== expected) {
+      const msg = `Gap in parsed section numbers: expected ${expected}, found ${parsedNums[i]}`;
+      logger.error(`validate: section coverage — ${msg}`);
       msgs.push({
         severity: "error",
         field: "sections",
-        message: `Gap in parsed section numbers: expected ${expected}, found ${parsedNums[i]}`,
+        message: msg,
       });
       break; // one error is enough to flag the issue
     }
@@ -457,10 +462,12 @@ export function validateSectionCoverage(
 
     const found = chunkTexts.some((ct) => ct.includes(sig));
     if (!found) {
+      const msg = `Section ${section.number} text not found in any chunk (starts with: "${sig.slice(0, 50)}")`;
+      logger.error(`validate: section coverage — ${msg}`);
       msgs.push({
         severity: "error",
         field: "sections",
-        message: `Section ${section.number} text not found in any chunk (starts with: "${sig.slice(0, 50)}")`,
+        message: msg,
       });
     }
   }
@@ -511,18 +518,22 @@ export function validateRefineCoverage(
     const tailFound = tail.length >= 10 ? postText.includes(tail) : true;
 
     if (!headFound) {
+      const msg = `Section ${chunk.sectionNumber} opening text not found after refine (starts with: "${head.slice(0, 50)}")`;
+      logger.error(`validate: refine coverage — ${msg}`);
       msgs.push({
         severity: "error",
         card_id: `section-${chunk.sectionNumber}`,
         field: "refine",
-        message: `Section ${chunk.sectionNumber} opening text not found after refine (starts with: "${head.slice(0, 50)}")`,
+        message: msg,
       });
     } else if (!tailFound) {
+      const msg = `Section ${chunk.sectionNumber} closing text not found after refine (ends with: "...${tail.slice(-50)}")`;
+      logger.error(`validate: refine coverage — ${msg}`);
       msgs.push({
         severity: "error",
         card_id: `section-${chunk.sectionNumber}`,
         field: "refine",
-        message: `Section ${chunk.sectionNumber} closing text not found after refine (ends with: "...${tail.slice(-50)}")`,
+        message: msg,
       });
     }
   }
@@ -552,11 +563,13 @@ export function validateRefineCoverage(
         return preTrimmed.length >= 30 && !CHUNK_SENTENCE_END_RE.test(preTrimmed);
       });
       if (!sourceAlsoFails) {
+        const msg = `Section ${chunk.sectionNumber} chunk ends mid-sentence after refine (ends with: "...${trimmed.slice(-50)}")`;
+        logger.error(`validate: refine coverage — ${msg}`);
         msgs.push({
           severity: "error",
           card_id: `section-${chunk.sectionNumber}`,
           field: "refine",
-          message: `Section ${chunk.sectionNumber} chunk ends mid-sentence after refine (ends with: "...${trimmed.slice(-50)}")`,
+          message: msg,
         });
       }
     }
