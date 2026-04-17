@@ -304,14 +304,10 @@ describe("translateChunksBatch", () => {
       ]),
     );
 
-    // Retry fails too
+    // Retry fails too — now fatal
     mockCallClaudeJSON.mockRejectedValue(new Error("API down"));
 
-    await translateChunksBatch(inputs);
-
-    expect(batchStats.totalRequests).toBe(2);
-    expect(batchStats.succeeded).toBe(1);
-    expect(batchStats.failed).toBe(1);
+    await expect(translateChunksBatch(inputs)).rejects.toThrow("API down");
   });
 
   it("accumulates token usage from batch results", async () => {
