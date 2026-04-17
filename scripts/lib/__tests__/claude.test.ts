@@ -89,30 +89,15 @@ describe("callClaudeJSON", () => {
     expect(callArgs.messages[0].content).toContain("user message");
   });
 
-  it("retries on invalid JSON then succeeds", async () => {
-    mockCreate
-      .mockResolvedValueOnce({
-        content: [{ type: "text", text: "not json at all" }],
-        usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
-      })
-      .mockResolvedValueOnce({
-        content: [{ type: "text", text: '{"action": "keep"}' }],
-        usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
-      });
-
-    const result = await callClaudeJSON<{ action: string }>("test");
-    expect(result).toEqual({ action: "keep" });
-    expect(mockCreate).toHaveBeenCalledTimes(2);
-  });
-
-  it("throws after retry also fails", async () => {
+  it("throws on invalid JSON without retrying", async () => {
     mockCreate.mockResolvedValue({
-      content: [{ type: "text", text: "still not json" }],
+      content: [{ type: "text", text: "not json at all" }],
       usage: { input_tokens: 100, output_tokens: 50, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
     });
 
     await expect(callClaudeJSON("test")).rejects.toThrow(
-      "Failed to parse JSON from API after retry",
+      "Failed to parse JSON from API",
     );
+    expect(mockCreate).toHaveBeenCalledTimes(1);
   });
 });

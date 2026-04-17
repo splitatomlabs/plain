@@ -313,21 +313,6 @@ export async function callClaudeJSON<T>(
   try {
     return JSON.parse(extractJSON(output)) as T;
   } catch {
-    logger.warn("api: JSON parse failed, retrying with explicit instruction");
-    // Retry once with explicit JSON instruction
-    const retryOutput = await callClaudeAPI(
-      `${fullPrompt}\n\nRespond with only valid JSON, no other text.`,
-      model,
-      system,
-    );
-    try {
-      return JSON.parse(extractJSON(retryOutput)) as T;
-    } catch {
-      logger.error("api: JSON parse failed after retry");
-      throw new ClaudeCliError(
-        "Failed to parse JSON from API after retry",
-        retryOutput,
-      );
-    }
+    throw new ClaudeCliError("Failed to parse JSON from API", output);
   }
 }
