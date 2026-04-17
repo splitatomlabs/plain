@@ -107,7 +107,7 @@ export function trackReturnVisit({ hasProgress } = {}) {
 				trackEvent('return_visit');
 			}
 		}
-		if (analyticsEnabled) {
+		if (analyticsEnabled && navigator.doNotTrack !== '1') {
 			localStorage.setItem(KEY_LAST_VISIT_AT, now.toISOString());
 		}
 	} catch {
