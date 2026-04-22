@@ -96,7 +96,7 @@
 	<div
 		bind:this={dialogRef}
 		class="modal"
-		role="dialog"
+		role="alertdialog"
 		aria-labelledby="milestone-heading"
 		aria-modal="true"
 		tabindex="-1"
