@@ -21,6 +21,27 @@ test.describe('WCAG accessibility — axe-core', () => {
 			expect(results.violations).toEqual([]);
 		});
 	}
+
+	test('Home (returning visitor) has no axe violations', async ({ page }) => {
+		await page.goto('/');
+		await page.evaluate(() => {
+			localStorage.setItem('plain-progress', JSON.stringify({
+				meditations: {
+					cards_read: ['meditations-01-001'],
+					last_card: 'meditations-01-001',
+					last_read_at: new Date().toISOString(),
+					resume_url: '/meditations/book-01/2',
+					completed: false,
+					completed_at: null
+				}
+			}));
+		});
+		await page.goto('/');
+		await page.waitForLoadState('networkidle');
+
+		const results = await new AxeBuilder({ page }).analyze();
+		expect(results.violations).toEqual([]);
+	});
 });
 
 test.describe('Keyboard navigation — card page', () => {

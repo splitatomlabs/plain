@@ -70,7 +70,7 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
 
 - [x] T09: **Full e2e run.** `npm run build --prefix web && npm run test:e2e --prefix web`. All 12 spec files must pass with same counts as baseline (T01) or higher if new assertions were added. Expected churn: only `accessibility.spec.js` behaviour changes from T07.
 
-- [ ] T10: **Axe verification on returning-visitor home.** The existing `accessibility.spec.js` runs axe against `/` for a visitor with no localStorage (new visitor). Add a short additional test (either inline or in a new `accessibility-returning.spec.js`) that seeds progress in localStorage (mirroring `home-page.spec.js:41-51`), navigates to `/`, and runs axe — confirming the h1 fix and ensuring returning-visitor path is also clean. Keep under 20 lines. Acceptance: new test passes green.
+- [x] T10: **Axe verification on returning-visitor home.** The existing `accessibility.spec.js` runs axe against `/` for a visitor with no localStorage (new visitor). Add a short additional test (either inline or in a new `accessibility-returning.spec.js`) that seeds progress in localStorage (mirroring `home-page.spec.js:41-51`), navigates to `/`, and runs axe — confirming the h1 fix and ensuring returning-visitor path is also clean. Keep under 20 lines. Acceptance: new test passes green.
 
 ## Verify
 
