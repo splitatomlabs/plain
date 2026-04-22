@@ -42,9 +42,9 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
 
 ## Tasks
 
-- [ ] T01: **Baseline — confirm current suite is green.** Run `npm test` and `npm run build --prefix web && npm run test:e2e --prefix web`. Capture pass counts so later comparisons are apples-to-apples. If anything fails pre-change, stop and surface before proceeding.
+- [x] T01: **Baseline — confirm current suite is green.** Run `npm test` and `npm run build --prefix web && npm run test:e2e --prefix web`. Capture pass counts so later comparisons are apples-to-apples. If anything fails pre-change, stop and surface before proceeding.
 
-- [ ] T02: **Card flip — expose state via `aria-pressed` + `inert`.** In `web/src/lib/components/Card.svelte`:
+- [x] T02: **Card flip — expose state via `aria-pressed` + `inert`.** In `web/src/lib/components/Card.svelte`:
   - Add `aria-pressed={flipped}` to the front-face flip button (around line 99-105).
   - Add `aria-pressed={flipped}` to the back-face flip button (around line 155-161) — same binding; the visible-face button's `aria-pressed` reflects current flip state.
   - Add `inert={flipped ? true : undefined}` to `.card-front` wrapper (around line 87).

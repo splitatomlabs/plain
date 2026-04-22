@@ -84,7 +84,7 @@
 	<div class="card-perspective">
 		<div class="card-inner" class:flipped style={innerHeight ? `height: ${innerHeight}px` : ''}>
 			<!-- Front face -->
-			<div class="card-front" bind:this={frontEl}>
+			<div class="card-front" bind:this={frontEl} inert={flipped ? true : undefined}>
 				<header class="card-author" style="color: {accentVar[card.author_slug]}">
 					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
 				</header>
@@ -99,6 +99,7 @@
 				<button
 					class="flip-btn"
 					onclick={() => { flipped = true; }}
+					aria-pressed={flipped}
 					aria-label="Show original text"
 				>
 					Show original ↻
@@ -140,7 +141,7 @@
 			</div>
 
 			<!-- Back face -->
-			<div class="card-back" bind:this={backEl}>
+			<div class="card-back" bind:this={backEl} inert={flipped ? undefined : true}>
 				<header class="card-author card-author-back">
 					<span style="color: {accentVar[card.author_slug]}">{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}</span>
 					<span class="card-face-label">Original</span>
@@ -155,6 +156,7 @@
 				<button
 					class="flip-btn"
 					onclick={() => { flipped = false; }}
+					aria-pressed={flipped}
 					aria-label="Show plain English"
 				>
 					Show plain English ↻
