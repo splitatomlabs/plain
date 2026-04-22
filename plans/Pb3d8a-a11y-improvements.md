@@ -68,7 +68,7 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
   - Do not change the existing `aria-label="Share this card"` or the `.share-label` span used for visual "Copied!" feedback on the mobile path — they stay.
   - Acceptance: screen reader reads "Link copied" when the clipboard fallback path succeeds; `sharing.spec.js` card-page test (line 6) still passes (aria-label unchanged); visual behavior unchanged.
 
-- [ ] T09: **Full e2e run.** `npm run build --prefix web && npm run test:e2e --prefix web`. All 12 spec files must pass with same counts as baseline (T01) or higher if new assertions were added. Expected churn: only `accessibility.spec.js` behaviour changes from T07.
+- [x] T09: **Full e2e run.** `npm run build --prefix web && npm run test:e2e --prefix web`. All 12 spec files must pass with same counts as baseline (T01) or higher if new assertions were added. Expected churn: only `accessibility.spec.js` behaviour changes from T07.
 
 - [ ] T10: **Axe verification on returning-visitor home.** The existing `accessibility.spec.js` runs axe against `/` for a visitor with no localStorage (new visitor). Add a short additional test (either inline or in a new `accessibility-returning.spec.js`) that seeds progress in localStorage (mirroring `home-page.spec.js:41-51`), navigates to `/`, and runs axe — confirming the h1 fix and ensuring returning-visitor path is also clean. Keep under 20 lines. Acceptance: new test passes green.
 
