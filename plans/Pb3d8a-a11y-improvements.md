@@ -62,7 +62,7 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
 
 - [x] T07: **Update e2e milestone modal selector.** In `web/tests/e2e/accessibility.spec.js`, change `page.locator('[role="dialog"]')` (line 150) → `page.locator('[role="alertdialog"]')`. The subsequent `toHaveAttribute('aria-modal', 'true')` and `toHaveAttribute('aria-labelledby', 'milestone-heading')` assertions (lines 155-156) stay as-is. Run `npx playwright test accessibility.spec.js --prefix web` to confirm green.
 
-- [ ] T08: **ShareButton — announce copied state via aria-live.** In `web/src/lib/components/ShareButton.svelte`:
+- [x] T08: **ShareButton — announce copied state via aria-live.** In `web/src/lib/components/ShareButton.svelte`:
   - Add a `<span class="share-copied-sr" aria-live="polite">{copied ? 'Link copied' : ''}</span>` inside the button, after the existing SVG/label conditionals (around line 55).
   - Add a CSS rule applying the `.visually-hidden` pattern (absolute positioning, 1×1px, clip-path) or add a class-level style block in the component. Prefer inline CSS in the component's `<style>` block rather than relying on the global utility (ShareButton is self-contained).
   - Do not change the existing `aria-label="Share this card"` or the `.share-label` span used for visual "Copied!" feedback on the mobile path — they stay.
