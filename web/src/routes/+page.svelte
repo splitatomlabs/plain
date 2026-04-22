@@ -5,8 +5,9 @@
 	import { progress } from '$lib/stores/progress.js';
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { browser } from '$app/environment';
-	import { page } from '$app/state';
 	import { onMount, untrack } from 'svelte';
+
+	const CANONICAL_ORIGIN = 'https://thinkplain.ai';
 
 	let { data } = $props();
 
@@ -96,13 +97,13 @@
 	<meta property="og:title" content="Plain — Ancient philosophy, in plain English" />
 	<meta property="og:description" content="Plain turns ancient philosophy books into bite-sized cards written in plain English." />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="{page.url.origin}/" />
-	<meta property="og:image" content="{page.url.origin}/api/og/home" />
+	<meta property="og:url" content="{CANONICAL_ORIGIN}/" />
+	<meta property="og:image" content="{CANONICAL_ORIGIN}/api/og/home" />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Plain — Ancient philosophy, in plain English" />
 	<meta name="twitter:description" content="Plain turns ancient philosophy books into bite-sized cards written in plain English." />
-	<meta name="twitter:image" content="/api/og/home" />
+	<meta name="twitter:image" content="{CANONICAL_ORIGIN}/api/og/home" />
 </svelte:head>
 
 {#snippet themesSection(showProgress)}
