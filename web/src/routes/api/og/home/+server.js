@@ -9,7 +9,7 @@ export async function GET() {
 			style: {
 				display: 'flex',
 				flexDirection: 'column',
-				justifyContent: 'space-between',
+				justifyContent: 'center',
 				width: '100%',
 				height: '100%',
 				backgroundColor: '#FAF7F2',
@@ -20,7 +20,7 @@ export async function GET() {
 				{
 					type: 'div',
 					props: {
-						style: { display: 'flex', gap: '16px' },
+						style: { display: 'flex', gap: '16px', marginBottom: '48px' },
 						children: ACCENT_COLORS.map((color) => ({
 							type: 'div',
 							props: {
@@ -39,39 +39,16 @@ export async function GET() {
 					props: {
 						style: {
 							display: 'flex',
-							flexDirection: 'column'
+							flexDirection: 'column',
+							fontSize: '96px',
+							color: '#2C2520',
+							lineHeight: 1.1,
+							letterSpacing: '-0.02em',
+							marginBottom: '32px'
 						},
 						children: [
-							{
-								type: 'div',
-								props: {
-									style: {
-										display: 'flex',
-										flexDirection: 'column',
-										fontSize: '80px',
-										color: '#2C2520',
-										lineHeight: 1.1,
-										letterSpacing: '-0.01em',
-										marginBottom: '28px'
-									},
-									children: [
-										{ type: 'div', props: { children: 'Ancient philosophy,' } },
-										{ type: 'div', props: { children: 'in plain English.' } }
-									]
-								}
-							},
-							{
-								type: 'div',
-								props: {
-									style: {
-										display: 'flex',
-										fontSize: '32px',
-										color: '#736B62',
-										lineHeight: 1.3
-									},
-									children: 'Read a classic book, one card at a time.'
-								}
-							}
+							{ type: 'div', props: { children: 'Ancient philosophy,' } },
+							{ type: 'div', props: { children: 'in plain English.' } }
 						]
 					}
 				},
@@ -80,10 +57,11 @@ export async function GET() {
 					props: {
 						style: {
 							display: 'flex',
-							fontSize: '28px',
-							color: '#2C2520'
+							fontSize: '40px',
+							color: '#736B62',
+							lineHeight: 1.3
 						},
-						children: 'Plain'
+						children: 'Read a classic book, one card at a time.'
 					}
 				}
 			]
