@@ -58,7 +58,7 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
 
 - [x] T05: **Milestone modal — switch to `role="alertdialog"`.** In `web/src/lib/components/MilestoneModal.svelte` line 99, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-modal="true"`, `aria-labelledby="milestone-heading"`, `tabindex="-1"`, and all focus-trap/Escape logic. Acceptance: modal still opens and closes identically; focus still moves into modal; Escape still closes.
 
-- [ ] T06: **Tag-milestone modal — switch to `role="alertdialog"`.** In `web/src/routes/tags/[tag]/+page.svelte` line 213, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-labelledby="tag-milestone-heading"` and `aria-modal="true"`. Acceptance: no visible change; role attribute updated.
+- [x] T06: **Tag-milestone modal — switch to `role="alertdialog"`.** In `web/src/routes/tags/[tag]/+page.svelte` line 213, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-labelledby="tag-milestone-heading"` and `aria-modal="true"`. Acceptance: no visible change; role attribute updated.
 
 - [ ] T07: **Update e2e milestone modal selector.** In `web/tests/e2e/accessibility.spec.js`, change `page.locator('[role="dialog"]')` (line 150) → `page.locator('[role="alertdialog"]')`. The subsequent `toHaveAttribute('aria-modal', 'true')` and `toHaveAttribute('aria-labelledby', 'milestone-heading')` assertions (lines 155-156) stay as-is. Run `npx playwright test accessibility.spec.js --prefix web` to confirm green.
 

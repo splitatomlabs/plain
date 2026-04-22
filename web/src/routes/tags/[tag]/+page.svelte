@@ -210,7 +210,7 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
 			class="modal"
-			role="dialog"
+			role="alertdialog"
 			aria-labelledby="tag-milestone-heading"
 			aria-modal="true"
 			tabindex="-1"
