@@ -147,7 +147,7 @@ test.describe('Milestone modal accessibility', () => {
 		await page.goto('/meditations/book-01/2');
 
 		// Check if modal appears (may not if milestone already seen)
-		const modal = page.locator('[role="dialog"]');
+		const modal = page.locator('[role="alertdialog"]');
 		const modalVisible = await modal.isVisible().catch(() => false);
 
 		if (modalVisible) {

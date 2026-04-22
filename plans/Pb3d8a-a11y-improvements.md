@@ -60,7 +60,7 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
 
 - [x] T06: **Tag-milestone modal — switch to `role="alertdialog"`.** In `web/src/routes/tags/[tag]/+page.svelte` line 213, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-labelledby="tag-milestone-heading"` and `aria-modal="true"`. Acceptance: no visible change; role attribute updated.
 
-- [ ] T07: **Update e2e milestone modal selector.** In `web/tests/e2e/accessibility.spec.js`, change `page.locator('[role="dialog"]')` (line 150) → `page.locator('[role="alertdialog"]')`. The subsequent `toHaveAttribute('aria-modal', 'true')` and `toHaveAttribute('aria-labelledby', 'milestone-heading')` assertions (lines 155-156) stay as-is. Run `npx playwright test accessibility.spec.js --prefix web` to confirm green.
+- [x] T07: **Update e2e milestone modal selector.** In `web/tests/e2e/accessibility.spec.js`, change `page.locator('[role="dialog"]')` (line 150) → `page.locator('[role="alertdialog"]')`. The subsequent `toHaveAttribute('aria-modal', 'true')` and `toHaveAttribute('aria-labelledby', 'milestone-heading')` assertions (lines 155-156) stay as-is. Run `npx playwright test accessibility.spec.js --prefix web` to confirm green.
 
 - [ ] T08: **ShareButton — announce copied state via aria-live.** In `web/src/lib/components/ShareButton.svelte`:
   - Add a `<span class="share-copied-sr" aria-live="polite">{copied ? 'Link copied' : ''}</span>` inside the button, after the existing SVG/label conditionals (around line 55).
