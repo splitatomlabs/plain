@@ -39,16 +39,39 @@ export async function GET() {
 					props: {
 						style: {
 							display: 'flex',
-							flexDirection: 'column',
-							fontSize: '64px',
-							color: '#2C2520',
-							lineHeight: 1.2,
-							letterSpacing: '-0.01em'
+							flexDirection: 'column'
 						},
 						children: [
-							{ type: 'div', props: { children: 'Three men.' } },
-							{ type: 'div', props: { children: 'Three completely different lives.' } },
-							{ type: 'div', props: { children: 'The same philosophy.' } }
+							{
+								type: 'div',
+								props: {
+									style: {
+										display: 'flex',
+										flexDirection: 'column',
+										fontSize: '80px',
+										color: '#2C2520',
+										lineHeight: 1.1,
+										letterSpacing: '-0.01em',
+										marginBottom: '28px'
+									},
+									children: [
+										{ type: 'div', props: { children: 'Ancient philosophy,' } },
+										{ type: 'div', props: { children: 'in plain English.' } }
+									]
+								}
+							},
+							{
+								type: 'div',
+								props: {
+									style: {
+										display: 'flex',
+										fontSize: '32px',
+										color: '#736B62',
+										lineHeight: 1.3
+									},
+									children: 'Read a classic book, one card at a time.'
+								}
+							}
 						]
 					}
 				},
@@ -57,12 +80,10 @@ export async function GET() {
 					props: {
 						style: {
 							display: 'flex',
-							fontSize: '22px',
-							color: '#736B62',
-							fontFamily: 'sans-serif',
-							letterSpacing: '0.02em'
+							fontSize: '28px',
+							color: '#2C2520'
 						},
-						children: 'Plain — Ancient philosophy, in plain English'
+						children: 'Plain'
 					}
 				}
 			]
