@@ -127,6 +127,7 @@
 
 {#if hasProgress}
 	<section class="returning-hero">
+		<h1 class="visually-hidden">Plain — Ancient philosophy, in plain English</h1>
 		<div class="author-rings">
 			{#each authorProgressData as { author, percentage, cardsRead, totalCards }}
 				<div class="ring-group">
