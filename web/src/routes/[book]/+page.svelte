@@ -26,6 +26,11 @@
 	onMount(() => {
 		progress.trackBookLandingViewed(data.book.slug);
 
+		// Force VO to resume at the top of the page content after client-side
+		// nav. The <main> element has tabindex="-1" (not keyboard-tabbable,
+		// so no ring concern for Tab users) and `outline: none` on :focus.
+		document.querySelector('main')?.focus?.({ preventScroll: true });
+
 		const params = new URLSearchParams(window.location.search);
 		isGift = params.get('gift') === 'true';
 		giftNote = params.get('note') || '';
@@ -51,12 +56,15 @@
 
 	function formatReadingTime(seconds) {
 		const mins = Math.ceil(seconds / 60);
+		let body;
 		if (mins > 90) {
 			const hrs = Math.floor(mins / 60);
 			const rem = mins % 60;
-			return rem > 0 ? `~${hrs} hr ${rem} min` : `~${hrs} hr`;
+			body = rem > 0 ? `${hrs} hr ${rem} min` : `${hrs} hr`;
+		} else {
+			body = `${mins} min`;
 		}
-		return `~${mins} min`;
+		return { visible: `~${body}`, sr: `approximately ${body}` };
 	}
 
 	let readingTimeLabel = $derived(formatReadingTime(data.book.total_reading_time_seconds || 0));
@@ -121,7 +129,7 @@
 	</header>
 
 	<div class="action-zone">
-		<p class="book-scope">{data.book.total_cards} cards · {readingTimeLabel} read</p>
+		<p class="book-scope">{data.book.total_cards} cards · <span aria-label={readingTimeLabel.sr}>{readingTimeLabel.visible}</span> read</p>
 
 		{#if bookPercentage > 0}
 			<div class="book-landing-progress">
@@ -176,9 +184,10 @@
 							{#if cp?.completed}
 								&#10003;
 							{:else if cp && cp.cardsRead > 0}
-								{cp.cardsRead} / {cp.total}
+								{cp.cardsRead} of {cp.total}
 							{:else if chapter.reading_time_seconds}
-								{formatReadingTime(chapter.reading_time_seconds)}
+								{@const rt = formatReadingTime(chapter.reading_time_seconds)}
+								<span aria-label={rt.sr}>{rt.visible}</span>
 							{:else}
 								{chapter.card_count} {chapter.card_count === 1 ? 'card' : 'cards'}
 							{/if}

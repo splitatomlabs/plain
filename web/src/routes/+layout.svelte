@@ -60,7 +60,7 @@
 	</div>
 </header>
 
-<main>
+<main tabindex="-1">
 	{@render children()}
 </main>
 
@@ -121,6 +121,10 @@
 		max-width: 72rem;
 		margin: 0 auto;
 		padding: 0 var(--space-lg);
+	}
+
+	main:focus {
+		outline: none;
 	}
 
 	.site-footer {
