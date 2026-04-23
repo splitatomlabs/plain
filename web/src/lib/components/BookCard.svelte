@@ -7,7 +7,6 @@
 </script>
 
 <article class="book-card">
-	<a href="/{book.slug}" class="card-link" aria-label="About {book.title}"></a>
 	<h3 class="book-title">{book.title}</h3>
 	<p class="book-description">{book.description}</p>
 	{#if percentage > 0}
@@ -19,6 +18,7 @@
 		</div>
 	{/if}
 	<a href={ctaHref} class="cta">{ctaLabel}</a>
+	<a href="/{book.slug}" class="card-link" aria-label="View {book.title}"></a>
 </article>
 
 <style>

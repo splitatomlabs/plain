@@ -29,8 +29,6 @@
 	{/if}
 </svelte:head>
 
-<a href="#main-content" class="skip-link">Skip to content</a>
-
 <header class="site-header">
 	<a href="/" class="site-name">Plain</a>
 	<div class="header-actions">
@@ -62,7 +60,7 @@
 	</div>
 </header>
 
-<main id="main-content">
+<main>
 	{@render children()}
 </main>
 
@@ -76,30 +74,6 @@
 </footer>
 
 <style>
-	.skip-link {
-		position: absolute;
-		left: -9999px;
-		top: auto;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		padding: var(--space-sm) var(--space-md);
-		background: var(--color-surface);
-		color: var(--color-text-primary);
-		font-family: var(--font-ui);
-		font-size: var(--text-ui);
-		border: 1px solid var(--color-border);
-		z-index: 100;
-	}
-
-	.skip-link:focus {
-		left: var(--space-md);
-		top: var(--space-sm);
-		width: auto;
-		height: auto;
-		overflow: visible;
-	}
-
 	.site-header {
 		display: flex;
 		align-items: center;
