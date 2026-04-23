@@ -80,17 +80,16 @@
 	class:card-muted={muted}
 	aria-live={muted ? undefined : 'polite'}
 	inert={muted ? true : undefined}
-	tabindex={muted ? undefined : -1}
 >
 	<div class="card-perspective">
 		<div class="card-inner" class:flipped style={innerHeight ? `height: ${innerHeight}px` : ''}>
 			<!-- Front face -->
 			<div class="card-front" bind:this={frontEl} inert={flipped ? true : undefined}>
-				<header class="card-author" style="color: {accentVar[card.author_slug]}">
+				<header class="card-author" tabindex={muted ? undefined : -1} style="color: {accentVar[card.author_slug]}">
 					{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}
 				</header>
 
-				<div class="card-text">
+				<div class="card-text" tabindex={muted ? undefined : -1}>
 					{#each paragraphs as paragraph}
 						<p>{paragraph}</p>
 					{/each}
@@ -143,12 +142,12 @@
 
 			<!-- Back face -->
 			<div class="card-back" bind:this={backEl} inert={flipped ? undefined : true}>
-				<header class="card-author card-author-back">
+				<header class="card-author card-author-back" tabindex={muted ? undefined : -1}>
 					<span style="color: {accentVar[card.author_slug]}">{authorNames[card.author_slug]} — {authorTitles[card.author_slug]}</span>
 					<span class="card-face-label">Original</span>
 				</header>
 
-				<div class="card-text">
+				<div class="card-text" tabindex={muted ? undefined : -1}>
 					{#each originalParagraphs as paragraph}
 						<p>{paragraph}</p>
 					{/each}
@@ -180,7 +179,8 @@
 		margin: 0 auto;
 	}
 
-	.card:focus {
+	.card-text:focus,
+	.card-author:focus {
 		outline: none;
 	}
 

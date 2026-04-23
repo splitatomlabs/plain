@@ -4,7 +4,7 @@
 	import { tagProgress } from '$lib/stores/tagProgress.js';
 	import { trackEvent } from '$lib/analytics.js';
 	import { browser } from '$app/environment';
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 
 	let { data } = $props();
 
@@ -16,7 +16,6 @@
 	let showMilestone = $state(null);
 	// Locally reordered sequence — unread cards first, then already-read cards
 	let sequence = $state(untrack(() => data.sequence));
-	let h1El = $state(null);
 	let focusInitialized = false;
 
 	const activeCard = $derived(sequence[localIndex] ?? sequence[0]);
@@ -26,18 +25,37 @@
 	let tagCardsRead = $state(0);
 	const positionDisplay = $derived(`${localIndex + 1} of ${data.totalCards}`);
 
+	// On card change (next/prev/swipe) move SR focus to the new card's author
+	// header — the author differs per card in the tag sequence, so announcing it
+	// confirms the nav. On flip, focus the card text instead (same author,
+	// different translation). Initial mount skips focus so fresh page loads
+	// start at the top. `await tick()` lets Svelte apply inert toggles first so
+	// the query picks the active face.
+	async function focusActiveFace(selector) {
+		if (!browser) return;
+		await tick();
+		const els = document.querySelectorAll(`.card-swipe-current ${selector}`);
+		for (const el of els) {
+			if (!el.closest('[inert]')) {
+				el.focus({ preventScroll: true });
+				return;
+			}
+		}
+	}
+
 	$effect(() => {
-		activeCard?.id;
-		if (!browser || !h1El || !activeCard) return;
+		if (!activeCard) return;
+		activeCard.id;
+		if (!browser) return;
 		if (!focusInitialized) {
 			focusInitialized = true;
 			return;
 		}
-		h1El.focus({ preventScroll: true });
+		focusActiveFace('.card-author');
 	});
 
 	function handleFlip() {
-		if (browser && h1El) h1El.focus({ preventScroll: true });
+		focusActiveFace('.card-text');
 	}
 
 	// Reset local state when navigating between tags (same route, new params).
@@ -154,11 +172,11 @@
 
 <div class="tag-detail">
 	<header class="tag-header">
-		<h1 id="card-heading" tabindex="-1" bind:this={h1El} aria-label="{data.tag.label}, {positionDisplay}">{data.tag.label}</h1>
+		<h1 aria-label="{data.tag.label}, {positionDisplay}">{data.tag.label}</h1>
 		<p class="tag-progress-count">
 			{positionDisplay}
 			{#if tagCardsRead > 0}
-				<span class="cards-read-badge" aria-label="{tagCardsRead} cards completed">{tagCardsRead} read</span>
+				<span class="cards-read-badge">{tagCardsRead} read</span>
 			{/if}
 		</p>
 	</header>

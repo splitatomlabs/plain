@@ -15,6 +15,7 @@
 
 	let { data } = $props();
 	let showMilestone = $state(null);
+	let focusInitialized = false;
 
 	// Local card state — tracks server data but can be overridden client-side on swipe.
 	// Using a generation counter lets us override with local values (swipe) and
@@ -33,24 +34,35 @@
 	const prevCard = $derived(localOverride ? localOverride.prevCard : data.prevCard);
 	const cardIndex = $derived(localOverride ? localOverride.cardIndex : data.cardIndex);
 
-	// Move SR focus to the active card's article whenever it changes (initial
-	// mount, nav, popstate, flip) so VO consistently announces the card content.
-	// `await tick()` lets Svelte flush pending state (especially inert toggles
-	// on card faces during flip) before focus lands.
-	async function focusActiveCard() {
+	// On card change and on flip, move SR focus to the active card's text so VO
+	// reads the new card body. Author is the same across every card in a book,
+	// so there's no point announcing it on nav. Initial mount skips focus so
+	// fresh page loads start at the top of the page. `await tick()` lets Svelte
+	// apply inert toggles first so the query picks the active face.
+	async function focusActiveFace(selector) {
 		if (!browser) return;
 		await tick();
-		const article = document.querySelector('.card-swipe-current article.card');
-		article?.focus({ preventScroll: true });
+		const els = document.querySelectorAll(`.card-swipe-current ${selector}`);
+		for (const el of els) {
+			if (!el.closest('[inert]')) {
+				el.focus({ preventScroll: true });
+				return;
+			}
+		}
 	}
 
 	$effect(() => {
 		activeCard.id;
-		if (browser) focusActiveCard();
+		if (!browser) return;
+		if (!focusInitialized) {
+			focusInitialized = true;
+			return;
+		}
+		focusActiveFace('.card-text');
 	});
 
 	function handleFlip() {
-		focusActiveCard();
+		focusActiveFace('.card-text');
 	}
 
 	const MILESTONES = [25, 50, 75, 100];
