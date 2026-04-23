@@ -127,6 +127,7 @@
 
 {#if hasProgress}
 	<section class="returning-hero">
+		<h1 class="visually-hidden">Your progress</h1>
 		<div class="author-rings">
 			{#each authorProgressData as { author, percentage, cardsRead, totalCards }}
 				<div class="ring-group">
@@ -134,9 +135,9 @@
 						{percentage}
 						size="medium"
 						authorSlug={author.slug}
-						label="{author.name}: {cardsRead} of {totalCards} cards read, {percentage}%"
+						label="{author.title}, {percentage}%"
 					/>
-					<span class="ring-label" style="color: var(--color-accent-{author.slug === 'marcus-aurelius' ? 'marcus' : author.slug})">{author.title}</span>
+					<span class="ring-label" aria-hidden="true" style="color: var(--color-accent-{author.slug === 'marcus-aurelius' ? 'marcus' : author.slug})">{author.title}</span>
 				</div>
 			{/each}
 		</div>

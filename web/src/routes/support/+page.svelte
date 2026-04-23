@@ -7,7 +7,7 @@
 	<meta name="description" content="Plain is free and always will be. If it has helped you, you can support the project." />
 </svelte:head>
 
-<article class="static-page">
+<div class="static-page">
 	<h1>Support</h1>
 
 	<p>In a world of constant noise, wisdom from the people who came before us matters more than ever. Plain exists to make ancient wisdom readable again, in plain English, for everyone. It starts with the Stoics — Epictetus, Marcus Aurelius, Seneca — whose ideas remain strikingly practical for living in a world you can't control.</p>
@@ -46,7 +46,7 @@
 	</ul>
 
 	<p>Thank you for reading.</p>
-</article>
+</div>
 
 <style>
 	.static-page {

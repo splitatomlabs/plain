@@ -21,15 +21,41 @@
 		}
 		return positions;
 	});
+
+	// Current chapter info (for SR announcement of section position)
+	const currentChapter = $derived.by(() => {
+		if (!hasChapters || !chapters || chapters.length === 0) return null;
+		let cumulative = 0;
+		for (let i = 0; i < chapters.length; i++) {
+			const nextCumulative = cumulative + chapters[i].card_count;
+			if (current <= nextCumulative) {
+				const inChapter = Math.max(0, current - cumulative);
+				const count = chapters[i].card_count;
+				return {
+					title: chapters[i].title,
+					percentInChapter: count > 0 ? Math.round((inChapter / count) * 100) : 0
+				};
+			}
+			cumulative = nextCumulative;
+		}
+		return null;
+	});
+
+	const ariaLabel = $derived(
+		currentChapter
+			? `${currentChapter.title} of ${chapters.length}, ${currentChapter.percentInChapter}% complete`
+			: `${percentage}% complete`
+	);
 </script>
 
 <div
 	class="progress-bar"
 	role="progressbar"
-	aria-valuenow={current}
+	aria-label="Reading progress"
+	aria-valuenow={percentage}
 	aria-valuemin={0}
-	aria-valuemax={total}
-	aria-label="Reading progress: {current} of {total} cards"
+	aria-valuemax={100}
+	aria-valuetext={ariaLabel}
 >
 	<div
 		class="progress-fill"

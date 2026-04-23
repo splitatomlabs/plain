@@ -54,6 +54,7 @@
 		</svg>
 	{/if}
 </button>
+<span class="share-copied-sr" aria-live="polite">{copied ? 'Link copied' : ''}</span>
 
 <style>
 	.share-button {
@@ -80,5 +81,17 @@
 		font-family: var(--font-ui);
 		font-size: var(--text-ui);
 		font-weight: 500;
+	}
+
+	.share-copied-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 </style>

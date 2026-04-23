@@ -89,21 +89,21 @@ test.describe('Card reading experience', () => {
 		const progressBar = page.locator('[role="progressbar"]');
 		await expect(progressBar).toBeVisible();
 
-		const initialValue = await progressBar.getAttribute('aria-valuenow');
+		const initialText = await progressBar.getAttribute('aria-valuetext');
 
 		// Navigate to next card
 		await page.keyboard.press('ArrowRight');
 		await page.waitForURL(/\/meditations\/book-01\/2$/);
 
-		const newValue = await progressBar.getAttribute('aria-valuenow');
-		expect(Number(newValue)).toBeGreaterThan(Number(initialValue));
+		const newText = await progressBar.getAttribute('aria-valuetext');
+		expect(newText).not.toBe(initialText);
 	});
 
 	test('card position indicator shows correct count', async ({ page }) => {
 		await page.goto('/meditations/book-01/1');
 
 		const position = page.locator('.card-swipe-current .card-front .card-position');
-		await expect(position).toContainText('/ ');
+		await expect(position).toContainText(' of ');
 	});
 
 	test('browser back button works after navigation', async ({ page }) => {

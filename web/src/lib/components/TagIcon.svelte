@@ -70,13 +70,16 @@
 	const countDisplay = $derived(
 		nextMilestone ? `${cardsRead} / ${nextMilestone}` : `${cardsRead} read`
 	);
+	const countSr = $derived(
+		nextMilestone ? `${cardsRead} of ${nextMilestone}` : `${cardsRead} read`
+	);
 </script>
 
 <a
 	href="/tags/{slug}"
 	class="tag-icon"
 	class:has-milestone={milestone}
-	aria-label="{label}{cardsRead ? ` — ${cardsRead} cards read` : ''}"
+	aria-label="{label}{cardsRead ? ` — ${countSr}` : ''}"
 >
 	<div class="icon-wrapper">
 		<svg

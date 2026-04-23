@@ -102,7 +102,7 @@ test.describe('Chapter markers and progress', () => {
 
 		const position = page.locator('.card-swipe-current .card-front .card-position');
 		await expect(position).toBeVisible();
-		await expect(position).toContainText('/');
+		await expect(position).toContainText(' of ');
 	});
 
 	test('segmented progress bar on Meditations', async ({ page }) => {

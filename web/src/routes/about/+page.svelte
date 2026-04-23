@@ -7,7 +7,7 @@
 	<meta name="description" content="Plain turns classic works of ancient philosophy into short cards written in plain English." />
 </svelte:head>
 
-<article class="static-page">
+<div class="static-page">
 	<h1>About</h1>
 
 	<p>Plain turns classic works of ancient philosophy into short cards written in plain English, so you can actually read them, finish them, and take something from them. It starts with the Stoics — Epictetus, Marcus Aurelius, Seneca — whose ideas remain strikingly practical for living in a world you can't control.</p>
@@ -55,7 +55,7 @@
 	<p>Making things easier to engage with is a consistent thread across Split Atom Labs' work. A previous project, the mobile game <a href="https://landoflivia.com">Land of Livia</a>, was designed around accessibility and as 2025 Apple Design Award Finalist for Inclusivity. Plain extends the same instinct to reading.</p>
 
 	<p>Thank you for reading.</p>
-</article>
+</div>
 
 <style>
 	.static-page {

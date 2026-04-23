@@ -72,7 +72,7 @@
 				<span class="stat-label">cards read</span>
 			</div>
 			<div class="stat">
-				<span class="stat-value">~{readingMinutes}</span>
+				<span class="stat-value" aria-label="approximately {readingMinutes}">~{readingMinutes}</span>
 				<span class="stat-label">minutes of reading</span>
 			</div>
 		</div>

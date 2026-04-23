@@ -11,9 +11,11 @@
 	import { pushState, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
+	import { tick } from 'svelte';
 
 	let { data } = $props();
 	let showMilestone = $state(null);
+	let focusInitialized = false;
 
 	// Local card state — tracks server data but can be overridden client-side on swipe.
 	// Using a generation counter lets us override with local values (swipe) and
@@ -31,6 +33,37 @@
 	const nextCard = $derived(localOverride ? localOverride.nextCard : data.nextCard);
 	const prevCard = $derived(localOverride ? localOverride.prevCard : data.prevCard);
 	const cardIndex = $derived(localOverride ? localOverride.cardIndex : data.cardIndex);
+
+	// On card change and on flip, move SR focus to the active card's text so VO
+	// reads the new card body. Author is the same across every card in a book,
+	// so there's no point announcing it on nav. Initial mount skips focus so
+	// fresh page loads start at the top of the page. `await tick()` lets Svelte
+	// apply inert toggles first so the query picks the active face.
+	async function focusActiveFace(selector) {
+		if (!browser) return;
+		await tick();
+		const els = document.querySelectorAll(`.card-swipe-current ${selector}`);
+		for (const el of els) {
+			if (!el.closest('[inert]')) {
+				el.focus({ preventScroll: true });
+				return;
+			}
+		}
+	}
+
+	$effect(() => {
+		activeCard.id;
+		if (!browser) return;
+		if (!focusInitialized) {
+			focusInitialized = true;
+			return;
+		}
+		focusActiveFace('.card-text');
+	});
+
+	function handleFlip() {
+		focusActiveFace('.card-text');
+	}
 
 	const MILESTONES = [25, 50, 75, 100];
 
@@ -150,7 +183,6 @@
 />
 
 <div class="card-page">
-	<h1 class="visually-hidden">{activeCard.source_reference} — In Plain English</h1>
 	{#if !prevCard}
 		<p class="card-boundary">Beginning of {data.book.title}</p>
 	{/if}
@@ -159,7 +191,7 @@
 
 	<CardSwipe onDismiss={handleDismiss} hasNext={!!nextCard} canSwipe={!!nextCard} cardId={activeCard.id}>
 		{#snippet children()}
-			<Card card={activeCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={cardIndex} />
+			<Card card={activeCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={cardIndex} onFlip={handleFlip} />
 		{/snippet}
 		{#snippet nextCardSnippet()}
 			{#if nextCard}

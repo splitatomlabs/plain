@@ -42,9 +42,9 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
 
 ## Tasks
 
-- [ ] T01: **Baseline — confirm current suite is green.** Run `npm test` and `npm run build --prefix web && npm run test:e2e --prefix web`. Capture pass counts so later comparisons are apples-to-apples. If anything fails pre-change, stop and surface before proceeding.
+- [x] T01: **Baseline — confirm current suite is green.** Run `npm test` and `npm run build --prefix web && npm run test:e2e --prefix web`. Capture pass counts so later comparisons are apples-to-apples. If anything fails pre-change, stop and surface before proceeding.
 
-- [ ] T02: **Card flip — expose state via `aria-pressed` + `inert`.** In `web/src/lib/components/Card.svelte`:
+- [x] T02: **Card flip — expose state via `aria-pressed` + `inert`.** In `web/src/lib/components/Card.svelte`:
   - Add `aria-pressed={flipped}` to the front-face flip button (around line 99-105).
   - Add `aria-pressed={flipped}` to the back-face flip button (around line 155-161) — same binding; the visible-face button's `aria-pressed` reflects current flip state.
   - Add `inert={flipped ? true : undefined}` to `.card-front` wrapper (around line 87).
@@ -52,25 +52,25 @@ Close four concrete a11y gaps (card flip state, home h1 hierarchy, milestone mod
   - Preserve existing `aria-label` text on both buttons.
   - Acceptance: when `flipped=false`, `.card-back` is inert (not tab-reachable, not in SR tree) and front flip button has `aria-pressed="false"`; when `flipped=true`, `.card-front` is inert and back flip button has `aria-pressed="true"`. Manual test: tab through card, confirm only one flip button is reachable at a time.
 
-- [ ] T03: **Verify flip e2e still passes.** Run `npm run build --prefix web && npx playwright test accessibility.spec.js --prefix web`. The existing test (lines 78-84) asserts the flip button is visible and has `aria-label="Show original text"`. Our changes preserve both. Expected: pass with no edits. If axe flags a new violation (e.g. inert interaction), investigate before proceeding.
+- [x] T03: **Verify flip e2e still passes.** Run `npm run build --prefix web && npx playwright test accessibility.spec.js --prefix web`. The existing test (lines 78-84) asserts the flip button is visible and has `aria-label="Show original text"`. Our changes preserve both. Expected: pass with no edits. If axe flags a new violation (e.g. inert interaction), investigate before proceeding.
 
-- [ ] T04: **Home page — add visually-hidden h1 for returning visitors.** In `web/src/routes/+page.svelte`, inside the `.returning-hero` section (around line 129, directly after the `<section>` opening tag), add `<h1 class="visually-hidden">Plain — Ancient philosophy, in plain English</h1>`. Acceptance: axe no longer reports heading-order violation on `/` for returning visitors; `home-page.spec.js` still passes (new-visitor h1 test at line 11 uses `h1` locator — `.first()` is implicit in `locator('h1')`, but confirm test still finds "Three men" — if `page.locator('h1')` returns multiple on returning visitors, the test uses `toContainText` which may still pass since only one `h1` renders per branch).
+- [x] T04: **Home page — add visually-hidden h1 for returning visitors.** In `web/src/routes/+page.svelte`, inside the `.returning-hero` section (around line 129, directly after the `<section>` opening tag), add `<h1 class="visually-hidden">Plain — Ancient philosophy, in plain English</h1>`. Acceptance: axe no longer reports heading-order violation on `/` for returning visitors; `home-page.spec.js` still passes (new-visitor h1 test at line 11 uses `h1` locator — `.first()` is implicit in `locator('h1')`, but confirm test still finds "Three men" — if `page.locator('h1')` returns multiple on returning visitors, the test uses `toContainText` which may still pass since only one `h1` renders per branch).
 
-- [ ] T05: **Milestone modal — switch to `role="alertdialog"`.** In `web/src/lib/components/MilestoneModal.svelte` line 99, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-modal="true"`, `aria-labelledby="milestone-heading"`, `tabindex="-1"`, and all focus-trap/Escape logic. Acceptance: modal still opens and closes identically; focus still moves into modal; Escape still closes.
+- [x] T05: **Milestone modal — switch to `role="alertdialog"`.** In `web/src/lib/components/MilestoneModal.svelte` line 99, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-modal="true"`, `aria-labelledby="milestone-heading"`, `tabindex="-1"`, and all focus-trap/Escape logic. Acceptance: modal still opens and closes identically; focus still moves into modal; Escape still closes.
 
-- [ ] T06: **Tag-milestone modal — switch to `role="alertdialog"`.** In `web/src/routes/tags/[tag]/+page.svelte` line 213, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-labelledby="tag-milestone-heading"` and `aria-modal="true"`. Acceptance: no visible change; role attribute updated.
+- [x] T06: **Tag-milestone modal — switch to `role="alertdialog"`.** In `web/src/routes/tags/[tag]/+page.svelte` line 213, change `role="dialog"` → `role="alertdialog"`. Preserve `aria-labelledby="tag-milestone-heading"` and `aria-modal="true"`. Acceptance: no visible change; role attribute updated.
 
-- [ ] T07: **Update e2e milestone modal selector.** In `web/tests/e2e/accessibility.spec.js`, change `page.locator('[role="dialog"]')` (line 150) → `page.locator('[role="alertdialog"]')`. The subsequent `toHaveAttribute('aria-modal', 'true')` and `toHaveAttribute('aria-labelledby', 'milestone-heading')` assertions (lines 155-156) stay as-is. Run `npx playwright test accessibility.spec.js --prefix web` to confirm green.
+- [x] T07: **Update e2e milestone modal selector.** In `web/tests/e2e/accessibility.spec.js`, change `page.locator('[role="dialog"]')` (line 150) → `page.locator('[role="alertdialog"]')`. The subsequent `toHaveAttribute('aria-modal', 'true')` and `toHaveAttribute('aria-labelledby', 'milestone-heading')` assertions (lines 155-156) stay as-is. Run `npx playwright test accessibility.spec.js --prefix web` to confirm green.
 
-- [ ] T08: **ShareButton — announce copied state via aria-live.** In `web/src/lib/components/ShareButton.svelte`:
+- [x] T08: **ShareButton — announce copied state via aria-live.** In `web/src/lib/components/ShareButton.svelte`:
   - Add a `<span class="share-copied-sr" aria-live="polite">{copied ? 'Link copied' : ''}</span>` inside the button, after the existing SVG/label conditionals (around line 55).
   - Add a CSS rule applying the `.visually-hidden` pattern (absolute positioning, 1×1px, clip-path) or add a class-level style block in the component. Prefer inline CSS in the component's `<style>` block rather than relying on the global utility (ShareButton is self-contained).
   - Do not change the existing `aria-label="Share this card"` or the `.share-label` span used for visual "Copied!" feedback on the mobile path — they stay.
   - Acceptance: screen reader reads "Link copied" when the clipboard fallback path succeeds; `sharing.spec.js` card-page test (line 6) still passes (aria-label unchanged); visual behavior unchanged.
 
-- [ ] T09: **Full e2e run.** `npm run build --prefix web && npm run test:e2e --prefix web`. All 12 spec files must pass with same counts as baseline (T01) or higher if new assertions were added. Expected churn: only `accessibility.spec.js` behaviour changes from T07.
+- [x] T09: **Full e2e run.** `npm run build --prefix web && npm run test:e2e --prefix web`. All 12 spec files must pass with same counts as baseline (T01) or higher if new assertions were added. Expected churn: only `accessibility.spec.js` behaviour changes from T07.
 
-- [ ] T10: **Axe verification on returning-visitor home.** The existing `accessibility.spec.js` runs axe against `/` for a visitor with no localStorage (new visitor). Add a short additional test (either inline or in a new `accessibility-returning.spec.js`) that seeds progress in localStorage (mirroring `home-page.spec.js:41-51`), navigates to `/`, and runs axe — confirming the h1 fix and ensuring returning-visitor path is also clean. Keep under 20 lines. Acceptance: new test passes green.
+- [x] T10: **Axe verification on returning-visitor home.** The existing `accessibility.spec.js` runs axe against `/` for a visitor with no localStorage (new visitor). Add a short additional test (either inline or in a new `accessibility-returning.spec.js`) that seeds progress in localStorage (mirroring `home-page.spec.js:41-51`), navigates to `/`, and runs axe — confirming the h1 fix and ensuring returning-visitor path is also clean. Keep under 20 lines. Acceptance: new test passes green.
 
 ## Verify
 
