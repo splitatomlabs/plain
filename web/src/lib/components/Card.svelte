@@ -6,7 +6,7 @@
 
 	import { onMount } from 'svelte';
 
-	let { card, book, totalCardsInBook, cardIndex, muted = false, linkSource = false } = $props();
+	let { card, book, totalCardsInBook, cardIndex, muted = false, linkSource = false, onFlip = null } = $props();
 
 	let flipped = $state(false);
 	let frontEl = $state(null);
@@ -80,6 +80,7 @@
 	class:card-muted={muted}
 	aria-live={muted ? undefined : 'polite'}
 	inert={muted ? true : undefined}
+	tabindex={muted ? undefined : -1}
 >
 	<div class="card-perspective">
 		<div class="card-inner" class:flipped style={innerHeight ? `height: ${innerHeight}px` : ''}>
@@ -98,7 +99,7 @@
 				{#if !muted}
 				<button
 					class="flip-btn"
-					onclick={() => { flipped = true; }}
+					onclick={() => { flipped = true; onFlip?.(); }}
 					aria-pressed={flipped}
 					aria-label="Show original text"
 				>
@@ -113,7 +114,7 @@
 						{:else}
 							<span class="card-source">{card.source_reference}</span>
 						{/if}
-						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> <span class="card-number">· {card.card_number} / {chapterCardCount}</span>{:else}<span class="card-number">{cardIndex} / {totalCardsInBook}</span>{/if}</span>
+						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> <span class="card-number">· {card.card_number} of {chapterCardCount}</span>{:else}<span class="card-number">{cardIndex} of {totalCardsInBook}</span>{/if}</span>
 					</div>
 
 					<div class="card-tags-row">
@@ -155,7 +156,7 @@
 
 				<button
 					class="flip-btn"
-					onclick={() => { flipped = false; }}
+					onclick={() => { flipped = false; onFlip?.(); }}
 					aria-pressed={flipped}
 					aria-label="Show plain English"
 				>
@@ -165,7 +166,7 @@
 				<footer class="card-footer">
 					<div class="card-meta">
 						<span class="card-source">{card.source_reference}</span>
-						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> <span class="card-number">· {card.card_number} / {chapterCardCount}</span>{:else}<span class="card-number">{cardIndex} / {totalCardsInBook}</span>{/if}</span>
+						<span class="card-position">{#if chapterTitle}<span class="chapter-label" style="color: {accentVar[card.author_slug]}">{chapterTitle}</span> <span class="card-number">· {card.card_number} of {chapterCardCount}</span>{:else}<span class="card-number">{cardIndex} of {totalCardsInBook}</span>{/if}</span>
 					</div>
 				</footer>
 			</div>

@@ -11,6 +11,7 @@
 	import { pushState, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
+	import { tick } from 'svelte';
 
 	let { data } = $props();
 	let showMilestone = $state(null);
@@ -31,6 +32,26 @@
 	const nextCard = $derived(localOverride ? localOverride.nextCard : data.nextCard);
 	const prevCard = $derived(localOverride ? localOverride.prevCard : data.prevCard);
 	const cardIndex = $derived(localOverride ? localOverride.cardIndex : data.cardIndex);
+
+	// Move SR focus to the active card's article whenever it changes (initial
+	// mount, nav, popstate, flip) so VO consistently announces the card content.
+	// `await tick()` lets Svelte flush pending state (especially inert toggles
+	// on card faces during flip) before focus lands.
+	async function focusActiveCard() {
+		if (!browser) return;
+		await tick();
+		const article = document.querySelector('.card-swipe-current article.card');
+		article?.focus({ preventScroll: true });
+	}
+
+	$effect(() => {
+		activeCard.id;
+		if (browser) focusActiveCard();
+	});
+
+	function handleFlip() {
+		focusActiveCard();
+	}
 
 	const MILESTONES = [25, 50, 75, 100];
 
@@ -150,7 +171,6 @@
 />
 
 <div class="card-page">
-	<h1 class="visually-hidden">{activeCard.source_reference} — In Plain English</h1>
 	{#if !prevCard}
 		<p class="card-boundary">Beginning of {data.book.title}</p>
 	{/if}
@@ -159,7 +179,7 @@
 
 	<CardSwipe onDismiss={handleDismiss} hasNext={!!nextCard} canSwipe={!!nextCard} cardId={activeCard.id}>
 		{#snippet children()}
-			<Card card={activeCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={cardIndex} />
+			<Card card={activeCard} book={data.book} totalCardsInBook={data.totalCards} cardIndex={cardIndex} onFlip={handleFlip} />
 		{/snippet}
 		{#snippet nextCardSnippet()}
 			{#if nextCard}

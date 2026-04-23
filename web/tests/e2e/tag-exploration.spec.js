@@ -14,7 +14,7 @@ test.describe('Tag detail page — card stack', () => {
 
 	test('shows tag name and position in header', async ({ page }) => {
 		await expect(page.locator('h1')).toContainText('Calm Your Mind');
-		await expect(page.locator('.tag-progress-count')).toContainText('1 /');
+		await expect(page.locator('.tag-progress-count')).toContainText('1 of');
 	});
 
 	test('shows muted next card underneath', async ({ page }) => {

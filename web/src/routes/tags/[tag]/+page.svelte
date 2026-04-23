@@ -16,13 +16,29 @@
 	let showMilestone = $state(null);
 	// Locally reordered sequence — unread cards first, then already-read cards
 	let sequence = $state(untrack(() => data.sequence));
+	let h1El = $state(null);
+	let focusInitialized = false;
 
 	const activeCard = $derived(sequence[localIndex] ?? sequence[0]);
 	const nextCard = $derived(localIndex < sequence.length - 1 ? sequence[localIndex + 1] : null);
 	const prevCard = $derived(localIndex > 0 ? sequence[localIndex - 1] : null);
 
 	let tagCardsRead = $state(0);
-	const positionDisplay = $derived(`${localIndex + 1} / ${data.totalCards}`);
+	const positionDisplay = $derived(`${localIndex + 1} of ${data.totalCards}`);
+
+	$effect(() => {
+		activeCard?.id;
+		if (!browser || !h1El || !activeCard) return;
+		if (!focusInitialized) {
+			focusInitialized = true;
+			return;
+		}
+		h1El.focus({ preventScroll: true });
+	});
+
+	function handleFlip() {
+		if (browser && h1El) h1El.focus({ preventScroll: true });
+	}
 
 	// Reset local state when navigating between tags (same route, new params).
 	// Runs on mount and on every tag slug change.
@@ -138,11 +154,11 @@
 
 <div class="tag-detail">
 	<header class="tag-header">
-		<h1>{data.tag.label}</h1>
+		<h1 id="card-heading" tabindex="-1" bind:this={h1El} aria-label="{data.tag.label}, {positionDisplay}">{data.tag.label}</h1>
 		<p class="tag-progress-count">
 			{positionDisplay}
 			{#if tagCardsRead > 0}
-				<span class="cards-read-badge">{tagCardsRead} read</span>
+				<span class="cards-read-badge" aria-label="{tagCardsRead} cards completed">{tagCardsRead} read</span>
 			{/if}
 		</p>
 	</header>
@@ -161,6 +177,7 @@
 					totalCardsInBook={data.totalCards}
 					cardIndex={localIndex + 1}
 					linkSource={true}
+					onFlip={handleFlip}
 				/>
 			{/snippet}
 			{#snippet nextCardSnippet()}

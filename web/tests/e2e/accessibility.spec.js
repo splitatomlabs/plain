@@ -4,7 +4,10 @@ import AxeBuilder from '@axe-core/playwright';
 const routes = [
 	{ name: 'Home', path: '/' },
 	{ name: 'Book landing', path: '/meditations' },
-	{ name: 'Card page', path: '/meditations/book-01/1' },
+	// Card page intentionally has no h1 — the card's article element carries the
+	// announcement for SR users, and a hidden h1 would duplicate progress bar and
+	// card-footer announcements. See `Option A` a11y decision in /+page.svelte.
+	{ name: 'Card page', path: '/meditations/book-01/1', disableRules: ['page-has-heading-one'] },
 	{ name: 'Tags index', path: '/tags' },
 	{ name: 'Tag detail', path: '/tags/calm-your-mind' },
 	{ name: 'Completed', path: '/completed/meditations' }
@@ -16,7 +19,9 @@ test.describe('WCAG accessibility — axe-core', () => {
 			await page.goto(route.path);
 			await page.waitForLoadState('networkidle');
 
-			const results = await new AxeBuilder({ page }).analyze();
+			let builder = new AxeBuilder({ page });
+			if (route.disableRules) builder = builder.disableRules(route.disableRules);
+			const results = await builder.analyze();
 
 			expect(results.violations).toEqual([]);
 		});
@@ -127,9 +132,10 @@ test.describe('Screen reader attributes — card page', () => {
 
 		const progressBar = page.locator('[role="progressbar"]');
 		await expect(progressBar).toBeVisible();
-		await expect(progressBar).toHaveAttribute('aria-valuenow', /\d+/);
-		await expect(progressBar).toHaveAttribute('aria-valuemax', /\d+/);
-		await expect(progressBar).toHaveAttribute('aria-label', /Reading progress/);
+		await expect(progressBar).toHaveAttribute('aria-label', 'Reading progress');
+		await expect(progressBar).toHaveAttribute('aria-valuenow', /^\d+$/);
+		await expect(progressBar).toHaveAttribute('aria-valuemax', '100');
+		await expect(progressBar).toHaveAttribute('aria-valuetext', /% complete/);
 	});
 
 	test('decorative elements are hidden from screen readers', async ({ page }) => {
