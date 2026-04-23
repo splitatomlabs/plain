@@ -99,7 +99,6 @@
 				<button
 					class="flip-btn"
 					onclick={() => { flipped = true; onFlip?.(); }}
-					aria-pressed={flipped}
 					aria-label="Show original text"
 				>
 					Show original ↻
@@ -156,7 +155,6 @@
 				<button
 					class="flip-btn"
 					onclick={() => { flipped = false; onFlip?.(); }}
-					aria-pressed={flipped}
 					aria-label="Show plain English"
 				>
 					Show plain English ↻
