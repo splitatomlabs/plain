@@ -172,7 +172,7 @@ full passage in context. One-time cost; revives Three Voices and lifts One-Line 
 
 ## Plans
 1. `plans/Pf39c2-social-pilot-01.md` — Content premises: gate and score the corpus into pools, generate a weekly schedule
-   - Status: [ ]
+   - Status: [x]
 2. `plans/Pf39c2-social-pilot-02.md` — Character system and rendering: three characters, per-format templates, encode
    - Status: [ ]
    - Depends on: 01
