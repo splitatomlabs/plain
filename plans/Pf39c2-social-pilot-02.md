@@ -183,6 +183,19 @@ looks like Plain.
 - [x] F14: (verification review R6) The `longestOtherMarkMs === 0` escape hatch in the F13 bound was load-bearing
   and untested — deleting the guard left the suite green while breaking every single-word Polly narration. Covered
   both reachable shapes, and proved the tests catch it by removing the guard and watching them fail.
+- [~] F15: CHANGE OF INTENT (user, 2026-08-26), not a defect. T05 as written specifies "already mid-push-in" plus a
+  320wpm karaoke highlight, and that is what was built — but the intended mechanic is that the archaic text SCROLLS
+  past faster than anyone can read, then the plain version lands. The built version has nothing travel: a 1.02->1.05
+  zoom over 2.5s and a highlight reaching ~14 of 150 words, so it reads as a dense page sitting still. Rebuild the
+  wall phase as a scroll. Decisions taken with the user: (a) FIXED scroll rate, identical on every card, with the
+  hard cut landing MID-PASSAGE so it visibly never finishes; (b) LARGER type so the block runs 2-3 screen-heights
+  and genuinely travels — illegibility comes from speed, not from squinting; (c) DROP the karaoke highlight, the
+  scroll is the motion. The countdown opening currently derives its numeral from the karaoke sweep, so it must be
+  re-derived from scroll progress.
+- [ ] F16: Re-derive the Wall gate around the scroll (depends on F15). The current gate's objective is "auto-fit to
+  exactly ONE screen" — the opposite of what a scroll needs. New axes: the block must be tall enough to travel, the
+  type must clear the legibility floor, and the scroll must NOT finish before the cut. Then regenerate
+  `content/social/render-exclusions.json` and week 1, since the pass/reject split will move.
 - [ ] F12: (re-review, noted not blocking) The read-through's question/objection branches in `scripts/lib/schedule.ts`
   re-derive content via their own gates and are still ungated by `render-exclusions.json`. The current Meditations
   book-02/03 slice passes both gates with 0 rejections, so there is no live defect — recorded, not fixed.
