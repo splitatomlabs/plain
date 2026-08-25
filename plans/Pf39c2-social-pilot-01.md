@@ -626,8 +626,84 @@ daily job makes no LLM call at post time.
   text, so it still isolates that SECOND defense now that `checkFaithfulness` runs first and would otherwise catch
   the old invented-text fixture before the candidate-membership check ever ran. `npx vitest run` — 567/567 green (558
   baseline + 9 new).
-- [ ] T10: Build `scripts/score-premises.ts` with `--format <wall|question|objection|still|all>`, `--dry-run`,
+- [x] T10: Build `scripts/score-premises.ts` with `--format <wall|question|objection|still|all>`, `--dry-run`,
   `--limit`, `--verbose`. Acceptance: `--dry-run --limit 5` runs without an API key.
+  **Note:** Added `scripts/score-premises.ts` (the CLI, mirroring `generate.ts`'s structure: `parseArgs` at module
+  scope, `--help`/`--output`/`--verbose` conventions, `logger.init("social", verbose, "premises.log")`, and the same
+  Cost Report block at the end using `tokenUsage`/`batchStats`) plus a new `scripts/lib/premises-cli.ts` holding the
+  pure, side-effect-free pieces (`VALID_FORMATS`, `isValidFormat`, `formatsToRun`, `parseLimit`) — split out
+  specifically for testability, see the correction below. The CLI calls only existing T07/T08/T09 functions
+  (`rankWall`/`questionGate`/`objectionGate`/`mechanicalGates`/`authorMix`/`combinedAuthorMix` from `premises.ts`;
+  `buildWallRequests`/`buildQuestionRequests`/`buildObjectionRequests`/`scoreWallSurvivors`/`scoreQuestionSurvivors`/
+  `scoreObjectionSurvivors`/`faithfulnessStats` from `premises-batch.ts`) — no new gate/scoring/orchestration logic
+  written here, per the plan's own file-layout instruction that T10 owns the CLI only.
+  **`--format still`, handled per the task's explicit instruction:** reports `mechanicalGates(cards).still12Word`'s
+  own pool (731 survivors, matching T02's corrected corpus-wide count) and always prints "gate-only, no LLM rubric
+  exists for this format (T01's still12Word mechanical gate is all there is)" — never builds or submits a request
+  for it, dry-run or not, since none of T07's three rubrics apply to it. `--format all` expands to all four
+  (`wall`/`question`/`objection`/`still`), so a full run reports Still alongside the three scored formats rather
+  than silently omitting it.
+  **`--dry-run`:** builds every request via the same pure builders `buildDryRunReport` (T08) uses
+  (`buildWallRequests`/`buildQuestionRequests`/`buildObjectionRequests`, which never call `createMessageBatch`/
+  `pollBatchUntilDone`/`streamBatchResults`/`getClient()`), prints per-format survivor/request/estimated-token counts,
+  and never writes files. Deliberately does NOT delegate to T08's `buildDryRunReport` directly, since that function
+  has no `--limit` parameter — instead calls the same builders per-format after slicing each gate's survivor array to
+  `entries.slice(0, limit ?? entries.length)` (a no-op slice when `limit` is `undefined`, so the unlimited path is
+  numerically identical to `buildDryRunReport`'s own figures — verified: unlimited `--dry-run` measures Wall 1,003 /
+  Question 89 / Objection 59 requests, ~1,207,900 estimated tokens, matching T08's own measured numbers exactly).
+  **`--limit`:** parsed and validated by `premises-cli.ts`'s `parseLimit` (positive integer only; throws a
+  "must be a positive integer" message otherwise, caught by the CLI and printed to stderr with exit 1). Composes with
+  `--dry-run` (caps requests built) and with a real run (caps gate survivors actually submitted/scored/written).
+  **`--verbose`:** passed straight through to `logger.init`, confirmed streaming `[INFO]` lines to stderr in real
+  time in an ad hoc run.
+  **Non-dry-run path** (not exercised against the real API per the task's explicit "do NOT run a real batch as part
+  of this task" — implemented and unit-tested via the CLI's own argument/dry-run paths only, real scoring left for
+  T11 to actually execute): gates each format, applies `--limit`, calls the matching T08 `scoreXSurvivors` function,
+  reports per-format score distribution (Wall: avg `impenetrability_score`/`landing_line_score`; Question: `answers`
+  vs `drifts` verdict counts; Objection: `accept` vs `reject` verdict counts) and per-format author mix (`authorMix`),
+  writes `<output>/<format>.json` (default `content/social/premises/`, one file per format, `still.json` included —
+  a gate-only `{card_id, book_slug, author_slug}` array, no rubric field since none exists), then reports
+  `faithfulnessStats.rejected` (T09's counter) and the across-formats `combinedAuthorMix` the T05 acceptance calls
+  for, over whichever formats were actually run in that invocation.
+  **Correction found while writing tests (real bug, not just a test artifact):** the first draft imported
+  `VALID_FORMATS`/`formatsToRun` directly from `../../score-premises.js` in the test file. Since `score-premises.ts`
+  is a top-level CLI script whose module body parses `argv` and calls `main().catch(...)` unconditionally — exactly
+  like `generate.ts` — that `import` alone silently re-ran the ENTIRE script against the test runner's own
+  `process.argv`/`process.env` as an import side effect: with no `--dry-run` flag and no `ANTHROPIC_API_KEY` in that
+  environment, it attempted a real (uncapped, 1,003-request) Wall scoring batch and failed loudly inside the test
+  run's own stderr once `createMessageBatch` hit the missing-API-key check. Fixed by extracting the pure pieces
+  (`VALID_FORMATS`, `isValidFormat`, `formatsToRun`, `parseLimit`) into the new `scripts/lib/premises-cli.ts`, which
+  has no top-level side effects and is safe to import directly; `score-premises.ts` now imports from there too, so
+  there is exactly one definition, not two. Everything that actually exercises the CLI's behavior (argument
+  validation, `--dry-run --limit 5`, `--format still`) spawns the script as a real subprocess via `execFileSync`
+  (`npx tsx scripts/score-premises.ts ...`) instead of importing it — the same way the acceptance command itself is
+  run — and asserts on exit code / stdout / stderr, which is also how `--limit 0`/negative/non-numeric rejection and
+  the exact "no Cost Report emitted" / "writes no pool files" dry-run invariants are verified.
+  **Tests** (`scripts/lib/__tests__/score-premises.test.ts`, new file, 27 tests): pure unit tests for
+  `VALID_FORMATS`/`formatsToRun`/`parseLimit` (10 tests, no subprocess); subprocess tests for argument parsing (each
+  of the 5 valid `--format` values accepted, an invalid one rejected with a message + nonzero exit, `--limit`
+  accepted/rejected at the zero/negative/non-numeric boundaries — negative uses `--limit=-5` single-token form to
+  route around `node:util`'s own `parseArgs` treating a separate `-5` token as an ambiguous option-like value, a
+  `node:util` quirk unrelated to this task's own validation — and `--help`); the acceptance criterion itself,
+  `--dry-run --limit 5` (exits 0 with no `ANTHROPIC_API_KEY` set, caps Wall/Question/Objection/Still all at
+  "processing 5", reports exactly 5 requests for each scored format, emits no Cost Report block, writes no pool
+  files); and `--format still` (reports gate-only with the explicit "no LLM rubric" language, and does not print
+  Wall/Question/Objection sections when run alone). `npx vitest run scripts/lib/__tests__/score-premises.test.ts` —
+  27/27 green. `npx vitest run` (full suite) — 594/594 green (567 baseline + 27 new), confirming no regression to
+  T01-T09 or any other consumer.
+  **Verify commands, run for real with no API key in the environment, output pasted verbatim:**
+  `env -u ANTHROPIC_API_KEY npx tsx scripts/score-premises.ts --dry-run --limit 5` — exit 0; Wall 1,003 gate
+  survivors (processing 5, 5 requests, ~5,465 est. tokens), Question 89 (processing 5, 5 requests, ~2,836 est.
+  tokens), Objection 59 (processing 5, 5 requests, ~5,307 est. tokens), Still 731 gate survivors (processing 5,
+  gate-only). `env -u ANTHROPIC_API_KEY npx tsx scripts/score-premises.ts --dry-run` (unlimited) — exit 0; Wall 1,003
+  requests (~1,086,613 est. tokens), Question 89 requests (~51,141 est. tokens), Objection 59 requests (~70,146 est.
+  tokens), Still 731 gate survivors (gate-only) — matching T08's own measured dry-run figures exactly.
+  **Follow-up for T11:** the non-dry-run scoring/pool-writing path above is implemented and covered only by the
+  dry-run/argument-parsing tests in this task's own file (per this task's explicit scope: build the CLI, don't spend
+  money running it) — T11 is the first task that will actually execute `scoreWallSurvivors`/`scoreQuestionSurvivors`/
+  `scoreObjectionSurvivors` for real through this CLI and should sanity-check the written `<output>/<format>.json`
+  shapes and the printed score-distribution/author-mix/faithfulness-rejection report against real API output before
+  committing the pools.
 - [ ] T11: Run scoring for real; commit the pools. Acceptance: each pool covers 4 weeks; 10 per format spot-checked
   by hand; count and score distribution reported.
 - [ ] T12: Implement the WEEKLY schedule generator — `content/social/pilot-schedule-wNN.json`, 7 days x 2 posts,
