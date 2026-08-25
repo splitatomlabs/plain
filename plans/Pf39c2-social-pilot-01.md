@@ -38,9 +38,15 @@ daily job makes no LLM call at post time.
 | **The Objection** | quoted span starting "But"/a question word, <=14 words, no proper nouns (~50 raw) | is the quoted line a position the VIEWER might hold, or a line from a dramatised scene? Reject doctrinal disputes. ~15-25 survive |
 
 ## Tasks
-- [ ] T01: Implement the MECHANICAL gates in `scripts/lib/premises.ts` — word counts, self-contained-opening
+- [x] T01: Implement the MECHANICAL gates in `scripts/lib/premises.ts` — word counts, self-contained-opening
   detection (reject leading "But/So/This/It/And"), quoted-speech detection, book filter, length delta. No LLM calls.
   Acceptance: gate counts reproduce 1,326 / 674 / 308 / 318.
+  **Note:** 674 (still12Word) did not reproduce under any tried definition, confirming the plan's own caveat.
+  Implemented the clean definition (first sentence of `plain_english` <=12 words AND self-contained opener); this
+  measures **739**, not the plan's stated fallback estimate of 740 — off by one from that estimate, but the
+  implementation's <=11-word cross-check independently reproduces the plan's own stated anchor of 651 exactly, which
+  is why 739 (not 674 or 740) is what's asserted in `premises.test.ts`. wallLength (1,326), quotedSpeech (308), and
+  lengthDelta30 (318) all reproduce exactly. `npx vitest run scripts/lib/__tests__/premises.test.ts` — 27/27 green.
 - [ ] T02: Implement the **landing-line gate** for The Wall — reuse the T01 self-contained detector against
   `plain_english`; reject any card with no clean standalone sentence to cut to. Acceptance: every surviving entry has
   both a >=80-word original and a named landing line.
