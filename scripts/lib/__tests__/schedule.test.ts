@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -9,11 +9,16 @@ import {
   loadFormatPools,
   loadPriorWeeks,
   DEFAULT_FORMAT_WEIGHTS,
+  isStrongWallEntry,
+  WALL_STRONG_IMPENETRABILITY_MIN,
+  WALL_STRONG_LANDING_LINE_MIN,
   type FormatPools,
   type FormatWeights,
   type WeekSchedule,
   type ScheduleFormat,
+  type WallPoolEntry,
 } from "../schedule.js";
+import { logger } from "../logger.js";
 import type { Card } from "../types.js";
 import type { AuthorSlug } from "../constants.js";
 
@@ -2662,5 +2667,212 @@ describe("T16: Meditations Books 2-3 default read-through", () => {
     for (const slot of week2.slots) {
       expect(week1Ids.has(slot.card_id)).toBe(false);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T21: Wall selection must respect the rubric scores T07/T08/T11 already
+// computed, not just the mechanical gate. A scored `wall.json` entry counts
+// as "strong" only when it clears BOTH `impenetrability_score` and
+// `landing_line_score` at `WALL_STRONG_IMPENETRABILITY_MIN`/
+// `WALL_STRONG_LANDING_LINE_MIN` (both 4, on the 1-5 scale) — see
+// `isStrongWallEntry`'s own doc comment in ./schedule.ts for the full
+// rationale, the measured 679/896 (~76%) strong coverage, and why a
+// gate-only entry (no rubric at all) is treated as strong by default rather
+// than sub-strong.
+// ---------------------------------------------------------------------------
+
+describe("T21: Wall selection respects rubric scores", () => {
+  const premisesDir = path.join(process.cwd(), "content", "social", "premises");
+
+  it("threshold constants are the documented values (both 4 on the 1-5 scale)", () => {
+    expect(WALL_STRONG_IMPENETRABILITY_MIN).toBe(4);
+    expect(WALL_STRONG_LANDING_LINE_MIN).toBe(4);
+  });
+
+  it("isStrongWallEntry requires BOTH axes to clear the threshold", () => {
+    const base = gatePools.wall[0];
+    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 4, landing_line_score: 4 } })).toBe(true);
+    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 5, landing_line_score: 5 } })).toBe(true);
+    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 3, landing_line_score: 5 } })).toBe(false);
+    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 5, landing_line_score: 3 } })).toBe(false);
+    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 3, landing_line_score: 3 } })).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // "A gate-only pool with no rubric fields still schedules normally" — the
+  // mechanical-gate path (rankWall's own output, used whenever T11 hasn't
+  // run yet) must never be filtered by a rubric it doesn't have.
+  // -------------------------------------------------------------------------
+  it("treats every gate-only entry (no rubric at all) as strong, not sub-strong", () => {
+    for (const entry of gatePools.wall) {
+      expect((entry as WallPoolEntry).rubric).toBeUndefined();
+      expect(isStrongWallEntry(entry as WallPoolEntry)).toBe(true);
+    }
+  });
+
+  it("a gate-only pool (no rubric fields) still schedules a full week normally", () => {
+    const week = makeWeek(1, 42);
+    expect(week.format_counts.wall).toBeGreaterThan(0);
+    expect(week.slots).toHaveLength(14);
+  });
+
+  describe("against the real scored pool (content/social/premises/wall.json)", () => {
+    it("no sub-strong entry is drawn while strong entries remain, across a multi-week, wall-dominant, fixed-seed chain", async () => {
+      const { pools, source } = await loadFormatPools(premisesDir, gatePools);
+      expect(source.wall).toBe("scored"); // sanity: really exercising the scored pool, not the gate-only fallback
+      const wallEntries = pools.wall as WallPoolEntry[];
+      const scoredByCardId = new Map(wallEntries.map((e) => [e.card_id, e]));
+      const strongCount = wallEntries.filter(isStrongWallEntry).length;
+
+      const priorUsedCardIds = new Set<string>();
+      let readThroughCursor = 0;
+      let wallDrawCount = 0;
+
+      for (let week = 1; week <= 10; week++) {
+        const schedule = generateWeek({
+          weekNumber: week,
+          seed: 2000 + week,
+          cards,
+          pools,
+          poolSource: source,
+          priorUsedCardIds,
+          readThroughBook: "enchiridion",
+          readThroughStartIndex: readThroughCursor,
+          weights: { wall: 20, question: 1, objection: 1 },
+        });
+        for (const slot of schedule.slots) {
+          priorUsedCardIds.add(slot.card_id);
+          if (!slot.read_through && slot.content.format === "wall") {
+            wallDrawCount += 1;
+            const scored = scoredByCardId.get(slot.card_id);
+            expect(scored).toBeDefined();
+            expect(isStrongWallEntry(scored!)).toBe(true);
+          }
+        }
+        readThroughCursor += schedule.slots.filter((s) => s.read_through).length;
+      }
+
+      // Sanity: this chain drew far fewer Wall slots than the strong pool's
+      // own size, so "every draw was strong" above is a real assertion about
+      // the SELECTION mechanism, not a vacuous truth from having exhausted
+      // strong and fallen back to reserve anyway.
+      expect(wallDrawCount).toBeGreaterThan(0);
+      expect(wallDrawCount).toBeLessThan(strongCount);
+    });
+
+    // -----------------------------------------------------------------------
+    // The "measurably outperforms" half of the acceptance criterion.
+    // MEASURED (seeds 3001-3010, weights {wall:20,question:1,objection:1},
+    // real corpus): full-pool mean impenetrability 4.1719 / landing_line
+    // 4.1942 (n=896); drawn mean impenetrability ~4.41 / landing_line ~4.48
+    // (n~61) — both clear margins over the unfiltered-pool baseline.
+    // -----------------------------------------------------------------------
+    it("mean impenetrability and landing-line scores of drawn Wall slots are higher than a random draw from the full pool", async () => {
+      const { pools, source } = await loadFormatPools(premisesDir, gatePools);
+      const wallEntries = pools.wall as WallPoolEntry[];
+      const mean = (xs: number[]) => xs.reduce((s, x) => s + x, 0) / xs.length;
+
+      const fullMeanImpenetrability = mean(wallEntries.map((e) => e.rubric!.impenetrability_score));
+      const fullMeanLandingLine = mean(wallEntries.map((e) => e.rubric!.landing_line_score));
+
+      const scoredByCardId = new Map(wallEntries.map((e) => [e.card_id, e]));
+      const priorUsedCardIds = new Set<string>();
+      let readThroughCursor = 0;
+      const drawn: WallPoolEntry[] = [];
+
+      for (let week = 1; week <= 10; week++) {
+        const schedule = generateWeek({
+          weekNumber: week,
+          seed: 3000 + week,
+          cards,
+          pools,
+          poolSource: source,
+          priorUsedCardIds,
+          readThroughBook: "enchiridion",
+          readThroughStartIndex: readThroughCursor,
+          weights: { wall: 20, question: 1, objection: 1 },
+        });
+        for (const slot of schedule.slots) {
+          priorUsedCardIds.add(slot.card_id);
+          if (!slot.read_through && slot.content.format === "wall") {
+            const scored = scoredByCardId.get(slot.card_id);
+            if (scored) drawn.push(scored);
+          }
+        }
+        readThroughCursor += schedule.slots.filter((s) => s.read_through).length;
+      }
+
+      expect(drawn.length).toBeGreaterThan(20); // a real sample, not noise
+      const drawnMeanImpenetrability = mean(drawn.map((e) => e.rubric!.impenetrability_score));
+      const drawnMeanLandingLine = mean(drawn.map((e) => e.rubric!.landing_line_score));
+
+      expect(drawnMeanImpenetrability).toBeGreaterThan(fullMeanImpenetrability);
+      expect(drawnMeanLandingLine).toBeGreaterThan(fullMeanLandingLine);
+      // Every drawn entry clears the strong floor on both axes by
+      // construction — asserted directly, not just implied by the means.
+      expect(Math.min(...drawn.map((e) => e.rubric!.impenetrability_score))).toBeGreaterThanOrEqual(
+        WALL_STRONG_IMPENETRABILITY_MIN,
+      );
+      expect(Math.min(...drawn.map((e) => e.rubric!.landing_line_score))).toBeGreaterThanOrEqual(WALL_STRONG_LANDING_LINE_MIN);
+    });
+  });
+
+  describe("reserve fallback (small synthetic pool forced to exhaustion)", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("draws every strong entry before touching reserve, and logs a warning naming the reserve fallback once strong is exhausted", () => {
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+
+      // Real gate survivors (discourses-49-002..011, all epictetus) — using
+      // real cards/landing lines keeps `assertFaithful` honest; only the
+      // synthetic `rubric` field is hand-built.
+      const base = gatePools.wall.filter((e) => e.book_slug === "discourses" && e.card_id.startsWith("discourses-49-"));
+      expect(base.length).toBeGreaterThanOrEqual(8);
+
+      const strongIds = new Set([base[0].card_id, base[1].card_id]);
+      const customWall: WallPoolEntry[] = base.slice(0, 8).map((entry) => ({
+        ...entry,
+        rubric: strongIds.has(entry.card_id)
+          ? { impenetrability_score: 5, landing_line_score: 5 }
+          : { impenetrability_score: 3, landing_line_score: 3 }, // below both thresholds — reserve
+      }));
+
+      const pools: FormatPools = { wall: customWall, question: gatePools.question, objection: gatePools.objection };
+
+      const schedule = generateWeek({
+        weekNumber: 1,
+        seed: 42,
+        cards,
+        pools,
+        poolSource: { wall: "scored", question: "gate-only", objection: "gate-only" },
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 100, question: 0, objection: 0 }, // force every slot 2 draw to be Wall
+      });
+
+      const drawnWallCardIds = schedule.slots
+        .filter((s) => !s.read_through && s.content.format === "wall")
+        .map((s) => s.card_id);
+      expect(drawnWallCardIds.length).toBe(7); // one Wall slot 2 per day, 7 days
+
+      const drawnStrongCount = drawnWallCardIds.filter((id) => strongIds.has(id)).length;
+      const drawnReserveCount = drawnWallCardIds.length - drawnStrongCount;
+
+      // Both strong entries were drawn (only 2 exist, and 7 draws from an
+      // 8-entry pool must exhaust them) and reserve fills every draw after.
+      expect(drawnStrongCount).toBe(2);
+      expect(drawnReserveCount).toBe(5);
+
+      // The warning fired, naming the reserve fallback and how many strong
+      // entries remained (0 — that's why it fell back at all).
+      expect(warnSpy).toHaveBeenCalled();
+      const warnMessages = warnSpy.mock.calls.map((call) => String(call[0]));
+      expect(warnMessages.some((m) => /Wall strong pool exhausted/i.test(m))).toBe(true);
+      expect(warnMessages.some((m) => /0 strong entries remain/i.test(m))).toBe(true);
+    });
   });
 });

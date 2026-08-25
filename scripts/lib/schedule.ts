@@ -64,7 +64,9 @@ import {
   type ObjectionEntry,
 } from "./premises.js";
 import { checkFaithfulness } from "./premises-scoring.js";
+import type { WallRubricResult } from "./premises-scoring.js";
 import { parsePoolFile } from "./pool-file.js";
+import { logger } from "./logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -122,6 +124,63 @@ export const DEFAULT_FORMAT_WEIGHTS: FormatWeights = { wall: 7, question: 6, obj
 export const READ_THROUGH_FALLBACK_ORDER: readonly ScheduleFormat[] = ["wall", "question", "objection"];
 
 export const DEFAULT_MAX_OBJECTION_PER_WEEK = 1;
+
+/**
+ * T21: Wall selection must respect T07's LLM rubric scores, not just the
+ * mechanical gate — a scored `wall.json` carries `impenetrability_score`
+ * and `landing_line_score` (both 1-5, see `WALL_SCORE_MIN`/`MAX` in
+ * ./premises-scoring.js) per entry, but `generateWeek` never looked at
+ * them; `selectWallBalanced` drew uniformly (weighted only by author) from
+ * every gate survivor, including the ~24% the rubric itself already marked
+ * weak. An entry counts as "strong" only when it clears BOTH axes — a
+ * cleanly-cut landing line pulled from an original that doesn't actually
+ * look impenetrable is still a weak Wall post, and vice versa.
+ *
+ * Measured over the real 896-entry scored pool
+ * (`content/social/premises/wall.json`, T07/T08/T11's output):
+ * `impenetrability_score` distribution `{2:1, 3:80, 4:579, 5:236}`,
+ * `landing_line_score` distribution `{1:4, 2:53, 3:92, 4:363, 5:384}`.
+ * `>= 4` on both axes covers 679 of 896 entries (~76%); the remaining 217
+ * (~24%) are reserve — exactly the plan's own framing of the weak
+ * remainder as RESERVE, not discarded (see the plan's T21 index note: "if
+ * the wall reads as ordinary prose the viewer just does not bother").
+ *
+ * Exported (not inlined into `isStrongWallEntry`) so the threshold is
+ * independently tunable and directly assertable in tests.
+ */
+export const WALL_STRONG_IMPENETRABILITY_MIN = 4;
+export const WALL_STRONG_LANDING_LINE_MIN = 4;
+
+/**
+ * A Wall pool entry that MAY carry a scored rubric — the loose shape both
+ * `RankedWallEntry` (gate-only, no rubric) and a scored `ScoredWallEntry`
+ * (./premises-batch.js: `RankedWallEntry & { rubric: WallRubricResult }`)
+ * satisfy, without importing the batch module here (schedule.ts has no
+ * business depending on batch-orchestration types for a shape this small).
+ */
+export type WallPoolEntry = RankedWallEntry & { rubric?: Pick<WallRubricResult, "impenetrability_score" | "landing_line_score"> };
+
+/**
+ * True when a Wall pool entry is "strong" enough to draw from before
+ * touching reserve (see `WALL_STRONG_IMPENETRABILITY_MIN`/
+ * `WALL_STRONG_LANDING_LINE_MIN`'s doc comment for the threshold and its
+ * measured coverage).
+ *
+ * An entry with NO `rubric` at all — the gate-only fallback pool
+ * (`rankWall`'s raw output, used whenever `content/social/premises/
+ * wall.json` is absent or empty — see `loadFormatPools`) — is treated as
+ * eligible/strong BY DEFAULT, not as sub-strong: there is no rubric score
+ * to fail, and the mechanical-gate path must keep scheduling normally with
+ * zero LLM calls, exactly as it did before this task. Only a PRESENT
+ * rubric that scores below either threshold demotes an entry to reserve.
+ */
+export function isStrongWallEntry(entry: WallPoolEntry): boolean {
+  if (!entry.rubric) return true;
+  return (
+    entry.rubric.impenetrability_score >= WALL_STRONG_IMPENETRABILITY_MIN &&
+    entry.rubric.landing_line_score >= WALL_STRONG_LANDING_LINE_MIN
+  );
+}
 
 /**
  * T16: the pilot's default read-through, applied by `generateWeek` whenever
@@ -774,8 +833,29 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
 
     let entry: WallEntry | QuestionEntry | ObjectionEntry;
     if (chosenFormat === "wall") {
+      // T21: draw from the STRONG subset first (both rubric scores >= the
+      // named threshold, or no rubric at all — see `isStrongWallEntry`);
+      // fall back to reserve only once strong is exhausted (which, because
+      // `wallPool` already excludes every card used in a prior week via
+      // `allUsed`/`priorUsedCardIds`, naturally accounts for strong entries
+      // consumed across accumulated prior weeks too, not just this one).
+      // Both branches call `selectWallBalanced` exactly once with exactly
+      // one requested entry — same as before this task — so this consumes
+      // the same fixed number of rng draws (2: one author roulette pick,
+      // one within-bucket index pick) regardless of which pool it draws
+      // from, preserving byte-identical regeneration from a seed.
       const remaining = wallPool.filter((e) => !allUsed.has(e.card_id));
-      [entry] = selectWallBalanced(remaining, wallAuthorWeightsMap, 1, rng);
+      const strongRemaining = remaining.filter(isStrongWallEntry);
+      let wallSourcePool = strongRemaining;
+      if (strongRemaining.length === 0) {
+        const reserveRemaining = remaining.filter((e) => !isStrongWallEntry(e));
+        logger.warn(
+          `generateWeek: Wall strong pool exhausted for week ${weekNumber} day ${day} — 0 strong entries remain; ` +
+            `falling back to ${reserveRemaining.length} reserve entr${reserveRemaining.length === 1 ? "y" : "ies"}.`,
+        );
+        wallSourcePool = reserveRemaining;
+      }
+      [entry] = selectWallBalanced(wallSourcePool, wallAuthorWeightsMap, 1, rng);
     } else if (chosenFormat === "question") {
       const remaining = questionPool.filter((e) => !allUsed.has(e.card_id));
       entry = uniformPick(remaining, rng);

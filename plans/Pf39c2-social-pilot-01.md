@@ -1348,3 +1348,75 @@ the next-ranked passage — Book 2 carries disproportionately recognisable mater
   scripts/lib/__tests__/claude.test.ts` — 13/13 green (10 baseline + 3 new). `npm test` — **773 pipeline tests**
   (757 baseline + 16 new) + **95 web unit tests**, all green, confirming no regression to T01-T19 or any other
   consumer. Did not re-run the scoring batch, per the task's explicit instruction.
+
+Added 2026-08-25 after generating week 1 as a probe (not committed). Two gaps that only appear when you read the
+actual posts: the rubric scores are computed but never gate selection, and passing the drift check is not the same
+as being worth posting.
+
+- [x] T21: Make Wall selection respect the rubric scores. T07 scored all 896 entries but nothing filters or ranks
+  by them — 679 are strong (impenetrability >=4 AND landing_line >=4), so 24% of the pool is sub-strong and freely
+  drawable. The index already frames the weak remainder as RESERVE: "if the wall reads as ordinary prose the viewer
+  just does not bother." Prefer strong entries; fall back to reserve only when strong is exhausted, and log when
+  that happens. Must stay deterministic and byte-identical for a seed. Acceptance: no sub-strong entry is drawn
+  while strong entries remain; a scored pool measurably outperforms the gate-only fallback on mean scores.
+  **Note:** Added `WALL_STRONG_IMPENETRABILITY_MIN`/`WALL_STRONG_LANDING_LINE_MIN` (both 4, exported/tunable),
+  `WallPoolEntry` (`RankedWallEntry & { rubric?: Pick<WallRubricResult, "impenetrability_score"|"landing_line_score"> }`
+  — a loose shape both a gate-only `RankedWallEntry` and a scored `ScoredWallEntry` satisfy, without importing the
+  batch module's type into schedule.ts), and `isStrongWallEntry` to `scripts/lib/schedule.ts`. **The "gate-only pools
+  have no rubric" requirement is the load-bearing case:** `isStrongWallEntry` returns `true` whenever `entry.rubric`
+  is absent — there is no score to fail, so the mechanical-gate path (used whenever T11 hasn't run, or a pool file is
+  empty — see `loadFormatPools`) schedules exactly as before, with zero filtering. Only a PRESENT rubric scoring
+  below either threshold demotes an entry to reserve. In `generateWeek`'s slot-2 Wall branch, `remaining` (the
+  already-`allUsed`-filtered pool, which by construction already excludes every card consumed in prior weeks via
+  `priorUsedCardIds`) is split into `strongRemaining`/`reserveRemaining`; `selectWallBalanced` is called on
+  `strongRemaining` whenever it's non-empty, falling back to `reserveRemaining` only when it's empty, with
+  `logger.warn` naming the week/day and explicitly stating "0 strong entries remain" plus the reserve count being
+  drawn from. **Determinism preserved by construction, not by luck:** both branches call `selectWallBalanced` exactly
+  once requesting exactly one entry, so exactly 2 rng draws (one author roulette pick, one within-bucket index pick)
+  are consumed regardless of which pool (strong or reserve) is passed or how large it is — the rng-consumption count
+  depends only on which branch is taken (itself a deterministic function of `allUsed`/seed/weights/prior weeks), never
+  on pool CONTENTS. All 98 pre-existing `schedule.test.ts` tests (byte-identity, no-cross-week-reuse, multi-week
+  chains) pass completely UNCHANGED, because every one of them uses `gatePools.wall` (`rankWall`'s raw, rubric-less
+  output) — with no `rubric` field anywhere, `strongRemaining` is always the WHOLE remaining pool and
+  `reserveRemaining` is always empty, so `wallSourcePool` is byte-identical to the pre-T21 `remaining` on every call;
+  the gate-only path is provably a no-op wrapper around the old behavior, not just tested to currently match it.
+  **T05/T17's author balancing is unchanged "on top of" this, per the task's own framing** — `wallAuthorWeightsMap`
+  is still solved once, over the FULL (unfiltered) `pools.wall`, exactly as before; only the pool `selectWallBalanced`
+  draws FROM is restricted to strong. **Combined author mix, measured two ways:** (1) isolated 200-draw comparison
+  (`selectWallBalanced` called directly on the full 896-entry scored pool vs. the 679-entry strong subset, same seed,
+  same solved weights) produced BYTE-IDENTICAL author counts (epictetus 2/200, marcus-aurelius 100/200, seneca
+  98/200) — because `wallAuthorWeights` solved epictetus's weight to ~0.014 for the real corpus's current scored
+  question pool (heavily suppressed already, pre-existing T05/T20 behavior, not something this task changed), the
+  200-draw run never got close enough to depleting either author's strong bucket for the restriction to change which
+  author gets picked at any step; (2) the raw per-author SHARE of the pool itself does shift some (full 896: epictetus
+  33.9% / marcus-aurelius 25.2% / seneca 40.8%; strong 679: epictetus 28.7% / marcus-aurelius 27.7% / seneca 43.6%)
+  but every author still has 188-296 strong entries — far more than any realistic multi-week draw count — so this
+  shift is NOT material to the schedule's realized combined author mix; reported per the task's explicit "if
+  restricting to strong materially shifts it, say so" instruction — it does not, measurably. **The "measurably
+  outperforms" acceptance, measured against the real 896-entry scored pool** (`content/social/premises/wall.json`):
+  full-pool mean `impenetrability_score` 4.1719 / mean `landing_line_score` 4.1942 (n=896); strong-subset (679, ~76%
+  of the pool) means 4.2916 / 4.5081; a 10-week wall-dominant simulated draw (seeds 3001-3010, weights
+  `{wall:20,question:1,objection:1}`, real `enchiridion` read-through) drew 61 Wall slot-2 entries with means 4.4098 /
+  4.4754 — both clear margins over the unfiltered-pool baseline, and every drawn entry's scores clear the strong floor
+  by construction (asserted directly, not just implied by the means). Added 7 new tests to `schedule.test.ts`
+  (`describe("T21: Wall selection respects rubric scores")`): threshold-constant values; `isStrongWallEntry`'s
+  both-axes requirement (4 boundary cases); the gate-only "no rubric == strong" invariant asserted directly over the
+  real `gatePools.wall`, plus a full-week gate-only smoke test; a real-scored-pool multi-week test asserting every
+  drawn Wall slot is strong while strong remains (with an explicit sanity check that the chain drew far fewer Wall
+  slots than the strong pool's own size, so the assertion isn't vacuously true from exhaustion); the mean-score
+  comparison test (drawn vs. full-pool baseline, both axes, plus the strong-floor check on every drawn entry); and a
+  forced-exhaustion test against a small synthetic 8-entry pool (2 strong + 6 reserve, built from real
+  `discourses-49-*` gate survivors so `assertFaithful` stays honest) with `weights: {wall:100}` forcing all 7 slot-2
+  draws to Wall — asserts both strong entries are drawn, all 5 remaining draws come from reserve, and
+  `logger.warn` fires naming both "Wall strong pool exhausted" and "0 strong entries remain" (spied via
+  `vi.spyOn(logger, "warn")`, restored in `afterEach`). `npx vitest run scripts/lib/__tests__/schedule.test.ts` —
+  105/105 green (98 baseline + 7 new). `npm test` — **780 pipeline tests** (773 baseline + 7 new) + **95 web unit
+  tests**, all green, confirming no regression to T01-T20 or any other consumer. No API calls made; the committed
+  `content/social/premises/wall.json` was read but not re-scored.
+- [ ] T22: Add a STOPPING-POWER dimension to the Question rubric, separate from drift. Real week-1 slots that
+  passed drift correctly but are not postable: "Do you have reason?" -> "Yes, I do." (question meaningless
+  standalone, answer has no substance) and "Can't serve in the army?" -> "Then run for office." (presupposes an
+  ancient situation no viewer is in). Score three things the drift check does not: the question's standalone
+  intelligibility, the answer's substance, and whether the premise applies to a modern viewer. Re-score the 89
+  (~$0.05). Acceptance: both quoted pairs are rejected; the surviving pool is a MEASURED number and still covers
+  4 weeks (>=28).
