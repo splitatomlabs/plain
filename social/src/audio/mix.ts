@@ -514,10 +514,53 @@ async function mixTracks(bedTrackPath: string, narrationTrackPath: string, outPa
 	]);
 }
 
-async function applyTwoPassLoudnormAndEncode(mixedPath: string, durationSec: number, outPath: string): Promise<LoudnessMeasurement> {
+/**
+ * Thrown by `mix()` when ffmpeg's first `loudnorm` pass measures a mix as
+ * digital silence (a non-finite `measured_I`/`measured_TP`/`measured_thresh`
+ * — ffmpeg's EBU R128 gating drops any track whose integrated loudness
+ * falls below its absolute silence threshold, reporting `-inf` rather than
+ * a real number). A silent mix is always a bug worth stopping on — see F02,
+ * `plans/Pf39c2-social-pilot-02.md` — so `mix()` never substitutes a
+ * default measurement and continues; it fails loudly here, before pass 2
+ * ever hands `-inf` to ffmpeg's `measured_I` option (which fails on its own,
+ * but with an opaque "Result too large" parse error rather than an
+ * explanation).
+ */
+export class SilentMixError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'SilentMixError';
+	}
+}
+
+/** True for any value ffmpeg's loudnorm JSON can report that isn't a finite number (`"-inf"`, `"nan"`, etc). */
+function isNonFiniteMeasurement(value: string): boolean {
+	return !Number.isFinite(Number(value));
+}
+
+async function applyTwoPassLoudnormAndEncode(
+	mixedPath: string,
+	durationSec: number,
+	outPath: string,
+	bedPath: string
+): Promise<LoudnessMeasurement> {
 	// Pass 1: measure.
 	const { stderr } = await runFfmpeg(loudnormAnalysisArgs(mixedPath));
 	const pass1 = parseLoudnormJson(stderr);
+
+	if (
+		isNonFiniteMeasurement(pass1.input_i) ||
+		isNonFiniteMeasurement(pass1.input_tp) ||
+		isNonFiniteMeasurement(pass1.input_thresh)
+	) {
+		throw new SilentMixError(
+			`mix: the mix of bed "${path.basename(bedPath)}" over ${durationSec.toFixed(1)}s measured as digital ` +
+				`silence on ffmpeg's first loudnorm pass (measured_I=${pass1.input_i}, measured_TP=${pass1.input_tp}, ` +
+				`measured_thresh=${pass1.input_thresh}). This is not a measurement glitch — the mixed audio really is ` +
+				`silent or effectively silent (e.g. a bed held at its silent floor for the whole duration with no ` +
+				`audible narration). Refusing to encode a silent post rather than substituting a default loudness value.`
+		);
+	}
 
 	// Pass 2: apply the pass-1 measurement, then encode to 48kHz stereo AAC.
 	const loudnormFilter =
@@ -575,7 +618,7 @@ export async function mix(input: MixInput): Promise<MixResult> {
 		await renderNarrationTrack(narrationPath, durationSec, narrEnv, narrationTrackPath);
 		await mixTracks(bedTrackPath, narrationTrackPath, mixedPath);
 
-		const measured = await applyTwoPassLoudnormAndEncode(mixedPath, durationSec, outPath);
+		const measured = await applyTwoPassLoudnormAndEncode(mixedPath, durationSec, outPath, bedPath);
 		const outDurationMs = await ffprobeDurationMs(outPath);
 
 		return { outPath, durationMs: outDurationMs, measured };

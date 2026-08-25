@@ -49,7 +49,7 @@ import {
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
 import { computeEligibleOpenings, type WallOpening } from './remotion/wall-openings.js';
-import { computeWallTiming, FPS } from './remotion/wall-timing.js';
+import { computeWallTiming, WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
 import { computeQuestionTiming } from './remotion/question-timing.js';
 import { computeObjectionTiming, OBJECTION_REPLY_LINE_COUNT } from './remotion/objection-timing.js';
 import { bedPath } from './audio/beds.js';
@@ -330,13 +330,25 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 	}
 }
 
-/** The Wall's silent phases (the moving wall + the landing line hold), in ms — see the module doc comment. */
-function wallSilentSpans(plan: WallPlan): TimeSpan[] {
-	const timing = computeWallTiming({
-		originalExcerpt: plan.originalExcerpt,
-		plainLines: plan.plainLines
-	});
-	return [{ startMs: 0, endMs: (timing.landingLine.endFrame / FPS) * 1000 }];
+/**
+ * The Wall's silent phases (the moving wall + the mandated 3s landing-line
+ * hold), in ms — see the module doc comment.
+ *
+ * Deliberately uses the FIXED `WALL_FRAMES + LANDING_LINE_FRAMES` boundary
+ * rather than `computeWallTiming(...).landingLine.endFrame`: when a card has
+ * no plain-passage lines left after the landing line, `computeWallTiming`
+ * extends `landingLine.endFrame` to absorb the 15s duration-floor pad (see
+ * `duration-bounds.ts`'s `padToMinimumDuration`) so the PICTURE keeps
+ * holding the landing line for the full post. That padding is not part of
+ * the documented "silent, motionless" 5.5s window — it exists purely to
+ * clear the MP4 duration floor. Silencing the bed for that padding too
+ * meant the whole clip (bed included) went silent for any 0-plain-line Wall
+ * card, which ffmpeg's loudnorm then measures as digital silence
+ * (`measured_I: -inf`) on its first pass (see F02,
+ * `plans/Pf39c2-social-pilot-02.md`).
+ */
+function wallSilentSpans(): TimeSpan[] {
+	return [{ startMs: 0, endMs: ((WALL_FRAMES + LANDING_LINE_FRAMES) / FPS) * 1000 }];
 }
 
 // ---------------------------------------------------------------------------
@@ -484,7 +496,7 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 
 		console.log(`Mixing audio (bed: ${plan.bedId})...`);
 		const mixedAudioPath = path.join(workDir, 'mixed.m4a');
-		const silentSpans = plan.formatPlan.format === 'wall' ? wallSilentSpans(plan.formatPlan) : [];
+		const silentSpans = plan.formatPlan.format === 'wall' ? wallSilentSpans() : [];
 		await mix({
 			bedPath: bedPath(plan.bedId),
 			narrationPath: narrationAudioPath,

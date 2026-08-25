@@ -131,6 +131,19 @@ looks like Plain.
   openings). Fixed inside the T17 round: the counter no longer renders over a MOVING archaic wall in any format —
   it appears only on the still payoff frames, where a viewer actually reads it. `counter.test.ts`'s pixel-level
   no-reflow proof was retargeted, not weakened.
+- [x] F02: Rendering week 1 end to end failed 3 of 14 posts. Two are `mix()` dying on ffmpeg's second loudnorm
+  pass with `Value -inf for parameter 'measured_I' out of range` — the first pass measured DIGITAL SILENCE. Both
+  failures used `bed-03-e-minor7`. Find the root cause (is bed-03 actually silent through the mix path, or does the
+  envelope/silent-span handling zero the whole track?) and fix it, then make the mixer fail with a clear, named
+  error when a first-pass measurement is non-finite instead of surfacing raw ffmpeg output.
+- [ ] F03: The third week-1 failure is a Wall card whose composition computes to 1845 frames (61.5s), over the
+  59s ceiling, so `padToMinimumDuration` refuses it AT RENDER TIME. Refusing is correct; failing this late is not —
+  the scheduler can hand the renderer a card that can never be rendered. Move the ceiling into the Wall gate
+  (beside the legibility floor) so an over-long card is rejected when the pool is surveyed, and have `surveyWallPool`
+  report how many cards the ceiling excludes.
+- [ ] F04: The Question's and The Objection's timing modules do not accept `narrationTimings` — only The Wall does
+  (flagged by T18). Once T14's voices land, real narration for those two formats can drift against their fixed
+  holds. Blocked behind T14; do not build until voices exist.
 
 ## Deferred
 **Three Voices** — only 15-37 usable triads exist. Revisit after a validated `pull_quote` field exists.

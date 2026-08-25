@@ -9,6 +9,7 @@ import { bedPath } from '../beds.js';
 import {
 	BED_DUCK_DB,
 	LOUDNESS_TOLERANCE_LU,
+	SilentMixError,
 	TARGET_LUFS,
 	TARGET_TRUE_PEAK_DBTP,
 	assertLoudnessWithinTolerance,
@@ -260,6 +261,106 @@ describe('mix', () => {
 				const narratedDb = meanVolumeDb(outPath, 2, 6);
 				expect(silentDb).toBeLessThan(-45);
 				expect(silentDb).toBeLessThan(narratedDb - 20);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
+	/**
+	 * Regression for F02 (`plans/Pf39c2-social-pilot-02.md`): a music-only
+	 * (no narration) Wall render whose card has no plain-passage lines left
+	 * after the landing line ends up with `durationMs` padded to the 15s
+	 * floor and a `silentSpans` window that covers only the documented
+	 * WALL_FRAMES+LANDING_LINE_FRAMES 5.5s phase, not the padding after it
+	 * (that was the bug — see `cli.ts`'s `wallSilentSpans`). Both real-world
+	 * failures used `bed-03-e-minor7`, so this pins that exact bed.
+	 */
+	describe('bed-03-e-minor7, no narration, padded-duration Wall shape (F02 regression)', () => {
+		const DURATION_MS = 15_000; // MIN_POST_DURATION_FRAMES (450 @ 30fps)
+		let result: Awaited<ReturnType<typeof mix>>;
+		let outPath: string;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'f02-regression-mix.m4a');
+			result = await mix({
+				bedPath: bedPath('bed-03-e-minor7'),
+				narrationPath: undefined,
+				durationMs: DURATION_MS,
+				narrationSpans: [],
+				// The wall + landing line's own fixed 5.5s window — never the
+				// full (possibly padded) duration.
+				silentSpans: [{ startMs: 0, endMs: 5500 }],
+				outPath
+			});
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			'succeeds rather than throwing on a non-finite pass-1 measurement',
+			() => {
+				expect(result.measured.integratedLufs).toBeGreaterThan(-70);
+			},
+			MIX_TIMEOUT_MS
+		);
+
+		it(
+			'measured integrated loudness is within tolerance of TARGET_LUFS',
+			() => {
+				const delta = Math.abs(result.measured.integratedLufs - TARGET_LUFS);
+				expect(delta).toBeLessThanOrEqual(LOUDNESS_TOLERANCE_LU);
+			},
+			MIX_TIMEOUT_MS
+		);
+
+		it(
+			'the bed is clearly audible after the silent 5.5s window',
+			() => {
+				const afterSilenceDb = meanVolumeDb(outPath, 7, 14);
+				expect(afterSilenceDb).toBeGreaterThan(-45);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
+	describe('a deliberately all-silent input throws SilentMixError, not a raw ffmpeg parse failure', () => {
+		const DURATION_MS = 15_000;
+		let outPath: string;
+		let thrown: unknown;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'all-silent-mix.m4a');
+			try {
+				// silentSpans covering the FULL duration reproduces the exact
+				// pre-fix bug shape: the bed is held at SILENCE_FLOOR_DB for the
+				// entire mix, which ffmpeg's loudnorm measures as -inf on pass 1.
+				await mix({
+					bedPath: bedPath('bed-03-e-minor7'),
+					narrationPath: undefined,
+					durationMs: DURATION_MS,
+					narrationSpans: [],
+					silentSpans: [{ startMs: 0, endMs: DURATION_MS }],
+					outPath
+				});
+			} catch (error) {
+				thrown = error;
+			}
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			'throws a SilentMixError (not a generic/ffmpeg-shaped error)',
+			() => {
+				expect(thrown).toBeInstanceOf(SilentMixError);
+			},
+			MIX_TIMEOUT_MS
+		);
+
+		it(
+			"the error names the bed and the mix's duration, and never quotes raw ffmpeg option-parsing output",
+			() => {
+				const message = (thrown as Error).message;
+				expect(message).toContain('bed-03-e-minor7');
+				expect(message).toContain('15.0s');
+				expect(message).not.toMatch(/Result too large/);
+				expect(message).not.toMatch(/Error applying option/);
 			},
 			MIX_TIMEOUT_MS
 		);
