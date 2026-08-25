@@ -81,7 +81,7 @@ looks like Plain.
   Acceptance: renders from a >=150-word card; the cut lands as a somatic drop when watched on a phone.
 - [x] T06: Add the Wall layout gate — auto-fit to exactly one screen and REJECT any card that cannot be set at
   >=14px equivalent (396 cards run over 150 words). Acceptance: an over-long card is rejected, not rendered illegibly.
-- [ ] T07: Build **The Question**. Frame 0.0 is the question alone, still and readable. Then the archaic original
+- [~] T07: Build **The Question**. Frame 0.0 is the question alone, still and readable. Then the archaic original
   arrives as the moving wall; then it drops away and the plain answer resolves in stillness. **There is no wrong
   answer** — it must never read as testing the viewer. Acceptance: renders from the validated pool; the question is
   legible and answerable within 1.5s.
@@ -92,7 +92,7 @@ looks like Plain.
   format of its own. PLAIN TEXT in body ink, never a styled or accent-coloured progress bar: an animated accent bar
   becomes brand furniture, which is TikTok watermark-rule territory. Acceptance: the overlay composes over all three
   formats without reflowing them, and reads as a page number rather than branding.
-- [~] T10: Implement the encoder. Acceptance: ffprobe confirms High/L4.0/yuv420p/1080x1920/30fps/AAC 48kHz and moov
+- [x] T10: Implement the encoder. Acceptance: ffprobe confirms High/L4.0/yuv420p/1080x1920/30fps/AAC 48kHz and moov
   before mdat.
 - [x] T11: Generate 5-8 calm ambient loopable instrumental beds, 60s each, no vocals. Run once, manually; commit the
   audio plus a README recording provider, licence and date. Acceptance: 5-8 tracks committed with provenance.
