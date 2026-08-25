@@ -85,10 +85,10 @@ looks like Plain.
   arrives as the moving wall; then it drops away and the plain answer resolves in stillness. **There is no wrong
   answer** — it must never read as testing the viewer. Acceptance: renders from the validated pool; the question is
   legible and answerable within 1.5s.
-- [ ] T08: Build **The Objection**. Frame 0.0 is the objection alone in quotation marks in the author's accent
+- [x] T08: Build **The Objection**. Frame 0.0 is the objection alone in quotation marks in the author's accent
   colour. Lead with On Anger. Cap the reply at its first two sentences and REJECT rather than truncate mid-argument.
   Acceptance: renders from the gated pool; no reply is cut mid-sentence.
-- [ ] T09: Implement the **read-through counter overlay** — a "Card 1 of 72" label any composition can carry, not a
+- [~] T09: Implement the **read-through counter overlay** — a "Card 1 of 72" label any composition can carry, not a
   format of its own. PLAIN TEXT in body ink, never a styled or accent-coloured progress bar: an animated accent bar
   becomes brand furniture, which is TikTok watermark-rule territory. Acceptance: the overlay composes over all three
   formats without reflowing them, and reads as a page number rather than branding.

@@ -7,6 +7,9 @@ import { Wall, type WallProps } from './Wall.js';
 import { computeQuestionTiming } from './question-timing.js';
 import { assertQuestionRenderable } from './question-gate.js';
 import { Question, type QuestionProps } from './Question.js';
+import { computeObjectionTiming } from './objection-timing.js';
+import { assertObjectionRenderable } from './objection-gate.js';
+import { Objection, type ObjectionProps } from './Objection.js';
 
 // 1080x1920 @ 30fps — the vertical story/reel frame every format in this
 // workspace renders to (see `social/src/render/sizes.ts`).
@@ -28,6 +31,12 @@ const defaultQuestionProps: QuestionProps = {
 	answer: 'One person cannot really master another.',
 	originalExcerpt: 'This is placeholder archaic text standing in for a real card excerpt.',
 	author: 'epictetus'
+};
+
+const defaultObjectionProps: ObjectionProps = {
+	objection: 'Placeholder objection standing in for a real card excerpt.',
+	reply: 'This is a placeholder first sentence. This is a placeholder second sentence.',
+	author: 'seneca'
 };
 
 export const RemotionRoot: React.FC = () => {
@@ -76,6 +85,29 @@ export const RemotionRoot: React.FC = () => {
 					assertWallCardRenderable(props.originalExcerpt);
 					return {
 						durationInFrames: computeQuestionTiming({ question: props.question }).totalFrames
+					};
+				}}
+			/>
+			<Composition<any, ObjectionProps>
+				id="Objection"
+				component={Objection}
+				width={WIDTH}
+				height={HEIGHT}
+				fps={FPS}
+				durationInFrames={computeObjectionTiming().totalFrames}
+				defaultProps={defaultObjectionProps}
+				calculateMetadata={({ props }) => {
+					// Runs before any frame renders — a pool-invalidated card, a
+					// reply that cannot be cleanly capped at two sentences without
+					// truncating mid-argument, or text that cannot be set legibly
+					// throws here, failing composition selection and the render
+					// outright. See `objection-gate.ts`.
+					assertObjectionRenderable({
+						objection: props.objection,
+						reply: props.reply
+					});
+					return {
+						durationInFrames: computeObjectionTiming().totalFrames
 					};
 				}}
 			/>

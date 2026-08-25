@@ -95,3 +95,40 @@ export {
 	type QuestionGateInput,
 	type QuestionGateResult
 } from './question-gate.js';
+export { Objection, type ObjectionProps } from './Objection.js';
+export {
+	computeObjectionTiming,
+	computeObjectionLayout,
+	quoteObjection,
+	OBJECTION_MIN_SECONDS,
+	OBJECTION_HOLD_SECONDS,
+	OBJECTION_HOLD_FRAMES,
+	OBJECTION_BOX_PADDING_X,
+	OBJECTION_BOX_WIDTH,
+	OBJECTION_BOX_HEIGHT,
+	OBJECTION_MIN_FONT,
+	OBJECTION_MAX_FONT,
+	OBJECTION_LINE_HEIGHT_RATIO,
+	OBJECTION_REPLY_LINE_COUNT,
+	OBJECTION_REPLY_MIN_SECONDS,
+	OBJECTION_REPLY_LINE_SECONDS,
+	OBJECTION_REPLY_LINE_FRAMES,
+	type ObjectionLayout,
+	type ObjectionPhaseWindow,
+	type ObjectionTimingSchedule
+} from './objection-timing.js';
+export {
+	gateObjectionCard,
+	assertObjectionRenderable,
+	orderObjectionPool,
+	surveyObjectionPool,
+	OBJECTION_REFERENCE_VIEWPORT_WIDTH,
+	OBJECTION_MIN_LEGIBLE_FONT_PX,
+	OBJECTION_REPLY_MIN_LEGIBLE_FONT_PX,
+	DISCOURSE_CONNECTIVES,
+	type ObjectionGateInput,
+	type ObjectionGateResult,
+	type ObjectionReplyLineLayout,
+	type ObjectionPoolSurveyEntry,
+	type ObjectionPoolSurveyResult
+} from './objection-gate.js';
