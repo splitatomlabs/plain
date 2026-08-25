@@ -117,7 +117,7 @@ daily job makes no LLM call at post time.
   the "That man..."/"Kings..." cases updated to their new expected outcomes.
   `npx vitest run scripts/lib/__tests__/premises.test.ts` — 67/67 green. `npx vitest run` (full pipeline suite) —
   323/323 green (312 baseline + 11 new tests from this round).
-- [ ] T03: Implement **visual-archaism ranking** for The Wall. Three deterministic sub-types:
+- [x] T03: Implement **visual-archaism ranking** for The Wall. Three deterministic sub-types:
   **Thou Wall (222)** — >=3 of thou/thee/thy/thine/hath/doth/dost/art/shalt/wilt/whither/wherefore/whereby/
   whensoever/perchance/nay/yea; **Cascade (204)** — >=3 semicolons; **Scene (176)** — >=2 quotation marks.
   The remaining ~670 are reserve.
@@ -126,6 +126,35 @@ daily job makes no LLM call at post time.
   `Grade 14` needs an original grade high enough to be worth showing. Entries failing both can only take the
   standard opening. Acceptance: sub-type counts reproduce, every entry carries its eligible openings, and the
   scheduler can weight by both.
+  **Note:** Added `ARCHAIC_MARKERS`, `classifyWallSubTypes`, `originalReadingGrade`, `eligibleWallOpenings`,
+  `rankWall`, and the `WallSubType`/`WallOpening`/`RankedWallEntry` types to `scripts/lib/premises.ts`.
+  `classifyWallSubTypes` is a standalone pure function over `original_excerpt` (not gated on `wallGate`), so it can
+  be asserted directly against the full 1,326-card >=80-word set, independent of the smaller 1,003-card `wallGate`
+  survivor pool `rankWall` actually ranks. All three sub-type checks match the plan's stated definitions exactly and
+  reproduce the measured counts given in the task: **Thou Wall 222** (counting archaic-marker TOKEN occurrences,
+  case-insensitive, word-boundary — NOT distinct markers, which measures 185), **Cascade 204** (>=3 `;` characters),
+  **Scene 137** (>=2 `"` characters — the plan's own estimate here was 176, which did not reproduce under any
+  quote-character definition tried: curly quotes gives 203, checking either `plain_english` or `original_excerpt`
+  gives 311; 137 is implemented and asserted, with the gap documented in-file, same treatment T01 gave its own
+  unreproducible 674 estimate). Sub-types are non-exclusive; union over the 1,326-card gate is 513 (`reserve` count
+  813), matching the task's stated figures exactly. Opening eligibility: `countdown` (the "190 -> 97" treatment)
+  requires `lengthDelta(card) >= 30`, reusing T01's `lengthDelta`; `grade` (the "Grade 14" treatment) requires
+  `originalReadingGrade(card) >= 12` — grade 12 chosen as the threshold because it's the same "too difficult"
+  ceiling `validateReadability` (`scripts/lib/validate.ts`) uses for the PLAIN version, so an original clearing that
+  bar is unambiguously harder than anything else the app ships. `originalReadingGrade` reuses the same
+  `rs.fleschKincaidGrade` call from `text-readability` that `validate.ts` uses (via the same
+  `@ts-expect-error` import pattern), applied to `original_excerpt` instead of `plain_english`, so grades stay
+  comparable across the pipeline. `rankWall` applies `classifyWallSubTypes` + `eligibleWallOpenings` over the T02
+  `wallGate` survivors and reports its own, smaller measured counts (necessarily <= the 1,326-card figures, since
+  not every length-gated card also has a qualifying landing line): within the 1,003-entry ranked pool, Thou Wall
+  171, Cascade 174, Scene 96, reserve 608; `countdown`-eligible 248, `grade`-eligible 631. Every ranked entry's
+  `eligible_openings` is non-empty and always contains `"standard"` (asserted corpus-wide). Added unit tests for
+  each sub-type's exact boundary (2 vs 3 markers, 2 vs 3 semicolons, 1 vs 2 quotes), a non-exclusive-overlap case,
+  opening-eligibility boundaries (`lengthDelta` 29 vs 30; reading grade below vs above 12; a card qualifying for
+  both numeric openings at once), and corpus-level tests asserting the 222/204/137/513/813 classifier counts and
+  the `rankWall`-pool counts above. `npx vitest run scripts/lib/__tests__/premises.test.ts` — 91/91 green (67
+  baseline + 24 new). `npx vitest run` (full pipeline suite) — 347/347 green (323 baseline + 24 new), confirming no
+  regression to T01/T02 or any other consumer.
 - [ ] T04: Implement **the validation gate for The Question**, three layers, cheapest first:
   **(a) deterministic** — reject any question containing a pronoun or demonstrative whose antecedent is not inside
   the question (13 of 21 question-side failures); reject fragments and mid-thought openers ("Because", "Then",

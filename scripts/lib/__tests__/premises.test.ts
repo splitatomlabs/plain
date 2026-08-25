@@ -15,6 +15,15 @@ import {
   wallGate,
   verbatim,
   hasUnresolvedReference,
+  classifyWallSubTypes,
+  eligibleWallOpenings,
+  originalReadingGrade,
+  rankWall,
+  WALL_THOU_MARKER_MIN,
+  WALL_CASCADE_SEMICOLON_MIN,
+  WALL_SCENE_QUOTE_MIN,
+  WALL_COUNTDOWN_DELTA_MIN,
+  WALL_ORIGINAL_GRADE_MIN,
 } from "../premises.js";
 import type { Card } from "../types.js";
 
@@ -607,5 +616,220 @@ describe("wallGate against the real corpus", () => {
     for (const entry of entries) {
       expect(entry.landing_line).not.toMatch(/\b(this|these|those)\b/i);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T03: visual-archaism ranking — classifyWallSubTypes
+// ---------------------------------------------------------------------------
+
+describe("classifyWallSubTypes", () => {
+  it("does not match thou_wall with exactly one below-threshold archaic marker count", () => {
+    // "thou", "hath" — 2 marker occurrences, one short of the threshold.
+    const card = makeCard({ original_excerpt: "Thou hath spoken truly of the matter at hand." });
+    const result = classifyWallSubTypes(card);
+    expect(result.archaic_marker_count).toBe(2);
+    expect(WALL_THOU_MARKER_MIN).toBe(3);
+    expect(result.sub_types).not.toContain("thou_wall");
+  });
+
+  it("matches thou_wall at exactly the threshold count", () => {
+    // "thou", "hath", "thy" — exactly 3 marker occurrences.
+    const card = makeCard({ original_excerpt: "Thou hath spoken, and thy word is true." });
+    const result = classifyWallSubTypes(card);
+    expect(result.archaic_marker_count).toBe(3);
+    expect(result.sub_types).toContain("thou_wall");
+  });
+
+  it("counts repeated occurrences of the same marker, not distinct markers", () => {
+    // "thou" appears 3 times — no distinct markers beyond "thou" itself,
+    // but the occurrence count still clears the threshold.
+    const card = makeCard({ original_excerpt: "Thou art thou, and thou shalt remain thou." });
+    const result = classifyWallSubTypes(card);
+    expect(result.archaic_marker_count).toBeGreaterThanOrEqual(3);
+    expect(result.sub_types).toContain("thou_wall");
+  });
+
+  it("does not match cascade with exactly one below-threshold semicolon count", () => {
+    const card = makeCard({ original_excerpt: "One; two; three of these matters remain unresolved." });
+    const result = classifyWallSubTypes(card);
+    expect(result.semicolon_count).toBe(2);
+    expect(WALL_CASCADE_SEMICOLON_MIN).toBe(3);
+    expect(result.sub_types).not.toContain("cascade");
+  });
+
+  it("matches cascade at exactly the threshold count", () => {
+    const card = makeCard({ original_excerpt: "One; two; three; four of these matters remain unresolved." });
+    const result = classifyWallSubTypes(card);
+    expect(result.semicolon_count).toBe(3);
+    expect(result.sub_types).toContain("cascade");
+  });
+
+  it("does not match scene with exactly one below-threshold quote character", () => {
+    const card = makeCard({ original_excerpt: 'He said, "hello there to everyone gathered.' });
+    const result = classifyWallSubTypes(card);
+    expect(result.quote_count).toBe(1);
+    expect(WALL_SCENE_QUOTE_MIN).toBe(2);
+    expect(result.sub_types).not.toContain("scene");
+  });
+
+  it("matches scene at exactly the threshold count", () => {
+    const card = makeCard({ original_excerpt: 'He said, "hello there to everyone gathered."' });
+    const result = classifyWallSubTypes(card);
+    expect(result.quote_count).toBe(2);
+    expect(result.sub_types).toContain("scene");
+  });
+
+  it("marks reserve true when no sub-type matches", () => {
+    const card = makeCard({ original_excerpt: "This is an ordinary modern sentence with nothing unusual in it." });
+    const result = classifyWallSubTypes(card);
+    expect(result.sub_types).toEqual([]);
+    expect(result.reserve).toBe(true);
+  });
+
+  it("marks reserve false and reports multiple sub-types when more than one matches (non-exclusive)", () => {
+    const card = makeCard({
+      original_excerpt: 'Thou hath spoken, and thy word is true; yet one; two; three remain: "so be it."',
+    });
+    const result = classifyWallSubTypes(card);
+    expect(result.sub_types).toContain("thou_wall");
+    expect(result.sub_types).toContain("cascade");
+    expect(result.reserve).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T03: opening eligibility
+// ---------------------------------------------------------------------------
+
+describe("eligibleWallOpenings", () => {
+  it("always includes standard", () => {
+    const card = makeCard({ original_excerpt: "A short original excerpt.", plain_english: "A short plain line." });
+    expect(eligibleWallOpenings(card)).toContain("standard");
+  });
+
+  it("excludes countdown when lengthDelta is one below the threshold", () => {
+    const original = Array.from({ length: 30 }, (_, i) => `word${i}`).join(" ");
+    const plain = Array.from({ length: 1 }, (_, i) => `word${i}`).join(" ");
+    const card = makeCard({ original_excerpt: original, plain_english: plain });
+    expect(lengthDelta(card)).toBe(WALL_COUNTDOWN_DELTA_MIN - 1);
+    expect(eligibleWallOpenings(card)).not.toContain("countdown");
+  });
+
+  it("includes countdown when lengthDelta is exactly at the threshold", () => {
+    const original = Array.from({ length: 31 }, (_, i) => `word${i}`).join(" ");
+    const plain = Array.from({ length: 1 }, (_, i) => `word${i}`).join(" ");
+    const card = makeCard({ original_excerpt: original, plain_english: plain });
+    expect(lengthDelta(card)).toBe(WALL_COUNTDOWN_DELTA_MIN);
+    expect(eligibleWallOpenings(card)).toContain("countdown");
+  });
+
+  it("excludes grade when the original's reading grade is below the threshold", () => {
+    const card = makeCard({ original_excerpt: "The cat sat. The dog ran. Sam ate cake." });
+    expect(originalReadingGrade(card)).toBeLessThan(WALL_ORIGINAL_GRADE_MIN);
+    expect(eligibleWallOpenings(card)).not.toContain("grade");
+  });
+
+  it("includes grade when the original's reading grade clears the threshold", () => {
+    const card = makeCard({
+      original_excerpt:
+        "Notwithstanding the aforementioned circumstances, the substantiality of metaphysical apprehension necessitates an exceedingly convoluted philosophical elucidation typically eschewed by unsophisticated interlocutors.",
+    });
+    expect(originalReadingGrade(card)).toBeGreaterThanOrEqual(WALL_ORIGINAL_GRADE_MIN);
+    expect(eligibleWallOpenings(card)).toContain("grade");
+  });
+
+  it("can qualify for both conditional openings at once", () => {
+    const original =
+      "Notwithstanding the aforementioned circumstances, the substantiality of metaphysical apprehension necessitates an exceedingly convoluted philosophical elucidation typically eschewed by unsophisticated interlocutors, whose brevity the plain rendering below entirely lacks, and whose ponderous, multiply-subordinated syntax further exemplifies the very obscurity under discussion.";
+    const card = makeCard({ original_excerpt: original, plain_english: "Keep it simple." });
+    expect(lengthDelta(card)).toBeGreaterThanOrEqual(WALL_COUNTDOWN_DELTA_MIN);
+    expect(originalReadingGrade(card)).toBeGreaterThanOrEqual(WALL_ORIGINAL_GRADE_MIN);
+    const openings = eligibleWallOpenings(card);
+    expect(openings).toContain("countdown");
+    expect(openings).toContain("grade");
+    expect(openings).toContain("standard");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T03: corpus-level counts — classifyWallSubTypes and rankWall
+// ---------------------------------------------------------------------------
+
+describe("classifyWallSubTypes against the real corpus", () => {
+  const cards = loadCorpus();
+  const gated = cards.filter((c) => wordCount(c.original_excerpt) >= 80);
+
+  it("gates to the 1,326-card wallLength set", () => {
+    expect(gated.length).toBe(1326);
+  });
+
+  it("measures Thou Wall (>=3 archaic marker occurrences) at exactly 222", () => {
+    const count = gated.filter((c) => classifyWallSubTypes(c).sub_types.includes("thou_wall")).length;
+    expect(count).toBe(222);
+  });
+
+  it("measures Cascade (>=3 semicolons) at exactly 204", () => {
+    const count = gated.filter((c) => classifyWallSubTypes(c).sub_types.includes("cascade")).length;
+    expect(count).toBe(204);
+  });
+
+  it("measures Scene (>=2 double-quote characters) at exactly 137", () => {
+    // The plan's own estimate for this sub-type was 176; that figure did
+    // not reproduce under any quote-character definition tried (see the
+    // in-file comment on classifyWallSubTypes). 137 is the measured count
+    // for the definition actually implemented and is what's asserted here.
+    const count = gated.filter((c) => classifyWallSubTypes(c).sub_types.includes("scene")).length;
+    expect(count).toBe(137);
+  });
+
+  it("measures reserve (no sub-type matches) at 813, the complement of the 513-card union", () => {
+    const results = gated.map((c) => classifyWallSubTypes(c));
+    const unionCount = results.filter((r) => !r.reserve).length;
+    const reserveCount = results.filter((r) => r.reserve).length;
+    expect(unionCount).toBe(513);
+    expect(reserveCount).toBe(813);
+    expect(unionCount + reserveCount).toBe(gated.length);
+  });
+});
+
+describe("rankWall against the real corpus", () => {
+  const entries = rankWall(loadCorpus());
+
+  it("ranks exactly the wallGate survivor set", () => {
+    expect(entries.length).toBe(wallGate(loadCorpus()).length);
+  });
+
+  it("every entry carries a non-empty eligible_openings that always includes standard", () => {
+    for (const entry of entries) {
+      expect(entry.eligible_openings.length).toBeGreaterThan(0);
+      expect(entry.eligible_openings).toContain("standard");
+    }
+  });
+
+  it("every entry's reserve flag matches whether it has any sub-type", () => {
+    for (const entry of entries) {
+      expect(entry.reserve).toBe(entry.sub_types.length === 0);
+    }
+  });
+
+  it("reports the ranked-pool sub-type and opening-eligibility counts (measured, informational)", () => {
+    const thou = entries.filter((e) => e.sub_types.includes("thou_wall")).length;
+    const cascade = entries.filter((e) => e.sub_types.includes("cascade")).length;
+    const scene = entries.filter((e) => e.sub_types.includes("scene")).length;
+    const reserve = entries.filter((e) => e.reserve).length;
+    const countdown = entries.filter((e) => e.eligible_openings.includes("countdown")).length;
+    const grade = entries.filter((e) => e.eligible_openings.includes("grade")).length;
+
+    // These are measured, reported counts within the smaller 1,003-entry
+    // ranked pool (T02 survivors) — necessarily <= the 1,326-card
+    // classifier counts above, since not every length-gated card also has
+    // a qualifying landing line.
+    expect(thou).toBe(171);
+    expect(cascade).toBe(174);
+    expect(scene).toBe(96);
+    expect(reserve).toBe(608);
+    expect(countdown).toBe(248);
+    expect(grade).toBe(631);
   });
 });

@@ -2,6 +2,9 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import type { Card } from "./types.js";
 
+// @ts-expect-error — text-readability has no type declarations
+import rs from "text-readability";
+
 // ---------------------------------------------------------------------------
 // T01: Mechanical gates — word counts, opener detection, quoted speech,
 // book filter, length delta. No LLM calls; every predicate here is pure and
@@ -773,4 +776,197 @@ export function wallGate(cards: Card[]): WallEntry[] {
     });
   }
   return entries;
+}
+
+// ---------------------------------------------------------------------------
+// T03: Visual-archaism ranking for The Wall. Phase 1 shows original_excerpt
+// as dense, archaic-looking text; some cards LOOK more impenetrable than
+// others (thick with "thou"/"hath"-style archaic diction, cascading
+// semicolon clauses, or a scene rendered in dialogue). Three deterministic,
+// non-exclusive sub-types capture that visual quality; a card matching none
+// of them is `reserve`. In the same pass, every ranked entry is flagged for
+// which of the format's OPENING treatments it's eligible for — the two
+// numeric openings ("190 -> 97", a word-count countdown, and "Grade 14", a
+// bare reading-grade readout) are conditional; every entry can always take
+// the plain "standard" opening.
+//
+// All three sub-type checks run against `original_excerpt` (not
+// plain_english) — the wall of text the viewer actually sees in phase 1.
+// ---------------------------------------------------------------------------
+
+/**
+ * Archaic diction markers that make a passage visually read as old/thick
+ * English. Matched case-insensitively at a word boundary; every OCCURRENCE
+ * counts (a repeated marker counts more than once), not just distinct
+ * markers — see `classifyWallSubTypes` for why (measured against the real
+ * corpus: counting occurrences gives 222 over the >=80-word gate; counting
+ * distinct markers per card gives 185, which does not match the plan).
+ */
+export const ARCHAIC_MARKERS = [
+  "thou",
+  "thee",
+  "thy",
+  "thine",
+  "hath",
+  "doth",
+  "dost",
+  "art",
+  "shalt",
+  "wilt",
+  "whither",
+  "wherefore",
+  "whereby",
+  "whensoever",
+  "perchance",
+  "nay",
+  "yea",
+] as const;
+
+const ARCHAIC_MARKER_RE = new RegExp(`\\b(${ARCHAIC_MARKERS.join("|")})\\b`, "gi");
+
+/** Sub-type match thresholds, all measured against `original_excerpt`. */
+export const WALL_THOU_MARKER_MIN = 3;
+export const WALL_CASCADE_SEMICOLON_MIN = 3;
+export const WALL_SCENE_QUOTE_MIN = 2;
+
+export type WallSubType = "thou_wall" | "cascade" | "scene";
+
+/**
+ * The Wall's two conditional openings, plus the always-available baseline.
+ * `countdown` is the "190 -> 97" treatment (original word count counting
+ * down live to the plain version's word count); `grade` is the "Grade 14"
+ * treatment (the original's computed reading grade shown as a bare
+ * measurement).
+ */
+export type WallOpening = "standard" | "countdown" | "grade";
+
+export interface WallSubTypeClassification {
+  sub_types: WallSubType[];
+  reserve: boolean;
+  archaic_marker_count: number;
+  semicolon_count: number;
+  quote_count: number;
+}
+
+/**
+ * Classify a card's `original_excerpt` into its Wall visual-archaism
+ * sub-type(s). Pure and standalone (does not require the T02 landing-line
+ * gate) so the corpus test can assert its counts directly over the full
+ * >=80-word wallLength set (1,326 cards), independent of how many of those
+ * survive `wallGate`.
+ *
+ * Sub-types are NOT mutually exclusive — a card thick with archaic diction
+ * AND full of semicolon cascades matches both `thou_wall` and `cascade`.
+ * `reserve` is true only when none of the three match.
+ *
+ * Measured over the 1,326-card >=80-word gate: Thou Wall 222, Cascade 204,
+ * Scene 137 (the plan's own estimate for Scene was 176; that figure does
+ * not reproduce under any quote-character definition tried — curly quotes
+ * gives 203, checking either plain_english or original_excerpt gives 311 —
+ * so 137, the measured count for ">=2 straight double-quote characters in
+ * original_excerpt", is what's implemented and asserted here. Same
+ * treatment T01 gave its own unreproducible 674 estimate: implement the
+ * clean stated definition, measure it, document the gap, don't contort the
+ * definition to hit an estimate).
+ */
+export function classifyWallSubTypes(card: Card): WallSubTypeClassification {
+  const text = card.original_excerpt;
+  const archaicMarkerCount = (text.match(ARCHAIC_MARKER_RE) ?? []).length;
+  const semicolonCount = (text.match(/;/g) ?? []).length;
+  const quoteCount = (text.match(/"/g) ?? []).length;
+
+  const subTypes: WallSubType[] = [];
+  if (archaicMarkerCount >= WALL_THOU_MARKER_MIN) subTypes.push("thou_wall");
+  if (semicolonCount >= WALL_CASCADE_SEMICOLON_MIN) subTypes.push("cascade");
+  if (quoteCount >= WALL_SCENE_QUOTE_MIN) subTypes.push("scene");
+
+  return {
+    sub_types: subTypes,
+    reserve: subTypes.length === 0,
+    archaic_marker_count: archaicMarkerCount,
+    semicolon_count: semicolonCount,
+    quote_count: quoteCount,
+  };
+}
+
+/** Minimum `lengthDelta` for the "190 -> 97" countdown opening to be worth showing (else the countdown barely moves). */
+export const WALL_COUNTDOWN_DELTA_MIN = 30;
+
+/**
+ * Minimum original-text reading grade for the "Grade 14" opening to be
+ * worth showing as a bare measurement. Grade 12 is the sensible floor: it's
+ * the same "too difficult" ceiling `validateReadability` (`scripts/lib/
+ * validate.ts`) uses for the PLAIN version, so a Wall original clearing
+ * that same bar is unambiguously harder reading than anything the app
+ * otherwise ships — worth calling out on screen. Measured over the
+ * 1,326-card >=80-word gate: 856 cards clear grade >=12.
+ */
+export const WALL_ORIGINAL_GRADE_MIN = 12;
+
+/**
+ * The original excerpt's Flesch-Kincaid grade level, via the same
+ * `text-readability` call `validateReadability` uses on the plain version
+ * (`scripts/lib/validate.ts`) — kept identical so grades are comparable
+ * across the pipeline.
+ */
+export function originalReadingGrade(card: Card): number {
+  return rs.fleschKincaidGrade(card.original_excerpt);
+}
+
+/**
+ * Which openings a card is eligible for. Every card can always take
+ * `standard`. `countdown` requires the plain version to be meaningfully
+ * shorter than the original (`lengthDelta(card) >= WALL_COUNTDOWN_DELTA_MIN`
+ * — the same threshold as `MechanicalGates.lengthDelta30`), or the
+ * countdown animation barely moves. `grade` requires the original's
+ * reading grade to clear `WALL_ORIGINAL_GRADE_MIN`. An entry failing both
+ * conditional checks carries only `["standard"]`; an entry passing both
+ * carries all three.
+ */
+export function eligibleWallOpenings(card: Card): WallOpening[] {
+  const openings: WallOpening[] = ["standard"];
+  if (lengthDelta(card) >= WALL_COUNTDOWN_DELTA_MIN) openings.push("countdown");
+  if (originalReadingGrade(card) >= WALL_ORIGINAL_GRADE_MIN) openings.push("grade");
+  return openings;
+}
+
+export interface RankedWallEntry extends WallEntry {
+  sub_types: WallSubType[];
+  reserve: boolean;
+  archaic_marker_count: number;
+  semicolon_count: number;
+  quote_count: number;
+  original_grade: number;
+  eligible_openings: WallOpening[];
+}
+
+/**
+ * Rank every T02 `wallGate` survivor (a card that already has a landing
+ * line) by visual-archaism sub-type and opening eligibility.
+ *
+ * The sub-type counts here are necessarily SMALLER than
+ * `classifyWallSubTypes`'s own corpus-wide counts (222/204/137): those are
+ * measured over all 1,326 length-gated cards, while `rankWall` only ever
+ * sees the 1,003 cards that also survive the landing-line gate. Call
+ * `classifyWallSubTypes` directly (or via `mechanicalGates`-style corpus
+ * tests) to reproduce the 1,326-card figures; use `rankWall`'s own output
+ * to measure the ranked-pool figures.
+ */
+export function rankWall(cards: Card[]): RankedWallEntry[] {
+  const entries = wallGate(cards);
+  const cardsById = new Map(cards.map((c) => [c.id, c]));
+
+  return entries.map((entry) => {
+    const card = cardsById.get(entry.card_id);
+    if (!card) {
+      throw new Error(`rankWall: no source card found for wallGate entry ${entry.card_id}`);
+    }
+    const classification = classifyWallSubTypes(card);
+    return {
+      ...entry,
+      ...classification,
+      original_grade: originalReadingGrade(card),
+      eligible_openings: eligibleWallOpenings(card),
+    };
+  });
 }
