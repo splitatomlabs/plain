@@ -1753,3 +1753,237 @@ describe("M11: assembleObjectionReply's error path and correct-occurrence resolu
     ).toThrow(/missing a valid reply_start/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// M14 (PR #39 fourth review round): the read-through Objection case's
+// empty-reply guard (`tryReadThroughContent`) was previously unasserted —
+// all 63 pre-existing tests pass even if the guard is deleted, because none
+// of them exercise a read-through-book card whose ONLY quoted objection is
+// the very last thing the card says (so `assembleObjectionReply` returns
+// "").  Without the guard, `resolveReadThrough` accepts the empty-reply
+// content as a valid candidate instead of cascading to Wall, and
+// `assertFaithful` then throws "field is empty" deep inside `generateWeek`
+// instead of the generator quietly falling back — exactly the failure mode
+// M3 already prevents for the WEIGHTED slot's pool, but that fix never
+// covered the read-through's own direct-from-card path.
+// ---------------------------------------------------------------------------
+
+describe("M14: read-through Objection's empty-reply guard falls back to Wall instead of surfacing an empty field", () => {
+  function fabricatedCard(id: string, plainEnglish: string, bookSlug: string): Card {
+    return {
+      id,
+      book_slug: bookSlug,
+      chapter_slug: "ch1",
+      card_number: 1,
+      total_cards_in_chapter: 1,
+      plain_english: plainEnglish,
+      original_excerpt: plainEnglish,
+      source_reference: "test",
+      author_slug: "epictetus",
+      tags: [],
+      reading_time_seconds: 10,
+    };
+  }
+
+  it("falls back to Wall on day 1 when the read-through book's next card ends on its own quoted objection (no reply text follows)", () => {
+    // Mirrors the one real corpus card this guard exists for
+    // (`discourses-53-010`, whose `plain_english` ends `"But I want my
+    // children and wife with me."`) with a fabricated equivalent so the test
+    // doesn't depend on that exact card surviving future corpus edits.
+    const emptyReplyRtCard = fabricatedCard(
+      "m14-rt-1",
+      `He said, "But why should I bother with any of this?"`,
+      "m14-readthrough",
+    );
+    // Days 2-7's read-through cards pose no quoted objection at all, so
+    // their own `objectionGate` candidate is `null` (a different, already-
+    // covered path) rather than an empty-reply one — day 1 alone exercises
+    // the guard this test targets.
+    const genericRtCards = Array.from({ length: 6 }, (_, i) =>
+      fabricatedCard(`m14-rt-${i + 2}`, `Read-through sentence number ${i + 2} standing alone.`, "m14-readthrough"),
+    );
+    const validObjectionCard = fabricatedCard(
+      "m14-valid-objection",
+      `He said, "But this is unbearable." That is not so; nothing forces you to suffer.`,
+      "m14-pool",
+    );
+    const wallFallbackCards = Array.from({ length: 6 }, (_, i) =>
+      fabricatedCard(`m14-wall-${i + 1}`, `Wall fallback sentence number ${i + 1} standing alone.`, "m14-pool"),
+    );
+
+    const allCards = [emptyReplyRtCard, ...genericRtCards, validObjectionCard, ...wallFallbackCards];
+
+    const validQuoted = `"But this is unbearable."`;
+    const objectionPool = [
+      {
+        card_id: validObjectionCard.id,
+        book_slug: validObjectionCard.book_slug,
+        author_slug: validObjectionCard.author_slug,
+        objection: "But this is unbearable.",
+        reply: "That is not so; nothing forces you to suffer.",
+        reply_start: validObjectionCard.plain_english.indexOf(validQuoted) + validQuoted.length,
+      },
+    ];
+
+    const wallPool = wallFallbackCards.map((c) => ({
+      card_id: c.id,
+      book_slug: c.book_slug,
+      author_slug: c.author_slug,
+      original_word_count: 20,
+      landing_line: c.plain_english,
+      sub_types: [],
+      reserve: false,
+      archaic_marker_count: 0,
+      semicolon_count: 0,
+      quote_count: 0,
+      original_grade: 5,
+      eligible_openings: ["standard" as const],
+    }));
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards: allCards,
+      pools: { wall: wallPool, question: [], objection: objectionPool },
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "m14-readthrough",
+      readThroughStartIndex: 0,
+      // Forces the read-through's per-day candidate draw toward "objection"
+      // every day, so day 1 actually reaches the empty-reply branch instead
+      // of the guard going untested because the draw never picked it.
+      weights: { wall: 0, question: 0, objection: 1 },
+    });
+
+    const day1Slot1 = week.slots.find((s) => s.day === 1 && s.slot === 1)!;
+    expect(day1Slot1.card_id).toBe(emptyReplyRtCard.id);
+    expect(day1Slot1.content.format).toBe("wall");
+    if (day1Slot1.content.format === "wall") {
+      expect(day1Slot1.content.landing_line).toBe(emptyReplyRtCard.plain_english);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M15 (PR #39 fourth review round): the read-through slot's own weekly
+// Objection-cap increment (`if (rtFormat === "objection")
+// objectionUsedThisWeek += 1;`) was previously unasserted — all 63
+// pre-existing tests pass even with this line replaced by a no-op, because
+// none of them checks `format_counts.objection` against
+// `max_objection_per_week` over enough real-corpus weeks to hit a week where
+// the read-through itself resolves to Objection. Without the increment nod
+// to the counter, a week where BOTH the read-through slot and the weighted
+// slot resolve to Objection reports `format_counts.objection === 2` against
+// a stated cap of 1 — the Objection format's weekly cadence (a plan-level
+// decision, not an implementation detail) silently breaks.
+// ---------------------------------------------------------------------------
+
+describe("M15: the read-through's own Objection resolution counts against the weekly cap", () => {
+  it("format_counts.objection never exceeds max_objection_per_week, across seeds 1..200 x weeks 1..10 (DEFAULT_FORMAT_WEIGHTS, isolated weeks)", () => {
+    let sawReadThroughObjection = false;
+    for (let seed = 1; seed <= 200; seed++) {
+      for (let week = 1; week <= 10; week++) {
+        // Sweep 10 non-overlapping 7-card windows across Enchiridion's 70
+        // cards (as M2 does above) so the read-through's own sequential
+        // card actually varies rather than always starting at index 0.
+        const startIndex = ((week - 1) % 10) * 7;
+        const schedule = generateWeek({
+          weekNumber: week,
+          seed: seed * 1000 + week, // a distinct rng stream per (seed, week) pair
+          cards,
+          pools: gatePools,
+          poolSource,
+          priorUsedCardIds: new Set(), // isolate each (seed, week) — a cap sample, not a chained sequence
+          readThroughBook: "enchiridion",
+          readThroughStartIndex: startIndex,
+          weights: DEFAULT_FORMAT_WEIGHTS,
+        });
+        expect(schedule.format_counts.objection).toBeLessThanOrEqual(schedule.max_objection_per_week);
+        const rtObjection = schedule.slots.some((s) => s.read_through && s.content.format === "objection");
+        if (rtObjection) sawReadThroughObjection = true;
+      }
+    }
+    // Not vacuous — the sweep must actually land on at least one week where
+    // the read-through itself resolved to Objection, otherwise this test
+    // would pass trivially without ever exercising the increment.
+    expect(sawReadThroughObjection).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M16 (PR #39 fourth review round): the weighted (slot 2) Wall pool's own
+// read-through-book exclusion (`wallPool`'s `&& e.book_slug !== readThroughBook`)
+// was previously unasserted — all 63 pre-existing tests pass even with that
+// clause dropped, even though the IDENTICAL clause on `questionPool` right
+// below it IS covered (see M2's seed sweep above, which fails immediately if
+// that one is dropped). Without the Wall exclusion, slot 2 can independently
+// draw a read-through-book card that the read-through's own sequential
+// cursor later reaches, desyncing the "already scheduled" guard at
+// `generateWeek`'s read-through step and throwing
+// `Read-through card "..." was already scheduled` mid-run instead of never
+// letting the collision happen in the first place.
+// ---------------------------------------------------------------------------
+
+describe("M16: the weighted Wall pool excludes the read-through book, same as the Question pool", () => {
+  it("never draws a read-through-book card into slot 2, wall-dominant weights, across seeds 1..20", () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      // Same 10-window sweep technique as M2's Question-pool test above.
+      const startIndex = ((seed - 1) % 10) * 7;
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: startIndex,
+        // Weighted heavily toward Wall so slot 2 actually draws from the
+        // Wall pool often enough to sample — mirrors M2's Question-heavy
+        // weighting for the same reason.
+        weights: { wall: 100, question: 0, objection: 0 },
+      });
+      for (const slot of week.slots) {
+        if (slot.slot === 2) {
+          expect(slot.book_slug).not.toBe("enchiridion");
+        }
+      }
+    }
+  });
+
+  it("multiple 8-week, wall-dominant real-corpus chains never throw and never repeat a card_id across weeks", () => {
+    const weights: FormatWeights = { wall: 100, question: 0, objection: 0 };
+
+    // Several independent 8-week chains (distinct seed bases), not just one
+    // — probed directly against a mutated `wallPool` (missing its
+    // read-through-book exclusion), seed bases 3/4/5/7 out of 1..10 each
+    // reliably reproduced the real "already scheduled" desync throw within
+    // 8 weeks, while seed base 100 alone (the one originally tried here)
+    // did not; a single chain is not enough to reliably catch this mutation.
+    for (let seedBase = 1; seedBase <= 10; seedBase++) {
+      const usedCardIds = new Set<string>();
+      let readThroughCursor = 0;
+
+      for (let week = 1; week <= 8; week++) {
+        const schedule = generateWeek({
+          weekNumber: week,
+          seed: seedBase * 100 + week,
+          cards,
+          pools: gatePools,
+          poolSource,
+          priorUsedCardIds: usedCardIds,
+          readThroughBook: "enchiridion",
+          readThroughStartIndex: readThroughCursor,
+          weights,
+        });
+        for (const slot of schedule.slots) {
+          // No card_id repeats a prior week's — the "never reuse a card"
+          // invariant this whole reservation scheme exists to protect.
+          expect(usedCardIds.has(slot.card_id)).toBe(false);
+          usedCardIds.add(slot.card_id);
+        }
+        readThroughCursor += 7;
+      }
+    }
+  });
+});
