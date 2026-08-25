@@ -1,0 +1,31 @@
+{
+  "name": "plain-social",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-polly": "^3.930.0",
+    "@elevenlabs/elevenlabs-js": "^2.20.1",
+    "@fontsource-variable/dm-sans": "^5.2.8",
+    "@fontsource-variable/literata": "^5.2.8",
+    "@remotion/cli": "^4.0.360",
+    "@remotion/renderer": "^4.0.360",
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "playwright": "^1.59.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "remotion": "^4.0.360"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.9"
+  }
+}

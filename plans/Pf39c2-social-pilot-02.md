@@ -50,7 +50,16 @@ looks like Plain.
   answerable in under 1.5s. The Objection — the objection alone, reading as a thought the viewer has had.
 
 ## Tasks
-- [ ] T01: Scaffold the `social/` workspace. Acceptance: `npm install --prefix social` succeeds; empty test run passes.
+- [x] T01: Scaffold the `social/` workspace. Acceptance: `npm install --prefix social` succeeds; empty test run passes.
+  Self-contained npm project (own `package.json`/`node_modules`/`tsconfig.json`, not a root workspace member),
+  mirroring root conventions (ESM, `tsx`, `vitest run`). All 17 required deps (playwright, remotion, @remotion/cli,
+  @remotion/renderer, react, react-dom, ffmpeg-static, ffprobe-static, @elevenlabs/elevenlabs-js,
+  @aws-sdk/client-polly, @fontsource-variable/literata, @fontsource-variable/dm-sans; dev: vitest, tsx, typescript,
+  @types/node, @types/react, @types/react-dom) installed cleanly, none dropped. Created empty dir scaffold
+  (`assets/characters/`, `assets/music/`, `src/render/templates/`, `src/remotion/`, `src/audio/__tests__/`) with
+  `.gitkeep`, plus `src/render/__tests__/scaffold.test.ts` placeholder. Added `social/out/` to root `.gitignore`
+  (`node_modules/` already covered globally). `npm install --prefix social` and `npm test --prefix social` both
+  exit 0 (1 passed test). No renderer/encoder/audio/Remotion implementation code was added — left for T02+.
 - [ ] T02: Art-direct and generate the three portraits; commit them plus a README recording tool, prompt, date and
   licence. Acceptance: a reviewer can tell slave/emperor/senator apart at thumbnail size, and they are clearly not
   stock marble-on-black.
