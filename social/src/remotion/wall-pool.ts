@@ -25,9 +25,19 @@ export interface WallPoolEntry {
 	[key: string]: unknown;
 }
 
-interface OutputCard {
+/**
+ * A card from `content/output/<book_slug>/*.json`. `plain_english` is
+ * typed explicitly (not left to the index signature) because T18's render
+ * CLI needs it directly — every other field the corpus carries is still
+ * reachable via the index signature without this module needing to know
+ * its shape.
+ */
+export interface OutputCard {
 	id: string;
+	book_slug: string;
 	original_excerpt: string;
+	plain_english: string;
+	author_slug: string;
 	[key: string]: unknown;
 }
 
@@ -70,6 +80,25 @@ export function resolveWallCardExcerpt(entry: WallPoolEntry, outputDir: string =
 		throw new Error(`Wall pool entry "${entry.card_id}" not found under ${path.join(outputDir, entry.book_slug)}`);
 	}
 	return card.original_excerpt;
+}
+
+/**
+ * Resolves a card's FULL record (not just `original_excerpt` — see
+ * `resolveWallCardExcerpt`) from `content/output/<bookSlug>/`. T18's render
+ * CLI is the primary caller: a `ScheduleSlot` only carries the on-screen
+ * fields a given format needs (see `scripts/lib/schedule.ts`'s
+ * `SlotContent`), never the rest of the card (e.g. The Question's
+ * `originalExcerpt`, or The Wall's full `plain_english` for the lines
+ * after the landing line) — those are resolved here, from the same
+ * `content/output/` corpus the schedule itself was generated against.
+ */
+export function loadOutputCard(bookSlug: string, cardId: string, outputDir: string = DEFAULT_OUTPUT_DIR): OutputCard {
+	const index = loadBookIndex(bookSlug, outputDir);
+	const card = index.get(cardId);
+	if (!card) {
+		throw new Error(`Card "${cardId}" not found under ${path.join(outputDir, bookSlug)}`);
+	}
+	return card;
 }
 
 export interface WallPoolSurveyResult {

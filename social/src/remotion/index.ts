@@ -1,4 +1,12 @@
 export { RemotionRoot } from './Root.js';
+export {
+	MIN_POST_DURATION_SECONDS,
+	MAX_POST_DURATION_SECONDS,
+	MIN_POST_DURATION_FRAMES,
+	MAX_POST_DURATION_FRAMES,
+	padToMinimumDuration,
+	type PaddedDuration
+} from './duration-bounds.js';
 export { ReadThroughCounter, COUNTER_FONT_STACK, type ReadThroughCounterProps } from './Counter.js';
 export {
 	COUNTER_SAFE_INSET_PX,
@@ -73,8 +81,10 @@ export {
 export {
 	surveyWallPool,
 	resolveWallCardExcerpt,
+	loadOutputCard,
 	type WallPoolEntry,
-	type WallPoolSurveyResult
+	type WallPoolSurveyResult,
+	type OutputCard
 } from './wall-pool.js';
 export {
 	computeOpeningData,
@@ -86,8 +96,10 @@ export {
 	gateOpening,
 	assertOpeningRenderable,
 	rotateOpening,
+	computeEligibleOpenings,
 	WALL_OPENINGS,
 	WALL_COUNTDOWN_DELTA_MIN,
+	WALL_ORIGINAL_GRADE_MIN,
 	FORBIDDEN_GRADE_VOCABULARY,
 	type WallOpening,
 	type OpeningData,

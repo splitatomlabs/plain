@@ -19,6 +19,7 @@
 
 import { fitFontSize } from '../render/fit.js';
 import { FPS, FRAME_WIDTH } from './wall-timing.js';
+import { padToMinimumDuration } from './duration-bounds.js';
 
 // Re-exported so `Objection.tsx` and callers can import everything they
 // need from this module's "timing" surface without also reaching into
@@ -163,8 +164,17 @@ export function computeObjectionTiming(): ObjectionTimingSchedule {
 		motionless: true
 	};
 
+	// The 15s MP4 floor (T18): The Objection's fixed shape totals only 225
+	// frames (7.5s) on its own. Extend the second (final) reply line's
+	// hold — the format's last payoff phase, already motionless — never the
+	// first reply line and never a new phase. See `duration-bounds.ts`.
+	const { totalFrames, padFrames } = padToMinimumDuration(secondReplyLine.endFrame);
+	if (padFrames > 0) {
+		secondReplyLine.endFrame += padFrames;
+	}
+
 	return {
-		totalFrames: secondReplyLine.endFrame,
+		totalFrames,
 		objection,
 		replyLines: [firstReplyLine, secondReplyLine]
 	};

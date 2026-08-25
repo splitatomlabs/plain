@@ -10,6 +10,7 @@
  */
 
 import { estimateWrappedLineCount, fitFontSize } from '../render/fit.js';
+import { padToMinimumDuration } from './duration-bounds.js';
 
 // ---------------------------------------------------------------------------
 // Frame rate and frame dimensions
@@ -335,8 +336,23 @@ export function computeWallTiming(input: WallTimingInput): WallTimingSchedule {
 		return { index, text, startFrame, endFrame, motionless: true };
 	});
 
+	// The 15s MP4 floor (T18): a short card (few or no plain-passage lines,
+	// or narration-driven lines that run quick) can land well under it —
+	// e.g. no `plainLines` at all is just `WALL_FRAMES + LANDING_LINE_FRAMES`
+	// (5.5s). Extend the LAST motionless payoff phase's hold — the last rest
+	// line if there is one, else the landing line itself — never add a new
+	// phase and never touch the moving wall phase. See `duration-bounds.ts`.
+	const { totalFrames, padFrames } = padToMinimumDuration(cursor);
+	if (padFrames > 0) {
+		if (restLines.length > 0) {
+			restLines[restLines.length - 1].endFrame += padFrames;
+		} else {
+			landingLine.endFrame += padFrames;
+		}
+	}
+
 	return {
-		totalFrames: cursor,
+		totalFrames,
 		wall,
 		karaoke,
 		landingLine,

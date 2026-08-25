@@ -121,9 +121,9 @@ looks like Plain.
 - [x] T17: Implement the three-way OPENING ROTATION for The Wall — standard, 190->97, Grade-14. Same pool, same
   reveal, different first 2s. Render the grade as a bare measurement, original only. Tag the chosen opening in post
   metadata so plan 03 can compare openings. Acceptance: three openings render from one card.
-- [~] T18: Build the render CLI — `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`, reading the schedule
+- [x] T18: Build the render CLI — `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`, reading the schedule
   and writing to `social/out/`. Acceptance: produces correct assets for a given day.
-- [ ] T19: Render a full week and review all 14 posts together, with sound, on a phone. A judgement gate, not a test:
+- [~] T19: Render a full week and review all 14 posts together, with sound, on a phone. A judgement gate, not a test:
   if they do not look like one coherent channel, fix the art direction before going further.
 
 ## Follow-up

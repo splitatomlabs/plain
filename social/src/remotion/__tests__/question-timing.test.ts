@@ -19,6 +19,7 @@ import {
 import { WALL_FRAMES, KARAOKE_WPM, FPS } from '../wall-timing.js';
 import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
 import { FORBIDDEN_TESTING_VOCABULARY } from '../question-gate.js';
+import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
@@ -118,6 +119,19 @@ describe('phase 3 — the answer resolves in stillness', () => {
 		const holdFrames = timing.answer.endFrame - timing.answer.startFrame;
 		expect(holdFrames).toBeGreaterThanOrEqual(Math.round(2.5 * FPS));
 		expect(ANSWER_FRAMES).toBeGreaterThanOrEqual(Math.round(2.5 * FPS));
+	});
+});
+
+describe('T18 — the composed total clears the 15s MP4 duration floor', () => {
+	it('the fixed shape (195 raw frames / 6.5s) is padded up to MIN_POST_DURATION_FRAMES, by extending only the answer hold', () => {
+		const timing = computeQuestionTiming({ question: FIXTURE_QUESTION });
+		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
+		expect(timing.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
+
+		expect(timing.question.endFrame - timing.question.startFrame).toBe(QUESTION_HOLD_FRAMES);
+		expect(timing.wall.endFrame - timing.wall.startFrame).toBe(WALL_FRAMES);
+		expect(timing.answer.endFrame - timing.answer.startFrame).toBeGreaterThan(ANSWER_FRAMES);
+		expect(timing.answer.motionless).toBe(true);
 	});
 });
 

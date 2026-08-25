@@ -18,6 +18,7 @@
 
 import { fitFontSize } from '../render/fit.js';
 import { FPS, FRAME_WIDTH, WALL_FRAMES, splitWords } from './wall-timing.js';
+import { padToMinimumDuration } from './duration-bounds.js';
 
 // Re-exported so `Question.tsx` and callers can import everything they need
 // from this module's "timing" surface without also reaching into
@@ -161,8 +162,17 @@ export function computeQuestionTiming(_input: QuestionTimingInput): QuestionTimi
 		motionless: true
 	};
 
+	// The 15s MP4 floor (T18): The Question's fixed shape totals only 195
+	// frames (6.5s) on its own. Extend the answer hold — the format's only
+	// payoff phase, already motionless — never the moving wall phase and
+	// never a new phase. See `duration-bounds.ts`.
+	const { totalFrames, padFrames } = padToMinimumDuration(answer.endFrame);
+	if (padFrames > 0) {
+		answer.endFrame += padFrames;
+	}
+
 	return {
-		totalFrames: answer.endFrame,
+		totalFrames,
 		question,
 		wall,
 		answer

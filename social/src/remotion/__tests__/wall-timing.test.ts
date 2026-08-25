@@ -22,8 +22,10 @@ import {
 	WALL_LINE_HEIGHT_RATIO,
 	WALL_MIN_FILL_RATIO,
 	LANDING_LINE_FRAMES,
+	DEFAULT_LINE_FRAMES,
 	type NarrationLineTiming
 } from '../wall-timing.js';
+import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
@@ -140,6 +142,41 @@ describe('the hard cut and the landing line hold', () => {
 		});
 		const expectedFrames = Math.round(1.5 * FPS);
 		expect(withNarration.restLines[0].endFrame - withNarration.restLines[0].startFrame).toBe(expectedFrames);
+	});
+});
+
+describe('T18 — the composed total clears the 15s MP4 duration floor', () => {
+	it('a short card (no plainLines) is padded up to MIN_POST_DURATION_FRAMES by extending the landing line hold', () => {
+		const timing = computeWallTiming({ originalExcerpt: 'one two three', plainLines: [] });
+		expect(timing.restLines.length).toBe(0);
+		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
+		expect(timing.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
+		expect(timing.wall.endFrame - timing.wall.startFrame).toBe(WALL_FRAMES);
+		expect(timing.landingLine.endFrame - timing.landingLine.startFrame).toBeGreaterThan(LANDING_LINE_FRAMES);
+		expect(timing.landingLine.motionless).toBe(true);
+		expect(timing.totalFrames).toBe(timing.landingLine.endFrame);
+	});
+
+	it('a real >=150-word card with several rest lines already clears the floor without any padding', () => {
+		const timing = computeWallTiming({
+			originalExcerpt: FIXTURE_CARD.original_excerpt,
+			plainLines: FIXTURE_PLAIN_LINES
+		});
+		expect(timing.restLines.length).toBeGreaterThan(0);
+		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
+		expect(timing.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
+		expect(timing.totalFrames).toBe(timing.restLines[timing.restLines.length - 1].endFrame);
+	});
+
+	it('when padding a card WITH rest lines, only the LAST rest line is extended', () => {
+		const shortLines = ['A short first line.', 'A short second line.'];
+		const timing = computeWallTiming({ originalExcerpt: 'one two three', plainLines: shortLines });
+		expect(timing.restLines.length).toBe(2);
+		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
+		// The first rest line keeps its default duration; only the final one grows.
+		expect(timing.restLines[0].endFrame - timing.restLines[0].startFrame).toBe(DEFAULT_LINE_FRAMES);
+		expect(timing.restLines[1].endFrame - timing.restLines[1].startFrame).toBeGreaterThanOrEqual(DEFAULT_LINE_FRAMES);
+		expect(timing.totalFrames).toBe(timing.restLines[1].endFrame);
 	});
 });
 

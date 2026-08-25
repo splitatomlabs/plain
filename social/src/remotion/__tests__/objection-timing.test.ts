@@ -21,6 +21,7 @@ import {
 	FPS
 } from '../objection-timing.js';
 import { gateObjectionCard } from '../objection-gate.js';
+import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
@@ -101,6 +102,22 @@ describe('phase 2 — the reply resolves in stillness, one line at a time', () =
 
 	it('totalFrames is exactly the sum of every phase', () => {
 		expect(timing.totalFrames).toBe(timing.replyLines[1].endFrame);
+	});
+});
+
+describe('T18 — the composed total clears the 15s MP4 duration floor', () => {
+	it('the fixed shape (225 raw frames / 7.5s) is padded up to MIN_POST_DURATION_FRAMES', () => {
+		const timing = computeObjectionTiming();
+		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
+		expect(timing.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
+	});
+
+	it('the padding extends the SECOND (final) reply line only — the first reply line and the objection hold are untouched', () => {
+		const timing = computeObjectionTiming();
+		expect(timing.objection.endFrame - timing.objection.startFrame).toBe(OBJECTION_HOLD_FRAMES);
+		expect(timing.replyLines[0].endFrame - timing.replyLines[0].startFrame).toBe(OBJECTION_REPLY_LINE_FRAMES);
+		expect(timing.replyLines[1].endFrame - timing.replyLines[1].startFrame).toBeGreaterThan(OBJECTION_REPLY_LINE_FRAMES);
+		expect(timing.replyLines[1].motionless).toBe(true);
 	});
 });
 

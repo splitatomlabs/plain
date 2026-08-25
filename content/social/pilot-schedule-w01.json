@@ -1,0 +1,239 @@
+{
+  "week": 1,
+  "seed": 42,
+  "weights": {
+    "wall": 7,
+    "question": 6,
+    "objection": 1
+  },
+  "read_through_book": "meditations",
+  "read_through_chapters": [
+    "book-02",
+    "book-03"
+  ],
+  "read_through_format": "dynamic",
+  "read_through_total": 48,
+  "max_objection_per_week": 1,
+  "slots": [
+    {
+      "day": 1,
+      "slot": 1,
+      "card_id": "meditations-02-001",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Remember how long thou hast already put off these things, and how often a certain day and hour as it were, having been set unto thee by the gods, thou hast neglected it. It is high time for thee to understand the true nature both of the world, whereof thou art a part; and of that Lord and Governor of the world, from whom, as a channel from the spring, thou thyself didst flow: and that there is but a certain limit of time appointed unto thee, which if thou shalt not make use of to calm and allay the many distempers of thy soul, it will pass away and thou with it, and never after return.",
+        "landing_line": "There is only a certain amount of time given to you."
+      },
+      "read_through": true,
+      "read_through_counter": "Card 1 of 48"
+    },
+    {
+      "day": 1,
+      "slot": 2,
+      "card_id": "on-anger-03-093",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "No man is satisfied with his own lot if he fixes his attention on that of another: and this leads to our being angry even with the gods, because somebody precedes us, though we forget of how many we take precedence, and that when a man envies few people, he must be followed in the background by a huge crowd of people who envy him. Yet so churlish is human nature, that, however much men may have received, they think themselves wronged if they are able to receive still more. “He gave me the praetorship. Yes, but I had hoped for the consulship. He bestowed the twelve axes upon me: true, but he did not make me a regular[12] consul. He allowed me to give my name to the year, but he did not help me to the priesthood. I have been elected a member of the college: but why only of one?",
+        "landing_line": "We forget how many people we're already ahead of."
+      },
+      "read_through": false,
+      "read_through_counter": null
+    },
+    {
+      "day": 2,
+      "slot": 1,
+      "card_id": "meditations-02-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Let it be thy earnest and incessant care as a Roman and a man to perform whatsoever it is that thou art about, with true and unfeigned gravity, natural affection, freedom and justice: and as for all other cares, and imaginations, how thou mayest ease thy mind of them. Which thou shalt do; if thou shalt go about every action as thy last action, free from all vanity, all passionate and wilful aberration from reason, and from all hypocrisy, and self-love, and dislike of those things, which by the fates or appointment of God have happened unto thee. Thou seest that those things, which for a man to hold on in a prosperous course, and to live a divine life, are requisite and necessary, are not many, for the gods will require no more of any man, that shall but keep and observe these things.",
+        "landing_line": "Make it your constant focus as a Roman and as a human being to do whatever you're doing with real seriousness, natural kindness, honesty, and fairness. Let go of all other worries and thoughts that clutter your mind. You can do this if you approach every action as if it were your last. Be free from vanity, from emotional reactions that go against reason, from pretense, from selfishness, and from complaining about what fate or God has given you. You can see that the things needed to live well and to live like the gods intended are not many. The gods ask nothing more from anyone who keeps and follows these simple things."
+      },
+      "read_through": true,
+      "read_through_counter": "Card 2 of 48"
+    },
+    {
+      "day": 2,
+      "slot": 2,
+      "card_id": "peace-of-mind-11-008",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca",
+      "content": {
+        "format": "question",
+        "question": "You are wealthy — but are you wealthier than Pompey?",
+        "answer": "When his old relative and new host Gaius opened Caesar's house to him so he could shut his own door, Pompey lacked even bread and water."
+      },
+      "read_through": false,
+      "read_through_counter": null
+    },
+    {
+      "day": 3,
+      "slot": 1,
+      "card_id": "meditations-02-003",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Do, soul, do; abuse and contemn thyself; yet a while and the time for thee to respect thyself, will be at an end. Every man's happiness depends from himself, but behold thy life is almost at an end, whiles affording thyself no respect, thou dost make thy happiness to consist in the souls, and conceits of other men.",
+        "landing_line": "You're letting your happiness depend on what other people think and say."
+      },
+      "read_through": true,
+      "read_through_counter": "Card 3 of 48"
+    },
+    {
+      "day": 3,
+      "slot": 2,
+      "card_id": "discourses-18-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "question",
+        "question": "What makes something good?",
+        "answer": "A certain kind of will."
+      },
+      "read_through": false,
+      "read_through_counter": null
+    },
+    {
+      "day": 4,
+      "slot": 1,
+      "card_id": "meditations-02-004",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Why should any of these things that happen externally, so much distract thee? Give thyself leisure to learn some good thing, and cease roving and wandering to and fro. Thou must also take heed of another kind of wandering, for they are idle in their actions, who toil and labour in this life, and have no certain scope to which to direct all their motions, and desires.",
+        "landing_line": "You must also watch out for another kind of wandering."
+      },
+      "read_through": true,
+      "read_through_counter": "Card 4 of 48"
+    },
+    {
+      "day": 4,
+      "slot": 2,
+      "card_id": "on-anger-03-108",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "content": {
+        "format": "question",
+        "question": "Someone has insulted you?",
+        "answer": "It's probably not worse than what happened to the Stoic philosopher Diogenes."
+      },
+      "read_through": false,
+      "read_through_counter": null
+    },
+    {
+      "day": 5,
+      "slot": 1,
+      "card_id": "meditations-02-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "For not observing the state of another man's soul, scarce was ever any man known to be unhappy. Tell whosoever they be that intend not, and guide not by reason and discretion the motions of their own souls, they must of necessity be unhappy.\n\nThese things thou must always have in mind: What is the nature of the universe, and what is mine--in particular: This unto that what relation it hath: what kind of part, of what kind of universe it is: And that there is nobody that can hinder thee, but that thou mayest always both do and speak those things which are agreeable to that nature, whereof thou art a part.",
+        "landing_line": "People who don't pay attention to their own inner state are rarely happy. Those who don't use reason to guide their thoughts and feelings will always be miserable.\n\nAlways keep these things in mind: What is the nature of the whole universe? What is my own nature? How do I fit into the bigger picture? What kind of part am I in what kind of whole? Remember that no one can stop you from acting and speaking in ways that match your true nature as part of this universe."
+      },
+      "read_through": true,
+      "read_through_counter": "Card 5 of 48"
+    },
+    {
+      "day": 5,
+      "slot": 2,
+      "card_id": "on-anger-02-092",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "What did Priam do in the Iliad? Did he not conceal his wrath and embrace the knees of Achilles? did he not raise to his lips that death-dealing hand, stained with the blood of his son, and sup with his slayer? True! but there were no perfumes and garlands, and his fierce enemy encouraged him with many soothing words to eat, not to drain huge goblets with a guard standing over him to see that he did it. Had he only feared for himself, the father would have treated the tyrant with scorn: but love for his son quenched his anger: he deserved the emperor's permission to leave the banquet and gather up the bones of his son: but, meanwhile, that kindly and polite youth the emperor would not even permit him to do this, but tormented the old man with frequent invitations to drink, advising him thereby to lighten his sorrows. He, on the other hand, appeared to be in good spirits, and to have forgotten what had been done that day: he would have lost his second son had he proved an unacceptable guest to the murderer of his eldest.",
+        "landing_line": "If Priam had only been worried about himself, he would have scorned the tyrant."
+      },
+      "read_through": false,
+      "read_through_counter": null
+    },
+    {
+      "day": 6,
+      "slot": 1,
+      "card_id": "meditations-02-006",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Theophrastus, where he compares sin with sin (as after a vulgar sense such things I grant may be compared:) says well and like a philosopher, that those sins are greater which are committed through lust, than those which are committed through anger. For he that is angry seems with a kind of grief and close contraction of himself, to turn away from reason; but he that sins through lust, being overcome by pleasure, doth in his very sin bewray a more impotent, and unmanlike disposition. Well then and like a philosopher doth he say, that he of the two is the more to be condemned, that sins with pleasure, than he that sins with grief. For indeed this latter may seem first to have been wronged, and so in some manner through grief thereof to have been forced to be angry, whereas he who through lust doth commit anything, did of himself merely resolve upon that action.",
+        "landing_line": "Theophrastus compares different types of wrongdoing."
+      },
+      "read_through": true,
+      "read_through_counter": "Card 6 of 48"
+    },
+    {
+      "day": 6,
+      "slot": 2,
+      "card_id": "on-anger-03-027",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "We must add to this, that the man who lives with quiet people is not only improved by their example, but also by the fact that he finds no reason for anger and does not practise his vice: it will, therefore, be his duty to avoid all those who he knows will excite his anger. You ask, who these are: many will bring about the same thing by various means; a proud man will offend you by his disdain, a talkative man by his abuse, an impudent man by his insults, a spiteful man by his malice, a quarrelsome man by his wrangling, a braggart and liar by his vain-gloriousness: you will not endure to be feared by a suspicious man, conquered by an obstinate one, or scorned by an ultra-refined one: Choose straightforward, good-natured, steady people, who will not provoke your wrath, and will bear with it. Those whose dispositions are yielding, polite and suave, will be of even greater service, provided they do not flatter, for excessive obsequiousness irritates bad-tempered men.",
+        "landing_line": "Too much flattery irritates people with bad tempers."
+      },
+      "read_through": false,
+      "read_through_counter": null
+    },
+    {
+      "day": 7,
+      "slot": 1,
+      "card_id": "meditations-02-007",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Whatsoever thou dost affect, whatsoever thou dost project, so do, and so project all, as one who, for aught thou knowest, may at this very present depart out of this life. And as for death, if there be any gods, it is no grievous thing to leave the society of men. The gods will do thee no hurt, thou mayest be sure.",
+        "landing_line": "You can be sure the gods will not harm you."
+      },
+      "read_through": true,
+      "read_through_counter": "Card 7 of 48"
+    },
+    {
+      "day": 7,
+      "slot": 2,
+      "card_id": "discourses-64-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "question",
+        "question": "You want me to trust you with my business?",
+        "answer": "You're a man who has corrupted his own will."
+      },
+      "read_through": false,
+      "read_through_counter": null
+    }
+  ],
+  "format_counts": {
+    "wall": 10,
+    "question": 4,
+    "objection": 0
+  },
+  "author_mix": {
+    "epictetus": {
+      "count": 2,
+      "share": 0.14285714285714285
+    },
+    "marcus-aurelius": {
+      "count": 7,
+      "share": 0.5
+    },
+    "seneca": {
+      "count": 5,
+      "share": 0.35714285714285715
+    }
+  },
+  "pool_source": {
+    "wall": "scored",
+    "question": "scored",
+    "objection": "scored"
+  }
+}

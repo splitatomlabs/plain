@@ -316,6 +316,63 @@ export function assertOpeningRenderable(
 }
 
 // ---------------------------------------------------------------------------
+// Computing eligibility directly from a card (T18) — for cards with no
+// pool entry to read `eligible_openings` off of
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimum original-text reading grade for the "Grade 14" opening to be
+ * worth showing as a bare measurement. Mirrors `WALL_ORIGINAL_GRADE_MIN` in
+ * the root content pipeline's `scripts/lib/premises.ts` — duplicated
+ * (never imported) because `social/` is a self-contained npm project (see
+ * T01) that does not depend on that package. Kept numerically identical by
+ * convention, same as `WALL_COUNTDOWN_DELTA_MIN` above.
+ */
+export const WALL_ORIGINAL_GRADE_MIN = 12;
+
+/**
+ * Computes which openings a card is eligible for, straight from its own
+ * text — the render-side mirror of `scripts/lib/premises.ts`'s
+ * `eligibleWallOpenings(card)`. Needed because a card's precomputed
+ * `eligible_openings` only exists on entries that went through the
+ * premise pipeline's scored Wall pool (`content/social/premises/
+ * wall.json`) — a READ-THROUGH card never does (`scripts/lib/schedule.ts`
+ * deliberately excludes every read-through card from that pool, so its
+ * own sequential cards can never collide with a weighted-slot draw), yet
+ * T18's render CLI still needs to know which openings a read-through
+ * Wall post may use.
+ *
+ * Every card is eligible for `standard`. `countdown` additionally
+ * requires the plain version to be at least `WALL_COUNTDOWN_DELTA_MIN`
+ * words shorter than the original; `grade` additionally requires the
+ * original's UNROUNDED reading grade (not `computeOpeningData`'s rounded
+ * `originalGrade`, which is display-only) to clear
+ * `WALL_ORIGINAL_GRADE_MIN` — same two thresholds, same word-count method
+ * (`splitWords`, matching `scripts/lib/premises.ts`'s `wordCount`), so a
+ * card's eligibility can never silently diverge between the two packages.
+ *
+ * `plainText` should be the card's full `plain_english` (verbatim), not
+ * just a landing line or a partial reconstruction — matches
+ * `lengthDelta`'s own `wordCount(card.plain_english)` in the root
+ * pipeline.
+ */
+export function computeEligibleOpenings(originalExcerpt: string, plainText: string): WallOpening[] {
+	const openings: WallOpening[] = ['standard'];
+
+	const delta = splitWords(originalExcerpt).length - splitWords(plainText).length;
+	if (delta >= WALL_COUNTDOWN_DELTA_MIN) {
+		openings.push('countdown');
+	}
+
+	const grade: number = rs.fleschKincaidGrade(originalExcerpt);
+	if (grade >= WALL_ORIGINAL_GRADE_MIN) {
+		openings.push('grade');
+	}
+
+	return openings;
+}
+
+// ---------------------------------------------------------------------------
 // Deterministic rotation
 // ---------------------------------------------------------------------------
 
