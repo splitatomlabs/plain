@@ -452,14 +452,24 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 			}
 			narrationAudioPath = path.join(workDir, 'narration-aligned.mp3');
 			await prependSilence(rawNarrationPath, offsetMs, narrationAudioPath);
-			narrationSpans = [{ startMs: offsetMs, endMs: offsetMs + narration.tts.durationMs }];
+			// `narration.audioDurationMs` is probed off the WRITTEN FILE
+			// (`narration.ts`), not `narration.tts.durationMs` — see that
+			// module's doc comment for why the latter under-reports (and
+			// on Polly, always under-reports by the final word).
+			narrationSpans = [{ startMs: offsetMs, endMs: offsetMs + narration.audioDurationMs }];
 		}
 
 		const inputProps = buildInputProps(plan, narrationTimings);
 
 		console.log('Bundling Remotion composition...');
+		// `bundle()` defaults to a fresh `os.tmpdir()/remotion-webpack-bundle-*`
+		// directory that it never cleans up. Bundle into a subdirectory of the
+		// workDir this function already owns and removes in `finally` below,
+		// so nothing is left behind in the system temp dir.
+		const bundleDir = path.join(workDir, 'bundle');
 		const bundleLocation = await bundle({
 			entryPoint: ENTRY_POINT,
+			outDir: bundleDir,
 			// Source imports use explicit `.js` extensions (NodeNext module
 			// resolution), which point at the `.ts`/`.tsx` files webpack
 			// actually needs to bundle — map that alias so webpack resolves
@@ -537,8 +547,14 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 		await writePostMetadata(metadataPath, fullMetadata);
 		console.log(`Wrote ${metadataPath}`);
 	} finally {
-		await rm(workDir, { recursive: true, force: true });
-		await closeRenderer();
+		// `closeRenderer()` runs first, in its own try, so a failing
+		// `rm(workDir)` below can never leave the Playwright/Chromium
+		// process (used by `renderCard` for the IG feed still) running.
+		try {
+			await closeRenderer();
+		} finally {
+			await rm(workDir, { recursive: true, force: true });
+		}
 	}
 }
 

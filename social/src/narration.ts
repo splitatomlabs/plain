@@ -31,7 +31,7 @@ import {
 } from './audio/tts.js';
 import { resolveVoice } from './audio/voices.js';
 import { lineTimingsFromMarks, assertNarrationInSync, type NarrationLineTiming } from './audio/timing.js';
-import { FFMPEG_BIN } from './render/encode.js';
+import { FFMPEG_BIN, probe } from './render/encode.js';
 import type { AuthorSlug } from './render/theme.js';
 
 const execFileAsync = promisify(execFile);
@@ -47,6 +47,17 @@ export function buildTtsProvider(env: TtsEnv): TtsProvider {
 export interface NarrationResult {
 	timings: NarrationLineTiming[];
 	tts: TtsResult;
+	/**
+	 * The WRITTEN AUDIO FILE's own duration, in milliseconds, as measured by
+	 * ffprobe (`render/encode.ts`'s `probe`) — never `tts.durationMs`. See
+	 * this module's `synthesizeNarration` doc comment for why: `tts.durationMs`
+	 * is derived from the provider's own marks, so comparing it against
+	 * `timings` (also derived from those same marks) is circular and can
+	 * never detect real drift. Callers (`cli.ts`) should use THIS value, not
+	 * `tts.durationMs`, for anything measuring real audio length — e.g. the
+	 * ducking span handed to `audio/mix.ts`.
+	 */
+	audioDurationMs: number;
 }
 
 /**
@@ -55,6 +66,18 @@ export interface NarrationResult {
  * marks back onto per-line boundaries) for `author`'s fixed voice, and
  * derives + validates per-line timing. Throws (via `assertNarrationInSync`)
  * rather than shipping a drifted narration track.
+ *
+ * The drift gate is checked against the WRITTEN FILE's real duration
+ * (probed with ffprobe), not `tts.durationMs`. `tts.durationMs` is read off
+ * the SAME provider marks that `timings` is derived from (`lineTimingsFromMarks`
+ * — see `audio/timing.ts`), so comparing `timings` against it is circular:
+ * drift is structurally zero and the gate can never fire. It is also wrong
+ * on Polly specifically — `parsePollySpeechMarks` (`audio/tts.ts`) sets the
+ * FINAL word's `endMs` equal to its own `startMs` (Polly never reports a
+ * duration for the last word), so `tts.durationMs` under-reports the actual
+ * mp3 by the whole final word. Probing the file on disk sidesteps both
+ * problems by measuring the one thing that is actually authoritative: the
+ * audio a listener will hear.
  */
 export async function synthesizeNarration(
 	lines: string[],
@@ -66,8 +89,17 @@ export async function synthesizeNarration(
 	const voice = resolveVoice(author, resolveTtsConfig(env));
 	const tts = await provider.synthesize(lines.join(' '), voice, outPath);
 	const timings = lineTimingsFromMarks(lines, tts);
-	assertNarrationInSync(timings, tts.durationMs);
-	return { timings, tts };
+
+	const probed = await probe(outPath);
+	if (probed.durationSec === null || !Number.isFinite(probed.durationSec)) {
+		throw new Error(
+			`synthesizeNarration: ffprobe could not determine a duration for the written narration file at ${outPath}.`
+		);
+	}
+	const audioDurationMs = probed.durationSec * 1000;
+
+	assertNarrationInSync(timings, audioDurationMs);
+	return { timings, tts, audioDurationMs };
 }
 
 /**

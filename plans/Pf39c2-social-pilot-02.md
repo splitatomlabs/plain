@@ -153,17 +153,17 @@ looks like Plain.
   week 1 ended up with an un-renderable slot. `tryReadThroughContent`'s wall branch is worse: it never gates at all
   ("wall always renders"), so the read-through cascade cannot route around an un-renderable card. Publish a
   renderer-derived exclusion list the scheduler reads, so an impossible slot is never scheduled in the first place.
-- [~] F06: (review M1+M2) The renderer-derived exclusion artifact covers The Wall's POOL only. The Question and
+- [x] F06: (review M1+M2) The renderer-derived exclusion artifact covers The Wall's POOL only. The Question and
   Objection pools are ungated, so a schedule can contain a card their gates reject at render time
   (`discourses-50-008` is 13 words, over the 12-word floor). And the read-through walks the book slice regardless of
   pool membership, so Wall exclusions can never apply to it — plus the survey derives the landing line differently
   from the read-through render, so even a surveyed card's verdict can be wrong. Extend the artifact to all three
   formats and to the read-through slice, using the read-through's own landing-line derivation.
-- [~] F07: (review M3+M4+M5) Three defects around the render path: every Remotion `bundle()` leaks a ~21MB temp dir
+- [x] F07: (review M3+M4+M5) Three defects around the render path: every Remotion `bundle()` leaks a ~21MB temp dir
   (412 dirs / 8.5GB on this machine); `assertNarrationInSync` is handed `marks[last].endMs` as the audio duration,
   so T13's drift gate compares marks against themselves and can never fire — and on Polly it under-reports by the
   final word, un-ducking the bed mid-word; and the root `npm test` never runs the 437-test `social/` suite.
-- [ ] F08: (review M6) No end-to-end render coverage for The Objection — week 1 contains no Objection slot, so its
+- [~] F08: (review M6) No end-to-end render coverage for The Objection — week 1 contains no Objection slot, so its
   whole render path has never executed. Blocked behind F06, which changes which cards can be scheduled.
 - [ ] F04: The Question's and The Objection's timing modules do not accept `narrationTimings` — only The Wall does
   (flagged by T18). Once T14's voices land, real narration for those two formats can drift against their fixed

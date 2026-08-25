@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import os from 'node:os';
+
+import { mkdtemp, rm } from 'node:fs/promises';
 
 import { bundle } from '@remotion/bundler';
 import { selectComposition } from '@remotion/renderer';
@@ -18,6 +21,20 @@ import {
 import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+
+// bundle() defaults to a fresh, never-cleaned-up
+// os.tmpdir()/remotion-webpack-bundle-* directory. Bundle into an
+// mkdtemp'd directory this file owns and removes in afterAll, so
+// running this suite doesn't leak temp directories (social pilot 02 F07).
+let bundleDir: string;
+
+beforeAll(async () => {
+	bundleDir = await mkdtemp(path.join(os.tmpdir(), 'plain-social-test-bundle-'));
+});
+
+afterAll(async () => {
+	await rm(bundleDir, { recursive: true, force: true });
+});
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
 const outputDir = path.join(repoRoot, 'content', 'output');
 
@@ -237,6 +254,7 @@ describe('the composition path surfaces the rejection (T07 wiring)', () => {
 		async () => {
 			const bundleLocation = await bundle({
 				entryPoint: path.join(moduleDir, '..', 'entry.tsx'),
+				outDir: bundleDir,
 				webpackOverride: (config) => ({
 					...config,
 					resolve: {

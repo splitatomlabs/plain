@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
+
+import { mkdtemp, rm } from 'node:fs/promises';
 
 import { bundle } from '@remotion/bundler';
 import { renderStill, selectComposition } from '@remotion/renderer';
@@ -28,6 +30,20 @@ import {
 import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+
+// bundle() defaults to a fresh, never-cleaned-up
+// os.tmpdir()/remotion-webpack-bundle-* directory. Bundle into an
+// mkdtemp'd directory this file owns and removes in afterAll, so
+// running this suite doesn't leak temp directories (social pilot 02 F07).
+let bundleDir: string;
+
+beforeAll(async () => {
+	bundleDir = await mkdtemp(path.join(os.tmpdir(), 'plain-social-test-bundle-'));
+});
+
+afterAll(async () => {
+	await rm(bundleDir, { recursive: true, force: true });
+});
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
 
 // --- Real >=150-word fixture, straight out of content/output ---------------
@@ -267,6 +283,7 @@ describe('end-to-end smoke: renders real still frames at the key boundaries', ()
 
 			const bundleLocation = await bundle({
 				entryPoint: path.join(moduleDir, '..', 'entry.tsx'),
+				outDir: bundleDir,
 				// Source imports use explicit `.js` extensions (required by the
 				// `NodeNext` module resolution in tsconfig.json), which point at
 				// the `.ts`/`.tsx` files webpack actually needs to bundle — map

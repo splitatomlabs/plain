@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "generate": "tsx scripts/generate.ts",
-    "test": "vitest run && npm run test:unit --prefix web"
+    "test": "vitest run && npm run test:unit --prefix web && npm test --prefix social"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.87.0",
