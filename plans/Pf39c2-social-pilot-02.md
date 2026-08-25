@@ -123,8 +123,15 @@ looks like Plain.
   metadata so plan 03 can compare openings. Acceptance: three openings render from one card.
 - [x] T18: Build the render CLI — `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`, reading the schedule
   and writing to `social/out/`. Acceptance: produces correct assets for a given day.
-- [~] T19: Render a full week and review all 14 posts together, with sound, on a phone. A judgement gate, not a test:
+- [!] T19: Render a full week and review all 14 posts together, with sound, on a phone. A judgement gate, not a test:
   if they do not look like one coherent channel, fix the art direction before going further.
+  RENDERS DONE, JUDGEMENT PENDING (2026-08-25). All 14 week-1 posts render to spec into `social/out/` (53MB):
+  8 Wall (3 standard, 3 grade, 2 countdown), 4 Question, 0 Objection — the read-through walks Meditations
+  02-001..007 in slot 1. Rendering the week is what surfaced F02, F03 and F05, which are fixed. The review itself
+  is the user's call and cannot be delegated: it must be watched WITH SOUND ON A PHONE. Two caveats to weigh while
+  watching — the portraits are placeholder art (T02) and there is no narration (T14), so the music bed is the whole
+  soundtrack. Re-render any time with:
+  `for d in 01 02 03 04 05 06 07; do for s in 1 2; do npx tsx social/src/cli.ts render --date 2026-09-$d --slot $s; done; done`
 
 ## Follow-up
 - [x] F01: The read-through counter collided with The Wall's packed archaic text (found while reviewing T17's
