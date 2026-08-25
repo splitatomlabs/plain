@@ -76,6 +76,113 @@ function extractBalancedJSONObject(text: string): string | null {
   }
 }
 
+/**
+ * T23: repairs a response whose JSON object/array is complete in every
+ * respect EXCEPT that the model never emitted its final closing brace(s) —
+ * a real failure mode diagnosed from raw responses captured by
+ * `recordParseFailure` (./parse-failure-log.ts) during a premises re-score.
+ * All four captured cases had `stop_reason: "end_turn"` (not `"max_tokens"`)
+ * and used well under 10% of the 4096-token budget, ruling out truncation:
+ * the model simply stopped after closing its last string value's quote and
+ * never wrote the matching `}`. E.g. (abbreviated):
+ *   {"verdict":"drifts", ... ,"reason":"...without more context."
+ * — a fully-formed object missing only its own closing `}`.
+ *
+ * Starting from the first `{` or `[` in the text, this walks forward
+ * tracking open braces/brackets (skipping over string contents, including
+ * escaped quotes, exactly like `findBalancedBraceEnd`/
+ * `extractBalancedJSONObject` above). If a stray CLOSING brace/bracket is
+ * ever encountered that doesn't match the top of the open stack, the
+ * structure is more broken than "missing a trailing close" and this
+ * refuses to guess (returns null) rather than fabricate something the
+ * model didn't actually write.
+ *
+ * Deliberately narrow scope: this ONLY closes unclosed braces/brackets. It
+ * never closes an unterminated string. `extractJSON` is shared with the
+ * content pipeline's translator, which reads a field like `plain_english`
+ * straight out of whatever this returns — if a string value itself was cut
+ * off mid-sentence (e.g. `max_tokens` truncation, or any other reason the
+ * model stopped mid-string), closing that string produces JSON that parses
+ * cleanly and reads as a complete, valid card, silently shipping a
+ * half-sentence translation into a book with no error raised anywhere. A
+ * response cut off inside a string is not "complete except for a missing
+ * trailing close" the way a response cut off between structural tokens is —
+ * the value itself is incomplete, and this repair must never guess at what
+ * the rest of it would have said. If the text runs out while still inside a
+ * string, this refuses to repair (returns null) so the caller's existing
+ * throw — and therefore retry — still fires, exactly as it did before this
+ * repair existed. Only once no string is open does it append the
+ * outstanding closing braces/brackets, in the correct (innermost-first)
+ * order, and the repair is returned only if the result actually parses —
+ * this never fabricates VALUES, only the minimal closing punctuation the
+ * model's own (complete) structure already implied.
+ */
+function attemptUnclosedJSONRepair(text: string): string | null {
+  const braceIdx = text.indexOf("{");
+  const bracketIdx = text.indexOf("[");
+  const start =
+    braceIdx === -1 ? bracketIdx : bracketIdx === -1 ? braceIdx : Math.min(braceIdx, bracketIdx);
+  if (start === -1) return null;
+
+  const closers: Array<"}" | "]"> = [];
+  let inString = false;
+  let escaped = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === "{") {
+      closers.push("}");
+    } else if (ch === "[") {
+      closers.push("]");
+    } else if (ch === "}" || ch === "]") {
+      if (closers.length > 0 && closers[closers.length - 1] === ch) {
+        closers.pop();
+      } else {
+        // A closing brace/bracket that doesn't match what's open — the
+        // structure is malformed in a way beyond "missing a trailing
+        // close." Don't guess.
+        return null;
+      }
+    }
+  }
+
+  // Nothing was left open — this wasn't actually the failure mode this
+  // repair targets (extractBalancedJSONObject would already have handled
+  // a fully-balanced-but-differently-invalid span).
+  if (closers.length === 0 && !inString) return null;
+
+  // Never close an unterminated string. `extractJSON` is shared with the
+  // content pipeline's translator — closing an open string turns a
+  // genuinely truncated translation (e.g. a `plain_english` value cut off
+  // mid-sentence) into JSON that parses cleanly and passes downstream
+  // validation, silently shipping a half-sentence into a book with no error
+  // raised anywhere. A response cut off mid-string is NOT "complete except
+  // for a missing trailing close" — the VALUE itself is incomplete, which
+  // this repair must never guess at. Refuse and let the caller's existing
+  // throw (and retry) handle it, same as before this repair existed.
+  if (inString) return null;
+
+  const candidate = text.slice(start) + closers.reverse().join("");
+  try {
+    JSON.parse(candidate);
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
 export function extractJSON(text: string): string {
   // 1. Try the full output as-is
   try {
@@ -125,6 +232,14 @@ export function extractJSON(text: string): string {
     } catch {
       // continue
     }
+  }
+
+  // 3c. Repair a response that's complete except for a missing trailing
+  // close — see `attemptUnclosedJSONRepair`'s own doc comment for the real,
+  // captured failure this targets (confirmed NOT max_tokens truncation).
+  const repaired = attemptUnclosedJSONRepair(text);
+  if (repaired !== null) {
+    return repaired;
   }
 
   throw new ClaudeCliError("Could not extract JSON from response", text);

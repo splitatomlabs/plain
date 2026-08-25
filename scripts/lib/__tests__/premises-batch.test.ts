@@ -9,14 +9,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 const mockCreateMessageBatch = vi.fn();
 const mockPollBatchUntilDone = vi.fn();
 const mockStreamBatchResults = vi.fn();
+// T23: the real-time retry path — defaults to rejecting (see beforeEach)
+// so every EXISTING "drops a failed item" test still ends up dropped, just
+// via one extra (failing) retry attempt, unless a test explicitly opts a
+// specific call into succeeding.
+const mockCallClaudeJSON = vi.fn();
 
 vi.mock("../claude.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../claude.js")>()),
   createMessageBatch: (...args: unknown[]) => mockCreateMessageBatch(...args),
   pollBatchUntilDone: (...args: unknown[]) => mockPollBatchUntilDone(...args),
   streamBatchResults: (...args: unknown[]) => mockStreamBatchResults(...args),
+  callClaudeJSON: (...args: unknown[]) => mockCallClaudeJSON(...args),
 }));
 
+import { readFile, rm } from "node:fs/promises";
+import path from "node:path";
 import {
   chunkArray,
   buildDryRunReport,
@@ -28,7 +36,9 @@ import {
   scoreObjectionSurvivors,
   MAX_REQUESTS_PER_BATCH,
   faithfulnessStats,
+  retryStats,
 } from "../premises-batch.js";
+import { PARSE_FAILURE_DIR } from "../parse-failure-log.js";
 import { loadCorpus, rankWall, questionGate, objectionGate, type QuestionEntry, type RankedWallEntry, type ObjectionEntry } from "../premises.js";
 import { logger } from "../logger.js";
 import { batchStats, tokenUsage } from "../claude.js";
@@ -84,6 +94,35 @@ function makeErroredResult(customId: string) {
   };
 }
 
+/** A "succeeded" batch item carrying RAW (not JSON.stringify'd) text, plus a configurable stop_reason/output_tokens — for exercising the parse-failure capture path (T23). */
+function makeRawSucceededResult(
+  customId: string,
+  text: string,
+  opts: { stopReason?: string | null; outputTokens?: number } = {},
+) {
+  return {
+    custom_id: customId,
+    result: {
+      type: "succeeded" as const,
+      message: {
+        content: [{ type: "text" as const, text }],
+        stop_reason: opts.stopReason ?? "end_turn",
+        usage: {
+          input_tokens: 10,
+          output_tokens: opts.outputTokens ?? 5,
+          cache_read_input_tokens: 0,
+          cache_creation_input_tokens: 0,
+        },
+      },
+    },
+  };
+}
+
+/** Cleans up a parse-failure capture file if it exists, so tests never leave stray artifacts under content/pipeline/social/parse-failures/. */
+async function cleanupCapture(customId: string): Promise<void> {
+  await rm(path.join(PARSE_FAILURE_DIR, `${customId}.json`), { force: true });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   batchStats.totalRequests = 0;
@@ -94,6 +133,13 @@ beforeEach(() => {
   tokenUsage.cacheReadTokens = 0;
   tokenUsage.cacheCreationTokens = 0;
   faithfulnessStats.rejected = 0;
+  retryStats.retried = 0;
+  retryStats.recovered = 0;
+  retryStats.droppedAfterRetry = 0;
+  // Default: the real-time retry always fails, so a pre-T23 "drops a
+  // failed item" test still ends up dropped (just via one extra failed
+  // retry attempt) unless a test explicitly overrides this per-call.
+  mockCallClaudeJSON.mockRejectedValue(new Error("retry not configured for this test"));
 });
 
 // ---------------------------------------------------------------------------
@@ -340,6 +386,124 @@ describe("scoreQuestionSurvivors", () => {
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("failed to parse"));
     } finally {
       warnSpy.mockRestore();
+      await cleanupCapture(customId);
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // T23: parse-failure capture + retry-once + recovered-vs-dropped accounting
+  // -------------------------------------------------------------------------
+
+  it("T23: captures the raw response, stop_reason, and output_tokens to disk on a parse failure, then retries once via the real-time API", async () => {
+    const card = makeCard({
+      id: "test-card-capture",
+      plain_english: "Do you want a good life? Then act well. Nothing else matters.",
+    });
+    const entries = questionGate([card]);
+    expect(entries).toHaveLength(1);
+
+    mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_capture" });
+    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_capture", processing_status: "ended" });
+
+    const requests = buildQuestionRequests(entries);
+    const customId = requests[0].request.custom_id;
+
+    // Truncated-looking response: not valid JSON, stop_reason is max_tokens,
+    // output_tokens is unusually high — exactly the shape T23 exists to
+    // diagnose (settling truncation vs. a genuinely malformed complete
+    // response).
+    const rawText = '{"verdict": "answers", "standalone_intellig';
+    mockStreamBatchResults.mockReturnValue(
+      asyncIterFrom([makeRawSucceededResult(customId, rawText, { stopReason: "max_tokens", outputTokens: 4096 })]),
+    );
+    // The retry also fails (default reject from beforeEach) — this item ends up genuinely dropped.
+
+    try {
+      const scored = await scoreQuestionSurvivors(entries, [card]);
+      expect(scored).toHaveLength(0);
+
+      const capturePath = path.join(PARSE_FAILURE_DIR, `${customId}.json`);
+      const captured = JSON.parse(await readFile(capturePath, "utf-8"));
+      expect(captured.custom_id).toBe(customId);
+      expect(captured.format).toBe("question");
+      expect(captured.stop_reason).toBe("max_tokens");
+      expect(captured.output_tokens).toBe(4096);
+      expect(captured.raw_text).toBe(rawText);
+      expect(typeof captured.error).toBe("string");
+      expect(captured.error.length).toBeGreaterThan(0);
+
+      // Also dropped after retry, since the retry itself failed.
+      expect(retryStats.retried).toBe(1);
+      expect(retryStats.recovered).toBe(0);
+      expect(retryStats.droppedAfterRetry).toBe(1);
+    } finally {
+      await cleanupCapture(customId);
+    }
+  });
+
+  it("T23: recovers a dropped request via one real-time retry, counted separately from a request that stays dropped", async () => {
+    const cardRecovers = makeCard({
+      id: "test-card-recovers",
+      plain_english: "Do you want a good life? Then act well. Nothing else matters.",
+    });
+    const cardStaysDropped = makeCard({
+      id: "test-card-stays-dropped",
+      plain_english: "Do you fear death? You should not. Death is nothing to you.",
+    });
+    const entries = questionGate([cardRecovers, cardStaysDropped]);
+    expect(entries).toHaveLength(2);
+
+    mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_retry" });
+    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_retry", processing_status: "ended" });
+
+    const requests = buildQuestionRequests(entries);
+    const [recoversId, staysDroppedId] = requests.map((r) => r.request.custom_id);
+
+    // First item's batch response is malformed (triggers a retry); second
+    // item's batch request errored outright (also triggers a retry).
+    mockStreamBatchResults.mockReturnValue(
+      asyncIterFrom([
+        makeRawSucceededResult(recoversId, "not valid json", { stopReason: "end_turn", outputTokens: 12 }),
+        makeErroredResult(staysDroppedId),
+      ]),
+    );
+
+    // Retry order mirrors the order failures were encountered above: the
+    // first retry (for `recoversId`) succeeds with a valid payload; the
+    // second retry (for `staysDroppedId`) fails, falling through to the
+    // default rejection configured in beforeEach.
+    mockCallClaudeJSON.mockResolvedValueOnce({
+      verdict: "answers",
+      standalone_intelligible: true,
+      answer_has_substance: true,
+      modern_premise: true,
+      reason: "Resolves it on retry.",
+    });
+
+    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+    const infoSpy = vi.spyOn(logger, "info").mockImplementation(() => {});
+    try {
+      const scored = await scoreQuestionSurvivors(entries, [cardRecovers, cardStaysDropped]);
+
+      expect(scored).toHaveLength(1);
+      expect(scored[0].card_id).toBe("test-card-recovers");
+      expect(scored[0].drift_verdict).toBe("answers");
+
+      expect(retryStats.retried).toBe(2);
+      expect(retryStats.recovered).toBe(1);
+      expect(retryStats.droppedAfterRetry).toBe(1);
+
+      // batchStats.failed reflects only the FINAL, post-retry drop — the
+      // recovered item must not still be counted as a failure.
+      expect(batchStats.succeeded).toBe(1);
+      expect(batchStats.failed).toBe(1);
+
+      expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining(`${recoversId} recovered via retry`));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(`${staysDroppedId} retry failed`));
+    } finally {
+      warnSpy.mockRestore();
+      infoSpy.mockRestore();
+      await cleanupCapture(recoversId);
     }
   });
 

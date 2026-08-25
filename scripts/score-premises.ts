@@ -30,6 +30,7 @@ import {
   scoreQuestionSurvivors,
   scoreObjectionSurvivors,
   faithfulnessStats,
+  retryStats,
   type BuiltRequest,
 } from "./lib/premises-batch.js";
 import { tokenUsage, batchStats } from "./lib/claude.js";
@@ -83,7 +84,12 @@ succeeded still writes the pool file (a deliberate --limit run is a
 legitimate workflow) but records the shortfall in the file's own "meta"
 field and prints a loud warning.
 
-Logs are written to content/pipeline/social/premises.log on every run.`);
+Logs are written to content/pipeline/social/premises.log on every run.
+
+A response that fails to parse gets one retry via the real-time API before
+being dropped. If it still fails to parse, its raw response, stop_reason,
+and output token count are captured to
+content/pipeline/social/parse-failures/<custom_id>.json (gitignored).`);
   process.exit(0);
 }
 
@@ -301,6 +307,13 @@ async function main(): Promise<void> {
 
   if (!dryRun) {
     console.log(`\nFaithfulness rejections: ${faithfulnessStats.rejected}`);
+    if (retryStats.retried > 0) {
+      console.log(
+        `Retries: ${retryStats.retried} attempted, ${retryStats.recovered} recovered, ` +
+          `${retryStats.droppedAfterRetry} dropped even after retry — see content/pipeline/social/parse-failures/ ` +
+          `for captured raw responses on any parse-failure drop.`,
+      );
+    }
     if (combined.length > 0) {
       console.log("\nCombined author mix (across all formats run):");
       const mix = combinedAuthorMix(combined);

@@ -1505,3 +1505,85 @@ as being worth posting.
   re-score compose correctly, not just against synthetic fixtures. `npm test` — **791 pipeline tests** (780 baseline
   + 11 new: 9 premises-scoring.test.ts + 2 schedule.test.ts) + **95 web unit tests**, all green, confirming no
   regression to T01-T21 or any other consumer. This is the last task in the plan.
+
+- [x] T23: Make parse failures diagnosable and recoverable. `extractJSON` still drops responses after T20's fix
+  (22 of 1,003 in the Wall run = 2.2%; 6 of 89 in the T22 Question re-score = 6.7%). Root cause is UNKNOWN because
+  the raw response text is discarded on parse failure — only the error message is logged, which is why T20's fix
+  was a code-review inference rather than a confirmed diagnosis. Two parts:
+  (a) persist the raw response text (and `stop_reason`) whenever parsing fails, so the next run is diagnosable;
+  (b) give the premises batch the real-time retry the translator already has at `translator.ts:191` — today every
+  drop is permanent, while the content pipeline recovers.
+  Hypothesis to test, not assume: `max_tokens` is 4096 everywhere and T22's rate tripled when the rubric went from
+  one judgement to four, which is consistent with truncation — but the T11 run averaged ~170 output tokens, so a
+  truncated response would be a 24x outlier. `stop_reason === "max_tokens"` settles it either way.
+  Acceptance: a forced parse failure writes the raw text somewhere inspectable; a dropped request is retried once;
+  the re-run reports whether truncation was the cause.
+  **(a) Capture:** new `scripts/lib/parse-failure-log.ts` — `recordParseFailure` writes
+  `content/pipeline/social/parse-failures/<custom_id>.json` (custom_id, format, parser error, `stop_reason`,
+  `usage.output_tokens`, and the full raw response text), awaited (not fire-and-forget) so the file is guaranteed to
+  exist before `submitAndCollect` returns, and overwriting any earlier capture for the same `custom_id` on a re-run.
+  `.gitignore` gained `content/pipeline/social/parse-failures/` — verified `content/pipeline/` itself is NOT
+  blanket-ignored (the per-book `parse.json`/`refine.json`/`translate.json` intermediates ARE committed), so this
+  needed its own explicit entry; `*.log` already covered `premises.log`.
+  **(b) Retry:** `submitAndCollect` (`scripts/lib/premises-batch.ts`) now mirrors `translateChunksBatch`
+  (`translator.ts:191`) — every first-attempt failure (errored, no text content, or parse failure) is collected and
+  retried once via `callClaudeJSON` (the existing real-time helper — no new client path), then re-validated through
+  the SAME format-specific parser (`parseWallRubricResponse`/etc, via `JSON.stringify` round-trip) a first-attempt
+  success would have gotten. New exported `retryStats = { retried, recovered, droppedAfterRetry }`, reset in tests
+  like `faithfulnessStats`; `batchStats.failed` (./claude.ts) now reflects only the FINAL post-retry drop count, not
+  every first-attempt failure. `score-premises.ts` reports retry stats alongside the faithfulness-rejection line.
+  **(c) Truncation hypothesis — TESTED, FALSE.** Real re-score run (`--format question --force --verbose`, 89
+  requests, $0.4863): 4 of 89 failed to parse on the first attempt; ALL FOUR had `stop_reason: "end_turn"` (never
+  `"max_tokens"`) with output_tokens 171–203 — under 5% of the 4096 budget. Truncation is ruled out. Inspecting the
+  captured raw text (`content/pipeline/social/parse-failures/*.json`) showed the actual shape: a fully-formed,
+  correctly-typed JSON object whose LAST character is the closing quote of its `"reason"` string — the model simply
+  never emitted the object's own final `}`. Fixed `extractJSON` (`scripts/lib/claude.ts`) with a new step 3c,
+  `attemptUnclosedJSONRepair`: walks the text from the first `{`/`[` tracking open braces/brackets (skipping string
+  contents exactly like the existing `findBalancedBraceEnd`), and if the text runs out with braces/brackets (and
+  optionally a string) still open, closes them in the correct innermost-first order and re-parses — returning the
+  repair ONLY if it actually parses, and refusing to guess (returns null, falls through to the existing throw) if a
+  stray mismatched closer proves the structure is broken in some other way. Verified against all 4 real captured
+  failures directly (`npx tsx` one-off) — all 4 now parse correctly. Of the run's 4 first-attempt failures, 3
+  recovered via the real-time retry (different response, happened to parse) and 1 was dropped even after retry
+  (`question_happy-life-22-004_73` — its retry response independently failed to parse too, predating this task's
+  `extractJSON` fix; not re-verified end-to-end against the fix to avoid a second ~$0.40 API spend, but all 4 of
+  the ORIGINAL captured failures now parse under the fixed `extractJSON`, so a future re-run of `--format question`
+  should recover all 89). `content/social/premises/question.json` was regenerated by this run (`--force`) — now
+  88/89 entries, `meta.dropped: 1`, matching the log.
+  **Tests:** `scripts/lib/__tests__/parse-failure-log.test.ts` (new, 4 tests) — capture writes the expected shape,
+  `stop_reason` distinguishes truncation from a complete-but-malformed response, a second capture overwrites the
+  first rather than accumulating, and defensive filename sanitization stays within `PARSE_FAILURE_DIR`.
+  `scripts/lib/__tests__/premises-batch.test.ts` — added `mockCallClaudeJSON` to the `../claude.js` mock (defaults
+  to rejecting, so every pre-T23 "drops a failed item" test still ends up dropped, just via one extra failed retry
+  attempt); reset `retryStats` in `beforeEach`; 2 new tests (a parse failure captures stop_reason/output_tokens/raw
+  text to disk then is dropped after a failed retry; a batch of one parse-failure + one errored item shows one
+  recovering via retry and one staying dropped, with `retryStats`/`batchStats.failed` accounting checked precisely).
+  32 baseline → 34. `scripts/lib/__tests__/claude.test.ts` — 6 new tests for `attemptUnclosedJSONRepair`, including
+  a verbatim-shaped regression fixture of the real captured failure, multi-level nested-brace repair, a
+  genuinely-truncated-mid-string case (the repair also covers real `max_tokens` truncation, not just this task's
+  diagnosed cause), unclosed-array repair, a mismatched-closer case that must still throw (refusing to guess), and
+  a fully-balanced response that must NOT be routed through the repair path. 13 baseline → 19. `npm test` —
+  **803 pipeline tests** (791 baseline + 12 new: 4 parse-failure-log.test.ts + 2 premises-batch.test.ts + 6
+  claude.test.ts) + **95 web unit tests**, all green.
+  **Fix pass (safety):** `attemptUnclosedJSONRepair`'s original version also closed an UNTERMINATED string (not just
+  unclosed braces/brackets), which silently converts a genuinely truncated translation into valid-looking JSON —
+  demonstrated with `{"plain_english": "Some things are up to you. Some things are not. What is up to` repairing to
+  a half-sentence card with no error raised anywhere, since `extractJSON` is shared with the content pipeline's
+  translator. Before this repair existed, that response would have failed to parse and been retried (the safe
+  outcome). Fixed by adding one guard in `scripts/lib/claude.ts`: if the brace/bracket scan reaches end-of-text with
+  a string still open, `attemptUnclosedJSONRepair` now returns `null` (refuses to repair) instead of closing the
+  string — only unclosed `{`/`[` are ever closed. Did NOT add the `stop_reason === "max_tokens"` defense-in-depth
+  check: `extractJSON` is called from 5+ sites across the content pipeline (`translator.ts`, `refine.ts`,
+  `recover-batch.ts`, `premises-scoring.ts`, `claude.ts`'s own `callClaudeJSON`), and plumbing `stop_reason` through
+  all of their signatures just to gate this one repair is the invasive restructuring the fix-pass brief said to
+  avoid — rule 1 (never close an unterminated string) already closes the demonstrated hole on its own, since a
+  `max_tokens` truncation almost always lands mid-string too. Re-verified against all 4 real captured failures in
+  `content/pipeline/social/parse-failures/` (one-off `npx tsx` run importing `extractJSON` directly) — all 4 still
+  repair correctly, confirming the narrower rule doesn't regress the diagnosed T23 fix (their strings were always
+  correctly closed; only the object's own closing `}` was missing). **Tests:** `scripts/lib/__tests__/claude.test.ts`
+  — replaced the one test that asserted the old (unsafe) mid-string repair with a test asserting it now throws;
+  added the exact `plain_english` case from the fix-pass brief verbatim as its own regression test; added a
+  "repairs an array with unclosed braces but properly closed strings" test and a "throws on an array truncated
+  mid-string" test (mirroring the object-vs-string distinction for the array path). Net +3 tests (one repair test
+  replaced in place, three added). `npm test` — **806 pipeline tests** (803 baseline + 3 new) + **95 web unit
+  tests**, all green — no existing test weakened or deleted.

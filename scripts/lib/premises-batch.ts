@@ -7,8 +7,11 @@ import {
   safeCustomId,
   tokenUsage,
   batchStats,
+  callClaudeJSON,
   type BatchRequest,
+  type CallClaudeOptions,
 } from "./claude.js";
+import { recordParseFailure } from "./parse-failure-log.js";
 import {
   rankWall,
   questionGate,
@@ -228,15 +231,82 @@ export function buildObjectionRequests(
 }
 
 // ---------------------------------------------------------------------------
+// T23: retry accounting, kept separate from `faithfulnessStats`
+// (faithfulness rejections are a deliberate content-quality drop; a retry
+// recovery/drop is an availability outcome) and separate from
+// `batchStats.failed` (./claude.ts, which after this task reflects only the
+// FINAL, post-retry drop count) so a run's report can distinguish "parsed
+// first time," "needed a retry and recovered," and "dropped even after a
+// retry." Reset per-process like `faithfulnessStats` — a single CLI
+// invocation accumulates across every format it runs, matching how
+// `tokenUsage`/`batchStats` already behave.
+// ---------------------------------------------------------------------------
+export const retryStats = {
+  retried: 0,
+  recovered: 0,
+  droppedAfterRetry: 0,
+};
+
+/** A batch item that failed on the first (batch) attempt and is eligible for a real-time retry. */
+interface FailedItem<TMeta> {
+  customId: string;
+  meta: TMeta;
+  request: BatchRequest;
+}
+
+/**
+ * Retries every item in `failedItems` once via the real-time API, mirroring
+ * `translateChunksBatch`'s retry pattern (./translator.ts:191) — reuses
+ * `callClaudeJSON` (./claude.ts) rather than opening a new client path.
+ * `callClaudeJSON` already does its own generic JSON.parse/extractJSON; the
+ * result is re-serialized and run back through this format's own `parse`
+ * (./premises-scoring.ts) so a recovered response gets EXACTLY the same
+ * schema validation (score ranges, enum values, required fields) a
+ * first-attempt success would have gotten — not a weaker check.
+ */
+async function retryFailedItems<TMeta, TParsed>(
+  failedItems: FailedItem<TMeta>[],
+  format: string,
+  parse: (raw: string) => TParsed,
+): Promise<Array<{ meta: TMeta; parsed: TParsed }>> {
+  if (failedItems.length === 0) return [];
+
+  logger.warn(
+    `premises-batch: ${format} — retrying ${failedItems.length} failed request(s) via real-time API`,
+  );
+
+  const recovered: Array<{ meta: TMeta; parsed: TParsed }> = [];
+
+  for (const { customId, meta, request } of failedItems) {
+    retryStats.retried++;
+    try {
+      const raw = await callClaudeJSON<unknown>(request.messages[0].content, undefined, {
+        system: request.system,
+      } as CallClaudeOptions);
+      const parsed = parse(JSON.stringify(raw));
+      recovered.push({ meta, parsed });
+      retryStats.recovered++;
+      logger.info(`premises-batch: ${format} — ${customId} recovered via retry`);
+    } catch (e) {
+      retryStats.droppedAfterRetry++;
+      const msg = e instanceof Error ? e.message : String(e);
+      logger.warn(`premises-batch: ${format} — ${customId} retry failed: ${msg} — dropped`);
+    }
+  }
+
+  return recovered;
+}
+
+// ---------------------------------------------------------------------------
 // Submit -> poll -> stream -> merge, shared across all three formats.
 // Mirrors `translateChunksBatch`'s structure (createMessageBatch ->
-// pollBatchUntilDone -> streamBatchResults -> per-item error handling), with
-// one deliberate difference: this module DROPS a failed item with a logged
-// reason rather than retrying it via the real-time API. The plan's own task
-// description asks for "drop failures with a logged reason," not a retry —
-// unlike the translate phase, a dropped premise candidate just means one
-// fewer post-worthy card in a pool of hundreds, not a missing card in the
-// shipped book.
+// pollBatchUntilDone -> streamBatchResults -> per-item error handling ->
+// retry-once via the real-time API). Before T23 this module dropped a
+// failed item permanently after a logged reason; now every failure gets one
+// real-time retry (`retryFailedItems`, above) before being counted as
+// dropped, and a parse failure additionally has its raw response persisted
+// (`recordParseFailure`, ./parse-failure-log.ts) so the failure is
+// diagnosable rather than just logged-and-discarded.
 // ---------------------------------------------------------------------------
 
 async function submitAndCollect<TMeta, TParsed>(
@@ -247,7 +317,11 @@ async function submitAndCollect<TMeta, TParsed>(
   if (built.length === 0) return [];
 
   const metaByCustomId = new Map<string, TMeta>();
-  for (const b of built) metaByCustomId.set(b.request.custom_id, b.meta);
+  const requestByCustomId = new Map<string, BatchRequest>();
+  for (const b of built) {
+    metaByCustomId.set(b.request.custom_id, b.meta);
+    requestByCustomId.set(b.request.custom_id, b.request);
+  }
 
   const chunks = chunkArray(built, MAX_REQUESTS_PER_BATCH);
   logger.info(
@@ -255,7 +329,8 @@ async function submitAndCollect<TMeta, TParsed>(
   );
 
   const collected: Array<{ meta: TMeta; parsed: TParsed }> = [];
-  let failed = 0;
+  const failedItems: FailedItem<TMeta>[] = [];
+  let firstAttemptFailed = 0;
 
   for (let i = 0; i < chunks.length; i++) {
     const requests = chunks[i].map((c) => c.request);
@@ -270,24 +345,27 @@ async function submitAndCollect<TMeta, TParsed>(
 
     for await (const item of streamBatchResults(batch.id)) {
       const meta = metaByCustomId.get(item.custom_id);
-      if (!meta) {
+      const request = requestByCustomId.get(item.custom_id);
+      if (!meta || !request) {
         logger.warn(`premises-batch: ${format} — unknown custom_id ${item.custom_id} — ignored`);
         continue;
       }
 
       if (item.result.type === "errored") {
-        failed++;
+        firstAttemptFailed++;
         logger.warn(
-          `premises-batch: ${format} — ${item.custom_id} errored: ${JSON.stringify(item.result.error)} — dropped`,
+          `premises-batch: ${format} — ${item.custom_id} errored: ${JSON.stringify(item.result.error)} — will retry`,
         );
+        failedItems.push({ customId: item.custom_id, meta, request });
         continue;
       }
 
       const message = item.result.message;
       const textBlock = message.content.find((b) => b.type === "text");
       if (!textBlock || textBlock.type !== "text") {
-        failed++;
-        logger.warn(`premises-batch: ${format} — ${item.custom_id} had no text content — dropped`);
+        firstAttemptFailed++;
+        logger.warn(`premises-batch: ${format} — ${item.custom_id} had no text content — will retry`);
+        failedItems.push({ customId: item.custom_id, meta, request });
         continue;
       }
 
@@ -300,11 +378,34 @@ async function submitAndCollect<TMeta, TParsed>(
       try {
         parsed = parse(textBlock.text);
       } catch (e) {
-        failed++;
+        firstAttemptFailed++;
         const msg = e instanceof Error ? e.message : String(e);
+        const stopReason = message.stop_reason ?? null;
+        const outputTokens = message.usage.output_tokens;
         logger.warn(
-          `premises-batch: ${format} — ${item.custom_id} failed to parse response: ${msg} — dropped`,
+          `premises-batch: ${format} — ${item.custom_id} failed to parse response ` +
+            `(stop_reason=${stopReason}, output_tokens=${outputTokens}): ${msg} — will retry`,
         );
+        // T23: persist the raw response so this failure is diagnosable —
+        // awaited (not fire-and-forget) so the capture is guaranteed to
+        // exist on disk before this function returns, and a write failure
+        // is logged loudly rather than silently swallowed.
+        try {
+          const capturePath = await recordParseFailure({
+            custom_id: item.custom_id,
+            format,
+            error: msg,
+            stop_reason: stopReason,
+            output_tokens: outputTokens,
+            raw_text: textBlock.text,
+          });
+          logger.info(`premises-batch: ${format} — captured raw response for ${item.custom_id} at ${capturePath}`);
+        } catch (writeErr) {
+          logger.warn(
+            `premises-batch: ${format} — failed to persist parse-failure capture for ${item.custom_id}: ${writeErr}`,
+          );
+        }
+        failedItems.push({ customId: item.custom_id, meta, request });
         continue;
       }
 
@@ -312,12 +413,17 @@ async function submitAndCollect<TMeta, TParsed>(
     }
   }
 
+  const recovered = await retryFailedItems(failedItems, format, parse);
+  collected.push(...recovered);
+  const droppedFinal = firstAttemptFailed - recovered.length;
+
   batchStats.totalRequests += built.length;
   batchStats.succeeded += collected.length;
-  batchStats.failed += failed;
+  batchStats.failed += droppedFinal;
 
   logger.info(
-    `premises-batch: ${format} — ${collected.length} succeeded, ${failed} dropped (of ${built.length} submitted)`,
+    `premises-batch: ${format} — ${collected.length} succeeded (${recovered.length} via retry), ` +
+      `${droppedFinal} dropped (of ${built.length} submitted)`,
   );
 
   return collected;
