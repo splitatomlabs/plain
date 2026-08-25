@@ -24,6 +24,27 @@ import {
   WALL_SCENE_QUOTE_MIN,
   WALL_COUNTDOWN_DELTA_MIN,
   WALL_ORIGINAL_GRADE_MIN,
+  QUESTION_MAX_WORDS,
+  QUESTION_SENTENCE_WINDOW,
+  QUESTION_OPENING_REJECTS,
+  findQuestionCandidate,
+  questionCandidateAnswer,
+  isExclamationShaped,
+  hasAttributionLeak,
+  hasMidThoughtOpener,
+  isFragmentQuestion,
+  passesLayerA,
+  isSocraticChainAnswer,
+  passesLayerB,
+  questionGate,
+  buildQuestionDriftRequests,
+  hasColonAttributionLeadIn,
+  isSecondPersonQuestion,
+  hasThirdPartyReference,
+  hasUnbalancedSingleQuote,
+  hasUnbalancedQuotes,
+  PIVOT_ANSWER_PHRASES,
+  isPivotAnswer,
 } from "../premises.js";
 import type { Card } from "../types.js";
 
@@ -831,5 +852,469 @@ describe("rankWall against the real corpus", () => {
     expect(reserve).toBe(608);
     expect(countdown).toBe(248);
     expect(grade).toBe(631);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04: The Question — mechanical gate helpers
+// ---------------------------------------------------------------------------
+
+describe("isExclamationShaped", () => {
+  it("rejects a question ending in stacked ?! punctuation", () => {
+    expect(isExclamationShaped("Isn't that wonderful?!")).toBe(true);
+  });
+
+  it("rejects a 'What a'/'What an' opener", () => {
+    expect(isExclamationShaped("What a strange thing to say?")).toBe(true);
+    expect(isExclamationShaped("What an odd way to live?")).toBe(true);
+  });
+
+  it("rejects a 'How <adjective>' rhetorical exclamation", () => {
+    expect(isExclamationShaped("How wonderful is that?")).toBe(true);
+  });
+
+  it("accepts a genuine 'How <auxiliary>' question", () => {
+    expect(isExclamationShaped("How do you know that?")).toBe(false);
+  });
+
+  it("accepts an ordinary question with a single trailing ?", () => {
+    expect(isExclamationShaped("What should you do next?")).toBe(false);
+  });
+});
+
+describe("hasAttributionLeak", () => {
+  it("flags a pronoun subject directly before an attribution verb", () => {
+    expect(hasAttributionLeak("He asks why virtue matters.")).toBe(true);
+    expect(hasAttributionLeak("Someone says this is easy.")).toBe(true);
+  });
+
+  it("flags 'you ask' specifically", () => {
+    expect(hasAttributionLeak("Then you ask what comes next.")).toBe(true);
+  });
+
+  it("does not flag ordinary 'you say'/'you should say' second-person address", () => {
+    // Measured against the real corpus: treating bare "you" the same as
+    // "he"/"someone" produced false positives on the author's own direct
+    // address to the viewer — see discourses-44-003 in the corpus test
+    // below.
+    expect(hasAttributionLeak("What should you say when something painful happens")).toBe(false);
+  });
+
+  it("flags a genuine proper-noun subject before an attribution verb", () => {
+    expect(hasAttributionLeak("But Epictetus said it plainly.")).toBe(true);
+  });
+
+  it("does not flag a sentence-initial wh-word before a speech verb", () => {
+    // "Who says X" is a rhetorical device ("nobody would say X"), not a
+    // report of what a third party said — measured against the real corpus
+    // (happy-life-24-003).
+    expect(hasAttributionLeak("Who says generosity is only for citizens who wear togas?")).toBe(false);
+  });
+
+  it("does not flag an ordinary sentence with no attribution verb", () => {
+    expect(hasAttributionLeak("The quality of your thoughts shapes your life.")).toBe(false);
+  });
+
+  it("flags a first-person speech verb ('I ask') — meditations-04-022", () => {
+    // Real corpus leak: the mechanical gate previously accepted this
+    // question because ATTRIBUTION_PRONOUN_SUBJECTS only covered third-party
+    // subjects (he/she/they/someone/people), never "I".
+    expect(hasAttributionLeak("I ask back: how does the earth keep holding all the buried bodies forever?")).toBe(
+      true,
+    );
+  });
+
+  it("flags a speech-attribution lead-in before a colon even without adjacent I+verb", () => {
+    expect(hasColonAttributionLeadIn("Epictetus asks something else: what should you do?")).toBe(true);
+  });
+
+  it("does not flag a colon with no speech attribution before it", () => {
+    expect(hasColonAttributionLeadIn("For example: what should you do next?")).toBe(false);
+  });
+
+  it("does not flag an ordinary first-person statement with 'I' that isn't a speech verb", () => {
+    expect(hasAttributionLeak("I know that virtue is the only true good.")).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04: The Question — mechanical gate, measured corpus counts
+// ---------------------------------------------------------------------------
+
+describe("findQuestionCandidate against the real corpus", () => {
+  const cards = loadCorpus();
+  const candidates = cards.map((c) => findQuestionCandidate(c)).filter((c): c is NonNullable<typeof c> => c !== null);
+
+  it("measures the mechanical gate at exactly 306", () => {
+    // Measured stage-by-stage (all applied to the first QUESTION_SENTENCE_WINDOW
+    // sentences of plain_english, as an existence check over the candidate
+    // set rather than a single fixed candidate carried through each stage):
+    //   question present                        458
+    //   + <=14 words                             380
+    //   + unquoted                               379
+    //   + self-contained opening (T01)           319
+    //   + not exclamation-shaped, no attribution  313
+    //     leak (author's own voice)
+    // The plan's target for this gate was 292. 313 was the first-pass measured
+    // count, before a fix-pass audit surfaced four real leaks the deterministic
+    // checks were missing (a first-person/colon-lead-in attribution gap in
+    // `hasAttributionLeak`, cataphoric "pivot" non-answers, third-party/literary
+    // reference questions, and unbalanced quote characters — see the
+    // `hasAttributionLeak`/`hasThirdPartyReference`/`isPivotAnswer`/
+    // `hasUnbalancedQuotes` tests above and below). `hasAttributionLeak`'s
+    // first-person/colon fix is applied here too (it's part of the mechanical
+    // gate's own "no attribution leak" check), dropping this stage from 313 to
+    // **306**. 306 is what's measured and asserted here — not contorted to hit
+    // any estimate, matching the policy T01/T03 documented for their own
+    // unreproducible targets.
+    expect(candidates.length).toBe(306);
+  });
+
+  it("every candidate question ends with '?', is within the word limit, and is unquoted", () => {
+    for (const { question } of candidates) {
+      expect(question.trim().endsWith("?")).toBe(true);
+      expect(wordCount(question)).toBeLessThanOrEqual(QUESTION_MAX_WORDS);
+      expect(question).not.toContain('"');
+    }
+  });
+
+  it("every candidate index falls within the sentence window", () => {
+    for (const { index } of candidates) {
+      expect(index).toBeLessThan(QUESTION_SENTENCE_WINDOW);
+    }
+  });
+});
+
+describe("questionCandidateAnswer", () => {
+  it("returns the sentence immediately following the question", () => {
+    const card = makeCard({
+      plain_english: "Is this the right path? It is not. Keep walking anyway.",
+    });
+    const candidate = findQuestionCandidate(card);
+    expect(candidate).not.toBeNull();
+    expect(questionCandidateAnswer(card, candidate!.index)).toBe("It is not.");
+  });
+
+  it("returns null when the question is the last sentence", () => {
+    const card = makeCard({ plain_english: "A short line here. Is this the last one?" });
+    const candidate = findQuestionCandidate(card);
+    expect(candidate).not.toBeNull();
+    expect(questionCandidateAnswer(card, candidate!.index)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04, layer (a): dangling references, mid-thought openers, fragments
+// ---------------------------------------------------------------------------
+
+describe("passesLayerA", () => {
+  it("rejects a question with a dangling pronoun (no in-line antecedent)", () => {
+    const question = "Why does he avoid it?";
+    expect(hasUnresolvedReference(question)).toBe(true);
+    expect(passesLayerA(question)).toBe(false);
+  });
+
+  it.each(QUESTION_OPENING_REJECTS)("rejects a question opening with '%s'", (opener) => {
+    const question = `${opener}, what should happen next?`;
+    expect(hasMidThoughtOpener(question)).toBe(true);
+    expect(passesLayerA(question)).toBe(false);
+  });
+
+  it("rejects a fragment (no leading capital letter)", () => {
+    const question = "did you really mean that?";
+    expect(isFragmentQuestion(question)).toBe(true);
+    expect(passesLayerA(question)).toBe(false);
+  });
+
+  it("accepts a self-contained question with no dangling reference, opener, or fragment", () => {
+    const question = "What should you do when things go wrong?";
+    expect(passesLayerA(question)).toBe(true);
+  });
+
+  it("rejects a third-party/literary reference question — on-anger-02-092", () => {
+    const question = "What did Priam do in the Iliad?";
+    expect(hasThirdPartyReference(question)).toBe(true);
+    expect(passesLayerA(question)).toBe(false);
+  });
+
+  it("rejects a third-party/literary reference question — discourses-17-003", () => {
+    const question = "How does Medea put it?";
+    expect(hasThirdPartyReference(question)).toBe(true);
+    expect(passesLayerA(question)).toBe(false);
+  });
+
+  it("rejects a question with an unbalanced quote character", () => {
+    const question = 'Why does love "always change?';
+    expect(hasUnresolvedReference(question)).toBe(false);
+    expect(hasUnbalancedQuotes(question)).toBe(true);
+    expect(passesLayerA(question)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04 fix pass: hasThirdPartyReference / isSecondPersonQuestion
+// ---------------------------------------------------------------------------
+
+describe("isSecondPersonQuestion", () => {
+  it("is true for a question containing 'you'/'your'/'we'/'our'/'us'", () => {
+    expect(isSecondPersonQuestion("What would you say to Epictetus?")).toBe(true);
+    expect(isSecondPersonQuestion("Can we trust Marcus on this?")).toBe(true);
+  });
+
+  it("is false for a question with no second-person word", () => {
+    expect(isSecondPersonQuestion("What did Priam do in the Iliad?")).toBe(false);
+  });
+});
+
+describe("hasThirdPartyReference", () => {
+  it("flags a question asked ABOUT a named third party — discourses-17-003", () => {
+    expect(hasThirdPartyReference("How does Medea put it?")).toBe(true);
+  });
+
+  it("flags a question asked about a literary work — on-anger-02-092", () => {
+    expect(hasThirdPartyReference("What did Priam do in the Iliad?")).toBe(true);
+  });
+
+  it("does not flag a second-person question that merely mentions a name — discourses-43-002", () => {
+    // Real corpus counter-example: the viewer is still addressed directly
+    // ("you"), so a proper noun elsewhere in the question doesn't break the
+    // forced-self-prediction mechanic.
+    expect(hasThirdPartyReference("Why did you want to be elected governor of the Cnossians?")).toBe(false);
+  });
+
+  it("does not flag a question with sentence-initial capitalization only", () => {
+    expect(hasThirdPartyReference("Why does this keep happening?")).toBe(false);
+  });
+
+  it("does not flag a question mentioning God", () => {
+    expect(hasThirdPartyReference("What does God have to do with any of this?")).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04, layer (b): Socratic-chain answers and attribution leaks
+// ---------------------------------------------------------------------------
+
+describe("passesLayerB", () => {
+  it("rejects an answer that itself ends in '?' (the Socratic chain continuing)", () => {
+    const answer = "Was your dislike of something?";
+    expect(isSocraticChainAnswer(answer)).toBe(true);
+    expect(passesLayerB(answer)).toBe(false);
+  });
+
+  it("rejects an answer with an attribution leak", () => {
+    const answer = "He says it doesn't matter.";
+    expect(hasAttributionLeak(answer)).toBe(true);
+    expect(passesLayerB(answer)).toBe(false);
+  });
+
+  it("accepts a plain declarative answer", () => {
+    const answer = "It was not, and never will be.";
+    expect(passesLayerB(answer)).toBe(true);
+  });
+
+  it("rejects a cataphoric pivot answer — discourses-21-004", () => {
+    const answer = "Think of it this way.";
+    expect(isPivotAnswer(answer)).toBe(true);
+    expect(passesLayerB(answer)).toBe(false);
+  });
+
+  it("rejects a pivot answer that resolves nothing — meditations-04-022", () => {
+    const answer = "Here's how it works.";
+    expect(isPivotAnswer(answer)).toBe(true);
+    expect(passesLayerB(answer)).toBe(false);
+  });
+
+  it("rejects an answer with an unbalanced quote character — discourses-17-003", () => {
+    const answer = "'I know the evil I'm about to do, but my anger is stronger than my better judgment.";
+    expect(hasUnbalancedQuotes(answer)).toBe(true);
+    expect(passesLayerB(answer)).toBe(false);
+  });
+
+  it("does not reject an answer that merely contains a pivot phrase mid-sentence", () => {
+    const answer = "Consider this carefully before you decide what to do.";
+    expect(isPivotAnswer(answer)).toBe(false);
+    expect(passesLayerB(answer)).toBe(true);
+  });
+
+  it("does not reject an answer with ordinary contractions/possessives — discourses-17-007", () => {
+    // Real corpus counter-example: contraction and possessive apostrophes
+    // never open an unclosed quote span.
+    const answer = "Don't think I'm saying that.";
+    expect(hasUnbalancedQuotes(answer)).toBe(false);
+    expect(passesLayerB(answer)).toBe(true);
+  });
+
+  it("rejects a known non-answer pair drawn from the real corpus (discourses-49-010)", () => {
+    // plain_english: "...Was your desire in any danger? Was your dislike of
+    // something? ..." — the "answer" is another question in the same
+    // Socratic chain, not a resolution.
+    const cards = loadCorpus();
+    const card = cards.find((c) => c.id === "discourses-49-010");
+    expect(card).toBeDefined();
+
+    const candidate = findQuestionCandidate(card!);
+    expect(candidate).not.toBeNull();
+    expect(candidate!.question).toBe("Was your desire in any danger?");
+
+    const answer = questionCandidateAnswer(card!, candidate!.index);
+    expect(answer).toBe("Was your dislike of something?");
+    expect(passesLayerB(answer!)).toBe(false);
+
+    // And confirm the full gate agrees: this card does not survive.
+    const survivorIds = questionGate(cards).map((e) => e.card_id);
+    expect(survivorIds).not.toContain("discourses-49-010");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04 fix pass: isPivotAnswer / hasUnbalancedQuotes / hasUnbalancedSingleQuote
+// ---------------------------------------------------------------------------
+
+describe("isPivotAnswer", () => {
+  it.each(PIVOT_ANSWER_PHRASES)("flags '%s' as a whole-sentence answer, with trailing punctuation", (phrase) => {
+    expect(isPivotAnswer(`${phrase}.`)).toBe(true);
+    expect(isPivotAnswer(phrase)).toBe(true);
+  });
+
+  it("is case-insensitive", () => {
+    expect(isPivotAnswer("think of it this way.")).toBe(true);
+  });
+
+  it("does not flag a longer answer that merely contains a pivot phrase mid-sentence", () => {
+    expect(isPivotAnswer("Consider this carefully before you decide what to do.")).toBe(false);
+    expect(isPivotAnswer("Here's the thing about anger: it never helps.")).toBe(false);
+  });
+
+  it("does not flag an ordinary declarative answer", () => {
+    expect(isPivotAnswer("It was not, and never will be.")).toBe(false);
+  });
+});
+
+describe("hasUnbalancedSingleQuote", () => {
+  it("flags an orphan opening quote never closed in the same text", () => {
+    expect(hasUnbalancedSingleQuote("'I know the evil I'm about to do, but my anger is stronger.")).toBe(true);
+  });
+
+  it("does not flag a properly opened and closed quote", () => {
+    expect(hasUnbalancedSingleQuote("'I love this,' he said.")).toBe(false);
+  });
+
+  it("does not flag ordinary contractions", () => {
+    expect(hasUnbalancedSingleQuote("Don't think I'm saying that.")).toBe(false);
+  });
+
+  it("does not flag a possessive apostrophe — 'Epictetus' body'", () => {
+    expect(hasUnbalancedSingleQuote("Epictetus' body was frail, but his will was not.")).toBe(false);
+  });
+});
+
+describe("hasUnbalancedQuotes", () => {
+  it("flags an odd count of double-quote characters", () => {
+    expect(hasUnbalancedQuotes('She said, "this is enough.')).toBe(true);
+  });
+
+  it("flags an orphan opening single quote", () => {
+    expect(hasUnbalancedQuotes("'I know the evil I'm about to do, but my anger is stronger.")).toBe(true);
+  });
+
+  it("does not flag balanced double quotes, contractions, or possessives", () => {
+    expect(hasUnbalancedQuotes('She said, "this is enough."')).toBe(false);
+    expect(hasUnbalancedQuotes("Don't think I'm saying that.")).toBe(false);
+    expect(hasUnbalancedQuotes("Epictetus' body was frail, but his will was not.")).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04: questionGate — full deterministic pipeline, measured corpus counts
+// ---------------------------------------------------------------------------
+
+describe("questionGate against the real corpus", () => {
+  const cards = loadCorpus();
+  const entries = questionGate(cards);
+
+  it("measures the surviving pool at each stage: mechanical 306, after layer (a) 150, after layer (b) 89", () => {
+    // Fix pass: `hasAttributionLeak` gained a first-person ("I ask")/
+    // colon-lead-in check (mechanical + layer b), layer (a) gained
+    // `hasThirdPartyReference` and `hasUnbalancedQuotes`, and layer (b) gained
+    // `isPivotAnswer` and `hasUnbalancedQuotes`. Measured drop: mechanical
+    // 313 -> 306, after layer (a) 162 -> 150, after layer (b) 100 -> 89. Not
+    // tuned to hit a target — measured and asserted as-is.
+    const mechanicalCount = cards.filter((c) => findQuestionCandidate(c) !== null).length;
+    const afterACount = cards.filter((c) => {
+      const candidate = findQuestionCandidate(c);
+      return candidate !== null && passesLayerA(candidate.question);
+    }).length;
+
+    expect(mechanicalCount).toBe(306);
+    expect(afterACount).toBe(150);
+    expect(entries.length).toBe(89);
+  });
+
+  it("author mix of the 89 survivors: epictetus 50, marcus-aurelius 21, seneca 18", () => {
+    const authorCounts: Record<string, number> = {};
+    for (const entry of entries) {
+      authorCounts[entry.author_slug] = (authorCounts[entry.author_slug] ?? 0) + 1;
+    }
+    expect(authorCounts).toEqual({ epictetus: 50, "marcus-aurelius": 21, seneca: 18 });
+  });
+
+  it("does not contain the four real leaks fixed by this pass", () => {
+    const ids = entries.map((e) => e.card_id);
+    expect(ids).not.toContain("meditations-04-022"); // "I ask back:" attribution leak
+    expect(ids).not.toContain("discourses-21-004"); // "Think of it this way." pivot answer
+    expect(ids).not.toContain("on-anger-02-092"); // "What did Priam do in the Iliad?"
+    expect(ids).not.toContain("discourses-17-003"); // "How does Medea put it?" + unbalanced quote
+  });
+
+  it("every survivor's question and answer are verbatim substrings of plain_english", () => {
+    const cardsById = new Map(cards.map((c) => [c.id, c]));
+    for (const entry of entries) {
+      const card = cardsById.get(entry.card_id)!;
+      expect(card.plain_english).toContain(entry.question);
+      expect(card.plain_english).toContain(entry.answer);
+    }
+  });
+
+  it("no survivor's answer ends in '?', carries an attribution leak, is a pivot answer, or has unbalanced quotes", () => {
+    for (const entry of entries) {
+      expect(entry.answer.trim().endsWith("?")).toBe(false);
+      expect(hasAttributionLeak(entry.answer)).toBe(false);
+      expect(isPivotAnswer(entry.answer)).toBe(false);
+      expect(hasUnbalancedQuotes(entry.answer)).toBe(false);
+    }
+  });
+
+  it("no survivor's question has an unresolved reference, mid-thought opener, is a fragment, a third-party reference, or has unbalanced quotes", () => {
+    for (const entry of entries) {
+      expect(hasUnresolvedReference(entry.question)).toBe(false);
+      expect(hasMidThoughtOpener(entry.question)).toBe(false);
+      expect(isFragmentQuestion(entry.question)).toBe(false);
+      expect(hasThirdPartyReference(entry.question)).toBe(false);
+      expect(hasUnbalancedQuotes(entry.question)).toBe(false);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T04, layer (c) stub: buildQuestionDriftRequests
+// ---------------------------------------------------------------------------
+
+describe("buildQuestionDriftRequests", () => {
+  it("shapes each survivor into a plain request object with no extra fields", () => {
+    const entries = [
+      { card_id: "meditations-05-016", book_slug: "meditations", author_slug: "marcus-aurelius" as const, question: "Is this the right path?", answer: "It is not." },
+    ];
+    const requests = buildQuestionDriftRequests(entries);
+    expect(requests).toEqual([
+      { card_id: "meditations-05-016", question: "Is this the right path?", answer: "It is not." },
+    ]);
+  });
+
+  it("returns one request per survivor, in order", () => {
+    const entries = questionGate(loadCorpus());
+    const requests = buildQuestionDriftRequests(entries);
+    expect(requests.length).toBe(entries.length);
+    expect(requests.map((r) => r.card_id)).toEqual(entries.map((e) => e.card_id));
   });
 });

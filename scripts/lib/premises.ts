@@ -970,3 +970,572 @@ export function rankWall(cards: Card[]): RankedWallEntry[] {
     };
   });
 }
+
+// ---------------------------------------------------------------------------
+// T04: The Question. Format: a short second-person question appears alone on
+// screen; the viewer silently predicts an answer; the card's own next
+// sentence appears as the author's answer. So the QUESTION must stand alone
+// with no context, and the following sentence must ACTUALLY ANSWER it.
+//
+// Three layers, cheapest first:
+//  - MECHANICAL GATE: is there a short, unquoted, self-contained,
+//    non-exclamatory question — in the author's own voice, not attributed to
+//    someone else — in the first three sentences of plain_english?
+//  - LAYER (a): does the chosen question stand alone (no dangling pronoun/
+//    demonstrative, no mid-thought opener, not a fragment)?
+//  - LAYER (b): does the candidate answer actually resolve rather than
+//    continue the question (not itself a question, no attribution leak)?
+//  - LAYER (c): topic drift — LLM judgement only, stubbed here (T07/T08).
+// ---------------------------------------------------------------------------
+
+/** Question word-count ceiling — must be readable at a glance with zero context. */
+export const QUESTION_MAX_WORDS = 14;
+
+/** The question must appear within the first N sentences of plain_english. */
+export const QUESTION_SENTENCE_WINDOW = 3;
+
+/**
+ * Verbs of speech/attribution used by both the mechanical gate's
+ * "author's own voice" check (on the question) and layer (b)'s attribution
+ * check (on the answer). Matched against a single token via
+ * `ATTRIBUTION_VERB_RE`, immediately preceded by an attribution subject —
+ * see `hasAttributionLeak`.
+ */
+export const ATTRIBUTION_VERBS = [
+  "ask",
+  "asks",
+  "asked",
+  "say",
+  "says",
+  "said",
+  "reply",
+  "replies",
+  "replied",
+  "answer",
+  "answers",
+  "answered",
+  "respond",
+  "responds",
+  "responded",
+  "retort",
+  "retorts",
+  "retorted",
+] as const;
+
+const ATTRIBUTION_VERB_RE = /^(asks?|asked|says?|said|repl(?:y|ies|ied)|answers?|answered|responds?|responded|retorts?|retorted)$/i;
+
+/**
+ * Pronoun subjects that always signal a dialogue attribution when they sit
+ * directly before an attribution verb ("he asks", "someone says", "they
+ * ask"). Deliberately excludes "you": "you say"/"you ask" as a rhetorical
+ * second-person prompt ("What should you say when...?") is often the
+ * AUTHOR'S OWN direct address to the viewer, not a dialogue leak — measured
+ * against the real corpus, treating bare "you" the same as "he"/"someone"
+ * produced false positives (e.g. "What should you say when something
+ * painful happens?", which is exactly the second-person voice this format
+ * wants). "you ask" specifically is still rejected, but narrowly, via
+ * `YOU_ASK_RE` below, matching the plan's literal example.
+ */
+const ATTRIBUTION_PRONOUN_SUBJECTS = new Set(["he", "she", "they", "someone", "people"]);
+
+/** "you ask" specifically (not "you say"/"you reply") — see the comment on `ATTRIBUTION_PRONOUN_SUBJECTS`. */
+const YOU_ASK_RE = /\byou\s+asks?\b/i;
+
+/**
+ * First-person speech verbs — "I ask", "I say", "I reply", "I answer" — that
+ * `ATTRIBUTION_PRONOUN_SUBJECTS` originally missed entirely (that set only
+ * covered third-party subjects: he/she/they/someone/people). "I ask back:
+ * how does the earth keep holding all the buried bodies forever?" is the
+ * author staging a rhetorical dialogue with an imagined interlocutor, not
+ * speaking directly to the viewer — same leak as "he asks", just first
+ * person (`meditations-04-022`). Matched literally on the four verbs the
+ * corpus audit surfaced, not the full `ATTRIBUTION_VERBS` conjugation set —
+ * deliberately narrow, since "I" is otherwise the normal subject of the
+ * author's own direct statements ("I know that...") and a broader match
+ * risks false-positiving on those.
+ */
+const FIRST_PERSON_ATTRIBUTION_RE = /\bI\s+(ask|say|reply|answer)\b/i;
+
+/**
+ * True when `clause` (a lead-in fragment, not necessarily a full sentence —
+ * see `hasColonAttributionLeadIn`) itself reads as a speech attribution: it
+ * contains an attribution verb AND opens with a plausible speaking subject.
+ * Unlike the main `hasAttributionLeak` loop, a capitalized first word here
+ * DOES count as subject evidence even though it's sentence/clause-initial
+ * — a colon lead-in's whole job is to name who's about to speak ("Epictetus
+ * asks:", "I ask back:"), so sentence-initial capitalization is exactly the
+ * expected shape, not the rhetorical-wh-question false positive the
+ * mid-sentence check guards against ("Who says...?").
+ */
+function isSpeechAttributionClause(clause: string): boolean {
+  const words = clause.trim().split(/\s+/).filter(Boolean);
+  if (words.length < 2) return false;
+  const hasVerb = words.some((w) => ATTRIBUTION_VERB_RE.test(stripPunctuation(w).toLowerCase()));
+  if (!hasVerb) return false;
+
+  const firstClean = stripPunctuation(words[0]).toLowerCase();
+  if (firstClean === "i") return true;
+  if (ATTRIBUTION_PRONOUN_SUBJECTS.has(firstClean)) return true;
+  return /^[A-Z]/.test(stripPunctuation(words[0]));
+}
+
+/**
+ * True when the text BEFORE the first `:` in `text` is itself a speech
+ * attribution — "I ask back: how does..." or "Epictetus asks: what should
+ * you do?" — a dialogue lead-in the mechanical gate's word-adjacency scan
+ * can miss when other words sit between the subject and the colon.
+ */
+export function hasColonAttributionLeadIn(text: string): boolean {
+  const colonIndex = text.indexOf(":");
+  if (colonIndex === -1) return false;
+  return isSpeechAttributionClause(text.slice(0, colonIndex));
+}
+
+/**
+ * True when `text` attributes a question/answer to a party other than the
+ * author speaking directly to the viewer — "he asks", "someone says",
+ * "you ask", "Epictetus said", "I ask back:". Checked, in order:
+ *  - "you ask" specifically (`YOU_ASK_RE`);
+ *  - a first-person speech verb — "I ask"/"I say"/"I reply"/"I answer"
+ *    (`FIRST_PERSON_ATTRIBUTION_RE`) — the author staging a rhetorical
+ *    dialogue with an imagined interlocutor is still a dialogue leak, just
+ *    first person, and the plain pronoun-subject scan below never covered
+ *    "I" (only third-party subjects);
+ *  - a speech-attribution lead-in before a colon (`hasColonAttributionLeadIn`)
+ *    — "I ask back: ..." / "Epictetus asks: ...";
+ *  - a closed-class pronoun subject (`ATTRIBUTION_PRONOUN_SUBJECTS`), any
+ *    position in the sentence, sitting IMMEDIATELY before an attribution
+ *    verb;
+ *  - a genuine capitalized proper-noun subject (`looksLikeProperNoun`,
+ *    reusing T02's noun-shape heuristic), excluding sentence-initial
+ *    position (index 0) — the same exclusion T02 uses, because ordinary
+ *    sentence-initial capitalization ("Who says...?", "What does...?") is
+ *    not proper-noun evidence and would otherwise false-positive on
+ *    rhetorical wh-questions.
+ * Shared by the mechanical gate (checked on the question, "author's own
+ * voice") and layer (b) (checked on the answer, "attribution leak").
+ */
+export function hasAttributionLeak(text: string): boolean {
+  if (YOU_ASK_RE.test(text)) return true;
+  if (FIRST_PERSON_ATTRIBUTION_RE.test(text)) return true;
+  if (hasColonAttributionLeadIn(text)) return true;
+
+  const words = text.trim().replace(/[—–]/g, " ").split(/\s+/);
+  for (let i = 1; i < words.length; i++) {
+    if (!ATTRIBUTION_VERB_RE.test(stripPunctuation(words[i]).toLowerCase())) continue;
+
+    const subjectClean = stripPunctuation(words[i - 1]).toLowerCase();
+    if (ATTRIBUTION_PRONOUN_SUBJECTS.has(subjectClean)) return true;
+    if (i - 1 !== 0 && looksLikeProperNoun(words[i - 1])) return true;
+  }
+  return false;
+}
+
+/** "How"-openers where the second word is not a question auxiliary — signals a rhetorical exclamation ("How wonderful..."), not a real question. */
+const HOW_AUX_WORDS = new Set([
+  "do",
+  "does",
+  "did",
+  "can",
+  "could",
+  "would",
+  "should",
+  "will",
+  "shall",
+  "is",
+  "are",
+  "was",
+  "were",
+  "have",
+  "has",
+  "had",
+  "many",
+  "much",
+  "long",
+  "often",
+  "far",
+  "old",
+]);
+
+const EXCLAMATION_ENDING_RE = /[!?]{2,}$/;
+const EXCLAMATION_OPENING_WHAT_RE = /^what\s+an?\b/i;
+
+/**
+ * True when `question` is rhetorically an exclamation dressed up with a
+ * trailing `?`, not a genuine question the viewer can answer:
+ *  - ends with stacked terminal punctuation (`?!`/`!?`);
+ *  - opens "What a"/"What an" ("What a joy this is?" — always exclamatory);
+ *  - opens "How <word>" where `<word>` is not a question auxiliary
+ *    (`HOW_AUX_WORDS`) — "How wonderful is that?" is exclamatory, "How do
+ *    you know?" is a real question. A deliberately blunt heuristic (no POS
+ *    tagging), consistent with the rest of this file's approach.
+ */
+export function isExclamationShaped(question: string): boolean {
+  const trimmed = question.trim();
+  if (EXCLAMATION_ENDING_RE.test(trimmed)) return true;
+  if (EXCLAMATION_OPENING_WHAT_RE.test(trimmed)) return true;
+
+  const howMatch = /^how\s+(\S+)/i.exec(trimmed);
+  if (howMatch && !HOW_AUX_WORDS.has(stripPunctuation(howMatch[1]).toLowerCase())) return true;
+
+  return false;
+}
+
+export interface QuestionCandidate {
+  question: string;
+  /** Index of `question` within `sentences(card.plain_english)` — used to locate the candidate answer. */
+  index: number;
+}
+
+/**
+ * The mechanical gate for The Question. Finds the FIRST sentence, in
+ * document order, among the first `QUESTION_SENTENCE_WINDOW` sentences of
+ * `plain_english`, that satisfies ALL of:
+ *  - ends with `?`;
+ *  - <= `QUESTION_MAX_WORDS` words;
+ *  - contains no `"` (unquoted — no on-screen attribution/dialogue frame);
+ *  - passes `isSelfContainedOpening` (T01: no leading But/So/This/It/And);
+ *  - is not exclamation-shaped (`isExclamationShaped`);
+ *  - carries no attribution leak (`hasAttributionLeak` — author's own
+ *    voice).
+ *
+ * These criteria are evaluated as a set (existence, not a fixed candidate
+ * carried through each stage): a card can survive an earlier stage via one
+ * of up to 3 first-window sentences and a later stage via a different one,
+ * matching the measured corpus counts below. The final `question` selected
+ * is the first sentence (by document order) to satisfy every criterion at
+ * once, chosen deterministically.
+ *
+ * Measured over the full corpus (`content/output`), applying criteria in
+ * order: question present in first 3 sentences — 458; + <=14 words — 380;
+ * + unquoted — 379; + self-contained opening — 319; + not
+ * exclamation-shaped and no attribution leak — **313** (0 cards were caught
+ * by `isExclamationShaped` alone in this corpus; 11 were caught by
+ * `hasAttributionLeak`, of which 3 also overlapped stages already excluded
+ * by earlier filters, netting -6 from 319). The plan's target for this gate
+ * was 292; 313 is what's implemented and measured — not contorted to hit
+ * the estimate, per the same policy T01/T03 documented for their own
+ * unreproducible targets.
+ */
+export function findQuestionCandidate(card: Card): QuestionCandidate | null {
+  const sents = sentences(card.plain_english);
+  const windowed = sents.slice(0, QUESTION_SENTENCE_WINDOW).map((question, index) => ({ question, index }));
+
+  const survivors = windowed
+    .filter(({ question }) => question.trim().endsWith("?"))
+    .filter(({ question }) => wordCount(question) <= QUESTION_MAX_WORDS)
+    .filter(({ question }) => !question.includes('"'))
+    .filter(({ question }) => isSelfContainedOpening(question))
+    .filter(({ question }) => !isExclamationShaped(question))
+    .filter(({ question }) => !hasAttributionLeak(question));
+
+  return survivors.length ? survivors[0] : null;
+}
+
+/**
+ * The candidate answer for a question at `candidateIndex` in
+ * `sentences(card.plain_english)`: exactly ONE sentence, the one
+ * immediately following the question in document order. `null` when the
+ * question is the last sentence in the card (no following sentence exists).
+ *
+ * Deliberately a single sentence, not a span: the format's own beat is "the
+ * card's own NEXT sentence appears as the author's answer" — a single held
+ * reveal the viewer checks their prediction against. Extending this to a
+ * multi-sentence answer span was considered and rejected for T04: it would
+ * dilute that one-beat reveal and there's no principled stopping rule (2
+ * sentences? 3?) without LLM judgement, which is out of scope here. If a
+ * future task needs multi-sentence answers, this is the place to extend it.
+ */
+export function questionCandidateAnswer(card: Card, candidateIndex: number): string | null {
+  const sents = sentences(card.plain_english);
+  return sents[candidateIndex + 1] ?? null;
+}
+
+/**
+ * Leading words/phrases that make a question read as mid-conversation
+ * rather than a self-contained opening — a continuation of an argument
+ * ("Because...", "Then...") or a framing device signalling the question is
+ * itself a quoted or imagined interjection ("What about...?", "You ask...").
+ * Matched case-insensitively at the start of the trimmed question.
+ */
+export const QUESTION_OPENING_REJECTS = ["Because", "Then", "What about", "You ask"] as const;
+
+const QUESTION_OPENER_RE = new RegExp(
+  `^(${QUESTION_OPENING_REJECTS.map((phrase) => phrase.replace(/ /g, "\\s+")).join("|")})\\b`,
+  "i",
+);
+
+/** True when `question` opens with one of `QUESTION_OPENING_REJECTS`. */
+export function hasMidThoughtOpener(question: string): boolean {
+  return QUESTION_OPENER_RE.test(question.trim());
+}
+
+/**
+ * True when `question` doesn't start with a capital letter. A blunt but
+ * effective signal that the "sentence" is actually a stray fragment grabbed
+ * mid-thought (e.g. by `sentences()`'s quote-aware splitting keeping a
+ * quoted run together and spilling a lowercase tail into the next chunk),
+ * not a genuine, independently openable question.
+ */
+export function isFragmentQuestion(question: string): boolean {
+  const trimmed = question.trim();
+  if (!trimmed) return true;
+  return !/^[A-Z]/.test(trimmed);
+}
+
+/**
+ * Second-person(-ish) words whose presence exempts a question from
+ * `hasThirdPartyReference` — the format's mechanic is FORCED
+ * SELF-PREDICTION, a question the viewer answers about their OWN life, so a
+ * question that's clearly addressed to the viewer (or includes them, "we"/
+ * "our"/"us") is fine even if it happens to name someone ("What would you
+ * say to Epictetus?").
+ */
+const SECOND_PERSON_WORDS = new Set(["you", "your", "yours", "yourself", "we", "our", "us"]);
+
+/** True when `question` contains a second-person(-ish) word anywhere. */
+export function isSecondPersonQuestion(question: string): boolean {
+  const words = question.trim().replace(/[—–]/g, " ").split(/\s+/);
+  return words.some((w) => SECOND_PERSON_WORDS.has(stripPunctuation(w).toLowerCase()));
+}
+
+/**
+ * Named subjects excluded from third-party-reference evidence even though
+ * they're capitalized, non-sentence-initial nouns: "I" is already excluded
+ * structurally (`looksLikeNoun` rejects anything under 3 characters, and
+ * `NOT_A_NOUN` lists it lowercase), but "God" is a common Stoic/theological
+ * term in this corpus, not a third party the question is ABOUT the way
+ * "Priam" or "Medea" are.
+ */
+const THIRD_PARTY_NAME_EXCLUDES = new Set(["god"]);
+
+/**
+ * True when `question` is asked ABOUT a named third party or literary work
+ * ("What did Priam do in the Iliad?", "How does Medea put it?") rather than
+ * posed TO the viewer about their own life — a failure of the format's core
+ * mechanic (forced self-prediction), not just a well-formedness defect.
+ * Second-person questions that merely MENTION a name ("What would you say
+ * to Epictetus?") are not rejected — `isSecondPersonQuestion` exempts them
+ * first. Otherwise, any capitalized, non-sentence-initial proper noun
+ * (reusing T02's `looksLikeProperNoun`, excluding "God") is third-party
+ * evidence.
+ */
+export function hasThirdPartyReference(question: string): boolean {
+  if (isSecondPersonQuestion(question)) return false;
+
+  const words = question.trim().replace(/[—–]/g, " ").split(/\s+/);
+  for (let i = 0; i < words.length; i++) {
+    if (i === 0) continue; // sentence-initial capitalization isn't proper-noun evidence
+    if (!looksLikeProperNoun(words[i])) continue;
+    if (THIRD_PARTY_NAME_EXCLUDES.has(stripPunctuation(words[i]).toLowerCase())) continue;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * A `'` preceded by start-of-string/whitespace and immediately followed by
+ * a non-whitespace character — the shape of an opening quote mark
+ * ("'I know..."), not a contraction (always letter-'-letter, e.g. "I'm")
+ * or a possessive/closing apostrophe (always non-whitespace-'-non-letter,
+ * e.g. "Epictetus' body").
+ */
+const SINGLE_QUOTE_OPEN_RE = /(?<=^|\s)'(?=\S)/g;
+
+/**
+ * A `'` preceded by a non-whitespace character and followed by
+ * whitespace/punctuation/end-of-string — the shape of a closing quote mark
+ * OR a possessive apostrophe ("Epictetus' body"). Deliberately can't tell
+ * those two apart (no way to, without a matching open elsewhere) — used
+ * only to count how many "closes" are available to pair against opens, so
+ * treating a possessive as a close is the conservative direction (it can
+ * only make an unbalanced count look balanced, never the reverse).
+ * Excludes contractions: the lookahead requires a NON-letter next
+ * character, so "I'm"/"don't" (letter immediately after `'`) never match.
+ */
+const SINGLE_QUOTE_CLOSE_RE = /(?<=\S)'(?=[\s,.!?;:")\]]|$)/g;
+
+/**
+ * True when `text` has more opening-shaped `'` marks than closing-shaped
+ * ones — an orphan opening quote that's never closed within the text
+ * ("'I know the evil I'm about to do..." — the trailing closing `'` was
+ * split into the NEXT sentence by `sentences()`, which is quote-aware only
+ * for `"`, not `'`; see `discourses-17-003`). Deliberately count-based, not
+ * a strict pairing walk — mirrors T02's `hasBalancedQuotes` treatment of
+ * `"`, which is also just an even/odd count.
+ */
+export function hasUnbalancedSingleQuote(text: string): boolean {
+  const opens = (text.match(SINGLE_QUOTE_OPEN_RE) ?? []).length;
+  const closes = (text.match(SINGLE_QUOTE_CLOSE_RE) ?? []).length;
+  return opens > closes;
+}
+
+/**
+ * True when `text` is not quote-well-formed: an odd count of `"` characters
+ * (same even/odd check T02's `hasBalancedQuotes` applies to landing lines),
+ * or an orphan opening `'` (`hasUnbalancedSingleQuote`). Applied to BOTH the
+ * question and the candidate answer — a broken mid-quote fragment can't
+ * stand alone on screen in either slot.
+ */
+export function hasUnbalancedQuotes(text: string): boolean {
+  if ((text.match(/"/g) ?? []).length % 2 !== 0) return true;
+  return hasUnbalancedSingleQuote(text);
+}
+
+/**
+ * Layer (a) — deterministic. Rejects a question whose antecedent isn't
+ * inside the question itself (reusing T02's whole-span
+ * `hasUnresolvedReference`, applied to the question span exactly as
+ * instructed — the same "no preceding context" problem the Wall's landing
+ * line has), plus mid-thought openers, bare fragments, third-party/literary
+ * references, and unbalanced quote characters.
+ */
+export function passesLayerA(question: string): boolean {
+  if (hasUnresolvedReference(question)) return false;
+  if (hasMidThoughtOpener(question)) return false;
+  if (isFragmentQuestion(question)) return false;
+  if (hasThirdPartyReference(question)) return false;
+  if (hasUnbalancedQuotes(question)) return false;
+  return true;
+}
+
+/**
+ * True when `answer` itself ends in `?` — the Socratic chain continuing
+ * (another question) rather than resolving into a stated answer.
+ */
+export function isSocraticChainAnswer(answer: string): boolean {
+  return answer.trim().endsWith("?");
+}
+
+/**
+ * Cataphoric "pivot" phrases — an answer that PROMISES an explanation
+ * instead of GIVING one ("Think of it this way.", "Here's how it works.").
+ * These pass the mechanical/layer-(a) checks cleanly (they're declarative,
+ * not a question), but they resolve nothing: the viewer checks their
+ * silent prediction against an empty frame, not a real answer
+ * (`meditations-04-022`, `discourses-21-004`).
+ */
+export const PIVOT_ANSWER_PHRASES = [
+  "Think of it this way",
+  "Here's how it works",
+  "Here's the thing",
+  "Let me explain",
+  "Consider this",
+  "It works like this",
+  "Look at it this way",
+  "Here's what I mean",
+] as const;
+
+const PIVOT_ANSWER_RE = new RegExp(
+  `^(${PIVOT_ANSWER_PHRASES.map((phrase) => phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})[.!?]*$`,
+  "i",
+);
+
+/**
+ * True when `answer`, once trimmed, IS (not merely contains) one of
+ * `PIVOT_ANSWER_PHRASES`, allowing trailing punctuation — matched against
+ * the WHOLE answer sentence so a longer answer that merely contains one of
+ * these phrases mid-sentence ("Consider this carefully before you decide.")
+ * is not rejected.
+ */
+export function isPivotAnswer(answer: string): boolean {
+  return PIVOT_ANSWER_RE.test(answer.trim());
+}
+
+/**
+ * Layer (b) — deterministic. Rejects a candidate answer that continues the
+ * Socratic chain instead of resolving it (`isSocraticChainAnswer`), leaks
+ * attribution to another speaker (`hasAttributionLeak`, shared with the
+ * mechanical gate's author's-own-voice check), is a cataphoric pivot phrase
+ * that promises an explanation instead of giving one (`isPivotAnswer`), or
+ * is not quote-well-formed (`hasUnbalancedQuotes`).
+ */
+export function passesLayerB(answer: string): boolean {
+  if (isSocraticChainAnswer(answer)) return false;
+  if (hasAttributionLeak(answer)) return false;
+  if (isPivotAnswer(answer)) return false;
+  if (hasUnbalancedQuotes(answer)) return false;
+  return true;
+}
+
+export interface QuestionEntry {
+  card_id: string;
+  book_slug: string;
+  author_slug: Card["author_slug"];
+  question: string;
+  answer: string;
+  /**
+   * Not populated by `questionGate` (which returns survivors only) — present
+   * so a future full-audit variant, or T07/T08's own rejection logging, can
+   * reuse this same shape for rejected candidates too.
+   */
+  rejected_by?: string;
+}
+
+/**
+ * The Question's full deterministic gate: mechanical gate + layer (a) +
+ * layer (b). Returns only survivors — cards with a self-contained question
+ * in the author's own voice, and a next sentence that actually answers it
+ * rather than dangling a reference, opening mid-thought, or continuing the
+ * question.
+ *
+ * Measured over the full corpus: mechanical gate 313 -> after layer (a) 162
+ * -> after layer (b) **100**. This 100-card pool (pre layer (c)) is what
+ * `buildQuestionDriftRequests` below hands to the LLM topic-drift check.
+ */
+export function questionGate(cards: Card[]): QuestionEntry[] {
+  const entries: QuestionEntry[] = [];
+
+  for (const card of cards) {
+    const candidate = findQuestionCandidate(card);
+    if (!candidate) continue;
+    if (!passesLayerA(candidate.question)) continue;
+
+    const answer = questionCandidateAnswer(card, candidate.index);
+    if (!answer) continue;
+    if (!passesLayerB(answer)) continue;
+
+    entries.push({
+      card_id: card.id,
+      book_slug: card.book_slug,
+      author_slug: card.author_slug,
+      question: candidate.question,
+      answer,
+    });
+  }
+
+  return entries;
+}
+
+// ---------------------------------------------------------------------------
+// T04 layer (c) — STUB ONLY. Topic drift (5 of 14 observed answer-side
+// failures): the next sentence is chronologically next but not logically an
+// answer to the question. That distinction needs LLM judgement — no regex
+// separates "answers the question" from "merely follows it" — so this task
+// (T04) defines ONLY the request-shaped data structure T07 (rubric/prompt)
+// and T08 (batch submit/poll/stream/merge, reusing the Batch helpers in
+// scripts/lib/claude.ts: createMessageBatch, pollBatchUntilDone,
+// streamBatchResults, safeCustomId — same pattern as the translate phase)
+// will build on. NO API calls and NO network code belong here.
+// ---------------------------------------------------------------------------
+
+export interface QuestionDriftRequest {
+  /** Built by T08 via `safeCustomId(card_id)`, matching the translate phase's pattern. */
+  card_id: string;
+  question: string;
+  answer: string;
+}
+
+/**
+ * Shape layer (a)+(b) survivors into the plain request objects layer (c)
+ * will submit as an Anthropic Batch. Pure data transformation — no SDK
+ * calls, no prompt/system text (that's T07's rubric). T08 turns these into
+ * real batch requests and merges the results back onto `QuestionEntry`.
+ */
+export function buildQuestionDriftRequests(entries: QuestionEntry[]): QuestionDriftRequest[] {
+  return entries.map((entry) => ({
+    card_id: entry.card_id,
+    question: entry.question,
+    answer: entry.answer,
+  }));
+}

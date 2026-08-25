@@ -155,7 +155,7 @@ daily job makes no LLM call at post time.
   the `rankWall`-pool counts above. `npx vitest run scripts/lib/__tests__/premises.test.ts` — 91/91 green (67
   baseline + 24 new). `npx vitest run` (full pipeline suite) — 347/347 green (323 baseline + 24 new), confirming no
   regression to T01/T02 or any other consumer.
-- [ ] T04: Implement **the validation gate for The Question**, three layers, cheapest first:
+- [x] T04: Implement **the validation gate for The Question**, three layers, cheapest first:
   **(a) deterministic** — reject any question containing a pronoun or demonstrative whose antecedent is not inside
   the question (13 of 21 question-side failures); reject fragments and mid-thought openers ("Because", "Then",
   "What about", "you ask") (5 more).
@@ -165,6 +165,114 @@ daily job makes no LLM call at post time.
   not logically an answer.
   Layers (a)+(b) remove 20 of 35 observed failures at zero cost. Acceptance: the surviving pool is a MEASURED number;
   a known non-answer pair is rejected; both deterministic layers are unit-tested against the documented failures.
+  **Note:** Added the MECHANICAL gate, layers (a)/(b), and a layer-(c) STUB to `scripts/lib/premises.ts`, reusing
+  `sentences`, `wordCount`, `isSelfContainedOpening` (T01) and `hasUnresolvedReference` (T02) exactly as instructed
+  — layer (a) applies T02's whole-span pronoun/demonstrative rule to the question span unmodified, with no second
+  reference-resolution rule written. `findQuestionCandidate` implements the mechanical gate: among the first
+  `QUESTION_SENTENCE_WINDOW` (3) sentences of `plain_english`, the first (document order) sentence satisfying ALL of
+  — ends `?`, <=`QUESTION_MAX_WORDS` (14) words, unquoted, passes `isSelfContainedOpening`, not exclamation-shaped
+  (`isExclamationShaped` — stacked `?!`/`!?`, "What a"/"What an" openers, or "How <non-auxiliary>" openers like "How
+  wonderful"), and no attribution leak (`hasAttributionLeak` — author's-own-voice check). Measured stage-by-stage
+  against the real corpus (`content/output`): question present in first 3 sentences 458; + <=14 words 380; +
+  unquoted 379; + self-contained opening 319; + not exclamation-shaped/no attribution leak — **313** (0 cards caught
+  by `isExclamationShaped` alone in this corpus; 11 caught by `hasAttributionLeak`, netting -6 after overlap with
+  already-excluded cards). The plan's target was 292; 313 is what's measured and asserted — not contorted to hit the
+  estimate, per the same policy T01/T03 documented for their own unreproducible targets. `hasAttributionLeak`
+  required one design correction during implementation: an initial version treated bare "you" the same as
+  "he"/"someone" (any subject immediately before a speech verb), which false-positived on the author's own direct
+  second-person address ("What should you say when something painful happens?" — genuinely the author's voice, not
+  a dialogue leak) — fixed by narrowing "you" to the literal "you ask" pattern the plan specifies, leaving "you say"/
+  "you reply" etc. unflagged. A second correction: the named-proper-noun subject branch (for "Epictetus said"-style
+  leaks) originally matched ANY capitalized word before a speech verb, including ordinary sentence-initial
+  capitalization ("Who says...?", "What does...?" — a common rhetorical device, not real attribution) — fixed by
+  excluding sentence-initial position (index 0) from counting as proper-noun evidence, the same restriction T02 uses
+  for its own antecedent lookback. `questionCandidateAnswer(card, index)` defines "the candidate answer" as exactly
+  ONE sentence — the one immediately following the question in `sentences(plain_english)` order — documented
+  in-file as a deliberate simplification (a multi-sentence span has no principled stopping rule without LLM
+  judgement, out of scope for T04). Layer (a) (`passesLayerA`) rejects `hasUnresolvedReference(question)`,
+  `hasMidThoughtOpener` (leading "Because"/"Then"/"What about"/"You ask", exported as `QUESTION_OPENING_REJECTS`),
+  and `isFragmentQuestion` (no leading capital letter — a stray fragment). Layer (b) (`passesLayerB`) rejects
+  `isSocraticChainAnswer` (answer itself ends `?`) and `hasAttributionLeak` (shared with the mechanical gate's
+  author's-voice check). `questionGate(cards)` composes mechanical + (a) + (b) and returns only survivors as
+  `QuestionEntry[]` (`{ card_id, book_slug, author_slug, question, answer, rejected_by? }` — `rejected_by` reserved
+  for a future full-audit variant or T07/T08's rejection logging; not populated by `questionGate` itself). Measured
+  full pipeline: mechanical 313 -> after layer (a) 162 -> after layer (b) **100** (this 100-card pool is what layer
+  (c) will judge for topic drift). Acceptance's "known non-answer pair" is drawn from the real corpus
+  (`discourses-49-010`: question "Was your desire in any danger?", candidate answer "Was your dislike of
+  something?" — the Socratic chain continuing, correctly rejected by `passesLayerB` and absent from
+  `questionGate`'s survivors). **Scope limit honored:** layer (c) is a documented stub only —
+  `QuestionDriftRequest` (`{ card_id, question, answer }`) and `buildQuestionDriftRequests(entries)` do pure data
+  shaping with no SDK/API calls and no network code; the in-file comment points at T07 (rubric/prompt) and T08
+  (batch submit/poll/stream/merge via `scripts/lib/claude.ts`'s `createMessageBatch`/`pollBatchUntilDone`/
+  `streamBatchResults`/`safeCustomId`, same pattern as the translate phase). Added 33 new tests to
+  `scripts/lib/__tests__/premises.test.ts`: unit tests for `isExclamationShaped`/`hasAttributionLeak` (including
+  the two false-positive corrections above, each pinned with a corpus-drawn example); layer (a) tests for a dangling
+  pronoun, each of the four `QUESTION_OPENING_REJECTS`, and a fragment; layer (b) tests for a Socratic-chain answer,
+  an attribution-leak answer, and the `discourses-49-010` corpus pair; corpus-level tests asserting the measured
+  313/162/100 counts and that every survivor's question/answer are verbatim substrings of `plain_english`; and
+  `buildQuestionDriftRequests` shape tests. `npx vitest run scripts/lib/__tests__/premises.test.ts` — 124/124 green
+  (91 baseline + 33 new). `npx vitest run` (full pipeline suite) — 380/380 green (347 baseline + 33 new), confirming
+  no regression to T01/T02/T03 or any other consumer.
+  **Fix pass (same task):** an audit of the 100 survivors found four real leaks the deterministic layers were
+  missing — all fixed in layers (a)/(b) per the plan's own "GATING, not scoring" instruction, no LLM calls added.
+  (1) **Attribution leak `hasAttributionLeak` missed:** it only covered THIRD-party subjects
+  (he/she/they/someone/people) immediately before an attribution verb, never first person ("I ask back: how does the
+  earth keep holding all the buried bodies forever?" — `meditations-04-022` — survived because "I" wasn't in
+  `ATTRIBUTION_PRONOUN_SUBJECTS`). Fixed with `FIRST_PERSON_ATTRIBUTION_RE` (literal "I ask"/"I say"/"I reply"/"I
+  answer", deliberately narrow — not the full verb-conjugation set, since "I" is also the ordinary subject of the
+  author's own direct statements) plus `hasColonAttributionLeadIn`/`isSpeechAttributionClause`, a second, more
+  general check for a speech attribution sitting before a `:` where the subject and verb aren't strictly adjacent
+  ("I ask back: ...", "Epictetus asks: ...") — this one deliberately DOES count sentence-initial capitalization as
+  subject evidence (unlike the main loop's mid-sentence check), because a colon lead-in's whole job is to name the
+  speaker. Both live inside `hasAttributionLeak` itself, so the fix applies everywhere that function is already
+  called — the mechanical gate (on the question) and layer (b) (on the answer) — with no new call sites needed.
+  (2) **Pivot-answer non-answers:** an answer that's purely cataphoric — it promises an explanation instead of
+  giving one ("Think of it this way." for `discourses-21-004`; "Here's how it works." for `meditations-04-022`) —
+  passed layer (b) cleanly (declarative, not a question, no attribution leak) but resolves nothing: the viewer
+  checks their silent prediction against an empty frame. Added `PIVOT_ANSWER_PHRASES` (8 phrases) and `isPivotAnswer`
+  to layer (b), matched against the WHOLE trimmed answer sentence (allowing trailing punctuation) via an anchored
+  `^...$` regex, not a substring search — a longer answer that merely contains one of these phrases mid-sentence
+  ("Consider this carefully before you decide what to do.") is correctly NOT rejected (unit-tested).
+  (3) **Third-party/literary reference questions:** the format's mechanic is FORCED SELF-PREDICTION — a
+  second-person question the viewer answers about their own life — and a question asked ABOUT a named third party
+  or work ("What did Priam do in the Iliad?" — `on-anger-02-092`; "How does Medea put it?" — `discourses-17-003`)
+  fails that mechanic even though it's otherwise well-formed. Added `hasThirdPartyReference` to layer (a): rejects a
+  question containing a capitalized, non-sentence-initial proper noun (reusing T02's `looksLikeProperNoun`,
+  excluding "God" — a common Stoic/theological term in this corpus, not a third party) UNLESS the question is
+  second-person-ish (`isSecondPersonQuestion` — contains you/your/yours/yourself/we/our/us), which exempts a
+  question that merely MENTIONS a name while still addressing the viewer directly (real corpus counter-example,
+  unit-tested: "Why did you want to be elected governor of the Cnossians?" — `discourses-43-002` — survives).
+  (4) **Unbalanced quote characters:** `sentences()` (unmodified, per the task's constraint) is quote-aware only for
+  `"`, not `'` — a mid-sentence terminator inside a single-quoted span it doesn't track gets split, orphaning a
+  leading `'I know the evil I'm about to do, but my anger is stronger than my better judgment.` as the candidate
+  ANSWER for `discourses-17-003` (the closing `'` was left as the next sentence's leading character). Applied the
+  same well-formedness idea T02's `hasBalancedQuotes` uses for `"` (even/odd count) to BOTH the question and answer
+  here via `hasUnbalancedQuotes`, plus a new, more careful check for `'` specifically: `hasUnbalancedSingleQuote`
+  counts "opening-shaped" `'` (preceded by start/whitespace, followed by a non-whitespace char) against
+  "closing-shaped" `'` (preceded by non-whitespace, followed by whitespace/punctuation/end) and rejects when opens
+  exceed closes. This distinguishes a real orphan quote-open from ordinary contractions ("don't", "I'm" — apostrophe
+  has a LETTER immediately after, so it's never counted as opening OR closing) and possessives ("Epictetus' body" —
+  counts as a "close" even though it's really a possessive, which is the conservative direction: it can only make an
+  unbalanced count look balanced, never manufacture a false rejection) — both unit-tested as counter-examples,
+  including a real corpus one (`discourses-17-007`: "Don't think I'm saying that." survives). Added to layer (a)
+  (question) and layer (b) (answer).
+  **Measured, stage by stage, after all four fixes** (mechanical gate's shared `hasAttributionLeak` fix moves the
+  first number too): mechanical 313 -> **306**; after layer (a) 162 -> **150**; after layer (b) 100 -> **89**. Not
+  tuned to hit any target — measured and asserted as-is, corpus-count assertions updated in
+  `scripts/lib/__tests__/premises.test.ts` to match. **Author mix of the 89 survivors:** epictetus 50 (56%),
+  marcus-aurelius 21 (24%), seneca 18 (20%) — the Epictetus skew T05 is scoped to address is if anything slightly
+  worse in this smaller pool than the plan's own "~65% of the usable Question pool" estimate suggested at the
+  100-card stage, so T05 remains necessary and unchanged in scope. All four real corpus leaks are confirmed absent
+  from `questionGate`'s survivors via a dedicated corpus-level test. Added 39 new tests, spread across
+  `hasAttributionLeak`/`hasColonAttributionLeadIn` (first-person + colon-lead-in), new
+  `isSecondPersonQuestion`/`hasThirdPartyReference` describe blocks, `passesLayerA` (third-party reference +
+  unbalanced quotes), `passesLayerB` (pivot answer + unbalanced quotes), new `isPivotAnswer`/
+  `hasUnbalancedSingleQuote`/`hasUnbalancedQuotes` describe blocks, and updated corpus-level tests (counts,
+  author-mix, leak-absence, and the broadened "no survivor has X" sweeps) — each of the six examples quoted in the
+  fix-pass instructions is pinned as its own rejection test, and each new rule has at least one counter-example test
+  proving it doesn't over-reject. `npx vitest run
+  scripts/lib/__tests__/premises.test.ts` — 163/163 green (124 baseline + 39 new). `npx vitest run` (full pipeline
+  suite) — 419/419 green (380 baseline + 39 new), confirming no regression to T01/T02/T03 or any other consumer.
 - [ ] T05: Balance the Epictetus skew (~65% of the usable Question pool) by weighting The Wall toward Meditations and
   the Seneca essays. Acceptance: the weekly schedule reports author mix across all formats combined, not per format.
 - [ ] T06: Write scoring tests. Cover fenced-JSON parsing, rejection of text not traceable to the source card,
