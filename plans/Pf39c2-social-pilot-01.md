@@ -873,8 +873,79 @@ daily job makes no LLM call at post time.
   repeating, or crashing differently. No existing test was weakened, loosened, or deleted. All seeds fixed (no
   probabilistic/flaky assertions); no network or API key required. `npx vitest run scripts/lib/__tests__/schedule.test.ts`
   — 47/47 green. Full suite `npx vitest run` — 641/641 green (624 baseline + 17 new).
-- [ ] T14: Add the weekly review step — before generating week N+1, read week N's retention data and choose the
+- [x] T14: Add the weekly review step — before generating week N+1, read week N's retention data and choose the
   format weighting and hook changes deliberately. Acceptance: a written, dated note per week beside the schedule file.
+  **Note:** Added `scripts/lib/review.ts` (template generation + parsing + validity checks), `scripts/review-week.ts`
+  (the CLI that writes a week's note), and wired a gate into `scripts/generate-schedule.ts` that refuses to generate
+  week N unless week N-1's review note exists and is filled in — following `generate-schedule.ts`'s own conventions
+  (`parseArgs`, `--help`) and `score-premises.ts`'s CLI-vs-lib split.
+  **The note, `content/social/pilot-review-wNN.md`, is written BESIDE the schedule file, never merged into it** — the
+  schedule JSON stays exactly what T12/T13 made it (pure, seed-deterministic, timestamp-free); the review note is the
+  one place a real date belongs, and that date is a required `--date YYYY-MM-DD` CLI argument (validated as a real
+  calendar date by `isValidDateString`, including catching shape-valid-but-impossible dates like `2026-02-30`) —
+  `review.ts` itself never calls `Date.now()`.
+  **Structured around the pre-registered criterion**, per the task's own instruction to prevent post-hoc
+  rationalisation: the template (`buildReviewNoteTemplate`) opens by quoting the index's own success-criterion wording
+  (10x-median-outlier-not-sufficient, track maximum AND median AND follow-conversion) and then has one explicit field
+  per requirement — per-post views (one row per schedule slot, card id included), Median views/Maximum views/Follows
+  gained, "Criterion A met (yes/no)" + evidence, "Criterion B met (yes/no/not-yet-assessable)" + evidence (Criterion B
+  can't be assessed before week 2, so that's a real third option, not a forced yes/no), and a "Decision for next week"
+  section with separate wall/question/objection weight fields, a hook-changes field, and a `Reason` field the comment
+  explicitly says "must be a deliberate choice made FROM the metrics above, not a hunch." Also embeds, per the task's
+  explicit requirement: the combined author mix (T05's own acceptance object, `schedule.author_mix`, reused directly —
+  no second mix computation) and the read-through position (the week's last read-through slot's own
+  `read_through_counter`, e.g. "Card 7 of 70 (enchiridion)").
+  **"Filled in", decided and documented in-file:** the template's placeholder token is the literal string `<TODO>`
+  (`PLACEHOLDER`); `isReviewNoteFilled` requires zero remaining occurrences anywhere in the file — a single unfilled
+  field (even just `Reason`) keeps the whole note "not reviewed." A separate `isReviewNoteStructurallyValid` checks
+  every required field label is still present as a `- Label: ...` line (so a hand-edited note that deleted a whole
+  section, leaving no `<TODO>` behind to trip the first check, doesn't get treated as filled) — `isReviewComplete`
+  (what the gate calls) requires both. One real bug this surfaced during testing: the template's own instructional
+  HTML comment originally explained the placeholder by quoting it literally ("Replace every `<TODO>` with...") — that
+  comment text itself contains `<TODO>`, so a fully-filled note could never pass `isReviewNoteFilled` no matter what
+  the reviewer entered. Fixed by rephrasing the instructions to describe the placeholder without repeating its exact
+  token; caught by this task's own tests, not just a manual eyeball.
+  **The gate in `generate-schedule.ts`** (`resolveBaseWeights`) runs before anything else in `main()`: for week 1, it
+  requires an explicit `--first-week` flag (an acknowledgement there's no week 0 to have reviewed, per the task's own
+  instruction that this escape hatch be explicit rather than silently inferred from `week === 1`); for week N > 1, it
+  requires `<output>/pilot-review-w<N-1>.md` to exist and pass `isReviewComplete`, printing the exact next command to
+  run (`review-week.ts --week <N-1> --date <...>`) when it's missing, and refusing with a distinct message when it
+  exists but is still a blank template. `--skip-review-check` is the second, deliberate-override escape hatch,
+  available on any week, and is logged loudly (not silent) when used. **The reviewer's chosen weights carry forward
+  automatically:** when the prior week's note is complete, `parseReviewNote`'s `nextWeekWeights` (parsed from the
+  note's own "Next week wall/question/objection weight" fields) become this run's weight DEFAULTS, printed to stdout;
+  `--wall-weight`/`--question-weight`/`--objection-weight` still override them explicitly for one run if needed — so
+  the review step's decision is what actually drives the next week's generation, not just a record kept alongside it.
+  **Determinism preserved, verified not just assumed:** the review note only ever changes which WEIGHTS
+  `generateWeek` receives (an existing, already-deterministic parameter from T12) — it never touches the schedule
+  JSON's own shape or adds any wall-clock data to it. A dedicated test generates week 2 twice with identical pinned
+  weights, once gated by a real filled review note and once via `--skip-review-check` with no note at all, and asserts
+  the two `pilot-schedule-w02.json` files are byte-identical strings — the T12/T13 byte-identity property survives the
+  gate's addition.
+  **`scripts/review-week.ts`** reads that week's own already-written `pilot-schedule-wNN.json` (refusing with a clear
+  message if it doesn't exist yet — you can't review a week that hasn't been generated) and writes the unfilled
+  template beside it; refuses to clobber an existing note unless `--force` is passed, so a filled note can't be
+  silently overwritten by a second template run.
+  **Tests** (`scripts/lib/__tests__/review.test.ts`, 18 tests, unit-level against `review.ts` directly; and
+  `scripts/lib/__tests__/generate-schedule-cli.test.ts`, 12 tests, subprocess-level against both CLIs — following
+  `score-premises.test.ts`'s own documented reason for spawning rather than importing a top-level CLI script that runs
+  `main()` on import): template field coverage (every required field present, including the pre-registered-criterion
+  wording, the embedded author mix, and the read-through position); date validation (valid, malformed, and
+  shape-valid-but-impossible dates); `isReviewNoteFilled`/`isReviewNoteStructurallyValid`/`isReviewComplete` across a
+  blank template, a fully filled note, a note with exactly one placeholder left, and a structurally gutted note;
+  `parseReviewNote` recovering every metric/decision field from a filled note and returning `null` (never a partial
+  object) for missing/placeholder/partially-filled weight fields — the task's own "parsing a filled note recovers the
+  chosen weights" acceptance line; the week-1 escape hatch (`--first-week` required, works when supplied); generating
+  week N+1 failing with a clear, specific message with no review note, failing with a distinct message with an
+  unfilled template, and succeeding once filled; the reviewed weights carrying forward into the next `generate-schedule.ts`
+  run's own stdout; `--skip-review-check` bypassing the gate; the byte-identity test described above; and
+  `review-week.ts`'s own argument/overwrite/date validation. `npx vitest run scripts/lib/__tests__/review.test.ts
+  scripts/lib/__tests__/generate-schedule-cli.test.ts` — 30/30 green. Full suite `npx vitest run` — 671/671 green (641
+  baseline + 30 new), confirming no regression to T01-T13 or any other consumer.
+  **Generated for real** (`npx tsx scripts/review-week.ts --week 1 --date 2026-08-25`, against the real,
+  already-generated `content/social/pilot-schedule-w01.json`): wrote `content/social/pilot-review-w01.md` — left
+  uncommitted, unfilled (per this task's own scope: T14 builds the review MECHANISM; actually reviewing week 1's real
+  retention data happens once real posts exist, out of scope until the pilot is actually live).
 
 ## Deferred
 A validated `pull_quote` field in the CONTENT pipeline — a verbatim, self-contained sentence chosen once with the

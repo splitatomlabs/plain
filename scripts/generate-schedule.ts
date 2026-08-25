@@ -16,7 +16,8 @@
  *   npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --dry-run
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { loadCorpus, rankWall, questionGate, objectionGate } from "./lib/premises.js";
@@ -30,6 +31,7 @@ import {
   type ScheduleFormat,
   type FormatWeights,
 } from "./lib/schedule.js";
+import { isReviewComplete, parseReviewNote, reviewNoteFileName } from "./lib/review.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -49,6 +51,8 @@ const { values: args } = parseArgs({
     output: { type: "string", default: "content/social" },
     "corpus-dir": { type: "string", default: "content/output" },
     "dry-run": { type: "boolean", default: false },
+    "first-week": { type: "boolean", default: false },
+    "skip-review-check": { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
 });
@@ -73,6 +77,10 @@ Options:
   --corpus-dir <dir>            Card corpus directory (default: content/output)
   --output <dir>                Schedule output directory (default: content/social)
   --dry-run                     Print the week's summary; do not write a file
+  --first-week                  Required to generate week 1 — an explicit acknowledgement
+                                 that there is no prior week to review (see the review gate below)
+  --skip-review-check           Deliberately bypass the review gate for week > 1 (logged loudly;
+                                 use only when you've reviewed retention some other way)
   --help                        Show this help
 
 Reads every prior pilot-schedule-w<NN>.json in --output (w01 .. w<week-1>)
@@ -82,7 +90,17 @@ read-through counter where the prior weeks left off.
 Pool fallback: reads <premises-dir>/{wall,question,objection}.json when
 present (T11's scored pools); falls back to the mechanical gate output
 (rankWall/questionGate/objectionGate) from the raw corpus when absent, so
-this works today, before T11 has run.`);
+this works today, before T11 has run.
+
+Review gate: per the plan's own cadence ("review retention, adjust hooks and
+format mix, then generate the next week"), generating week N (N > 1) refuses
+to run unless <output>/pilot-review-w<N-1>.md exists AND is filled in (built
+via scripts/review-week.ts, no placeholder "<TODO>" left in it). When that
+note IS filled in, its "Next week wall/question/objection weight" fields
+become this run's weight DEFAULTS (still overridable by
+--wall-weight/--question-weight/--objection-weight). Week 1 has no prior
+week, so pass --first-week instead. --skip-review-check bypasses the gate
+entirely for a deliberate override.`);
   process.exit(0);
 }
 
@@ -123,12 +141,6 @@ function parseWeight(raw: string | undefined, fallback: number, flagName: string
   return n;
 }
 
-const weights: FormatWeights = {
-  wall: parseWeight(args["wall-weight"], DEFAULT_FORMAT_WEIGHTS.wall, "--wall-weight"),
-  question: parseWeight(args["question-weight"], DEFAULT_FORMAT_WEIGHTS.question, "--question-weight"),
-  objection: parseWeight(args["objection-weight"], DEFAULT_FORMAT_WEIGHTS.objection, "--objection-weight"),
-};
-
 const maxObjectionPerWeek = parseWeight(
   args["max-objection-per-week"],
   DEFAULT_MAX_OBJECTION_PER_WEEK,
@@ -142,10 +154,92 @@ const outputDir = args.output!;
 const dryRun = !!args["dry-run"];
 
 // ---------------------------------------------------------------------------
+// The weekly review gate (T14).
+//
+// The plan's cadence is "Schedule one week at a time. Review retention,
+// adjust hooks and format mix, then generate the next week." — so generating
+// week N (N > 1) refuses to run until week N-1's review note
+// (content/social/pilot-review-w<N-1>.md, built by scripts/review-week.ts)
+// exists and is actually filled in (see ./lib/review.ts's `isReviewComplete`
+// for exactly what "filled in" means). When it is, the note's own chosen
+// "Next week wall/question/objection weight" fields become this run's weight
+// DEFAULTS — the deliberate weighting decision the reviewer made carries
+// forward automatically, while --wall-weight etc. can still override it
+// explicitly for this one run.
+//
+// Two escape hatches, both explicit (never inferred silently): --first-week
+// for week 1 (there is no week 0 to have reviewed), and --skip-review-check
+// for a deliberate override on any week.
+// ---------------------------------------------------------------------------
+
+async function resolveBaseWeights(): Promise<FormatWeights> {
+  if (week === 1) {
+    if (!args["first-week"]) {
+      console.error(
+        `Week 1 has no prior week to review. Pass --first-week to acknowledge this and generate week 1 ` +
+          `without the review gate.`,
+      );
+      process.exit(1);
+    }
+    return DEFAULT_FORMAT_WEIGHTS;
+  }
+
+  if (args["skip-review-check"]) {
+    console.error(
+      `--skip-review-check set: generating week ${week} WITHOUT checking week ${week - 1}'s review note. ` +
+        `This deliberately bypasses the plan's "review, then generate the next week" cadence.`,
+    );
+    return DEFAULT_FORMAT_WEIGHTS;
+  }
+
+  const priorWeek = week - 1;
+  const reviewPath = path.join(outputDir, reviewNoteFileName(priorWeek));
+  if (!existsSync(reviewPath)) {
+    console.error(
+      `Missing review note for week ${priorWeek}: ${reviewPath}\n` +
+        `Review week ${priorWeek}'s retention data first:\n` +
+        `  npx tsx scripts/review-week.ts --week ${priorWeek} --date <YYYY-MM-DD>\n` +
+        `then fill in the metrics and decision fields, and retry this command.\n` +
+        `(Use --skip-review-check to override this deliberately.)`,
+    );
+    process.exit(1);
+  }
+
+  const content = await readFile(reviewPath, "utf-8");
+  if (!isReviewComplete(content)) {
+    console.error(
+      `Review note for week ${priorWeek} exists but is not filled in yet: ${reviewPath}\n` +
+        `Replace every "<TODO>" with real metrics and a real next-week decision, then retry.\n` +
+        `(Use --skip-review-check to override this deliberately.)`,
+    );
+    process.exit(1);
+  }
+
+  const parsed = parseReviewNote(content);
+  if (parsed.nextWeekWeights) {
+    console.log(
+      `Using week ${priorWeek}'s reviewed weights as this run's defaults: ` +
+        `wall=${parsed.nextWeekWeights.wall}, question=${parsed.nextWeekWeights.question}, ` +
+        `objection=${parsed.nextWeekWeights.objection} (still overridable via --wall-weight etc.)`,
+    );
+    return parsed.nextWeekWeights;
+  }
+  return DEFAULT_FORMAT_WEIGHTS;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
+  const baseWeights = await resolveBaseWeights();
+
+  const weights: FormatWeights = {
+    wall: parseWeight(args["wall-weight"], baseWeights.wall, "--wall-weight"),
+    question: parseWeight(args["question-weight"], baseWeights.question, "--question-weight"),
+    objection: parseWeight(args["objection-weight"], baseWeights.objection, "--objection-weight"),
+  };
+
   const cards = loadCorpus(corpusDir);
 
   const gatePools = { wall: rankWall(cards), question: questionGate(cards), objection: objectionGate(cards) };
