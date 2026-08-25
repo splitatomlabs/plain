@@ -60,14 +60,21 @@ looks like Plain.
   `.gitkeep`, plus `src/render/__tests__/scaffold.test.ts` placeholder. Added `social/out/` to root `.gitignore`
   (`node_modules/` already covered globally). `npm install --prefix social` and `npm test --prefix social` both
   exit 0 (1 passed test). No renderer/encoder/audio/Remotion implementation code was added — left for T02+.
-- [ ] T02: Art-direct and generate the three portraits; commit them plus a README recording tool, prompt, date and
+- [!] T02: Art-direct and generate the three portraits; commit them plus a README recording tool, prompt, date and
   licence. Acceptance: a reviewer can tell slave/emperor/senator apart at thumbnail size, and they are clearly not
   stock marble-on-black.
-- [ ] T03: Write renderer tests — output dimensions, JPEG for the IG feed size, long text shrinks rather than
+  BLOCKED (2026-08-25, user decision): no image-generation tool is available in this session. Two rounds of
+  hand-authored SVG were reviewed and rejected — round 1 read as flat cartoon avatars, round 2 as uncanny carved
+  profiles. The user will generate the real portraits externally. What IS committed: the three SVGs as clearly
+  labelled PLACEHOLDER art, `social/assets/characters/README.md` as an asset contract (file contract, art-direction
+  brief, provenance requirements), and `social/src/render/characters.ts` as the loader every downstream composition
+  uses. Dropping three conforming files into `social/assets/characters/` completes this task with no code change;
+  flip `PORTRAITS_ARE_PLACEHOLDER` when they land.
+- [x] T03: Write renderer tests — output dimensions, JPEG for the IG feed size, long text shrinks rather than
   overflows, correct accent per author. Acceptance: tests fail against an empty implementation.
-- [ ] T04: Implement the Playwright card renderer, auto-fitting by binary-searching font size, mirroring
+- [x] T04: Implement the Playwright card renderer, auto-fitting by binary-searching font size, mirroring
   `web/src/lib/utils/og.js`. Acceptance: T03 passes.
-- [ ] T05: Build **The Wall** — the flagship. Frame 0.0 is a screen packed edge to edge with 150+ words of
+- [~] T05: Build **The Wall** — the flagship. Frame 0.0 is a screen packed edge to edge with 150+ words of
   small-set archaic text, already mid-push-in, no title card and no margins; a karaoke highlight races through at
   ~320wpm, past reading speed. **Silent.** At **2-3s: hard cut** — all motion stops, silence, one still plain
   sentence held a full 3 seconds. Then the rest of the plain passage, one still line at a time, quietly narrated.

@@ -1,0 +1,44 @@
+<!-- PLACEHOLDER ART — not final. See README.md. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="Carved relief-print profile of Epictetus, the Stoic slave">
+	<title>Epictetus — the Slave</title>
+
+	<defs>
+		<pattern id="hatch-ep" patternUnits="userSpaceOnUse" width="22" height="22" patternTransform="rotate(35)">
+			<line x1="0" y1="0" x2="0" y2="22" stroke="#7F4E37" stroke-width="5"/>
+		</pattern>
+	</defs>
+
+	<!-- Paper ground -->
+	<rect width="1000" height="1000" fill="#FAF7F2"/>
+
+	<!-- Shoulders, one bare -->
+	<path fill="#B5704F" d="M60 1000 C65 830 105 700 205 650 C305 602 400 578 470 572 Q540 565 610 578 C690 592 780 618 850 665 C915 710 940 840 942 1000 Z"/>
+
+	<!-- Diagonal drape line of the tunic, crossing from the covered shoulder toward the opposite hip -->
+	<g fill="none" stroke="#7F4E37" stroke-width="6" stroke-linecap="round" opacity="0.8">
+		<path d="M650 610 C560 680 460 730 380 820"/>
+		<path d="M690 640 C605 705 510 755 435 840"/>
+	</g>
+	<path fill="url(#hatch-ep)" d="M690 660 L790 700 L760 850 L668 815 Z"/>
+
+	<!-- Head + neck, scaled down and bowed forward -->
+	<g transform="translate(70,120) scale(0.75) translate(600,560) rotate(-10) translate(-600,-560)">
+		<path fill="#B5704F" d="M600 130 L520 145 L420 220 L460 250 L330 340 L365 368 L350 392 L372 402 L355 415 L378 428 L345 465 L390 500 L460 520 L540 530 L600 528 L630 545 L640 600 L636 660 L650 660 L655 600 L670 500 L700 420 Q730 330 730 240 Q725 155 680 150 Z"/>
+
+		<!-- Neck shadow hatch -->
+		<path fill="url(#hatch-ep)" d="M630 545 L640 590 L636 650 L604 645 L598 555 Z"/>
+
+		<!-- Close-cropped hair: a thin band, not a full head of hair -->
+		<path fill="#7F4E37" d="M420 220 L520 145 L600 130 L680 150 Q722 172 715 235 L688 222 Q672 188 618 175 L560 168 L512 175 L448 202 Z"/>
+
+		<!-- Short beard, hugging the jaw only -->
+		<path fill="#7F4E37" d="M365 368 C346 392 340 418 350 442 C358 462 372 478 390 490 L412 480 L428 490 L448 478 L468 488 L488 476 L508 486 C518 470 525 458 530 446 L505 452 L462 446 L412 432 C398 414 388 394 382 380 C378 374 371 369 365 368 Z"/>
+
+		<!-- Ear: a single hooked stroke -->
+		<path fill="none" stroke="#FAF7F2" stroke-width="10" stroke-linecap="round" d="M615 390 Q642 402 634 438 Q627 462 605 452"/>
+
+		<!-- Eye: heavy carved lid line over a thin slot, no white, no pupil -->
+		<path fill="none" stroke="#FAF7F2" stroke-width="12" stroke-linecap="round" d="M455 274 Q480 256 512 262"/>
+		<path fill="none" stroke="#FAF7F2" stroke-width="6" stroke-linecap="round" d="M462 286 L508 280"/>
+	</g>
+</svg>
