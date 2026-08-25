@@ -323,8 +323,48 @@ daily job makes no LLM call at post time.
   scripts/lib/__tests__/premises.test.ts` — 184/184 green (163 baseline + 21 new). `npx vitest run` (full pipeline
   suite) — 440/440 green (419 baseline + 21 new), confirming no regression to T01/T02/T03/T04 or any other
   consumer.
-- [ ] T06: Write scoring tests. Cover fenced-JSON parsing, rejection of text not traceable to the source card,
+- [x] T06: Write scoring tests. Cover fenced-JSON parsing, rejection of text not traceable to the source card,
   per-rubric output shapes, per-format length limits. Acceptance: tests fail against an empty implementation.
+  **Note:** Added `scripts/lib/premises-scoring.ts` (stubs only — gate code in `premises.ts` stays separate from
+  scoring code, per the plan's file layout) and `scripts/lib/__tests__/premises-scoring.test.ts` (51 new tests).
+  Every exported function in `premises-scoring.ts` throws `new Error("not implemented")`; the module's constants
+  (`WALL_SCORE_MIN`/`MAX`, `OBJECTION_MAX_WORDS`, `WALL_ORIGINAL_MIN_WORDS`, the verdict/classification enums) are
+  real values, not stubs, since they're facts to assert against, not logic to implement. **Shapes chosen, matching
+  the plan's "three different shapes" framing:** Wall = `{ impenetrability_score, landing_line_score,
+  chosen_landing_line, reason? }` (scores + a chosen line, no verdict — every Wall candidate already survived T02's
+  mechanical gate, so the LLM's job here is scoring/selection, not accept/reject); Question =
+  `{ verdict: "answers"|"drifts", reason }` (T04 layer (c)'s topic-drift judgement); Objection =
+  `{ verdict: "accept"|"reject", classification: "viewer_position"|"dramatized_scene"|"doctrinal_dispute", reason }`
+  (the heaviest shape, per the plan's own description). Four coverage areas, each its own `describe` block group: (1)
+  **fenced-JSON parsing** — 12 tests, 4 per parser (bare JSON, ```json-fenced, JSON with leading/trailing prose, a
+  malformed-JSON rejection asserting the thrown message matches `/json/i`); (2) **traceability** — 9 tests against a
+  new `checkFaithfulness(text, card)` stub, covering verbatim-from-`plain_english`, verbatim-from-`original_excerpt`,
+  a verbatim partial-sentence substring, paraphrase, embellishment (source text plus an invented tail), wholly
+  invented text, a **near-miss single-word substitution** ("life" -> "soul") — the plan's named central case — text
+  stitched from two non-adjacent real fragments (not itself a contiguous substring), and a reason-string check;
+  `checkFaithfulness` is documented as mechanical only (no LLM call inside it), matching "Enforce mechanically"; (3)
+  **per-rubric output shapes** — 17 tests: each parser accepts its own shape and rejects missing/extra required
+  fields, a wrong-typed score, out-of-range scores (Wall only — the plan explicitly names this), an invalid
+  verdict/classification enum value, and BOTH other formats' shapes; (4) **per-format length limits** — 13 tests
+  across four new pure-boolean stubs (`withinWallOriginalLimit`, `withinWallLandingLineLimit`, `withinQuestionLimit`,
+  `withinObjectionLimit`), reusing `LANDING_LINE_MAX_WORDS`/`QUESTION_MAX_WORDS` from `premises.ts` rather than
+  redefining them, plus a new `OBJECTION_MAX_WORDS` (14) kept as its OWN constant even though it numerically equals
+  `QUESTION_MAX_WORDS` — deliberately not shared, so the two formats' limits can never silently drift together. The
+  capstone test in this group is the one the task calls out explicitly: a single 150-word string passes
+  `withinWallOriginalLimit` (no ceiling on the Wall's original side) while the same-length string fails
+  `withinQuestionLimit`, proving no single global limit is applied. **Correction during implementation:** the first
+  pass of the 15 "rejects a malformed/wrong-shape payload" tests asserted only `.toThrow()` with no message pattern
+  — every one of them passed trivially against the stub (which throws unconditionally), leaving 15 of 51 new tests
+  accidentally green, violating the task's "tests MUST be red" requirement. Fixed by tightening each to
+  `.toThrow(/specific-field-name/i)` (e.g. `/chosen_landing_line/`, `/score/i`, `/verdict/i`, `/classification/i`,
+  `/reason/i`) — a message a real T07 validator will plausibly produce, but that the stub's literal "not implemented"
+  text can never match — which turned all 15 red without weakening what they assert once T07 lands (each still
+  fails for exactly the field/shape reason its name describes). **Measured:** `npx vitest run
+  scripts/lib/__tests__/premises-scoring.test.ts` — 51/51 RED (all fail against the stubs, confirmed both before and
+  after the message-specificity fix — 36/51 before, 51/51 after). `npx vitest run
+  scripts/lib/__tests__/premises.test.ts` — 184/184 GREEN, untouched. `npx vitest run` (full pipeline suite) — 491
+  total (440 baseline + 51 new): 440 passed, 51 failed, confirming zero regression to T01-T05 or any other existing
+  consumer.
 - [ ] T07: Implement the three LLM rubrics and parsers. **The Objection's carries the most weight** — no regex
   separates "a position the viewer might hold" from "a line spoken in a scene". System prompt cached per author,
   reusing the `buildTranslationSystem` pattern in `scripts/lib/prompt.ts`. Acceptance: T06 passes.
