@@ -78,6 +78,31 @@ export interface NarrationResult {
  * mp3 by the whole final word. Probing the file on disk sidesteps both
  * problems by measuring the one thing that is actually authoritative: the
  * audio a listener will hear.
+ *
+ * That Polly under-report has a second consequence this function must
+ * correct BEFORE gating, not just avoid: `timings`' own last line also ends
+ * at that same too-early `startMs`, because `lineTimingsFromMarks` reads
+ * its `endSeconds` straight off the same collapsed final mark. Gating an
+ * uncorrected `timings` against the probed (correct) file duration would
+ * then mean drift is ALWAYS roughly "the final word's real duration plus
+ * any trailing silence" — comfortably outside `NARRATION_DRIFT_TOLERANCE_MS`
+ * on any real clip — so the gate would reject every genuine Polly render,
+ * never just the actually-drifted ones. So: close the collapsed final mark
+ * with the probed file duration first, and rebuild `timings` from THAT
+ * corrected mark set, before calling `assertNarrationInSync`.
+ *
+ * The repair is deliberately gated on `tts.provider === 'polly'` AND the
+ * collapsed shape (`endMs === startMs`), not on the shape alone. Polly's
+ * "no duration for the final word" behavior is a documented, systematic
+ * property of `parsePollySpeechMarks` — safe to patch unconditionally
+ * whenever it's seen from that provider. ElevenLabs' marks are
+ * per-CHARACTER timestamps read directly off its own response
+ * (`elevenLabsAlignmentToMarks`); a zero-duration final character there
+ * isn't a known artifact of this codebase's parsing (unlike Polly's, it
+ * isn't manufactured by our own code) and could be a legitimate report —
+ * or a symptom of a genuinely broken response worth surfacing as drift,
+ * not silently stretching to fit. Repairing it the same way would risk
+ * masking a real ElevenLabs bug instead of a known Polly quirk.
  */
 export async function synthesizeNarration(
 	lines: string[],
@@ -88,7 +113,6 @@ export async function synthesizeNarration(
 ): Promise<NarrationResult> {
 	const voice = resolveVoice(author, resolveTtsConfig(env));
 	const tts = await provider.synthesize(lines.join(' '), voice, outPath);
-	const timings = lineTimingsFromMarks(lines, tts);
 
 	const probed = await probe(outPath);
 	if (probed.durationSec === null || !Number.isFinite(probed.durationSec)) {
@@ -97,6 +121,21 @@ export async function synthesizeNarration(
 		);
 	}
 	const audioDurationMs = probed.durationSec * 1000;
+
+	// Repair Polly's collapsed final-word mark (see doc comment above) with
+	// the probed file duration BEFORE deriving timings, so the drift gate
+	// measures real drift rather than the final word's own duration. Never
+	// mutates `tts.marks` in place — `tts` is returned to the caller as-is.
+	const marks = tts.marks;
+	const lastMark = marks[marks.length - 1];
+	const isCollapsedPollyFinalMark =
+		tts.provider === 'polly' && lastMark !== undefined && lastMark.endMs === lastMark.startMs;
+	const repairedMarks =
+		isCollapsedPollyFinalMark && audioDurationMs > lastMark.startMs
+			? [...marks.slice(0, -1), { ...lastMark, endMs: audioDurationMs }]
+			: marks;
+
+	const timings = lineTimingsFromMarks(lines, { ...tts, marks: repairedMarks });
 
 	assertNarrationInSync(timings, audioDurationMs);
 	return { timings, tts, audioDurationMs };

@@ -802,6 +802,47 @@ describe("F05/F06: renderer-derived exclusions", () => {
     expect(exclusions).toBeNull();
   });
 
+  // F11: `loadExclusions`'s two throw paths (non-object JSON, and a missing
+  // required array section) are the only thing standing between a
+  // truncated/hand-edited artifact and a silently ungated schedule — assert
+  // both actually fire, through `loadFormatPools` (the only real caller).
+  it("rejects a present-but-non-object exclusions file (e.g. a bare JSON array) with the 'unrecognized shape' message", async () => {
+    const exclusionsPath = path.join(tempDir, "render-exclusions.json");
+    await writeFile(exclusionsPath, "[]");
+
+    await expect(loadFormatPools(tempDir, gatePools, exclusionsPath)).rejects.toThrow(/unrecognized shape/i);
+  });
+
+  it("rejects an exclusions file missing the read_through section, naming it in the error", async () => {
+    const exclusionsPath = path.join(tempDir, "render-exclusions.json");
+    await writeFile(
+      exclusionsPath,
+      JSON.stringify({
+        meta: {
+          generated_at: "2026-08-25T00:00:00.000Z",
+          max_post_duration_frames: 1770,
+          max_post_duration_seconds: 59,
+          wall_min_legible_font_px: 39,
+          question_min_legible_font_px: 78,
+          question_max_words: 12,
+          objection_min_legible_font_px: 78,
+          read_through_book: "meditations",
+          read_through_chapters: ["book-02", "book-03"],
+          wall: { submitted: 0, succeeded: 0, dropped: 0 },
+          question: { submitted: 0, succeeded: 0, dropped: 0 },
+          objection: { submitted: 0, succeeded: 0, dropped: 0 },
+          read_through: { submitted: 0, succeeded: 0, dropped: 0 },
+        },
+        wall: [],
+        question: [],
+        objection: [],
+        // read_through deliberately omitted.
+      }),
+    );
+
+    await expect(loadFormatPools(tempDir, gatePools, exclusionsPath)).rejects.toThrow(/read_through/);
+  });
+
   // -------------------------------------------------------------------------
   // The read-through's wall branch (`tryReadThroughContent`) must ALSO
   // consult its OWN exclusion list — a read-through card can be excluded

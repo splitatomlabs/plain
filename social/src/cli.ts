@@ -100,6 +100,12 @@ Options:
   --slot <1|2>            Which of the day's two slots to render (required).
                           Slot 1 is always the read-through slot.
   --out <dir>              Output directory (default: social/out/).
+  --schedule-dir <dir>     Directory to read pilot-schedule-w<NN>.json from
+                          (default: content/social/). Testing/override
+                          affordance only — real renders should never need
+                          this; it lets tests and one-off tooling point at a
+                          fixture schedule without touching the committed
+                          pipeline state in content/social/.
   --dry-run                Print the resolved render plan; write nothing.
   --require-narration      Fail instead of warning when no narration is
                           available (T14 is not done yet, so this always
@@ -111,6 +117,7 @@ interface RenderArgs {
 	date: string;
 	slotNumber: number;
 	outDir: string;
+	scheduleDir: string;
 	dryRun: boolean;
 	requireNarration: boolean;
 }
@@ -122,6 +129,7 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 			date: { type: 'string' },
 			slot: { type: 'string' },
 			out: { type: 'string', default: DEFAULT_OUT_DIR },
+			'schedule-dir': { type: 'string', default: SCHEDULE_DIR },
 			'dry-run': { type: 'boolean', default: false },
 			'require-narration': { type: 'boolean', default: false },
 			help: { type: 'boolean', default: false }
@@ -149,6 +157,7 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 		date: values.date,
 		slotNumber,
 		outDir: values.out ?? DEFAULT_OUT_DIR,
+		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
 		dryRun: Boolean(values['dry-run']),
 		requireNarration: Boolean(values['require-narration'])
 	};
@@ -158,8 +167,8 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 // Loading the schedule
 // ---------------------------------------------------------------------------
 
-async function loadWeekSchedule(week: number): Promise<WeekSchedule> {
-	const filePath = path.join(SCHEDULE_DIR, scheduleFileName(week));
+async function loadWeekSchedule(week: number, scheduleDir: string): Promise<WeekSchedule> {
+	const filePath = path.join(scheduleDir, scheduleFileName(week));
 	if (!existsSync(filePath)) {
 		throw new Error(
 			`No schedule found for week ${week}: ${filePath}\n` +
@@ -216,7 +225,7 @@ interface RenderPlan {
 
 async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 	const { week, day } = dateToWeekDay(args.date);
-	const schedule = await loadWeekSchedule(week);
+	const schedule = await loadWeekSchedule(week, args.scheduleDir);
 	const slot = resolveSlot(schedule, day, args.slotNumber);
 	const card = loadOutputCard(slot.book_slug, slot.card_id);
 

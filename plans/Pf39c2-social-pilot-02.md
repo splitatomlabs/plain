@@ -165,16 +165,16 @@ looks like Plain.
   final word, un-ducking the bed mid-word; and the root `npm test` never runs the 437-test `social/` suite.
 - [x] F08: (review M6) No end-to-end render coverage for The Objection — week 1 contains no Objection slot, so its
   whole render path has never executed. Blocked behind F06, which changes which cards can be scheduled.
-- [~] F09: (re-review R1) The F07 drift-gate fix swapped a gate that could never fire for one that can never pass.
+- [x] F09: (re-review R1) The F07 drift-gate fix swapped a gate that could never fire for one that can never pass.
   Polly reports no duration for the final word (`endMs === startMs`), so gating the last line's end against the
   probed file duration always drifts by the final word plus trailing silence — ~490ms on the committed fixture,
   against a 120ms tolerance. Repair the under-reporting mark before building timings, then gate.
-- [~] F10: (re-review R2+R4) `content/social/pilot-schedule-w02.json` is a TEST FIXTURE committed as real pipeline
+- [x] F10: (re-review R2+R4) `content/social/pilot-schedule-w02.json` is a TEST FIXTURE committed as real pipeline
   state — generated with `--objection-weight 20 --skip-review-check`, it bypasses plan 01's review gate and would
   become week 3's `loadPriorWeeks` input. Add a `--schedule-dir` override to the CLI, move it under
   `social/src/__tests__/fixtures/`, and delete it from `content/social/`. Also fix the confirmed mkdtemp-parent leak
   in `cli.test.ts`'s dry-run tests.
-- [~] F11: (re-review R3) `loadExclusions`'s two throw paths are untested — they are the only thing between a
+- [x] F11: (re-review R3) `loadExclusions`'s two throw paths are untested — they are the only thing between a
   truncated or hand-edited artifact and a silently ungated schedule.
 - [ ] F12: (re-review, noted not blocking) The read-through's question/objection branches in `scripts/lib/schedule.ts`
   re-derive content via their own gates and are still ungated by `render-exclusions.json`. The current Meditations
