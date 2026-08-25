@@ -163,7 +163,7 @@ looks like Plain.
   (412 dirs / 8.5GB on this machine); `assertNarrationInSync` is handed `marks[last].endMs` as the audio duration,
   so T13's drift gate compares marks against themselves and can never fire — and on Polly it under-reports by the
   final word, un-ducking the bed mid-word; and the root `npm test` never runs the 437-test `social/` suite.
-- [~] F08: (review M6) No end-to-end render coverage for The Objection — week 1 contains no Objection slot, so its
+- [x] F08: (review M6) No end-to-end render coverage for The Objection — week 1 contains no Objection slot, so its
   whole render path has never executed. Blocked behind F06, which changes which cards can be scheduled.
 - [ ] F04: The Question's and The Objection's timing modules do not accept `narrationTimings` — only The Wall does
   (flagged by T18). Once T14's voices land, real narration for those two formats can drift against their fixed
