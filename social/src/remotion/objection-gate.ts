@@ -203,6 +203,19 @@ export interface ObjectionReplyLineLayout {
 	lineHeight: number;
 }
 
+/**
+ * Which check rejected the card (F06) — lets a caller surveying the pool
+ * (`social/scripts/write-exclusions.ts`) tally/report WHY separately from
+ * the human-readable `reason`, mirroring `wall-gate.ts`'s `failure` field:
+ *  - `"pool_flags"` — `verdict`/`classification` rejected it.
+ *  - `"sentence_cap"` — the two-sentence-cap rejection rules (too few
+ *    complete sentences, a non-terminal boundary, or a hanging third
+ *    sentence).
+ *  - `"legibility"` — the objection frame or a reply line falls under its
+ *    legibility floor once fitted.
+ */
+export type ObjectionGateAxis = 'pool_flags' | 'sentence_cap' | 'legibility';
+
 export type ObjectionGateResult =
 	| {
 			ok: true;
@@ -211,7 +224,7 @@ export type ObjectionGateResult =
 			replyLines: [string, string];
 			replyLayouts: [ObjectionReplyLineLayout, ObjectionReplyLineLayout];
 	  }
-	| { ok: false; reason: string };
+	| { ok: false; reason: string; axis: ObjectionGateAxis };
 
 /**
  * Runs every check above against `input` and rejects the first one that
@@ -226,7 +239,8 @@ export function gateObjectionCard(input: ObjectionGateInput): ObjectionGateResul
 	if (input.verdict !== undefined && input.verdict !== 'accept') {
 		return {
 			ok: false,
-			reason: `Objection card rejected: rubric verdict is "${input.verdict}", not "accept".`
+			reason: `Objection card rejected: rubric verdict is "${input.verdict}", not "accept".`,
+			axis: 'pool_flags'
 		};
 	}
 
@@ -236,7 +250,8 @@ export function gateObjectionCard(input: ObjectionGateInput): ObjectionGateResul
 			reason:
 				`Objection card rejected: rubric classification is "${input.classification}", not ` +
 				'"viewer_position" — a line spoken by a character in a staged scene, or a live doctrinal ' +
-				'dispute, is not a position a viewer plausibly holds of their own.'
+				'dispute, is not a position a viewer plausibly holds of their own.',
+			axis: 'pool_flags'
 		};
 	}
 
@@ -247,7 +262,8 @@ export function gateObjectionCard(input: ObjectionGateInput): ObjectionGateResul
 			ok: false,
 			reason:
 				`Objection card rejected: the reply yields only ${sentences.length} complete sentence(s), ` +
-				'fewer than the two the format requires.'
+				'fewer than the two the format requires.',
+			axis: 'sentence_cap'
 		};
 	}
 
@@ -258,7 +274,8 @@ export function gateObjectionCard(input: ObjectionGateInput): ObjectionGateResul
 			ok: false,
 			reason:
 				'Objection card rejected: one of the first two sentences does not end at a real terminal ' +
-				'punctuation boundary — refusing to emit a partial sentence rather than truncating mid-argument.'
+				'punctuation boundary — refusing to emit a partial sentence rather than truncating mid-argument.',
+			axis: 'sentence_cap'
 		};
 	}
 
@@ -268,7 +285,8 @@ export function gateObjectionCard(input: ObjectionGateInput): ObjectionGateResul
 			ok: false,
 			reason:
 				`Objection card rejected: the third sentence opens with the discourse connective ` +
-				`"${firstWord(third)}" — cutting after sentence two would leave the argument hanging mid-thought.`
+				`"${firstWord(third)}" — cutting after sentence two would leave the argument hanging mid-thought.`,
+			axis: 'sentence_cap'
 		};
 	}
 
@@ -279,7 +297,8 @@ export function gateObjectionCard(input: ObjectionGateInput): ObjectionGateResul
 			reason:
 				`Objection card rejected: the objection fits frame 0 only at ${objectionLayout.fontSize}px, ` +
 				`below the ${OBJECTION_MIN_LEGIBLE_FONT_PX}px legibility floor (the 1080-frame equivalent of ` +
-				`${OBJECTION_MIN_LEGIBLE_CSS_PX}px on a ${OBJECTION_REFERENCE_VIEWPORT_WIDTH}px-wide reference phone).`
+				`${OBJECTION_MIN_LEGIBLE_CSS_PX}px on a ${OBJECTION_REFERENCE_VIEWPORT_WIDTH}px-wide reference phone).`,
+			axis: 'legibility'
 		};
 	}
 
@@ -306,7 +325,8 @@ export function gateObjectionCard(input: ObjectionGateInput): ObjectionGateResul
 				ok: false,
 				reason:
 					`Objection card rejected: reply sentence ${i + 1} fits only at ${fits[i].fontSize}px, below ` +
-					`the ${OBJECTION_REPLY_MIN_LEGIBLE_FONT_PX}px legibility floor.`
+					`the ${OBJECTION_REPLY_MIN_LEGIBLE_FONT_PX}px legibility floor.`,
+				axis: 'legibility'
 			};
 		}
 	}

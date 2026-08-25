@@ -60,13 +60,13 @@
     {
       "day": 2,
       "slot": 2,
-      "card_id": "peace-of-mind-11-008",
-      "book_slug": "peace-of-mind",
-      "author_slug": "seneca",
+      "card_id": "meditations-11-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
       "content": {
         "format": "question",
-        "question": "You are wealthy — but are you wealthier than Pompey?",
-        "answer": "When his old relative and new host Gaius opened Caesar's house to him so he could shut his own door, Pompey lacked even bread and water."
+        "question": "Have I done anything kind?",
+        "answer": "Then I have gained from it."
       },
       "read_through": false,
       "read_through_counter": null
@@ -144,13 +144,13 @@
     {
       "day": 5,
       "slot": 2,
-      "card_id": "peace-of-mind-17-003",
-      "book_slug": "peace-of-mind",
+      "card_id": "happy-life-12-002",
+      "book_slug": "happy-life",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "Still, we must observe moderation in this matter, for there is a great difference between living simply and living slovenly. Moreover, we ought to retire a great deal into ourselves: for association with persons unlike ourselves upsets all that we had arranged, rouses the passions which were at rest, and rubs into a sore any weak or imperfectly healed place in our minds. Nevertheless we ought to mix up these two things, and to pass our lives alternately in solitude and among throngs of people; for the former will make us long for the society of mankind, the latter for that of ourselves, and the one will counteract the other: solitude will cure us when we are sick of crowds, and crowds will cure us when we are sick of solitude.",
-        "landing_line": "There's a big difference between living simply and living like a slob."
+        "original_excerpt": "Let them no longer, then, join incongruous matters together, or connect pleasure with virtue, a mistake whereby they court the worst of men. The reckless profligate, always in liquor and belching out the fumes of wine, believes that he lives with virtue, because he knows that he lives with pleasure, for he hears it said that pleasure cannot exist apart from virtue; consequently he dubs his vices with the title of wisdom and parades all that he ought to conceal. So, men are not encouraged by Epicurus to run riot, but the vicious hide their excesses in the lap of philosophy, and flock to the schools in which they hear the praises of pleasure. They do not consider how sober and temperate—for so, by Hercules, I believe it to be—that \"pleasure\" of Epicurus is, but they rush at his mere name, seeking to obtain some protection and cloak for their vices.",
+        "landing_line": "Epicurus doesn't encourage people to go wild."
       },
       "read_through": false,
       "read_through_counter": null
@@ -223,12 +223,12 @@
       "share": 0.14285714285714285
     },
     "marcus-aurelius": {
-      "count": 7,
-      "share": 0.5
+      "count": 8,
+      "share": 0.5714285714285714
     },
     "seneca": {
-      "count": 5,
-      "share": 0.35714285714285715
+      "count": 4,
+      "share": 0.2857142857142857
     }
   },
   "pool_source": {

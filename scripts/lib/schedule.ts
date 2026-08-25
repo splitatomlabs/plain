@@ -26,11 +26,14 @@
  * the renderer's own gate (`social/src/remotion/wall-gate.ts`'s legibility
  * floor and F03's 59s duration ceiling) can still reject a card no matter
  * how its landing line is chosen. So Wall is now ALSO gated here, against
- * the renderer-published exclusion list (`content/social/wall-exclusions.json`,
- * see `./wall-exclusions.ts` and `tryReadThroughContent`'s wall branch) —
- * the cascade can in principle exhaust all three formats now, which
- * `resolveReadThrough` surfaces as a real thrown error rather than the old
- * "unreachable" guarantee.
+ * the renderer-published READ-THROUGH exclusion list (F06 —
+ * `content/social/render-exclusions.json`'s `read_through` section, surveyed
+ * with the read-through's own landing-line derivation; see `./exclusions.ts`
+ * and `tryReadThroughContent`'s wall branch) — the cascade can in principle
+ * exhaust all three formats now, which `resolveReadThrough` surfaces as a
+ * real thrown error rather than the old "unreachable" guarantee. F06 also
+ * gates the WEIGHTED slot's Question and Objection pools the same way F05
+ * gated Wall's — see `loadFormatPools`'s own doc comment.
  *
  * `generateWeek` is a pure function: no filesystem access, no `Date.now()`,
  * no `Math.random()`. Every random choice is drawn from `createSeededRng`
@@ -75,7 +78,7 @@ import { checkFaithfulness, passesStoppingPower } from "./premises-scoring.js";
 import type { WallRubricResult } from "./premises-scoring.js";
 import { parsePoolFile } from "./pool-file.js";
 import { logger } from "./logger.js";
-import { loadWallExclusions } from "./wall-exclusions.js";
+import { loadExclusions, type LoadedExclusions } from "./exclusions.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -326,17 +329,20 @@ export interface GenerateWeekOptions {
   readThroughFormat?: ScheduleFormat;
   maxObjectionPerWeek?: number;
   /**
-   * F05: the renderer-derived Wall exclusion list (card ids
-   * `social/src/remotion/wall-gate.ts`'s gate would reject — see
-   * `./wall-exclusions.ts` and `content/social/wall-exclusions.json`),
-   * consulted by the read-through's wall branch (`tryReadThroughContent`)
-   * so an un-renderable card is never scheduled as Wall. The weighted
-   * slot's own Wall pool is filtered separately, upstream, by
-   * `loadFormatPools` — this option only affects the read-through slot's
-   * per-card fallback cascade (`resolveReadThrough`). Optional: leave
-   * undefined to run ungated, exactly as before F05.
+   * F06: the renderer-derived READ-THROUGH exclusion list — card ids of the
+   * read-through's own book/chapter slice that `social/src/remotion/
+   * wall-gate.ts`'s gate would reject, surveyed with the read-through's OWN
+   * landing-line derivation (`selectLandingLine(card) ?? card.plain_english`
+   * — see `content/social/render-exclusions.json`'s `read_through` section
+   * and `./exclusions.ts`). Consulted ONLY by the read-through's wall
+   * branch (`tryReadThroughContent`) so an un-renderable card is never
+   * scheduled as Wall there — a read-through card is excluded from every
+   * weighted pool entirely (see `readThroughCardIds` below), so the Wall
+   * pool's own exclusion filtering (`loadFormatPools`) can never reach it;
+   * this option exists specifically because that filtering can't. Optional:
+   * leave undefined to run ungated, exactly as before F05/F06.
    */
-  wallExclusions?: ReadonlySet<string>;
+  readThroughExclusions?: ReadonlySet<string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -466,9 +472,10 @@ function contentFromEntry(format: ScheduleFormat, entry: WallEntry | QuestionEnt
  * faithful (it's verbatim card text), never fabricated — BUT the renderer's
  * own gate (`social/src/remotion/wall-gate.ts`'s legibility floor and F03's
  * 59s duration ceiling) can still reject a card no matter how its landing
- * line is chosen, so `wallExclusions` (the renderer-derived exclusion list
- * loaded from `content/social/wall-exclusions.json` — see
- * `./wall-exclusions.ts`) is consulted first: a card on that list returns
+ * line is chosen, so `readThroughExclusions` (the renderer-derived
+ * read-through exclusion list loaded from `content/social/
+ * render-exclusions.json`'s `read_through` section — see `./exclusions.ts`)
+ * is consulted first: a card on that list returns
  * `null` here too, exactly like an unsupported question/objection
  * candidate, instead of scheduling a slot the renderer cannot actually
  * produce. "question"/"objection" return `null` — rather than fabricating
@@ -478,18 +485,18 @@ function contentFromEntry(format: ScheduleFormat, entry: WallEntry | QuestionEnt
  * as a question is not an option here. Callers decide what a `null` means:
  * `resolveReadThrough` treats it as "try the next format in the fallback
  * order"; `readThroughContentOrThrow` (the forced-override path) treats it
- * as a hard error. `wallExclusions` is optional and defaults to
+ * as a hard error. `readThroughExclusions` is optional and defaults to
  * `undefined` (no exclusions applied) — a checkout with no
- * `wall-exclusions.json` on disk behaves exactly as before F05.
+ * `render-exclusions.json` on disk behaves exactly as before F05/F06.
  */
 function tryReadThroughContent(
   format: ScheduleFormat,
   card: Card,
-  wallExclusions?: ReadonlySet<string>,
+  readThroughExclusions?: ReadonlySet<string>,
 ): SlotContent | null {
   switch (format) {
     case "wall": {
-      if (wallExclusions?.has(card.id)) return null;
+      if (readThroughExclusions?.has(card.id)) return null;
       const landingLine = selectLandingLine(card) ?? card.plain_english;
       return { format: "wall", original_excerpt: card.original_excerpt, landing_line: landingLine };
     }
@@ -526,8 +533,12 @@ function tryReadThroughContent(
  * so a card that can't is a hard error rather than a silent fallback — the
  * caller asked for one format specifically, not "whatever works."
  */
-function readThroughContentOrThrow(format: ScheduleFormat, card: Card, wallExclusions?: ReadonlySet<string>): SlotContent {
-  const content = tryReadThroughContent(format, card, wallExclusions);
+function readThroughContentOrThrow(
+  format: ScheduleFormat,
+  card: Card,
+  readThroughExclusions?: ReadonlySet<string>,
+): SlotContent {
+  const content = tryReadThroughContent(format, card, readThroughExclusions);
   if (!content) {
     throw new Error(
       `Read-through card "${card.id}" has no valid ${format} candidate — readThroughFormat "${format}" ` +
@@ -546,7 +557,7 @@ function readThroughContentOrThrow(format: ScheduleFormat, card: Card, wallExclu
  * tried) and skipping Objection when `objectionAvailable` is false (weekly
  * cap already reached). Before F05, Wall always rendered, so this cascade
  * always terminated; now that `tryReadThroughContent`'s wall branch can
- * also return `null` (a card on `wallExclusions`), the cascade can in
+ * also return `null` (a card on `readThroughExclusions`), the cascade can in
  * principle exhaust all three formats — see the thrown error below, which
  * is a real, actionable failure now rather than the old "unreachable" dead
  * code.
@@ -555,18 +566,19 @@ function resolveReadThrough(
   candidate: ScheduleFormat,
   card: Card,
   objectionAvailable: boolean,
-  wallExclusions?: ReadonlySet<string>,
+  readThroughExclusions?: ReadonlySet<string>,
 ): { format: ScheduleFormat; content: SlotContent } {
   const order = [candidate, ...READ_THROUGH_FALLBACK_ORDER.filter((f) => f !== candidate)];
   for (const format of order) {
     if (format === "objection" && !objectionAvailable) continue;
-    const content = tryReadThroughContent(format, card, wallExclusions);
+    const content = tryReadThroughContent(format, card, readThroughExclusions);
     if (content) return { format, content };
   }
   throw new Error(
     `Read-through card "${card.id}" could not render any format — Wall is excluded by the renderer's gate ` +
-      `(content/social/wall-exclusions.json) and no Question/Objection candidate exists for this card either. ` +
-      `Choose a different read-through book/chapter slice, or regenerate the corpus/exclusion list.`,
+      `(content/social/render-exclusions.json's read_through section) and no Question/Objection candidate ` +
+      `exists for this card either. Choose a different read-through book/chapter slice, or regenerate the ` +
+      `corpus/exclusion list.`,
   );
 }
 
@@ -709,7 +721,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     weights = DEFAULT_FORMAT_WEIGHTS,
     readThroughFormat: forcedReadThroughFormat,
     maxObjectionPerWeek = DEFAULT_MAX_OBJECTION_PER_WEEK,
-    wallExclusions,
+    readThroughExclusions,
   } = options;
 
   // T16: `readThroughBook` and `readThroughChapters` default TOGETHER, only
@@ -840,12 +852,12 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     let rtContent: SlotContent;
     if (forcedReadThroughFormat !== undefined) {
       rtFormat = forcedReadThroughFormat;
-      rtContent = readThroughContentOrThrow(rtFormat, rtCard, wallExclusions);
+      rtContent = readThroughContentOrThrow(rtFormat, rtCard, readThroughExclusions);
     } else {
       const objectionAvailable = objectionUsedThisWeek < maxObjectionPerWeek;
       const rtAvailable = SCHEDULE_FORMATS.filter((f) => f !== "objection" || objectionAvailable);
       const rtCandidate = weightedFormatChoice(weights, rtAvailable, rng);
-      const resolved = resolveReadThrough(rtCandidate, rtCard, objectionAvailable, wallExclusions);
+      const resolved = resolveReadThrough(rtCandidate, rtCard, objectionAvailable, readThroughExclusions);
       rtFormat = resolved.format;
       rtContent = resolved.content;
       if (rtFormat === "objection") objectionUsedThisWeek += 1;
@@ -1008,28 +1020,35 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
  * reason.
  */
 /**
- * `wallExclusionsPath` (F05): the renderer-derived Wall exclusion list —
- * `content/social/wall-exclusions.json`, written by
- * `social/scripts/write-wall-exclusions.ts` from `surveyWallPool`'s verdict
- * (`social/src/remotion/wall-gate.ts`'s legibility floor and F03's 59s
- * duration ceiling). Optional and absent-tolerant BY DESIGN: passing
- * `undefined`, or a path that doesn't exist on disk, runs exactly as before
- * F05 (a warning is logged either way, so running ungated is visible, not
- * silent) — no test or caller is required to have this file present. When
- * it IS present, every excluded id is dropped from the Wall pool here, once,
- * so a card the renderer would refuse to render can never reach the
- * weighted slot draw in `generateWeek` in the first place (matching the
- * `on-anger-03-027` week-1 failure this fixes). See `./wall-exclusions.ts`.
+ * `exclusionsPath` (F05/F06): the renderer-derived exclusion list —
+ * `content/social/render-exclusions.json`, written by
+ * `social/scripts/write-exclusions.ts` by running each format's own
+ * renderer gate (`social/src/remotion/wall-gate.ts`, `question-gate.ts`,
+ * `objection-gate.ts`) over its scored pool. Optional and absent-tolerant
+ * BY DESIGN: passing `undefined`, or a path that doesn't exist on disk,
+ * runs every format ungated (a warning is logged either way, so running
+ * ungated is visible, not silent) — no test or caller is required to have
+ * this file present. When it IS present, every excluded id is dropped from
+ * its OWN format's pool here, once, so a card the renderer would refuse to
+ * render can never reach the weighted slot draw in `generateWeek` in the
+ * first place (F05 fixed this for Wall alone — matching the
+ * `on-anger-03-027` week-1 failure; F06 extends it to Question and
+ * Objection — matching `discourses-50-008`, a 13-word question the pool's
+ * own flags all pass but the renderer's still-format word-count floor
+ * rejects). The artifact's `read_through` section is NOT applied here —
+ * see `GenerateWeekOptions.readThroughExclusions` and
+ * `tryReadThroughContent` for why the read-through needs a separately
+ * surveyed set. See `./exclusions.ts`.
  */
 export async function loadFormatPools(
   premisesDir: string,
   gatePools: FormatPools,
-  wallExclusionsPath?: string,
+  exclusionsPath?: string,
 ): Promise<{
   pools: FormatPools;
   source: Record<ScheduleFormat, "scored" | "gate-only">;
-  /** `null` when no exclusion file was found (ungated) — see `wallExclusionsPath`'s doc comment above. */
-  wallExclusions: Set<string> | null;
+  /** `null` when no exclusion file was found (ungated) — see `exclusionsPath`'s doc comment above. */
+  exclusions: LoadedExclusions | null;
 }> {
   const source: Record<ScheduleFormat, "scored" | "gate-only"> = {
     wall: "gate-only",
@@ -1107,30 +1126,39 @@ export async function loadFormatPools(
     }
   }
 
-  // F05: drop any Wall pool entry the renderer's gate has already rejected,
-  // regardless of whether `wall` above came from a scored pool file or the
-  // mechanical gate fallback — an excluded card is un-renderable either way.
-  const wallExclusions = wallExclusionsPath ? await loadWallExclusions(wallExclusionsPath) : null;
-  if (wallExclusions === null) {
+  // F05/F06: drop any pool entry the renderer's OWN gate has already
+  // rejected, regardless of whether a format's pool above came from a
+  // scored pool file or the mechanical gate fallback — an excluded card is
+  // un-renderable either way, for every format, not just Wall.
+  const exclusions = exclusionsPath ? await loadExclusions(exclusionsPath) : null;
+  if (exclusions === null) {
     console.warn(
-      `loadFormatPools: no wall-exclusions file${wallExclusionsPath ? ` at "${wallExclusionsPath}"` : ""} — ` +
-        `running UNGATED. The scheduler may draw a Wall card the renderer's gate (legibility floor / F03's ` +
-        `59s duration ceiling) will reject at render time. Run ` +
-        `"npx tsx social/scripts/write-wall-exclusions.ts --date <date>" to generate it.`,
+      `loadFormatPools: no exclusions file${exclusionsPath ? ` at "${exclusionsPath}"` : ""} — running every ` +
+        `format UNGATED. The scheduler may draw a card the renderer's own gate (Wall's legibility floor / F03's ` +
+        `59s duration ceiling; Question's word-count/legibility floor; Objection's two-sentence cap/legibility ` +
+        `floor) will reject at render time. Run "npx tsx social/scripts/write-exclusions.ts --date <date>" to ` +
+        `generate it.`,
     );
-  } else if (wallExclusions.size > 0) {
-    const before = wall.length;
-    wall = wall.filter((e) => !wallExclusions.has(e.card_id));
-    const dropped = before - wall.length;
-    if (dropped > 0) {
-      console.warn(
-        `loadFormatPools: dropped ${dropped} Wall pool entr${dropped === 1 ? "y" : "ies"} excluded by the ` +
-          `renderer's gate (${wallExclusionsPath}) — an un-renderable card is never scheduled.`,
-      );
-    }
+  } else {
+    const dropExcluded = <T extends { card_id: string }>(formatLabel: string, entries: T[], excluded: Set<string>): T[] => {
+      if (excluded.size === 0) return entries;
+      const before = entries.length;
+      const filtered = entries.filter((e) => !excluded.has(e.card_id));
+      const dropped = before - filtered.length;
+      if (dropped > 0) {
+        console.warn(
+          `loadFormatPools: dropped ${dropped} ${formatLabel} pool entr${dropped === 1 ? "y" : "ies"} excluded ` +
+            `by the renderer's gate (${exclusionsPath}) — an un-renderable card is never scheduled.`,
+        );
+      }
+      return filtered;
+    };
+    wall = dropExcluded("Wall", wall, exclusions.wall);
+    question = dropExcluded("Question", question, exclusions.question);
+    objection = dropExcluded("Objection", objection, exclusions.objection);
   }
 
-  return { pools: { wall, question, objection }, source, wallExclusions };
+  return { pools: { wall, question, objection }, source, exclusions };
 }
 
 export interface PriorWeeksState {

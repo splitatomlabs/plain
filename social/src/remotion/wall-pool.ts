@@ -103,9 +103,21 @@ export function loadOutputCard(bookSlug: string, cardId: string, outputDir: stri
 }
 
 /**
+ * Every card of `bookSlug`, from `content/output/<bookSlug>/`. F06: the
+ * read-through survey (`social/scripts/write-exclusions.ts`) needs the
+ * WHOLE book's cards (to build the read-through slice), not one card at a
+ * time via `loadOutputCard` — reuses the same `loadBookIndex` cache so a
+ * book already read for `loadOutputCard`/`resolveWallCardExcerpt` isn't
+ * re-read from disk.
+ */
+export function loadBookCards(bookSlug: string, outputDir: string = DEFAULT_OUTPUT_DIR): OutputCard[] {
+	return [...loadBookIndex(bookSlug, outputDir).values()];
+}
+
+/**
  * One rejected pool entry, with enough detail (F05) for
- * `social/scripts/write-wall-exclusions.ts` to publish a per-card reason
- * and axis to `content/social/wall-exclusions.json` — `rejectedIds` alone
+ * `social/scripts/write-exclusions.ts` to publish a per-card reason
+ * and axis to `content/social/render-exclusions.json` — `rejectedIds` alone
  * (below) only says WHICH cards failed, not why.
  */
 export interface WallPoolRejection {

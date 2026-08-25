@@ -1,0 +1,829 @@
+{
+  "meta": {
+    "generated_at": "2026-08-26T00:00:00.000Z",
+    "max_post_duration_frames": 1770,
+    "max_post_duration_seconds": 59,
+    "wall_min_legible_font_px": 39,
+    "question_min_legible_font_px": 78,
+    "question_max_words": 12,
+    "objection_min_legible_font_px": 78,
+    "read_through_book": "meditations",
+    "read_through_chapters": [
+      "book-02",
+      "book-03"
+    ],
+    "wall": {
+      "submitted": 896,
+      "succeeded": 837,
+      "dropped": 59
+    },
+    "question": {
+      "submitted": 88,
+      "succeeded": 48,
+      "dropped": 40
+    },
+    "objection": {
+      "submitted": 59,
+      "succeeded": 27,
+      "dropped": 32
+    },
+    "read_through": {
+      "submitted": 48,
+      "succeeded": 48,
+      "dropped": 0
+    }
+  },
+  "wall": [
+    {
+      "card_id": "discourses-01-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2265 frames (75.5s) across 20 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-11-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-11-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-12-002",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-12-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-13-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-13-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-14-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-15-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2685 frames (89.5s) across 24 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-19-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-19-009",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-20-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-21-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-23-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-24-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-24-002",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-25-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-26-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2265 frames (75.5s) across 20 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-28-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-28-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-30-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-31-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-32-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-33-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-35-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-39-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-40-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2370 frames (79.0s) across 21 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-40-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-44-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-48-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-49-008",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-50-008",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-52-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-53-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-53-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-57-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2265 frames (75.5s) across 20 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-59-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-59-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2580 frames (86.0s) across 23 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-63-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "enchiridion-29-002",
+      "book_slug": "enchiridion",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "enchiridion-48-001",
+      "book_slug": "enchiridion",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-01-014",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-04-007",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-08-002",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-08-028",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-01-001",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-01-003",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-01-065",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2370 frames (79.0s) across 21 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-02-020",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-02-024",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-02-046",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-013",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-027",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-051",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-052",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-04-005",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-08-003",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-09-001",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-10-002",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    }
+  ],
+  "question": [
+    {
+      "card_id": "discourses-01-002",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "discourses-12-005",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-13-007",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-14-001",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-17-007",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "discourses-18-003",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the answer as lacking substance."
+    },
+    {
+      "card_id": "discourses-18-004",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "discourses-19-007",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "discourses-21-003",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-23-008",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "discourses-26-007",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-30-003",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-31-004",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the answer as lacking substance."
+    },
+    {
+      "card_id": "discourses-35-001",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the answer as lacking substance."
+    },
+    {
+      "card_id": "discourses-36-006",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "discourses-43-002",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "discourses-49-007",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the answer as lacking substance."
+    },
+    {
+      "card_id": "discourses-50-005",
+      "book_slug": "discourses",
+      "axis": "word_count",
+      "reason": "Question card rejected: the question is 13 words, over the 12-word still-format floor."
+    },
+    {
+      "card_id": "discourses-50-008",
+      "book_slug": "discourses",
+      "axis": "word_count",
+      "reason": "Question card rejected: the question is 13 words, over the 12-word still-format floor."
+    },
+    {
+      "card_id": "discourses-56-002",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-59-001",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "discourses-61-003",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the answer as lacking substance."
+    },
+    {
+      "card_id": "enchiridion-24-002",
+      "book_slug": "enchiridion",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "happy-life-02-003",
+      "book_slug": "happy-life",
+      "axis": "word_count",
+      "reason": "Question card rejected: the question is 13 words, over the 12-word still-format floor."
+    },
+    {
+      "card_id": "happy-life-11-002",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "meditations-04-007",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "meditations-04-015",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "meditations-05-021",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "meditations-07-001",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "meditations-07-004",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "meditations-07-049",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "meditations-08-046",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "meditations-08-054",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "meditations-10-045",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "meditations-12-039",
+      "book_slug": "meditations",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "on-anger-01-025",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "on-anger-02-017",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
+    },
+    {
+      "card_id": "on-anger-02-027",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "on-anger-02-073",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    },
+    {
+      "card_id": "peace-of-mind-08-004",
+      "book_slug": "peace-of-mind",
+      "axis": "pool_flags",
+      "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
+    }
+  ],
+  "objection": [
+    {
+      "card_id": "discourses-01-003",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-01-004",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-09-002",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-12-003",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-12-006",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-15-005",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-18-002",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-23-007",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "discourses-53-010",
+      "book_slug": "discourses",
+      "axis": "sentence_cap",
+      "reason": "Objection card rejected: the reply yields only 0 complete sentence(s), fewer than the two the format requires."
+    },
+    {
+      "card_id": "discourses-54-001",
+      "book_slug": "discourses",
+      "axis": "sentence_cap",
+      "reason": "Objection card rejected: the third sentence opens with the discourse connective \"So\" — cutting after sentence two would leave the argument hanging mid-thought."
+    },
+    {
+      "card_id": "discourses-64-004",
+      "book_slug": "discourses",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "enchiridion-22-001",
+      "book_slug": "enchiridion",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-10-002",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-11-002",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-13-002",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-15-001",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-15-001",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-16-002",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-18-001",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-21-001",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-22-004",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-22-004",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "happy-life-26-001",
+      "book_slug": "happy-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "on-anger-01-043",
+      "book_slug": "on-anger",
+      "axis": "sentence_cap",
+      "reason": "Objection card rejected: the third sentence opens with the discourse connective \"But\" — cutting after sentence two would leave the argument hanging mid-thought."
+    },
+    {
+      "card_id": "on-anger-01-064",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "on-anger-02-070",
+      "book_slug": "on-anger",
+      "axis": "sentence_cap",
+      "reason": "Objection card rejected: the reply yields only 1 complete sentence(s), fewer than the two the format requires."
+    },
+    {
+      "card_id": "on-anger-02-078",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "on-anger-02-088",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "on-anger-03-112",
+      "book_slug": "on-anger",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "peace-of-mind-14-003",
+      "book_slug": "peace-of-mind",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "peace-of-mind-14-004",
+      "book_slug": "peace-of-mind",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    },
+    {
+      "card_id": "shortness-of-life-07-006",
+      "book_slug": "shortness-of-life",
+      "axis": "pool_flags",
+      "reason": "Objection card rejected: rubric verdict is \"reject\", not \"accept\"."
+    }
+  ],
+  "read_through": []
+}

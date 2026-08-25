@@ -606,74 +606,120 @@ describe("loadFormatPools", () => {
 });
 
 // ---------------------------------------------------------------------------
-// F05: the scheduler must consult the renderer-derived Wall exclusion list
-// (`content/social/wall-exclusions.json`, written by
-// `social/scripts/write-wall-exclusions.ts` from `surveyWallPool`) so a
-// card the renderer's own gate (`social/src/remotion/wall-gate.ts`'s
-// legibility floor / F03's 59s duration ceiling) would reject is never
-// scheduled in the first place. `on-anger-03-027` is the real card that
-// motivated this — a real corpus card, present in the mechanical gate-only
-// Wall pool (`rankWall`), that the renderer's gate rejects for duration.
+// F05/F06: the scheduler must consult the renderer-derived exclusion list
+// (`content/social/render-exclusions.json`, written by
+// `social/scripts/write-exclusions.ts`) so a card the renderer's own gate
+// (`social/src/remotion/wall-gate.ts` / `question-gate.ts` /
+// `objection-gate.ts`) would reject is never scheduled in the first place.
+// F05 covered Wall alone (`on-anger-03-027`, a real corpus card the
+// renderer's gate rejects for duration). F06 extends this to Question and
+// Objection (`discourses-50-008` — every pool flag passes, but the question
+// is 13 words, over the renderer's 12-word still-format floor — is the
+// named fixture) and to the read-through slice, which structurally can't be
+// covered by the Wall pool's own exclusion filtering (a read-through card
+// is excluded from every weighted pool entirely).
 // ---------------------------------------------------------------------------
-describe("F05: renderer-derived Wall exclusions", () => {
+describe("F05/F06: renderer-derived exclusions", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await mkdtemp(path.join(tmpdir(), "schedule-wall-exclusions-test-"));
+    tempDir = await mkdtemp(path.join(tmpdir(), "schedule-exclusions-test-"));
   });
 
   afterEach(async () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  async function writeExclusionsFile(cardIds: string[]): Promise<string> {
-    const filePath = path.join(tempDir, "wall-exclusions.json");
+  interface ExclusionFixture {
+    card_id: string;
+    book_slug: string;
+    axis: string;
+    reason: string;
+  }
+
+  async function writeExclusionsFile(sections: {
+    wall?: ExclusionFixture[];
+    question?: ExclusionFixture[];
+    objection?: ExclusionFixture[];
+    read_through?: ExclusionFixture[];
+  }): Promise<string> {
+    const filePath = path.join(tempDir, "render-exclusions.json");
+    const wall = sections.wall ?? [];
+    const question = sections.question ?? [];
+    const objection = sections.objection ?? [];
+    const readThrough = sections.read_through ?? [];
     await writeFile(
       filePath,
       JSON.stringify({
         meta: {
-          submitted: 896,
-          succeeded: 896 - cardIds.length,
-          dropped: cardIds.length,
-          limited: false,
           generated_at: "2026-08-25T00:00:00.000Z",
           max_post_duration_frames: 1770,
           max_post_duration_seconds: 59,
           wall_min_legible_font_px: 39,
+          question_min_legible_font_px: 78,
+          question_max_words: 12,
+          objection_min_legible_font_px: 78,
+          read_through_book: "meditations",
+          read_through_chapters: ["book-02", "book-03"],
+          wall: { submitted: 896, succeeded: 896 - wall.length, dropped: wall.length },
+          question: { submitted: 88, succeeded: 88 - question.length, dropped: question.length },
+          objection: { submitted: 59, succeeded: 59 - objection.length, dropped: objection.length },
+          read_through: { submitted: 48, succeeded: 48 - readThrough.length, dropped: readThrough.length },
         },
-        entries: cardIds.map((card_id) => ({
-          card_id,
-          book_slug: "on-anger",
-          axis: "duration",
-          reason: "synthetic fixture — see F05",
-        })),
+        wall,
+        question,
+        objection,
+        read_through: readThrough,
       }),
     );
     return filePath;
   }
 
-  it("loadFormatPools drops excluded ids from the Wall pool and logs how many it dropped", async () => {
-    // `on-anger-03-027` is a real entry in the mechanical gate-only Wall
-    // pool (`gatePools.wall`, built from `rankWall(cards)` above) — the
-    // exact card F05 fixes.
-    expect(gatePools.wall.some((e) => e.card_id === "on-anger-03-027")).toBe(true);
+  function fixture(card_id: string, book_slug: string, axis: string): ExclusionFixture {
+    return { card_id, book_slug, axis, reason: "synthetic fixture — see F05/F06" };
+  }
 
-    const exclusionsPath = await writeExclusionsFile(["on-anger-03-027"]);
+  it("loadFormatPools drops excluded ids from EACH format's own pool and logs per format", async () => {
+    // `on-anger-03-027` (Wall) and `discourses-50-008` (Question — every
+    // pool flag passes; only the renderer's 12-word still-format floor
+    // rejects it, the exact M1 fixture) are both real entries in the
+    // mechanical gate-only pools built above.
+    expect(gatePools.wall.some((e) => e.card_id === "on-anger-03-027")).toBe(true);
+    expect(gatePools.question.some((e) => e.card_id === "discourses-50-008")).toBe(true);
+    const objectionFixtureId = gatePools.objection[0]!.card_id;
+
+    const exclusionsPath = await writeExclusionsFile({
+      wall: [fixture("on-anger-03-027", "on-anger", "duration")],
+      question: [fixture("discourses-50-008", "discourses", "word_count")],
+      objection: [fixture(objectionFixtureId, gatePools.objection[0]!.book_slug, "sentence_cap")],
+    });
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
-      const { pools, wallExclusions } = await loadFormatPools(tempDir, gatePools, exclusionsPath);
+      const { pools, exclusions } = await loadFormatPools(tempDir, gatePools, exclusionsPath);
       expect(pools.wall.some((e) => e.card_id === "on-anger-03-027")).toBe(false);
       expect(pools.wall.length).toBe(gatePools.wall.length - 1);
-      expect(wallExclusions).not.toBeNull();
-      expect(wallExclusions!.has("on-anger-03-027")).toBe(true);
+      expect(pools.question.some((e) => e.card_id === "discourses-50-008")).toBe(false);
+      expect(pools.question.length).toBe(gatePools.question.length - 1);
+      expect(pools.objection.some((e) => e.card_id === objectionFixtureId)).toBe(false);
+      expect(pools.objection.length).toBe(gatePools.objection.length - 1);
+
+      expect(exclusions).not.toBeNull();
+      expect(exclusions!.wall.has("on-anger-03-027")).toBe(true);
+      expect(exclusions!.question.has("discourses-50-008")).toBe(true);
+      expect(exclusions!.objection.has(objectionFixtureId)).toBe(true);
+
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped 1 Wall pool entry"));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped 1 Question pool entry"));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped 1 Objection pool entry"));
     } finally {
       warnSpy.mockRestore();
     }
   });
 
   it("an excluded id never appears in a generated week", async () => {
-    const exclusionsPath = await writeExclusionsFile(["on-anger-03-027"]);
+    const exclusionsPath = await writeExclusionsFile({
+      wall: [fixture("on-anger-03-027", "on-anger", "duration")],
+    });
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     let pools: FormatPools;
     try {
@@ -697,41 +743,82 @@ describe("F05: renderer-derived Wall exclusions", () => {
     }
   });
 
-  it("with no exclusions file present, loadFormatPools behaves exactly as before F05 and logs that it is running ungated", async () => {
+  it("no generated slot references a card id excluded for ITS OWN format, across seeds 1..50 (discourses-50-008 named fixture)", async () => {
+    const exclusionsPath = await writeExclusionsFile({
+      wall: [fixture("on-anger-03-027", "on-anger", "duration")],
+      question: [fixture("discourses-50-008", "discourses", "word_count")],
+      objection: [fixture(gatePools.objection[0]!.card_id, gatePools.objection[0]!.book_slug, "sentence_cap")],
+    });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    let pools: FormatPools;
+    try {
+      ({ pools } = await loadFormatPools(tempDir, gatePools, exclusionsPath));
+    } finally {
+      warnSpy.mockRestore();
+    }
+
+    const excludedByFormat: Record<ScheduleFormat, Set<string>> = {
+      wall: new Set(["on-anger-03-027"]),
+      question: new Set(["discourses-50-008"]),
+      objection: new Set([gatePools.objection[0]!.card_id]),
+    };
+
+    for (let seed = 1; seed <= 50; seed++) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+      });
+      for (const slot of week.slots) {
+        expect(excludedByFormat[slot.content.format].has(slot.card_id)).toBe(false);
+      }
+    }
+  });
+
+  it("with no exclusions file present, loadFormatPools behaves exactly as before F05/F06 and logs that it is running ungated", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
-      const { pools, wallExclusions } = await loadFormatPools(tempDir, gatePools, path.join(tempDir, "wall-exclusions.json"));
+      const { pools, exclusions } = await loadFormatPools(tempDir, gatePools, path.join(tempDir, "render-exclusions.json"));
       expect(pools.wall).toBe(gatePools.wall);
-      expect(wallExclusions).toBeNull();
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("running UNGATED"));
+      expect(pools.question).toBe(gatePools.question);
+      expect(pools.objection).toBe(gatePools.objection);
+      expect(exclusions).toBeNull();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("running every format UNGATED"));
     } finally {
       warnSpy.mockRestore();
     }
   });
 
-  it("with no wallExclusionsPath argument at all, loadFormatPools behaves exactly as before F05 (the option is fully optional)", async () => {
-    const { pools, wallExclusions } = await loadFormatPools(tempDir, gatePools);
+  it("with no exclusionsPath argument at all, loadFormatPools behaves exactly as before F05/F06 (the option is fully optional)", async () => {
+    const { pools, exclusions } = await loadFormatPools(tempDir, gatePools);
     expect(pools.wall).toBe(gatePools.wall);
-    expect(wallExclusions).toBeNull();
+    expect(pools.question).toBe(gatePools.question);
+    expect(pools.objection).toBe(gatePools.objection);
+    expect(exclusions).toBeNull();
   });
 
   // -------------------------------------------------------------------------
   // The read-through's wall branch (`tryReadThroughContent`) must ALSO
-  // consult the exclusion list — a read-through card can be excluded even
-  // though it never goes through `loadFormatPools`'s Wall-pool filter (the
-  // read-through advances through every card of its book in strict
+  // consult its OWN exclusion list — a read-through card can be excluded
+  // even though it never goes through `loadFormatPools`'s Wall-pool filter
+  // (the read-through advances through every card of its book in strict
   // sequence, independent of pool membership). `enchiridion-11-001` is a
   // real card that can render BOTH Question and Objection (verified against
   // the real corpus), so excluding it from Wall lets the fallback cascade
   // (`resolveReadThrough`) prove it actually lands on another format,
   // rather than merely not crashing.
   // -------------------------------------------------------------------------
-  it("cascades the read-through to another format when its next sequential card is excluded from Wall", () => {
+  it("cascades the read-through to another format when its next sequential card is excluded", () => {
     const enchiridionCards = cards.filter((c) => c.book_slug === "enchiridion");
     const excludedIndex = enchiridionCards.findIndex((c) => c.id === "enchiridion-11-001");
     expect(excludedIndex).toBeGreaterThanOrEqual(0);
 
-    const wallExclusions = new Set(["enchiridion-11-001"]);
+    const readThroughExclusions = new Set(["enchiridion-11-001"]);
 
     // Force the weighted candidate draw to "wall" every time, so the
     // fallback cascade is exercised deterministically rather than by luck
@@ -746,7 +833,7 @@ describe("F05: renderer-derived Wall exclusions", () => {
       readThroughBook: "enchiridion",
       readThroughStartIndex: excludedIndex,
       weights: { wall: 100, question: 0, objection: 0 },
-      wallExclusions,
+      readThroughExclusions,
     });
 
     const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
@@ -762,11 +849,11 @@ describe("F05: renderer-derived Wall exclusions", () => {
     }
   });
 
-  it("without wallExclusions passed to generateWeek, the read-through's wall branch behaves exactly as before F05", () => {
+  it("without readThroughExclusions passed to generateWeek, the read-through's wall branch behaves exactly as before F05/F06", () => {
     const enchiridionCards = cards.filter((c) => c.book_slug === "enchiridion");
     const startIndex = enchiridionCards.findIndex((c) => c.id === "enchiridion-11-001");
 
-    const withExclusions = generateWeek({
+    const withoutExclusions = generateWeek({
       weekNumber: 1,
       seed: 1,
       cards,
@@ -776,10 +863,10 @@ describe("F05: renderer-derived Wall exclusions", () => {
       readThroughBook: "enchiridion",
       readThroughStartIndex: startIndex,
       weights: { wall: 100, question: 0, objection: 0 },
-      // wallExclusions deliberately omitted.
+      // readThroughExclusions deliberately omitted.
     });
 
-    const day1 = withExclusions.slots.find((s) => s.day === 1 && s.read_through)!;
+    const day1 = withoutExclusions.slots.find((s) => s.day === 1 && s.read_through)!;
     expect(day1.card_id).toBe("enchiridion-11-001");
     // With no exclusion list, the forced-wall candidate renders as wall,
     // exactly as it always has.

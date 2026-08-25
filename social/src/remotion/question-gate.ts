@@ -129,9 +129,20 @@ export interface QuestionGateInput {
 	answer_has_substance?: boolean;
 }
 
+/**
+ * Which check rejected the card (F06) — lets a caller surveying the pool
+ * (`social/scripts/write-exclusions.ts`) tally/report WHY separately from
+ * the human-readable `reason`, mirroring `wall-gate.ts`'s `failure` field:
+ *  - `"pool_flags"` — `drift_verdict`/`standalone_intelligible`/
+ *    `answer_has_substance` rejected it.
+ *  - `"word_count"` — over `QUESTION_MAX_WORDS`.
+ *  - `"legibility"` — under `QUESTION_MIN_LEGIBLE_FONT_PX` once fitted.
+ */
+export type QuestionGateAxis = 'pool_flags' | 'word_count' | 'legibility';
+
 export type QuestionGateResult =
 	| { ok: true; layout: QuestionLayout; wordCount: number }
-	| { ok: false; reason: string; wordCount: number };
+	| { ok: false; reason: string; wordCount: number; axis: QuestionGateAxis };
 
 /**
  * Runs every check above against `input` and rejects the first one that
@@ -147,7 +158,8 @@ export function gateQuestionCard(input: QuestionGateInput): QuestionGateResult {
 		return {
 			ok: false,
 			reason: `Question card rejected: drift_verdict is "${input.drift_verdict}", not "answers" — the answer does not resolve the question.`,
-			wordCount
+			wordCount,
+			axis: 'pool_flags'
 		};
 	}
 
@@ -155,7 +167,8 @@ export function gateQuestionCard(input: QuestionGateInput): QuestionGateResult {
 		return {
 			ok: false,
 			reason: 'Question card rejected: the pool flagged the question as not standing alone without context.',
-			wordCount
+			wordCount,
+			axis: 'pool_flags'
 		};
 	}
 
@@ -163,7 +176,8 @@ export function gateQuestionCard(input: QuestionGateInput): QuestionGateResult {
 		return {
 			ok: false,
 			reason: 'Question card rejected: the pool flagged the answer as lacking substance.',
-			wordCount
+			wordCount,
+			axis: 'pool_flags'
 		};
 	}
 
@@ -171,7 +185,8 @@ export function gateQuestionCard(input: QuestionGateInput): QuestionGateResult {
 		return {
 			ok: false,
 			reason: `Question card rejected: the question is ${wordCount} words, over the ${QUESTION_MAX_WORDS}-word still-format floor.`,
-			wordCount
+			wordCount,
+			axis: 'word_count'
 		};
 	}
 
@@ -183,7 +198,8 @@ export function gateQuestionCard(input: QuestionGateInput): QuestionGateResult {
 				`Question card rejected: the question fits the opening frame only at ${layout.fontSize}px, ` +
 				`below the ${QUESTION_MIN_LEGIBLE_FONT_PX}px legibility floor (the 1080-frame equivalent of ` +
 				`${QUESTION_MIN_LEGIBLE_CSS_PX}px on a ${QUESTION_REFERENCE_VIEWPORT_WIDTH}px-wide reference phone).`,
-			wordCount
+			wordCount,
+			axis: 'legibility'
 		};
 	}
 
