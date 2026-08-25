@@ -54,8 +54,7 @@ import {
   wallAuthorWeights,
   selectWallBalanced,
   selectLandingLine,
-  findQuestionCandidate,
-  questionCandidateAnswer,
+  questionGate,
   objectionGate,
   type AuthorMixEntry,
   type WallEntry,
@@ -63,6 +62,7 @@ import {
   type QuestionEntry,
   type ObjectionEntry,
 } from "./premises.js";
+import { checkFaithfulness } from "./premises-scoring.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -242,12 +242,49 @@ function weightedFormatChoice(weights: FormatWeights, available: ScheduleFormat[
 // On-screen field derivation.
 // ---------------------------------------------------------------------------
 
-/** Build a slot's on-screen fields from an already-gated/scored pool entry (the normal, weighted-slot path). */
+/**
+ * Reassemble an Objection's reply DIRECTLY from the card's own
+ * `plain_english` text: the exact remainder of the text after the quoted
+ * objection closes, trimmed. Never trusts a persisted `reply` field
+ * (whether from a gate-only pool or a scored pool file written to disk) —
+ * `objectionGate`'s own `reply` is a whitespace-normalising re-join of
+ * `sentences()`'s output (`sents.slice(i + 1).join(" ")`) that is only a
+ * verbatim substring of `plain_english` by accident of this corpus's
+ * current formatting (see M4 in the PR #39 review). Slicing the raw string
+ * directly, instead of re-stitching trimmed sentence chunks, makes the
+ * result an exact substring BY CONSTRUCTION, not by coincidence — so it can
+ * never silently drift from faithful as the corpus's formatting evolves.
+ */
+function assembleObjectionReply(card: Card, objection: string): string {
+  const quoted = `"${objection}"`;
+  const idx = card.plain_english.indexOf(quoted);
+  if (idx === -1) {
+    throw new Error(
+      `Objection "${objection}" for card "${card.id}" is not a verbatim quoted span (with its surrounding quote ` +
+        `marks) in plain_english — cannot assemble a faithful reply.`,
+    );
+  }
+  return card.plain_english.slice(idx + quoted.length).trim();
+}
+
+/**
+ * Build a slot's on-screen fields from an already-gated/scored pool entry
+ * (the normal, weighted-slot path).
+ *
+ * Wall prefers the LLM rubric's `chosen_landing_line` (T07's scored pick)
+ * over the mechanical `landing_line` when a scored pool provided one —
+ * otherwise a scored `wall.json` would produce byte-identical posts to the
+ * gate-only fallback and T11's Wall rubric calls would buy nothing (see M5
+ * in the PR #39 review). Falls back to the mechanical line when no rubric
+ * is present (the gate-only path, or a scored pool that for some reason
+ * omits it).
+ */
 function contentFromEntry(format: ScheduleFormat, entry: WallEntry | QuestionEntry | ObjectionEntry, card: Card): SlotContent {
   switch (format) {
     case "wall": {
-      const w = entry as WallEntry;
-      return { format: "wall", original_excerpt: card.original_excerpt, landing_line: w.landing_line };
+      const w = entry as WallEntry & { rubric?: { chosen_landing_line?: string } };
+      const landingLine = w.rubric?.chosen_landing_line ?? w.landing_line;
+      return { format: "wall", original_excerpt: card.original_excerpt, landing_line: landingLine };
     }
     case "question": {
       const q = entry as QuestionEntry;
@@ -255,7 +292,7 @@ function contentFromEntry(format: ScheduleFormat, entry: WallEntry | QuestionEnt
     }
     case "objection": {
       const o = entry as ObjectionEntry;
-      return { format: "objection", objection: o.objection, reply: o.reply };
+      return { format: "objection", objection: o.objection, reply: assembleObjectionReply(card, o.objection) };
     }
   }
 }
@@ -284,16 +321,28 @@ function tryReadThroughContent(format: ScheduleFormat, card: Card): SlotContent 
       return { format: "wall", original_excerpt: card.original_excerpt, landing_line: landingLine };
     }
     case "question": {
-      const candidate = findQuestionCandidate(card);
-      if (!candidate) return null;
-      const answer = questionCandidateAnswer(card, candidate.index);
-      if (!answer) return null;
-      return { format: "question", question: candidate.question, answer };
+      // Route through the full T04 gate (mechanical candidate + layer (a) +
+      // layer (b)), not just the raw mechanical `findQuestionCandidate` —
+      // the mechanical candidate alone can select a question with an
+      // unresolved reference, a mid-thought opener, or an answer that's
+      // itself another question, all of which layer (a)/(b) exist to catch
+      // (see M2 in the PR #39 review). `questionGate` returns only
+      // survivors, so a `null` here means "no valid candidate", letting the
+      // caller's fallback cascade try the next format.
+      const [gated] = questionGate([card]);
+      if (!gated) return null;
+      return { format: "question", question: gated.question, answer: gated.answer };
     }
     case "objection": {
       const [found] = objectionGate([card]);
       if (!found) return null;
-      return { format: "objection", objection: found.objection, reply: found.reply };
+      // An objection whose reply is empty (the quoted line is the very
+      // last thing said in the card) has no answer to show — the format's
+      // whole point is objection THEN reply, so this isn't a valid
+      // candidate either (see M3 in the PR #39 review).
+      const reply = assembleObjectionReply(card, found.objection);
+      if (!reply) return null;
+      return { format: "objection", objection: found.objection, reply };
     }
   }
 }
@@ -337,6 +386,53 @@ function resolveReadThrough(
   }
   // Unreachable: "wall" is always in `order` and always renders.
   throw new Error(`Read-through card "${card.id}" could not render any format — this should be unreachable.`);
+}
+
+/**
+ * The on-screen content fields to faithfulness-check for a given slot's
+ * content, keyed by field name (used in the thrown error message when a
+ * check fails). `original_excerpt` is deliberately excluded — it's copied
+ * straight from `card.original_excerpt` (see `contentFromEntry`/
+ * `tryReadThroughContent`'s wall cases), never derived, so it can never be
+ * unfaithful.
+ */
+function contentFieldsToCheck(content: SlotContent): [field: string, text: string][] {
+  switch (content.format) {
+    case "wall":
+      return [["landing_line", content.landing_line]];
+    case "question":
+      return [
+        ["question", content.question],
+        ["answer", content.answer],
+      ];
+    case "objection":
+      return [
+        ["objection", content.objection],
+        ["reply", content.reply],
+      ];
+  }
+}
+
+/**
+ * THE CENTRAL SAFETY PROPERTY: every word posted under a real author's name
+ * must be traceable to that author's own card (`plain_english` or
+ * `original_excerpt`). Run mechanically, right before a slot is committed —
+ * not just at scoring time (T09) — because a slot's final on-screen text is
+ * assembled here (from a pool entry, a scored rubric's chosen line, or the
+ * read-through's own raw-card derivation) and nothing upstream of this point
+ * re-checks it once assembled (see M4 in the PR #39 review). Throws naming
+ * the day, slot, card id, and specific field that failed.
+ */
+function assertFaithful(card: Card, content: SlotContent, day: number, slotNumber: number): void {
+  for (const [field, text] of contentFieldsToCheck(content)) {
+    if (!text) continue; // an empty string is trivially a substring of anything; nothing to check
+    const result = checkFaithfulness(text, card);
+    if (!result.faithful) {
+      throw new Error(
+        `Faithfulness check failed for day ${day} slot ${slotNumber} (card "${card.id}", field "${field}"): ${result.reason}`,
+      );
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -394,7 +490,15 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   const allUsed = new Set<string>(priorUsedCardIds);
   const wallPool = pools.wall.filter((e) => !allUsed.has(e.card_id) && e.book_slug !== readThroughBook);
   const questionPool = pools.question.filter((e) => !allUsed.has(e.card_id) && e.book_slug !== readThroughBook);
-  const objectionPool = pools.objection.filter((e) => !allUsed.has(e.card_id) && e.book_slug !== readThroughBook);
+  // Excludes entries whose reply is empty/whitespace-only — the format's
+  // whole point is objection THEN reply, so one with nothing to answer it
+  // isn't a valid candidate at all (see M3 in the PR #39 review). Filtered
+  // out of the pool itself, not just skipped after being drawn, so it never
+  // consumes an rng draw and never displaces a valid entry's chance of
+  // being picked.
+  const objectionPool = pools.objection.filter(
+    (e) => !allUsed.has(e.card_id) && e.book_slug !== readThroughBook && e.reply.trim().length > 0,
+  );
 
   const slots: ScheduleSlot[] = [];
   let objectionUsedThisWeek = 0;
@@ -435,6 +539,8 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
       rtContent = resolved.content;
       if (rtFormat === "objection") objectionUsedThisWeek += 1;
     }
+
+    assertFaithful(rtCard, rtContent, day, 1);
 
     slots.push({
       day,
@@ -477,6 +583,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     if (!card) throw new Error(`Card "${entry.card_id}" from the ${chosenFormat} pool was not found in the corpus`);
 
     const content = contentFromEntry(chosenFormat, entry, card);
+    assertFaithful(card, content, day, 2);
     slots.push({
       day,
       slot: 2,
@@ -526,10 +633,15 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
  * (`scoreQuestionSurvivors`/`scoreObjectionSurvivors` merge every parsed
  * response regardless of verdict — see premises-batch.ts) — filtered here
  * to `drift_verdict === "answers"` / `rubric.verdict === "accept"` before
- * they're usable as a schedule pool. The Wall's scored pool carries no
- * verdict (every Wall candidate already survived the mechanical gate; the
- * rubric only scores/selects a landing line), so every scored Wall row is
- * used as-is.
+ * they're usable as a schedule pool. FAILS CLOSED: a row missing the field
+ * entirely is EXCLUDED, not admitted — a truncated write or a renamed field
+ * must never silently promote a `drifts`/`dramatized_scene`/
+ * `doctrinal_dispute` row into the posting pool (see M6 in the PR #39
+ * review). Excluded rows are logged (to stderr) by card id so a real schema
+ * problem is visible rather than silently shrinking the pool. The Wall's
+ * scored pool carries no verdict (every Wall candidate already survived the
+ * mechanical gate; the rubric only scores/selects a landing line), so every
+ * scored Wall row is used as-is.
  */
 export async function loadFormatPools(
   premisesDir: string,
@@ -555,12 +667,26 @@ export async function loadFormatPools(
   }
   if (existsSync(questionPath)) {
     const scored = JSON.parse(await readFile(questionPath, "utf-8")) as (QuestionEntry & { drift_verdict?: string })[];
-    question = scored.filter((e) => e.drift_verdict === undefined || e.drift_verdict === "answers");
+    question = scored.filter((e) => {
+      if (e.drift_verdict === "answers") return true;
+      console.warn(
+        `loadFormatPools: excluding Question pool row for card "${e.card_id}" — drift_verdict is ` +
+          `${JSON.stringify(e.drift_verdict)} (expected "answers").`,
+      );
+      return false;
+    });
     source.question = "scored";
   }
   if (existsSync(objectionPath)) {
     const scored = JSON.parse(await readFile(objectionPath, "utf-8")) as (ObjectionEntry & { rubric?: { verdict?: string } })[];
-    objection = scored.filter((e) => e.rubric === undefined || e.rubric.verdict === "accept");
+    objection = scored.filter((e) => {
+      if (e.rubric?.verdict === "accept") return true;
+      console.warn(
+        `loadFormatPools: excluding Objection pool row for card "${e.card_id}" — rubric.verdict is ` +
+          `${JSON.stringify(e.rubric?.verdict)} (expected "accept").`,
+      );
+      return false;
+    });
     source.objection = "scored";
   }
 
@@ -578,18 +704,37 @@ export interface PriorWeeksState {
  * `pilot-schedule-w<week-1>.json`) from `dir` and derive the state the next
  * week's generation needs: every already-scheduled card id (so it can never
  * be reused) and how many read-through cards have been consumed so far (so
- * the next week resumes the sequence with no skip and no repeat). Missing
- * files are treated as "no prior weeks" (week 1 has none) rather than an
- * error.
+ * the next week resumes the sequence with no skip and no repeat).
+ *
+ * Week 1 has no prior weeks at all (the loop below never runs), which is the
+ * ONLY legitimate reason a file is absent. Any OTHER missing file — e.g.
+ * w02 absent while generating week 4 — is refused with a named error rather
+ * than silently treated as "no prior week": that would re-open the exact
+ * card ids and read-through position w02 already consumed, producing
+ * duplicate posts and rewinding the read-through counter (see M1 in the PR
+ * #39 review). A prior-week file that parses but carries a missing,
+ * non-array, or empty `slots` is refused the same way, as corrupt.
  */
 export async function loadPriorWeeks(dir: string, week: number): Promise<PriorWeeksState> {
   const usedCardIds = new Set<string>();
   let readThroughConsumed = 0;
 
   for (let w = 1; w < week; w++) {
-    const filePath = path.join(dir, `pilot-schedule-w${String(w).padStart(2, "0")}.json`);
-    if (!existsSync(filePath)) continue;
+    const fileName = `pilot-schedule-w${String(w).padStart(2, "0")}.json`;
+    const filePath = path.join(dir, fileName);
+    if (!existsSync(filePath)) {
+      throw new Error(
+        `Missing prior week schedule "${fileName}" in "${dir}" — week ${week} cannot be generated without every ` +
+          `earlier week's schedule on disk (w01..w${String(week - 1).padStart(2, "0")}). Generate week ${w} first, ` +
+          `or restore its file if it was moved/deleted.`,
+      );
+    }
     const parsed = JSON.parse(await readFile(filePath, "utf-8")) as WeekSchedule;
+    if (!Array.isArray(parsed.slots) || parsed.slots.length === 0) {
+      throw new Error(
+        `Corrupt prior week schedule "${fileName}" in "${dir}" — "slots" is missing, not an array, or empty.`,
+      );
+    }
     for (const slot of parsed.slots) {
       usedCardIds.add(slot.card_id);
       if (slot.read_through) readThroughConsumed += 1;

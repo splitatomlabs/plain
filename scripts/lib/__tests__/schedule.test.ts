@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { loadCorpus, rankWall, questionGate, objectionGate, wallAuthorWeights } from "../premises.js";
+import { loadCorpus, rankWall, questionGate, objectionGate, wallAuthorWeights, sentences, passesLayerA, passesLayerB } from "../premises.js";
+import { checkFaithfulness } from "../premises-scoring.js";
 import {
   generateWeek,
   loadFormatPools,
@@ -401,12 +402,25 @@ describe("loadFormatPools", () => {
     expect(pools.objection).toBe(gatePools.objection);
   });
 
-  it("reads a scored Wall pool file when present, using every entry as-is", async () => {
-    const scoredWall = gatePools.wall.slice(0, 3).map((e) => ({ ...e, rubric: { impenetrability_score: 5, landing_line_score: 5, chosen_landing_line: e.landing_line } }));
+  // Strengthened per M5 in the PR #39 review: the ORIGINAL version of this
+  // test set `chosen_landing_line: e.landing_line` — identical to the
+  // mechanical line — so it could never have caught `contentFromEntry`
+  // discarding the rubric's own chosen line entirely (M5's actual defect).
+  // Using a DISTINCT value here proves the field survives the load as its
+  // own value, not merely something coincidentally equal to `landing_line`.
+  it("reads a scored Wall pool file when present, preserving a rubric-chosen landing line distinct from the mechanical one", async () => {
+    const scoredWall = gatePools.wall
+      .slice(0, 3)
+      .map((e) => ({ ...e, rubric: { impenetrability_score: 5, landing_line_score: 5, chosen_landing_line: `${e.landing_line} (rubric pick)` } }));
     await writeFile(path.join(tempDir, "wall.json"), JSON.stringify(scoredWall));
     const { pools, source } = await loadFormatPools(tempDir, gatePools);
     expect(source.wall).toBe("scored");
     expect(pools.wall).toHaveLength(3);
+    for (let i = 0; i < 3; i++) {
+      const entry = pools.wall[i] as (typeof scoredWall)[number];
+      expect(entry.rubric.chosen_landing_line).toBe(`${gatePools.wall[i].landing_line} (rubric pick)`);
+      expect(entry.rubric.chosen_landing_line).not.toBe(gatePools.wall[i].landing_line);
+    }
   });
 
   it("filters a scored Question pool to only drift_verdict === 'answers'", async () => {
@@ -433,6 +447,37 @@ describe("loadFormatPools", () => {
     expect(source.objection).toBe("scored");
     expect(pools.objection).toHaveLength(1);
     expect(pools.objection[0].card_id).toBe(base[0].card_id);
+  });
+
+  // -------------------------------------------------------------------------
+  // M6: verdict filters fail CLOSED — a row missing the field entirely must
+  // be excluded, not admitted. Pre-fix, `e.drift_verdict === undefined || ...`
+  // and `e.rubric === undefined || ...` let a truncated/schema-renamed pool
+  // file promote drifts/dramatized_scene/doctrinal_dispute rows into the
+  // posting pool.
+  // -------------------------------------------------------------------------
+  it("fails closed on a scored Question row missing drift_verdict entirely", async () => {
+    const base = gatePools.question.slice(0, 2);
+    const scoredQuestion = [
+      { ...base[0] }, // no drift_verdict field at all — must NOT be admitted
+      { ...base[1], drift_verdict: "answers", drift_reason: "resolves it" },
+    ];
+    await writeFile(path.join(tempDir, "question.json"), JSON.stringify(scoredQuestion));
+    const { pools } = await loadFormatPools(tempDir, gatePools);
+    expect(pools.question).toHaveLength(1);
+    expect(pools.question[0].card_id).toBe(base[1].card_id);
+  });
+
+  it("fails closed on a scored Objection row missing rubric entirely", async () => {
+    const base = gatePools.objection.slice(0, 2);
+    const scoredObjection = [
+      { ...base[0] }, // no rubric field at all — must NOT be admitted
+      { ...base[1], rubric: { verdict: "accept", classification: "viewer_position", reason: "yes" } },
+    ];
+    await writeFile(path.join(tempDir, "objection.json"), JSON.stringify(scoredObjection));
+    const { pools } = await loadFormatPools(tempDir, gatePools);
+    expect(pools.objection).toHaveLength(1);
+    expect(pools.objection[0].card_id).toBe(base[1].card_id);
   });
 });
 
@@ -479,6 +524,34 @@ describe("loadPriorWeeks", () => {
     // Requesting state for week 2 should only read week 1.
     const state = await loadPriorWeeks(tempDir, 2);
     expect(state.readThroughConsumed).toBe(7);
+  });
+
+  // -------------------------------------------------------------------------
+  // M1: a missing prior-week file in the MIDDLE of the range must reject,
+  // not silently read as "no prior week" — that would re-open its cards and
+  // rewind the read-through counter (reproduced: w01-w03 generated, w02
+  // moved aside, w04 duplicated 7 cards and rewound 7 more).
+  // -------------------------------------------------------------------------
+  it("rejects when an earlier week's file is missing (a gap in the range), naming the missing file", async () => {
+    const week1 = makeWeek(1, 42);
+    await writeFile(path.join(tempDir, "pilot-schedule-w01.json"), JSON.stringify(week1));
+    // w02 deliberately never written — simulates it being moved/deleted.
+    const week1Ids = new Set(week1.slots.map((s) => s.card_id));
+    const week3 = makeWeek(3, 42, week1Ids, 7);
+    await writeFile(path.join(tempDir, "pilot-schedule-w03.json"), JSON.stringify(week3));
+
+    await expect(loadPriorWeeks(tempDir, 4)).rejects.toThrow(/pilot-schedule-w02\.json/);
+  });
+
+  it("rejects a prior week file whose slots field is missing, not an array, or empty (corrupt)", async () => {
+    await writeFile(path.join(tempDir, "pilot-schedule-w01.json"), JSON.stringify({ week: 1 }));
+    await expect(loadPriorWeeks(tempDir, 2)).rejects.toThrow(/slots/i);
+
+    await writeFile(path.join(tempDir, "pilot-schedule-w01.json"), JSON.stringify({ week: 1, slots: "not-an-array" }));
+    await expect(loadPriorWeeks(tempDir, 2)).rejects.toThrow(/slots/i);
+
+    await writeFile(path.join(tempDir, "pilot-schedule-w01.json"), JSON.stringify({ week: 1, slots: [] }));
+    await expect(loadPriorWeeks(tempDir, 2)).rejects.toThrow(/slots/i);
   });
 });
 
@@ -1095,5 +1168,240 @@ describe("T13: read-through sequencing (strict, multi-week, order-verified)", ()
         readThroughStartIndex: startIndex + 7,
       }),
     ).toThrow(/complete|exhausted/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M2 (PR #39 review): read-through Question slots must pass the same T04
+// gates (layer (a)/(b)) that the weighted-slot pool already enforces via
+// `questionGate`. Pre-fix, `tryReadThroughContent` called
+// `findQuestionCandidate`/`questionCandidateAnswer` raw, admitting
+// candidates layer (a)/(b) would have rejected — e.g. an answer that is
+// itself another question.
+// ---------------------------------------------------------------------------
+
+describe("M2: read-through Question slots are gated the same as the weighted-slot pool", () => {
+  it("every read-through question slot's answer resolves the question and passes layer (a)/(b), across seeds 1..20", () => {
+    let questionSlotCount = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      // Sweep 10 non-overlapping 7-card windows across all 70 Enchiridion
+      // cards (2 seeds per window) rather than always starting at 0 — only 5
+      // of Enchiridion's 70 cards pass the full T04 gate, and none of them
+      // fall in the first window, so a fixed `readThroughStartIndex: 0`
+      // would never exercise this fix at all.
+      const startIndex = ((seed - 1) % 10) * 7;
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(), // isolate each seed — a format-mix sample, not a multi-week sequence
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: startIndex,
+        // Weighted heavily toward Question so the read-through's own draw
+        // actually surfaces question-format days often enough to sample —
+        // same technique as the "falls back deterministically..." test above.
+        weights: { wall: 0, question: 100, objection: 0 },
+      });
+      for (const slot of week.slots) {
+        if (!slot.read_through || slot.content.format !== "question") continue;
+        questionSlotCount += 1;
+        // The specific defect: an answer that is itself another question
+        // (`enchiridion-24-003` reproduced this at seed-scale — "Your
+        // country won't have fancy buildings..." is not an answer).
+        expect(slot.content.answer.trim().endsWith("?")).toBe(false);
+        expect(passesLayerA(slot.content.question)).toBe(true);
+        expect(passesLayerB(slot.content.answer)).toBe(true);
+      }
+    }
+    expect(questionSlotCount).toBeGreaterThan(0); // not vacuous — real question slots were exercised
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M3 (PR #39 review): an Objection entry whose reply is empty must never be
+// scheduled, even when it's the ONLY entry available for a weighted slot —
+// filtered out of the pool itself so it can't be drawn, not skipped after
+// selection (which would waste an rng draw or crash the day).
+// ---------------------------------------------------------------------------
+
+describe("M3: empty-reply Objection entries are excluded from the pool", () => {
+  function fabricatedCard(id: string, plainEnglish: string, bookSlug: string): Card {
+    return {
+      id,
+      book_slug: bookSlug,
+      chapter_slug: "ch1",
+      card_number: 1,
+      total_cards_in_chapter: 1,
+      plain_english: plainEnglish,
+      original_excerpt: plainEnglish,
+      source_reference: "test",
+      author_slug: "epictetus",
+      tags: [],
+      reading_time_seconds: 10,
+    };
+  }
+
+  it("never schedules an Objection entry whose reply is empty, even weighted to dominate every draw", () => {
+    const readThroughCards = Array.from({ length: 7 }, (_, i) =>
+      fabricatedCard(`m3-rt-${i + 1}`, `Read-through sentence number ${i + 1}.`, "m3-readthrough"),
+    );
+
+    const emptyReplyCard = fabricatedCard("m3-empty-reply", `He said, "But I want my children and wife with me."`, "m3-pool");
+    const validCard = fabricatedCard(
+      "m3-valid-reply",
+      `He said, "But this is unbearable." That is not so; nothing forces you to suffer.`,
+      "m3-pool",
+    );
+    // Enough Wall fallback cards to keep days 2-7's weighted slot fed once
+    // the week's single valid Objection entry (and the weekly cap) are
+    // used up on day 1.
+    const wallFallbackCards = Array.from({ length: 6 }, (_, i) =>
+      fabricatedCard(`m3-wall-${i + 1}`, `Wall fallback sentence number ${i + 1} standing alone.`, "m3-pool"),
+    );
+
+    const allCards = [...readThroughCards, emptyReplyCard, validCard, ...wallFallbackCards];
+
+    const objectionPool = [
+      {
+        card_id: emptyReplyCard.id,
+        book_slug: emptyReplyCard.book_slug,
+        author_slug: emptyReplyCard.author_slug,
+        objection: "But I want my children and wife with me.",
+        reply: "",
+      },
+      {
+        card_id: validCard.id,
+        book_slug: validCard.book_slug,
+        author_slug: validCard.author_slug,
+        objection: "But this is unbearable.",
+        reply: "That is not so; nothing forces you to suffer.",
+      },
+    ];
+
+    const wallPool = wallFallbackCards.map((c) => ({
+      card_id: c.id,
+      book_slug: c.book_slug,
+      author_slug: c.author_slug,
+      original_word_count: 20,
+      landing_line: c.plain_english,
+      sub_types: [],
+      reserve: false,
+      archaic_marker_count: 0,
+      semicolon_count: 0,
+      quote_count: 0,
+      original_grade: 5,
+      eligible_openings: ["standard" as const],
+    }));
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards: allCards,
+      pools: { wall: wallPool, question: [], objection: objectionPool },
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "m3-readthrough",
+      readThroughStartIndex: 0,
+      weights: { wall: 0, question: 0, objection: 1 }, // objection dominates every available draw
+    });
+
+    // The empty-reply card is never scheduled, in either slot.
+    expect(week.slots.some((s) => s.card_id === emptyReplyCard.id)).toBe(false);
+
+    // The valid entry IS scheduled (capped at 1/week) and carries a
+    // non-empty reply.
+    const objectionSlots = week.slots.filter((s) => s.content.format === "objection");
+    expect(objectionSlots).toHaveLength(1);
+    expect(objectionSlots[0].card_id).toBe(validCard.id);
+    if (objectionSlots[0].content.format === "objection") {
+      expect(objectionSlots[0].content.reply.trim().length).toBeGreaterThan(0);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M4 (PR #39 review): faithfulness is THE central safety property — every
+// on-screen string must be traceable to its card's own `plain_english` or
+// `original_excerpt`. Enforced mechanically in `generateWeek` right before
+// each slot is pushed; this test independently re-verifies the property
+// over real corpus output across many seeds, covering fields no prior test
+// checked (`reply`, and every weighted-slot field).
+// ---------------------------------------------------------------------------
+
+describe("M4: faithfulness holds for every on-screen field, every slot", () => {
+  it("every content string is a verbatim substring of its card's plain_english or original_excerpt, across seeds 1..20", () => {
+    let checkedFieldCount = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+      });
+      for (const slot of week.slots) {
+        const card = cards.find((c) => c.id === slot.card_id)!;
+        const fields: string[] =
+          slot.content.format === "wall"
+            ? [slot.content.landing_line]
+            : slot.content.format === "question"
+              ? [slot.content.question, slot.content.answer]
+              : [slot.content.objection, slot.content.reply];
+        for (const text of fields) {
+          if (!text) continue;
+          checkedFieldCount += 1;
+          expect(checkFaithfulness(text, card).faithful).toBe(true);
+        }
+      }
+    }
+    expect(checkedFieldCount).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M5 (PR #39 review): `contentFromEntry` must prefer the Wall rubric's
+// `chosen_landing_line` over the mechanical `landing_line` when a scored
+// pool provides one — otherwise a scored wall.json buys nothing over the
+// gate-only fallback.
+// ---------------------------------------------------------------------------
+
+describe("M5: the Wall's rubric-chosen landing line is preferred over the mechanical one", () => {
+  it("uses rubric.chosen_landing_line for a scored Wall entry, not the mechanical landing_line", () => {
+    const baseEntry = gatePools.wall.find((e) => e.book_slug !== "enchiridion")!;
+    const card = cards.find((c) => c.id === baseEntry.card_id)!;
+    // A second, distinct sentence from the SAME card — guaranteed a verbatim
+    // substring (M4 must still pass), and distinct from the mechanical pick
+    // so this test can actually tell the two apart.
+    const alternateLine = sentences(card.plain_english).find((s) => s !== baseEntry.landing_line);
+    expect(alternateLine).toBeDefined();
+
+    const scoredWallPool = [
+      { ...baseEntry, rubric: { impenetrability_score: 5, landing_line_score: 5, chosen_landing_line: alternateLine! } },
+    ];
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: { wall: scoredWallPool, question: gatePools.question, objection: gatePools.objection },
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+      weights: { wall: 1, question: 0, objection: 0 }, // Wall dominates every weighted draw
+    });
+
+    const wallSlot = week.slots.find((s) => s.card_id === baseEntry.card_id);
+    expect(wallSlot).toBeDefined();
+    expect(wallSlot!.content.format).toBe("wall");
+    if (wallSlot!.content.format === "wall") {
+      expect(wallSlot!.content.landing_line).toBe(alternateLine);
+      expect(wallSlot!.content.landing_line).not.toBe(baseEntry.landing_line);
+    }
   });
 });

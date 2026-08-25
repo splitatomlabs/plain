@@ -53,6 +53,7 @@ const { values: args } = parseArgs({
     "dry-run": { type: "boolean", default: false },
     "first-week": { type: "boolean", default: false },
     "skip-review-check": { type: "boolean", default: false },
+    force: { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
 });
@@ -81,6 +82,10 @@ Options:
                                  that there is no prior week to review (see the review gate below)
   --skip-review-check           Deliberately bypass the review gate for week > 1 (logged loudly;
                                  use only when you've reviewed retention some other way)
+  --force                       Overwrite an existing pilot-schedule-wNN.json for this week.
+                                 Without it, re-running an already-generated week refuses to run —
+                                 that file is the authoritative record of what was actually posted,
+                                 and later weeks' exclusion sets are derived from it (see loadPriorWeeks).
   --help                        Show this help
 
 Reads every prior pilot-schedule-w<NN>.json in --output (w01 .. w<week-1>)
@@ -152,6 +157,7 @@ const premisesDir = args["premises-dir"]!;
 const corpusDir = args["corpus-dir"]!;
 const outputDir = args.output!;
 const dryRun = !!args["dry-run"];
+const force = !!args.force;
 
 // ---------------------------------------------------------------------------
 // The weekly review gate (T14).
@@ -278,9 +284,24 @@ async function main(): Promise<void> {
     return;
   }
 
-  await mkdir(outputDir, { recursive: true });
   const fileName = `pilot-schedule-w${String(week).padStart(2, "0")}.json`;
   const filePath = path.join(outputDir, fileName);
+
+  // Refuse to clobber an already-posted week's authoritative record —
+  // loadPriorWeeks derives later weeks' exclusion sets and read-through
+  // position from this exact file (see M7 in the PR #39 review). Mirrors
+  // review-week.ts's own --force guard on its output file.
+  if (existsSync(filePath) && !force) {
+    console.error(
+      `Week ${week} schedule already exists: ${filePath}\n` +
+        `Use --force to overwrite it (this discards the record of what was actually posted for that week ` +
+        `and can desynchronize later weeks' exclusion sets).`,
+    );
+    process.exit(1);
+    return;
+  }
+
+  await mkdir(outputDir, { recursive: true });
   await writeFile(filePath, JSON.stringify(schedule, null, 2) + "\n", "utf-8");
   console.log(`\nWrote ${filePath}`);
 }

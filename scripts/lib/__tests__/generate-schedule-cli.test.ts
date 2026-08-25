@@ -199,6 +199,42 @@ describe("review gate", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// M7 (PR #39 review): re-running --week N must never silently clobber an
+// already-posted week's authoritative record. Mirrors review-week.ts's own
+// --force guard on its output file.
+// ---------------------------------------------------------------------------
+describe("overwrite guard (M7)", () => {
+  it("refuses to overwrite an already-generated week without --force, leaving the file byte-unchanged", async () => {
+    const first = generate(["--week", "1", "--seed", "1", "--output", outputDir, "--first-week"]);
+    expect(first.status).toBe(0);
+
+    const filePath = path.join(outputDir, "pilot-schedule-w01.json");
+    const before = await readFile(filePath, "utf-8");
+
+    const second = generate(["--week", "1", "--seed", "2", "--output", outputDir, "--first-week"]);
+    expect(second.status).not.toBe(0);
+    expect(second.stderr).toMatch(/already exists/i);
+
+    const after = await readFile(filePath, "utf-8");
+    expect(after).toBe(before);
+  });
+
+  it("overwrites an already-generated week with --force", async () => {
+    const first = generate(["--week", "1", "--seed", "1", "--output", outputDir, "--first-week"]);
+    expect(first.status).toBe(0);
+
+    const filePath = path.join(outputDir, "pilot-schedule-w01.json");
+    const before = await readFile(filePath, "utf-8");
+
+    const second = generate(["--week", "1", "--seed", "2", "--output", outputDir, "--first-week", "--force"]);
+    expect(second.status).toBe(0);
+
+    const after = await readFile(filePath, "utf-8");
+    expect(after).not.toBe(before);
+  });
+});
+
 describe("review-week.ts", () => {
   it("refuses to build a template for a week whose schedule hasn't been generated yet", () => {
     const result = reviewWeek(["--week", "1", "--date", "2026-08-25", "--schedule-dir", outputDir]);
