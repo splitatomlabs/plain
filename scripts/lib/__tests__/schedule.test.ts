@@ -2277,3 +2277,189 @@ describe("T15: read-through book slice", () => {
     expect(week2ReadThrough).toEqual(meditationsSlice.slice(7, 14).map((c) => c.id));
   });
 });
+
+// ---------------------------------------------------------------------------
+// T16: the pilot's new DEFAULT read-through — Meditations Books 2-3 (48
+// cards), replacing the original Enchiridion default. Enchiridion had ~3,316
+// Goodreads reviews against Meditations' ~379,000 (~100x more recognised)
+// and Book 1 is the atypical "Debts and Lessons" acknowledgements list, so
+// the slice deliberately starts at Book 2 (see `DEFAULT_READ_THROUGH_BOOK`/
+// `DEFAULT_READ_THROUGH_CHAPTERS` in ../schedule.ts for the full rationale).
+//
+// These tests call `generateWeek` WITHOUT passing `readThroughBook` or
+// `readThroughChapters` at all — proving the coupled default itself. Every
+// OTHER describe block in this file deliberately keeps exercising
+// Enchiridion/whole-book behavior as an EXPLICIT option (per T16's own
+// instruction: tests that deliberately exercise Enchiridion or a whole-book
+// read-through must keep doing so, since the whole-book path stays covered
+// — distinct from testing the default).
+// ---------------------------------------------------------------------------
+
+describe("T16: Meditations Books 2-3 default read-through", () => {
+  // Same technique as T13's `trueReadingOrder` and T15's `trueReadingOrderSlice`
+  // above — an independent re-derivation of the ordering `generateWeek`'s
+  // own default is expected to produce, so this doesn't just re-assert the
+  // implementation's own logic back at itself.
+  function trueReadingOrderSlice(allCards: Card[], bookSlug: string, chapters: string[]): Card[] {
+    const bookCards = allCards.filter((c) => c.book_slug === bookSlug);
+    const byChapter = new Map<string, Card[]>();
+    for (const c of bookCards) {
+      if (!byChapter.has(c.chapter_slug)) byChapter.set(c.chapter_slug, []);
+      byChapter.get(c.chapter_slug)!.push(c);
+    }
+    const ordered: Card[] = [];
+    for (const slug of chapters) {
+      const group = [...(byChapter.get(slug) ?? [])].sort((a, b) => a.card_number - b.card_number);
+      ordered.push(...group);
+    }
+    return ordered;
+  }
+
+  const defaultSlice = trueReadingOrderSlice(cards, "meditations", ["book-02", "book-03"]);
+
+  function makeDefaultWeek(
+    week: number,
+    seed: number,
+    priorUsedCardIds: Set<string> = new Set(),
+    readThroughStartIndex = 0,
+  ): WeekSchedule {
+    return generateWeek({
+      weekNumber: week,
+      seed,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds,
+      readThroughStartIndex,
+      // readThroughBook / readThroughChapters deliberately OMITTED — this is
+      // the whole point of this describe block: prove `generateWeek`'s own
+      // coupled default, not a caller-supplied slice.
+    });
+  }
+
+  it("Meditations Books 2-3 have 48 cards combined — grounding this suite's own numbers", () => {
+    expect(defaultSlice).toHaveLength(48);
+  });
+
+  it("omitting readThroughBook and readThroughChapters resolves to the Meditations Books 2-3 default", () => {
+    const week = makeDefaultWeek(1, 42);
+    expect(week.read_through_book).toBe("meditations");
+    expect(week.read_through_chapters).toEqual(["book-02", "book-03"]);
+    expect(week.read_through_total).toBe(48);
+  });
+
+  it("the default read-through advances sequentially through Book 2 first, matching the independently derived true reading order", () => {
+    const week = makeDefaultWeek(1, 42);
+    const readThroughIds = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.card_id);
+    expect(readThroughIds).toEqual(defaultSlice.slice(0, 7).map((c) => c.id));
+    // Book 2 has 20 cards, so all 7 of week 1's read-through cards are
+    // still within Book 2.
+    expect(readThroughIds.every((id) => id.startsWith("meditations-02-"))).toBe(true);
+  });
+
+  it(
+    "across 6 consecutive weeks (42 cards) the default read-through covers Books 2 then 3 in true reading order " +
+      "with no skip or repeat, crossing from Book 2 (20 cards) into Book 3 partway through",
+    () => {
+      const usedCardIds = new Set<string>();
+      let readThroughConsumed = 0;
+      const allReadThrough: string[] = [];
+      for (let week = 1; week <= 6; week++) {
+        const schedule = makeDefaultWeek(week, 42, usedCardIds, readThroughConsumed);
+        const readThroughIds = schedule.slots
+          .filter((s) => s.read_through)
+          .sort((a, b) => a.day - b.day)
+          .map((s) => s.card_id);
+        allReadThrough.push(...readThroughIds);
+        for (const s of schedule.slots) usedCardIds.add(s.card_id);
+        readThroughConsumed += 7;
+      }
+      expect(allReadThrough).toHaveLength(42);
+      expect(new Set(allReadThrough).size).toBe(42); // no repeat
+      expect(allReadThrough).toEqual(defaultSlice.slice(0, 42).map((c) => c.id)); // no skip, strict order
+      expect(allReadThrough.slice(0, 20).every((id) => id.startsWith("meditations-02-"))).toBe(true);
+      expect(allReadThrough.slice(20).every((id) => id.startsWith("meditations-03-"))).toBe(true);
+    },
+  );
+
+  // -------------------------------------------------------------------------
+  // 48 cards is 6.9 weeks — mirrors the existing Enchiridion (70-card)
+  // exhaustion-boundary tests elsewhere in this file, at the new default's
+  // own boundary.
+  // -------------------------------------------------------------------------
+  it("a week landing exactly on the slice's last card (index 41..47 of 48) succeeds with no skip, no repeat, no throw, ending exactly on the 48th card", () => {
+    const startIndex = defaultSlice.length - 7; // 41 — the week's 7 days exactly consume cards 42..48
+    const week = makeDefaultWeek(7, 42, new Set(), startIndex);
+    const readThroughIds = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.card_id);
+    expect(readThroughIds).toEqual(defaultSlice.slice(startIndex).map((c) => c.id));
+    const counters = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.read_through_counter);
+    expect(counters).toEqual([42, 43, 44, 45, 46, 47, 48].map((n) => `Card ${n} of 48`));
+  });
+
+  it("week 7 exhausts the slice partway through — only 6 cards remain (43..48) after 6 full weeks consume 42", () => {
+    expect(() => makeDefaultWeek(7, 42, new Set(), 42)).toThrow(/complete|exhausted/i);
+  });
+
+  it("week 8, attempted at the fully-exhausted position (index 48), throws immediately with no skip or repeat", () => {
+    expect(() => makeDefaultWeek(8, 42, new Set(), 48)).toThrow(/complete|exhausted/i);
+  });
+
+  // -------------------------------------------------------------------------
+  // THE acceptance assertion: the combined mix over a default week reports
+  // marcus-aurelius as the majority author.
+  // -------------------------------------------------------------------------
+  it(
+    "reports marcus-aurelius as the majority author in the combined mix of a default week " +
+      "(measured, seed 42 week 1: epictetus 21.4%, marcus-aurelius 71.4%, seneca 7.1%)",
+    () => {
+      const week = makeDefaultWeek(1, 42);
+      const mix = week.author_mix;
+      expect(mix["marcus-aurelius"].share).toBeGreaterThan(mix.epictetus.share);
+      expect(mix["marcus-aurelius"].share).toBeGreaterThan(mix.seneca.share);
+      expect(mix["marcus-aurelius"].share).toBeGreaterThan(0.5); // an outright majority, not merely a plurality
+    },
+  );
+
+  it("marcus-aurelius is the majority author across a spread of default-week seeds, not one cherry-picked seed", () => {
+    let marcusWins = 0;
+    const n = 15;
+    for (let seed = 1; seed <= n; seed++) {
+      const week = makeDefaultWeek(1, seed);
+      const mix = week.author_mix;
+      if (mix["marcus-aurelius"].share > mix.epictetus.share && mix["marcus-aurelius"].share > mix.seneca.share) {
+        marcusWins += 1;
+      }
+    }
+    // Directional: at least 7 of every default week's 14 slots are the
+    // Meditations read-through (marcus-aurelius) by construction, so marcus
+    // should win comfortably across most seeds, not merely half.
+    expect(marcusWins).toBeGreaterThanOrEqual(Math.ceil(n * 0.8));
+  });
+
+  // -------------------------------------------------------------------------
+  // Determinism and no-cross-week-reuse still hold under the new default.
+  // -------------------------------------------------------------------------
+  it("is byte-identical across two independent runs with the same seed, under the default", () => {
+    const a = makeDefaultWeek(1, 42);
+    const b = makeDefaultWeek(1, 42);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+
+  it("never reuses a card scheduled in a prior week, under the default", () => {
+    const week1 = makeDefaultWeek(1, 42);
+    const week1Ids = new Set(week1.slots.map((s) => s.card_id));
+    const week2 = makeDefaultWeek(2, 42, week1Ids, 7);
+    for (const slot of week2.slots) {
+      expect(week1Ids.has(slot.card_id)).toBe(false);
+    }
+  });
+});

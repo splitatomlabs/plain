@@ -1019,6 +1019,73 @@ the next-ranked passage — Book 2 carries disproportionately recognisable mater
   hardcoded `enchiridion` default and help text, and update every `schedule.test.ts` test that currently hardcodes
   `readThroughBook: "enchiridion"` as an implicit default (T15 added no default-flip logic — `readThroughChapters`
   is only ever passed explicitly today, exactly as scoped).
-- [ ] T16: Switch the read-through default to Meditations Books 2-3 (48 cards, 7 weeks) and update the counter
+- [x] T16: Switch the read-through default to Meditations Books 2-3 (48 cards, 7 weeks) and update the counter
   total, tests and CLI help. Acceptance: the combined mix reports Marcus as the majority author; the read-through
   advances sequentially through book-02 then book-03; determinism and no-cross-week-reuse still hold.
+  **Why (decided with the user):** the read-through is the pilot's only retention mechanic, and it was running on
+  the Enchiridion (~3,316 Goodreads reviews) while Meditations has ~379,000 ratings and is the universal gateway
+  text (~100x more recognised; ~8x Seneca's most popular essay). Amazon Kindle highlight data puts Meditations 2.14
+  at 18,635 highlighters against 1,680 for the next-ranked passage, so Book 2 carries disproportionately
+  recognisable material. Book 1 is the atypical "Debts and Lessons" acknowledgements (`From my grandfather Verus I
+  learned to be gentle and calm...`) and would have been the opening 4+ weeks — the exact pilot window — so the
+  slice deliberately starts at Book 2. The user also prefers more Marcus Aurelius and Seneca over Epictetus.
+  **Note:** Measured Books 2-3 against the real corpus: book-02 20 cards + book-03 28 cards = **48**, matching the
+  task's own stated total exactly. Made the default live in TWO places, per the task's own instruction (T15's
+  follow-up note flagged this as "entirely mechanical from here"): (1) `scripts/lib/schedule.ts` — added
+  `DEFAULT_READ_THROUGH_BOOK` ("meditations") and `DEFAULT_READ_THROUGH_CHAPTERS` (`["book-02", "book-03"]`), made
+  `GenerateWeekOptions.readThroughBook` optional, and added default-resolution logic inside `generateWeek` itself:
+  `readThroughBook`/`readThroughChapters` default TOGETHER only when BOTH are omitted from the caller's options —
+  passing `readThroughBook` alone (any value, including `"meditations"`) opts out of the coupled default and reads
+  that book in FULL, preserving T15's own unchanged whole-book behavior. This coupling (not two independent
+  defaults) is deliberate: an independent `readThroughChapters` default would have wrongly applied Books 2-3 to a
+  caller-supplied `readThroughBook: "enchiridion"`, which has no `book-02`/`book-03` chapters and would throw.
+  (2) `scripts/generate-schedule.ts` — removed the CLI's own hardcoded `--book` default (`"enchiridion"`) entirely,
+  so `args.book` is `undefined` unless the caller passes it, and `generateWeek` applies its own coupled default;
+  `--read-through-chapters` was already `undefined`-by-default and needed no change. Updated `--help` to document the
+  new coupled default and the opt-out rule, and switched the "Read-through: ..." console log line from the CLI's own
+  (now possibly-`undefined`) local `book` variable to `schedule.read_through_book` — the resolved value, correct
+  whether it came from the caller, the CLI flag, or the new default. **Test strategy — distinguishing "the default"
+  from "deliberately testing Enchiridion/whole-book" (per the task's explicit instruction not to blanket-replace):**
+  left every existing test in `schedule.test.ts` that passes `readThroughBook: "enchiridion"` (or an explicit
+  `"meditations"` + chapter slice) UNTOUCHED — `generateWeek` has always required `readThroughBook` to be passed
+  explicitly (T15 added no default-flip logic of its own), so every existing call site was already an EXPLICIT
+  choice, not an implicit default; the whole T13 describe block ("read-through sequencing") and the T15 "read-through
+  book slice" block both deliberately exercise Enchiridion and/or the whole-book path as their own stated scope, and
+  stay exactly as they were (confirmed: same 78 tests, all still green, unmodified). Instead, added a NEW
+  `describe("T16: Meditations Books 2-3 default read-through")` block (11 new tests) that calls `generateWeek` with
+  `readThroughBook`/`readThroughChapters` OMITTED ENTIRELY — the only tests in the file that actually exercise the
+  default resolution path — covering: the default's own three fields (`read_through_book: "meditations"`,
+  `read_through_chapters: ["book-02","book-03"]`, `read_through_total: 48`); sequential Book 2 -> Book 3 ordering
+  against an independently re-derived true reading order (mirroring T13's/T15's own helpers, not reusing them); a
+  6-week/42-card sweep proving no skip/no repeat and the Book 2 (20 cards) -> Book 3 (28 cards) crossover lands
+  exactly at index 20; the new 48-card exhaustion boundary — a week landing exactly on cards 42-48 succeeds with
+  counters "Card 42 of 48".."Card 48 of 48", week 7 (attempted at index 42, needing 7 cards with only 6 remaining)
+  throws `/complete|exhausted/i`, and week 8 (attempted at the fully-exhausted index 48) throws immediately — mirrors
+  the existing Enchiridion 70-card boundary tests at their own new numbers, per the task's explicit "week 7 partially,
+  week 8 fully" instruction; **the acceptance assertion** — marcus-aurelius's share strictly exceeds both epictetus's
+  and seneca's AND exceeds 0.5 (an outright majority, not merely a plurality) for the pinned seed-42/week-1 default,
+  plus a 15-seed directional sweep confirming marcus wins on at least 80% of seeds (not one cherry-picked seed);
+  determinism (byte-identical same-seed reruns) and no-cross-week-reuse, both re-run under the new default
+  specifically (not just inherited from the untouched Enchiridion-based tests). **Measured, seed 42 week 1 (the
+  pinned/reported case):** epictetus 3/14 (21.4%), marcus-aurelius 10/14 (**71.4%**), seneca 1/14 (7.1%) — an
+  outright majority, not just a plurality, confirming the acceptance criterion with real numbers. T05's own
+  regression test (Meditations cards outside Books 2-3 still reach weighted Wall slots) is T15's EXISTING
+  `"a slice read-through excludes ONLY its own cards..."` test in the "T15: read-through book slice" describe block
+  — left unmodified and confirmed still green under this task's changes, no new test needed since it was already
+  written against the exact slice T16 now defaults to. **Regenerated weeks 1 and 2** (`npx tsx
+  scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force`, then `--week 2 --seed 42
+  --skip-review-check --force` — week 1's pre-existing `pilot-review-w01.md` is an unfilled Enchiridion-era template
+  from earlier exploratory runs, out of scope to fill in here, so `--skip-review-check` was used deliberately rather
+  than blocked on it) — **left uncommitted, per instruction.** Both weeks: `read_through_book: "meditations"`,
+  `read_through_chapters: ["book-02","book-03"]`, `read_through_total: 48`; format counts `wall: 10, question: 4,
+  objection: 0`; combined author mix identical both weeks (epictetus 21.4%, marcus-aurelius 71.4%, seneca 7.1%); book
+  distribution both weeks `meditations: 10, on-anger: 1, discourses: 3` (10 of 14 slots are Meditations — the 7
+  read-through slots plus 3 Wall-weighted Meditations draws). First three read-through cards (week 1): Day 1
+  `meditations-02-001`, "Card 1 of 48"; Day 2 `meditations-02-002`, "Card 2 of 48"; Day 3 `meditations-02-003`, "Card
+  3 of 48" — all three resolved to the Wall format from Meditations Book 2's opening lines ("Remember how long thou
+  hast already put off these things...", the classic Meditations 2.1-2.3 material). `npx vitest run
+  scripts/lib/__tests__/schedule.test.ts` — 89/89 green (78 baseline + 11 new). `npm test` — **716 pipeline tests**
+  (705 baseline + 11 new) + **95 web unit tests**, all green, confirming no regression to T01-T15 or any other
+  consumer. `git diff --stat` (before regenerating the uncommitted schedule files) touches only
+  `scripts/lib/schedule.ts`, `scripts/generate-schedule.ts`, `scripts/lib/__tests__/schedule.test.ts`, and this plan
+  file.

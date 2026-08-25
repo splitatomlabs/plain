@@ -27,6 +27,8 @@ import {
   loadPriorWeeks,
   DEFAULT_FORMAT_WEIGHTS,
   DEFAULT_MAX_OBJECTION_PER_WEEK,
+  DEFAULT_READ_THROUGH_BOOK,
+  DEFAULT_READ_THROUGH_CHAPTERS,
   SCHEDULE_FORMATS,
   type ScheduleFormat,
   type FormatWeights,
@@ -41,7 +43,7 @@ const { values: args } = parseArgs({
   options: {
     week: { type: "string" },
     seed: { type: "string" },
-    book: { type: "string", default: "enchiridion" },
+    book: { type: "string" },
     "read-through-chapters": { type: "string" },
     "read-through-format": { type: "string" },
     "wall-weight": { type: "string" },
@@ -65,12 +67,17 @@ if (args.help) {
 Options:
   --week <n>                    Week number to generate (1-based, required)
   --seed <n>                    RNG seed — same seed + weights + prior weeks = byte-identical output (required)
-  --book <slug>                 Read-through book (default: enchiridion)
+  --book <slug>                 Read-through book. Default (T16, when neither --book nor
+                                --read-through-chapters is given): ${DEFAULT_READ_THROUGH_BOOK}, sliced
+                                to chapters ${DEFAULT_READ_THROUGH_CHAPTERS.join(", ")} — 48 cards.
+                                Passing --book alone (any value, including ${DEFAULT_READ_THROUGH_BOOK})
+                                opts out of that default slice and reads the named book in FULL.
   --read-through-chapters <s>   Comma-separated chapter slugs restricting the read-through to a SLICE
                                 of --book, walked in the order given (e.g. book-02,book-03). Default:
-                                unset — read through the entire book, exactly as before this flag
-                                existed. Throws if a named chapter doesn't exist in --book or if the
-                                resulting slice is empty.
+                                unset — read through the entire --book, UNLESS --book is also left
+                                unset, in which case the coupled T16 default above applies. Throws if
+                                a named chapter doesn't exist in --book or if the resulting slice is
+                                empty.
   --read-through-format <fmt>   Force every read-through slot to render as one fixed format
                                 (${SCHEDULE_FORMATS.join(", ")}); throws if a card can't render it.
                                 Default: unset — each day's read-through slot draws its format
@@ -170,7 +177,11 @@ const maxObjectionPerWeek = parseWeight(
   "--max-objection-per-week",
 );
 
-const book = args.book!;
+// Left `undefined` (not defaulted here) when neither --book nor
+// --read-through-chapters is given, so `generateWeek` applies its own
+// coupled T16 default (Meditations Books 2-3) — see `GenerateWeekOptions`'s
+// doc comment in `./lib/schedule.ts`. Passing --book explicitly always wins.
+const book = args.book;
 const premisesDir = args["premises-dir"]!;
 const corpusDir = args["corpus-dir"]!;
 const outputDir = args.output!;
@@ -292,7 +303,7 @@ async function main(): Promise<void> {
     `  Format counts — wall ${schedule.format_counts.wall}, question ${schedule.format_counts.question}, ` +
       `objection ${schedule.format_counts.objection}`,
   );
-  console.log(`  Read-through: ${book}, cards ${readThroughConsumed + 1}-${readThroughConsumed + 7} of ${schedule.read_through_total}`);
+  console.log(`  Read-through: ${schedule.read_through_book}, cards ${readThroughConsumed + 1}-${readThroughConsumed + 7} of ${schedule.read_through_total}`);
   console.log("  Author mix (combined, across all formats and the read-through):");
   for (const [author, m] of Object.entries(schedule.author_mix)) {
     console.log(`    ${author}: ${m.count} (${(m.share * 100).toFixed(1)}%)`);

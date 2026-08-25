@@ -96,7 +96,9 @@ export interface FormatWeights {
  * MEASURED CAVEAT: the realized weekly format counts skew noticeably more
  * Wall-heavy than the literal "7/6/1" split, because the read-through's own
  * draw resolves to Wall far more than its weighted share alone would
- * suggest — measured directly against Enchiridion's 70 cards, only 8 can
+ * suggest — measured directly against Enchiridion's 70 cards (the pilot's
+ * read-through book prior to T16's Meditations Books 2-3 default; the
+ * mechanism itself is unchanged, only which book illustrates it), only 8 can
  * render Question and only 4 can render Objection, so whenever the
  * read-through's candidate draw picks a non-Wall format it usually cascades
  * straight back to Wall (`resolveReadThrough`). This is expected, not a
@@ -118,6 +120,27 @@ export const DEFAULT_FORMAT_WEIGHTS: FormatWeights = { wall: 7, question: 6, obj
 export const READ_THROUGH_FALLBACK_ORDER: readonly ScheduleFormat[] = ["wall", "question", "objection"];
 
 export const DEFAULT_MAX_OBJECTION_PER_WEEK = 1;
+
+/**
+ * T16: the pilot's default read-through, applied by `generateWeek` whenever
+ * BOTH `readThroughBook` and `readThroughChapters` are omitted from
+ * `GenerateWeekOptions` (see `generateWeek`'s own destructuring below) — and
+ * mirrored in `scripts/generate-schedule.ts`'s CLI defaults (`--book`,
+ * `--read-through-chapters`). Meditations Books 2-3 (48 cards: 20 + 28,
+ * measured against the real corpus) replaces the original Enchiridion
+ * default: Meditations has ~379,000 Goodreads ratings against the
+ * Enchiridion's ~3,316 (~100x more recognised) and is the more universally
+ * read gateway text; Book 1 is the atypical "Debts and Lessons"
+ * acknowledgements list and would have made a weak 4+-week opening, so the
+ * slice deliberately starts at Book 2. Passing EITHER option explicitly
+ * (even `readThroughBook: "meditations"` alone, with no chapters) opts out
+ * of this coupled default entirely and falls back to T15's own behavior —
+ * an explicit book with no chapters reads that book in full — see
+ * `generateWeek`'s default-resolution comment for exactly how the two
+ * options are coupled.
+ */
+export const DEFAULT_READ_THROUGH_BOOK = "meditations";
+export const DEFAULT_READ_THROUGH_CHAPTERS: string[] = ["book-02", "book-03"];
 
 export interface WallSlotContent {
   format: "wall";
@@ -147,7 +170,7 @@ export interface ScheduleSlot {
   author_slug: AuthorSlug;
   content: SlotContent;
   read_through: boolean;
-  /** e.g. "Card 5 of 70". `null` when `read_through` is false. */
+  /** e.g. "Card 5 of 48" (the default Meditations Books 2-3 slice — T16). `null` when `read_through` is false. */
   read_through_counter: string | null;
 }
 
@@ -195,15 +218,28 @@ export interface GenerateWeekOptions {
   poolSource: Record<ScheduleFormat, "scored" | "gate-only">;
   /** Every card id already used in prior weeks (and, defensively, this week — see `generateWeek`). */
   priorUsedCardIds: ReadonlySet<string>;
-  readThroughBook: string;
+  /**
+   * Read-through book slug. Optional (T16) — when omitted ALONG WITH
+   * `readThroughChapters`, defaults to `DEFAULT_READ_THROUGH_BOOK`
+   * ("meditations") sliced to `DEFAULT_READ_THROUGH_CHAPTERS` (Books 2-3, 48
+   * cards). Supplying `readThroughBook` explicitly (with `readThroughChapters`
+   * left unset) opts out of the coupled default and reads that book in full,
+   * exactly as T15 always has — see `generateWeek`'s default-resolution
+   * comment for the precise coupling rule.
+   */
+  readThroughBook?: string;
   /**
    * Optional slice of `readThroughBook`: chapter slugs (e.g. `["book-02",
-   * "book-03"]`), in the order the read-through should walk them. When
-   * omitted (the default), the read-through covers the ENTIRE book, in the
-   * corpus's own order — byte-identical to this option not existing at all
-   * (see `buildReadThroughSequence`). Every chapter named must actually
-   * exist in `readThroughBook`, and the resulting slice must be non-empty —
-   * both throw a clear error otherwise.
+   * "book-03"]`), in the order the read-through should walk them. When BOTH
+   * this and `readThroughBook` are omitted, defaults to
+   * `DEFAULT_READ_THROUGH_CHAPTERS` against `DEFAULT_READ_THROUGH_BOOK`
+   * (T16's Meditations Books 2-3 default). When `readThroughBook` is given
+   * explicitly but this is omitted, the read-through covers that book's
+   * ENTIRE contents, in the corpus's own order — byte-identical to this
+   * option not existing at all (see `buildReadThroughSequence`), unchanged
+   * from T15. Every chapter named must actually exist in `readThroughBook`,
+   * and the resulting slice must be non-empty — both throw a clear error
+   * otherwise.
    */
   readThroughChapters?: string[];
   /** 0-based index into the read-through slice's sequential card list where this week should start. */
@@ -561,13 +597,24 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     pools,
     poolSource,
     priorUsedCardIds,
-    readThroughBook,
-    readThroughChapters,
+    readThroughBook: readThroughBookOption,
+    readThroughChapters: readThroughChaptersOption,
     readThroughStartIndex,
     weights = DEFAULT_FORMAT_WEIGHTS,
     readThroughFormat: forcedReadThroughFormat,
     maxObjectionPerWeek = DEFAULT_MAX_OBJECTION_PER_WEEK,
   } = options;
+
+  // T16: `readThroughBook` and `readThroughChapters` default TOGETHER, only
+  // when BOTH are omitted — Meditations Books 2-3 (see
+  // `DEFAULT_READ_THROUGH_BOOK`/`DEFAULT_READ_THROUGH_CHAPTERS`'s own doc
+  // comments for the full rationale). Supplying `readThroughBook` alone
+  // (any value, including "meditations") opts out of the coupled default and
+  // reads that book in full — T15's unchanged behavior — rather than
+  // silently reapplying the Books 2-3 slice to whatever book was named.
+  const readThroughBook = readThroughBookOption ?? DEFAULT_READ_THROUGH_BOOK;
+  const readThroughChapters =
+    readThroughChaptersOption ?? (readThroughBookOption === undefined ? [...DEFAULT_READ_THROUGH_CHAPTERS] : undefined);
 
   const rng = createSeededRng(seed);
   const cardsById = new Map(cards.map((c) => [c.id, c]));
