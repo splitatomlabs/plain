@@ -88,7 +88,7 @@ looks like Plain.
 - [x] T08: Build **The Objection**. Frame 0.0 is the objection alone in quotation marks in the author's accent
   colour. Lead with On Anger. Cap the reply at its first two sentences and REJECT rather than truncate mid-argument.
   Acceptance: renders from the gated pool; no reply is cut mid-sentence.
-- [~] T09: Implement the **read-through counter overlay** — a "Card 1 of 72" label any composition can carry, not a
+- [x] T09: Implement the **read-through counter overlay** — a "Card 1 of 72" label any composition can carry, not a
   format of its own. PLAIN TEXT in body ink, never a styled or accent-coloured progress bar: an animated accent bar
   becomes brand furniture, which is TikTok watermark-rule territory. Acceptance: the overlay composes over all three
   formats without reflowing them, and reads as a page number rather than branding.
@@ -118,7 +118,7 @@ looks like Plain.
   confirmed platform spec. Acceptance: measured loudness within tolerance; output is 48kHz stereo AAC.
 - [ ] T16: Automate the three house-rule checks across every format. Acceptance: the check fails a composition with
   overshoot easing or a moving payoff frame.
-- [ ] T17: Implement the three-way OPENING ROTATION for The Wall — standard, 190->97, Grade-14. Same pool, same
+- [~] T17: Implement the three-way OPENING ROTATION for The Wall — standard, 190->97, Grade-14. Same pool, same
   reveal, different first 2s. Render the grade as a bare measurement, original only. Tag the chosen opening in post
   metadata so plan 03 can compare openings. Acceptance: three openings render from one card.
 - [ ] T18: Build the render CLI — `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`, reading the schedule

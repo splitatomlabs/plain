@@ -1,4 +1,11 @@
 export { RemotionRoot } from './Root.js';
+export { ReadThroughCounter, COUNTER_FONT_STACK, type ReadThroughCounterProps } from './Counter.js';
+export {
+	COUNTER_SAFE_INSET_PX,
+	COUNTER_FONT_SIZE_PX,
+	COUNTER_BOUNDING_BOX,
+	type CounterBoundingBox
+} from './counter-layout.js';
 export { Wall, WallPhase, PayoffLine, SERIF_STACK, type WallProps } from './Wall.js';
 export {
 	computeWallLayout,

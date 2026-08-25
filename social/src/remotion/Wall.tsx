@@ -3,6 +3,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
 import { fitFontSize } from '../render/fit.js';
+import { ReadThroughCounter } from './Counter.js';
 import { assertWallCardRenderable } from './wall-gate.js';
 import {
 	computeWallTiming,
@@ -36,6 +37,13 @@ export interface WallProps extends Record<string, unknown> {
 	 * Falls back to a fixed duration per line when absent.
 	 */
 	narrationTimings?: NarrationLineTiming[];
+	/**
+	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
+	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
+	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
+	 * this renders as (T09).
+	 */
+	counter?: string | null;
 }
 
 // Exported (additively) so other compositions sharing this visual grammar —
@@ -63,6 +71,9 @@ export const Wall: React.FC<WallProps> = (props) => {
 		narrationTimings: props.narrationTimings
 	});
 	const accent = ACCENTS[props.author];
+	// Optional overlay (T09) — a sibling layer on every phase below, never a
+	// participant in any phase's own layout. See `Counter.tsx`.
+	const counter = props.counter ?? null;
 
 	if (frame < timing.wall.endFrame) {
 		// Rejects rather than renders an over-long card at an illegible size —
@@ -71,16 +82,29 @@ export const Wall: React.FC<WallProps> = (props) => {
 		// backstop for any path that renders `Wall` directly.
 		const layout = assertWallCardRenderable(props.originalExcerpt);
 		return (
-			<WallPhase frame={frame} text={props.originalExcerpt} accent={accent} timing={timing} layout={layout} />
+			<>
+				<WallPhase frame={frame} text={props.originalExcerpt} accent={accent} timing={timing} layout={layout} />
+				<ReadThroughCounter label={counter} />
+			</>
 		);
 	}
 
 	if (frame < timing.landingLine.endFrame) {
-		return <PayoffLine text={props.landingLine} />;
+		return (
+			<>
+				<PayoffLine text={props.landingLine} />
+				<ReadThroughCounter label={counter} />
+			</>
+		);
 	}
 
 	const restLine = timing.restLines.find((line) => frame >= line.startFrame && frame < line.endFrame);
-	return <PayoffLine text={restLine ? restLine.text : ''} />;
+	return (
+		<>
+			<PayoffLine text={restLine ? restLine.text : ''} />
+			<ReadThroughCounter label={counter} />
+		</>
+	);
 };
 
 /**

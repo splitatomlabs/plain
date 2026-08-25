@@ -2,6 +2,7 @@ import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
+import { ReadThroughCounter } from './Counter.js';
 import { assertQuestionRenderable } from './question-gate.js';
 import {
 	computeQuestionLayout,
@@ -25,6 +26,15 @@ export interface QuestionProps extends Record<string, unknown> {
 	/** Verbatim archaic original — must never be paraphrased or fabricated. */
 	originalExcerpt: string;
 	author: AuthorSlug;
+	/**
+	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
+	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
+	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
+	 * this renders as (T09). Never shown during the opening question-alone
+	 * frame (see this component's own doc comment above) — only once the
+	 * archaic wall arrives.
+	 */
+	counter?: string | null;
 }
 
 /**
@@ -51,6 +61,9 @@ export const Question: React.FC<QuestionProps> = (props) => {
 	const frame = useCurrentFrame();
 	const timing: QuestionTimingSchedule = computeQuestionTiming({ question: props.question });
 	const accent = ACCENTS[props.author];
+	// Optional overlay (T09) — a sibling layer on every phase below, never a
+	// participant in any phase's own layout. See `Counter.tsx`.
+	const counter = props.counter ?? null;
 
 	if (frame < timing.question.endFrame) {
 		// Rejects rather than renders an over-long, illegible or
@@ -62,6 +75,10 @@ export const Question: React.FC<QuestionProps> = (props) => {
 			question: props.question,
 			answer: props.answer
 		});
+		// No overlay of any kind here, deliberately — frame 0 is the question
+		// ALONE, with nothing else on screen (see this component's doc
+		// comment above and `__tests__/question-timing.test.ts`'s "frame 0
+		// renders ONLY the question" guard). See the next two branches below.
 		return <QuestionLine text={props.question} />;
 	}
 
@@ -77,14 +94,22 @@ export const Question: React.FC<QuestionProps> = (props) => {
 		const layout = computeWallLayout(props.originalExcerpt);
 		const relativeFrame = frame - timing.wall.startFrame;
 		return (
-			<WallPhase frame={relativeFrame} text={props.originalExcerpt} accent={accent} timing={wallTiming} layout={layout} />
+			<>
+				<WallPhase frame={relativeFrame} text={props.originalExcerpt} accent={accent} timing={wallTiming} layout={layout} />
+				<ReadThroughCounter label={counter} />
+			</>
 		);
 	}
 
 	// The wall drops away and the plain answer resolves in stillness — the
 	// exact same still, centred payoff line The Wall's landing phase uses.
 	// Nothing marks it as "correct": it is simply where the passage lands.
-	return <PayoffLine text={props.answer} />;
+	return (
+		<>
+			<PayoffLine text={props.answer} />
+			<ReadThroughCounter label={counter} />
+		</>
+	);
 };
 
 /**

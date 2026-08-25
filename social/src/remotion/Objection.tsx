@@ -2,6 +2,7 @@ import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, PAPER, type AuthorSlug } from '../render/theme.js';
+import { ReadThroughCounter } from './Counter.js';
 import { assertObjectionRenderable } from './objection-gate.js';
 import {
 	computeObjectionLayout,
@@ -27,6 +28,15 @@ export interface ObjectionProps extends Record<string, unknown> {
 	 */
 	reply: string;
 	author: AuthorSlug;
+	/**
+	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
+	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
+	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
+	 * this renders as (T09). Never shown during the opening objection-alone
+	 * frame (see that phase's own comment below) — only once the reply
+	 * resolves.
+	 */
+	counter?: string | null;
 }
 
 /**
@@ -64,17 +74,35 @@ export const Objection: React.FC<ObjectionProps> = (props) => {
 		objection: props.objection,
 		reply: props.reply
 	});
+	// Optional overlay (T09) — a sibling layer on every phase below, never a
+	// participant in any phase's own layout. See `Counter.tsx`.
+	const counter = props.counter ?? null;
 
 	if (frame < timing.objection.endFrame) {
+		// No overlay of any kind here, deliberately — frame 0 is the
+		// objection ALONE, still, centred, nothing else on screen (see this
+		// component's doc comment above and
+		// `__tests__/objection-timing.test.ts`'s "opening branch" guard). See
+		// the reply-line branches below.
 		return <ObjectionLine text={props.objection} author={props.author} />;
 	}
 
 	const [firstReplyLine] = timing.replyLines;
 	if (frame < firstReplyLine.endFrame) {
-		return <PayoffLine text={gate.replyLines[0]} />;
+		return (
+			<>
+				<PayoffLine text={gate.replyLines[0]} />
+				<ReadThroughCounter label={counter} />
+			</>
+		);
 	}
 
-	return <PayoffLine text={gate.replyLines[1]} />;
+	return (
+		<>
+			<PayoffLine text={gate.replyLines[1]} />
+			<ReadThroughCounter label={counter} />
+		</>
+	);
 };
 
 /**
