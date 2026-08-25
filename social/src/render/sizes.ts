@@ -14,8 +14,9 @@ export type SizeName = keyof typeof SIZES;
 /**
  * The output image format for a given render size.
  *
- * Implemented in T04.
+ * Instagram's feed endpoint only accepts JPEG (and must stay <=8MB); every
+ * other target (the 1080x1920 story/video frame) is PNG.
  */
 export function formatForSize(size: SizeName): 'png' | 'jpeg' {
-	throw new Error('not implemented');
+	return size === 'igFeed' ? 'jpeg' : 'png';
 }
