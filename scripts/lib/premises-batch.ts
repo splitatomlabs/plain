@@ -29,6 +29,7 @@ import {
   parseWallRubricResponse,
   parseQuestionRubricResponse,
   parseObjectionRubricResponse,
+  checkFaithfulness,
   type WallRubricResult,
   type QuestionRubricResult,
   type ObjectionRubricResult,
@@ -113,6 +114,47 @@ function assertWithinSurvivorCeiling(count: number, ceiling: number, format: str
         `Only gate survivors should ever reach this function, never the raw corpus.`,
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// T09: Faithfulness enforcement — THE CENTRAL SAFETY PROPERTY. "Every word
+// on screen must be traceable to plain_english or original_excerpt. Enforce
+// mechanically." T07's `checkFaithfulness` (./premises-scoring.ts) does the
+// mechanical check; this module is responsible for actually CALLING it on
+// every piece of on-screen text before an entry is admitted to a format's
+// scored pool, for all three formats — Wall's chosen_landing_line, Question's
+// question+answer, Objection's quoted objection+reply. A failure is DROPPED,
+// never repaired (the plan says reject, not repair), with a logged reason
+// naming the card id and the specific offending field, and is counted
+// separately from generic batch failures so a nonzero count is a visible
+// signal for T11's report, not a silent drop folded into `batchStats.failed`.
+// ---------------------------------------------------------------------------
+
+/** Faithfulness-check rejections, counted separately from `batchStats.failed` (./claude.ts) — see the block comment above. */
+export const faithfulnessStats = {
+  rejected: 0,
+};
+
+/**
+ * Run T07's `checkFaithfulness` against `text` for the on-screen field named
+ * `field` on card `cardId`. Returns `true` (admit) or `false` (drop) and, on
+ * failure, logs a warning naming both the card id and the field, and
+ * increments `faithfulnessStats.rejected`.
+ */
+function assertFaithful(
+  format: string,
+  cardId: string,
+  field: string,
+  text: string,
+  card: Pick<Card, "plain_english" | "original_excerpt">,
+): boolean {
+  const result = checkFaithfulness(text, card);
+  if (result.faithful) return true;
+  faithfulnessStats.rejected++;
+  logger.warn(
+    `premises-batch: ${format} — ${cardId} failed faithfulness check on "${field}": ${result.reason} — dropped`,
+  );
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -296,11 +338,15 @@ export type ScoredQuestionEntry = QuestionEntry & {
 export type ScoredObjectionEntry = ObjectionEntry & { rubric: ObjectionRubricResult };
 
 /**
- * Score The Wall's gate survivors (`rankWall` output). Also defends against
- * a hallucinated `chosen_landing_line` — one that isn't verbatim among the
- * candidates `buildWallRubricUser` actually offered the model — by dropping
- * (with a logged reason) any response whose chosen line isn't found in
- * `findLandingLines(card)` for that card.
+ * Score The Wall's gate survivors (`rankWall` output). Two independent
+ * defenses against a hallucinated `chosen_landing_line`, both drops with a
+ * logged reason: (1) T09's `checkFaithfulness` — the line must be an exact
+ * substring of `plain_english` or `original_excerpt`; (2) Wall's own
+ * multiple-choice invariant — the line must additionally be verbatim among
+ * the candidates `buildWallRubricUser` actually offered the model
+ * (`findLandingLines(card)`), which is strictly narrower than (1) alone
+ * (e.g. it also enforces the landing-line word-count/self-containment
+ * bounds a merely-faithful substring wouldn't).
  */
 export async function scoreWallSurvivors(
   entries: RankedWallEntry[],
@@ -315,6 +361,11 @@ export async function scoreWallSurvivors(
   for (const { meta, parsed } of results) {
     const card = cardsById.get(meta.card_id);
     if (!card) continue; // unreachable — buildWallRequests already required this card to exist
+
+    if (!assertFaithful("wall", meta.card_id, "chosen_landing_line", parsed.chosen_landing_line, card)) {
+      continue;
+    }
+
     const candidates = findLandingLines(card);
     if (!candidates.includes(parsed.chosen_landing_line)) {
       logger.warn(
@@ -327,18 +378,35 @@ export async function scoreWallSurvivors(
   return scored;
 }
 
-/** Score The Question's gate survivors (`questionGate` output) for topic drift (T04 layer (c)). */
+/**
+ * Score The Question's gate survivors (`questionGate` output) for topic
+ * drift (T04 layer (c)). `cards` is required (not just `entries`) so every
+ * survivor's on-screen `question` and `answer` — both mechanically extracted
+ * from `plain_english` by `questionGate`, not authored by the LLM rubric,
+ * but audited here anyway per T09's own instruction to check every on-screen
+ * field before admission — can be faithfulness-checked against their source
+ * card before being admitted to the scored pool.
+ */
 export async function scoreQuestionSurvivors(
   entries: QuestionEntry[],
+  cards: Card[],
 ): Promise<ScoredQuestionEntry[]> {
   assertWithinSurvivorCeiling(entries.length, QUESTION_SURVIVOR_CEILING, "Question");
+  const cardsById = new Map(cards.map((c) => [c.id, c]));
   const built = buildQuestionRequests(entries);
   const results = await submitAndCollect(built, "question", parseQuestionRubricResponse);
-  return results.map(({ meta, parsed }) => ({
-    ...meta,
-    drift_verdict: parsed.verdict,
-    drift_reason: parsed.reason,
-  }));
+
+  const scored: ScoredQuestionEntry[] = [];
+  for (const { meta, parsed } of results) {
+    const card = cardsById.get(meta.card_id);
+    if (!card) continue; // no source card supplied for this survivor — can't verify faithfulness, so don't admit it
+
+    if (!assertFaithful("question", meta.card_id, "question", meta.question, card)) continue;
+    if (!assertFaithful("question", meta.card_id, "answer", meta.answer, card)) continue;
+
+    scored.push({ ...meta, drift_verdict: parsed.verdict, drift_reason: parsed.reason });
+  }
+  return scored;
 }
 
 /** Score The Objection's gate survivors (`objectionGate` output). */
@@ -350,7 +418,18 @@ export async function scoreObjectionSurvivors(
   const cardsById = new Map(cards.map((c) => [c.id, c]));
   const built = buildObjectionRequests(entries, cardsById);
   const results = await submitAndCollect(built, "objection", parseObjectionRubricResponse);
-  return results.map(({ meta, parsed }) => ({ ...meta, rubric: parsed }));
+
+  const scored: ScoredObjectionEntry[] = [];
+  for (const { meta, parsed } of results) {
+    const card = cardsById.get(meta.card_id);
+    if (!card) continue; // unreachable — buildObjectionRequests already required this card to exist
+
+    if (!assertFaithful("objection", meta.card_id, "objection", meta.objection, card)) continue;
+    if (!assertFaithful("objection", meta.card_id, "reply", meta.reply, card)) continue;
+
+    scored.push({ ...meta, rubric: parsed });
+  }
+  return scored;
 }
 
 // ---------------------------------------------------------------------------

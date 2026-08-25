@@ -27,6 +27,7 @@ import {
   scoreQuestionSurvivors,
   scoreObjectionSurvivors,
   MAX_REQUESTS_PER_BATCH,
+  faithfulnessStats,
 } from "../premises-batch.js";
 import { loadCorpus, rankWall, questionGate, objectionGate, type QuestionEntry, type RankedWallEntry, type ObjectionEntry } from "../premises.js";
 import { logger } from "../logger.js";
@@ -92,6 +93,7 @@ beforeEach(() => {
   tokenUsage.outputTokens = 0;
   tokenUsage.cacheReadTokens = 0;
   tokenUsage.cacheCreationTokens = 0;
+  faithfulnessStats.rejected = 0;
 });
 
 // ---------------------------------------------------------------------------
@@ -251,12 +253,13 @@ describe("scoreQuestionSurvivors", () => {
       asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "It resolves the question." })]),
     );
 
-    const scored = await scoreQuestionSurvivors(entries);
+    const scored = await scoreQuestionSurvivors(entries, [card]);
 
     expect(scored).toHaveLength(1);
     expect(scored[0].card_id).toBe("test-card-1");
     expect(scored[0].drift_verdict).toBe("answers");
     expect(scored[0].drift_reason).toBe("It resolves the question.");
+    expect(faithfulnessStats.rejected).toBe(0);
   });
 
   it("drops an errored item with a logged reason", async () => {
@@ -286,7 +289,7 @@ describe("scoreQuestionSurvivors", () => {
 
     const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
     try {
-      const scored = await scoreQuestionSurvivors(entries);
+      const scored = await scoreQuestionSurvivors(entries, [cardA, cardB]);
       expect(scored).toHaveLength(1);
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(badId));
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped"));
@@ -327,7 +330,7 @@ describe("scoreQuestionSurvivors", () => {
 
     const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
     try {
-      const scored = await scoreQuestionSurvivors(entries);
+      const scored = await scoreQuestionSurvivors(entries, [card]);
       expect(scored).toHaveLength(0);
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("failed to parse"));
     } finally {
@@ -345,7 +348,7 @@ describe("scoreQuestionSurvivors", () => {
     mockPollBatchUntilDone.mockResolvedValue({ id: "batch_full", processing_status: "ended" });
     mockStreamBatchResults.mockReturnValue(asyncIterFrom([]));
 
-    await scoreQuestionSurvivors(entries);
+    await scoreQuestionSurvivors(entries, cards);
 
     expect(mockCreateMessageBatch).toHaveBeenCalledOnce();
     const submitted = mockCreateMessageBatch.mock.calls[0][0];
@@ -361,7 +364,7 @@ describe("scoreQuestionSurvivors", () => {
       question: "Is this ok?",
       answer: "It is.",
     }));
-    await expect(scoreQuestionSurvivors(oversized)).rejects.toThrow(/ceiling/i);
+    await expect(scoreQuestionSurvivors(oversized, [])).rejects.toThrow(/ceiling/i);
     expect(mockCreateMessageBatch).not.toHaveBeenCalled();
   });
 });
@@ -397,11 +400,13 @@ describe("scoreWallSurvivors", () => {
     expect(scored).toHaveLength(1);
     expect(scored[0].rubric.chosen_landing_line).toBe(entries[0].landing_line);
     expect(tokenUsage.inputTokens).toBeGreaterThan(0);
+    expect(faithfulnessStats.rejected).toBe(0);
   });
 
-  it("drops a response whose chosen_landing_line is not among the offered candidates", async () => {
+  it("drops a response whose chosen_landing_line is faithful but not among the offered candidates", async () => {
     const cards = loadCorpus();
     const entries = rankWall(cards).slice(0, 1);
+    const card = cards.find((c) => c.id === entries[0].card_id)!;
     const built = buildWallRequests(entries, new Map(cards.map((c) => [c.id, c])));
     const customId = built[0].request.custom_id;
 
@@ -412,7 +417,12 @@ describe("scoreWallSurvivors", () => {
         makeSucceededResult(customId, {
           impenetrability_score: 4,
           landing_line_score: 5,
-          chosen_landing_line: "This line was invented and never offered as a candidate.",
+          // Real, verbatim text from the card (passes T09's faithfulness
+          // check) but drawn from original_excerpt, which is never among
+          // the plain_english landing-line candidates offered to the model
+          // — isolates Wall's SECOND, narrower defense from the faithfulness
+          // check itself.
+          chosen_landing_line: card.original_excerpt,
           reason: "n/a",
         }),
       ]),
@@ -423,6 +433,8 @@ describe("scoreWallSurvivors", () => {
       const scored = await scoreWallSurvivors(entries, cards);
       expect(scored).toHaveLength(0);
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("not among the offered candidates"));
+      // Faithful, so this drop is NOT counted as a faithfulness rejection.
+      expect(faithfulnessStats.rejected).toBe(0);
     } finally {
       warnSpy.mockRestore();
     }
@@ -470,6 +482,7 @@ describe("scoreObjectionSurvivors", () => {
     expect(scored).toHaveLength(1);
     expect(scored[0].rubric.verdict).toBe("accept");
     expect(scored[0].rubric.classification).toBe("viewer_position");
+    expect(faithfulnessStats.rejected).toBe(0);
   });
 
   it("submits exactly the gate survivor count against the real corpus, never the full corpus", async () => {
@@ -534,5 +547,309 @@ describe("orchestration batch paging", () => {
     const secondPage = mockCreateMessageBatch.mock.calls[1][0];
     expect(firstPage.length).toBe(MAX_REQUESTS_PER_BATCH);
     expect(secondPage.length).toBe(5);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T09: faithfulness enforcement — the central safety property. "Every word
+// on screen must be traceable to plain_english or original_excerpt." For
+// each format: a synthetic hallucinated response (plausible, well-formed,
+// parses cleanly, but NOT present in the source card) must be dropped and
+// counted; a near-miss (source text with exactly one word swapped) must
+// also be dropped, since a naive fuzzy check would let it through; a
+// faithful, verbatim response must be admitted.
+// ---------------------------------------------------------------------------
+describe("T09 faithfulness enforcement", () => {
+  describe("The Wall", () => {
+    it("rejects a synthetic hallucinated chosen_landing_line (acceptance test)", async () => {
+      const cards = loadCorpus();
+      const entries = rankWall(cards).slice(0, 1);
+      const card = cards.find((c) => c.id === entries[0].card_id)!;
+      const built = buildWallRequests(entries, new Map(cards.map((c) => [c.id, c])));
+      const customId = built[0].request.custom_id;
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_w_halluc" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_w_halluc", processing_status: "ended" });
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([
+          makeSucceededResult(customId, {
+            impenetrability_score: 4,
+            landing_line_score: 5,
+            // Plausible, well-formed, on-topic — and entirely invented.
+            chosen_landing_line: "Real strength comes from mastering your own reactions, not the world around you.",
+            reason: "Reads clean and self-contained.",
+          }),
+        ]),
+      );
+
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      try {
+        const scored = await scoreWallSurvivors(entries, cards);
+        expect(scored).toHaveLength(0);
+        expect(faithfulnessStats.rejected).toBe(1);
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringMatching(new RegExp(`${card.id}.*chosen_landing_line`)),
+        );
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it("rejects a near-miss with exactly one word substituted", async () => {
+      const cards = loadCorpus();
+      const entries = rankWall(cards).slice(0, 1);
+      const built = buildWallRequests(entries, new Map(cards.map((c) => [c.id, c])));
+      const customId = built[0].request.custom_id;
+
+      const nearMiss = entries[0].landing_line.replace(/[a-zA-Z]{5,}/, "flibbertigibbet");
+      expect(nearMiss).not.toBe(entries[0].landing_line);
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_w_nearmiss" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_w_nearmiss", processing_status: "ended" });
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([
+          makeSucceededResult(customId, {
+            impenetrability_score: 4,
+            landing_line_score: 5,
+            chosen_landing_line: nearMiss,
+            reason: "n/a",
+          }),
+        ]),
+      );
+
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      try {
+        const scored = await scoreWallSurvivors(entries, cards);
+        expect(scored).toHaveLength(0);
+        expect(faithfulnessStats.rejected).toBe(1);
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it("admits a faithful, verbatim chosen_landing_line (positive control)", async () => {
+      const cards = loadCorpus();
+      const entries = rankWall(cards).slice(0, 1);
+      const built = buildWallRequests(entries, new Map(cards.map((c) => [c.id, c])));
+      const customId = built[0].request.custom_id;
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_w_control" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_w_control", processing_status: "ended" });
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([
+          makeSucceededResult(customId, {
+            impenetrability_score: 4,
+            landing_line_score: 5,
+            chosen_landing_line: entries[0].landing_line,
+            reason: "n/a",
+          }),
+        ]),
+      );
+
+      const scored = await scoreWallSurvivors(entries, cards);
+      expect(scored).toHaveLength(1);
+      expect(faithfulnessStats.rejected).toBe(0);
+    });
+  });
+
+  describe("The Question", () => {
+    it("rejects a synthetic hallucinated question/answer (acceptance test)", async () => {
+      const card = makeCard({
+        id: "test-q-halluc",
+        plain_english: "Do you want a good life? Then act well. Nothing else matters.",
+      });
+      // A hand-built entry standing in for a hypothetical gate defect or a
+      // corrupted intermediate — not derived from questionGate — carrying
+      // plausible, well-formed, on-topic text that was never actually
+      // written in the card.
+      const entries: QuestionEntry[] = [
+        {
+          card_id: card.id,
+          book_slug: card.book_slug,
+          author_slug: card.author_slug,
+          question: "Do you know what truly matters in your own life?",
+          answer: "Only your own choices determine whether you live well.",
+        },
+      ];
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_halluc" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_halluc", processing_status: "ended" });
+      const requests = buildQuestionRequests(entries);
+      const customId = requests[0].request.custom_id;
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "It resolves the question." })]),
+      );
+
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      try {
+        const scored = await scoreQuestionSurvivors(entries, [card]);
+        expect(scored).toHaveLength(0);
+        expect(faithfulnessStats.rejected).toBeGreaterThan(0);
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"question"`)));
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it("rejects a near-miss answer with exactly one word substituted", async () => {
+      const card = makeCard({
+        id: "test-q-nearmiss",
+        plain_english: "Do you want a good life? Then act well. Nothing else matters.",
+      });
+      const gated = questionGate([card]);
+      expect(gated).toHaveLength(1);
+
+      const nearMissAnswer = gated[0].answer.replace(/[a-zA-Z]{4,}/, "flibbertigibbet");
+      expect(nearMissAnswer).not.toBe(gated[0].answer);
+      const entries: QuestionEntry[] = [{ ...gated[0], answer: nearMissAnswer }];
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_nearmiss" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_nearmiss", processing_status: "ended" });
+      const requests = buildQuestionRequests(entries);
+      const customId = requests[0].request.custom_id;
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "n/a" })]),
+      );
+
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      try {
+        const scored = await scoreQuestionSurvivors(entries, [card]);
+        expect(scored).toHaveLength(0);
+        expect(faithfulnessStats.rejected).toBe(1);
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"answer"`)));
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it("admits a faithful question/answer pair (positive control)", async () => {
+      const card = makeCard({
+        id: "test-q-control",
+        plain_english: "Do you want a good life? Then act well. Nothing else matters.",
+      });
+      const entries = questionGate([card]);
+      expect(entries).toHaveLength(1);
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_control" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_control", processing_status: "ended" });
+      const requests = buildQuestionRequests(entries);
+      const customId = requests[0].request.custom_id;
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "n/a" })]),
+      );
+
+      const scored = await scoreQuestionSurvivors(entries, [card]);
+      expect(scored).toHaveLength(1);
+      expect(faithfulnessStats.rejected).toBe(0);
+    });
+  });
+
+  describe("The Objection", () => {
+    it("rejects a synthetic hallucinated objection/reply (acceptance test)", async () => {
+      const card = makeCard({
+        id: "test-obj-halluc",
+        plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.',
+      });
+      // A hand-built entry, not derived from objectionGate, carrying
+      // plausible, well-formed, on-topic text that was never actually
+      // written in the card.
+      const entries: ObjectionEntry[] = [
+        {
+          card_id: card.id,
+          book_slug: card.book_slug,
+          author_slug: card.author_slug,
+          objection: "But why should nobody ever listen to reason around here?",
+          reply: "Because reason alone rarely changes a stubborn mind.",
+        },
+      ];
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_obj_halluc" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_obj_halluc", processing_status: "ended" });
+      const built = buildObjectionRequests(entries, new Map([[card.id, card]]));
+      const customId = built[0].request.custom_id;
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([
+          makeSucceededResult(customId, {
+            verdict: "accept",
+            classification: "viewer_position",
+            reason: "n/a",
+          }),
+        ]),
+      );
+
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      try {
+        const scored = await scoreObjectionSurvivors(entries, [card]);
+        expect(scored).toHaveLength(0);
+        expect(faithfulnessStats.rejected).toBeGreaterThan(0);
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"objection"`)));
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it("rejects a near-miss objection with exactly one word substituted", async () => {
+      const card = makeCard({
+        id: "test-obj-nearmiss",
+        plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.',
+      });
+      const gated = objectionGate([card]);
+      expect(gated).toHaveLength(1);
+
+      const nearMissObjection = gated[0].objection.replace(/[a-zA-Z]{5,}/, "flibbertigibbet");
+      expect(nearMissObjection).not.toBe(gated[0].objection);
+      const entries: ObjectionEntry[] = [{ ...gated[0], objection: nearMissObjection }];
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_obj_nearmiss" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_obj_nearmiss", processing_status: "ended" });
+      const built = buildObjectionRequests(entries, new Map([[card.id, card]]));
+      const customId = built[0].request.custom_id;
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([
+          makeSucceededResult(customId, {
+            verdict: "accept",
+            classification: "viewer_position",
+            reason: "n/a",
+          }),
+        ]),
+      );
+
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      try {
+        const scored = await scoreObjectionSurvivors(entries, [card]);
+        expect(scored).toHaveLength(0);
+        expect(faithfulnessStats.rejected).toBe(1);
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"objection"`)));
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it("admits a faithful objection/reply pair (positive control)", async () => {
+      const card = makeCard({
+        id: "test-obj-control",
+        plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.',
+      });
+      const entries = objectionGate([card]);
+      expect(entries).toHaveLength(1);
+
+      mockCreateMessageBatch.mockResolvedValue({ id: "batch_obj_control" });
+      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_obj_control", processing_status: "ended" });
+      const built = buildObjectionRequests(entries, new Map([[card.id, card]]));
+      const customId = built[0].request.custom_id;
+      mockStreamBatchResults.mockReturnValue(
+        asyncIterFrom([
+          makeSucceededResult(customId, {
+            verdict: "accept",
+            classification: "viewer_position",
+            reason: "n/a",
+          }),
+        ]),
+      );
+
+      const scored = await scoreObjectionSurvivors(entries, [card]);
+      expect(scored).toHaveLength(1);
+      expect(faithfulnessStats.rejected).toBe(0);
+    });
   });
 });

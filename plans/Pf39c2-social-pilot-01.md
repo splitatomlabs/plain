@@ -585,8 +585,47 @@ daily job makes no LLM call at post time.
   scripts/lib/__tests__/premises-batch.test.ts` — 22/22 green. `npx vitest run` (full pipeline suite) — 556/556 green
   (534 baseline + 22 new), confirming no regression to T01-T07a, `logger.test.ts`, `claude.test.ts`, or
   `translateBatch.test.ts`.
-- [ ] T09: Implement the faithfulness check — reject any output whose on-screen text is not a faithful subset of its
+- [x] T09: Implement the faithfulness check — reject any output whose on-screen text is not a faithful subset of its
   source card. Acceptance: a synthetic hallucinated response is rejected in tests.
+  **Enforcement, not a second implementation.** T07's `checkFaithfulness` (`premises-scoring.ts`) already existed and
+  was unit-tested; this task's job was wiring it into every merge step in `premises-batch.ts` so a hallucinated
+  response can never reach a committed pool, plus a run-stats counter and end-to-end tests.
+  **Audit — which on-screen fields were already covered vs. newly wired:**
+  - Wall: `chosen_landing_line` (LLM rubric output) was ALREADY defended, but only by Wall's own narrower "must be
+    among the offered `findLandingLines(card)` candidates" check, not by `checkFaithfulness` itself. Added an
+    explicit `checkFaithfulness` call BEFORE that check, so a hallucinated line is now rejected by the general
+    faithfulness constraint first; the narrower candidate-membership check is retained as a second, Wall-specific
+    defense (it also catches a real substring — e.g. drawn from `original_excerpt` — that's faithful but was never
+    actually offered as a landing-line option). `original_excerpt` itself (phase 1 on screen) was never at risk — it's
+    read straight off the card, never LLM output.
+  - Question: `question`/`answer` were UNCHECKED. Both are mechanically extracted from `plain_english` by
+    `questionGate` (not authored by the LLM rubric, which returns only `verdict`/`reason`), and a corpus-wide check
+    confirmed 0/89 real survivors currently fail faithfulness — but nothing enforced that invariant at the merge
+    step, so a future gate defect or corrupted intermediate could ship unfaithful text undetected. Added
+    `checkFaithfulness` on both fields in `scoreQuestionSurvivors`'s merge loop; changed its signature to
+    `(entries, cards: Card[])` (previously `entries` only) so it can look up each survivor's source card — the only
+    call sites were this file's own tests, all updated.
+  - Objection: `objection` (the quoted line) and `reply` (the author's answer, per `ObjectionEntry`'s own doc comment:
+    "exists here for T08/rendering to use once a candidate is accepted") were both UNCHECKED. Same corpus-wide result
+    (0/59 failures today). Added `checkFaithfulness` on both fields in `scoreObjectionSurvivors`'s merge loop. An
+    empty `reply` (2/78 raw candidates per T07a's own measurement) passes trivially — `verbatim("", source)` is
+    vacuously true — matching `ObjectionEntry`'s documented contract that an empty reply is valid, not a defect.
+  **Reject, never repair**, per the task's own instruction: every faithfulness failure `continue`s past that entry in
+  the merge loop rather than attempting any fallback/substitution.
+  **Counted separately:** added `export const faithfulnessStats = { rejected: number }` (`premises-batch.ts`) —
+  incremented by a new `assertFaithful(format, cardId, field, text, card)` helper shared across all three merge
+  steps, so T11's report can surface a nonzero faithfulness-rejection count as its own signal rather than folding it
+  into `batchStats.failed` (generic batch/parse failures, in `claude.ts`). Every rejection logs via `logger.warn`,
+  naming both the card id and the specific field (`... failed faithfulness check on "field": reason — dropped`).
+  **Tests** (`premises-batch.test.ts`, new `describe("T09 faithfulness enforcement")` block, 9 new tests): for EACH of
+  the three formats — a synthetic hallucinated response (plausible, well-formed, parses cleanly, not present in the
+  source card) is rejected and counted (the acceptance criterion); a near-miss (source text with exactly one word
+  swapped for a nonsense token) is also rejected — the case a substring/fuzzy check would let through; a faithful,
+  verbatim response is admitted and increments nothing. Also updated the pre-existing Wall "not among offered
+  candidates" test to use genuinely faithful-but-uncatalogued text (`original_excerpt`) instead of wholly invented
+  text, so it still isolates that SECOND defense now that `checkFaithfulness` runs first and would otherwise catch
+  the old invented-text fixture before the candidate-membership check ever ran. `npx vitest run` — 567/567 green (558
+  baseline + 9 new).
 - [ ] T10: Build `scripts/score-premises.ts` with `--format <wall|question|objection|still|all>`, `--dry-run`,
   `--limit`, `--verbose`. Acceptance: `--dry-run --limit 5` runs without an API key.
 - [ ] T11: Run scoring for real; commit the pools. Acceptance: each pool covers 4 weeks; 10 per format spot-checked
