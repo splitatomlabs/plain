@@ -704,7 +704,7 @@ daily job makes no LLM call at post time.
   `scoreObjectionSurvivors` for real through this CLI and should sanity-check the written `<output>/<format>.json`
   shapes and the printed score-distribution/author-mix/faithfulness-rejection report against real API output before
   committing the pools.
-- [ ] T11: Run scoring for real; commit the pools. Acceptance: each pool covers 4 weeks; 10 per format spot-checked
+- [x] T11: Run scoring for real; commit the pools. Acceptance: each pool covers 4 weeks; 10 per format spot-checked
   by hand; count and score distribution reported.
 - [x] T12: Implement the WEEKLY schedule generator — `content/social/pilot-schedule-wNN.json`, 7 days x 2 posts,
   format mix as a weighting argument, deterministic from a seed. Must read all prior weeks and never reuse a card.
@@ -1277,3 +1277,11 @@ the next-ranked passage — Book 2 carries disproportionately recognisable mater
   `--dry-run`, which never calls `writePoolFile` at all). `npm test` — **757 pipeline tests** (724 baseline + 33
   new: 25 pool-file.test.ts + 8 schedule.test.ts) + **95 web unit tests**, all green, confirming no regression to
   T01-T18 or any other consumer.
+
+- [ ] T20: Relax the rubric parsers' unknown-field rejection. The T11 full run lost 107 of 1,003 Wall responses
+  (10.7%) to `rejectUnknownFields` — the model returned valid scores plus an additive commentary field
+  (`impenetrability_score_reason`, `landing_line_score_note`, `impenetrability_score_explanation`). Ignore
+  additive unknown fields while still requiring the known set and validating types; cross-format discrimination
+  still works because a wrong-format payload lacks the REQUIRED fields. Also tighten the prompt to discourage
+  extra fields. Acceptance: a response with an extra commentary field parses; a Question-shaped payload is still
+  rejected by the Wall parser; T06 tests stay green.

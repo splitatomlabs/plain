@@ -1,0 +1,3666 @@
+{
+  "meta": {
+    "submitted": 731,
+    "succeeded": 731,
+    "dropped": 0,
+    "limited": false,
+    "generated_at": "2026-08-25T08:12:38.945Z"
+  },
+  "entries": [
+    {
+      "card_id": "discourses-49-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-49-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-49-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-49-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-49-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-49-010",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-49-011",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-45-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-45-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-45-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-009",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-011",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-012",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-013",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-014",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-017",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-018",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-53-019",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-62-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-62-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-62-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-64-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-64-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-05-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-009",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-010",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-011",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-57-012",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-58-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-58-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-58-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-13-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-13-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-13-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-47-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-02-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-02-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-09-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-21-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-21-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-25-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-25-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-25-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-25-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-32-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-23-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-23-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-23-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-12-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-12-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-12-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-33-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-33-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-33-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-33-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-14-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-14-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-16-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-39-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-39-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-39-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-39-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-39-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-39-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-44-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-44-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-44-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-08-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-08-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-08-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-08-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-27-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-38-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-38-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-34-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-34-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-22-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-22-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-22-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-04-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-04-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-06-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-06-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-01-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-01-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-01-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-28-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-28-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-28-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-28-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-28-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-63-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-63-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-63-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-18-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-18-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-18-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-18-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-18-009",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-59-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-59-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-59-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-59-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-35-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-36-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-36-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-36-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-36-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-36-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-36-012",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-15-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-15-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-15-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-19-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-19-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-19-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-19-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-19-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-19-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-37-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-31-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-31-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-31-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-31-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-31-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-31-009",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-17-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-17-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-17-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-11-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-11-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-010",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-012",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-013",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-50-017",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-48-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-48-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-48-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-48-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-48-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-24-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-24-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-43-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-43-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-43-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-43-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-29-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-30-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-42-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-42-010",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-56-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-56-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-56-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-56-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-56-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-56-009",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-51-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-51-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-52-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-52-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-52-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-40-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-40-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-46-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-46-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-26-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-26-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-26-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-61-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-61-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "discourses-55-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-01-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-01-002",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-02-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-04-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-06-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-07-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-08-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-11-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-15-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-17-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-24-002",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-24-003",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-26-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-27-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-29-002",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-30-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-33-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-33-002",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-33-004",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-34-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-40-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-45-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-46-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-47-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-48-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-50-002",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-50-003",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "enchiridion-51-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus"
+    },
+    {
+      "card_id": "happy-life-01-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-01-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-03-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-04-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-05-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-06-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-07-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-08-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-08-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-08-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-09-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-09-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-10-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-10-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-13-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-14-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-14-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-15-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-15-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-16-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-16-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-17-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-18-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-18-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-19-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-20-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-20-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-23-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-23-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-24-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-24-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-25-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-26-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-26-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-26-008",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-27-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-27-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-27-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "happy-life-28-001",
+      "book_slug": "happy-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "meditations-01-003",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-006",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-015",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-016",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-018",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-019",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-026",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-027",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-028",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-01-030",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-001",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-003",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-004",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-006",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-010",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-013",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-015",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-016",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-019",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-02-020",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-009",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-011",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-012",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-013",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-016",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-019",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-020",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-021",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-022",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-03-027",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-004",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-007",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-009",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-010",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-011",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-012",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-014",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-015",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-016",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-018",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-022",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-024",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-028",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-031",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-032",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-034",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-035",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-036",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-037",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-039",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-040",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-041",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-042",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-044",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-050",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-051",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-052",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-053",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-04-054",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-004",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-008",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-010",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-019",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-021",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-022",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-024",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-027",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-028",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-029",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-030",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-032",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-033",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-035",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-036",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-037",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-038",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-040",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-041",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-043",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-044",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-046",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-047",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-049",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-051",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-05-052",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-001",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-003",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-004",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-007",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-008",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-013",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-014",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-015",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-019",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-020",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-024",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-029",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-031",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-032",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-033",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-034",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-035",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-038",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-040",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-043",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-044",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-048",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-049",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-050",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-055",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-056",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-059",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-060",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-062",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-06-063",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-001",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-003",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-006",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-007",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-008",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-009",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-011",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-013",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-016",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-017",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-020",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-021",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-023",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-024",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-029",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-031",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-035",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-038",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-043",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-049",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-055",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-07-058",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-006",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-007",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-009",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-010",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-011",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-012",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-014",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-019",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-021",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-026",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-028",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-031",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-033",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-034",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-036",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-039",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-040",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-041",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-044",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-046",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-047",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-049",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-050",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-052",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-054",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-056",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-057",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-059",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-060",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-062",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-065",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-066",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-08-067",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-001",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-008",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-010",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-011",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-012",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-013",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-015",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-016",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-017",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-019",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-020",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-023",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-024",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-027",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-029",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-030",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-031",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-033",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-034",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-036",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-037",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-038",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-043",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-044",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-046",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-048",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-09-060",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-006",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-009",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-011",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-012",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-013",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-022",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-024",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-026",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-029",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-030",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-032",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-034",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-038",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-039",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-042",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-043",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-044",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-048",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-049",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-051",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-053",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-10-054",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-001",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-006",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-007",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-010",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-013",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-014",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-017",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-020",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-022",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-023",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-026",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-029",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-035",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-037",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-039",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-040",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-043",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-044",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-11-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-002",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-009",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-011",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-020",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-021",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-023",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-026",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-030",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-032",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-033",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-037",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-038",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-039",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-040",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "meditations-12-041",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius"
+    },
+    {
+      "card_id": "on-anger-01-001",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-003",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-009",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-010",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-011",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-014",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-015",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-018",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-024",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-025",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-026",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-030",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-032",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-033",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-034",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-036",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-040",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-041",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-044",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-045",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-049",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-053",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-054",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-055",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-056",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-057",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-059",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-061",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-062",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-063",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-066",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-01-067",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-001",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-004",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-008",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-009",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-017",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-018",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-019",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-022",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-027",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-028",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-033",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-034",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-035",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-038",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-039",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-042",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-044",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-045",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-046",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-048",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-049",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-052",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-054",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-058",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-059",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-060",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-061",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-064",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-066",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-069",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-070",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-071",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-073",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-074",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-075",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-076",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-079",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-080",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-081",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-084",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-086",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-087",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-092",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-095",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-101",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-02-103",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-003",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-005",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-006",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-007",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-013",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-015",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-017",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-026",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-030",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-032",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-036",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-038",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-039",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-041",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-043",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-045",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-047",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-048",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-055",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-057",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-058",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-059",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-060",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-061",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-065",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-067",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-068",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-073",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-075",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-078",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-079",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-084",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-089",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-092",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-095",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-096",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-097",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-102",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-104",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-105",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-107",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-108",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-109",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-110",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-113",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-116",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-117",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-119",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "on-anger-03-120",
+      "book_slug": "on-anger",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-01-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-01-005",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-01-006",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-01-009",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-02-002",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-02-004",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-03-004",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-03-006",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-04-001",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-04-002",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-04-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-04-005",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-06-001",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-06-002",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-07-001",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-07-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-08-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-08-004",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-09-002",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-10-001",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-10-005",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-11-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-11-004",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-11-005",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-11-007",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-11-008",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-14-001",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-14-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-14-005",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-14-006",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-16-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-17-003",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-17-004",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "peace-of-mind-17-005",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-01-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-01-002",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-02-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-02-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-02-004",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-02-005",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-04-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-06-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-07-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-07-004",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-07-006",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-08-002",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-08-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-08-004",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-09-002",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-10-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-10-005",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-11-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-12-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-12-002",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-12-009",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-14-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-14-002",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-14-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-16-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-17-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-17-002",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-17-004",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-18-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-19-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-19-002",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-19-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-20-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    },
+    {
+      "card_id": "shortness-of-life-20-005",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca"
+    }
+  ]
+}
