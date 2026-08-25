@@ -10,7 +10,7 @@ class PipelineLogger {
   private fileHandle: FileHandle | null = null;
   private verbose = false;
 
-  async init(bookSlug: string, verbose: boolean): Promise<void> {
+  async init(bookSlug: string, verbose: boolean, fileName = "pipeline.log"): Promise<void> {
     // Close any previously open handle
     await this.close();
 
@@ -19,7 +19,7 @@ class PipelineLogger {
     const dir = path.join(process.cwd(), "content", "pipeline", bookSlug);
     await mkdir(dir, { recursive: true });
 
-    const logPath = path.join(dir, "pipeline.log");
+    const logPath = path.join(dir, fileName);
 
     // Truncate to last MAX_LOG_BYTES if the file is too large
     await this.truncateIfNeeded(logPath);

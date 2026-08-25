@@ -178,6 +178,14 @@ export interface BatchRequest {
   custom_id: string;
   model?: string;
   system?: string;
+  /**
+   * When true, emits `system` as the array-with-`cache_control` form
+   * (mirroring the real-time path in `callClaudeAPI`) instead of a plain
+   * string, marking it as an ephemeral prompt-cache breakpoint. Optional
+   * and defaults to false so existing callers that pass `system` as a
+   * plain string are unaffected.
+   */
+  cache_system?: boolean;
   messages: Array<{ role: "user" | "assistant"; content: string }>;
   max_tokens?: number;
 }
@@ -199,12 +207,23 @@ export async function createMessageBatch(
   const client = getClient();
   const sdkRequests = requests.map((r) => {
     const modelId = API_MODEL_MAP[r.model ?? "sonnet"] ?? r.model ?? API_MODEL_MAP["sonnet"];
+    const system = r.system
+      ? r.cache_system
+        ? [
+            {
+              type: "text" as const,
+              text: r.system,
+              cache_control: { type: "ephemeral" as const },
+            },
+          ]
+        : r.system
+      : undefined;
     return {
       custom_id: r.custom_id,
       params: {
         model: modelId,
         max_tokens: r.max_tokens ?? 4096,
-        ...(r.system ? { system: r.system } : {}),
+        ...(system ? { system } : {}),
         messages: r.messages,
       },
     };

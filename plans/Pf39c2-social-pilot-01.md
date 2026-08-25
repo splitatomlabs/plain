@@ -500,7 +500,7 @@ daily job makes no LLM call at post time.
   asserted as an accept) and direct tests for `isOpenerOnly` and the corpus-wide "no survivor is opener-only or
   exclamation-shaped" invariant. `npx vitest run` (full pipeline suite) — 534/534 green, confirming no regression to
   T01-T07 or any other consumer.
-- [ ] T08: Implement batch orchestration — chunk, submit, poll, stream, merge. Only T01/T02 survivors are sent. Log
+- [x] T08: Implement batch orchestration — chunk, submit, poll, stream, merge. Only T01/T02 survivors are sent. Log
   to `content/pipeline/social/premises.log` via the existing `logger`. Acceptance: `--dry-run` prints request counts
   with no API key set.
   **Resolved by T07a:** the Objection's own mechanical gate (`objectionGate` in `premises.ts`) is now built — 59 raw
@@ -508,6 +508,83 @@ daily job makes no LLM call at post time.
   marcus-aurelius 3; was 78 before the floor). T08 can submit `objectionGate(loadCorpus())` entries directly against
   `buildObjectionRubricSystem`/`buildObjectionRubricUser`, the same way it submits `wallGate`/`questionGate`
   survivors for the other two formats.
+  **Note:** Added `scripts/lib/premises-batch.ts`, mirroring `translateChunksBatch`'s (`translator.ts`) structure —
+  build requests via T07's builders -> `createMessageBatch` -> `pollBatchUntilDone` -> `streamBatchResults` -> merge —
+  while calling only T07's prompt builders/parsers, never re-implementing prompting or parsing (gate code stays in
+  `premises.ts`, scoring code stays in `premises-scoring.ts`, orchestration lives here, per the plan's own file-layout
+  instruction). Three entry points, one per format: `scoreWallSurvivors(entries: RankedWallEntry[], cards: Card[])`,
+  `scoreQuestionSurvivors(entries: QuestionEntry[])`, `scoreObjectionSurvivors(entries: ObjectionEntry[], cards: Card[])`
+  — each takes the ALREADY-GATED survivor pool (never `loadCorpus()`'s raw output) plus whatever `Card[]` lookup
+  context its own rubric's user-message builder needs (Wall/Objection need the full card for
+  `original_excerpt`/`plain_english`; Question doesn't, since `buildQuestionRubricUser` takes T04's own
+  `QuestionDriftRequest` shape directly). **"Only survivors are sent" is enforced two ways, not just documented:**
+  (1) type-level — `RankedWallEntry`/`QuestionEntry`/`ObjectionEntry` are structurally incompatible with `Card`
+  (missing `landing_line`/`question`/`objection` etc.), so passing `loadCorpus()` itself as `entries` fails to
+  compile; (2) a runtime trip-wire, `assertWithinSurvivorCeiling` — per-format ceilings (Wall 1,100, Question 150,
+  Objection 100) set with generous headroom above this file's own measured gate sizes but strictly below the full
+  corpus (1,615), so a caller that accidentally passes an un-gated list throws immediately instead of silently
+  submitting (and paying for) an LLM call on every card in the app; unit-tested for all three formats. A corpus-level
+  test for Question and Objection also asserts the exact submitted count equals `questionGate`/`objectionGate`'s own
+  count (89 / 59) and is strictly less than `loadCorpus().length` (1,615) — the literal acceptance wording ("never
+  submit the raw 1,615") pinned as a test, not just a design note.
+  **Cache-control — fix pass (post-review):** the original note here observed, correctly, that `translator.ts`'s batch
+  function doesn't set `cache_control` and concluded this file should match that pattern. That conclusion was wrong:
+  the plan asks for the rubric system prompt to be "cached per author," and `sortByAuthor` grouping alone reuses a
+  byte-identical string but never actually establishes a cache breakpoint on the Batch API path — `claude.ts`'s
+  real-time path (`callClaudeAPI`) has always set `cache_control: { type: "ephemeral" }` on its system block; the
+  batch path just never grew the same capability, because `BatchRequest.system` (`claude.ts`) was typed as a plain
+  string and `createMessageBatch` passed it straight through with no wrapper. Fixed by adding an optional
+  `cache_system?: boolean` field to `BatchRequest`: when set, `createMessageBatch` emits `system` as the
+  array-with-`cache_control` form (mirroring the real-time path); when absent, it emits the original plain string,
+  so `translator.ts`/`refine.ts` (neither of which sets the new flag) are unaffected. All three rubric request
+  builders here (`buildWallRequests`/`buildQuestionRequests`/`buildObjectionRequests`) now set `cache_system: true`,
+  so — combined with `sortByAuthor`'s grouping — Wall's ~1,003 requests actually share a server-side cache across
+  the ~3 per-author system prompts instead of each paying full input price. New tests: `createMessageBatch` emits the
+  plain-string form when `cache_system` is absent (protecting `translator.ts`/`refine.ts`) and the `cache_control`
+  array form when present (`scripts/lib/__tests__/batch.test.ts`); all three rubric builders assert
+  `request.cache_system === true` (`scripts/lib/__tests__/premises-batch.test.ts`). `npx vitest run` — 558/558 green
+  (556 baseline + 2 new).
+  **Chunking:** `chunkArray<T>(items, size)` is a small generic helper; orchestration pages every format's requests at
+  `MAX_REQUESTS_PER_BATCH = 500` — well under the Batch API's own 100,000-request ceiling, chosen so a single batch
+  failure only costs re-submitting one page (relevant mainly to the ~1,003-entry Wall pool; Question/Objection are
+  single-page today at 89/59). Unit-tested at the exact boundary (`chunkArray([1,2,3,4,5], 2)` -> `[[1,2],[3,4],[5]]`)
+  and at the orchestration level (a synthetic 505-entry Wall pool produces two `createMessageBatch` calls of 500 and 5).
+  **Failure handling deliberately does NOT retry** (unlike `translateChunksBatch`'s real-time-API retry-then-throw):
+  the task's own wording is "drop failures with a logged reason," and a dropped premise candidate just means one fewer
+  post-worthy card in a pool of hundreds, not a missing card in a shipped book — flagged here in case T11 (the real
+  scoring run) decides a retry is worth adding later. Every drop path (`errored` result, missing text block, JSON
+  parse/validation failure) logs via `logger.warn` with the `custom_id` and a reason, and — Wall only — a response
+  whose `chosen_landing_line` isn't verbatim among the candidates `buildWallRubricUser` actually offered
+  (`findLandingLines(card)`) is also dropped with a logged reason, defending against a hallucinated line the T09
+  faithfulness check (not yet built) would otherwise have to catch alone.
+  **`logger` — one small, behavior-preserving change:** `PipelineLogger.init` (`logger.ts`) gained an optional third
+  `fileName` parameter (default `"pipeline.log"`, unchanged for every existing caller) so this module's log can live at
+  `content/pipeline/social/premises.log` instead of colliding with `generate.ts`'s own per-book
+  `content/pipeline/<book>/pipeline.log` convention; `logger.test.ts` (12 tests, none touching the new parameter) is
+  untouched and still green. This module only ever calls `logger.info`/`.warn` — never `.init`/`.close` — so a future
+  CLI (T10) owns calling `logger.init("social", verbose, "premises.log")` before invoking anything here.
+  **Dry run — the acceptance criterion.** `buildDryRunReport(cards: Card[])` builds every request for every format via
+  the same pure builders the real path uses, then stops — it never calls `createMessageBatch`/`pollBatchUntilDone`/
+  `streamBatchResults`, so it never touches `getClient()` (`claude.ts`) and never reads `ANTHROPIC_API_KEY`; verified
+  both by a unit test that deletes `ANTHROPIC_API_KEY` from `process.env` before calling it and by an ad hoc
+  `npx tsx` run with the key unset. T10 owns wiring an actual `--dry-run` CLI flag to this function; this task's own
+  scope (per the plan's T10 line) is the function itself, not the CLI. **Measured dry-run counts against the full
+  corpus** (`content/output`, 1,615 cards): Wall 1,003 requests, Question 89 requests, Objection 59 requests — 1,151
+  requests total, ~1,207,900 estimated tokens (rough 4-chars/token heuristic, cheap to compute, not billing-accurate;
+  Wall alone accounts for ~1,086,600 of that, since every Wall prompt repeats the >=80-word `original_excerpt`).
+  Added `scripts/lib/__tests__/premises-batch.test.ts` (22 new tests), mocking only `createMessageBatch`/
+  `pollBatchUntilDone`/`streamBatchResults` from `claude.js` (via `importOriginal`, exactly `translateBatch.test.ts`'s
+  own pattern) so `safeCustomId`/`tokenUsage`/`batchStats`/`extractJSON` stay real: `chunkArray` (even split, boundary
+  split, oversized chunk size, empty input, invalid size); `buildDryRunReport` (no-API-key/no-SDK-call, survivor count
+  == request count, empty-corpus zeroes); `buildQuestionRequests` (author-contiguous grouping, unique custom_ids per
+  entry); `scoreQuestionSurvivors` (merge a success, drop an errored item with a logged reason, drop a malformed-JSON
+  item with a logged reason, submit exactly the gate count against the real corpus and not the corpus size, the
+  ceiling trip-wire); `scoreWallSurvivors` (merge + token accumulation, drop a hallucinated `chosen_landing_line`, the
+  ceiling trip-wire); `scoreObjectionSurvivors` (merge, submit exactly the gate count against the real corpus, the
+  ceiling trip-wire); and one orchestration-level paging test. `npx vitest run
+  scripts/lib/__tests__/premises-batch.test.ts` — 22/22 green. `npx vitest run` (full pipeline suite) — 556/556 green
+  (534 baseline + 22 new), confirming no regression to T01-T07a, `logger.test.ts`, `claude.test.ts`, or
+  `translateBatch.test.ts`.
 - [ ] T09: Implement the faithfulness check — reject any output whose on-screen text is not a faithful subset of its
   source card. Acceptance: a synthetic hallucinated response is rejected in tests.
 - [ ] T10: Build `scripts/score-premises.ts` with `--format <wall|question|objection|still|all>`, `--dry-run`,
