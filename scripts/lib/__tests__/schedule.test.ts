@@ -1263,6 +1263,13 @@ describe("M3: empty-reply Objection entries are excluded from the pool", () => {
 
     const allCards = [...readThroughCards, emptyReplyCard, validCard, ...wallFallbackCards];
 
+    // `reply_start` is derived the same way `objectionGate` itself derives
+    // it (the offset right after the quoted span closes) rather than
+    // hardcoded, so these fixtures stay correct if the card text above ever
+    // changes — see M8/M9 in the PR #39 second review round, which is what
+    // made `reply_start` a required field on every `ObjectionEntry`.
+    const emptyReplyQuoted = `"But I want my children and wife with me."`;
+    const validQuoted = `"But this is unbearable."`;
     const objectionPool = [
       {
         card_id: emptyReplyCard.id,
@@ -1270,6 +1277,7 @@ describe("M3: empty-reply Objection entries are excluded from the pool", () => {
         author_slug: emptyReplyCard.author_slug,
         objection: "But I want my children and wife with me.",
         reply: "",
+        reply_start: emptyReplyCard.plain_english.indexOf(emptyReplyQuoted) + emptyReplyQuoted.length,
       },
       {
         card_id: validCard.id,
@@ -1277,6 +1285,7 @@ describe("M3: empty-reply Objection entries are excluded from the pool", () => {
         author_slug: validCard.author_slug,
         objection: "But this is unbearable.",
         reply: "That is not so; nothing forces you to suffer.",
+        reply_start: validCard.plain_english.indexOf(validQuoted) + validQuoted.length,
       },
     ];
 
@@ -1402,6 +1411,294 @@ describe("M5: the Wall's rubric-chosen landing line is preferred over the mechan
     if (wallSlot!.content.format === "wall") {
       expect(wallSlot!.content.landing_line).toBe(alternateLine);
       expect(wallSlot!.content.landing_line).not.toBe(baseEntry.landing_line);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M9 (PR #39 second review round): the blank-reply pool filter (and
+// `assertFaithful`) must key off the ASSEMBLED reply — the exact text the
+// slot will render — not a persisted `reply` field that can silently
+// diverge from it (e.g. a scored `objection.json` written before a later
+// corpus edit).
+// ---------------------------------------------------------------------------
+
+describe("M9: Objection filtering validates the ASSEMBLED reply, not the persisted field", () => {
+  function fabricatedCard(id: string, plainEnglish: string, bookSlug: string): Card {
+    return {
+      id,
+      book_slug: bookSlug,
+      chapter_slug: "ch1",
+      card_number: 1,
+      total_cards_in_chapter: 1,
+      plain_english: plainEnglish,
+      original_excerpt: plainEnglish,
+      source_reference: "test",
+      author_slug: "epictetus",
+      tags: [],
+      reading_time_seconds: 10,
+    };
+  }
+
+  it("excludes a pool entry whose persisted reply is stale (non-empty) but whose assembled reply is empty", () => {
+    const readThroughCards = Array.from({ length: 7 }, (_, i) =>
+      fabricatedCard(`m9-rt-${i + 1}`, `Read-through sentence number ${i + 1}.`, "m9-readthrough"),
+    );
+    // The quoted objection is the very last thing said in the CURRENT card —
+    // a real re-scoring would assemble an empty reply from it — but the
+    // persisted `reply` field (as if scored against an earlier draft of this
+    // card that had more text afterward) still reads non-empty.
+    const staleCard = fabricatedCard("m9-stale", `He said, "But this is truly unbearable for me."`, "m9-pool");
+    // 7, not 6: unlike M3's fixture, the ONLY Objection entry here is
+    // excluded from the pool from the very start (its assembled reply is
+    // empty), so every one of the week's 7 weighted slots — not just the 6
+    // remaining after day 1 — falls through to a Wall fallback card.
+    const wallFallbackCards = Array.from({ length: 7 }, (_, i) =>
+      fabricatedCard(`m9-wall-${i + 1}`, `Wall fallback sentence number ${i + 1} standing alone.`, "m9-pool"),
+    );
+    const allCards = [...readThroughCards, staleCard, ...wallFallbackCards];
+
+    const quoted = `"But this is truly unbearable for me."`;
+    const staleObjectionPool = [
+      {
+        card_id: staleCard.id,
+        book_slug: staleCard.book_slug,
+        author_slug: staleCard.author_slug,
+        objection: "But this is truly unbearable for me.",
+        reply: "The truth is that suffering passes.", // STALE — no longer matches the current card
+        reply_start: staleCard.plain_english.indexOf(quoted) + quoted.length,
+      },
+    ];
+    const wallPool = wallFallbackCards.map((c) => ({
+      card_id: c.id,
+      book_slug: c.book_slug,
+      author_slug: c.author_slug,
+      original_word_count: 20,
+      landing_line: c.plain_english,
+      sub_types: [],
+      reserve: false,
+      archaic_marker_count: 0,
+      semicolon_count: 0,
+      quote_count: 0,
+      original_grade: 5,
+      eligible_openings: ["standard" as const],
+    }));
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards: allCards,
+      pools: { wall: wallPool, question: [], objection: staleObjectionPool },
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "m9-readthrough",
+      readThroughStartIndex: 0,
+      weights: { wall: 0, question: 0, objection: 1 }, // objection dominates every available draw
+    });
+
+    // The stale entry is never scheduled — the assembled reply is empty
+    // even though the persisted `reply` field reads non-empty.
+    expect(week.slots.some((s) => s.card_id === staleCard.id)).toBe(false);
+    expect(week.format_counts.objection).toBe(0);
+  });
+
+  it("treats an empty scored Wall landing line as a faithfulness FAILURE, not something to silently skip", () => {
+    const baseEntry = gatePools.wall.find((e) => e.book_slug !== "enchiridion")!;
+    // `??` only falls back on null/undefined, not on an empty string — so a
+    // rubric that (incorrectly) chose an empty line reaches `contentFromEntry`
+    // as an empty `landing_line`, exactly the shape `assertFaithful` must now
+    // reject rather than skip (see M9 in the PR #39 second review round).
+    const scoredWallPool = [
+      { ...baseEntry, rubric: { impenetrability_score: 5, landing_line_score: 5, chosen_landing_line: "" } },
+    ];
+
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 1,
+        cards,
+        pools: { wall: scoredWallPool, question: gatePools.question, objection: gatePools.objection },
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 1, question: 0, objection: 0 }, // Wall dominates every weighted draw
+      }),
+    ).toThrow(/field "landing_line".*field is empty/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M10 (PR #39 second review round): `assertFaithful` is THE central safety
+// property, but nothing previously asserted that `generateWeek` actually
+// throws when it fails — deleting the `assertFaithful` calls entirely left
+// the suite green. These cases tamper a pool entry's on-screen field with
+// text the author never wrote and assert the generator refuses to schedule
+// it, naming the offending day, slot, and field in the thrown message.
+// ---------------------------------------------------------------------------
+
+describe("M10: generateWeek actually throws when a field fails the faithfulness check", () => {
+  it("throws naming the field when a scored Wall entry's chosen_landing_line was never written by the author", () => {
+    const baseEntry = gatePools.wall.find((e) => e.book_slug !== "enchiridion")!;
+    const scoredWallPool = [
+      {
+        ...baseEntry,
+        rubric: { impenetrability_score: 5, landing_line_score: 5, chosen_landing_line: "A line the author never wrote." },
+      },
+    ];
+
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 1,
+        cards,
+        pools: { wall: scoredWallPool, question: gatePools.question, objection: gatePools.objection },
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 1, question: 0, objection: 0 }, // Wall dominates every weighted draw
+      }),
+    ).toThrow(/day 1 slot 2 \(card "[^"]+", field "landing_line"\)/);
+  });
+
+  it("names the day, slot, and field when a Question entry's answer was never written by the author", () => {
+    const baseEntry = gatePools.question.find((e) => e.book_slug !== "enchiridion")!;
+    expect(baseEntry).toBeDefined();
+    const tamperedQuestionPool = [{ ...baseEntry!, answer: "An answer the author never actually gave." }];
+
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 1,
+        cards,
+        pools: { wall: gatePools.wall, question: tamperedQuestionPool, objection: gatePools.objection },
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 0, question: 1, objection: 0 }, // Question dominates every weighted draw
+      }),
+    ).toThrow(/day 1 slot 2 \(card "[^"]+", field "answer"\)/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M11 (PR #39 second review round): `assembleObjectionReply`'s own error and
+// correct-occurrence paths, previously untested.
+// ---------------------------------------------------------------------------
+
+describe("M11: assembleObjectionReply's error path and correct-occurrence resolution", () => {
+  function fabricatedCard(id: string, plainEnglish: string, bookSlug: string): Card {
+    return {
+      id,
+      book_slug: bookSlug,
+      chapter_slug: "ch1",
+      card_number: 1,
+      total_cards_in_chapter: 1,
+      plain_english: plainEnglish,
+      original_excerpt: plainEnglish,
+      source_reference: "test",
+      author_slug: "epictetus",
+      tags: [],
+      reading_time_seconds: 10,
+    };
+  }
+
+  it("throws '/not a verbatim quoted span/' when the entry's objection does not appear in plain_english", () => {
+    const rtCard = fabricatedCard("m11-rt-1", "Read-through sentence one.", "m11-readthrough-1");
+    const card = fabricatedCard(
+      "m11-mismatch",
+      'He grumbled, "But why should I suffer for this?" and walked off.',
+      "m11-pool-1",
+    );
+    const objectionPool = [
+      {
+        card_id: card.id,
+        book_slug: card.book_slug,
+        author_slug: card.author_slug,
+        objection: "But this text was never actually quoted anywhere.",
+        reply: "irrelevant",
+        reply_start: 0,
+      },
+    ];
+
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 1,
+        cards: [rtCard, card],
+        pools: { wall: [], question: [], objection: objectionPool },
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "m11-readthrough-1",
+        readThroughStartIndex: 0,
+        weights: { wall: 0, question: 0, objection: 1 },
+      }),
+    ).toThrow(/not a verbatim quoted span/);
+  });
+
+  it("resolves the CORRECT occurrence when a card quotes the same objection span twice (M8 regression)", () => {
+    const readThroughCards = Array.from({ length: 7 }, (_, i) =>
+      fabricatedCard(`m11-rt-2-${i + 1}`, `Read-through sentence number ${i + 1}.`, "m11-readthrough-2"),
+    );
+    const card = fabricatedCard(
+      "m11-dup-quote",
+      'He complains, "But it is not fair at all." Then he walks away and sulks for hours. Later he returns and ' +
+        'says again, "But it is not fair at all." The truth is that fairness was never promised to anyone.',
+      "m11-pool-2",
+    );
+    // Fills the weighted slot on days 2-7, once the week's single Objection
+    // entry (and its weekly cap) are used up on day 1 — same pattern as
+    // M3's fixture above.
+    const wallFallbackCards = Array.from({ length: 6 }, (_, i) =>
+      fabricatedCard(`m11-wall-${i + 1}`, `Wall fallback sentence number ${i + 1} standing alone.`, "m11-pool-2"),
+    );
+    const wallPool = wallFallbackCards.map((c) => ({
+      card_id: c.id,
+      book_slug: c.book_slug,
+      author_slug: c.author_slug,
+      original_word_count: 20,
+      landing_line: c.plain_english,
+      sub_types: [],
+      reserve: false,
+      archaic_marker_count: 0,
+      semicolon_count: 0,
+      quote_count: 0,
+      original_grade: 5,
+      eligible_openings: ["standard" as const],
+    }));
+
+    const gated = objectionGate([card]);
+    const duplicates = gated.filter((e) => e.objection === "But it is not fair at all.");
+    // Both occurrences of the duplicated quoted span survive the gate —
+    // this is the scenario `indexOf` alone could never disambiguate.
+    expect(duplicates).toHaveLength(2);
+    const secondOccurrence = duplicates[1];
+    // Sanity check the fixture actually exercises two DISTINCT offsets,
+    // otherwise this test wouldn't be able to tell a correct answer from a
+    // wrong (first-occurrence) one.
+    expect(duplicates[0].reply_start).not.toBe(duplicates[1].reply_start);
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards: [...readThroughCards, card, ...wallFallbackCards],
+      pools: { wall: wallPool, question: [], objection: [secondOccurrence] },
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "m11-readthrough-2",
+      readThroughStartIndex: 0,
+      weights: { wall: 0, question: 0, objection: 1 },
+    });
+
+    const objectionSlot = week.slots.find((s) => s.content.format === "objection");
+    expect(objectionSlot).toBeDefined();
+    if (objectionSlot!.content.format === "objection") {
+      // The reply following the SECOND (correct) occurrence — never the
+      // narration-plus-re-quote that following the FIRST occurrence would
+      // wrongly produce.
+      expect(objectionSlot!.content.reply).toBe("The truth is that fairness was never promised to anyone.");
     }
   });
 });

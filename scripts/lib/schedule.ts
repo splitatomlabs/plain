@@ -254,17 +254,40 @@ function weightedFormatChoice(weights: FormatWeights, available: ScheduleFormat[
  * directly, instead of re-stitching trimmed sentence chunks, makes the
  * result an exact substring BY CONSTRUCTION, not by coincidence — so it can
  * never silently drift from faithful as the corpus's formatting evolves.
+ *
+ * Slices from `entry.reply_start` — the offset `objectionGate` itself
+ * recorded for the SPECIFIC occurrence this entry matched — rather than
+ * re-searching `plain_english` with `indexOf`. `indexOf` always resolves to
+ * the FIRST occurrence of the quoted span, which silently produces the
+ * wrong reply (the text following an EARLIER repeat of the same quote,
+ * rather than the one this entry actually refers to) when a card quotes the
+ * same objection more than once — and because that wrong text is still a
+ * verbatim substring of `plain_english`, `assertFaithful` cannot catch it
+ * (see M8 in the PR #39 second review round). Slicing from the offset the
+ * gate already computed while walking the card is correct by construction,
+ * with no search at all.
+ *
+ * Still verifies the quoted span is present at all (a hand-built/tampered
+ * entry, or one whose card no longer contains the quote it names, has no
+ * valid `reply_start` to trust) — this is the one case where we do fall
+ * back to a defensive `includes` check, purely to fail loud rather than
+ * slice a meaningless offset.
  */
-function assembleObjectionReply(card: Card, objection: string): string {
-  const quoted = `"${objection}"`;
-  const idx = card.plain_english.indexOf(quoted);
-  if (idx === -1) {
+function assembleObjectionReply(card: Card, entry: Pick<ObjectionEntry, "objection" | "reply_start">): string {
+  const quoted = `"${entry.objection}"`;
+  if (!card.plain_english.includes(quoted)) {
     throw new Error(
-      `Objection "${objection}" for card "${card.id}" is not a verbatim quoted span (with its surrounding quote ` +
-        `marks) in plain_english — cannot assemble a faithful reply.`,
+      `Objection "${entry.objection}" for card "${card.id}" is not a verbatim quoted span (with its surrounding ` +
+        `quote marks) in plain_english — cannot assemble a faithful reply.`,
     );
   }
-  return card.plain_english.slice(idx + quoted.length).trim();
+  if (!Number.isInteger(entry.reply_start) || entry.reply_start < 0) {
+    throw new Error(
+      `Objection entry for card "${card.id}" (objection "${entry.objection}") is missing a valid reply_start ` +
+        `offset — cannot assemble a faithful reply.`,
+    );
+  }
+  return card.plain_english.slice(entry.reply_start).trim();
 }
 
 /**
@@ -292,7 +315,7 @@ function contentFromEntry(format: ScheduleFormat, entry: WallEntry | QuestionEnt
     }
     case "objection": {
       const o = entry as ObjectionEntry;
-      return { format: "objection", objection: o.objection, reply: assembleObjectionReply(card, o.objection) };
+      return { format: "objection", objection: o.objection, reply: assembleObjectionReply(card, o) };
     }
   }
 }
@@ -340,7 +363,7 @@ function tryReadThroughContent(format: ScheduleFormat, card: Card): SlotContent 
       // last thing said in the card) has no answer to show — the format's
       // whole point is objection THEN reply, so this isn't a valid
       // candidate either (see M3 in the PR #39 review).
-      const reply = assembleObjectionReply(card, found.objection);
+      const reply = assembleObjectionReply(card, found);
       if (!reply) return null;
       return { format: "objection", objection: found.objection, reply };
     }
@@ -425,7 +448,20 @@ function contentFieldsToCheck(content: SlotContent): [field: string, text: strin
  */
 function assertFaithful(card: Card, content: SlotContent, day: number, slotNumber: number): void {
   for (const [field, text] of contentFieldsToCheck(content)) {
-    if (!text) continue; // an empty string is trivially a substring of anything; nothing to check
+    // An empty on-screen field is never a valid post (see M9 in the PR #39
+    // second review round) — it used to be treated as "trivially a
+    // substring of anything, nothing to check" and silently skipped, which
+    // let an empty `reply` slip through undetected (reproduced as
+    // `{"format":"objection","objection":"...","reply":""}`, precisely the
+    // empty-reply post M3 was supposed to prevent). Failing here, rather
+    // than skipping, makes this the last line of defense even if an empty
+    // string somehow reaches this point despite upstream pool filtering.
+    if (!text) {
+      throw new Error(
+        `Faithfulness check failed for day ${day} slot ${slotNumber} (card "${card.id}", field "${field}"): ` +
+          `field is empty — an empty on-screen field is never a valid post.`,
+      );
+    }
     const result = checkFaithfulness(text, card);
     if (!result.faithful) {
       throw new Error(
@@ -496,9 +532,21 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   // out of the pool itself, not just skipped after being drawn, so it never
   // consumes an rng draw and never displaces a valid entry's chance of
   // being picked.
-  const objectionPool = pools.objection.filter(
-    (e) => !allUsed.has(e.card_id) && e.book_slug !== readThroughBook && e.reply.trim().length > 0,
-  );
+  //
+  // Tests the ASSEMBLED reply (`assembleObjectionReply`, with the card in
+  // hand), not the entry's own persisted `reply` field. A scored
+  // `objection.json` written before a later corpus edit can carry a
+  // persisted `reply` that no longer matches what actually renders — this
+  // filter must agree with what the slot will actually show, or a
+  // once-empty-but-now-populated (or once-populated-but-now-empty) `reply`
+  // field silently diverges from what's scheduled (see M9 in the PR #39
+  // second review round).
+  const objectionPool = pools.objection.filter((e) => {
+    if (allUsed.has(e.card_id) || e.book_slug === readThroughBook) return false;
+    const entryCard = cardsById.get(e.card_id);
+    if (!entryCard) throw new Error(`Card "${e.card_id}" from the objection pool was not found in the corpus`);
+    return assembleObjectionReply(entryCard, e).length > 0;
+  });
 
   const slots: ScheduleSlot[] = [];
   let objectionUsedThisWeek = 0;

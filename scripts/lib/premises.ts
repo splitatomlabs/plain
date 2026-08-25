@@ -1938,6 +1938,27 @@ export interface ObjectionEntry {
    * THEN answer) should filter on `reply.length > 0` itself.
    */
   reply: string;
+  /**
+   * The character offset into THIS entry's own card's `card.plain_english`
+   * immediately after the matched quoted span (`"${objection}"`, closing
+   * quote included) closes — i.e. `card.plain_english.slice(reply_start)`
+   * is the exact remainder of the raw string, before trimming, that
+   * `reply` above was assembled from.
+   *
+   * Exists so a consumer can re-derive a guaranteed-verbatim reply by
+   * slicing the card's own text directly (`card.plain_english.slice(
+   * reply_start).trim()`) instead of re-searching for the quoted span with
+   * `indexOf`, which always resolves to the FIRST occurrence in the card
+   * and silently returns the wrong text when a card quotes the same
+   * objection span more than once (see M8 in the PR #39 second review
+   * round — reproduced with a card quoting `"But it is not fair at all."`
+   * twice). `reply_start` is captured HERE, from the same walk over
+   * `sentences(card.plain_english)` that found the matching span in the
+   * first place, so it is correct by construction for whichever occurrence
+   * this particular entry actually came from — no re-searching, and so no
+   * possibility of resolving to the wrong occurrence.
+   */
+  reply_start: number;
 }
 
 /**
@@ -2016,9 +2037,23 @@ export function objectionGate(cards: Card[]): ObjectionEntry[] {
 
   for (const card of cards) {
     const sents = sentences(card.plain_english);
+    // Running cursor into `card.plain_english` (the RAW, untrimmed string —
+    // `reply_start` must be an offset into this exact string, not into
+    // `sentences()`'s internally-trimmed working copy). `sentences()` only
+    // ever trims whitespace at each chunk's boundary and never reorders or
+    // rewrites characters, so each `sentence` appears verbatim, in order, in
+    // `card.plain_english`; searching for it starting from `cursor` (rather
+    // than from 0 every time) finds THIS sentence's own true position even
+    // when the exact same sentence text recurs later in the card, because
+    // the true next occurrence can only be separated from `cursor` by
+    // whitespace (never by another copy of the same text) — see M8 in the
+    // PR #39 second review round.
+    let cursor = 0;
 
     for (let i = 0; i < sents.length; i++) {
       const sentence = sents[i];
+      const sentenceStart = card.plain_english.indexOf(sentence, cursor);
+      cursor = sentenceStart + sentence.length;
 
       for (const match of sentence.matchAll(QUOTE_SPAN_RE)) {
         const content = match[1].trim();
@@ -2041,6 +2076,7 @@ export function objectionGate(cards: Card[]): ObjectionEntry[] {
           author_slug: card.author_slug,
           objection: content,
           reply,
+          reply_start: sentenceStart + matchEnd,
         });
       }
     }
