@@ -3,8 +3,8 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
 import { fitFontSize } from '../render/fit.js';
+import { assertWallCardRenderable } from './wall-gate.js';
 import {
-	computeWallLayout,
 	computeWallTiming,
 	splitWords,
 	wallScaleAtFrame,
@@ -62,7 +62,11 @@ export const Wall: React.FC<WallProps> = (props) => {
 	const accent = ACCENTS[props.author];
 
 	if (frame < timing.wall.endFrame) {
-		const layout = computeWallLayout(props.originalExcerpt);
+		// Rejects rather than renders an over-long card at an illegible size —
+		// see `wall-gate.ts` (T06). `Root.tsx`'s `calculateMetadata` already
+		// runs this same gate before a render starts; this call is the
+		// backstop for any path that renders `Wall` directly.
+		const layout = assertWallCardRenderable(props.originalExcerpt);
 		return (
 			<WallPhase frame={frame} text={props.originalExcerpt} accent={accent} timing={timing} layout={layout} />
 		);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Composition } from 'remotion';
 
 import { computeWallTiming, FPS } from './wall-timing.js';
+import { assertWallCardRenderable } from './wall-gate.js';
 import { Wall, type WallProps } from './Wall.js';
 
 // 1080x1920 @ 30fps — the vertical story/reel frame every format in this
@@ -31,13 +32,20 @@ export const RemotionRoot: React.FC = () => {
 				fps={FPS}
 				durationInFrames={computeWallTiming(defaultWallProps).totalFrames}
 				defaultProps={defaultWallProps}
-				calculateMetadata={({ props }) => ({
-					durationInFrames: computeWallTiming({
-						originalExcerpt: props.originalExcerpt,
-						plainLines: props.plainLines,
-						narrationTimings: props.narrationTimings
-					}).totalFrames
-				})}
+				calculateMetadata={({ props }) => {
+					// Runs before any frame renders — an over-long card (T06's
+					// legibility gate) throws here, failing composition selection
+					// and the render outright rather than producing an illegible
+					// frame. See `wall-gate.ts`.
+					assertWallCardRenderable(props.originalExcerpt);
+					return {
+						durationInFrames: computeWallTiming({
+							originalExcerpt: props.originalExcerpt,
+							plainLines: props.plainLines,
+							narrationTimings: props.narrationTimings
+						}).totalFrames
+					};
+				}}
 			/>
 		</>
 	);

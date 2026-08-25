@@ -79,7 +79,7 @@ looks like Plain.
   ~320wpm, past reading speed. **Silent.** At **2-3s: hard cut** — all motion stops, silence, one still plain
   sentence held a full 3 seconds. Then the rest of the plain passage, one still line at a time, quietly narrated.
   Acceptance: renders from a >=150-word card; the cut lands as a somatic drop when watched on a phone.
-- [~] T06: Add the Wall layout gate — auto-fit to exactly one screen and REJECT any card that cannot be set at
+- [x] T06: Add the Wall layout gate — auto-fit to exactly one screen and REJECT any card that cannot be set at
   >=14px equivalent (396 cards run over 150 words). Acceptance: an over-long card is rejected, not rendered illegibly.
 - [ ] T07: Build **The Question**. Frame 0.0 is the question alone, still and readable. Then the archaic original
   arrives as the moving wall; then it drops away and the plain answer resolves in stillness. **There is no wrong
@@ -105,7 +105,7 @@ looks like Plain.
   timestamp differs from audio duration by more than 120ms. Acceptance: a synthetic drifted timing set is rejected.
 - [ ] T14: Audition and fix one voice per Stoic; commit the three voice IDs with written rationale. They never change
   after this. Acceptance: three IDs committed and distinguishable from each other.
-- [ ] T15: Implement the mixer — trim/loop a bed to length, duck it under narration with scripted (deterministic)
+- [~] T15: Implement the mixer — trim/loop a bed to length, duck it under narration with scripted (deterministic)
   volume envelopes, mix, then two-pass ffmpeg `loudnorm` (measure with `print_format=json`, then apply). Target
   ~-14 LUFS integrated, -1 dBTP as a NAMED CONSTANT, not a literal — it is an industry-standard figure, not a
   confirmed platform spec. Acceptance: measured loudness within tolerance; output is 48kHz stereo AAC.
