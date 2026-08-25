@@ -304,6 +304,39 @@ export interface WallTimingSchedule {
 }
 
 /**
+ * Frame length of each rest line (phase 3), in order — narration-driven when
+ * `narrationTimings[index]` is supplied, else `DEFAULT_LINE_FRAMES`. Split
+ * out from `computeWallTiming` so `computeWallRawTotalFrames` (the gate's
+ * pre-padding duration check — see `wall-gate.ts`) sums the exact same
+ * per-line frame counts the real schedule uses, rather than a second,
+ * potentially-drifting estimate.
+ */
+function restLineFrameCounts(plainLines: string[], narrationTimings?: NarrationLineTiming[]): number[] {
+	return plainLines.map((_, index) => {
+		const timing = narrationTimings?.[index];
+		return timing ? Math.max(1, Math.round((timing.endSeconds - timing.startSeconds) * FPS)) : DEFAULT_LINE_FRAMES;
+	});
+}
+
+/**
+ * The composition's total frame count BEFORE `padToMinimumDuration` is
+ * applied — i.e. `computeWallTiming`'s `cursor` at the point it would call
+ * `padToMinimumDuration`. Exists so the Wall gate (`wall-gate.ts`) can check
+ * a card against `MAX_POST_DURATION_FRAMES` itself, at survey time, without
+ * going through `padToMinimumDuration` (which THROWS on an over-long
+ * composition — exactly the outcome the gate exists to turn into a graceful
+ * rejection instead of a render-time crash). `computeWallTiming` below calls
+ * this same function rather than recomputing the sum, so the gate's number
+ * and the real render's pre-padding number can never drift apart.
+ */
+export function computeWallRawTotalFrames(input: WallTimingInput): number {
+	const wallEnd = WALL_FRAMES;
+	const landingLineEnd = wallEnd + LANDING_LINE_FRAMES;
+	const restFrames = restLineFrameCounts(input.plainLines, input.narrationTimings);
+	return restFrames.reduce((cursor, frames) => cursor + frames, landingLineEnd);
+}
+
+/**
  * Computes every frame boundary of The Wall from its props. The only place
  * in this composition where phase lengths are decided — `Wall.tsx` reads the
  * result and never computes a frame boundary itself.
@@ -324,14 +357,11 @@ export function computeWallTiming(input: WallTimingInput): WallTimingSchedule {
 		motionless: true
 	};
 
+	const restFrames = restLineFrameCounts(input.plainLines, input.narrationTimings);
 	let cursor = landingLine.endFrame;
 	const restLines: WallRestLine[] = input.plainLines.map((text, index) => {
-		const timing = input.narrationTimings?.[index];
-		const frames = timing
-			? Math.max(1, Math.round((timing.endSeconds - timing.startSeconds) * FPS))
-			: DEFAULT_LINE_FRAMES;
 		const startFrame = cursor;
-		const endFrame = startFrame + frames;
+		const endFrame = startFrame + restFrames[index];
 		cursor = endFrame;
 		return { index, text, startFrame, endFrame, motionless: true };
 	});

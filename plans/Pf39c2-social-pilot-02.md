@@ -136,7 +136,7 @@ looks like Plain.
   failures used `bed-03-e-minor7`. Find the root cause (is bed-03 actually silent through the mix path, or does the
   envelope/silent-span handling zero the whole track?) and fix it, then make the mixer fail with a clear, named
   error when a first-pass measurement is non-finite instead of surfacing raw ffmpeg output.
-- [ ] F03: The third week-1 failure is a Wall card whose composition computes to 1845 frames (61.5s), over the
+- [x] F03: The third week-1 failure is a Wall card whose composition computes to 1845 frames (61.5s), over the
   59s ceiling, so `padToMinimumDuration` refuses it AT RENDER TIME. Refusing is correct; failing this late is not —
   the scheduler can hand the renderer a card that can never be rendered. Move the ceiling into the Wall gate
   (beside the legibility floor) so an over-long card is rejected when the pool is surveyed, and have `surveyWallPool`

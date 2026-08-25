@@ -69,14 +69,16 @@ export {
 	type WallRestLine,
 	type WallTimingInput,
 	type WallTimingSchedule,
-	type NarrationLineTiming
+	type NarrationLineTiming,
+	computeWallRawTotalFrames
 } from './wall-timing.js';
 export {
 	gateWallCard,
 	assertWallCardRenderable,
 	WALL_REFERENCE_VIEWPORT_WIDTH,
 	WALL_MIN_LEGIBLE_FONT_PX,
-	type WallGateResult
+	type WallGateResult,
+	type WallGateContentInput
 } from './wall-gate.js';
 export {
 	surveyWallPool,

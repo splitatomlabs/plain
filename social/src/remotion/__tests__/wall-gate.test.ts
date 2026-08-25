@@ -7,8 +7,10 @@ import { bundle } from '@remotion/bundler';
 import { selectComposition } from '@remotion/renderer';
 
 import { FRAME_WIDTH, WALL_MIN_FONT, splitWords } from '../wall-timing.js';
+import { MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 import { gateWallCard, assertWallCardRenderable, WALL_REFERENCE_VIEWPORT_WIDTH, WALL_MIN_LEGIBLE_FONT_PX } from '../wall-gate.js';
-import { surveyWallPool, resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
+import { surveyWallPool, resolveWallCardExcerpt, loadOutputCard, type WallPoolEntry } from '../wall-pool.js';
+import { computeWallPlainLines } from '../../cli-plan.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
@@ -164,7 +166,7 @@ describe('the composition path surfaces the rejection (T06 wiring)', () => {
 describe('surveyWallPool — the real pool', () => {
 	it('runs the gate over every entry and reports counts that sum to the pool size', () => {
 		const result = surveyWallPool(POOL.entries, outputDir);
-		expect(result.passed + result.rejected).toBe(POOL.entries.length);
+		expect(result.passed + result.rejectedForLegibility + result.rejectedForDuration).toBe(POOL.entries.length);
 		expect(result.passed).toBeGreaterThan(0);
 	});
 
@@ -183,5 +185,67 @@ describe('surveyWallPool — the real pool', () => {
 		for (const slug of bookSlugs) {
 			expect(() => readdirSync(path.join(outputDir, slug))).not.toThrow();
 		}
+	});
+
+	it('reports the duration ceiling exclusions separately from legibility exclusions (F03)', () => {
+		const result = surveyWallPool(POOL.entries, outputDir);
+		// The real over-long card below proves this is >0, not just structurally present.
+		expect(result.rejectedForDuration).toBeGreaterThan(0);
+		expect(result.rejectedForDuration).toBeLessThan(POOL.entries.length);
+	});
+});
+
+describe('gateWallCard — the duration ceiling (F03)', () => {
+	// `content/social/pilot-schedule-w01.json` day 6 slot 2 draws this exact
+	// card and fails at render time (`padToMinimumDuration` throws: 1845
+	// frames, 61.5s, over the 1770-frame/59s ceiling) — reproduced here as a
+	// pool-survey-time rejection instead, per F03.
+	const OVERLONG_ENTRY: WallPoolEntry = {
+		card_id: 'on-anger-03-027',
+		book_slug: 'on-anger'
+	};
+
+	it('rejects the real over-long card with a duration reason, naming the frame count, ceiling and line count', () => {
+		const card = loadOutputCard(OVERLONG_ENTRY.book_slug, OVERLONG_ENTRY.card_id, outputDir);
+		const landingLine = 'Too much flattery irritates people with bad tempers.';
+		const plainLines = computeWallPlainLines(card.plain_english, landingLine);
+
+		const result = gateWallCard(card.original_excerpt, { plainLines });
+
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.failure).toBe('duration');
+			expect(result.totalFrames).toBeGreaterThan(MAX_POST_DURATION_FRAMES);
+			expect(result.lineCount).toBe(plainLines.length);
+			expect(result.reason).toContain(String(result.totalFrames));
+			expect(result.reason).toContain(String(MAX_POST_DURATION_FRAMES));
+			expect(result.reason).toContain(String(plainLines.length));
+		}
+	});
+
+	it('assertWallCardRenderable throws the same duration reason', () => {
+		const card = loadOutputCard(OVERLONG_ENTRY.book_slug, OVERLONG_ENTRY.card_id, outputDir);
+		const landingLine = 'Too much flattery irritates people with bad tempers.';
+		const plainLines = computeWallPlainLines(card.plain_english, landingLine);
+
+		expect(() => assertWallCardRenderable(card.original_excerpt, { plainLines })).toThrow(
+			new RegExp(`over the ${MAX_POST_DURATION_FRAMES}-frame`)
+		);
+	});
+
+	it('a normal card (short plainLines) still passes both the legibility and duration checks', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+		const result = gateWallCard(excerpt, { plainLines: ['One short rest line.', 'Another short rest line.'] });
+
+		expect(result.ok).toBe(true);
+	});
+
+	it('omitting plainLines never false-rejects for duration (fixed wall + landing-line phases only)', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+		const result = gateWallCard(excerpt);
+
+		expect(result.ok).toBe(true);
 	});
 });

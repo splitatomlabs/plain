@@ -52,11 +52,17 @@ export const RemotionRoot: React.FC = () => {
 				durationInFrames={computeWallTiming(defaultWallProps).totalFrames}
 				defaultProps={defaultWallProps}
 				calculateMetadata={({ props }) => {
-					// Runs before any frame renders — an over-long card (T06's
-					// legibility gate) throws here, failing composition selection
-					// and the render outright rather than producing an illegible
-					// frame. See `wall-gate.ts`.
-					assertWallCardRenderable(props.originalExcerpt);
+					// Runs before any frame renders — a card that's either too
+					// small to read (T06's legibility floor) or whose composition
+					// would exceed the MP4 duration ceiling (F03) throws here,
+					// failing composition selection and the render outright rather
+					// than producing an illegible frame or a duration the encoder
+					// (and `padToMinimumDuration`) would refuse anyway. See
+					// `wall-gate.ts`.
+					assertWallCardRenderable(props.originalExcerpt, {
+						plainLines: props.plainLines,
+						narrationTimings: props.narrationTimings
+					});
 					return {
 						durationInFrames: computeWallTiming({
 							originalExcerpt: props.originalExcerpt,

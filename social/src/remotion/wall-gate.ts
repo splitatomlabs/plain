@@ -20,7 +20,17 @@
  * Surveying the real card pool off disk lives in `wall-pool.ts` instead.
  */
 
-import { computeWallLayout, splitWords, FRAME_WIDTH, WALL_MIN_FONT, type WallLayout } from './wall-timing.js';
+import {
+	computeWallLayout,
+	computeWallRawTotalFrames,
+	splitWords,
+	FPS,
+	FRAME_WIDTH,
+	WALL_MIN_FONT,
+	type NarrationLineTiming,
+	type WallLayout
+} from './wall-timing.js';
+import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from './duration-bounds.js';
 
 // ---------------------------------------------------------------------------
 // The legibility floor
@@ -73,25 +83,58 @@ if (WALL_MIN_FONT >= WALL_MIN_LEGIBLE_FONT_PX) {
 // The gate
 // ---------------------------------------------------------------------------
 
+/**
+ * Everything besides `originalExcerpt` the gate needs to also check the
+ * `MAX_POST_DURATION_FRAMES` ceiling — both optional so every existing
+ * single-argument call site (Question's reuse of the wall's archaic-text
+ * phase, which has no `plainLines` of its own; the legibility-only tests
+ * below) keeps working exactly as before: an omitted `plainLines` computes
+ * a duration of just the fixed wall + landing-line phases (well under the
+ * ceiling on its own), so the duration check is a no-op rather than a false
+ * rejection for those callers.
+ */
+export interface WallGateContentInput {
+	/** The rest of the plain passage, in order, excluding the landing line — see `WallTimingInput.plainLines`. */
+	plainLines?: string[];
+	/** Optional per-line narration timing — see `WallTimingInput.narrationTimings`. */
+	narrationTimings?: NarrationLineTiming[];
+}
+
 export type WallGateResult =
 	| { ok: true; layout: WallLayout }
-	| { ok: false; reason: string; fontSize: number; wordCount: number };
+	| {
+			ok: false;
+			reason: string;
+			/** Which floor/ceiling rejected the card — lets callers (e.g. `surveyWallPool`) tally the two separately. */
+			failure: 'legibility' | 'duration';
+			fontSize?: number;
+			wordCount?: number;
+			totalFrames?: number;
+			lineCount?: number;
+	  };
 
 /**
- * Runs `computeWallLayout` for `originalExcerpt` and rejects it when the
- * fitted font size falls below `WALL_MIN_LEGIBLE_FONT_PX` (which, per the
- * invariant above, also covers the "did not fit at all" case). Never
- * shrinks below the floor and never renders anyway — a rejection is a
- * rejection, to be excluded upstream (see `surveyWallPool`) or to fail a
- * render outright (see `assertWallCardRenderable`).
+ * Runs `computeWallLayout` for `originalExcerpt` and rejects it when EITHER:
+ *   1. the fitted font size falls below `WALL_MIN_LEGIBLE_FONT_PX` (which,
+ *      per the invariant above, also covers the "did not fit at all" case);
+ *   2. the composition's pre-padding duration (wall + landing line + every
+ *      rest line from `content.plainLines`) exceeds `MAX_POST_DURATION_FRAMES`
+ *      — the same ceiling `padToMinimumDuration` enforces, but caught here,
+ *      at pool-survey time, instead of at render time (see `duration-bounds.ts`
+ *      and F03).
+ * Never shrinks below the floor, never trims to the ceiling, and never
+ * renders anyway — a rejection is a rejection, to be excluded upstream (see
+ * `surveyWallPool`) or to fail a render outright (see
+ * `assertWallCardRenderable`).
  */
-export function gateWallCard(originalExcerpt: string): WallGateResult {
+export function gateWallCard(originalExcerpt: string, content: WallGateContentInput = {}): WallGateResult {
 	const layout = computeWallLayout(originalExcerpt);
 	const wordCount = splitWords(originalExcerpt).length;
 
 	if (layout.fontSize < WALL_MIN_LEGIBLE_FONT_PX) {
 		return {
 			ok: false,
+			failure: 'legibility',
 			reason:
 				`Wall card rejected: ${wordCount} words fit the wall box only at ${layout.fontSize}px, ` +
 				`below the ${WALL_MIN_LEGIBLE_FONT_PX}px legibility floor (the 1080-frame equivalent of ` +
@@ -101,19 +144,40 @@ export function gateWallCard(originalExcerpt: string): WallGateResult {
 		};
 	}
 
+	const plainLines = content.plainLines ?? [];
+	const totalFrames = computeWallRawTotalFrames({
+		originalExcerpt,
+		plainLines,
+		narrationTimings: content.narrationTimings
+	});
+
+	if (totalFrames > MAX_POST_DURATION_FRAMES) {
+		return {
+			ok: false,
+			failure: 'duration',
+			reason:
+				`Wall card rejected: composition computes to ${totalFrames} frames ` +
+				`(${(totalFrames / FPS).toFixed(1)}s) across ${plainLines.length} plain-passage ` +
+				`line${plainLines.length === 1 ? '' : 's'}, over the ${MAX_POST_DURATION_FRAMES}-frame ` +
+				`(${MAX_POST_DURATION_SECONDS}s) ceiling.`,
+			totalFrames,
+			lineCount: plainLines.length
+		};
+	}
+
 	return { ok: true, layout };
 }
 
 /**
  * `gateWallCard`, but throws instead of returning a result — the shape a
- * render pipeline needs so an over-long card fails the render outright
- * rather than producing an illegible frame. Wired into `Root.tsx`'s
+ * render pipeline needs so an over-long or illegible card fails the render
+ * outright rather than producing a bad frame. Wired into `Root.tsx`'s
  * `calculateMetadata` (which Remotion runs before any frame is rendered)
  * and into `Wall.tsx` itself, so both the composition-selection path and a
  * direct render of the component reject the same cards.
  */
-export function assertWallCardRenderable(originalExcerpt: string): WallLayout {
-	const result = gateWallCard(originalExcerpt);
+export function assertWallCardRenderable(originalExcerpt: string, content: WallGateContentInput = {}): WallLayout {
+	const result = gateWallCard(originalExcerpt, content);
 	if (!result.ok) {
 		throw new Error(result.reason);
 	}

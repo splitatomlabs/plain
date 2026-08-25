@@ -114,11 +114,15 @@ export const Wall: React.FC<WallProps> = (props) => {
 	const counter = props.counter ?? null;
 
 	if (frame < timing.wall.endFrame) {
-		// Rejects rather than renders an over-long card at an illegible size —
-		// see `wall-gate.ts` (T06). `Root.tsx`'s `calculateMetadata` already
-		// runs this same gate before a render starts; this call is the
-		// backstop for any path that renders `Wall` directly.
-		const layout = assertWallCardRenderable(props.originalExcerpt);
+		// Rejects rather than renders an over-long card (either too small to
+		// read, or whose composition busts the duration ceiling — F03) — see
+		// `wall-gate.ts` (T06). `Root.tsx`'s `calculateMetadata` already runs
+		// this same gate before a render starts; this call is the backstop
+		// for any path that renders `Wall` directly.
+		const layout = assertWallCardRenderable(props.originalExcerpt, {
+			plainLines: props.plainLines,
+			narrationTimings: props.narrationTimings
+		});
 
 		// T17 — the opening rotation. `standard` (the default) renders
 		// nothing extra here at all: the wall is unchanged. The two numeric

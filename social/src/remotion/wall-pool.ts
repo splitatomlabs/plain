@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { gateWallCard } from './wall-gate.js';
+import { computeWallPlainLines } from '../cli-plan.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 /** `social/src/remotion` -> `social/src` -> `social` -> repo root. */
@@ -103,34 +104,68 @@ export function loadOutputCard(bookSlug: string, cardId: string, outputDir: stri
 
 export interface WallPoolSurveyResult {
 	passed: number;
-	rejected: number;
+	/** Cards the legibility floor rejected — see `WALL_MIN_LEGIBLE_FONT_PX`. */
+	rejectedForLegibility: number;
+	/** Cards the `MAX_POST_DURATION_FRAMES` ceiling rejected — see F03. */
+	rejectedForDuration: number;
 	rejectedIds: string[];
+}
+
+/**
+ * Resolves a Wall pool entry's landing line the same way
+ * `scripts/lib/schedule.ts`'s `contentFromEntry` does: prefer the scored
+ * rubric's `chosen_landing_line` (T07) over the mechanical `landing_line`
+ * when the entry carries one. Kept in one place so the survey's duration
+ * check (below) picks the same line the real schedule would post, rather
+ * than a second guess that could disagree with it.
+ */
+function resolveEntryLandingLine(entry: WallPoolEntry): string {
+	const rubric = entry.rubric as { chosen_landing_line?: string } | undefined;
+	const landingLine = rubric?.chosen_landing_line ?? entry.landing_line;
+	if (typeof landingLine !== 'string') {
+		throw new Error(`Wall pool entry "${entry.card_id}" has no usable landing_line to survey duration against.`);
+	}
+	return landingLine;
 }
 
 /**
  * Runs `gateWallCard` across every entry in `content/social/premises/wall.json`
  * (or any equivalent list of `{ card_id, book_slug }` entries), resolving
- * each excerpt from `content/output/`. This is how the schedule (T18) is
- * meant to feed only renderable cards to the renderer — a card the gate
- * rejects here should never reach `Wall.tsx` in the first place, though
+ * each excerpt (and, for the duration check, the rest of the plain passage)
+ * from `content/output/`. This is how the schedule (T18) is meant to feed
+ * only renderable cards to the renderer — a card the gate rejects here
+ * should never reach `Wall.tsx` in the first place, though
  * `assertWallCardRenderable` remains the backstop if one slips through.
+ *
+ * `rejectedForLegibility` and `rejectedForDuration` are reported separately
+ * (F03) rather than as one combined `rejected` count, so a pipeline log can
+ * tell "too small to read" apart from "too long to ship" at a glance.
  */
 export function surveyWallPool(
 	entries: WallPoolEntry[],
 	outputDir: string = DEFAULT_OUTPUT_DIR
 ): WallPoolSurveyResult {
 	let passed = 0;
+	let rejectedForLegibility = 0;
+	let rejectedForDuration = 0;
 	const rejectedIds: string[] = [];
 
 	for (const entry of entries) {
-		const excerpt = resolveWallCardExcerpt(entry, outputDir);
-		const result = gateWallCard(excerpt);
+		const card = loadOutputCard(entry.book_slug, entry.card_id, outputDir);
+		const landingLine = resolveEntryLandingLine(entry);
+		const plainLines = computeWallPlainLines(card.plain_english, landingLine);
+		const result = gateWallCard(card.original_excerpt, { plainLines });
 		if (result.ok) {
 			passed++;
 		} else {
 			rejectedIds.push(entry.card_id);
+			if (result.failure === 'duration') {
+				rejectedForDuration++;
+			} else {
+				rejectedForLegibility++;
+			}
 		}
 	}
 
-	return { passed, rejected: rejectedIds.length, rejectedIds };
+	return { passed, rejectedForLegibility, rejectedForDuration, rejectedIds };
 }
