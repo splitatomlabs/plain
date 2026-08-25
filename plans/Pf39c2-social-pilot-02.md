@@ -92,14 +92,14 @@ looks like Plain.
   format of its own. PLAIN TEXT in body ink, never a styled or accent-coloured progress bar: an animated accent bar
   becomes brand furniture, which is TikTok watermark-rule territory. Acceptance: the overlay composes over all three
   formats without reflowing them, and reads as a page number rather than branding.
-- [ ] T10: Implement the encoder. Acceptance: ffprobe confirms High/L4.0/yuv420p/1080x1920/30fps/AAC 48kHz and moov
+- [~] T10: Implement the encoder. Acceptance: ffprobe confirms High/L4.0/yuv420p/1080x1920/30fps/AAC 48kHz and moov
   before mdat.
-- [~] T11: Generate 5-8 calm ambient loopable instrumental beds, 60s each, no vocals. Run once, manually; commit the
+- [x] T11: Generate 5-8 calm ambient loopable instrumental beds, 60s each, no vocals. Run once, manually; commit the
   audio plus a README recording provider, licence and date. Acceptance: 5-8 tracks committed with provenance.
 - [x] T12: Define the TTS provider interface — `synthesize(text, voice) -> audioPath`, satisfied by both ElevenLabs
   and Polly so swapping is config. Tests use recorded fixtures, never live calls. Acceptance: a simulated ElevenLabs
   failure produces Polly audio.
-- [ ] T13: Implement LINE-LEVEL narration timing — `social/src/audio/timing.ts`. Word-level sync is not needed: The
+- [~] T13: Implement LINE-LEVEL narration timing — `social/src/audio/timing.ts`. Word-level sync is not needed: The
   Wall is silent (its highlight is a timed sweep) and every payoff is one still line at a time. Timings must come
   from native provider data, never estimated from word counts. Gate: reject any render where the last line's end
   timestamp differs from audio duration by more than 120ms. Acceptance: a synthetic drifted timing set is rejected.
