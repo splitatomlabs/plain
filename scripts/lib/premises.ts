@@ -1651,60 +1651,164 @@ export const BALANCED_AUTHOR_SHARE: Record<AuthorSlug, number> = {
  * this is only the assumption `wallAuthorWeights` uses to size its own
  * correction when the caller doesn't override it. 0.5 mirrors the plan's own
  * "7 days x 2 posts" shape read as one Question + one Wall per day.
+ *
+ * T17 note: when a `readThrough` context is passed to `wallAuthorWeights`,
+ * this fraction describes the split of the FREE (non-read-through) slots
+ * only, not the whole week — see `ReadThroughShareContext`.
  */
 export const DEFAULT_QUESTION_FRACTION = 0.5;
+
+/**
+ * T17: the read-through's fixed contribution to a week's author mix.
+ *
+ * T16 moved the pilot's default read-through onto Meditations, so every
+ * read-through slot's author is now fixed to a single philosopher instead
+ * of drawing from a pool. That author is NOT something Wall's weighting can
+ * offset — it is a hard floor. Passing this context to `wallAuthorWeights`
+ * makes the solve target the COMBINED 14-slot mix (read-through + free
+ * slots) instead of pretending the free slots are the whole week, which is
+ * what caused Marcus Aurelius to be counted twice (50% from the
+ * read-through, then another ~43% from a Wall correction that still assumed
+ * no read-through existed) — see the module's T05 section for the pre-T17
+ * mechanism this replaces.
+ */
+export interface ReadThroughShareContext {
+  /** The fixed author of every read-through slot this week (e.g. the read-through book's author — one book, one author). */
+  author: AuthorSlug;
+  /**
+   * Fraction of the week's TOTAL slots (read-through + free) occupied by
+   * the read-through — e.g. 7/14 = 0.5 for the pilot's 7-day, 2-slot-per-day
+   * week (1 read-through slot + 1 free slot per day).
+   */
+  slotShare: number;
+  /**
+   * The Objection pool — folds its own natural (unweighted, uncorrected —
+   * The Objection draws uniformly from its pool, same as The Question)
+   * author mix into the free-slot budget, exactly as `questionPool` already
+   * does for The Question. Required (rather than defaulted to `[]`) because
+   * an empty pool would silently zero out the `objection` share of
+   * `freeSlotFormatShare` below without reducing that share itself, which
+   * would make the free-slot budget sum to less than 1 — see the "no format
+   * share may be asserted without also supplying its pool" guard in
+   * `wallAuthorWeights`.
+   */
+  objectionPool: { author_slug: AuthorSlug }[];
+  /**
+   * Expected format split of the FREE (non-read-through) slots — what
+   * fraction of that budget is expected to render as Wall vs. Question vs.
+   * Objection. Defaults to the ratio `generateWeek` (./schedule.ts) actually
+   * draws slot 2's format from — `DEFAULT_FORMAT_WEIGHTS` there is `{ wall:
+   * 7, question: 6, objection: 1 }` (sum 14), which reduces to `{ wall: 0.5,
+   * question: 3/7, objection: 1/14 }`; not imported directly to avoid a
+   * schedule.ts <-> premises.ts import cycle, so this default is kept in
+   * sync by hand and by `schedule.test.ts`'s cross-check.
+   */
+  freeSlotFormatShare?: { wall: number; question: number; objection: number };
+}
+
+/** See `ReadThroughShareContext.freeSlotFormatShare`'s doc comment for where 7:6:1 comes from. */
+export const DEFAULT_FREE_SLOT_FORMAT_SHARE = { wall: 7 / 14, question: 6 / 14, objection: 1 / 14 };
 
 /**
  * Compute the per-author weighting The Wall should apply so that the
  * COMBINED mix across formats lands closer to `BALANCED_AUTHOR_SHARE` than
  * The Question pool's own mix does alone.
  *
- * The algebra: for each author `a`, if a fraction `questionFraction` of the
- * week's posts are Question posts (share `q[a]` per `authorMix(questionPool)`)
- * and the remaining `1 - questionFraction` are Wall posts (share `w[a]`,
- * unknown), the combined share is:
+ * Two modes, selected by whether `readThrough` is passed:
  *
- *   combined[a] = questionFraction * q[a] + (1 - questionFraction) * w[a]
+ * 1. **No `readThrough` (default, byte-identical to the pre-T17 function).**
+ *    For each author `a`, if a fraction `questionFraction` of the week's
+ *    posts are Question posts (share `q[a]` per `authorMix(questionPool)`)
+ *    and the remaining `1 - questionFraction` are Wall posts (share `w[a]`,
+ *    unknown), the combined share is:
  *
- * Solving for `w[a]` that makes `combined[a] == 1/3` gives:
+ *      combined[a] = questionFraction * q[a] + (1 - questionFraction) * w[a]
  *
- *   w[a] = (1/3 - questionFraction * q[a]) / (1 - questionFraction)
+ *    Solving for `w[a]` that makes `combined[a] == 1/3`:
  *
- * Because `sum(q[a]) == 1`, the un-clamped solution always sums to exactly 1
- * across the three authors (`3 * 1/3 - sum(q[a]) == 1`), so it's already a
- * valid weight distribution UNLESS the Question pool's skew toward one
- * author is so severe that its solved Wall weight would need to be negative
- * (not possible here: the worst-skewed author, epictetus at 56%, is still
- * below the 66.7% ceiling at which its solved weight would hit zero — see
- * the corpus-level test). Weights are clamped to >= 0 and renormalized to
- * sum to 1 as a defensive measure for any future corpus where a Question
- * pool skews harder than that.
+ *      w[a] = (1/3 - questionFraction * q[a]) / (1 - questionFraction)
  *
- * `wallPool` is accepted (per the plan's specified signature) so a future
- * caller's weights are visibly tied to the pool they'll be applied against,
- * and so this function can guard against solving a positive weight for an
- * author the Wall pool cannot actually supply (also renormalized away).
+ * 2. **With `readThrough` (T17).** A `readThrough.slotShare` fraction of
+ *    the week is fixed to `readThrough.author` regardless of what Wall
+ *    does, and only the remaining `freeShare = 1 - slotShare` is split
+ *    across Wall/Question/Objection per `freeSlotFormatShare`. The combined
+ *    share generalizes to:
+ *
+ *      combined[a] = slotShare * (a == readThrough.author ? 1 : 0)
+ *                  + freeShare * (wallShare * w[a] + questionShare * q[a] + objectionShare * o[a])
+ *
+ *    Solving for `w[a]` that makes `combined[a] == 1/3`:
+ *
+ *      w[a] = (1/3 - slotShare*(a==author) - freeShare*questionShare*q[a] - freeShare*objectionShare*o[a])
+ *             / (freeShare * wallShare)
+ *
+ *    REACHABLE FLOOR: `readThrough.author`'s combined share can never drop
+ *    below `readThrough.slotShare` — Wall supplies none of the
+ *    read-through's fixed slots, so its solved weight for that author comes
+ *    out negative whenever `slotShare` alone already exceeds 1/3 (true for
+ *    the pilot's default 7/14 = 0.5: that author is mathematically
+ *    guaranteed at least 50%, so the even 1/3 target is UNREACHABLE for it,
+ *    by design, not by a bug). The clamp below turns that negative solve
+ *    into 0 — "give that author none of Wall's discretionary weight" — which
+ *    is the correct "push as far as possible" answer, not a workaround.
+ *    `freeShare * wallShare` can also be 0 (a week with no read-through-free
+ *    Wall budget at all, e.g. `slotShare` -> 1 or `freeSlotFormatShare.wall`
+ *    -> 0); that is guarded explicitly rather than left to divide-by-zero,
+ *    and falls through to the same "no signal, weight evenly" renormalize
+ *    step used when every author's Wall pool is empty.
+ *
+ * In both modes, an author absent from `wallPool` gets weight 0 regardless
+ * of the algebra, and the raw solved weights are clamped to `>= 0`
+ * (`Math.max`) then renormalized to sum to exactly 1 (equivalently, into
+ * `[0, 1]`) — defensive for any corpus/config where a pool skews harder
+ * than the target can absorb.
  */
 export function wallAuthorWeights(
   questionPool: QuestionEntry[],
   wallPool: RankedWallEntry[],
   questionFraction = DEFAULT_QUESTION_FRACTION,
+  readThrough?: ReadThroughShareContext,
 ): Record<AuthorSlug, number> {
   const questionMix = authorMix(questionPool);
   const wallMix = authorMix(wallPool);
 
   const raw = {} as Record<AuthorSlug, number>;
-  for (const author of VALID_AUTHOR_SLUGS) {
-    const solved = (BALANCED_AUTHOR_SHARE[author] - questionFraction * questionMix[author].share) / (1 - questionFraction);
-    // An author with nothing in the Wall pool can't be assigned any weight,
-    // regardless of what the algebra solves for.
-    raw[author] = wallMix[author].count > 0 ? Math.max(0, solved) : 0;
+
+  if (readThrough === undefined) {
+    for (const author of VALID_AUTHOR_SLUGS) {
+      const solved = (BALANCED_AUTHOR_SHARE[author] - questionFraction * questionMix[author].share) / (1 - questionFraction);
+      // An author with nothing in the Wall pool can't be assigned any weight,
+      // regardless of what the algebra solves for.
+      raw[author] = wallMix[author].count > 0 ? Math.max(0, solved) : 0;
+    }
+  } else {
+    const objectionMix = authorMix(readThrough.objectionPool);
+    const { wall: wallShare, question: questionShare, objection: objectionShare } =
+      readThrough.freeSlotFormatShare ?? DEFAULT_FREE_SLOT_FORMAT_SHARE;
+    const freeShare = 1 - readThrough.slotShare;
+    const denom = freeShare * wallShare;
+
+    for (const author of VALID_AUTHOR_SLUGS) {
+      if (denom <= 0) {
+        // No free-slot Wall budget to solve for at all (see the doc
+        // comment's REACHABLE FLOOR note) — leave raw at 0 for every
+        // author; the renormalize step below falls back to an even split.
+        raw[author] = 0;
+        continue;
+      }
+      const fixedContribution =
+        readThrough.slotShare * (author === readThrough.author ? 1 : 0) +
+        freeShare * questionShare * questionMix[author].share +
+        freeShare * objectionShare * objectionMix[author].share;
+      const solved = (BALANCED_AUTHOR_SHARE[author] - fixedContribution) / denom;
+      raw[author] = wallMix[author].count > 0 ? Math.max(0, solved) : 0;
+    }
   }
 
   const total = VALID_AUTHOR_SLUGS.reduce((sum, author) => sum + raw[author], 0);
   const weights = {} as Record<AuthorSlug, number>;
   for (const author of VALID_AUTHOR_SLUGS) {
-    weights[author] = total > 0 ? raw[author] / total : 1 / VALID_AUTHOR_SLUGS.length;
+    weights[author] = total > 0 ? Math.min(1, Math.max(0, raw[author] / total)) : 1 / VALID_AUTHOR_SLUGS.length;
   }
   return weights;
 }

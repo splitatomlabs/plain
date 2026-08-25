@@ -1089,3 +1089,81 @@ the next-ranked passage — Book 2 carries disproportionately recognisable mater
   consumer. `git diff --stat` (before regenerating the uncommitted schedule files) touches only
   `scripts/lib/schedule.ts`, `scripts/generate-schedule.ts`, `scripts/lib/__tests__/schedule.test.ts`, and this plan
   file.
+
+- [x] T17: Make T05's `wallAuthorWeights` account for the READ-THROUGH's fixed author contribution. It currently
+  computes weights to offset the Question pool's Epictetus skew only, giving `{epictetus 0.105, marcus 0.431,
+  seneca 0.464}`. With the read-through now on Meditations, Marcus is counted twice (50% of slots from the
+  read-through plus 43% of Wall slots), measuring epictetus 21.4% / marcus 71.4% / seneca 7.1% — Seneca is worse
+  than the 18.3% it had under the Enchiridion read-through. Acceptance: the combined mix moves materially toward
+  Seneca without Marcus losing its majority; measured numbers reported.
+  **Implementation:** extended `wallAuthorWeights` (`scripts/lib/premises.ts`) with a new optional 4th parameter,
+  `readThrough?: ReadThroughShareContext` (`{ author, slotShare, objectionPool, freeSlotFormatShare? }`), rather than
+  changing its existing signature — calling it with no 4th argument is **byte-identical to the pre-T17 function**
+  (pinned by a new "backward compatibility" test reasserting the exact old solved weights), so every pre-existing
+  caller/test needed no change. When `readThrough` IS passed, the algebra generalizes from "Question + Wall split
+  the whole week" to "`slotShare` of the week is fixed to `readThrough.author` regardless of Wall, and only the
+  remaining `1 - slotShare` free budget is split across Wall/Question/Objection per `freeSlotFormatShare` (default
+  `{ wall: 0.5, question: 3/7, objection: 1/14 }`, i.e. the 7:6:1 ratio `DEFAULT_FORMAT_WEIGHTS` already uses for
+  slot 2's own per-day format draw — kept as a literal, not imported, to avoid a schedule.ts <-> premises.ts import
+  cycle)" — solved per-author for `w[a]` that would make the COMBINED 14-slot share hit 1/3, clamped to `>= 0` and
+  renormalized into `[0, 1]`, exactly mirroring the old function's own clamp/renormalize discipline. **Reachable
+  floor, documented in the function's own doc comment:** `readThrough.author`'s combined share can never drop below
+  `readThrough.slotShare` — Wall supplies none of the read-through's fixed slots — so at the pilot's default 0.5
+  share that author is guaranteed at least 50% and the even-1/3 target is mathematically unreachable for it; the
+  solve comes out negative for that author and clamps to 0 ("give it none of Wall's discretionary weight") rather
+  than erroring. Also guarded the `freeShare * wallShare == 0` case explicitly (e.g. `slotShare -> 1`, no free slots
+  at all) rather than dividing by zero — falls through to the same "no signal, weight evenly" renormalize path
+  already used when every author's Wall pool is empty. `scripts/lib/schedule.ts`'s `generateWeek` (the only real
+  caller) now builds this context at its `wallAuthorWeights(...)` call site: `author` from `bookCards[0].author_slug`
+  (the read-through book's own author — one book, one author, by construction), `slotShare` hardcoded to `0.5` (7
+  read-through + 7 free slots per 14-slot week — a fixed shape of the day loop, independent of format weighting),
+  `objectionPool` from `pools.objection`, and `freeSlotFormatShare` DERIVED from this week's own actual `weights`
+  (not the `DEFAULT_FORMAT_WEIGHTS` literal) so a CLI override (`--question-weight` etc.) still gets an accurate
+  correction. **Test updates — distinguishing genuine old-behavior assertions from now-inaccurate methodology, per
+  the task's explicit instruction not to blanket-replace:** `premises.test.ts`'s existing `wallAuthorWeights`
+  describe block (5 tests, including the exact pre-T17 solved-weights assertion) was left completely UNTOUCHED —
+  every one of those calls omits the new 4th argument, so they still exercise and correctly pin the OLD algebra,
+  which is still live and still correct for any caller with no read-through to account for; added one more test
+  alongside them explicitly naming this as the backward-compatibility contract. Added a new
+  `describe("wallAuthorWeights with a readThrough context (T17)")` block (6 new tests) against the real corpus:
+  marcus-aurelius's own Wall weight solves to exactly 0 at the default 0.5 share; no weight is ever negative or NaN
+  across a `slotShare` sweep (0.5/0.75/0.9/0.999/1); `slotShare: 1` degrades to an even 1/3 split rather than
+  dividing by zero; weight still pushes directionally toward epictetus/seneca and away from marcus-aurelius; the
+  exact solved corpus weights are pinned (`epictetus 0.4230308186071691, marcus-aurelius 0, seneca 0.5769691813928309`);
+  and an explicit `freeSlotFormatShare` override produces different weights than the default. In `schedule.test.ts`,
+  the ONE test that genuinely encoded the old per-format Wall-weighting behavior — "a slice read-through excludes
+  ONLY its own cards" (T15), which forced `weights: { wall: 100, question: 0, objection: 0 }` specifically because
+  "Wall is weighted toward marcus-aurelius (~0.43)" — no longer holds under T17 (that weight is now ~0 by design), so
+  it was updated to force `question: 100` instead (The Question pool's own natural, uncorrected mix still has 21
+  Meditations entries, all outside the book-02/03 slice, so it exercises the exact same by-card-id-not-book_slug
+  regression this test exists to catch); confirmed still green. Updated two now-stale comments (not assertions) in
+  the same file that described the pre-T17 "~0.43" Wall weight to explain the post-T17 mechanism instead. Updated
+  the T16 acceptance test's own docstring/measured numbers from the pre-T17 "epictetus 21.4%, marcus 71.4%, seneca
+  7.1%" to the post-T17 measured values (its actual assertions — marcus is majority and beats both others — were
+  unaffected and needed no change). Added a new T17-specific regression test in the T16 describe block: aggregates
+  `author_mix` across 15 fixed seeds (1,2,3,7,11,13,17,19,23,29,31,37,41,42,97) of isolated default weeks, asserting
+  seneca's combined share exceeds 0.15 (well clear of the pre-fix 7.1%) while marcus-aurelius's stays above both 0.5
+  and the other two authors' shares — a stable multi-week check, not a single seed. **Measured, seed 42 week 1 and
+  week 2 (both, post-fix):** epictetus 3/14 (**21.4%**, unchanged from pre-fix), marcus-aurelius 8/14 (**57.1%**,
+  down from 71.4%, still an outright majority), seneca 3/14 (**21.4%**, up 3x from 7.1% — materially toward Seneca,
+  satisfying the acceptance criterion with real numbers, and landing closer to even than my own rough pre-implementation
+  projection of ~30% seneca / ~15% epictetus predicted, because the finite 14-card weekly draw plus The Question's
+  own natural ~24% marcus/20% seneca mix pulled epictetus's share down less and seneca's up less than the
+  infinite-population algebra alone suggested). Format counts unchanged both weeks: `wall: 10, question: 4,
+  objection: 0` (T17 only reweights Wall's AUTHOR selection, not the format draw itself). Book distribution both
+  weeks: `{ meditations: 8, discourses: 3, "on-anger": 2, "peace-of-mind": 1 }` (7 read-through Meditations cards +
+  1 additional Meditations card reached via The Question's own natural mix, not Wall — consistent with Wall's
+  marcus-aurelius weight solving to 0). **Regenerated weeks 1 and 2** (`npx tsx scripts/generate-schedule.ts --week 1
+  --seed 42 --first-week --force`, then `--week 2 --seed 42 --skip-review-check --force` — week 1's
+  `pilot-review-w01.md` is still the unfilled Enchiridion-era template from before T16, out of scope to fill in
+  here) — **left uncommitted, per instruction.** `npx vitest run scripts/lib/__tests__/premises.test.ts
+  scripts/lib/__tests__/schedule.test.ts` — 310/310 green (302 + 8 new: 7 in premises.test.ts, 1 in schedule.test.ts).
+  `npm test` — **724 pipeline tests** (716 baseline + 8 new) + **95 web unit tests**, all green, confirming no
+  regression to T01-T16 or any other consumer. Did not touch the read-through default, gates, rubrics, or batch
+  code. `git diff --stat` (before regenerating the uncommitted schedule files) touches only
+  `scripts/lib/premises.ts`, `scripts/lib/schedule.ts`, `scripts/lib/__tests__/premises.test.ts`,
+  `scripts/lib/__tests__/schedule.test.ts`, and this plan file.
+  **Follow-up (not in scope here):** T11 (running real LLM scoring to produce the committed pools) will change the
+  real `wallPool`/`questionPool`/`objectionPool` contents and could shift these exact solved weights and measured
+  percentages somewhat — the mechanism and its reachable-floor behavior will not change, only the numbers. Worth a
+  quick re-measure after T11 lands.

@@ -1461,6 +1461,115 @@ describe("wallAuthorWeights", () => {
     const total = wOverride.epictetus + wOverride["marcus-aurelius"] + wOverride.seneca;
     expect(total).toBeCloseTo(1, 8);
   });
+
+  it("with no readThrough argument, is byte-identical to the pre-T17 function (backward compatibility)", () => {
+    // Same call as the "measures the exact solved weights" test above —
+    // pins that adding the optional 4th `readThrough` parameter changed
+    // nothing about the function's behavior when a caller doesn't pass it.
+    expect(weights.epictetus).toBeCloseTo(0.10486891385767785, 6);
+    expect(weights["marcus-aurelius"]).toBeCloseTo(0.43071161048689144, 6);
+    expect(weights.seneca).toBeCloseTo(0.4644194756554308, 6);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T17: wallAuthorWeights(..., readThrough) — the read-through's fixed author
+// contribution. The pilot's default read-through (Meditations, T16) fixes
+// marcus-aurelius at 7 of every 14 slots (50%) regardless of what Wall does,
+// so treating the free slots as the whole week (T05's original algebra)
+// double-counts marcus-aurelius. These tests exercise the read-through-aware
+// path directly; schedule.test.ts exercises it end to end through
+// `generateWeek`.
+// ---------------------------------------------------------------------------
+
+describe("wallAuthorWeights with a readThrough context (T17)", () => {
+  const cards = loadCorpus();
+  const questionPool = questionGate(cards);
+  const wallPool = rankWall(cards);
+  const objectionPool = objectionGate(cards);
+
+  it("solves marcus-aurelius's own Wall weight to (near) 0 when marcus-aurelius is the fixed read-through author at a 50% floor", () => {
+    // 7/14 = 0.5 already exceeds the 1/3 balanced target, so the "combined
+    // == 1/3" equation has no non-negative solution for marcus-aurelius —
+    // this is the REACHABLE FLOOR case documented on wallAuthorWeights.
+    const weights = wallAuthorWeights(questionPool, wallPool, DEFAULT_QUESTION_FRACTION, {
+      author: "marcus-aurelius",
+      slotShare: 0.5,
+      objectionPool,
+    });
+    expect(weights["marcus-aurelius"]).toBe(0);
+    expect(weights.epictetus).toBeGreaterThan(0);
+    expect(weights.seneca).toBeGreaterThan(0);
+    const total = weights.epictetus + weights["marcus-aurelius"] + weights.seneca;
+    expect(total).toBeCloseTo(1, 8);
+  });
+
+  it("no weight is negative or NaN even when the read-through author is pinned at a share far above what any target could reach", () => {
+    for (const slotShare of [0.5, 0.75, 0.9, 0.999, 1]) {
+      const weights = wallAuthorWeights(questionPool, wallPool, DEFAULT_QUESTION_FRACTION, {
+        author: "marcus-aurelius",
+        slotShare,
+        objectionPool,
+      });
+      for (const author of ["epictetus", "marcus-aurelius", "seneca"] as const) {
+        expect(Number.isNaN(weights[author])).toBe(false);
+        expect(weights[author]).toBeGreaterThanOrEqual(0);
+        expect(weights[author]).toBeLessThanOrEqual(1);
+      }
+      const total = weights.epictetus + weights["marcus-aurelius"] + weights.seneca;
+      expect(total).toBeCloseTo(1, 6);
+    }
+  });
+
+  it("at slotShare 1 (no free slots at all), degrades to an even split rather than dividing by zero", () => {
+    const weights = wallAuthorWeights(questionPool, wallPool, DEFAULT_QUESTION_FRACTION, {
+      author: "marcus-aurelius",
+      slotShare: 1,
+      objectionPool,
+    });
+    expect(weights.epictetus).toBeCloseTo(1 / 3, 8);
+    expect(weights["marcus-aurelius"]).toBeCloseTo(1 / 3, 8);
+    expect(weights.seneca).toBeCloseTo(1 / 3, 8);
+  });
+
+  it("pushes weight toward epictetus and seneca, away from marcus-aurelius, when marcus-aurelius already holds the read-through floor", () => {
+    const weights = wallAuthorWeights(questionPool, wallPool, DEFAULT_QUESTION_FRACTION, {
+      author: "marcus-aurelius",
+      slotShare: 0.5,
+      objectionPool,
+    });
+    expect(weights["marcus-aurelius"]).toBeLessThan(BALANCED_AUTHOR_SHARE["marcus-aurelius"]);
+    expect(weights.epictetus).toBeGreaterThan(BALANCED_AUTHOR_SHARE.epictetus);
+    expect(weights.seneca).toBeGreaterThan(BALANCED_AUTHOR_SHARE.seneca);
+  });
+
+  it("measures the exact solved weights at the pilot's default 7/14 read-through share against the real corpus", () => {
+    const weights = wallAuthorWeights(questionPool, wallPool, DEFAULT_QUESTION_FRACTION, {
+      author: "marcus-aurelius",
+      slotShare: 0.5,
+      objectionPool,
+    });
+    expect(weights.epictetus).toBeCloseTo(0.4230308186071691, 6);
+    expect(weights["marcus-aurelius"]).toBe(0);
+    expect(weights.seneca).toBeCloseTo(0.5769691813928309, 6);
+  });
+
+  it("accepts an explicit freeSlotFormatShare overriding the DEFAULT_FREE_SLOT_FORMAT_SHARE default", () => {
+    const defaultShareWeights = wallAuthorWeights(questionPool, wallPool, DEFAULT_QUESTION_FRACTION, {
+      author: "marcus-aurelius",
+      slotShare: 0.5,
+      objectionPool,
+    });
+    const wallOnlyWeights = wallAuthorWeights(questionPool, wallPool, DEFAULT_QUESTION_FRACTION, {
+      author: "marcus-aurelius",
+      slotShare: 0.5,
+      objectionPool,
+      freeSlotFormatShare: { wall: 1, question: 0, objection: 0 },
+    });
+    expect(wallOnlyWeights).not.toEqual(defaultShareWeights);
+    const total = wallOnlyWeights.epictetus + wallOnlyWeights["marcus-aurelius"] + wallOnlyWeights.seneca;
+    expect(total).toBeCloseTo(1, 8);
+  });
 });
 
 describe("createSeededRng", () => {

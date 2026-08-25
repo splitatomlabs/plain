@@ -52,6 +52,7 @@ import {
   createSeededRng,
   combinedAuthorMix,
   wallAuthorWeights,
+  DEFAULT_QUESTION_FRACTION,
   selectWallBalanced,
   selectLandingLine,
   questionGate,
@@ -634,11 +635,40 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   // material). See the module doc comment and the `M16`/T15 tests below.
   const readThroughCardIds = new Set(bookCards.map((c) => c.id));
 
-  // Author weighting for The Wall (T05) is computed against the FULL,
-  // unfiltered pools — a fixed correction reflecting the corpus's own
-  // skew, not a moving target that drifts as cards get consumed week to
-  // week.
-  const wallAuthorWeightsMap = wallAuthorWeights(pools.question, pools.wall);
+  // Author weighting for The Wall (T05, extended by T17) is computed
+  // against the FULL, unfiltered pools — a fixed correction reflecting the
+  // corpus's own skew, not a moving target that drifts as cards get
+  // consumed week to week.
+  //
+  // T17: the read-through's author is now FIXED (T16 moved it onto
+  // Meditations), so Wall's correction must target the COMBINED 14-slot
+  // mix (7 read-through + 7 free slots), not the free slots alone — see
+  // `ReadThroughShareContext`'s doc comment in ./premises.ts for why
+  // treating the free slots as the whole week double-counts the
+  // read-through's author. `readThroughAuthor` is read straight off the
+  // read-through's own sequence (`bookCards[0]`) rather than hardcoded,
+  // since every card in a single read-through book shares one author by
+  // construction. `readThroughSlotShare` is 7/14 = 0.5 for the pilot's
+  // fixed 7-day, 2-slot-per-day week (1 read-through slot + 1 free slot per
+  // day) — not derived from `weights`, because the read-through's slot
+  // COUNT is fixed by the day loop below regardless of format weighting;
+  // only its rendered FORMAT is drawn from `weights`. `freeSlotFormatShare`
+  // IS derived from `weights` (this week's actual format weights, which may
+  // differ from `DEFAULT_FORMAT_WEIGHTS` via CLI overrides) so the
+  // correction stays accurate if a future week's weights change.
+  const readThroughAuthor = bookCards[0].author_slug;
+  const readThroughSlotShare = 0.5;
+  const formatWeightTotal = weights.wall + weights.question + weights.objection;
+  const freeSlotFormatShare =
+    formatWeightTotal > 0
+      ? { wall: weights.wall / formatWeightTotal, question: weights.question / formatWeightTotal, objection: weights.objection / formatWeightTotal }
+      : undefined;
+  const wallAuthorWeightsMap = wallAuthorWeights(pools.question, pools.wall, DEFAULT_QUESTION_FRACTION, {
+    author: readThroughAuthor,
+    slotShare: readThroughSlotShare,
+    objectionPool: pools.objection,
+    freeSlotFormatShare,
+  });
 
   // The weighted (slot 2) pools EXCLUDE the read-through book entirely. The
   // read-through advances through every one of that book's cards in strict

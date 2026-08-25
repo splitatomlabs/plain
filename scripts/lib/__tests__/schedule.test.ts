@@ -15,6 +15,7 @@ import {
   type ScheduleFormat,
 } from "../schedule.js";
 import type { Card } from "../types.js";
+import type { AuthorSlug } from "../constants.js";
 
 // ---------------------------------------------------------------------------
 // Real-corpus fixtures, computed once — these tests exercise the generator
@@ -1997,10 +1998,17 @@ describe("M16: the weighted Wall pool excludes the read-through book, same as th
 // read-through is sliced to a few chapters (T16's actual plan: Meditations
 // Books 2-3, 48 of Meditations' 576 cards), a `book_slug` exclusion would
 // silently strip EVERY Meditations card from the Wall/Question pools —
-// destroying T05's author balancing, which weights Wall toward
-// marcus-aurelius (~0.43) specifically because Meditations is its best
-// material. These tests assert the exclusion is by CARD ID, not book, and
-// that the default (no chapters) path is untouched.
+// destroying T05's author balancing. (Pre-T17, Wall was weighted toward
+// marcus-aurelius, ~0.43, specifically because Meditations is its best
+// material; post-T17, with Meditations as the read-through book,
+// wallAuthorWeights instead solves marcus-aurelius's OWN Wall weight to ~0 —
+// see ReadThroughShareContext in ./premises.ts — because the read-through
+// already guarantees it a majority floor, so Wall's discretionary weight is
+// spent on epictetus/seneca instead. Either way, a book_slug exclusion would
+// still be wrong: it would strip Meditations material The Wall, The
+// Question or The Objection could otherwise legitimately draw.) These tests
+// assert the exclusion is by CARD ID, not book, and that the default (no
+// chapters) path is untouched.
 // ---------------------------------------------------------------------------
 
 describe("T15: read-through book slice", () => {
@@ -2157,9 +2165,17 @@ describe("T15: read-through book slice", () => {
         readThroughBook: "meditations",
         readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
         readThroughStartIndex: 0,
-        // Maximize the chance slot 2 draws a Meditations Wall card — Wall is
-        // weighted toward marcus-aurelius (~0.43, see wallAuthorWeights).
-        weights: { wall: 100, question: 0, objection: 0 },
+        // Maximize the chance slot 2 draws a Meditations card via The
+        // Question instead of The Wall: T17 makes wallAuthorWeights solve
+        // marcus-aurelius's Wall weight to ~0 whenever the read-through
+        // book (here, Meditations) already fixes marcus-aurelius at a
+        // guaranteed-majority floor (see ReadThroughShareContext in
+        // ./premises.ts), so Wall itself is no longer a reliable way to
+        // surface a Meditations card here. The Question pool's own
+        // (unweighted, uncorrected) mix still has 21 Meditations entries —
+        // all outside this book-02/03 slice — so weighting toward Question
+        // instead reliably exercises the same by-card-id exclusion.
+        weights: { wall: 0, question: 100, objection: 0 },
       });
       for (const slot of week.slots) {
         if (slot.slot === 2 && slot.book_slug === "meditations" && !meditationsSliceIds.has(slot.card_id)) {
@@ -2419,7 +2435,9 @@ describe("T16: Meditations Books 2-3 default read-through", () => {
   // -------------------------------------------------------------------------
   it(
     "reports marcus-aurelius as the majority author in the combined mix of a default week " +
-      "(measured, seed 42 week 1: epictetus 21.4%, marcus-aurelius 71.4%, seneca 7.1%)",
+      "(measured post-T17, seed 42 week 1: epictetus 21.4%, marcus-aurelius 57.1%, seneca 21.4% — " +
+      "T17 makes wallAuthorWeights account for the read-through's fixed 50% marcus-aurelius floor, " +
+      "materially raising seneca from the pre-T17 7.1% without marcus-aurelius losing its majority)",
     () => {
       const week = makeDefaultWeek(1, 42);
       const mix = week.author_mix;
@@ -2443,6 +2461,41 @@ describe("T16: Meditations Books 2-3 default read-through", () => {
     // Meditations read-through (marcus-aurelius) by construction, so marcus
     // should win comfortably across most seeds, not merely half.
     expect(marcusWins).toBeGreaterThanOrEqual(Math.ceil(n * 0.8));
+  });
+
+  // -------------------------------------------------------------------------
+  // T17: wallAuthorWeights must account for the read-through's fixed author
+  // contribution, not just The Question pool's own skew. Pre-T17, the
+  // default (Meditations) read-through's fixed 50% marcus-aurelius floor
+  // was counted TWICE — once from the read-through itself, again from a
+  // Wall correction still assuming no read-through existed — leaving seneca
+  // at a measured 7.1% (seed 42, week 1; see the git history of this file's
+  // "measured, seed 42 week 1" test above). Fixed seeds, aggregated over
+  // several isolated weeks, so this is a stable regression check, not a
+  // single lucky draw.
+  // -------------------------------------------------------------------------
+  it("T17: seneca's combined share is materially above the pre-fix 7.1%, with marcus-aurelius still the largest share, across a fixed multi-week seed sweep", () => {
+    const seeds = [1, 2, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 42, 97];
+    const totals: Record<AuthorSlug, number> = { epictetus: 0, "marcus-aurelius": 0, seneca: 0 };
+    let totalSlots = 0;
+    for (const seed of seeds) {
+      const week = makeDefaultWeek(1, seed);
+      for (const author of ["epictetus", "marcus-aurelius", "seneca"] as const) {
+        totals[author] += week.author_mix[author].count;
+      }
+      totalSlots += week.slots.length;
+    }
+    const senecaShare = totals.seneca / totalSlots;
+    const marcusShare = totals["marcus-aurelius"] / totalSlots;
+    const epictetusShare = totals.epictetus / totalSlots;
+
+    // Materially above the pre-T17 measured 7.1% — well clear of noise.
+    expect(senecaShare).toBeGreaterThan(0.15);
+    // Marcus-aurelius keeps its majority — the read-through's own 50% floor
+    // guarantees this regardless of Wall's weighting.
+    expect(marcusShare).toBeGreaterThan(0.5);
+    expect(marcusShare).toBeGreaterThan(senecaShare);
+    expect(marcusShare).toBeGreaterThan(epictetusShare);
   });
 
   // -------------------------------------------------------------------------
