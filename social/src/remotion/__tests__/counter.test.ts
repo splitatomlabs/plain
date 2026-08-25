@@ -272,11 +272,18 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 					id: 'Wall',
 					baseProps: WALL_BASE_PROPS,
 					// The Wall has no "alone" phase — frame 0 is already the moving
-					// wall — so the counter is present start to finish, including
-					// the landing-line payoff (a still frame held for
-					// LANDING_LINE_SECONDS).
+					// wall — but the counter must NEVER render over that moving
+					// phase (it would collide with the wall's own first line — see
+					// `Wall.tsx`'s `counter` doc comment). It only appears once the
+					// composition reaches a still payoff frame: the landing line
+					// (held for LANDING_LINE_SECONDS) or a rest line.
 					frames: [
-						{ frame: 0, expectCounter: true, note: 'frame 0 — the moving wall' },
+						{ frame: 0, expectCounter: false, note: 'frame 0 — the moving wall' },
+						{
+							frame: wallTiming.wall.endFrame - 1,
+							expectCounter: false,
+							note: 'the last frame of the moving wall, an instant before the cut'
+						},
 						{ frame: wallTiming.landingLine.startFrame, expectCounter: true, note: 'the landing-line payoff' }
 					]
 				},
@@ -287,10 +294,17 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 					// see `Question.tsx`'s doc comment and
 					// `question-timing.test.ts`'s "frame 0 renders ONLY the
 					// question" guard, which this test must not contradict (no
-					// existing test may change). The overlay starts once the
-					// archaic wall arrives, and stays through the answer payoff.
+					// existing test may change). The moving archaic-wall phase that
+					// follows must ALSO never show the counter — same collision
+					// this format shares with The Wall's own moving phase — so it
+					// only resumes on the still answer payoff.
 					frames: [
 						{ frame: 0, expectCounter: false, note: 'frame 0 — the question alone' },
+						{
+							frame: questionTiming.wall.startFrame,
+							expectCounter: false,
+							note: 'the moving archaic wall'
+						},
 						{
 							frame: questionTiming.answer.startFrame,
 							expectCounter: true,

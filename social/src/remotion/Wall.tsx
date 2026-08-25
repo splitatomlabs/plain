@@ -3,13 +3,23 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
 import { fitFontSize } from '../render/fit.js';
-import { ReadThroughCounter } from './Counter.js';
+import { ReadThroughCounter, COUNTER_FONT_STACK } from './Counter.js';
 import { assertWallCardRenderable } from './wall-gate.js';
+import {
+	computeOpeningData,
+	assertOpeningRenderable,
+	countdownValueAtFrame,
+	formatCountdownLabel,
+	GRADE_LABEL_PREFIX,
+	WALL_OPENINGS,
+	type WallOpening
+} from './wall-openings.js';
 import {
 	computeWallTiming,
 	splitWords,
 	wallScaleAtFrame,
 	WALL_LINE_HEIGHT_RATIO,
+	FRAME_HEIGHT,
 	PAYOFF_BOX_WIDTH,
 	PAYOFF_BOX_HEIGHT,
 	PAYOFF_MIN_FONT,
@@ -41,9 +51,35 @@ export interface WallProps extends Record<string, unknown> {
 	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
 	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
 	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
-	 * this renders as (T09).
+	 * this renders as (T09). NEVER shown during the moving wall phase (the
+	 * counter must not collide with the archaic wall it would otherwise sit
+	 * on top of) — only once the composition reaches a still payoff frame
+	 * (the landing line or a rest line).
 	 */
 	counter?: string | null;
+	/**
+	 * Which of the Wall's three OPENING treatments (T17) this render uses —
+	 * `standard` (the packed wall exactly as it renders today), `countdown`
+	 * ("190 -> 97", the original's word count counting down live in step
+	 * with the karaoke sweep to the plain word count), or `grade`
+	 * ("Grade 14", the original's computed reading grade as a bare
+	 * measurement — original only). See `wall-openings.ts`. Defaults to
+	 * `standard` so every existing caller and test is unaffected — this
+	 * prop is purely additive.
+	 */
+	opening?: WallOpening;
+	/**
+	 * Which openings THIS card is eligible for — normally the precomputed
+	 * `eligible_openings` field on the card's `content/social/premises/
+	 * wall.json` pool entry (see `scripts/lib/premises.ts`'s
+	 * `eligibleWallOpenings`). Defaults to permitting all three when
+	 * omitted, so a direct render (Remotion Studio, or a caller that has
+	 * already screened the card upstream) isn't blocked — `wall-openings.ts`'s
+	 * `gateOpening`/`assertOpeningRenderable` is the REJECTION path this
+	 * feeds when a real pool entry's list is narrower than `['standard',
+	 * 'countdown', 'grade']`.
+	 */
+	eligibleOpenings?: WallOpening[];
 }
 
 // Exported (additively) so other compositions sharing this visual grammar —
@@ -71,8 +107,10 @@ export const Wall: React.FC<WallProps> = (props) => {
 		narrationTimings: props.narrationTimings
 	});
 	const accent = ACCENTS[props.author];
-	// Optional overlay (T09) — a sibling layer on every phase below, never a
-	// participant in any phase's own layout. See `Counter.tsx`.
+	// Optional overlay (T09) — a sibling layer on every STILL payoff phase
+	// below, never a participant in any phase's own layout and never shown
+	// during the moving wall phase (it must not collide with the archaic
+	// wall). See `Counter.tsx`.
 	const counter = props.counter ?? null;
 
 	if (frame < timing.wall.endFrame) {
@@ -81,10 +119,51 @@ export const Wall: React.FC<WallProps> = (props) => {
 		// runs this same gate before a render starts; this call is the
 		// backstop for any path that renders `Wall` directly.
 		const layout = assertWallCardRenderable(props.originalExcerpt);
+
+		// T17 — the opening rotation. `standard` (the default) renders
+		// nothing extra here at all: the wall is unchanged. The two numeric
+		// openings compute their numeral from the real card (never
+		// hardcoded — CONSTRAINT 6's "factually true") and gate themselves
+		// against this card's `eligibleOpenings` before rendering anything —
+		// see `wall-openings.ts`'s `assertOpeningRenderable`.
+		const opening = props.opening ?? 'standard';
+		let openingBadge: React.ReactElement | null = null;
+		if (opening !== 'standard') {
+			// The full plain passage, reconstructed the same way the schedule
+			// (T18) will have it — `landingLine` is part of `plain_english`,
+			// not a separate sentence, so word count must include it to match
+			// `scripts/lib/premises.ts`'s `lengthDelta` (`wordCount(card.
+			// plain_english)`).
+			const plainText = [props.landingLine, ...props.plainLines].join(' ');
+			const openingData = computeOpeningData(props.originalExcerpt, plainText);
+			assertOpeningRenderable(
+				{ eligible_openings: props.eligibleOpenings ?? WALL_OPENINGS },
+				opening,
+				openingData
+			);
+			if (opening === 'countdown') {
+				// The cut is the LAST frame the wall phase renders
+				// (`timing.wall.endFrame` itself is already the payoff phase —
+				// see the `frame < timing.landingLine.endFrame` branch below),
+				// so `countdownValueAtFrame` lands exactly on
+				// `plainWordCount` there, not one frame late.
+				const value = countdownValueAtFrame(frame, timing.karaoke, timing.wall.endFrame - 1, openingData);
+				openingBadge = <WallOpeningBadge value={formatCountdownLabel(value)} accent={accent} />;
+			} else {
+				// `grade`: ORIGINAL ONLY, bare measurement — never the plain
+				// side's grade, never an adjective. `GRADE_LABEL_PREFIX` is a
+				// hardcoded constant ("Grade"), never composed from card data
+				// — see `FORBIDDEN_GRADE_VOCABULARY` in `wall-openings.ts`.
+				openingBadge = (
+					<WallOpeningBadge value={String(openingData.originalGrade)} accent={accent} sublabel={GRADE_LABEL_PREFIX} />
+				);
+			}
+		}
+
 		return (
 			<>
 				<WallPhase frame={frame} text={props.originalExcerpt} accent={accent} timing={timing} layout={layout} />
-				<ReadThroughCounter label={counter} />
+				{openingBadge}
 			</>
 		);
 	}
@@ -184,6 +263,101 @@ export function WallPhase({
 						);
 					})}
 				</p>
+			</div>
+		</AbsoluteFill>
+	);
+}
+
+/**
+ * The numeral is the SUBJECT of the `countdown` and `grade` openings, not a
+ * badge pinned over the text — the index plan's own words are "the first
+ * frame carries A NUMBER INSTEAD OF A WALL". This renders it that way:
+ * dominant (`WALL_OPENING_VALUE_FONT_SIZE`, 280-360px), set directly over
+ * the wall with NO backing plate, no rounded rectangle and no blur — it is
+ * fine, and expected, for it to sit on top of illegible archaic text; what
+ * it must never do is erase a soft-edged rectangle out of that text the way
+ * an opaque card would.
+ *
+ * FRAMING TEXT under CONSTRAINT 6, not quoted content — set apart from
+ * `WallPhase`'s quoted block by every signal that rule asks for, all at
+ * once rather than relying on any single one:
+ *
+ *   - a different typeface — `COUNTER_FONT_STACK` (DM Sans, the UI face
+ *     `Counter.tsx` already uses for the read-through label), never
+ *     `SERIF_STACK`, which is reserved for the author's own words;
+ *   - a different colour — the author's own `accent`, never the wall's
+ *     `INK`, and (per `docs/BRANDING.md`) accents are only ever used this
+ *     large specifically because they fail WCAG AA at body-text sizes;
+ *   - roughly 6x the wall's own type size — unmistakably a different kind
+ *     of thing on screen, not a bigger word in the same sentence;
+ *   - no name, no "he/she wrote", no possessive — bare digits (and, for
+ *     `grade`, the bare word "Grade") and nothing else, so it is never
+ *     attributed to the author.
+ *
+ * Both openings anchor to the SAME region (the upper third, horizontally
+ * centred) so the two numeric openings read as one family rather than two
+ * different treatments.
+ *
+ * `value` and `sublabel` must already be the exact, computed, factual
+ * strings to show (`"190"`, `"14"` + `"Grade"`) — this component does no
+ * formatting or rounding of its own; see `wall-openings.ts`'s
+ * `computeOpeningData`, `countdownValueAtFrame`, `formatCountdownLabel` and
+ * `GRADE_LABEL_PREFIX` for where those come from.
+ */
+export const WALL_OPENING_VALUE_FONT_SIZE = 320;
+export const WALL_OPENING_SUBLABEL_FONT_SIZE = 72;
+/** Anchors the badge's content vertically within the frame's upper third. */
+export const WALL_OPENING_REGION_HEIGHT = FRAME_HEIGHT / 3;
+
+export function WallOpeningBadge({
+	value,
+	accent,
+	sublabel
+}: {
+	value: string;
+	accent: string;
+	sublabel?: string;
+}): React.ReactElement {
+	return (
+		<AbsoluteFill style={{ pointerEvents: 'none' }}>
+			<div
+				style={{
+					position: 'absolute',
+					top: 0,
+					left: 0,
+					right: 0,
+					height: WALL_OPENING_REGION_HEIGHT,
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					justifyContent: 'center'
+				}}
+			>
+				{sublabel ? (
+					<span
+						style={{
+							fontFamily: COUNTER_FONT_STACK,
+							fontWeight: 700,
+							fontSize: WALL_OPENING_SUBLABEL_FONT_SIZE,
+							lineHeight: 1,
+							color: accent,
+							marginBottom: 8
+						}}
+					>
+						{sublabel}
+					</span>
+				) : null}
+				<span
+					style={{
+						fontFamily: COUNTER_FONT_STACK,
+						fontWeight: 700,
+						fontSize: WALL_OPENING_VALUE_FONT_SIZE,
+						lineHeight: 1,
+						color: accent
+					}}
+				>
+					{value}
+				</span>
 			</div>
 		</AbsoluteFill>
 	);

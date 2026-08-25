@@ -19,7 +19,8 @@
     "playwright": "^1.59.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "remotion": "^4.0.360"
+    "remotion": "^4.0.360",
+    "text-readability": "^1.0.2"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

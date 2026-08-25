@@ -31,8 +31,9 @@ export interface QuestionProps extends Record<string, unknown> {
 	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
 	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
 	 * this renders as (T09). Never shown during the opening question-alone
-	 * frame (see this component's own doc comment above) — only once the
-	 * archaic wall arrives.
+	 * frame, and NEVER shown while the archaic wall is moving either (it
+	 * must not collide with it) — only once the plain answer resolves in
+	 * stillness.
 	 */
 	counter?: string | null;
 }
@@ -93,12 +94,11 @@ export const Question: React.FC<QuestionProps> = (props) => {
 		const wallTiming = computeWallTiming({ originalExcerpt: props.originalExcerpt, plainLines: [] });
 		const layout = computeWallLayout(props.originalExcerpt);
 		const relativeFrame = frame - timing.wall.startFrame;
-		return (
-			<>
-				<WallPhase frame={relativeFrame} text={props.originalExcerpt} accent={accent} timing={wallTiming} layout={layout} />
-				<ReadThroughCounter label={counter} />
-			</>
-		);
+		// No counter here, deliberately — the moving archaic wall is not a
+		// still payoff frame, and the counter must never collide with it
+		// (see this component's `counter` doc comment above). It resumes on
+		// the answer payoff below.
+		return <WallPhase frame={relativeFrame} text={props.originalExcerpt} accent={accent} timing={wallTiming} layout={layout} />;
 	}
 
 	// The wall drops away and the plain answer resolves in stillness — the

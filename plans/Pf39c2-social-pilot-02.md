@@ -116,15 +116,21 @@ looks like Plain.
   volume envelopes, mix, then two-pass ffmpeg `loudnorm` (measure with `print_format=json`, then apply). Target
   ~-14 LUFS integrated, -1 dBTP as a NAMED CONSTANT, not a literal — it is an industry-standard figure, not a
   confirmed platform spec. Acceptance: measured loudness within tolerance; output is 48kHz stereo AAC.
-- [ ] T16: Automate the three house-rule checks across every format. Acceptance: the check fails a composition with
+- [~] T16: Automate the three house-rule checks across every format. Acceptance: the check fails a composition with
   overshoot easing or a moving payoff frame.
-- [~] T17: Implement the three-way OPENING ROTATION for The Wall — standard, 190->97, Grade-14. Same pool, same
+- [x] T17: Implement the three-way OPENING ROTATION for The Wall — standard, 190->97, Grade-14. Same pool, same
   reveal, different first 2s. Render the grade as a bare measurement, original only. Tag the chosen opening in post
   metadata so plan 03 can compare openings. Acceptance: three openings render from one card.
 - [ ] T18: Build the render CLI — `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`, reading the schedule
   and writing to `social/out/`. Acceptance: produces correct assets for a given day.
 - [ ] T19: Render a full week and review all 14 posts together, with sound, on a phone. A judgement gate, not a test:
   if they do not look like one coherent channel, fix the art direction before going further.
+
+## Follow-up
+- [x] F01: The read-through counter collided with The Wall's packed archaic text (found while reviewing T17's
+  openings). Fixed inside the T17 round: the counter no longer renders over a MOVING archaic wall in any format —
+  it appears only on the still payoff frames, where a viewer actually reads it. `counter.test.ts`'s pixel-level
+  no-reflow proof was retargeted, not weakened.
 
 ## Deferred
 **Three Voices** — only 15-37 usable triads exist. Revisit after a validated `pull_quote` field exists.
