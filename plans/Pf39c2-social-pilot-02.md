@@ -79,7 +79,7 @@ looks like Plain.
   ~320wpm, past reading speed. **Silent.** At **2-3s: hard cut** — all motion stops, silence, one still plain
   sentence held a full 3 seconds. Then the rest of the plain passage, one still line at a time, quietly narrated.
   Acceptance: renders from a >=150-word card; the cut lands as a somatic drop when watched on a phone.
-- [ ] T06: Add the Wall layout gate — auto-fit to exactly one screen and REJECT any card that cannot be set at
+- [~] T06: Add the Wall layout gate — auto-fit to exactly one screen and REJECT any card that cannot be set at
   >=14px equivalent (396 cards run over 150 words). Acceptance: an over-long card is rejected, not rendered illegibly.
 - [ ] T07: Build **The Question**. Frame 0.0 is the question alone, still and readable. Then the archaic original
   arrives as the moving wall; then it drops away and the plain answer resolves in stillness. **There is no wrong
@@ -96,7 +96,7 @@ looks like Plain.
   before mdat.
 - [~] T11: Generate 5-8 calm ambient loopable instrumental beds, 60s each, no vocals. Run once, manually; commit the
   audio plus a README recording provider, licence and date. Acceptance: 5-8 tracks committed with provenance.
-- [~] T12: Define the TTS provider interface — `synthesize(text, voice) -> audioPath`, satisfied by both ElevenLabs
+- [x] T12: Define the TTS provider interface — `synthesize(text, voice) -> audioPath`, satisfied by both ElevenLabs
   and Polly so swapping is config. Tests use recorded fixtures, never live calls. Acceptance: a simulated ElevenLabs
   failure produces Polly audio.
 - [ ] T13: Implement LINE-LEVEL narration timing — `social/src/audio/timing.ts`. Word-level sync is not needed: The
