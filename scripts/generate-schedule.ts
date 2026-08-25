@@ -51,6 +51,7 @@ const { values: args } = parseArgs({
     "objection-weight": { type: "string" },
     "max-objection-per-week": { type: "string" },
     "premises-dir": { type: "string", default: "content/social/premises" },
+    "wall-exclusions": { type: "string" },
     output: { type: "string", default: "content/social" },
     "corpus-dir": { type: "string", default: "content/output" },
     "dry-run": { type: "boolean", default: false },
@@ -88,6 +89,10 @@ Options:
   --objection-weight <n>        Relative weight for The Objection (default: ${DEFAULT_FORMAT_WEIGHTS.objection})
   --max-objection-per-week <n>  Cap on Objection slots per week regardless of weight (default: ${DEFAULT_MAX_OBJECTION_PER_WEEK})
   --premises-dir <dir>          Scored premise pools directory (default: content/social/premises)
+  --wall-exclusions <path>      Renderer-derived Wall exclusion list (F05), written by
+                                 social/scripts/write-wall-exclusions.ts (default: <output>/wall-exclusions.json).
+                                 Optional — if absent, generation proceeds ungated (logged loudly) exactly as
+                                 it did before F05.
   --corpus-dir <dir>            Card corpus directory (default: content/output)
   --output <dir>                Schedule output directory (default: content/social)
   --dry-run                     Print the week's summary; do not write a file
@@ -185,6 +190,11 @@ const book = args.book;
 const premisesDir = args["premises-dir"]!;
 const corpusDir = args["corpus-dir"]!;
 const outputDir = args.output!;
+// F05: default to <output>/wall-exclusions.json (the same directory the
+// weekly schedules themselves live in) rather than requiring every caller
+// to spell it out — still fully overridable via --wall-exclusions, and
+// loadFormatPools tolerates this path being absent (logged, not fatal).
+const wallExclusionsPath = args["wall-exclusions"] ?? path.join(outputDir, "wall-exclusions.json");
 const dryRun = !!args["dry-run"];
 const force = !!args.force;
 
@@ -278,7 +288,7 @@ async function main(): Promise<void> {
   const cards = loadCorpus(corpusDir);
 
   const gatePools = { wall: rankWall(cards), question: questionGate(cards), objection: objectionGate(cards) };
-  const { pools, source } = await loadFormatPools(premisesDir, gatePools);
+  const { pools, source, wallExclusions } = await loadFormatPools(premisesDir, gatePools, wallExclusionsPath);
 
   const { usedCardIds, readThroughConsumed } = await loadPriorWeeks(outputDir, week);
 
@@ -295,6 +305,7 @@ async function main(): Promise<void> {
     weights,
     readThroughFormat,
     maxObjectionPerWeek,
+    wallExclusions: wallExclusions ?? undefined,
   });
 
   console.log(`Week ${week} (seed ${seed}):`);

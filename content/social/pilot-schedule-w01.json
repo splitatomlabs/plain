@@ -32,13 +32,13 @@
     {
       "day": 1,
       "slot": 2,
-      "card_id": "on-anger-03-093",
-      "book_slug": "on-anger",
+      "card_id": "shortness-of-life-02-004",
+      "book_slug": "shortness-of-life",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "No man is satisfied with his own lot if he fixes his attention on that of another: and this leads to our being angry even with the gods, because somebody precedes us, though we forget of how many we take precedence, and that when a man envies few people, he must be followed in the background by a huge crowd of people who envy him. Yet so churlish is human nature, that, however much men may have received, they think themselves wronged if they are able to receive still more. “He gave me the praetorship. Yes, but I had hoped for the consulship. He bestowed the twelve axes upon me: true, but he did not make me a regular[12] consul. He allowed me to give my name to the year, but he did not help me to the priesthood. I have been elected a member of the college: but why only of one?",
-        "landing_line": "We forget how many people we're already ahead of."
+        "original_excerpt": "But all duration is time, not life: vices press upon us and surround us on every side, and do not permit us to regain our feet, or to raise our eyes and gaze upon truth, but when we are down keep us prostrate and chained to low desires. Men who are in this condition are never allowed to come to themselves: if ever by chance they obtain any rest, they roll to and fro like the deep sea, which heaves and tosses after a gale, and they never have any respite from their lusts. Do you suppose that I speak of those whose ills are notorious? Nay, look at those whose prosperity all men run to see: they are choked by their own good things. To how many men do riches prove a heavy burden? how many men's eloquence and continual desire to display their own cleverness has cost them their lives? how many are sallow with constant sensual indulgence? how many have no freedom left them by the tribe of clients that surges around them?",
+        "landing_line": "Just existing isn't the same as truly living."
       },
       "read_through": false,
       "read_through_counter": null
@@ -144,13 +144,13 @@
     {
       "day": 5,
       "slot": 2,
-      "card_id": "on-anger-02-092",
-      "book_slug": "on-anger",
+      "card_id": "peace-of-mind-17-003",
+      "book_slug": "peace-of-mind",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "What did Priam do in the Iliad? Did he not conceal his wrath and embrace the knees of Achilles? did he not raise to his lips that death-dealing hand, stained with the blood of his son, and sup with his slayer? True! but there were no perfumes and garlands, and his fierce enemy encouraged him with many soothing words to eat, not to drain huge goblets with a guard standing over him to see that he did it. Had he only feared for himself, the father would have treated the tyrant with scorn: but love for his son quenched his anger: he deserved the emperor's permission to leave the banquet and gather up the bones of his son: but, meanwhile, that kindly and polite youth the emperor would not even permit him to do this, but tormented the old man with frequent invitations to drink, advising him thereby to lighten his sorrows. He, on the other hand, appeared to be in good spirits, and to have forgotten what had been done that day: he would have lost his second son had he proved an unacceptable guest to the murderer of his eldest.",
-        "landing_line": "If Priam had only been worried about himself, he would have scorned the tyrant."
+        "original_excerpt": "Still, we must observe moderation in this matter, for there is a great difference between living simply and living slovenly. Moreover, we ought to retire a great deal into ourselves: for association with persons unlike ourselves upsets all that we had arranged, rouses the passions which were at rest, and rubs into a sore any weak or imperfectly healed place in our minds. Nevertheless we ought to mix up these two things, and to pass our lives alternately in solitude and among throngs of people; for the former will make us long for the society of mankind, the latter for that of ourselves, and the one will counteract the other: solitude will cure us when we are sick of crowds, and crowds will cure us when we are sick of solitude.",
+        "landing_line": "There's a big difference between living simply and living like a slob."
       },
       "read_through": false,
       "read_through_counter": null
@@ -172,13 +172,13 @@
     {
       "day": 6,
       "slot": 2,
-      "card_id": "on-anger-03-027",
-      "book_slug": "on-anger",
+      "card_id": "happy-life-16-001",
+      "book_slug": "happy-life",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "We must add to this, that the man who lives with quiet people is not only improved by their example, but also by the fact that he finds no reason for anger and does not practise his vice: it will, therefore, be his duty to avoid all those who he knows will excite his anger. You ask, who these are: many will bring about the same thing by various means; a proud man will offend you by his disdain, a talkative man by his abuse, an impudent man by his insults, a spiteful man by his malice, a quarrelsome man by his wrangling, a braggart and liar by his vain-gloriousness: you will not endure to be feared by a suspicious man, conquered by an obstinate one, or scorned by an ultra-refined one: Choose straightforward, good-natured, steady people, who will not provoke your wrath, and will bear with it. Those whose dispositions are yielding, polite and suave, will be of even greater service, provided they do not flatter, for excessive obsequiousness irritates bad-tempered men.",
-        "landing_line": "Too much flattery irritates people with bad tempers."
+        "original_excerpt": "True happiness, therefore, consists in virtue: and what will this virtue bid you do? Not to think anything bad or good which is connected neither with virtue nor with wickedness: and in the next place, both to endure unmoved the assaults of evil, and, as far as is right, to form a god out of what is good. What reward does she promise you for this campaign? an enormous one, and one that raises you to the level of the gods: you shall be subject to no restraint and to no want; you shall be free, safe, unhurt; you shall fail in nothing that you attempt; you shall be debarred from nothing; everything shall turn out according to your wish; no misfortune shall befal you; nothing shall happen to you except what you expect and hope for.",
+        "landing_line": "True happiness comes from virtue."
       },
       "read_through": false,
       "read_through_counter": null

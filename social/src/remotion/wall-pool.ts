@@ -102,6 +102,21 @@ export function loadOutputCard(bookSlug: string, cardId: string, outputDir: stri
 	return card;
 }
 
+/**
+ * One rejected pool entry, with enough detail (F05) for
+ * `social/scripts/write-wall-exclusions.ts` to publish a per-card reason
+ * and axis to `content/social/wall-exclusions.json` — `rejectedIds` alone
+ * (below) only says WHICH cards failed, not why.
+ */
+export interface WallPoolRejection {
+	card_id: string;
+	book_slug: string;
+	/** Which `gateWallCard` axis rejected this card. */
+	axis: 'legibility' | 'duration';
+	/** Verbatim `WallGateResult.reason` from `gateWallCard`. */
+	reason: string;
+}
+
 export interface WallPoolSurveyResult {
 	passed: number;
 	/** Cards the legibility floor rejected — see `WALL_MIN_LEGIBLE_FONT_PX`. */
@@ -109,6 +124,8 @@ export interface WallPoolSurveyResult {
 	/** Cards the `MAX_POST_DURATION_FRAMES` ceiling rejected — see F03. */
 	rejectedForDuration: number;
 	rejectedIds: string[];
+	/** Every rejection, WITH its axis and reason (F05) — same cards as `rejectedIds`, in the same order. */
+	rejections: WallPoolRejection[];
 }
 
 /**
@@ -149,6 +166,7 @@ export function surveyWallPool(
 	let rejectedForLegibility = 0;
 	let rejectedForDuration = 0;
 	const rejectedIds: string[] = [];
+	const rejections: WallPoolRejection[] = [];
 
 	for (const entry of entries) {
 		const card = loadOutputCard(entry.book_slug, entry.card_id, outputDir);
@@ -159,6 +177,12 @@ export function surveyWallPool(
 			passed++;
 		} else {
 			rejectedIds.push(entry.card_id);
+			rejections.push({
+				card_id: entry.card_id,
+				book_slug: entry.book_slug,
+				axis: result.failure,
+				reason: result.reason
+			});
 			if (result.failure === 'duration') {
 				rejectedForDuration++;
 			} else {
@@ -167,5 +191,5 @@ export function surveyWallPool(
 		}
 	}
 
-	return { passed, rejectedForLegibility, rejectedForDuration, rejectedIds };
+	return { passed, rejectedForLegibility, rejectedForDuration, rejectedIds, rejections };
 }

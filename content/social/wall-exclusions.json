@@ -1,0 +1,368 @@
+{
+  "meta": {
+    "submitted": 896,
+    "succeeded": 837,
+    "dropped": 59,
+    "limited": false,
+    "generated_at": "2026-08-25T00:00:00.000Z",
+    "max_post_duration_frames": 1770,
+    "max_post_duration_seconds": 59,
+    "wall_min_legible_font_px": 39
+  },
+  "entries": [
+    {
+      "card_id": "discourses-01-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2265 frames (75.5s) across 20 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-11-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-11-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-12-002",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-12-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-13-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-13-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-14-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-15-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2685 frames (89.5s) across 24 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-19-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-19-009",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-20-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-21-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-23-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-24-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-24-002",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-25-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-26-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2265 frames (75.5s) across 20 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-28-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-28-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-30-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-31-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-32-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-33-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-35-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-39-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-40-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2370 frames (79.0s) across 21 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-40-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-44-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-48-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-49-008",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-50-008",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-52-001",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-53-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-53-005",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-57-007",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2265 frames (75.5s) across 20 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-59-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-59-004",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2580 frames (86.0s) across 23 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "discourses-63-003",
+      "book_slug": "discourses",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "enchiridion-29-002",
+      "book_slug": "enchiridion",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "enchiridion-48-001",
+      "book_slug": "enchiridion",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-01-014",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-04-007",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-08-002",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "meditations-08-028",
+      "book_slug": "meditations",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-01-001",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-01-003",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-01-065",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2370 frames (79.0s) across 21 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-02-020",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2160 frames (72.0s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-02-024",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-02-046",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-013",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-027",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-051",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "on-anger-03-052",
+      "book_slug": "on-anger",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-04-005",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1950 frames (65.0s) across 17 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-08-003",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-09-001",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
+    },
+    {
+      "card_id": "peace-of-mind-10-002",
+      "book_slug": "peace-of-mind",
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1845 frames (61.5s) across 16 plain-passage lines, over the 1770-frame (59s) ceiling."
+    }
+  ]
+}

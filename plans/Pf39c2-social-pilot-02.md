@@ -141,6 +141,11 @@ looks like Plain.
   the scheduler can hand the renderer a card that can never be rendered. Move the ceiling into the Wall gate
   (beside the legibility floor) so an over-long card is rejected when the pool is surveyed, and have `surveyWallPool`
   report how many cards the ceiling excludes.
+- [x] F05: F03 surfaced the real gap behind it: the SCHEDULER never consults the renderer's gate. 59 of the 896
+  Wall pool entries exceed the 59s ceiling, and `scripts/lib/schedule.ts` can schedule any of them — which is how
+  week 1 ended up with an un-renderable slot. `tryReadThroughContent`'s wall branch is worse: it never gates at all
+  ("wall always renders"), so the read-through cascade cannot route around an un-renderable card. Publish a
+  renderer-derived exclusion list the scheduler reads, so an impossible slot is never scheduled in the first place.
 - [ ] F04: The Question's and The Objection's timing modules do not accept `narrationTimings` — only The Wall does
   (flagged by T18). Once T14's voices land, real narration for those two formats can drift against their fixed
   holds. Blocked behind T14; do not build until voices exist.

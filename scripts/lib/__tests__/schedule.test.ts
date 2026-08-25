@@ -606,6 +606,188 @@ describe("loadFormatPools", () => {
 });
 
 // ---------------------------------------------------------------------------
+// F05: the scheduler must consult the renderer-derived Wall exclusion list
+// (`content/social/wall-exclusions.json`, written by
+// `social/scripts/write-wall-exclusions.ts` from `surveyWallPool`) so a
+// card the renderer's own gate (`social/src/remotion/wall-gate.ts`'s
+// legibility floor / F03's 59s duration ceiling) would reject is never
+// scheduled in the first place. `on-anger-03-027` is the real card that
+// motivated this — a real corpus card, present in the mechanical gate-only
+// Wall pool (`rankWall`), that the renderer's gate rejects for duration.
+// ---------------------------------------------------------------------------
+describe("F05: renderer-derived Wall exclusions", () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), "schedule-wall-exclusions-test-"));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  async function writeExclusionsFile(cardIds: string[]): Promise<string> {
+    const filePath = path.join(tempDir, "wall-exclusions.json");
+    await writeFile(
+      filePath,
+      JSON.stringify({
+        meta: {
+          submitted: 896,
+          succeeded: 896 - cardIds.length,
+          dropped: cardIds.length,
+          limited: false,
+          generated_at: "2026-08-25T00:00:00.000Z",
+          max_post_duration_frames: 1770,
+          max_post_duration_seconds: 59,
+          wall_min_legible_font_px: 39,
+        },
+        entries: cardIds.map((card_id) => ({
+          card_id,
+          book_slug: "on-anger",
+          axis: "duration",
+          reason: "synthetic fixture — see F05",
+        })),
+      }),
+    );
+    return filePath;
+  }
+
+  it("loadFormatPools drops excluded ids from the Wall pool and logs how many it dropped", async () => {
+    // `on-anger-03-027` is a real entry in the mechanical gate-only Wall
+    // pool (`gatePools.wall`, built from `rankWall(cards)` above) — the
+    // exact card F05 fixes.
+    expect(gatePools.wall.some((e) => e.card_id === "on-anger-03-027")).toBe(true);
+
+    const exclusionsPath = await writeExclusionsFile(["on-anger-03-027"]);
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const { pools, wallExclusions } = await loadFormatPools(tempDir, gatePools, exclusionsPath);
+      expect(pools.wall.some((e) => e.card_id === "on-anger-03-027")).toBe(false);
+      expect(pools.wall.length).toBe(gatePools.wall.length - 1);
+      expect(wallExclusions).not.toBeNull();
+      expect(wallExclusions!.has("on-anger-03-027")).toBe(true);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped 1 Wall pool entry"));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it("an excluded id never appears in a generated week", async () => {
+    const exclusionsPath = await writeExclusionsFile(["on-anger-03-027"]);
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    let pools: FormatPools;
+    try {
+      ({ pools } = await loadFormatPools(tempDir, gatePools, exclusionsPath));
+    } finally {
+      warnSpy.mockRestore();
+    }
+
+    for (let seed = 1; seed <= 20; seed++) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+      });
+      expect(week.slots.some((s) => s.card_id === "on-anger-03-027")).toBe(false);
+    }
+  });
+
+  it("with no exclusions file present, loadFormatPools behaves exactly as before F05 and logs that it is running ungated", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const { pools, wallExclusions } = await loadFormatPools(tempDir, gatePools, path.join(tempDir, "wall-exclusions.json"));
+      expect(pools.wall).toBe(gatePools.wall);
+      expect(wallExclusions).toBeNull();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("running UNGATED"));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it("with no wallExclusionsPath argument at all, loadFormatPools behaves exactly as before F05 (the option is fully optional)", async () => {
+    const { pools, wallExclusions } = await loadFormatPools(tempDir, gatePools);
+    expect(pools.wall).toBe(gatePools.wall);
+    expect(wallExclusions).toBeNull();
+  });
+
+  // -------------------------------------------------------------------------
+  // The read-through's wall branch (`tryReadThroughContent`) must ALSO
+  // consult the exclusion list — a read-through card can be excluded even
+  // though it never goes through `loadFormatPools`'s Wall-pool filter (the
+  // read-through advances through every card of its book in strict
+  // sequence, independent of pool membership). `enchiridion-11-001` is a
+  // real card that can render BOTH Question and Objection (verified against
+  // the real corpus), so excluding it from Wall lets the fallback cascade
+  // (`resolveReadThrough`) prove it actually lands on another format,
+  // rather than merely not crashing.
+  // -------------------------------------------------------------------------
+  it("cascades the read-through to another format when its next sequential card is excluded from Wall", () => {
+    const enchiridionCards = cards.filter((c) => c.book_slug === "enchiridion");
+    const excludedIndex = enchiridionCards.findIndex((c) => c.id === "enchiridion-11-001");
+    expect(excludedIndex).toBeGreaterThanOrEqual(0);
+
+    const wallExclusions = new Set(["enchiridion-11-001"]);
+
+    // Force the weighted candidate draw to "wall" every time, so the
+    // fallback cascade is exercised deterministically rather than by luck
+    // of the seed.
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: excludedIndex,
+      weights: { wall: 100, question: 0, objection: 0 },
+      wallExclusions,
+    });
+
+    const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
+    expect(day1.card_id).toBe("enchiridion-11-001");
+    expect(day1.content.format).not.toBe("wall");
+    // Faithful to the card's own text, not fabricated.
+    const card = cards.find((c) => c.id === "enchiridion-11-001")!;
+    if (day1.content.format === "question") {
+      expect(card.plain_english).toContain(day1.content.question);
+      expect(card.plain_english).toContain(day1.content.answer);
+    } else {
+      expect(card.plain_english).toContain(day1.content.objection);
+    }
+  });
+
+  it("without wallExclusions passed to generateWeek, the read-through's wall branch behaves exactly as before F05", () => {
+    const enchiridionCards = cards.filter((c) => c.book_slug === "enchiridion");
+    const startIndex = enchiridionCards.findIndex((c) => c.id === "enchiridion-11-001");
+
+    const withExclusions = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: startIndex,
+      weights: { wall: 100, question: 0, objection: 0 },
+      // wallExclusions deliberately omitted.
+    });
+
+    const day1 = withExclusions.slots.find((s) => s.day === 1 && s.read_through)!;
+    expect(day1.card_id).toBe("enchiridion-11-001");
+    // With no exclusion list, the forced-wall candidate renders as wall,
+    // exactly as it always has.
+    expect(day1.content.format).toBe("wall");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // T19 regression test: the actual reported failure. The T11 smoke run wrote
 // `[]` to wall/question/objection.json after every request errored, and
 // `generate-schedule` then died with "No format pool entries left to

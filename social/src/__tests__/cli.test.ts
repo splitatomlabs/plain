@@ -118,8 +118,13 @@ describe('resolveSlot — against the real committed week-1 schedule', () => {
 	it('2026-09-01 slot 2 resolves to the expected card and format', () => {
 		const { day } = dateToWeekDay('2026-09-01');
 		const slot = resolveSlot(WEEK_1_SCHEDULE, day, 2);
-		expect(slot.card_id).toBe('on-anger-03-093');
-		expect(slot.book_slug).toBe('on-anger');
+		// F05: week 1 was regenerated once the scheduler started consulting the
+		// renderer's Wall exclusion list (content/social/wall-exclusions.json) —
+		// dropping 59 excluded entries from the Wall pool shifts which index
+		// every subsequent weighted draw lands on, so this slot's card changed
+		// even though it was never itself excluded.
+		expect(slot.card_id).toBe('shortness-of-life-02-004');
+		expect(slot.book_slug).toBe('shortness-of-life');
 		expect(slot.content.format).toBe('wall');
 		expect(slot.read_through).toBe(false);
 	});
