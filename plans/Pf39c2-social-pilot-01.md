@@ -47,9 +47,76 @@ daily job makes no LLM call at post time.
   implementation's <=11-word cross-check independently reproduces the plan's own stated anchor of 651 exactly, which
   is why 739 (not 674 or 740) is what's asserted in `premises.test.ts`. wallLength (1,326), quotedSpeech (308), and
   lengthDelta30 (318) all reproduce exactly. `npx vitest run scripts/lib/__tests__/premises.test.ts` — 27/27 green.
-- [ ] T02: Implement the **landing-line gate** for The Wall — reuse the T01 self-contained detector against
+- [x] T02: Implement the **landing-line gate** for The Wall — reuse the T01 self-contained detector against
   `plain_english`; reject any card with no clean standalone sentence to cut to. Acceptance: every surviving entry has
-  both a >=80-word original and a named landing line.
+  both a >=80-word original and a named landing line, AND actually stands alone with zero preceding context (a
+  viewer who has read nothing else must understand it).
+  **Note:** Added `findLandingLines`/`selectLandingLine`/`wallGate`/`verbatim`/`hasUnresolvedReference` to
+  `scripts/lib/premises.ts`, reusing `isSelfContainedOpening`, `sentences`, and `wordCount` from T01. A qualifying
+  landing line is a complete, non-question sentence (5-18 words — bounds documented in-file), passes the T01 opener
+  check, and carries no unresolved pronoun/demonstrative reference ANYWHERE in the line (broader list than T01's,
+  since a standalone payoff line has to resolve narrative references too, not just argument continuations).
+  `selectLandingLine` deterministically prefers the LAST qualifying sentence (cards build to a conclusion).
+  **Correction (same task):** the first pass measured 1,286 survivors but the gate wasn't actually testing
+  standalone-ness — two mechanical defects inflated that count. (1) `sentences()` split on `.`/`!`/`?` naively,
+  breaking inside quoted speech and emitting broken fragments (unbalanced quotes, orphaned leading `"` stolen from
+  the previous sentence's closing quote — e.g. `" If you don't like the conditions, leave.`). Fixed by making
+  `sentences()` quote-aware: a terminator inside an unclosed quote no longer ends the sentence unless the very next
+  character is the closing `"`, and a closing `"` right after a terminator stays attached to the sentence it closes.
+  (2) `hasUnresolvedLeadingReference` (renamed `hasUnresolvedReference`) only checked the LEADING word, so a
+  pronoun sitting mid-sentence with no antecedent passed silently (e.g. "Husbands and wives fight about it all
+  night." — "it" has nothing to point back to). Fixed by checking the whole line for a third-person
+  pronoun/demonstrative, rejecting UNLESS a plausible antecedent exists in-line: either a demonstrative used as a
+  determiner immediately before its noun ("that man", "those people" — referent on screen), or a capitalized,
+  non-sentence-initial proper noun earlier in the line (ordinary sentence-initial capitalization doesn't count as
+  proper-noun evidence — that's what makes "Husbands"/"wives" correctly NOT excuse "it"). Also added: a landing
+  line can never start with `"` (no on-screen attribution) or have an unbalanced quote count (defense in depth,
+  on top of the `sentences()` fix). `findLandingLines` also picked up bare "It" in
+  `LANDING_LINE_REFERENCE_REJECTS` — it was previously covered only for the leading position (via
+  `SELF_CONTAINED_OPENING_REJECTS`), not mid-sentence. `wallGate(loadCorpus())` now measures **1,138** survivors
+  (<=1,326 wallLength, as required) — cards that lose their previously-selected sentence don't necessarily drop
+  out; several fall back to an earlier still-qualifying sentence in the same card. The shared `sentences()` fix
+  also moved T01's `still12Word` corpus count from 739 to **731** (documented in-file and in the test). Known
+  remaining gap: lines with no third-person pronoun that still read as the tail of an argument (e.g. "Keep our
+  anger on hold.") aren't caught by this mechanical gate — "our" is first-person, out of scope for
+  `hasUnresolvedReference`'s pronoun list; would need a qualitative/LLM check to catch. Every survivor's
+  `landing_line` is verified verbatim (exact substring) against its source card's `plain_english`, and a
+  corpus-level regression test asserts no survivor has an odd `"` count or starts with `"`/whitespace.
+  `npx vitest run scripts/lib/__tests__/premises.test.ts` — 56/56 green. `npx vitest run` (full pipeline suite) —
+  312/312 green, confirming the shared `sentences()` change didn't regress T01 or any other consumer.
+  **Round 2 correction (same task, second fix pass):** an audit found 230 of the 1,138 survivors still carried an
+  unresolved reference — two remaining gaps in `hasUnresolvedReference`. (1) The demonstrative-as-determiner
+  exception ("that man", "those people" — referent on screen) was the main leak: it also excused genuinely
+  backward-pointing determiners like "this person", "these external things", "that way of life", because the
+  exception only checked whether a noun followed the demonstrative, not whether that noun actually supplied the
+  referent. Separately, "This" was missing from `LANDING_LINE_REFERENCE_REJECTS` entirely (only covered as a
+  leading word via `SELF_CONTAINED_OPENING_REJECTS`), so a mid-sentence "this" was never checked at all. Fixed by
+  dropping the determiner exception outright for `this`/`these`/`those`/`such` (always rejected, any grammatical
+  role) and adding `this` to the reference-word list. `that` keeps one narrow, verb-list-gated exception for its
+  non-referential use as a subordinating conjunction ("the truth is that...", "I know that...") —
+  `isNonReferentialThat`; a relative-clause reading ("the man that spoke") was deliberately NOT implemented as a
+  second exception path, because without POS tagging a bare "is the previous word noun-shaped" heuristic can't
+  tell a real relative clause apart from a determiner leak ("Don't let that excellent part become enslaved." —
+  "let" reads as noun-shaped to a stopword-list check) — measured, and dropped in favor of "when in doubt, REJECT".
+  (2) The third-person-pronoun antecedent lookback accepted ANY earlier capitalized word regardless of number,
+  so a plural proper noun could wrongly clear a singular pronoun or vice versa. Tightened to require number
+  agreement (singular antecedent for he/she/it forms, plural for they forms) while keeping the capitalized-word
+  restriction — extending to lowercase common nouns was tried and reverted: without POS tagging, ordinary verbs
+  ("fight", "worry") pass the same blunt noun-shape check as real nouns and wrongly resolved pronouns ("Husbands
+  and wives fight about it" — "fight" would incorrectly excuse "it"). Plural detection itself uses a curated
+  whitelist for capitalized words (`KNOWN_PLURAL_PROPER_NOUNS` — "Stoics", "Athenians", etc.) rather than a
+  trailing-`s` heuristic, since most singular proper names in this corpus end in `s` (Marcus, Socrates, Zeus,
+  Chrysippus, Croesus, Pythagoras). Also fixed two tokenization gaps surfaced by the corpus audit: an em/en dash
+  glued directly to the next word with no space ("love—this is true") hid a reference word from the whitespace
+  tokenizer; and a contraction suffix (`'s`/`'re`/`'ll`/`'ve`/`'d`) glued a reference word into one token that
+  never matched the exact-word lookup ("that's" != "that", "they're" != "they"). Both are now normalized in
+  `stripPunctuation` before matching. `wallGate(loadCorpus())` now measures **1,003** survivors (down from 1,138;
+  landed below the plan's 700-900 estimate range for this round, not tuned to hit it — see in-code rationale for
+  each rejected/kept design option). Added a corpus-wide regression test asserting no surviving landing line
+  contains a standalone `this`/`these`/`those` token, plus unit tests for all six real-corpus leak examples and
+  the "That man..."/"Kings..." cases updated to their new expected outcomes.
+  `npx vitest run scripts/lib/__tests__/premises.test.ts` — 67/67 green. `npx vitest run` (full pipeline suite) —
+  323/323 green (312 baseline + 11 new tests from this round).
 - [ ] T03: Implement **visual-archaism ranking** for The Wall. Three deterministic sub-types:
   **Thou Wall (222)** — >=3 of thou/thee/thy/thine/hath/doth/dost/art/shalt/wilt/whither/wherefore/whereby/
   whensoever/perchance/nay/yea; **Cascade (204)** — >=3 semicolons; **Scene (176)** — >=2 quotation marks.
