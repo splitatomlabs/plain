@@ -1200,7 +1200,80 @@ the next-ranked passage — Book 2 carries disproportionately recognisable mater
   `rm -f content/social/premises/*.json` — so the scheduler keeps falling back to the mechanical gates until T19
   fixes the empty-pool-file trap. `npm test` — 724 pipeline tests + 95 web unit tests, all green (no regression;
   this task only changed two string literals).
-- [ ] T19: Never write a pool file from a run that produced no scored entries. The failed smoke run wrote `[]` to
+- [x] T19: Never write a pool file from a run that produced no scored entries. The failed smoke run wrote `[]` to
   wall/question/objection.json; `loadFormatPools` treats a present-but-empty file as a real empty pool rather than
   falling back to the gates, so `generate-schedule` died with "pools exhausted". Acceptance: a run with zero
   successes leaves any existing pool file untouched and exits non-zero; a partial run warns loudly.
+  **Note:** Added `scripts/lib/pool-file.ts` — the single module both the writer (`score-premises.ts`) and the
+  reader (`schedule.ts`'s `loadFormatPools`) now share, so "is this pool file usable" is defined in exactly one
+  place. `parsePoolFile<T>(raw)` reads either on-disk shape uniformly: the LEGACY bare JSON array (every pool
+  written before this task, and every fixture `schedule.test.ts` already hand-writes) gets `meta: null`; the new
+  CURRENT envelope `{ meta: PoolMeta, entries: T[] }` — `PoolMeta = { submitted, succeeded, dropped, limited,
+  generated_at }`, exactly the fields the task named — is read directly. Throws on anything that's neither shape
+  (a bare object with no `entries` array), rather than silently returning an empty pool. `classifyRun(counts)` is
+  the pure classifier: `"empty-gate"` (nothing submitted — a gate that legitimately found zero survivors, not a
+  failure), `"zero"` (submitted > 0, succeeded === 0 — the actual T19 bug shape: all 30 requests errored against a
+  retired model id), `"partial"`, or `"full"`. `decidePoolWrite(format, counts)` is the pure write decision built on
+  top of it (no fs, no `process.exit` — the part of this module cheapest to exhaustively unit-test): `"empty-gate"`
+  -> `{ write: false, exitCode: 0 }` (nothing to write, not fatal); `"zero"` -> `{ write: false, exitCode: 1, error
+  }` naming the format and the submitted count; `"partial"` -> `{ write: true, exitCode: 0, warning }` naming both
+  counts; `"full"` -> `{ write: true, exitCode: 0 }`, silent. `writePoolFile(opts)` is the ONLY function in the
+  codebase that opens a pool file for writing — it owns all the fs I/O (real `mkdir`/`readFile`/`writeFile`, no
+  fakes), applies `decidePoolWrite`'s decision (throwing on `"zero"`, so an existing file is never even opened for
+  read in that branch, let alone write — genuinely byte-untouched, not just "restored to the same bytes"), prints
+  the partial warning via `console.warn` before returning it (so a caller can't accidentally swallow it), and
+  implements point 3's `--limit`-overwrite guard: when `limited` is true AND an existing pool file already has MORE
+  entries than this run produced, refuses to overwrite it (throws) unless `force` is set — mirroring
+  `generate-schedule.ts`/`review-week.ts`'s own `--force` convention exactly, including reusing `parsePoolFile` to
+  read the EXISTING file for the size comparison, so a legacy-shaped existing pool is recognized by the guard too.
+  Takes an injectable `now` clock so `generated_at` is deterministic in tests.
+  **`score-premises.ts` changes:** added a `--force` CLI flag (parsed the same way `generate-schedule.ts`'s already
+  is) and rewrote the local `writePool` helper into a thin wrapper around `writePoolFile`, passing
+  `{ submitted: limited.length, succeeded: scored.length }` for Wall/Question/Objection (both counts were already
+  in scope at each call site — no changes needed to `premises-batch.ts`'s batch/faithfulness plumbing, since
+  `scored.length` already reflects everything that survived BOTH the batch AND the faithfulness check) and
+  `{ submitted: limited.length, succeeded: limited.length }` for the gate-only Still pool (nothing can fail between
+  gate and pool for a format with no LLM rubric). Because `writePoolFile` throws on a zero-successes format,
+  `main()`'s existing `main().catch(...)` handler (unchanged) already exits 1 — no new exit-code plumbing needed;
+  the run stops at the first zero-successes format rather than continuing to the next (matches the actual bug
+  scenario, where every format's requests failed for the same reason — a retired model id — so continuing would
+  only repeat the same failure). `--help`'s usage text documents both the zero-successes refusal and the partial
+  warning.
+  **`schedule.ts`'s `loadFormatPools` changes (defense in depth, per the task's own instruction to keep the reader
+  "tolerant of the old plain-array shape"):** now calls `parsePoolFile` instead of a bare `JSON.parse`, so both
+  shapes are read identically. Independently of `score-premises.ts` refusing to WRITE an empty pool going forward,
+  `loadFormatPools` ALSO now treats a present-but-EMPTY pool file (legacy `[]` or an envelope with `entries: []`) —
+  however it got that way (a manual edit, a pre-T19 leftover, some future bug) — exactly like an ABSENT file:
+  falls back to the mechanical gate output and reports `source: "gate-only"`, with a `console.warn` naming the
+  file. This is the actual fix for "pools exhausted", proven end-to-end (not just at the loader) by a new
+  regression test suite that constructs empty pool files (both shapes) in a tmp dir, runs them through
+  `loadFormatPools` AND `generateWeek` together, and asserts a full 14-slot week comes back rather than a thrown
+  "pools exhausted" error.
+  **Also fixed, per the task's explicit note:** `scripts/lib/__tests__/token-audit.ts` (`claude-sonnet-4-20250514`
+  -> `claude-sonnet-5`, 3 occurrences, sonnet-only tier preserved) and `scripts/lib/__tests__/quality-comparison.ts`
+  (`OPUS`/`SONNET` constants -> `claude-opus-5`/`claude-sonnet-5`, both tiers preserved) — both standalone
+  `npx tsx`-only scripts, untouched by `vitest.config.ts`'s `include` glob, so this doesn't change `npm test`'s
+  count on its own.
+  **Tests:** `scripts/lib/__tests__/pool-file.test.ts` (new, 25 tests) — `parsePoolFile` (legacy array, envelope
+  with/without meta, empty legacy array, unrecognized shapes throw); `classifyRun`/`buildPoolMeta` (all four
+  outcomes, dropped computed correctly); `decidePoolWrite` (all four outcomes' exact shape, including the
+  zero-successes error naming the format/count/"zero" and the partial warning naming both counts); `writePoolFile`
+  against real tmp directories — the acceptance criteria pinned directly: zero successes with an existing file
+  throws and leaves it BYTE-IDENTICAL (`readFile` before/after, `toBe`-compared), zero successes with no
+  pre-existing file throws and creates no file (`existsSync` false after), empty-gate writes nothing without
+  throwing, a partial run writes the envelope with the exact expected `meta` and calls `console.warn`, a full run
+  writes with `meta.dropped === 0` and never warns, the `--limit`-overwrite guard blocks/allows/is-skipped-by-force
+  correctly (including against a legacy-shaped existing file), and a non-limited run overwrites unconditionally.
+  Extended `scripts/lib/__tests__/schedule.test.ts`'s existing `loadFormatPools` describe block with 6 new tests
+  (envelope-shape reads for Wall/Question, empty-fallback for Wall/Question/Objection in both shapes, and a
+  per-format-independence test) plus a new top-level `describe("T19 regression — empty pool files never brick
+  generateWeek")` with 2 tests (legacy-shape and envelope-shape empty pool files, both proving `generateWeek`
+  returns a full 14-slot week with no thrown error) — 8 new tests total in that file. No API call anywhere in any
+  new test — `writePoolFile`'s tests use only real fs against tmp dirs; the zero/partial run "results" are supplied
+  as fake `RunCounts`, never produced by an actual batch call.
+  `npx vitest run scripts/lib/__tests__/pool-file.test.ts` — 25/25 green. `npx vitest run
+  scripts/lib/__tests__/schedule.test.ts` — 98/98 green (90 baseline + 8 new). `npx vitest run
+  scripts/lib/__tests__/score-premises.test.ts` — 27/27 green, unchanged (its own subprocess spawns are all
+  `--dry-run`, which never calls `writePoolFile` at all). `npm test` — **757 pipeline tests** (724 baseline + 33
+  new: 25 pool-file.test.ts + 8 schedule.test.ts) + **95 web unit tests**, all green, confirming no regression to
+  T01-T18 or any other consumer.

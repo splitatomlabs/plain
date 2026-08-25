@@ -10,8 +10,6 @@
  *   npx tsx scripts/score-premises.ts --dry-run --limit 5
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { parseArgs } from "node:util";
 import type { AuthorSlug } from "./lib/constants.js";
 import type { Card } from "./lib/types.js";
@@ -37,6 +35,7 @@ import {
 import { tokenUsage, batchStats } from "./lib/claude.js";
 import { logger } from "./lib/logger.js";
 import { VALID_FORMATS, isValidFormat, formatsToRun, parseLimit, type Format } from "./lib/premises-cli.js";
+import { writePoolFile, type RunCounts } from "./lib/pool-file.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -49,6 +48,7 @@ const { values: args } = parseArgs({
     limit: { type: "string" },
     output: { type: "string", default: "content/social/premises" },
     verbose: { type: "boolean", default: false },
+    force: { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
 });
@@ -63,6 +63,9 @@ Options:
   --limit <n>        Cap the number of gate survivors processed per format
   --output <dir>     Pool output directory (default: content/social/premises)
   --verbose          Print all log messages to stderr (log file always written)
+  --force            Overwrite an existing, larger pool file with a --limit
+                      run's smaller one (T19 guard against a smoke run
+                      silently shrinking a real full pool)
   --help             Show this help
 
 Environment:
@@ -72,6 +75,13 @@ Note on --format still: The Still has no LLM rubric — it is the 12-word
 still-image pattern interrupt, and T01's still12Word mechanical gate is all
 there is. --format still (and --format all) reports that gate's pool as
 gate-only; no request is ever built or submitted for it.
+
+A run that produces zero scored entries for a format (e.g. every request
+errored) refuses to write that format's pool file and exits non-zero — any
+existing pool file is left untouched. A run where some but not all requests
+succeeded still writes the pool file (a deliberate --limit run is a
+legitimate workflow) but records the shortfall in the file's own "meta"
+field and prints a loud warning.
 
 Logs are written to content/pipeline/social/premises.log on every run.`);
   process.exit(0);
@@ -93,6 +103,7 @@ try {
 const format = args.format as Format;
 const dryRun = !!args["dry-run"];
 const verbose = !!args.verbose;
+const force = !!args.force;
 const outputDir = args.output!;
 
 // ---------------------------------------------------------------------------
@@ -139,11 +150,26 @@ function printAuthorMix(label: string, entries: { author_slug: AuthorSlug }[]): 
   console.log(`  ${label}: ${parts.join(", ")}`);
 }
 
-async function writePool(name: string, entries: unknown[]): Promise<void> {
-  await mkdir(outputDir, { recursive: true });
-  const filePath = path.join(outputDir, `${name}.json`);
-  await writeFile(filePath, JSON.stringify(entries, null, 2) + "\n", "utf-8");
-  console.log(`  Wrote ${entries.length} entries to ${filePath}`);
+/**
+ * T19: the single place score-premises.ts writes a pool file. Delegates the
+ * actual decision (write / refuse / warn) and fs I/O to
+ * `./lib/pool-file.ts`'s `writePoolFile`, which is directly unit-tested
+ * against real counts and real tmp directories — no API call needed to
+ * exercise the zero-successes / partial-run / --limit-overwrite paths.
+ *
+ * `counts.submitted` is the number of requests this run attempted for this
+ * format (gate-only formats like Still count every processed survivor as
+ * "submitted", since there's no LLM request to fail); `counts.succeeded` is
+ * `entries.length` — everything actually admitted to the pool.
+ */
+async function writePool<T>(name: string, entries: T[], counts: RunCounts): Promise<void> {
+  const result = await writePoolFile({ outputDir, name, entries, counts, limited: limit !== undefined, force });
+  if (!result.wrote) {
+    console.log(`  ${name}: 0 entries submitted — nothing to write, skipping pool file.`);
+    return;
+  }
+  const partial = counts.succeeded < counts.submitted ? " (PARTIAL — see warning above)" : "";
+  console.log(`  Wrote ${entries.length} entries to ${result.filePath}${partial}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -168,7 +194,7 @@ async function processWall(cards: Card[], cardsById: Map<string, Card>): Promise
       `landing_line avg ${avg(scored.map((s) => s.rubric.landing_line_score)).toFixed(2)}`,
   );
   printAuthorMix("Author mix", scored);
-  await writePool("wall", scored);
+  await writePool("wall", scored, { submitted: limited.length, succeeded: scored.length });
   return scored;
 }
 
@@ -189,7 +215,7 @@ async function processQuestion(cards: Card[], cardsById: Map<string, Card>): Pro
   console.log(`  Scored: ${scored.length}/${limited.length}`);
   console.log(`  Score distribution — answers ${answers}, drifts ${drifts}`);
   printAuthorMix("Author mix", scored);
-  await writePool("question", scored);
+  await writePool("question", scored, { submitted: limited.length, succeeded: scored.length });
   return scored;
 }
 
@@ -210,7 +236,7 @@ async function processObjection(cards: Card[], cardsById: Map<string, Card>): Pr
   console.log(`  Scored: ${scored.length}/${limited.length}`);
   console.log(`  Score distribution — accept ${accepted}, reject ${rejected}`);
   printAuthorMix("Author mix", scored);
-  await writePool("objection", scored);
+  await writePool("objection", scored, { submitted: limited.length, succeeded: scored.length });
   return scored;
 }
 
@@ -230,7 +256,10 @@ async function processStill(cards: Card[], cardsById: Map<string, Card>): Promis
 
   if (!dryRun) {
     printAuthorMix("Author mix", limited);
-    await writePool("still", limited);
+    // Gate-only: nothing can "fail" between the gate and the pool, so
+    // submitted === succeeded always here (still subject to the
+    // zero-survivors / --limit-overwrite guards in writePoolFile).
+    await writePool("still", limited, { submitted: limited.length, succeeded: limited.length });
   }
   return limited;
 }

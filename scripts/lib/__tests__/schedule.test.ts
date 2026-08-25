@@ -480,6 +480,154 @@ describe("loadFormatPools", () => {
     expect(pools.objection).toHaveLength(1);
     expect(pools.objection[0].card_id).toBe(base[1].card_id);
   });
+
+  // -------------------------------------------------------------------------
+  // T19: the current `{ meta, entries }` envelope shape (written by
+  // `score-premises.ts` via `./pool-file.ts`'s `writePoolFile`) must be
+  // read identically to the legacy plain-array shape every earlier test in
+  // this describe block writes directly.
+  // -------------------------------------------------------------------------
+  it("reads a scored Wall pool file written in the current { meta, entries } envelope shape", async () => {
+    const entries = gatePools.wall.slice(0, 2);
+    const meta = { submitted: 2, succeeded: 2, dropped: 0, limited: false, generated_at: "2026-08-25T00:00:00.000Z" };
+    await writeFile(path.join(tempDir, "wall.json"), JSON.stringify({ meta, entries }));
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source.wall).toBe("scored");
+    expect(pools.wall).toHaveLength(2);
+    expect(pools.wall[0].card_id).toBe(entries[0].card_id);
+  });
+
+  it("reads a scored Question pool file in the envelope shape, still filtering to drift_verdict === 'answers'", async () => {
+    const base = gatePools.question.slice(0, 2);
+    const entries = [
+      { ...base[0], drift_verdict: "answers", drift_reason: "resolves it" },
+      { ...base[1], drift_verdict: "drifts", drift_reason: "off topic" },
+    ];
+    const meta = { submitted: 2, succeeded: 2, dropped: 0, limited: false, generated_at: "2026-08-25T00:00:00.000Z" };
+    await writeFile(path.join(tempDir, "question.json"), JSON.stringify({ meta, entries }));
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source.question).toBe("scored");
+    expect(pools.question).toHaveLength(1);
+    expect(pools.question[0].card_id).toBe(base[0].card_id);
+  });
+
+  // -------------------------------------------------------------------------
+  // T19: a present-but-EMPTY pool file — whether the legacy bare `[]` the
+  // original bug actually wrote, or an empty `entries` array inside the
+  // current envelope — must be treated exactly like an ABSENT file: fall
+  // back to the mechanical gate output, not accepted as a real empty pool.
+  // This is what actually fixes "pools exhausted": see the regression test
+  // below for the end-to-end proof against `generateWeek` itself.
+  // -------------------------------------------------------------------------
+  it("falls back to the mechanical gate when the Wall pool file is a legacy empty array", async () => {
+    await writeFile(path.join(tempDir, "wall.json"), JSON.stringify([]));
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source.wall).toBe("gate-only");
+    expect(pools.wall).toBe(gatePools.wall);
+  });
+
+  it("falls back to the mechanical gate when the Question pool file is an envelope with empty entries", async () => {
+    const meta = { submitted: 30, succeeded: 0, dropped: 30, limited: false, generated_at: "2026-08-25T00:00:00.000Z" };
+    await writeFile(path.join(tempDir, "question.json"), JSON.stringify({ meta, entries: [] }));
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source.question).toBe("gate-only");
+    expect(pools.question).toBe(gatePools.question);
+  });
+
+  it("falls back to the mechanical gate when the Objection pool file is a legacy empty array", async () => {
+    await writeFile(path.join(tempDir, "objection.json"), JSON.stringify([]));
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source.objection).toBe("gate-only");
+    expect(pools.objection).toBe(gatePools.objection);
+  });
+
+  it("treats an empty pool file for one format independently — the other two formats' real files still load", async () => {
+    await writeFile(path.join(tempDir, "wall.json"), JSON.stringify([]));
+    const scoredObjection = [{ ...gatePools.objection[0], rubric: { verdict: "accept", classification: "viewer_position", reason: "yes" } }];
+    await writeFile(path.join(tempDir, "objection.json"), JSON.stringify(scoredObjection));
+    const { source } = await loadFormatPools(tempDir, gatePools);
+    expect(source.wall).toBe("gate-only");
+    expect(source.question).toBe("gate-only");
+    expect(source.objection).toBe("scored");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T19 regression test: the actual reported failure. The T11 smoke run wrote
+// `[]` to wall/question/objection.json after every request errored, and
+// `generate-schedule` then died with "No format pool entries left to
+// schedule day 1 of week 1 — pools exhausted." because the (present but
+// empty) pool files were treated as real, exhausted pools rather than
+// falling back to the mechanical gates. This proves the fix end-to-end,
+// through `loadFormatPools` AND `generateWeek` together, not just the
+// loader in isolation.
+// ---------------------------------------------------------------------------
+describe("T19 regression — empty pool files never brick generateWeek", () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), "schedule-pools-empty-test-"));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it("generates a full week from empty (legacy-shape) pool files with no 'pools exhausted' error", async () => {
+    await writeFile(path.join(tempDir, "wall.json"), JSON.stringify([]));
+    await writeFile(path.join(tempDir, "question.json"), JSON.stringify([]));
+    await writeFile(path.join(tempDir, "objection.json"), JSON.stringify([]));
+
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source).toEqual({ wall: "gate-only", question: "gate-only", objection: "gate-only" });
+
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 42,
+        cards,
+        pools,
+        poolSource: source,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+      }),
+    ).not.toThrow();
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools,
+      poolSource: source,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+    });
+    expect(week.slots).toHaveLength(14);
+  });
+
+  it("generates a full week from empty (envelope-shape) pool files with no 'pools exhausted' error", async () => {
+    const zeroMeta = { submitted: 30, succeeded: 0, dropped: 30, limited: false, generated_at: "2026-08-25T00:00:00.000Z" };
+    await writeFile(path.join(tempDir, "wall.json"), JSON.stringify({ meta: zeroMeta, entries: [] }));
+    await writeFile(path.join(tempDir, "question.json"), JSON.stringify({ meta: zeroMeta, entries: [] }));
+    await writeFile(path.join(tempDir, "objection.json"), JSON.stringify({ meta: zeroMeta, entries: [] }));
+
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source).toEqual({ wall: "gate-only", question: "gate-only", objection: "gate-only" });
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools,
+      poolSource: source,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+    });
+    expect(week.slots).toHaveLength(14);
+  });
 });
 
 // ---------------------------------------------------------------------------

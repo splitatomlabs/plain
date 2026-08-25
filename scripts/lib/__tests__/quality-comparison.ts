@@ -15,8 +15,8 @@ import { buildTranslationPrompt } from "../prompt.js";
 const client = new Anthropic();
 
 // Models to compare
-const OPUS = "claude-opus-4-20250514";
-const SONNET = "claude-sonnet-4-20250514";
+const OPUS = "claude-opus-5";
+const SONNET = "claude-sonnet-5";
 
 interface ChunkPick {
   label: string;

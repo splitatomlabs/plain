@@ -64,6 +64,7 @@ import {
   type ObjectionEntry,
 } from "./premises.js";
 import { checkFaithfulness } from "./premises-scoring.js";
+import { parsePoolFile } from "./pool-file.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -829,11 +830,29 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
 
 /**
  * Load the three format pools for scheduling. Reads the scored pool file
- * (`<premisesDir>/<format>.json`, written by `scripts/score-premises.ts`)
- * WHEN PRESENT; falls back to the mechanical gate output
- * (`rankWall`/`questionGate`/`objectionGate` from ./premises.ts) when it is
- * absent — this is what lets the schedule generator run today, before T11
- * has produced any scored pools, with no rework needed once it has.
+ * (`<premisesDir>/<format>.json`, written by `scripts/score-premises.ts` via
+ * `./pool-file.ts`'s `writePoolFile`) WHEN PRESENT AND NON-EMPTY; falls back
+ * to the mechanical gate output (`rankWall`/`questionGate`/`objectionGate`
+ * from ./premises.ts) both when the file is absent (T11 hasn't run yet) and
+ * when it parses to zero entries (T19 — see below) — this is what lets the
+ * schedule generator run today, before T11 has produced any scored pools,
+ * with no rework needed once it has.
+ *
+ * `parsePoolFile` (./pool-file.ts) reads either on-disk shape: a bare JSON
+ * array (legacy — every pool written before T19, and every fixture
+ * `schedule.test.ts` hand-writes) or the current `{ meta, entries }`
+ * envelope.
+ *
+ * T19 (empty-pool defense in depth): `score-premises.ts` now refuses to
+ * WRITE a pool file for a run that produced zero scored entries (see
+ * `writePoolFile`'s zero-successes branch), so this fallback should be
+ * unreachable in normal operation going forward. It stays here anyway as a
+ * second, independent line of defense — a present-but-EMPTY pool file
+ * (however it got that way: a manual edit, a pre-T19 leftover, a bug
+ * elsewhere) is treated exactly like an ABSENT one, falling back to the
+ * mechanical gates, rather than being accepted as a real empty pool that
+ * would otherwise make `generateWeek` die with "pools exhausted" the moment
+ * every mechanical-gate survivor for that format has already been used.
  *
  * A scored Question/Objection pool file includes REJECTED rows too
  * (`scoreQuestionSurvivors`/`scoreObjectionSurvivors` merge every parsed
@@ -868,32 +887,49 @@ export async function loadFormatPools(
   let objection: FormatPools["objection"] = gatePools.objection;
 
   if (existsSync(wallPath)) {
-    wall = JSON.parse(await readFile(wallPath, "utf-8"));
-    source.wall = "scored";
+    const { entries } = parsePoolFile<FormatPools["wall"][number]>(JSON.parse(await readFile(wallPath, "utf-8")));
+    if (entries.length > 0) {
+      wall = entries;
+      source.wall = "scored";
+    } else {
+      console.warn(`loadFormatPools: "${wallPath}" has zero entries — falling back to the mechanical gate output.`);
+    }
   }
   if (existsSync(questionPath)) {
-    const scored = JSON.parse(await readFile(questionPath, "utf-8")) as (QuestionEntry & { drift_verdict?: string })[];
-    question = scored.filter((e) => {
-      if (e.drift_verdict === "answers") return true;
-      console.warn(
-        `loadFormatPools: excluding Question pool row for card "${e.card_id}" — drift_verdict is ` +
-          `${JSON.stringify(e.drift_verdict)} (expected "answers").`,
-      );
-      return false;
-    });
-    source.question = "scored";
+    const { entries: scored } = parsePoolFile<QuestionEntry & { drift_verdict?: string }>(
+      JSON.parse(await readFile(questionPath, "utf-8")),
+    );
+    if (scored.length > 0) {
+      question = scored.filter((e) => {
+        if (e.drift_verdict === "answers") return true;
+        console.warn(
+          `loadFormatPools: excluding Question pool row for card "${e.card_id}" — drift_verdict is ` +
+            `${JSON.stringify(e.drift_verdict)} (expected "answers").`,
+        );
+        return false;
+      });
+      source.question = "scored";
+    } else {
+      console.warn(`loadFormatPools: "${questionPath}" has zero entries — falling back to the mechanical gate output.`);
+    }
   }
   if (existsSync(objectionPath)) {
-    const scored = JSON.parse(await readFile(objectionPath, "utf-8")) as (ObjectionEntry & { rubric?: { verdict?: string } })[];
-    objection = scored.filter((e) => {
-      if (e.rubric?.verdict === "accept") return true;
-      console.warn(
-        `loadFormatPools: excluding Objection pool row for card "${e.card_id}" — rubric.verdict is ` +
-          `${JSON.stringify(e.rubric?.verdict)} (expected "accept").`,
-      );
-      return false;
-    });
-    source.objection = "scored";
+    const { entries: scored } = parsePoolFile<ObjectionEntry & { rubric?: { verdict?: string } }>(
+      JSON.parse(await readFile(objectionPath, "utf-8")),
+    );
+    if (scored.length > 0) {
+      objection = scored.filter((e) => {
+        if (e.rubric?.verdict === "accept") return true;
+        console.warn(
+          `loadFormatPools: excluding Objection pool row for card "${e.card_id}" — rubric.verdict is ` +
+            `${JSON.stringify(e.rubric?.verdict)} (expected "accept").`,
+        );
+        return false;
+      });
+      source.objection = "scored";
+    } else {
+      console.warn(`loadFormatPools: "${objectionPath}" has zero entries — falling back to the mechanical gate output.`);
+    }
   }
 
   return { pools: { wall, question, objection }, source };

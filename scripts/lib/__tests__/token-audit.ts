@@ -61,7 +61,7 @@ Respond with ONLY this JSON (no other text):
 async function measureCall(
   label: string,
   prompt: string,
-  model: "claude-sonnet-4-20250514",
+  model: "claude-sonnet-5",
 ) {
   const start = Date.now();
   const response = await client.messages.create({
@@ -96,12 +96,12 @@ async function main() {
   const refineSonnet = await measureCall(
     "Refine",
     refinePrompt,
-    "claude-sonnet-4-20250514",
+    "claude-sonnet-5",
   );
   const translateSonnet = await measureCall(
     "Translate",
     translatePrompt,
-    "claude-sonnet-4-20250514",
+    "claude-sonnet-5",
   );
 
   // Summary
