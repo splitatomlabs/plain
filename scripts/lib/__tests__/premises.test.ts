@@ -45,8 +45,16 @@ import {
   hasUnbalancedQuotes,
   PIVOT_ANSWER_PHRASES,
   isPivotAnswer,
+  authorMix,
+  combinedAuthorMix,
+  wallAuthorWeights,
+  selectWallBalanced,
+  createSeededRng,
+  BALANCED_AUTHOR_SHARE,
+  DEFAULT_QUESTION_FRACTION,
 } from "../premises.js";
 import type { Card } from "../types.js";
+import type { AuthorSlug } from "../constants.js";
 
 function makeCard(overrides: Partial<Card> = {}): Card {
   return {
@@ -1316,5 +1324,238 @@ describe("buildQuestionDriftRequests", () => {
     const requests = buildQuestionDriftRequests(entries);
     expect(requests.length).toBe(entries.length);
     expect(requests.map((r) => r.card_id)).toEqual(entries.map((e) => e.card_id));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T05: authorMix / combinedAuthorMix / wallAuthorWeights / selectWallBalanced
+// ---------------------------------------------------------------------------
+
+describe("authorMix", () => {
+  it("counts and shares a synthetic collection", () => {
+    const entries = [
+      { author_slug: "epictetus" as const },
+      { author_slug: "epictetus" as const },
+      { author_slug: "seneca" as const },
+      { author_slug: "marcus-aurelius" as const },
+    ];
+    const mix = authorMix(entries);
+    expect(mix).toEqual({
+      epictetus: { count: 2, share: 0.5 },
+      "marcus-aurelius": { count: 1, share: 0.25 },
+      seneca: { count: 1, share: 0.25 },
+    });
+  });
+
+  it("returns a zero entry for an author with no matching entries, not undefined", () => {
+    const entries = [{ author_slug: "seneca" as const }];
+    const mix = authorMix(entries);
+    expect(mix.epictetus).toEqual({ count: 0, share: 0 });
+    expect(mix["marcus-aurelius"]).toEqual({ count: 0, share: 0 });
+  });
+
+  it("returns share 0 (not NaN) for every author on an empty collection", () => {
+    const mix = authorMix([]);
+    expect(mix.epictetus.share).toBe(0);
+    expect(mix["marcus-aurelius"].share).toBe(0);
+    expect(mix.seneca.share).toBe(0);
+  });
+
+  it("measures the real Question pool's author mix: epictetus 50 (56%), marcus-aurelius 21 (24%), seneca 18 (20%)", () => {
+    const entries = questionGate(loadCorpus());
+    const mix = authorMix(entries);
+    expect(mix.epictetus.count).toBe(50);
+    expect(mix["marcus-aurelius"].count).toBe(21);
+    expect(mix.seneca.count).toBe(18);
+    expect(mix.epictetus.share).toBeCloseTo(50 / 89, 5);
+    expect(mix["marcus-aurelius"].share).toBeCloseTo(21 / 89, 5);
+    expect(mix.seneca.share).toBeCloseTo(18 / 89, 5);
+  });
+});
+
+describe("combinedAuthorMix", () => {
+  it("flattens multiple pools before computing the mix", () => {
+    const poolA = [{ author_slug: "epictetus" as const }, { author_slug: "epictetus" as const }];
+    const poolB = [{ author_slug: "seneca" as const }, { author_slug: "marcus-aurelius" as const }];
+    const mix = combinedAuthorMix(poolA, poolB);
+    expect(mix.epictetus.count).toBe(2);
+    expect(mix.seneca.count).toBe(1);
+    expect(mix["marcus-aurelius"].count).toBe(1);
+    expect(mix.epictetus.share).toBeCloseTo(0.5, 5);
+  });
+
+  it("is equivalent to authorMix over the flattened pools", () => {
+    const cards = loadCorpus();
+    const questionPool = questionGate(cards);
+    const wallPool = rankWall(cards);
+    expect(combinedAuthorMix(questionPool, wallPool)).toEqual(authorMix([...questionPool, ...wallPool]));
+  });
+});
+
+describe("wallAuthorWeights", () => {
+  const cards = loadCorpus();
+  const questionPool = questionGate(cards);
+  const wallPool = rankWall(cards);
+  const weights = wallAuthorWeights(questionPool, wallPool);
+
+  it("pushes weight away from epictetus and toward marcus-aurelius and seneca", () => {
+    // Question pool shares: epictetus 56%, marcus-aurelius 24%, seneca 20%.
+    // Wall should correct in the opposite direction: epictetus's Wall weight
+    // should land well below an even 1/3, while marcus-aurelius's and
+    // seneca's should land above it.
+    expect(weights.epictetus).toBeLessThan(BALANCED_AUTHOR_SHARE.epictetus);
+    expect(weights["marcus-aurelius"]).toBeGreaterThan(BALANCED_AUTHOR_SHARE["marcus-aurelius"]);
+    expect(weights.seneca).toBeGreaterThan(BALANCED_AUTHOR_SHARE.seneca);
+  });
+
+  it("measures the exact solved weights at the default 50/50 question/wall fraction", () => {
+    // Solved algebraically: w[a] = (1/3 - 0.5 * q[a]) / 0.5, per the in-file
+    // derivation, then renormalized (the un-clamped solution already sums to
+    // 1 here since no author's Question share exceeds the 2/3 ceiling that
+    // would force clamping).
+    expect(weights.epictetus).toBeCloseTo(0.10486891385767785, 6);
+    expect(weights["marcus-aurelius"]).toBeCloseTo(0.43071161048689144, 6);
+    expect(weights.seneca).toBeCloseTo(0.4644194756554308, 6);
+  });
+
+  it("weights always sum to 1", () => {
+    const total = weights.epictetus + weights["marcus-aurelius"] + weights.seneca;
+    expect(total).toBeCloseTo(1, 8);
+  });
+
+  it("assigns zero weight to an author absent from the Wall pool, regardless of the algebra", () => {
+    const syntheticQuestionPool = [
+      { card_id: "a", book_slug: "discourses", author_slug: "epictetus" as const, question: "q", answer: "a" },
+    ];
+    const syntheticWallPool = [
+      {
+        card_id: "b",
+        book_slug: "meditations",
+        author_slug: "marcus-aurelius" as const,
+        original_word_count: 100,
+        landing_line: "line",
+        sub_types: [],
+        reserve: true,
+        archaic_marker_count: 0,
+        semicolon_count: 0,
+        quote_count: 0,
+        original_grade: 5,
+        eligible_openings: ["standard" as const],
+      },
+    ];
+    const w = wallAuthorWeights(syntheticQuestionPool, syntheticWallPool);
+    expect(w.seneca).toBe(0);
+  });
+
+  it("accepts an explicit questionFraction overriding DEFAULT_QUESTION_FRACTION", () => {
+    const wOverride = wallAuthorWeights(questionPool, wallPool, 0.25);
+    expect(DEFAULT_QUESTION_FRACTION).toBe(0.5);
+    expect(wOverride).not.toEqual(weights);
+    const total = wOverride.epictetus + wOverride["marcus-aurelius"] + wOverride.seneca;
+    expect(total).toBeCloseTo(1, 8);
+  });
+});
+
+describe("createSeededRng", () => {
+  it("is deterministic: the same seed produces the same sequence", () => {
+    const a = createSeededRng(42);
+    const b = createSeededRng(42);
+    const seqA = [a(), a(), a(), a()];
+    const seqB = [b(), b(), b(), b()];
+    expect(seqA).toEqual(seqB);
+  });
+
+  it("different seeds produce different sequences", () => {
+    const a = createSeededRng(1);
+    const b = createSeededRng(2);
+    expect(a()).not.toBe(b());
+  });
+
+  it("always yields values in [0, 1)", () => {
+    const rng = createSeededRng(7);
+    for (let i = 0; i < 100; i++) {
+      const v = rng();
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThan(1);
+    }
+  });
+});
+
+describe("selectWallBalanced", () => {
+  const cards = loadCorpus();
+  const wallPool = rankWall(cards);
+  const questionPool = questionGate(cards);
+  const weights = wallAuthorWeights(questionPool, wallPool);
+
+  it("is deterministic: the same seed and weights return a byte-identical selection", () => {
+    const a = selectWallBalanced(wallPool, weights, 20, createSeededRng(42));
+    const b = selectWallBalanced(wallPool, weights, 20, createSeededRng(42));
+    expect(a.map((e) => e.card_id)).toEqual(b.map((e) => e.card_id));
+  });
+
+  it("different seeds produce different selections", () => {
+    const a = selectWallBalanced(wallPool, weights, 20, createSeededRng(1));
+    const b = selectWallBalanced(wallPool, weights, 20, createSeededRng(2));
+    expect(a.map((e) => e.card_id)).not.toEqual(b.map((e) => e.card_id));
+  });
+
+  it("every returned entry comes from the input pool, with no duplicates", () => {
+    const poolIds = new Set(wallPool.map((e) => e.card_id));
+    const selected = selectWallBalanced(wallPool, weights, 50, createSeededRng(5));
+    expect(selected.length).toBe(50);
+    const selectedIds = selected.map((e) => e.card_id);
+    expect(new Set(selectedIds).size).toBe(selectedIds.length);
+    for (const id of selectedIds) expect(poolIds.has(id)).toBe(true);
+  });
+
+  it("caps the selection at the pool size when n exceeds it", () => {
+    const tinyPool = wallPool.slice(0, 3);
+    const selected = selectWallBalanced(tinyPool, weights, 10, createSeededRng(3));
+    expect(selected.length).toBe(3);
+  });
+
+  it("over a large draw, honours the weighting directionally (more seneca/marcus-aurelius, less epictetus than an even split)", () => {
+    const selected = selectWallBalanced(wallPool, weights, 300, createSeededRng(11));
+    const mix = authorMix(selected);
+    expect(mix.epictetus.share).toBeLessThan(1 / 3);
+    expect(mix["marcus-aurelius"].share).toBeGreaterThan(1 / 3);
+    expect(mix.seneca.share).toBeGreaterThan(1 / 3);
+  });
+});
+
+describe("combined weekly selection proves the point of T05", () => {
+  // A realistic 7 Question + 7 Wall week. The Question sample is drawn with
+  // weights matching its OWN natural (uncorrected) mix — T05 does not
+  // rebalance The Question itself, only The Wall — while the Wall sample
+  // uses wallAuthorWeights's correction. Both draws reuse the same
+  // deterministic selectWallBalanced/createSeededRng mechanism.
+  const cards = loadCorpus();
+  const questionPool = questionGate(cards);
+  const wallPool = rankWall(cards);
+  const wallWeights = wallAuthorWeights(questionPool, wallPool);
+  const questionMix = authorMix(questionPool);
+  const naturalQuestionWeights: Record<AuthorSlug, number> = {
+    epictetus: questionMix.epictetus.share,
+    "marcus-aurelius": questionMix["marcus-aurelius"].share,
+    seneca: questionMix.seneca.share,
+  };
+
+  const questionSample = selectWallBalanced(questionPool, naturalQuestionWeights, 7, createSeededRng(42));
+  const wallSample = selectWallBalanced(wallPool, wallWeights, 7, createSeededRng(42));
+  const combined = combinedAuthorMix(questionSample, wallSample);
+
+  it("measures a combined epictetus share materially lower than the Question pool's 56%", () => {
+    expect(questionMix.epictetus.share).toBeCloseTo(50 / 89, 5); // 0.562 — the pool's own skew, unchanged
+    expect(combined.epictetus.count).toBe(3);
+    expect(combined.epictetus.share).toBeCloseTo(3 / 14, 5); // 0.214 — materially lower than 0.562
+    expect(combined.epictetus.share).toBeLessThan(0.3);
+  });
+
+  it("reports the full combined mix for this seed: epictetus 3, marcus-aurelius 5, seneca 6 (of 14)", () => {
+    expect(combined).toEqual({
+      epictetus: { count: 3, share: 3 / 14 },
+      "marcus-aurelius": { count: 5, share: 5 / 14 },
+      seneca: { count: 6, share: 6 / 14 },
+    });
   });
 });

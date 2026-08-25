@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import type { Card } from "./types.js";
+import { VALID_AUTHOR_SLUGS, type AuthorSlug } from "./constants.js";
 
 // @ts-expect-error — text-readability has no type declarations
 import rs from "text-readability";
@@ -1538,4 +1539,232 @@ export function buildQuestionDriftRequests(entries: QuestionEntry[]): QuestionDr
     question: entry.question,
     answer: entry.answer,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// T05: Balance the Epictetus skew. The Question's usable pool is
+// structurally skewed toward Epictetus (measured: epictetus 50 / 89 = 56%,
+// marcus-aurelius 21 / 89 = 24%, seneca 18 / 89 = 20% — see T04's note; the
+// plan's own ~65% estimate is close but not exact) because *Discourses* is a
+// diatribe transcript that natively matches the question/answer format. That
+// skew CANNOT be fixed inside The Question's own pool without discarding
+// otherwise-good material, and T05 is explicitly scoped not to try. Instead,
+// The Wall — whose ranked pool (1,003 entries; see `rankWall`) is more than
+// ten times the size of The Question's — absorbs the correction: it is
+// weighted AWAY from Epictetus and TOWARD Marcus Aurelius and Seneca so that
+// once a week's Question and Wall posts are combined, the OVERALL author mix
+// lands closer to even than The Question's pool ever could on its own.
+//
+// This section builds the mechanism (`wallAuthorWeights`,
+// `selectWallBalanced`) and the reporting (`authorMix`, `combinedAuthorMix`)
+// the scheduler (T12) will consume. T05 does not build the scheduler itself.
+// ---------------------------------------------------------------------------
+
+/**
+ * Deterministic, seedable PRNG (mulberry32). Exported so T12 can reuse the
+ * exact same generator `selectWallBalanced` uses — the plan requires
+ * byte-identical regeneration from a seed, which is only possible if every
+ * consumer shares one RNG implementation rather than each rolling its own.
+ *
+ * Returns a function that yields floats in `[0, 1)`, advancing an internal
+ * 32-bit state on every call. Pure function of `seed` and call count — no
+ * `Math.random()` anywhere in this file.
+ */
+export function createSeededRng(seed: number): () => number {
+  let state = seed >>> 0;
+  return function rng(): number {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export interface AuthorMixEntry {
+  count: number;
+  share: number;
+}
+
+/**
+ * Author mix (count and share of total) for ANY collection carrying
+ * `author_slug` — a single format's pool, or a combined multi-format
+ * selection. This is the piece the acceptance criterion needs: the weekly
+ * schedule must report author mix across all formats COMBINED, not per
+ * format, and this function is what makes that call site possible (see
+ * `combinedAuthorMix` below).
+ *
+ * Always returns an entry for all three known authors (`VALID_AUTHOR_SLUGS`),
+ * even when a given author has zero entries in `entries` — so a caller can
+ * always read `mix.seneca.count` without a defined-ness check. `share` is 0
+ * for every author when `entries` is empty (rather than `NaN`).
+ */
+export function authorMix<T extends { author_slug: AuthorSlug }>(entries: T[]): Record<AuthorSlug, AuthorMixEntry> {
+  const counts = {} as Record<AuthorSlug, number>;
+  for (const author of VALID_AUTHOR_SLUGS) counts[author] = 0;
+  for (const entry of entries) counts[entry.author_slug] += 1;
+
+  const total = entries.length;
+  const result = {} as Record<AuthorSlug, AuthorMixEntry>;
+  for (const author of VALID_AUTHOR_SLUGS) {
+    result[author] = { count: counts[author], share: total > 0 ? counts[author] / total : 0 };
+  }
+  return result;
+}
+
+/**
+ * Convenience wrapper for the scheduler's report: flattens any number of
+ * per-format pools (e.g. a week's Question selections and a week's Wall
+ * selections) and runs `authorMix` over the combined set. This is the exact
+ * call T12's weekly report needs to satisfy T05's acceptance criterion —
+ * "the weekly schedule reports author mix across all formats combined, not
+ * per format."
+ */
+export function combinedAuthorMix<T extends { author_slug: AuthorSlug }>(
+  ...pools: T[][]
+): Record<AuthorSlug, AuthorMixEntry> {
+  return authorMix(pools.flat());
+}
+
+/**
+ * The balance target: an even three-way split (1/3 each). This is the
+ * "obvious" target and the one implemented here, even though the corpus
+ * itself is not quite even (1,615 cards: epictetus 458 / 28%, marcus-aurelius
+ * 576 / 36%, seneca 581 / 36% — measured). An even split was chosen over
+ * matching the corpus's own proportions for two reasons: (1) the corpus mix
+ * is already close to even (28/36/36) — matching it instead of a clean 1/3
+ * each would only reproduce a small part of the skew problem while adding
+ * complexity for little gain; (2) "balanced" is a reader-facing promise
+ * (three philosophers, one voice each, none dominating the feed) that reads
+ * more honestly as an even split than as "proportional to how much each of
+ * them happened to write."
+ */
+export const BALANCED_AUTHOR_SHARE: Record<AuthorSlug, number> = {
+  epictetus: 1 / 3,
+  "marcus-aurelius": 1 / 3,
+  seneca: 1 / 3,
+};
+
+/**
+ * Default assumption for how much of a week's two-post-per-day schedule is
+ * Question posts (vs. Wall posts) when solving for Wall's correction weight
+ * below — see `wallAuthorWeights`. T12 owns the schedule's real format mix;
+ * this is only the assumption `wallAuthorWeights` uses to size its own
+ * correction when the caller doesn't override it. 0.5 mirrors the plan's own
+ * "7 days x 2 posts" shape read as one Question + one Wall per day.
+ */
+export const DEFAULT_QUESTION_FRACTION = 0.5;
+
+/**
+ * Compute the per-author weighting The Wall should apply so that the
+ * COMBINED mix across formats lands closer to `BALANCED_AUTHOR_SHARE` than
+ * The Question pool's own mix does alone.
+ *
+ * The algebra: for each author `a`, if a fraction `questionFraction` of the
+ * week's posts are Question posts (share `q[a]` per `authorMix(questionPool)`)
+ * and the remaining `1 - questionFraction` are Wall posts (share `w[a]`,
+ * unknown), the combined share is:
+ *
+ *   combined[a] = questionFraction * q[a] + (1 - questionFraction) * w[a]
+ *
+ * Solving for `w[a]` that makes `combined[a] == 1/3` gives:
+ *
+ *   w[a] = (1/3 - questionFraction * q[a]) / (1 - questionFraction)
+ *
+ * Because `sum(q[a]) == 1`, the un-clamped solution always sums to exactly 1
+ * across the three authors (`3 * 1/3 - sum(q[a]) == 1`), so it's already a
+ * valid weight distribution UNLESS the Question pool's skew toward one
+ * author is so severe that its solved Wall weight would need to be negative
+ * (not possible here: the worst-skewed author, epictetus at 56%, is still
+ * below the 66.7% ceiling at which its solved weight would hit zero — see
+ * the corpus-level test). Weights are clamped to >= 0 and renormalized to
+ * sum to 1 as a defensive measure for any future corpus where a Question
+ * pool skews harder than that.
+ *
+ * `wallPool` is accepted (per the plan's specified signature) so a future
+ * caller's weights are visibly tied to the pool they'll be applied against,
+ * and so this function can guard against solving a positive weight for an
+ * author the Wall pool cannot actually supply (also renormalized away).
+ */
+export function wallAuthorWeights(
+  questionPool: QuestionEntry[],
+  wallPool: RankedWallEntry[],
+  questionFraction = DEFAULT_QUESTION_FRACTION,
+): Record<AuthorSlug, number> {
+  const questionMix = authorMix(questionPool);
+  const wallMix = authorMix(wallPool);
+
+  const raw = {} as Record<AuthorSlug, number>;
+  for (const author of VALID_AUTHOR_SLUGS) {
+    const solved = (BALANCED_AUTHOR_SHARE[author] - questionFraction * questionMix[author].share) / (1 - questionFraction);
+    // An author with nothing in the Wall pool can't be assigned any weight,
+    // regardless of what the algebra solves for.
+    raw[author] = wallMix[author].count > 0 ? Math.max(0, solved) : 0;
+  }
+
+  const total = VALID_AUTHOR_SLUGS.reduce((sum, author) => sum + raw[author], 0);
+  const weights = {} as Record<AuthorSlug, number>;
+  for (const author of VALID_AUTHOR_SLUGS) {
+    weights[author] = total > 0 ? raw[author] / total : 1 / VALID_AUTHOR_SLUGS.length;
+  }
+  return weights;
+}
+
+/**
+ * Deterministic weighted selection, without replacement, of `n` entries from
+ * `pool` — the mechanism The Wall uses to draw a week's cards so that the
+ * resulting author mix honours `weights` (e.g. from `wallAuthorWeights`).
+ *
+ * Algorithm, repeated `min(n, pool.length)` times: (1) among authors that
+ * still have unpicked entries, draw one author via roulette-wheel selection
+ * weighted by `weights` (falling back to a uniform draw among remaining
+ * authors if every remaining author's weight is 0 — keeps the function total
+ * even against a degenerate all-zero weight map); (2) draw one entry
+ * uniformly at random from that author's remaining bucket; (3) remove it so
+ * it can never be picked twice.
+ *
+ * Deterministic and seedable: every random choice is drawn from `rng` (see
+ * `createSeededRng`), never `Math.random()`, so the same `pool` + `weights` +
+ * `rng` sequence (i.e. the same seed) always returns byte-identical output —
+ * required by T12 for regeneration.
+ */
+export function selectWallBalanced<T extends { author_slug: AuthorSlug }>(
+  pool: T[],
+  weights: Record<AuthorSlug, number>,
+  n: number,
+  rng: () => number,
+): T[] {
+  const remaining = {} as Record<AuthorSlug, T[]>;
+  for (const author of VALID_AUTHOR_SLUGS) remaining[author] = [];
+  for (const entry of pool) remaining[entry.author_slug].push(entry);
+
+  const selected: T[] = [];
+  const draws = Math.min(n, pool.length);
+
+  for (let i = 0; i < draws; i++) {
+    const availableAuthors = VALID_AUTHOR_SLUGS.filter((author) => remaining[author].length > 0);
+    const availableWeight = availableAuthors.reduce((sum, author) => sum + (weights[author] ?? 0), 0);
+
+    let pickedAuthor: AuthorSlug;
+    if (availableWeight > 0) {
+      let r = rng() * availableWeight;
+      pickedAuthor = availableAuthors[availableAuthors.length - 1];
+      for (const author of availableAuthors) {
+        r -= weights[author] ?? 0;
+        if (r <= 0) {
+          pickedAuthor = author;
+          break;
+        }
+      }
+    } else {
+      const index = Math.min(Math.floor(rng() * availableAuthors.length), availableAuthors.length - 1);
+      pickedAuthor = availableAuthors[index];
+    }
+
+    const bucket = remaining[pickedAuthor];
+    const index = Math.min(Math.floor(rng() * bucket.length), bucket.length - 1);
+    const [entry] = bucket.splice(index, 1);
+    selected.push(entry);
+  }
+
+  return selected;
 }

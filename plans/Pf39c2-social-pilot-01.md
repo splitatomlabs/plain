@@ -273,8 +273,56 @@ daily job makes no LLM call at post time.
   proving it doesn't over-reject. `npx vitest run
   scripts/lib/__tests__/premises.test.ts` — 163/163 green (124 baseline + 39 new). `npx vitest run` (full pipeline
   suite) — 419/419 green (380 baseline + 39 new), confirming no regression to T01/T02/T03 or any other consumer.
-- [ ] T05: Balance the Epictetus skew (~65% of the usable Question pool) by weighting The Wall toward Meditations and
+- [x] T05: Balance the Epictetus skew (~65% of the usable Question pool) by weighting The Wall toward Meditations and
   the Seneca essays. Acceptance: the weekly schedule reports author mix across all formats combined, not per format.
+  **Note:** Added `authorMix`, `combinedAuthorMix`, `wallAuthorWeights`, `selectWallBalanced`, and `createSeededRng`
+  to `scripts/lib/premises.ts`, reusing `loadCorpus`, `rankWall`, `questionGate`, `RankedWallEntry`, and
+  `QuestionEntry` exactly as instructed — `sentences()`, the T02 reference rules, the T03 classifier, and the T04
+  gate predicates are all untouched. `authorMix<T extends { author_slug: AuthorSlug }>(entries)` is generic over any
+  collection carrying `author_slug` (a single format's pool or a flattened multi-format selection) and always
+  returns all three authors, count 0 / share 0 rather than `undefined`/`NaN` when an author has no entries.
+  `combinedAuthorMix(...pools)` flattens any number of pools and calls `authorMix` — this is the exact call the
+  weekly scheduler (T12) needs to satisfy the acceptance criterion. **Balance target, stated explicitly per the
+  task:** an even three-way split (`BALANCED_AUTHOR_SHARE`, 1/3 each) — chosen over matching the corpus's own
+  proportions (1,615 cards: epictetus 458/28%, marcus-aurelius 576/36%, seneca 581/36%) because the corpus mix is
+  already close to even, so matching it instead of a clean 1/3 would only reproduce part of the skew problem, and
+  because "balanced" is a reader-facing promise (three philosophers, none dominating the feed) that reads more
+  honestly as an even split than as "proportional to how much each of them happened to write" — full reasoning
+  in-file. `wallAuthorWeights(questionPool, wallPool, questionFraction = DEFAULT_QUESTION_FRACTION)` solves
+  algebraically for the Wall weight `w[a]` per author that makes `questionFraction * q[a] + (1 - questionFraction) *
+  w[a] == 1/3`, given `questionFraction = 0.5` by default (mirroring the plan's "7 days x 2 posts" as one Question +
+  one Wall per day; overridable once T12 knows the schedule's real format mix). Because `sum(q[a]) == 1`, the
+  un-clamped solution always sums to exactly 1; clamped to >= 0 and renormalized as a defensive measure for a future
+  corpus where a Question pool's skew could exceed the 66.7% ceiling at which a solved weight would go negative (not
+  the case here — measured worst case is epictetus at 56%). An author absent from the Wall pool is forced to weight
+  0 regardless of what the algebra solves for. Measured over the real corpus:
+  `wallAuthorWeights(questionGate(loadCorpus()), rankWall(loadCorpus()))` = epictetus 0.1049, marcus-aurelius
+  0.4307, seneca 0.4644 — pushed away from epictetus (natural Wall-pool share 33%) and toward marcus-aurelius
+  (up from 26%) and seneca (up from 41%), exactly as required. `selectWallBalanced(pool, weights, n, rng)` is a
+  generic (any `{ author_slug }` collection, not Wall-specific) deterministic weighted selection without
+  replacement: roulette-wheel author draw weighted by `weights` among authors with remaining entries, then a
+  uniform draw within that author's remaining bucket, removing the picked entry so it can never repeat. Every
+  random choice comes from the injected `rng`, never `Math.random()`. `createSeededRng(seed)` is a self-contained
+  mulberry32 PRNG, exported so T12 reuses the identical generator — required for T12's byte-identical regeneration
+  from a seed. **Measured combined mix for a representative 7 Question + 7 Wall week** (seed 42, Question sample
+  drawn with weights matching its OWN natural/uncorrected mix — T05 does not rebalance The Question itself, only
+  The Wall — and Wall sample drawn with `wallAuthorWeights`'s correction): epictetus 3/14 (21.4%), marcus-aurelius
+  5/14 (35.7%), seneca 6/14 (42.9%) — materially lower than the Question pool's own 56% epictetus share, which is
+  unchanged and unchangeable at 50/89 (56.2%). A directional large-draw test (n=300 from the full Wall pool) also
+  confirms `selectWallBalanced` honours the weighting: epictetus share below 1/3, marcus-aurelius and seneca above
+  it. Added 21 new tests to `scripts/lib/__tests__/premises.test.ts`: `authorMix` unit tests (synthetic collection,
+  missing-author zero entries, empty-collection share, and the real Question pool's measured 50/21/18);
+  `combinedAuthorMix` tests (synthetic multi-pool flatten, equivalence to `authorMix` over a manually flattened
+  Question+Wall pool); `wallAuthorWeights` tests (directional push away from epictetus/toward the other two, the
+  exact solved weights at the default fraction, weights summing to 1, an author absent from a synthetic Wall pool
+  forced to 0, an explicit `questionFraction` override); `createSeededRng` tests (same-seed determinism,
+  different-seed divergence, output bounded to `[0, 1)`); `selectWallBalanced` tests (same-seed determinism,
+  different-seed divergence, no duplicates and all entries traceable to the input pool, capping at pool size, and
+  the large-draw directional check); and the combined-mix week-level test proving the point of the task, pinning
+  both the exact seed-42 combined counts and the qualitative "materially lower than 56%" claim. `npx vitest run
+  scripts/lib/__tests__/premises.test.ts` — 184/184 green (163 baseline + 21 new). `npx vitest run` (full pipeline
+  suite) — 440/440 green (419 baseline + 21 new), confirming no regression to T01/T02/T03/T04 or any other
+  consumer.
 - [ ] T06: Write scoring tests. Cover fenced-JSON parsing, rejection of text not traceable to the source card,
   per-rubric output shapes, per-format length limits. Acceptance: tests fail against an empty implementation.
 - [ ] T07: Implement the three LLM rubrics and parsers. **The Objection's carries the most weight** — no regex
