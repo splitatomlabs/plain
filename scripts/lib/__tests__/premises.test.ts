@@ -1743,6 +1743,19 @@ describe("objectionGate", () => {
       expect(entries.length).toBe(59);
     });
 
+    it("every entry's reply_start lands right after its own quoted occurrence, and reply is everything after it (M12)", () => {
+      // Corpus-wide version of the M12 fixture test in schedule.test.ts:
+      // confirms the gate's cursor resolves each entry to ITS OWN occurrence
+      // of the quoted span (not always the first one in the card), across
+      // every real entry the gate produces — not just a synthetic repeat.
+      const cardsById = new Map(cards.map((c) => [c.id, c]));
+      for (const e of entries) {
+        const card = cardsById.get(e.card_id)!;
+        expect(card.plain_english.slice(0, e.reply_start).endsWith(`"${e.objection}"`)).toBe(true);
+        expect(card.plain_english.slice(e.reply_start).trim()).toBe(e.reply);
+      }
+    });
+
     it("is in the 35-65 raw-pool range (regression guard)", () => {
       // Narrowed from 40-80 (measured against the pre-floor 78-candidate
       // pool) to 35-65 now that the floor measures 59 — still wide enough

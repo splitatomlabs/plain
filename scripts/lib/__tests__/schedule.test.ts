@@ -1701,4 +1701,55 @@ describe("M11: assembleObjectionReply's error path and correct-occurrence resolu
       expect(objectionSlot!.content.reply).toBe("The truth is that fairness was never promised to anyone.");
     }
   });
+
+  it("resolves the correct occurrence when the whole objection SENTENCE repeats verbatim (M12 gate cursor)", () => {
+    const pe = 'He says "But it is not fair at all." He says "But it is not fair at all." The truth is plain.';
+    const card = fabricatedCard("m12-dup-sentence", pe, "m12-pool");
+    const [first, second] = objectionGate([card]);
+
+    expect(second.reply_start).toBeGreaterThan(first.reply_start);
+    for (const e of [first, second]) {
+      expect(pe.slice(0, e.reply_start).endsWith(`"${e.objection}"`)).toBe(true);
+      expect(pe.slice(e.reply_start).trim()).toBe(e.reply);
+    }
+    expect(pe.slice(second.reply_start).trim()).toBe("The truth is plain.");
+  });
+
+  it("throws '/missing a valid reply_start/' when a hand-built pool entry omits reply_start (M13)", () => {
+    const rtCard = fabricatedCard("m13-rt-1", "Read-through sentence one.", "m13-readthrough-1");
+    const card = fabricatedCard(
+      "m13-missing-reply-start",
+      'He grumbled, "But why should I suffer for this?" and walked off.',
+      "m13-pool-1",
+    );
+    // A verbatim quoted span (passes the `includes` check in
+    // `assembleObjectionReply`), but with no `reply_start` at all — the kind
+    // of `objection.json` entry that could have been written before the M8
+    // commit introduced the field. Cast is deliberate: this simulates
+    // unvalidated JSON on disk, not a value ever produced by `objectionGate`
+    // itself.
+    const objectionPool = [
+      {
+        card_id: card.id,
+        book_slug: card.book_slug,
+        author_slug: card.author_slug,
+        objection: "But why should I suffer for this?",
+        reply: "irrelevant",
+      } as unknown as import("../premises.js").ObjectionEntry,
+    ];
+
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 1,
+        cards: [rtCard, card],
+        pools: { wall: [], question: [], objection: objectionPool },
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "m13-readthrough-1",
+        readThroughStartIndex: 0,
+        weights: { wall: 0, question: 0, objection: 1 },
+      }),
+    ).toThrow(/missing a valid reply_start/);
+  });
 });
