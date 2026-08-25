@@ -81,7 +81,7 @@ looks like Plain.
   Acceptance: renders from a >=150-word card; the cut lands as a somatic drop when watched on a phone.
 - [x] T06: Add the Wall layout gate — auto-fit to exactly one screen and REJECT any card that cannot be set at
   >=14px equivalent (396 cards run over 150 words). Acceptance: an over-long card is rejected, not rendered illegibly.
-- [~] T07: Build **The Question**. Frame 0.0 is the question alone, still and readable. Then the archaic original
+- [x] T07: Build **The Question**. Frame 0.0 is the question alone, still and readable. Then the archaic original
   arrives as the moving wall; then it drops away and the plain answer resolves in stillness. **There is no wrong
   answer** — it must never read as testing the viewer. Acceptance: renders from the validated pool; the question is
   legible and answerable within 1.5s.

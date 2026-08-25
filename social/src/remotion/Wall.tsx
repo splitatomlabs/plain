@@ -38,7 +38,10 @@ export interface WallProps extends Record<string, unknown> {
 	narrationTimings?: NarrationLineTiming[];
 }
 
-const SERIF_STACK = "'Literata Variable', 'Literata', Georgia, serif";
+// Exported (additively) so other compositions sharing this visual grammar —
+// see `Question.tsx`'s archaic-wall phase — set type in the exact same
+// typeface stack rather than duplicating the string.
+export const SERIF_STACK = "'Literata Variable', 'Literata', Georgia, serif";
 
 /**
  * The Wall — the flagship. Frame 0 is already a packed, mid-push-in wall of
@@ -90,8 +93,13 @@ export const Wall: React.FC<WallProps> = (props) => {
  * never recomputes its own fit, so the "packed edge to edge, no clipped
  * glyphs" geometry tested in `wall-timing.test.ts` is the geometry that
  * actually ships.
+ *
+ * Exported (additively) so `Question.tsx` reuses this exact JSX for its
+ * archaic-wall phase rather than forking a second copy — see that file's
+ * comment on `relativeFrame` for why the `frame` it passes in is relative
+ * to that phase's own start, not the whole composition's frame 0.
  */
-function WallPhase({
+export function WallPhase({
 	frame,
 	text,
 	accent,
@@ -161,8 +169,11 @@ function WallPhase({
  * Phases 2 and 3 — one still line, centred, on paper, zero motion. Renders
  * identically on every frame it's shown, so there is no interpolation range
  * to accidentally animate.
+ *
+ * Exported (additively) so `Question.tsx` reuses this exact JSX for its own
+ * still answer phase rather than forking a second copy.
  */
-function PayoffLine({ text }: { text: string }): React.ReactElement {
+export function PayoffLine({ text }: { text: string }): React.ReactElement {
 	const fit = fitFontSize(text, {
 		maxWidth: PAYOFF_BOX_WIDTH,
 		maxHeight: PAYOFF_BOX_HEIGHT,

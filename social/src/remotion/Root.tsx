@@ -4,6 +4,9 @@ import { Composition } from 'remotion';
 import { computeWallTiming, FPS } from './wall-timing.js';
 import { assertWallCardRenderable } from './wall-gate.js';
 import { Wall, type WallProps } from './Wall.js';
+import { computeQuestionTiming } from './question-timing.js';
+import { assertQuestionRenderable } from './question-gate.js';
+import { Question, type QuestionProps } from './Question.js';
 
 // 1080x1920 @ 30fps — the vertical story/reel frame every format in this
 // workspace renders to (see `social/src/render/sizes.ts`).
@@ -18,6 +21,13 @@ const defaultWallProps: WallProps = {
 	landingLine: 'This is the landing line.',
 	plainLines: ['This is the rest of the plain passage.'],
 	author: 'marcus-aurelius'
+};
+
+const defaultQuestionProps: QuestionProps = {
+	question: 'What is a master anyway?',
+	answer: 'One person cannot really master another.',
+	originalExcerpt: 'This is placeholder archaic text standing in for a real card excerpt.',
+	author: 'epictetus'
 };
 
 export const RemotionRoot: React.FC = () => {
@@ -44,6 +54,28 @@ export const RemotionRoot: React.FC = () => {
 							plainLines: props.plainLines,
 							narrationTimings: props.narrationTimings
 						}).totalFrames
+					};
+				}}
+			/>
+			<Composition<any, QuestionProps>
+				id="Question"
+				component={Question}
+				width={WIDTH}
+				height={HEIGHT}
+				fps={FPS}
+				durationInFrames={computeQuestionTiming(defaultQuestionProps).totalFrames}
+				defaultProps={defaultQuestionProps}
+				calculateMetadata={({ props }) => {
+					// Runs before any frame renders — a bad card (over-long
+					// question, unfittable at the legibility floor, or an entry
+					// that fails the pool's own validation flags) throws here,
+					// failing composition selection and the render outright
+					// rather than producing an unreadable or mistagged frame.
+					// See `question-gate.ts`.
+					assertQuestionRenderable({ question: props.question, answer: props.answer });
+					assertWallCardRenderable(props.originalExcerpt);
+					return {
+						durationInFrames: computeQuestionTiming({ question: props.question }).totalFrames
 					};
 				}}
 			/>

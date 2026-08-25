@@ -1,5 +1,5 @@
 export { RemotionRoot } from './Root.js';
-export { Wall, type WallProps } from './Wall.js';
+export { Wall, WallPhase, PayoffLine, SERIF_STACK, type WallProps } from './Wall.js';
 export {
 	computeWallLayout,
 	computeWallTiming,
@@ -59,3 +59,39 @@ export {
 	type WallPoolEntry,
 	type WallPoolSurveyResult
 } from './wall-pool.js';
+export { Question, type QuestionProps } from './Question.js';
+export {
+	computeQuestionTiming,
+	computeQuestionLayout,
+	QUESTION_HOLD_SECONDS,
+	QUESTION_HOLD_FRAMES,
+	QUESTION_BOX_PADDING_X,
+	QUESTION_BOX_WIDTH,
+	QUESTION_BOX_HEIGHT,
+	QUESTION_MIN_FONT,
+	QUESTION_MAX_FONT,
+	QUESTION_LINE_HEIGHT_RATIO,
+	ANSWER_MIN_SECONDS,
+	ANSWER_SECONDS,
+	ANSWER_FRAMES,
+	ANSWER_BOX_PADDING_X,
+	ANSWER_BOX_WIDTH,
+	ANSWER_BOX_HEIGHT,
+	ANSWER_MIN_FONT,
+	ANSWER_MAX_FONT,
+	ANSWER_LINE_HEIGHT_RATIO,
+	type QuestionLayout,
+	type QuestionPhaseWindow,
+	type QuestionTimingInput,
+	type QuestionTimingSchedule
+} from './question-timing.js';
+export {
+	gateQuestionCard,
+	assertQuestionRenderable,
+	QUESTION_MAX_WORDS,
+	QUESTION_REFERENCE_VIEWPORT_WIDTH,
+	QUESTION_MIN_LEGIBLE_FONT_PX,
+	FORBIDDEN_TESTING_VOCABULARY,
+	type QuestionGateInput,
+	type QuestionGateResult
+} from './question-gate.js';
