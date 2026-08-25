@@ -85,6 +85,28 @@ describe("createMessageBatch", () => {
     expect(callArg.requests[0].params.system).toBe("You are a helpful assistant.");
   });
 
+  it("emits system as a cache_control array when cache_system is true", async () => {
+    mockBatchCreate.mockResolvedValue({ id: "batch_cache", processing_status: "in_progress" });
+
+    await createMessageBatch([
+      {
+        custom_id: "req-4",
+        system: "You are a helpful assistant.",
+        cache_system: true,
+        messages: [{ role: "user", content: "Hi" }],
+      },
+    ]);
+
+    const callArg = mockBatchCreate.mock.calls[0][0];
+    expect(callArg.requests[0].params.system).toEqual([
+      {
+        type: "text",
+        text: "You are a helpful assistant.",
+        cache_control: { type: "ephemeral" },
+      },
+    ]);
+  });
+
   it("uses provided max_tokens when specified", async () => {
     mockBatchCreate.mockResolvedValue({ id: "batch_zzz", processing_status: "in_progress" });
 

@@ -6,7 +6,7 @@ const TAG_DESCRIPTIONS = VALID_TAGS.map(
   (t) => `"${t.slug}" — ${t.label}: ${t.description}`,
 ).join("\n");
 
-const AUTHOR_VOICE: Record<string, string> = {
+export const AUTHOR_VOICE: Record<string, string> = {
   epictetus: `Epictetus is direct, instructional, and blunt. He speaks like a teacher who has no patience for excuses. The tone is firm but caring — "Here's what you control. Here's what you don't. Act accordingly." Use second person ("you") heavily. Keep sentences punchy and declarative.`,
 
   "marcus-aurelius": `Marcus Aurelius is reflective, personal, and sometimes weary. He is writing to himself in a private journal. The tone is quiet, honest, and inward — like someone talking themselves through a hard day. Preserve any sense of struggle or fatigue. Use second person sparingly (he addresses himself as "you" sometimes).`,

@@ -30,6 +30,11 @@ yarn-error.log*
 *.tmp
 .temp/
 
+# T23: raw LLM responses captured on premises rubric parse failures —
+# debugging exhaust, not a build artifact (unlike the committed
+# content/pipeline/<book>/*.json pipeline intermediates).
+content/pipeline/social/parse-failures/
+
 # Test output
 test-results/
 

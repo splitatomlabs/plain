@@ -4,13 +4,13 @@ import type { FileHandle } from "node:fs/promises";
 
 const MAX_LOG_BYTES = 100 * 1024; // 100 KB
 
-type Level = "INFO" | "WARN" | "ERROR" | "DECISION";
+type Level = "INFO" | "WARN" | "ERROR" | "DECISION" | "DEBUG";
 
 class PipelineLogger {
   private fileHandle: FileHandle | null = null;
   private verbose = false;
 
-  async init(bookSlug: string, verbose: boolean): Promise<void> {
+  async init(bookSlug: string, verbose: boolean, fileName = "pipeline.log"): Promise<void> {
     // Close any previously open handle
     await this.close();
 
@@ -19,7 +19,7 @@ class PipelineLogger {
     const dir = path.join(process.cwd(), "content", "pipeline", bookSlug);
     await mkdir(dir, { recursive: true });
 
-    const logPath = path.join(dir, "pipeline.log");
+    const logPath = path.join(dir, fileName);
 
     // Truncate to last MAX_LOG_BYTES if the file is too large
     await this.truncateIfNeeded(logPath);
@@ -71,6 +71,16 @@ class PipelineLogger {
 
   decision(message: string): void {
     this.write("DECISION", message);
+  }
+
+  /**
+   * Lower-severity than `warn` — for diagnostics worth keeping in the log
+   * for later pattern-spotting (e.g. a systematic prompt drift) without
+   * implying anything went wrong. Same file-write/verbose-stderr behavior
+   * as every other level.
+   */
+  debug(message: string): void {
+    this.write("DEBUG", message);
   }
 
   private write(level: Level, message: string): void {

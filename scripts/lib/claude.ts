@@ -15,6 +15,174 @@ export interface CallClaudeOptions {
   system?: string;
 }
 
+/**
+ * Find the index of the "}" that balances the "{" at `startIndex`, tracking
+ * string literals (and their escape sequences) so a brace character inside
+ * a JSON string value is never mistaken for a structural one. Returns -1 if
+ * the braces starting at `startIndex` never balance before the text ends.
+ */
+function findBalancedBraceEnd(text: string, startIndex: number): number {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = startIndex; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === "{") {
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Scan `text` for a balanced `{ ... }` span that also parses as valid JSON,
+ * trying each "{" occurrence in document order as a candidate start (so a
+ * stray, unrelated brace pair earlier in the text — e.g. inside ordinary
+ * prose — doesn't prevent finding the real JSON object that follows it).
+ * Returns the first candidate that parses, or null if none does.
+ */
+function extractBalancedJSONObject(text: string): string | null {
+  let searchFrom = 0;
+  while (true) {
+    const start = text.indexOf("{", searchFrom);
+    if (start === -1) return null;
+    const end = findBalancedBraceEnd(text, start);
+    if (end !== -1) {
+      const candidate = text.slice(start, end + 1);
+      try {
+        JSON.parse(candidate);
+        return candidate;
+      } catch {
+        // Not valid JSON even though the braces balance — keep scanning
+        // from the next "{" occurrence.
+      }
+    }
+    searchFrom = start + 1;
+  }
+}
+
+/**
+ * T23: repairs a response whose JSON object/array is complete in every
+ * respect EXCEPT that the model never emitted its final closing brace(s) —
+ * a real failure mode diagnosed from raw responses captured by
+ * `recordParseFailure` (./parse-failure-log.ts) during a premises re-score.
+ * All four captured cases had `stop_reason: "end_turn"` (not `"max_tokens"`)
+ * and used well under 10% of the 4096-token budget, ruling out truncation:
+ * the model simply stopped after closing its last string value's quote and
+ * never wrote the matching `}`. E.g. (abbreviated):
+ *   {"verdict":"drifts", ... ,"reason":"...without more context."
+ * — a fully-formed object missing only its own closing `}`.
+ *
+ * Starting from the first `{` or `[` in the text, this walks forward
+ * tracking open braces/brackets (skipping over string contents, including
+ * escaped quotes, exactly like `findBalancedBraceEnd`/
+ * `extractBalancedJSONObject` above). If a stray CLOSING brace/bracket is
+ * ever encountered that doesn't match the top of the open stack, the
+ * structure is more broken than "missing a trailing close" and this
+ * refuses to guess (returns null) rather than fabricate something the
+ * model didn't actually write.
+ *
+ * Deliberately narrow scope: this ONLY closes unclosed braces/brackets. It
+ * never closes an unterminated string. `extractJSON` is shared with the
+ * content pipeline's translator, which reads a field like `plain_english`
+ * straight out of whatever this returns — if a string value itself was cut
+ * off mid-sentence (e.g. `max_tokens` truncation, or any other reason the
+ * model stopped mid-string), closing that string produces JSON that parses
+ * cleanly and reads as a complete, valid card, silently shipping a
+ * half-sentence translation into a book with no error raised anywhere. A
+ * response cut off inside a string is not "complete except for a missing
+ * trailing close" the way a response cut off between structural tokens is —
+ * the value itself is incomplete, and this repair must never guess at what
+ * the rest of it would have said. If the text runs out while still inside a
+ * string, this refuses to repair (returns null) so the caller's existing
+ * throw — and therefore retry — still fires, exactly as it did before this
+ * repair existed. Only once no string is open does it append the
+ * outstanding closing braces/brackets, in the correct (innermost-first)
+ * order, and the repair is returned only if the result actually parses —
+ * this never fabricates VALUES, only the minimal closing punctuation the
+ * model's own (complete) structure already implied.
+ */
+function attemptUnclosedJSONRepair(text: string): string | null {
+  const braceIdx = text.indexOf("{");
+  const bracketIdx = text.indexOf("[");
+  const start =
+    braceIdx === -1 ? bracketIdx : bracketIdx === -1 ? braceIdx : Math.min(braceIdx, bracketIdx);
+  if (start === -1) return null;
+
+  const closers: Array<"}" | "]"> = [];
+  let inString = false;
+  let escaped = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === "{") {
+      closers.push("}");
+    } else if (ch === "[") {
+      closers.push("]");
+    } else if (ch === "}" || ch === "]") {
+      if (closers.length > 0 && closers[closers.length - 1] === ch) {
+        closers.pop();
+      } else {
+        // A closing brace/bracket that doesn't match what's open — the
+        // structure is malformed in a way beyond "missing a trailing
+        // close." Don't guess.
+        return null;
+      }
+    }
+  }
+
+  // Nothing was left open — this wasn't actually the failure mode this
+  // repair targets (extractBalancedJSONObject would already have handled
+  // a fully-balanced-but-differently-invalid span).
+  if (closers.length === 0 && !inString) return null;
+
+  // Never close an unterminated string. `extractJSON` is shared with the
+  // content pipeline's translator — closing an open string turns a
+  // genuinely truncated translation (e.g. a `plain_english` value cut off
+  // mid-sentence) into JSON that parses cleanly and passes downstream
+  // validation, silently shipping a half-sentence into a book with no error
+  // raised anywhere. A response cut off mid-string is NOT "complete except
+  // for a missing trailing close" — the VALUE itself is incomplete, which
+  // this repair must never guess at. Refuse and let the caller's existing
+  // throw (and retry) handle it, same as before this repair existed.
+  if (inString) return null;
+
+  const candidate = text.slice(start) + closers.reverse().join("");
+  try {
+    JSON.parse(candidate);
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
 export function extractJSON(text: string): string {
   // 1. Try the full output as-is
   try {
@@ -36,17 +204,21 @@ export function extractJSON(text: string): string {
     }
   }
 
-  // 3. Extract between first { and last }
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    const extracted = text.slice(firstBrace, lastBrace + 1);
-    try {
-      JSON.parse(extracted);
-      return extracted;
-    } catch {
-      // continue
-    }
+  // 3. Extract a balanced { ... } object. Naively slicing from the first
+  // "{" to the last "}" in the whole text breaks the moment ANY unrelated
+  // curly brace shows up before or after the real JSON object — e.g. the
+  // model prefacing its answer with ordinary prose like "the passage uses
+  // {nested clauses} heavily" before emitting the actual JSON. That
+  // unrelated brace pair widens (or, if it comes after, doesn't narrow) the
+  // naive slice into something that no longer parses, even though a
+  // perfectly valid JSON object is sitting right there in the text. Instead,
+  // try each "{" occurrence in turn as a candidate start, scan forward for
+  // ITS matching "}" (properly skipping over string contents, including
+  // escaped quotes, so a brace-like character inside a string never throws
+  // off the depth count), and return the first candidate that parses.
+  const balanced = extractBalancedJSONObject(text);
+  if (balanced !== null) {
+    return balanced;
   }
 
   // 3b. Try array extraction [ ... ]
@@ -62,6 +234,14 @@ export function extractJSON(text: string): string {
     }
   }
 
+  // 3c. Repair a response that's complete except for a missing trailing
+  // close — see `attemptUnclosedJSONRepair`'s own doc comment for the real,
+  // captured failure this targets (confirmed NOT max_tokens truncation).
+  const repaired = attemptUnclosedJSONRepair(text);
+  if (repaired !== null) {
+    return repaired;
+  }
+
   throw new ClaudeCliError("Could not extract JSON from response", text);
 }
 
@@ -70,8 +250,8 @@ export function extractJSON(text: string): string {
 // ---------------------------------------------------------------------------
 
 const API_MODEL_MAP: Record<string, string> = {
-  sonnet: "claude-sonnet-4-20250514",
-  opus: "claude-opus-4-20250514",
+  sonnet: "claude-sonnet-5",
+  opus: "claude-opus-5",
 };
 
 /** Accumulated token usage for cost reporting */
@@ -178,6 +358,14 @@ export interface BatchRequest {
   custom_id: string;
   model?: string;
   system?: string;
+  /**
+   * When true, emits `system` as the array-with-`cache_control` form
+   * (mirroring the real-time path in `callClaudeAPI`) instead of a plain
+   * string, marking it as an ephemeral prompt-cache breakpoint. Optional
+   * and defaults to false so existing callers that pass `system` as a
+   * plain string are unaffected.
+   */
+  cache_system?: boolean;
   messages: Array<{ role: "user" | "assistant"; content: string }>;
   max_tokens?: number;
 }
@@ -199,12 +387,23 @@ export async function createMessageBatch(
   const client = getClient();
   const sdkRequests = requests.map((r) => {
     const modelId = API_MODEL_MAP[r.model ?? "sonnet"] ?? r.model ?? API_MODEL_MAP["sonnet"];
+    const system = r.system
+      ? r.cache_system
+        ? [
+            {
+              type: "text" as const,
+              text: r.system,
+              cache_control: { type: "ephemeral" as const },
+            },
+          ]
+        : r.system
+      : undefined;
     return {
       custom_id: r.custom_id,
       params: {
         model: modelId,
         max_tokens: r.max_tokens ?? 4096,
-        ...(r.system ? { system: r.system } : {}),
+        ...(system ? { system } : {}),
         messages: r.messages,
       },
     };
