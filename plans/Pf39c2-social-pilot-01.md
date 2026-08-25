@@ -1278,10 +1278,73 @@ the next-ranked passage — Book 2 carries disproportionately recognisable mater
   new: 25 pool-file.test.ts + 8 schedule.test.ts) + **95 web unit tests**, all green, confirming no regression to
   T01-T18 or any other consumer.
 
-- [ ] T20: Relax the rubric parsers' unknown-field rejection. The T11 full run lost 107 of 1,003 Wall responses
+- [x] T20: Relax the rubric parsers' unknown-field rejection. The T11 full run lost 107 of 1,003 Wall responses
   (10.7%) to `rejectUnknownFields` — the model returned valid scores plus an additive commentary field
   (`impenetrability_score_reason`, `landing_line_score_note`, `impenetrability_score_explanation`). Ignore
   additive unknown fields while still requiring the known set and validating types; cross-format discrimination
   still works because a wrong-format payload lacks the REQUIRED fields. Also tighten the prompt to discourage
   extra fields. Acceptance: a response with an extra commentary field parses; a Question-shaped payload is still
   rejected by the Wall parser; T06 tests stay green.
+  **Note:** Renamed `rejectUnknownFields` (`scripts/lib/premises-scoring.ts`) to `logIgnoredFields` and changed its
+  behavior from throwing to a no-op-on-content, debug-log-only side effect: it now only reports (never rejects) any
+  key not in the parser's known-field list. **Cross-format discrimination verified, not assumed:** read every T06
+  cross-format test before changing anything — none of the 6 "rejects a Wall/Question/Objection-shaped payload"
+  tests construct a payload that is otherwise-valid-plus-an-extra-field; each wrong-format fixture (`validWallJSON`/
+  `validQuestionJSON`/`validObjectionJSON`) is simply missing the target parser's own required fields entirely, so
+  every one of those tests was already passing on the `require*`/`requireEnum` calls that run BEFORE the (now
+  relaxed) unknown-field check — confirmed by running the full 66-test baseline unchanged before touching the
+  parsers, then again after, both green with zero test edits needed to keep them passing. No T06 test relied on
+  extra-field rejection specifically, so nothing needed to be weakened or flagged back to the requester. Order of
+  validation inside each parser is otherwise unchanged (all three still call `logIgnoredFields` last, after every
+  required field is validated) since that ordering was never what made cross-format rejection work.
+  **Logging:** added a `debug` level + `logger.debug()` to `scripts/lib/logger.ts` (previously only
+  INFO/WARN/ERROR/DECISION existed) — same file-write/verbose-stderr behavior as every other level, silent in tests
+  that never call `logger.init`. `logIgnoredFields` calls it with the format name and the exact ignored field
+  names whenever a response carries one, so a systematic prompt drift (e.g. every Wall response suddenly carrying
+  `impenetrability_score_reason`) stays visible in `premises.log` instead of silently costing pool entries the way
+  the T11 run's drops did — without re-introducing the reject-and-lose-the-response behavior this task removes.
+  **Prompts tightened** (all three system prompts in `premises-scoring.ts`): each "Respond with ONLY this JSON"
+  instruction now explicitly states the exact field count and shape ("EXACTLY these N fields... and no others") and
+  tells the model to put all reasoning inside `reason` rather than inventing a new field, naming the real dropped
+  field names (`impenetrability_score_reason`, `landing_line_score_note`) as the literal anti-pattern to avoid in
+  the Wall prompt. This directly targets the plan's point 4 (reduce occurrence, not just tolerate it) — unverified
+  against a real model response (no batch was re-run, per the task's explicit instruction not to spend), so the
+  actual reduction in occurrence rate remains to be measured whenever T21/a future run happens.
+  **`extractJSON` investigation (separate, smaller fix):** of the 107 dropped Wall responses, 85 were unknown-field
+  rejections (now fixed above) and 22 were `"Could not extract JSON from response"` — `wall_meditations-04-045_389`
+  is the example named in the task, not the only instance. No raw response text was recoverable (no
+  `ANTHROPIC_API_KEY` in this environment, and `premises-batch.ts` never persists the raw text of a response it
+  fails to parse, only the error message), so causation for the SPECIFIC 22 real drops couldn't be confirmed
+  directly. Code review plus a reproducible test found a genuine, demonstrable `extractJSON` bug independent of
+  that: its brace-extraction step naively sliced from the first `{` to the LAST `}` in the entire response, which
+  breaks the instant any unrelated curly brace appears anywhere in leading prose before the real JSON object (e.g.
+  a model aside like "the passage uses {nested clauses} heavily" ahead of the actual answer) — confirmed with a
+  minimal repro (`extractJSON('I'll assess this {mentally} first.\n{"impenetrability_score": 4, ...}')` failed
+  before the fix, since the naive slice spans both unrelated brace groups and the prose between them, which is not
+  valid JSON). This is a plausible, not confirmed, explanation for some/all of the 22 real drops, given the Wall
+  prompt explicitly invites the model to discuss clause-stacking and archaic diction in its `reason` text. Fixed by
+  replacing the naive slice with `extractBalancedJSONObject`/`findBalancedBraceEnd`: scans each `{` occurrence in
+  document order, finds ITS matching `}` via string-literal-aware (escape-aware) depth counting, and returns the
+  first candidate span that also parses as valid JSON — so an unrelated leading brace pair is tried, fails to
+  parse, and the scan moves on to the real JSON object that follows it. Verified this does NOT paper over genuinely
+  malformed model output: unescaped quotes inside a string value, a raw unescaped newline inside a string, a
+  trailing comma, mid-object truncation, and an empty response all still correctly throw
+  `"Could not extract JSON from response"` after the fix — only the specific "extra unrelated brace in surrounding
+  prose" failure mode is now recovered. Added 3 new tests to `scripts/lib/__tests__/claude.test.ts`: a stray-brace-
+  before-the-real-JSON repro (fails before this fix, passes after), a literal-braces-inside-a-string-value case
+  (was already passing, pinned as a regression guard), and a still-throws case (balanced braces that never resolve
+  to valid JSON anywhere in the text).
+  **Tests:** 13 new tests in `scripts/lib/__tests__/premises-scoring.test.ts` — the four real dropped field names
+  from the task (`impenetrability_score_check`, `landing_line_score_note`, `impenetrability_score_reason`,
+  `impenetrability_score_explanation`), each parsed successfully via its own `it.each` case with the extra field
+  asserted absent from the returned result; a multi-extra-field case (the real `wall_meditations-07-019_454`
+  example, which carried two unknown fields at once); three "still strict" cases proving a missing required field,
+  a wrong-typed field, and an out-of-range score all still throw even when an extra field is also present; a
+  Question-shaped-plus-extra-field payload still rejected by the Wall parser (the literal acceptance-criterion
+  wording); and four more tests giving the Question and Objection parsers the same additive-field-tolerated /
+  invalid-enum-still-rejected coverage the Wall parser got, for symmetry. 3 new tests in
+  `scripts/lib/__tests__/claude.test.ts` per the `extractJSON` fix above. `npx vitest run
+  scripts/lib/__tests__/premises-scoring.test.ts` — 79/79 green (66 baseline + 13 new). `npx vitest run
+  scripts/lib/__tests__/claude.test.ts` — 13/13 green (10 baseline + 3 new). `npm test` — **773 pipeline tests**
+  (757 baseline + 16 new) + **95 web unit tests**, all green, confirming no regression to T01-T19 or any other
+  consumer. Did not re-run the scoring batch, per the task's explicit instruction.

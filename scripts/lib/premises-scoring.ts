@@ -11,6 +11,7 @@ import {
 } from "./premises.js";
 import { extractJSON } from "./claude.js";
 import { AUTHOR_VOICE } from "./prompt.js";
+import { logger } from "./logger.js";
 
 // ---------------------------------------------------------------------------
 // T07: The three LLM rubrics and their response parsers. Scoring runs ONLY
@@ -18,8 +19,12 @@ import { AUTHOR_VOICE } from "./prompt.js";
 // (T01/T02 for The Wall, T04's mechanical+layer(a)/(b) for The Question);
 // nothing here re-litigates what those deterministic layers already
 // settled. This module is pure parsing/prompt-construction/validation — no
-// SDK calls, no network code. T08 owns batch submit/poll/stream/merge and
-// calls the functions below.
+// SDK calls, no network code (the one exception, added in T20, is a
+// fire-and-forget `logger.debug` call when a parser ignores an additive
+// unknown field — local file I/O only, same non-blocking pattern every
+// other `logger` call site in this codebase already uses, never a network
+// call and never something a caller needs to await). T08 owns batch
+// submit/poll/stream/merge and calls the functions below.
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -28,11 +33,18 @@ import { AUTHOR_VOICE } from "./prompt.js";
 // Each rubric parser accepts a raw LLM response — fenced in ```json, bare
 // JSON, or JSON with leading/trailing prose — and returns a STRUCTURALLY
 // VALIDATED result object for its own format only. Malformed JSON, or JSON
-// that doesn't match the parser's own shape (including a shape that
-// belongs to one of the OTHER two rubrics), is rejected with a clear,
-// thrown error naming the offending field. `extractJSON` (./claude.js)
-// does the fence-stripping/prose-stripping; this module only validates
-// shape once JSON has been extracted.
+// missing a required field / using the wrong type for one / carrying an
+// out-of-range score or invalid enum value (including a payload shaped
+// like one of the OTHER two rubrics, which is missing this format's own
+// required fields), is rejected with a clear, thrown error naming the
+// offending field. `extractJSON` (./claude.js) does the fence-stripping/
+// prose-stripping; this module only validates shape once JSON has been
+// extracted. An ADDITIVE unrecognized field — one sitting alongside a
+// complete, correctly-typed set of known fields, e.g. the model
+// volunteering `impenetrability_score_reason` alongside a valid
+// `impenetrability_score` — is NOT rejected (see `logIgnoredFields`'s own
+// doc comment for the real-run defect this fixes); it is silently dropped
+// from the returned result and logged at debug level.
 // ---------------------------------------------------------------------------
 
 /** Inclusive score range every Wall rubric score must fall within. */
@@ -152,10 +164,29 @@ function requireEnum<T extends string>(obj: Record<string, unknown>, field: stri
   return value as T;
 }
 
-function rejectUnknownFields(obj: Record<string, unknown>, allowedFields: readonly string[], formatName: string): void {
+/**
+ * T20 fix: the real T11 run lost 107 of 1,003 Wall responses (10.7%) to a
+ * PRIOR version of this function, which THREW on any additive field the
+ * model volunteered alongside a complete, correctly-typed set of known
+ * fields (`impenetrability_score_check`, `landing_line_score_note`, etc. —
+ * the model explaining itself in a field name of its own invention rather
+ * than in `reason`). That is not a malformed or wrong-shape response — it
+ * is a fully valid scoring the model chose to annotate — so it must not be
+ * dropped. Additive unknown fields are now IGNORED (never merged into the
+ * returned result — the return type only ever carries the known fields) and
+ * logged at debug level so a systematic prompt drift stays visible instead
+ * of silently costing pool entries the way this one did. Every known field
+ * is still required to be present and correctly typed, and every existing
+ * range/enum validation is unchanged — this function no longer contributes
+ * to REJECTING a payload at all, cross-format discrimination is carried
+ * entirely by the `require*`/`requireEnum` calls that already run first.
+ */
+function logIgnoredFields(obj: Record<string, unknown>, allowedFields: readonly string[], formatName: string): void {
   const extra = Object.keys(obj).filter((key) => !allowedFields.includes(key));
   if (extra.length > 0) {
-    throw new Error(`${formatName} rubric response has unexpected field(s): ${extra.join(", ")}`);
+    logger.debug(
+      `premises-scoring: ${formatName} rubric response carried unexpected field(s), ignored: ${extra.join(", ")}`,
+    );
   }
 }
 
@@ -165,10 +196,14 @@ const OBJECTION_RUBRIC_FIELDS = ["verdict", "classification", "reason"] as const
 
 /**
  * Parse a raw LLM response into a validated `WallRubricResult`. Rejects
- * malformed JSON; rejects a payload missing a required field, carrying an
- * extra unrecognized field, using the wrong type for a field, or carrying
- * a score outside [`WALL_SCORE_MIN`, `WALL_SCORE_MAX`]; rejects a payload
- * shaped like `QuestionRubricResult` or `ObjectionRubricResult`.
+ * malformed JSON; rejects a payload missing a required field, using the
+ * wrong type for a field, or carrying a score outside [`WALL_SCORE_MIN`,
+ * `WALL_SCORE_MAX`]; rejects a payload shaped like `QuestionRubricResult` or
+ * `ObjectionRubricResult` (both are missing `chosen_landing_line` and/or the
+ * two scores, which is what actually gets rejected on — see
+ * `logIgnoredFields`'s own doc comment for why an ADDITIVE unrecognized
+ * field, e.g. a commentary field the model volunteered alongside a complete
+ * valid response, is tolerated rather than rejected).
  */
 export function parseWallRubricResponse(raw: string): WallRubricResult {
   const parsed = parseJSONResponse(raw);
@@ -176,7 +211,7 @@ export function parseWallRubricResponse(raw: string): WallRubricResult {
   const landing_line_score = requireNumber(parsed, "landing_line_score", WALL_SCORE_MIN, WALL_SCORE_MAX);
   const chosen_landing_line = requireString(parsed, "chosen_landing_line");
   const reason = optionalString(parsed, "reason");
-  rejectUnknownFields(parsed, WALL_RUBRIC_FIELDS, "Wall");
+  logIgnoredFields(parsed, WALL_RUBRIC_FIELDS, "Wall");
   return reason !== undefined
     ? { impenetrability_score, landing_line_score, chosen_landing_line, reason }
     : { impenetrability_score, landing_line_score, chosen_landing_line };
@@ -195,7 +230,7 @@ export function parseQuestionRubricResponse(raw: string): QuestionRubricResult {
   const parsed = parseJSONResponse(raw);
   const verdict = requireEnum(parsed, "verdict", QUESTION_RUBRIC_VERDICTS);
   const reason = requireString(parsed, "reason");
-  rejectUnknownFields(parsed, QUESTION_RUBRIC_FIELDS, "Question");
+  logIgnoredFields(parsed, QUESTION_RUBRIC_FIELDS, "Question");
   return { verdict, reason };
 }
 
@@ -214,7 +249,7 @@ export function parseObjectionRubricResponse(raw: string): ObjectionRubricResult
   const classification = requireEnum(parsed, "classification", OBJECTION_CLASSIFICATIONS);
   const verdict = requireEnum(parsed, "verdict", OBJECTION_RUBRIC_VERDICTS);
   const reason = requireString(parsed, "reason");
-  rejectUnknownFields(parsed, OBJECTION_RUBRIC_FIELDS, "Objection");
+  logIgnoredFields(parsed, OBJECTION_RUBRIC_FIELDS, "Objection");
   return { verdict, classification, reason };
 }
 
@@ -368,7 +403,7 @@ Then choose exactly ONE line from the numbered CANDIDATE LANDING LINES list as c
 
 ${VOICE_REMINDER}
 
-Respond with ONLY this JSON (no other text):
+Respond with ONLY this JSON (no other text) — EXACTLY these four fields, in this shape, and no others. Put ALL of your reasoning inside "reason"; do not invent additional fields (for example, do not add a separate "impenetrability_score_reason" or "landing_line_score_note" — everything explanatory belongs in "reason" alone):
 {
   "impenetrability_score": <integer 1-5>,
   "landing_line_score": <integer 1-5>,
@@ -418,7 +453,7 @@ Your ONLY job is TOPIC DRIFT: does the candidate answer ACTUALLY ANSWER the ques
 
 ${VOICE_REMINDER}
 
-Respond with ONLY this JSON (no other text):
+Respond with ONLY this JSON (no other text) — EXACTLY these two fields, in this shape, and no others. Put ALL of your reasoning inside "reason"; do not invent additional fields:
 {
   "verdict": "answers" | "drifts",
   "reason": "<one sentence explaining your verdict>"
@@ -470,7 +505,7 @@ When in doubt between (A) and (B)/(C), reject. The bar: would an ordinary reader
 
 ${VOICE_REMINDER}
 
-Respond with ONLY this JSON (no other text):
+Respond with ONLY this JSON (no other text) — EXACTLY these three fields, in this shape, and no others. Put ALL of your reasoning inside "reason"; do not invent additional fields:
 {
   "verdict": "accept" | "reject",
   "classification": "viewer_position" | "dramatized_scene" | "doctrinal_dispute",

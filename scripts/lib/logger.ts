@@ -4,7 +4,7 @@ import type { FileHandle } from "node:fs/promises";
 
 const MAX_LOG_BYTES = 100 * 1024; // 100 KB
 
-type Level = "INFO" | "WARN" | "ERROR" | "DECISION";
+type Level = "INFO" | "WARN" | "ERROR" | "DECISION" | "DEBUG";
 
 class PipelineLogger {
   private fileHandle: FileHandle | null = null;
@@ -71,6 +71,16 @@ class PipelineLogger {
 
   decision(message: string): void {
     this.write("DECISION", message);
+  }
+
+  /**
+   * Lower-severity than `warn` — for diagnostics worth keeping in the log
+   * for later pattern-spotting (e.g. a systematic prompt drift) without
+   * implying anything went wrong. Same file-write/verbose-stderr behavior
+   * as every other level.
+   */
+  debug(message: string): void {
+    this.write("DEBUG", message);
   }
 
   private write(level: Level, message: string): void {

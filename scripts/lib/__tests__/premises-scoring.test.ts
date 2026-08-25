@@ -269,6 +269,124 @@ describe("The Wall rubric shape", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// T20: additive unknown fields are TOLERATED, not rejected.
+//
+// The real T11 run lost 107 of 1,003 Wall responses (10.7%) because the
+// model returned every required field correctly, then volunteered an extra
+// commentary field alongside them — a complete, valid scoring, thrown away
+// for annotating itself. These four field names are drawn verbatim from the
+// real drops logged in content/pipeline/social/premises.log.
+// ---------------------------------------------------------------------------
+
+describe("The Wall rubric tolerates additive unknown fields (T20)", () => {
+  const validWallFields = {
+    impenetrability_score: 4,
+    landing_line_score: 5,
+    chosen_landing_line: "The quality of your thoughts shapes the quality of your life.",
+  };
+
+  it.each([
+    "impenetrability_score_check",
+    "landing_line_score_note",
+    "impenetrability_score_reason",
+    "impenetrability_score_explanation",
+  ])("parses successfully when the response also carries %s", (extraField) => {
+    const raw = JSON.stringify({ ...validWallFields, [extraField]: "some model commentary" });
+    const result = parseWallRubricResponse(raw);
+    expect(result).toMatchObject(validWallFields);
+    // The extra field must not leak into the returned result.
+    expect(result).not.toHaveProperty(extraField);
+  });
+
+  it("parses successfully with multiple additive unknown fields at once", () => {
+    // Real corpus example: wall_meditations-07-019_454 carried BOTH
+    // impenetrability_reason and landing_line_reason simultaneously.
+    const raw = JSON.stringify({
+      ...validWallFields,
+      impenetrability_reason: "dense clause-stacking",
+      landing_line_reason: "stands alone cleanly",
+    });
+    const result = parseWallRubricResponse(raw);
+    expect(result).toMatchObject(validWallFields);
+  });
+
+  it("still rejects a missing required field even when extra fields are present", () => {
+    const bad = JSON.stringify({
+      impenetrability_score: 4,
+      landing_line_score: 5,
+      impenetrability_score_reason: "some commentary",
+      // chosen_landing_line omitted
+    });
+    expect(() => parseWallRubricResponse(bad)).toThrow(/chosen_landing_line/);
+  });
+
+  it("still rejects a wrong-typed known field even when extra fields are present", () => {
+    const bad = JSON.stringify({
+      impenetrability_score: "4",
+      landing_line_score: 5,
+      chosen_landing_line: "A line.",
+      impenetrability_score_reason: "some commentary",
+    });
+    expect(() => parseWallRubricResponse(bad)).toThrow(/score/i);
+  });
+
+  it("still rejects an out-of-range score even when extra fields are present", () => {
+    const bad = JSON.stringify({
+      impenetrability_score: 4,
+      landing_line_score: 6,
+      chosen_landing_line: "A line.",
+      landing_line_score_note: "some commentary",
+    });
+    expect(() => parseWallRubricResponse(bad)).toThrow(/score/i);
+  });
+
+  it("a Question-shaped payload is still rejected by the Wall parser even with an extra field added", () => {
+    const bad = JSON.stringify({ verdict: "answers", reason: "resolves it", extra_commentary: "note" });
+    expect(() => parseWallRubricResponse(bad)).toThrow(/score|chosen_landing_line/i);
+  });
+});
+
+describe("The Question and Objection rubrics also tolerate additive unknown fields (T20)", () => {
+  it("Question parser parses successfully with an extra commentary field", () => {
+    const raw = JSON.stringify({
+      verdict: "answers",
+      reason: "The following sentence directly resolves the question.",
+      verdict_confidence: "high",
+    });
+    const result = parseQuestionRubricResponse(raw);
+    expect(result).toMatchObject({ verdict: "answers" });
+    expect(result).not.toHaveProperty("verdict_confidence");
+  });
+
+  it("Question parser still rejects an invalid verdict even with an extra field present", () => {
+    const bad = JSON.stringify({ verdict: "maybe", reason: "Unclear.", verdict_confidence: "low" });
+    expect(() => parseQuestionRubricResponse(bad)).toThrow(/verdict/i);
+  });
+
+  it("Objection parser parses successfully with an extra commentary field", () => {
+    const raw = JSON.stringify({
+      verdict: "accept",
+      classification: "viewer_position",
+      reason: "A general reader could plausibly hold this objection themselves.",
+      classification_confidence: "high",
+    });
+    const result = parseObjectionRubricResponse(raw);
+    expect(result).toMatchObject({ verdict: "accept", classification: "viewer_position" });
+    expect(result).not.toHaveProperty("classification_confidence");
+  });
+
+  it("Objection parser still rejects an invalid classification even with an extra field present", () => {
+    const bad = JSON.stringify({
+      verdict: "accept",
+      classification: "narrator_aside",
+      reason: "Not a real classification.",
+      classification_confidence: "low",
+    });
+    expect(() => parseObjectionRubricResponse(bad)).toThrow(/classification/i);
+  });
+});
+
 describe("The Question rubric shape", () => {
   it("accepts a valid Question payload", () => {
     const result = parseQuestionRubricResponse(validQuestionJSON);

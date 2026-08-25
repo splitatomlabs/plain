@@ -15,6 +15,67 @@ export interface CallClaudeOptions {
   system?: string;
 }
 
+/**
+ * Find the index of the "}" that balances the "{" at `startIndex`, tracking
+ * string literals (and their escape sequences) so a brace character inside
+ * a JSON string value is never mistaken for a structural one. Returns -1 if
+ * the braces starting at `startIndex` never balance before the text ends.
+ */
+function findBalancedBraceEnd(text: string, startIndex: number): number {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = startIndex; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === "{") {
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Scan `text` for a balanced `{ ... }` span that also parses as valid JSON,
+ * trying each "{" occurrence in document order as a candidate start (so a
+ * stray, unrelated brace pair earlier in the text — e.g. inside ordinary
+ * prose — doesn't prevent finding the real JSON object that follows it).
+ * Returns the first candidate that parses, or null if none does.
+ */
+function extractBalancedJSONObject(text: string): string | null {
+  let searchFrom = 0;
+  while (true) {
+    const start = text.indexOf("{", searchFrom);
+    if (start === -1) return null;
+    const end = findBalancedBraceEnd(text, start);
+    if (end !== -1) {
+      const candidate = text.slice(start, end + 1);
+      try {
+        JSON.parse(candidate);
+        return candidate;
+      } catch {
+        // Not valid JSON even though the braces balance — keep scanning
+        // from the next "{" occurrence.
+      }
+    }
+    searchFrom = start + 1;
+  }
+}
+
 export function extractJSON(text: string): string {
   // 1. Try the full output as-is
   try {
@@ -36,17 +97,21 @@ export function extractJSON(text: string): string {
     }
   }
 
-  // 3. Extract between first { and last }
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    const extracted = text.slice(firstBrace, lastBrace + 1);
-    try {
-      JSON.parse(extracted);
-      return extracted;
-    } catch {
-      // continue
-    }
+  // 3. Extract a balanced { ... } object. Naively slicing from the first
+  // "{" to the last "}" in the whole text breaks the moment ANY unrelated
+  // curly brace shows up before or after the real JSON object — e.g. the
+  // model prefacing its answer with ordinary prose like "the passage uses
+  // {nested clauses} heavily" before emitting the actual JSON. That
+  // unrelated brace pair widens (or, if it comes after, doesn't narrow) the
+  // naive slice into something that no longer parses, even though a
+  // perfectly valid JSON object is sitting right there in the text. Instead,
+  // try each "{" occurrence in turn as a candidate start, scan forward for
+  // ITS matching "}" (properly skipping over string contents, including
+  // escaped quotes, so a brace-like character inside a string never throws
+  // off the depth count), and return the first candidate that parses.
+  const balanced = extractBalancedJSONObject(text);
+  if (balanced !== null) {
+    return balanced;
   }
 
   // 3b. Try array extraction [ ... ]

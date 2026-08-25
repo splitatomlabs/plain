@@ -54,6 +54,32 @@ describe("extractJSON", () => {
   it("throws on non-JSON text", () => {
     expect(() => extractJSON("not json at all")).toThrow("Could not extract JSON");
   });
+
+  // T20 fix: a naive "slice from the first { to the last }" breaks the
+  // moment ANY unrelated curly brace shows up in prose BEFORE the real JSON
+  // object — the slice then spans two unrelated brace groups plus the text
+  // between them, which never parses even though a valid JSON object is
+  // right there. This is exactly the failure mode found while investigating
+  // premises.log's "Could not extract JSON from response" drops.
+  it("extracts JSON that follows prose containing an unrelated brace", () => {
+    const result = extractJSON(
+      'I\'ll assess this {mentally} first.\n{"impenetrability_score": 4, "landing_line_score": 5}',
+    );
+    expect(JSON.parse(result)).toEqual({ impenetrability_score: 4, landing_line_score: 5 });
+  });
+
+  it("extracts JSON when a string value itself contains literal curly braces", () => {
+    const result = extractJSON(
+      'Reasoning: the passage uses {nested clauses} heavily.\n\n{"impenetrability_score": 4, "reason": "dense {nested} structure"}',
+    );
+    expect(JSON.parse(result)).toEqual({ impenetrability_score: 4, reason: "dense {nested} structure" });
+  });
+
+  it("still throws when no candidate span is valid JSON despite balanced braces", () => {
+    expect(() => extractJSON("Just some {mentally} unrelated {braces} here, no real JSON.")).toThrow(
+      "Could not extract JSON",
+    );
+  });
 });
 
 describe("callClaudeJSON", () => {
