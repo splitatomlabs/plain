@@ -103,8 +103,15 @@ looks like Plain.
   Wall is silent (its highlight is a timed sweep) and every payoff is one still line at a time. Timings must come
   from native provider data, never estimated from word counts. Gate: reject any render where the last line's end
   timestamp differs from audio duration by more than 120ms. Acceptance: a synthetic drifted timing set is rejected.
-- [ ] T14: Audition and fix one voice per Stoic; commit the three voice IDs with written rationale. They never change
+- [!] T14: Audition and fix one voice per Stoic; commit the three voice IDs with written rationale. They never change
   after this. Acceptance: three IDs committed and distinguishable from each other.
+  BLOCKED (2026-08-25): auditioning requires an `ELEVENLABS_API_KEY` and a human listening to real synthesis; T12
+  forbids live provider calls in tests. Everything around the decision IS built: `social/src/audio/voices.ts` holds
+  the three-slot registry with every id `null`, `assertVoicesAssigned()` fails loudly so placeholder voices cannot
+  ship silently, `social/scripts/audition-voices.ts` runs the audition against a fixed verbatim passage per Stoic,
+  and `social/assets/voices/README.md` is the decision record awaiting ids, rationale and audition date. The test
+  already contains the real acceptance assertion behind a `VOICES_ARE_UNSET` branch, so populating the registry
+  flips it on with no test edit.
 - [~] T15: Implement the mixer — trim/loop a bed to length, duck it under narration with scripted (deterministic)
   volume envelopes, mix, then two-pass ffmpeg `loudnorm` (measure with `print_format=json`, then apply). Target
   ~-14 LUFS integrated, -1 dBTP as a NAMED CONSTANT, not a literal — it is an industry-standard figure, not a
