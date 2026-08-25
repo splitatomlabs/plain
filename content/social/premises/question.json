@@ -1,74 +1,23 @@
 {
   "meta": {
     "submitted": 89,
-    "succeeded": 89,
-    "dropped": 0,
+    "succeeded": 83,
+    "dropped": 6,
     "limited": false,
-    "generated_at": "2026-08-25T08:10:25.444Z"
+    "generated_at": "2026-08-25T09:15:29.014Z"
   },
   "entries": [
     {
-      "card_id": "discourses-44-003",
+      "card_id": "discourses-35-001",
       "book_slug": "discourses",
       "author_slug": "epictetus",
-      "question": "What should you say when something painful happens?",
-      "answer": "\"This is what I trained for. This is why I practiced.\"",
+      "question": "Do people put serious effort into bad things?",
+      "answer": "No way.",
       "drift_verdict": "answers",
-      "drift_reason": "The candidate directly provides the words to say when something painful happens, exactly as the question asked."
-    },
-    {
-      "card_id": "meditations-11-014",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Will someone look down on me?",
-      "answer": "Let them worry about their reasons.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly addresses the concern about being looked down on by dismissing the need to worry about the other person's judgment."
-    },
-    {
-      "card_id": "on-anger-02-073",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "Where will you find a fair judge?",
-      "answer": "The same man who chases after everyone's wife — who thinks another man's wife is more desirable just because she belongs to someone else — won't let anyone even look at his own wife.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The answer describes a hypocrite's double standard about wives, never addressing where or whether a fair judge can be found."
-    },
-    {
-      "card_id": "discourses-45-002",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What are we actually trying to accomplish?",
-      "answer": "We want to live with our desires and fears under control.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly states the goal being asked about—controlling desires and fears."
-    },
-    {
-      "card_id": "meditations-04-047",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "After all, what difference does one day make?",
-      "answer": "For the same reason, don't think it matters much to die many years from now rather than tomorrow.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly resolves the rhetorical point by extending it: if one day makes no difference, neither does dying years from now versus tomorrow."
-    },
-    {
-      "card_id": "discourses-36-006",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What do most people do instead?",
-      "answer": "They act like a traveler heading home who stops at a nice inn and decides to stay there forever.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly describes what most people do instead, using the inn metaphor to answer the question posed."
-    },
-    {
-      "card_id": "discourses-26-007",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What are we looking at?",
-      "answer": "Let's say pleasure.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what is being examined, and the candidate directly names it by proposing 'pleasure' as the subject."
+      "drift_reason": "The question is self-contained and relatable, and 'No way' does directly resolve it rather than drifting, but it's a two-word bare denial with no elaborated claim, giving the viewer nothing substantive to check their prediction against.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
     },
     {
       "card_id": "peace-of-mind-08-004",
@@ -77,556 +26,10 @@
       "question": "Do you think Demetrius was happier?",
       "answer": "He was Pompey's former slave who became incredibly wealthy.",
       "drift_verdict": "drifts",
-      "drift_reason": "The candidate describes Demetrius's background and wealth but never addresses whether he was happier."
-    },
-    {
-      "card_id": "discourses-17-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Why do you agree with something?",
-      "answer": "Because it seems true to you.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks for the reason behind agreement, and the answer directly supplies that reason—perceived truth."
-    },
-    {
-      "card_id": "discourses-53-008",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What else have you been studying from the beginning?",
-      "answer": "You've been learning to tell the difference between what's yours and what isn't.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what else has been studied from the beginning, and the answer directly names that thing: distinguishing what's yours from what isn't."
-    },
-    {
-      "card_id": "meditations-08-046",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Why should I trouble myself?",
-      "answer": "I have never willingly troubled anyone else.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks for a reason to trouble oneself, but the answer instead makes a claim about never troubling others, which doesn't resolve the original 'why' being asked."
-    },
-    {
-      "card_id": "discourses-17-007",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Does a person differ in no way from a stork?",
-      "answer": "Don't think I'm saying that.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks whether a person is no different from a stork, and the candidate directly denies that implication, resolving it."
-    },
-    {
-      "card_id": "happy-life-22-004",
-      "book_slug": "happy-life",
-      "author_slug": "seneca",
-      "question": "Do you want to know how different our positions really are?",
-      "answer": "If my wealth leaves me, it will only take itself.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly illustrates the difference in positions by contrasting how loss affects him versus another, resolving the question's setup."
-    },
-    {
-      "card_id": "enchiridion-45-001",
-      "book_slug": "enchiridion",
-      "author_slug": "epictetus",
-      "question": "Does someone take a quick bath?",
-      "answer": "Don't say they're doing it wrong — just say they're doing it quickly.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly resolves the question by prescribing how to describe the quick bath instead of judging it."
-    },
-    {
-      "card_id": "discourses-59-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What makes a tyrant scary?",
-      "answer": "His guards, you say.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly proposes the answer to what makes a tyrant scary, framed as the naive answer Epictetus will then dismantle."
-    },
-    {
-      "card_id": "on-anger-01-025",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "When exactly?",
-      "answer": "Only when their anger is already cooling down and fading away on its own — not when it was blazing hot.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate specifies the exact timing (when anger is cooling, not blazing) that the question asks about."
-    },
-    {
-      "card_id": "discourses-19-007",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "See?",
-      "answer": "It doesn't bite.",
-      "drift_verdict": "answers",
-      "drift_reason": "The 'See?' invites confirmation of an observation, and 'It doesn't bite' directly confirms what was just demonstrated."
-    },
-    {
-      "card_id": "meditations-08-054",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Is the cucumber bitter?",
-      "answer": "Put it aside.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what to do if the cucumber is bitter, and 'Put it aside' directly gives that response/action."
-    },
-    {
-      "card_id": "discourses-14-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Why?",
-      "answer": "So you can become a champion.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate directly gives the reason ('why'), completing the cause-effect statement the question asked for."
-    },
-    {
-      "card_id": "discourses-12-005",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Someone gets promoted to a high position?",
-      "answer": "Everyone who meets him congratulates him.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question sets up a scenario, and the answer describes what happens next in that scenario, resolving it directly."
-    },
-    {
-      "card_id": "meditations-05-037",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Aren't you being foolish then?",
-      "answer": "You get puffed up with pride over these things.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks whether this is foolish, and the answer confirms and specifies the foolishness as prideful self-inflation, directly resolving it."
-    },
-    {
-      "card_id": "meditations-04-037",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "What should we focus our care and effort on?",
-      "answer": "Only this: that our thoughts and intentions are just.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly names the thing to focus care and effort on—just thoughts and intentions."
-    },
-    {
-      "card_id": "discourses-56-002",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Why do you choose to read?",
-      "answer": "Tell me.",
-      "drift_verdict": "drifts",
-      "drift_reason": "'Tell me.' is a demand for the reader to answer, not a declarative resolution of the question itself."
-    },
-    {
-      "card_id": "meditations-04-015",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Do you have reason?",
-      "answer": "Yes, I do.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question directly asks whether reason is present, and the answer affirms it plainly."
-    },
-    {
-      "card_id": "happy-life-27-004",
-      "book_slug": "happy-life",
-      "author_slug": "seneca",
-      "question": "Why don't you look at your own problems instead?",
-      "answer": "They're tearing you apart from every direction.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer explains why one should look at their own problems—because those problems are actively tearing them apart—directly resolving the question's implicit rebuke."
-    },
-    {
-      "card_id": "discourses-18-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What makes something good?",
-      "answer": "A certain kind of will.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what makes something good, and the candidate directly names the will as that cause."
-    },
-    {
-      "card_id": "discourses-16-002",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "How do you fight a habit?",
-      "answer": "With the opposite habit.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate directly states the method for fighting a habit, resolving the how-question posed."
-    },
-    {
-      "card_id": "meditations-04-028",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Does someone wrong you?",
-      "answer": "They hurt themselves, not you.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate directly resolves the question by reframing who bears the harm when someone wrongs you."
-    },
-    {
-      "card_id": "enchiridion-15-001",
-      "book_slug": "enchiridion",
-      "author_slug": "epictetus",
-      "question": "Is something passed around to you?",
-      "answer": "Reach out and take a reasonable portion.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question sets up a scenario (something being passed around) and the candidate directly tells you what to do about it."
-    },
-    {
-      "card_id": "meditations-08-045",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Are you caught up in pain or pleasure?",
-      "answer": "Let your senses deal with that.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly resolves the question by telling him to let the senses handle pain or pleasure rather than his mind."
-    },
-    {
-      "card_id": "meditations-04-007",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "What's left then?",
-      "answer": "You need to practice this retreat into yourself often.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks what remains as a resource, but the candidate jumps to a practical instruction to practice retreat often, assuming the answer rather than stating it."
-    },
-    {
-      "card_id": "on-anger-03-034",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "You don't want to be angry all the time?",
-      "answer": "Then don't go looking for trouble.",
-      "drift_verdict": "answers",
-      "drift_reason": "The advice to avoid seeking out trouble directly resolves the desire to not be perpetually angry by addressing its cause."
-    },
-    {
-      "card_id": "on-anger-03-108",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "Someone has insulted you?",
-      "answer": "It's probably not worse than what happened to the Stoic philosopher Diogenes.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly addresses the insult by comparing it favorably to a worse historical example, offering perspective as a response."
-    },
-    {
-      "card_id": "discourses-50-005",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Don't you know that over a long life, many different things must happen?",
-      "answer": "Fever will kill one person.",
-      "drift_verdict": "answers",
-      "drift_reason": "It gives a concrete example of the 'different things' that must happen over a long life, directly resolving the question."
-    },
-    {
-      "card_id": "discourses-30-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Won't you start by examining whether your decision makes sense?",
-      "answer": "You need to build on a solid foundation.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks whether you'll examine your decision's soundness, but the answer shifts to a general metaphor about building on foundations rather than affirming or resolving that examination."
-    },
-    {
-      "card_id": "meditations-11-005",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Have I done anything kind?",
-      "answer": "Then I have gained from it.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The answer assumes a conditional ('if so, then I have gained') rather than actually reflecting on or resolving whether he did something kind."
-    },
-    {
-      "card_id": "enchiridion-30-001",
-      "book_slug": "enchiridion",
-      "author_slug": "epictetus",
-      "question": "Is someone your father?",
-      "answer": "Then you should care for him, respect him, and take his criticism patiently.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly specifies what having a father entails, resolving the question's implicit 'what then'."
-    },
-    {
-      "card_id": "happy-life-11-002",
-      "book_slug": "happy-life",
-      "author_slug": "seneca",
-      "question": "Don't you see how many bad things pleasure might advise?",
-      "answer": "\"But pleasure combined with virtue can't give bad advice,\" our opponent says.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks the reader to recognize the bad things pleasure can advise, but the answer instead pivots to an opponent's counterargument rather than naming or resolving that point."
-    },
-    {
-      "card_id": "discourses-48-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Why are vulgar people more powerful than you?",
-      "answer": "Because they speak their worthless words from genuine beliefs.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly explains the source of their power—genuine conviction—resolving the question asked."
-    },
-    {
-      "card_id": "on-anger-03-092",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "Do I have less than I hoped for?",
-      "answer": "Well, maybe I hoped for more than I should have.",
-      "drift_verdict": "answers",
-      "drift_reason": "The reply directly addresses the shortfall implied in the question by reframing it as an issue of excessive hope rather than deficient reality."
-    },
-    {
-      "card_id": "happy-life-02-003",
-      "book_slug": "happy-life",
-      "author_slug": "seneca",
-      "question": "What have I accomplished except to make myself a target for my enemies?",
-      "answer": "All I've done is show people who hate me exactly where to hurt me.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate restates the accusation in plain terms, directly resolving the rhetorical question about self-exposure to enemies."
-    },
-    {
-      "card_id": "discourses-35-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Do people put serious effort into bad things?",
-      "answer": "No way.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate directly answers the yes/no question with a firm negative."
-    },
-    {
-      "card_id": "peace-of-mind-04-002",
-      "book_slug": "peace-of-mind",
-      "author_slug": "seneca",
-      "question": "Can't serve in the army?",
-      "answer": "Then run for office.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks about an alternative to military service, and the answer directly offers one."
-    },
-    {
-      "card_id": "meditations-07-052",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "What could stop your mind from staying calm and peaceful?",
-      "answer": "Your mind can judge things correctly and make good use of whatever happens.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The candidate praises the mind's capability rather than identifying what could disturb its calm, so it doesn't resolve the question asked."
-    },
-    {
-      "card_id": "meditations-07-004",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "What else is living again?",
-      "answer": "Public shows and ceremonies full of pomp and vanity.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what else recurs, and the answer directly names examples—public shows and ceremonies—that fit that recurrence."
-    },
-    {
-      "card_id": "discourses-23-008",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What, immortal too, free from aging and sickness?",
-      "answer": "No.",
-      "drift_verdict": "answers",
-      "drift_reason": "The blunt 'No.' directly rejects the rhetorical question's absurd premise of immortality and freedom from aging/sickness."
-    },
-    {
-      "card_id": "discourses-43-004",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "When you were a boy, did you examine your own beliefs?",
-      "answer": "No — you just did whatever you always do now.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly resolves the question by asserting the boy never examined his beliefs, just acted on habit as he does now."
-    },
-    {
-      "card_id": "discourses-13-007",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What should we do then?",
-      "answer": "This is what a real philosopher struggles with.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks what action to take, but the answer describes who struggles with the issue rather than stating what should be done."
-    },
-    {
-      "card_id": "discourses-01-002",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What faculty will tell you?",
-      "answer": "The one that can examine both itself and everything else.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks which faculty will tell you (something implied earlier), and the answer directly identifies that faculty by its defining characteristic."
-    },
-    {
-      "card_id": "discourses-04-002",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What does virtue actually produce?",
-      "answer": "Peace of mind.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what virtue produces, and the answer directly names the product: peace of mind."
-    },
-    {
-      "card_id": "discourses-23-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Won't you look for the nature of good in rational beings?",
-      "answer": "If it's not there, you won't find it anywhere else — not in plants or animals.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly builds on the question's premise, affirming that rational beings are where the good is found, contrasting with plants and animals."
-    },
-    {
-      "card_id": "discourses-31-006",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What weighs us down and disturbs us?",
-      "answer": "Nothing but our opinions.",
-      "drift_verdict": "answers",
-      "drift_reason": "Directly identifies opinions as the sole cause of the weight and disturbance the question asks about."
-    },
-    {
-      "card_id": "discourses-31-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Where is good?",
-      "answer": "In your choices.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks where good resides, and the answer directly locates it in one's choices."
-    },
-    {
-      "card_id": "on-anger-03-062",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "What dying person was ever forbidden to groan?",
-      "answer": "He was afraid that in their final agony, they might speak too freely.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The candidate introduces a new subject ('he') and a fear about speaking freely, rather than affirming that no dying person was ever forbidden to groan."
-    },
-    {
-      "card_id": "discourses-40-005",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What is crying and complaining?",
-      "answer": "Just a judgment.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what crying and complaining are, and the answer directly identifies them as merely a judgment."
-    },
-    {
-      "card_id": "discourses-21-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What can I do?",
-      "answer": "I can choose the ship's captain, the sailors, the day, and when to sail.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly lists the things within the speaker's control, resolving the question of what can be done."
-    },
-    {
-      "card_id": "discourses-43-002",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Why did you want to be elected governor of the Cnossians?",
-      "answer": "Because of your opinion.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly gives the cause the question asked for, attributing the desire for office to the person's own opinion."
-    },
-    {
-      "card_id": "discourses-25-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What does being a son require?",
-      "answer": "Consider everything you own as belonging to your father.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly states what being a son requires: treating your possessions as your father's."
-    },
-    {
-      "card_id": "meditations-10-045",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "What kind of life are you so eager to escape?",
-      "answer": "All these difficult things are just practice for a mind that sees things as they really are.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks for a description of the life being escaped, but the answer instead offers a reframing about difficulties being mental practice, without characterizing that life."
-    },
-    {
-      "card_id": "on-anger-02-003",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "Or does anger need our mind's cooperation to get started?",
-      "answer": "We Stoics believe that anger cannot do anything by itself without our mind's approval.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate directly resolves the yes/no question by affirming that anger requires the mind's approval to act."
-    },
-    {
-      "card_id": "discourses-61-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What's going to happen — is that outside your control?",
-      "answer": "Yes.",
-      "drift_verdict": "answers",
-      "drift_reason": "The one-word 'Yes' directly resolves the yes/no question about whether outcomes are outside your control."
-    },
-    {
-      "card_id": "meditations-07-001",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "What is wickedness?",
-      "answer": "It is something you have seen many times before in the world.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks for a definition of wickedness, but the answer only comments on its familiarity, never actually defining what it is."
-    },
-    {
-      "card_id": "peace-of-mind-11-008",
-      "book_slug": "peace-of-mind",
-      "author_slug": "seneca",
-      "question": "You are wealthy — but are you wealthier than Pompey?",
-      "answer": "When his old relative and new host Gaius opened Caesar's house to him so he could shut his own door, Pompey lacked even bread and water.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly resolves the comparison by showing Pompey, despite his wealth, fell to utter destitution, implying the reader isn't safer than him."
-    },
-    {
-      "card_id": "shortness-of-life-02-001",
-      "book_slug": "shortness-of-life",
-      "author_slug": "seneca",
-      "question": "Why do we blame nature?",
-      "answer": "She has been generous to us.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The candidate asserts nature's generosity but never gives the reason we blame her, leaving the question's 'why' unresolved."
-    },
-    {
-      "card_id": "enchiridion-11-001",
-      "book_slug": "enchiridion",
-      "author_slug": "epictetus",
-      "question": "Did your child die?",
-      "answer": "You gave them back.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly reframes the child's death as a return, resolving the question with Epictetus's characteristic teaching point."
-    },
-    {
-      "card_id": "discourses-13-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Tell me — what do you want to happen to you?",
-      "answer": "I'm content if I want and avoid things according to nature.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly states what Epictetus wants to happen to him—contentment through desiring and avoiding in accordance with nature."
-    },
-    {
-      "card_id": "discourses-49-006",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What are you doing, you poor fools?",
-      "answer": "You're wandering around like blind people.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly characterizes what the fools are doing—stumbling blindly—resolving the question's 'what are you doing'."
-    },
-    {
-      "card_id": "discourses-15-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Why are we still afraid?",
-      "answer": "The things we've been worried about are beyond anyone's control.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly explains the cause of fear: worrying about things outside anyone's control."
-    },
-    {
-      "card_id": "meditations-07-017",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "Is anyone foolish enough to fear change?",
-      "answer": "Everything that exists came from change.",
-      "drift_verdict": "answers",
-      "drift_reason": "The rhetorical question implies no one should fear change, and the answer gives the reasoning why—change is the source of all existence—directly resolving the implied point."
+      "drift_reason": "The question needs the identity of Demetrius and the point of comparison ('happier than whom?') to mean anything, so it fails standalone; the candidate answer describes a different figure's wealth rather than directly asserting whether Demetrius was happier, so it drifts rather than resolving the question, even though the wealth-versus-contentment premise is still recognizable today and the claim itself is substantive.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
     },
     {
       "card_id": "meditations-05-021",
@@ -635,7 +38,58 @@
       "question": "What am I doing with my soul right now?",
       "answer": "You need to ask yourself this question regularly.",
       "drift_verdict": "drifts",
-      "drift_reason": "The candidate advises repeating the question rather than actually answering what the soul is doing right now."
+      "drift_reason": "The answer doesn't say what he's actually doing with his soul—it just tells him to keep asking the question, which is a meta-comment about the practice rather than a resolution of it, and gives the reader nothing substantive to check their prediction against; the question itself is intelligible standalone and the premise of self-examination is one modern readers share.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-11-014",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Will someone look down on me?",
+      "answer": "Let them worry about their reasons.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question raises a universal anxiety about others' judgment, and the answer resolves it by reframing responsibility onto the judger rather than the self, which is a substantive claim rather than a bare yes/no; the worry about being looked down on is a premise every modern viewer recognizes from daily life.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "on-anger-02-017",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "question": "Why should I go through specific examples?",
+      "answer": "Just know this: when you see the Forum packed with crowds, the voting grounds swarming with people, or the great Circus where most of the population gathers at once, there are as many vices as there are people.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question presupposes a preceding rhetorical move ('specific examples' of what?) that isn't specified, so it's meaningless without context; the answer also doesn't actually justify why examples are needed—it substitutes a general observation about crowds and vice rather than resolving the meta-question about method, though the claim itself is substantive and its premise (crowds harboring vice) is relatable today.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "happy-life-27-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "question": "Why don't you look at your own problems instead?",
+      "answer": "They're tearing you apart from every direction.",
+      "drift_verdict": "answers",
+      "drift_reason": "The rhetorical question implies you should look at your own problems instead of others', and the answer supplies the reason—your own problems are urgent and consuming ('tearing you apart from every direction'), which resolves the implied 'why'; it's self-contained, substantive, and taps into the very modern tendency to focus on others' issues while neglecting one's own.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-43-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Why did you want to be elected governor of the Cnossians?",
+      "answer": "Because of your opinion.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer does address the 'why' by pointing to self-opinion/vanity as the cause, so it doesn't drift; but 'Cnossians' is an obscure ancient reference that confuses standalone reading, the two-word answer gives almost nothing to check a prediction against, and the premise of seeking an ancient elected governorship has no real analog in most modern viewers' lives.",
+      "standalone_intelligible": false,
+      "answer_has_substance": false,
+      "modern_premise": false
     },
     {
       "card_id": "discourses-49-007",
@@ -644,97 +98,10 @@
       "question": "Is happiness in political power?",
       "answer": "No.",
       "drift_verdict": "answers",
-      "drift_reason": "The blunt 'No.' directly resolves the yes/no question about whether happiness lies in political power."
-    },
-    {
-      "card_id": "discourses-18-004",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Stronger at what?",
-      "answer": "At putting someone in chains, killing them, dragging them wherever they want, taking their stuff.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks 'stronger at what,' and the candidate directly lists the specific things the stronger party can do, resolving the question."
-    },
-    {
-      "card_id": "on-anger-02-017",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "Why should I go through specific examples?",
-      "answer": "Just know this: when you see the Forum packed with crowds, the voting grounds swarming with people, or the great Circus where most of the population gathers at once, there are as many vices as there are people.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly explains why specific examples are unnecessary by giving a general principle to apply instead ('just know this...')."
-    },
-    {
-      "card_id": "discourses-28-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Are we anxious about forming false beliefs?",
-      "answer": "No, because that's up to us.",
-      "drift_verdict": "answers",
-      "drift_reason": "The answer directly resolves the question by stating no and giving the reason, matching the yes/no nature of the query."
-    },
-    {
-      "card_id": "discourses-20-005",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What advice should I give you?",
-      "answer": "\"Train your mind to handle whatever happens.\"",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what advice should be given, and the candidate directly provides that advice."
-    },
-    {
-      "card_id": "discourses-64-006",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "You want me to trust you with my business?",
-      "answer": "You're a man who has corrupted his own will.",
-      "drift_verdict": "answers",
-      "drift_reason": "The reply directly addresses the trustworthiness question by explaining why the person can't be trusted—their will is corrupted."
-    },
-    {
-      "card_id": "discourses-18-003",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Do we philosophers teach you to despise kings?",
-      "answer": "I hope not.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate directly denies the accusation posed in the question, resolving it."
-    },
-    {
-      "card_id": "discourses-18-010",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What is a master anyway?",
-      "answer": "One person can't really master another.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what a master is, and the answer directly addresses this by asserting that true mastery of one person over another isn't real, resolving the question's premise."
-    },
-    {
-      "card_id": "discourses-15-005",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Do you see what you're doing to yourself?",
-      "answer": "You're putting yourself in a tight spot.",
-      "drift_verdict": "answers",
-      "drift_reason": "The candidate directly names the self-inflicted harm the question points to, resolving it."
-    },
-    {
-      "card_id": "discourses-31-004",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "What do we admire?",
-      "answer": "External things.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what we admire, and the candidate directly names the object of admiration."
-    },
-    {
-      "card_id": "discourses-50-008",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "question": "Don't you know that a good person does nothing just to look good?",
-      "answer": "They do things because they're right.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks what motivates a good person if not appearance, and the answer directly supplies that motivation: doing what's right."
+      "drift_reason": "The answer directly resolves the question, and the premise (equating happiness with political power) is still a modern assumption many hold, but the bare 'No.' gives the viewer nothing to check their prediction against beyond a yes/no match.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
     },
     {
       "card_id": "meditations-12-039",
@@ -743,52 +110,34 @@
       "question": "What is the current state of my understanding?",
       "answer": "This is what really matters.",
       "drift_verdict": "drifts",
-      "drift_reason": "The candidate makes an evaluative claim about importance rather than describing the actual current state of his understanding."
+      "drift_reason": "The question asks Marcus to assess his current understanding, but the answer only asserts that 'this' matters without describing what his understanding actually is, so it drifts rather than resolving the question, and it's too vague and generic to give a viewer anything concrete to check a prediction against; the question itself is clear standalone and reflects a timeless act of self-assessment.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
     },
     {
-      "card_id": "meditations-07-049",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "How do we know Socrates was really so great and special?",
-      "answer": "Yes, he died nobly.",
-      "drift_verdict": "answers",
-      "drift_reason": "It directly concedes one point of Socrates' greatness (his noble death) in response to the question about his greatness."
-    },
-    {
-      "card_id": "on-anger-02-027",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "question": "Look, we fear fever, gout, and painful sores, don't we?",
-      "answer": "But that doesn't mean these diseases are good things.",
-      "drift_verdict": "drifts",
-      "drift_reason": "The question asks whether we fear these ailments, but the answer addresses whether they're 'good things,' a different point about moral value rather than confirming or resolving the fear claim."
-    },
-    {
-      "card_id": "meditations-07-016",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "question": "What is happiness?",
-      "answer": "It's having a good spirit within you.",
-      "drift_verdict": "answers",
-      "drift_reason": "Directly defines happiness as having a good spirit within, resolving the question posed."
-    },
-    {
-      "card_id": "discourses-24-001",
+      "card_id": "discourses-14-001",
       "book_slug": "discourses",
       "author_slug": "epictetus",
-      "question": "What is a human being?",
-      "answer": "A thinking, mortal creature.",
-      "drift_verdict": "answers",
-      "drift_reason": "The question asks for a definition of a human being, and the answer directly provides one."
+      "question": "Why?",
+      "answer": "So you can become a champion.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The bare 'Why?' has no antecedent on screen so a viewer can't know what is being asked, making it unintelligible standalone and the 'answer' cannot be judged as resolving anything specific; even taken at face value the champion framing presupposes an athletic-contest context most modern viewers aren't in, though the sentence itself does offer a concrete claim.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": false
     },
     {
-      "card_id": "enchiridion-24-002",
-      "book_slug": "enchiridion",
-      "author_slug": "epictetus",
-      "question": "What do you mean by help?",
-      "answer": "They won't get money from you.",
+      "card_id": "happy-life-02-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "question": "What have I accomplished except to make myself a target for my enemies?",
+      "answer": "All I've done is show people who hate me exactly where to hurt me.",
       "drift_verdict": "answers",
-      "drift_reason": "It clarifies what 'help' does not mean (giving money), directly resolving the request to define the term."
+      "drift_reason": "The answer directly resolves the question by restating the self-accusation with a sharper image (accomplishments revealing exactly where you're vulnerable to attack), giving the viewer something concrete to check their prediction against; the question stands alone as a relatable moment of rueful self-reflection, and the premise—that achievement can invite resentment or attack from rivals/critics—is one modern viewers recognize from work, social media, or public life.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
     },
     {
       "card_id": "on-anger-03-085",
@@ -797,7 +146,478 @@
       "question": "Why plot to damage someone's reputation, wealth, or body?",
       "answer": "You can't succeed without a fight and risk to yourself — even if your target is weaker than you.",
       "drift_verdict": "answers",
-      "drift_reason": "It gives a reason not to plot such harm—namely that it always requires a fight and personal risk—directly resolving the 'why' question."
+      "drift_reason": "The question implicitly asks whether such plotting is worth it, and the answer gives a concrete reason against it — that even successful schemes cost you risk and struggle — which resolves the rhetorical question with real substance; it stands alone fine and the situation (scheming to harm a rival's standing, money, or body) is still a recognizable modern temptation.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "enchiridion-24-002",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "question": "What do you mean by help?",
+      "answer": "They won't get money from you.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly addresses what 'help' means by ruling out money as its content, giving a concrete claim the viewer can check their guess against; the question stands on its own as a philosophical challenge to a common word, and the situation—being asked to help someone, especially financially—is one modern viewers regularly face.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-01-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What faculty will tell you?",
+      "answer": "The one that can examine both itself and everything else.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly names which faculty (the one that examines itself and everything else), giving real substance to check a prediction against, and the underlying idea of a self-reflective mental capacity is still relatable today; but the question alone is confusing without context—'tell you' what?—since it presumes a prior discussion of distinct 'faculties' that a cold viewer has no access to.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-61-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What's going to happen — is that outside your control?",
+      "answer": "Yes.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question, and the premise (worrying about outcomes you can't control) is universally relatable, but a bare 'Yes' gives the viewer nothing substantive to check their prediction against.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-59-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What makes a tyrant scary?",
+      "answer": "His guards, you say.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question asks what makes a tyrant scary, but the answer doesn't assert the author's own resolution — it voices the naive answer ('his guards') as something 'you say,' framing it as the reader's assumption rather than Epictetus's actual point, which reads as a setup for a rebuttal rather than a genuine answer; it's otherwise standalone-intelligible, names a concrete substantive claim, and the fear-of-power-and-force premise is one modern readers still recognize.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-20-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What advice should I give you?",
+      "answer": "\"Train your mind to handle whatever happens.\"",
+      "drift_verdict": "answers",
+      "drift_reason": "The question sets up a direct request for guidance, and the answer delivers concrete, substantive advice ('train your mind') rather than a bare yes/no; it reads fine with zero context as a rhetorical setup, and the premise—wanting practical advice for handling life—is universal and modern.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-45-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What are we actually trying to accomplish?",
+      "answer": "We want to live with our desires and fears under control.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly states the goal the question asks about, giving a concrete claim (control over desires and fears) worth checking against a prediction; the question stands alone as a general life-purpose question anyone could ponder, and the premise—wanting mastery over one's own emotions—is universally modern.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-08-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Are you caught up in pain or pleasure?",
+      "answer": "Let your senses deal with that.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question asks whether you're absorbed in pain or pleasure, and the answer directly resolves it with a Stoic directive: delegate that concern to the senses rather than let it consume your mind, which is a substantive claim you could compare against a prediction; the situation of being overtaken by pain or pleasure is universally relatable and the question stands fine with no added context.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-04-015",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Do you have reason?",
+      "answer": "Yes, I do.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question, but the question is trivially opaque with zero context, and the two-word answer gives the viewer nothing substantive to check a prediction against; the underlying premise (humans possessing reason) is still relatable today.",
+      "standalone_intelligible": false,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-28-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Are we anxious about forming false beliefs?",
+      "answer": "No, because that's up to us.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question with a real claim (belief formation is within our control, so no anxiety is warranted) rather than a bare yes/no; the question stands alone as intelligible without context, and the premise — worrying about holding false beliefs — is a concern any modern viewer recognizes in themselves.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "on-anger-03-062",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "question": "What dying person was ever forbidden to groan?",
+      "answer": "He was afraid that in their final agony, they might speak too freely.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question rhetorically asserts that no dying person is ever denied the right to groan, but the candidate sentence pivots to a different claim about someone (an ambiguous 'he') fearing that the dying might 'speak too freely' — a shift from groaning to speech and from the dying person's right to a third party's fear, so it doesn't resolve the question asked; the question itself is intelligible standalone, the sentence has real content, and the premise (dying and being allowed to express pain) is universally relatable.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-18-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Stronger at what?",
+      "answer": "At putting someone in chains, killing them, dragging them wherever they want, taking their stuff.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves what kind of 'stronger' is meant, listing concrete forms of coercive power, so it doesn't drift. The question stands alone as a provocative challenge to anyone who claims superiority through force, the answer gives specific, checkable content rather than a bare yes/no, and the premise—people wielding physical/coercive power over you—is still a real modern situation (bosses, authorities, bullies), even if the specific examples (chains) are archaic-flavored but clearly metaphorical for coercion.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "on-anger-03-108",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "question": "Someone has insulted you?",
+      "answer": "It's probably not worse than what happened to the Stoic philosopher Diogenes.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question is a clear, self-contained scenario anyone today recognizes, and the answer directly addresses it by offering a comparative claim (invoking Diogenes) rather than a bare yes/no, giving the reader something concrete to weigh against their prediction.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-48-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Why are vulgar people more powerful than you?",
+      "answer": "Because they speak their worthless words from genuine beliefs.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly explains the power differential (genuine belief versus your own hesitation), giving a real claim to check against; the question is understandable alone, and the situation—crude, confident people seeming to win out over more thoughtful ones—is one modern viewers still recognize.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-43-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "When you were a boy, did you examine your own beliefs?",
+      "answer": "No — you just did whatever you always do now.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question with a real claim (you acted on habit rather than examined belief, and still do), giving the viewer something concrete to check against; the question is fully intelligible alone, and the premise — that as a child you didn't scrutinize your own beliefs and may still not — is one any modern viewer recognizes from their own life.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-15-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Why are we still afraid?",
+      "answer": "The things we've been worried about are beyond anyone's control.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer identifies the root cause of fear (worrying about things outside our control), directly resolving the 'why' asked; the question stands alone as a universal human question, the answer offers a real claim to check against, and the premise—fear over uncontrollable things—is one every modern viewer recognizes.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-08-046",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Why should I trouble myself?",
+      "answer": "I have never willingly troubled anyone else.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question asks why he should bother troubling himself, but the answer pivots to a claim about never troubling others, leaving the actual 'why bother' unresolved; the question itself is intelligible alone, the answer is a substantive claim, and the underlying concern about self-imposed worry is still relatable today.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-11-005",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Have I done anything kind?",
+      "answer": "Then I have gained from it.",
+      "drift_verdict": "answers",
+      "drift_reason": "The reply reframes the self-check as its own answer — the kindness itself is the reward — which resolves the reflective question rather than drifting to a new topic; it stands alone fine, carries a real Stoic claim worth weighing against a prediction, and the situation (wondering whether you've done something good today) is one any modern reader recognizes.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "peace-of-mind-11-008",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca",
+      "question": "You are wealthy — but are you wealthier than Pompey?",
+      "answer": "When his old relative and new host Gaius opened Caesar's house to him so he could shut his own door, Pompey lacked even bread and water.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer resolves the question by showing that even Pompey, a byword for immense wealth, was reduced to destitution — implying the comparison the question invites; it's a concrete historical claim with real substance to check a prediction against, the question stands on its own as a rhetorical comparison anyone can grasp, and the underlying situation (measuring your wealth against someone famously richer) is a comparison modern readers still make.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "on-anger-02-073",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "question": "Where will you find a fair judge?",
+      "answer": "The same man who chases after everyone's wife — who thinks another man's wife is more desirable just because she belongs to someone else — won't let anyone even look at his own wife.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer resolves the question with dark irony: the 'judges' you'll find are hypocrites who condemn in others what they excuse in themselves, illustrated vividly with the adulterer/jealous husband example. The question stands alone fine, the answer offers a concrete, checkable claim rather than a bare yes/no, and the underlying pattern of moral double-standards and hypocritical judgment is something any modern reader recognizes, even if the specific wife-as-property phrasing is dated.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-23-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What, immortal too, free from aging and sickness?",
+      "answer": "No.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question is understandable on its own as asking whether you expect exemption from aging and sickness, and 'No.' does resolve it directly, but a single word gives the viewer nothing to check their prediction against; the premise (wanting freedom from aging and illness) is universally modern.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "shortness-of-life-02-001",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca",
+      "question": "Why do we blame nature?",
+      "answer": "She has been generous to us.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly rebuts the premise of the question by asserting nature's generosity, giving a substantive claim to check against, and both the question and answer are intelligible standalone since 'blaming nature/fate' for one's problems is a recognizable, timeless human tendency.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-13-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What should we do then?",
+      "answer": "This is what a real philosopher struggles with.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question demands a concrete prescription ('do this'), but the answer only describes the struggle of philosophers rather than stating what to actually do, so it drifts rather than resolves; the question also leans on an unstated prior context ('then') that leaves it dangling for a cold viewer, and the vague, unresolved answer gives nothing substantive to check a prediction against, even though the premise of wanting guidance on how to act is a modern, relatable one.",
+      "standalone_intelligible": false,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "enchiridion-45-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "question": "Does someone take a quick bath?",
+      "answer": "Don't say they're doing it wrong — just say they're doing it quickly.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by giving Epictetus's actual instruction (describe neutrally, don't judge), the question is understandable alone as a small everyday observation, the answer offers a real reframing claim worth checking against a prediction, and the situation—judging someone else's minor habits—is universally relatable today.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-16-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "How do you fight a habit?",
+      "answer": "With the opposite habit.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question with a concrete method (counter with the opposite habit), giving the viewer something real to check their prediction against; the question is self-contained and immediately meaningful to anyone today who struggles with a bad habit.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-07-049",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "How do we know Socrates was really so great and special?",
+      "answer": "Yes, he died nobly.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly offers a concrete reason (his noble death) as the basis for Socrates' reputation, resolving the question rather than drifting; the question is understandable without context since Socrates is a familiar historical figure, the answer gives a specific claim worth checking a prediction against, and questioning whether someone's fame is truly deserved is a premise modern readers still recognize.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-24-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What is a human being?",
+      "answer": "A thinking, mortal creature.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly defines the term asked about with a substantive claim (thinking + mortal) rather than a bare restatement, the question stands alone fine with zero context, and the premise—wondering what a human being fundamentally is—is one any modern viewer can engage with.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-04-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What does virtue actually produce?",
+      "answer": "Peace of mind.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly names what virtue produces, giving a concrete claim to check a prediction against; the question stands alone fine and the premise—that virtue/character is supposed to yield some inner benefit—is one modern readers still relate to.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "on-anger-02-003",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "question": "Or does anger need our mind's cooperation to get started?",
+      "answer": "We Stoics believe that anger cannot do anything by itself without our mind's approval.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by affirming that anger requires the mind's approval to act, giving a real Stoic claim to check against a prediction rather than a bare yes/no; the question is understandable on its own and concerns an experience (anger overtaking or requiring assent) any modern reader recognizes from their own emotional life.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-19-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "See?",
+      "answer": "It doesn't bite.",
+      "drift_verdict": "drifts",
+      "drift_reason": "\"See?\" is a bare attention-prompt with no referent, so alone it means nothing to a viewer; \"It doesn't bite\" merely continues a demonstration about some unnamed 'it' rather than resolving a real question, leaving no clear claim to check a prediction against or a recognizable modern situation to anchor it in.",
+      "standalone_intelligible": false,
+      "answer_has_substance": false,
+      "modern_premise": false
+    },
+    {
+      "card_id": "discourses-64-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "You want me to trust you with my business?",
+      "answer": "You're a man who has corrupted his own will.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question reads as a rhetorical refusal of trust, and the answer directly resolves it by naming the reason (a corrupted will) rather than merely restating or drifting; it's understandable alone, offers a real substantive claim to check a prediction against, and the situation of deciding whether to trust someone with your affairs is still common today.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-07-001",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "What is wickedness?",
+      "answer": "It is something you have seen many times before in the world.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question asks what wickedness IS, but the answer only says you've seen it before—it addresses familiarity/frequency rather than defining or characterizing its nature, so it drifts off the actual question; that same thinness also means it offers no real claim to check a prediction against, though the question itself is clear standalone and the concept of wickedness is one modern viewers still grapple with.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "happy-life-22-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "question": "Do you want to know how different our positions really are?",
+      "answer": "If my wealth leaves me, it will only take itself.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer gives a real claim (his wealth's loss would cost him nothing beyond itself) that begins to cash out 'how different' the compared positions are, so it resolves rather than drifts. But standing alone, 'our positions' is too vague for a fresh viewer to know what's being compared (wealth? status? philosophy?), so it fails standalone intelligibility even though it has real substance and rests on a premise—owning wealth and fearing its loss—that's still ordinary today.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-07-016",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "What is happiness?",
+      "answer": "It's having a good spirit within you.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question is universally intelligible with no context needed, and the answer gives a real, checkable claim (happiness = an inner good spirit rather than external circumstance) rather than a bare restatement; the premise—wondering what happiness actually consists of—is one any modern viewer shares.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-26-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What are we looking at?",
+      "answer": "Let's say pleasure.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question gives no context for what 'we' are looking at, so it's meaningless standalone; the answer 'Let's say pleasure' is a hypothetical placeholder rather than a real claim, offering nothing substantive to check a prediction against, and it doesn't clearly resolve the vague question it follows.",
+      "standalone_intelligible": false,
+      "answer_has_substance": false,
+      "modern_premise": false
+    },
+    {
+      "card_id": "discourses-50-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Don't you know that over a long life, many different things must happen?",
+      "answer": "Fever will kill one person.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question sets up the claim that a long life brings many different, often harsh events, and the answer gives a concrete instance (death by fever) that illustrates and confirms this rather than drifting to a different topic; it's a real, checkable claim rather than a bare yes/no, the question is understandable with zero context, and the premise—that life brings unpredictable hardships like illness and death—is as true for modern readers as ancient ones.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-07-017",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Is anyone foolish enough to fear change?",
+      "answer": "Everything that exists came from change.",
+      "drift_verdict": "answers",
+      "drift_reason": "The rhetorical question implies no one should fear change, and the answer resolves it by giving the underlying reason: change is the very source of existence, making fear of it irrational; this is a substantive claim, stands alone without context, and speaks to a universal, timeless human anxiety still relevant today.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-17-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Why do you agree with something?",
+      "answer": "Because it seems true to you.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the 'why' by naming the criterion for agreement (apparent truth), giving the viewer a concrete claim to check their prediction against; the question is intelligible alone since anyone can reflect on why they agree with things, and the premise—that people assent to claims based on how things appear to them—is a timeless, still-relevant one.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-13-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Tell me — what do you want to happen to you?",
+      "answer": "I'm content if I want and avoid things according to nature.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by stating the condition for contentment (wanting/avoiding in line with nature), giving a concrete claim to check a prediction against; the question stands alone as a universal, immediately graspable prompt about desire, and the underlying situation—wanting things to go a certain way—is one any modern reader recognizes.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-04-047",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "After all, what difference does one day make?",
+      "answer": "For the same reason, don't think it matters much to die many years from now rather than tomorrow.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer extends the same logic to a bigger case (dying years from now vs. tomorrow), affirming that a single day carries no real weight against the whole of life, so it resolves the rhetorical question rather than drifting; the question itself is vague but evokes a universal theme of mortality/time that reads intelligibly alone, the answer offers a real claim to check against rather than a bare yes/no, and confronting how much a day or a lifespan matters is a premise every modern reader still lives inside.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
     },
     {
       "card_id": "meditations-12-037",
@@ -806,7 +626,382 @@
       "question": "What do you want?",
       "answer": "To live a long time.",
       "drift_verdict": "answers",
-      "drift_reason": "The question asks what the reader/self wants, and the candidate directly names a desire, resolving it."
+      "drift_reason": "The question directly asks about desire, and the answer names a concrete, specific desire ('to live a long time'), giving the viewer something real to check their prediction against; both the question and the underlying premise—wanting a long life—are universally understandable and still relevant today.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "happy-life-11-002",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "question": "Don't you see how many bad things pleasure might advise?",
+      "answer": "\"But pleasure combined with virtue can't give bad advice,\" our opponent says.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question asks Seneca to concede that pleasure can lead to bad outcomes, but the next sentence isn't his answer at all — it's an opponent's rebuttal ('pleasure combined with virtue can't give bad advice,' our opponent says), which sidesteps rather than resolves the question, making this topic drift; the question itself is clear and relatable (following pleasure's advice into bad choices), and the quoted claim has real content, but it's the wrong voice answering the wrong point.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-44-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What should you say when something painful happens?",
+      "answer": "\"This is what I trained for. This is why I practiced.\"",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly gives the phrase Epictetus prescribes for painful moments, resolving the question with a concrete, quotable claim rather than a bare yes/no; the question stands alone as a universally graspable prompt about coping with hardship, and the premise—facing painful events and needing a mental script for them—is something every modern viewer faces.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-07-052",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "What could stop your mind from staying calm and peaceful?",
+      "answer": "Your mind can judge things correctly and make good use of whatever happens.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question asks what could disrupt calm, but the answer instead asserts a positive capacity of the mind (correct judgment and good use of events) without identifying any obstacle or threat to calmness, so it drifts rather than resolving the question asked; it is otherwise standalone-intelligible, substantive as a claim, and rests on a premise (wanting inner calm despite events) that any modern viewer recognizes.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "enchiridion-11-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "question": "Did your child die?",
+      "answer": "You gave them back.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question sets up a devastating hypothetical and the answer directly reframes it with the Stoic 'borrowed, not owned' claim, giving a real position to check against a prediction; it's fully intelligible alone, and though rare, losing a loved one is a universal human situation modern viewers recognize, not an outdated social structure.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-31-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Where is good?",
+      "answer": "In your choices.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question asks where 'good' resides, and the answer directly locates it in one's choices, resolving the question with a real philosophical claim worth checking against a prediction; the question stands alone as a recognizable philosophical prompt, and the premise—that people wonder where good/value comes from—is one modern viewers still grapple with.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "enchiridion-30-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "question": "Is someone your father?",
+      "answer": "Then you should care for him, respect him, and take his criticism patiently.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question clearly asks about a specific relationship (father), and the answer directly resolves it with concrete instructions on how to treat him; it's understandable alone, offers real substantive guidance to check against a prediction, and the premise—having a father you must relate to—is universally shared by modern readers.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-12-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Someone gets promoted to a high position?",
+      "answer": "Everyone who meets him congratulates him.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly describes the social reaction to the promotion scenario the question raises, so it resolves rather than drifts; it's clear on its own, offers a concrete claim (that others congratulate him) rather than a bare yes/no, and workplace promotion and the social reactions around it are a situation modern viewers still recognize.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-56-002",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Why do you choose to read?",
+      "answer": "Tell me.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The candidate is just a prompt asking the reader to answer, not an actual answer to the question, so it fails to resolve what was asked and gives nothing to check a prediction against; the question itself is intelligible standalone and its premise (reading with some purpose) is one modern readers share.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "peace-of-mind-04-002",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca",
+      "question": "Can't serve in the army?",
+      "answer": "Then run for office.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question with a real alternative claim worth checking a prediction against, and the question is intelligible standalone, but it presupposes an ancient civic structure of mandatory military or political service that no ordinary modern viewer is actually inside.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": false
+    },
+    {
+      "card_id": "discourses-31-004",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What do we admire?",
+      "answer": "External things.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question with a clear claim (we admire external things), which is substantive and predictable-against; the question stands alone as a reflective prompt anyone can engage with, and the premise—that people fixate on admiring possessions, status, or appearances—is still very much a modern reality.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-17-007",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Does a person differ in no way from a stork?",
+      "answer": "Don't think I'm saying that.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question directly addresses whether humans are essentially just storks, and the answer denies that claim, so it technically resolves the question — but standing alone it's baffling (why storks?), the denial gives no actual content to check a prediction against, and the odd animal-comparison premise doesn't map onto anything a modern reader is grappling with.",
+      "standalone_intelligible": false,
+      "answer_has_substance": false,
+      "modern_premise": false
+    },
+    {
+      "card_id": "discourses-31-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What weighs us down and disturbs us?",
+      "answer": "Nothing but our opinions.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by naming opinions as the sole cause, giving a clear, checkable claim; the question stands alone as a universal human concern about distress, and the premise—that our own judgments cause our disturbance—is one any modern viewer recognizes from daily experience.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-04-028",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Does someone wrong you?",
+      "answer": "They hurt themselves, not you.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question presupposes being wronged by another—a universal, everyday situation—and the answer gives a substantive Stoic claim (the wrongdoer harms themselves, not you) that directly resolves the question and gives the viewer something concrete to check their prediction against.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-30-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Won't you start by examining whether your decision makes sense?",
+      "answer": "You need to build on a solid foundation.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question asks whether you'll examine if a decision makes sense, but the answer shifts to a vague metaphor about building on a 'solid foundation' rather than describing what examining a decision actually involves, so it doesn't concretely resolve the question and offers little concrete substance to check a prediction against; the question itself is clear standalone and the premise (checking your own decisions) is universally modern.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-50-008",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Don't you know that a good person does nothing just to look good?",
+      "answer": "They do things because they're right.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by contrasting acting for appearance versus acting because it's right, giving a real claim to check against; it's intelligible alone, has substance beyond a bare yes/no, and the premise (performing goodness for image vs. genuine motive) is one modern viewers recognize.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-07-004",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "What else is living again?",
+      "answer": "Public shows and ceremonies full of pomp and vanity.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer does resolve the question by naming another category of things that 'come round again,' but the phrase 'living again' is untethered without the missing context about cycles of fashion or recurrence, making the question opaque on its own; the answer itself is concrete and substantive, and the underlying idea of recurring hollow spectacles and pomp is one modern viewers recognize.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-25-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What does being a son require?",
+      "answer": "Consider everything you own as belonging to your father.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question with a concrete claim worth checking a prediction against, and the question reads clearly with no context; but it presupposes an ancient patriarchal household structure where a son's property is considered his father's, which isn't how most modern viewers relate to family ownership or duty.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": false
+    },
+    {
+      "card_id": "meditations-08-054",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Is the cucumber bitter?",
+      "answer": "Put it aside.",
+      "drift_verdict": "answers",
+      "drift_reason": "The literal question about a bitter cucumber is answered directly with the practical instruction to discard it, which resolves the implied 'yes' and gives a concrete action to check against a prediction; cucumbers and bitter food are a mundane, universally relatable situation, though the philosophical weight (not railing against small annoyances) isn't signaled without the surrounding context.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-18-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Do we philosophers teach you to despise kings?",
+      "answer": "I hope not.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer does address the question but with a bare hedge ('I hope not') that gives the viewer no real claim to check a prediction against, and the premise of teaching attitudes toward literal kings is not a situation most modern viewers live inside.",
+      "standalone_intelligible": true,
+      "answer_has_substance": false,
+      "modern_premise": false
+    },
+    {
+      "card_id": "meditations-04-037",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "What should we focus our care and effort on?",
+      "answer": "Only this: that our thoughts and intentions are just.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly names what to focus care and effort on—the justice of one's thoughts and intentions—giving a concrete claim to check a prediction against; the question stands alone as a general life-priorities question, and the premise (deciding where to direct your effort and attention) is one any modern viewer faces.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "on-anger-01-025",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "question": "When exactly?",
+      "answer": "Only when their anger is already cooling down and fading away on its own — not when it was blazing hot.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves 'when' with a concrete timing claim (only as anger naturally cools), giving real substance to check against a prediction, and the underlying situation—waiting out someone's anger—is universally relatable; but 'When exactly?' alone gives no clue what topic or prior claim it refers to, so it fails standalone intelligibility.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-15-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Do you see what you're doing to yourself?",
+      "answer": "You're putting yourself in a tight spot.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by naming the effect ('putting yourself in a tight spot'), giving a concrete claim to check a prediction against; the question, though generic, works as a self-reflective prompt anyone can engage with cold, and the premise—self-inflicted trouble through one's own reactions—is a universal, modern-relevant situation.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-36-006",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What do most people do instead?",
+      "answer": "They act like a traveler heading home who stops at a nice inn and decides to stay there forever.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question with a vivid, substantive claim about mistaking a pleasant detour for the destination, but the question itself is meaningless without knowing what the 'right' alternative action was, so it fails standalone intelligibility despite the premise (getting distracted from a goal by comfort) being relatable today.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-18-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What makes something good?",
+      "answer": "A certain kind of will.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question is self-contained and timeless, and the answer directly resolves it by locating goodness in the will rather than external circumstance, giving a real (if terse) claim to check against a prediction; the premise that we judge things as 'good' or 'bad' is universally shared today.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-21-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What can I do?",
+      "answer": "I can choose the ship's captain, the sailors, the day, and when to sail.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly lists what 'I can do' in a specific nautical scenario, so it resolves the question as stated, but without any context the question reads as generic and the sudden shift to choosing a ship's captain and sailing day is confusing rather than illuminating; that scenario also presupposes a seafaring situation almost no modern viewer is actually in, even though the claim itself is concrete and substantive.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": false
+    },
+    {
+      "card_id": "meditations-10-045",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "What kind of life are you so eager to escape?",
+      "answer": "All these difficult things are just practice for a mind that sees things as they really are.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question asks Marcus to characterize the life he wants to escape, but the answer pivots to a general claim about hardship being practice for clear-sightedness, never actually describing or naming that life, so it drifts rather than resolves; it is otherwise intelligible alone, makes a substantive claim, and rests on the very modern experience of wanting to escape one's circumstances.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-23-003",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "Won't you look for the nature of good in rational beings?",
+      "answer": "If it's not there, you won't find it anywhere else — not in plants or animals.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by asserting that if the nature of good isn't found in rational beings, it won't be found in lower forms of life, giving a real claim to check against; the question is understandable on its own, and the premise—wondering where 'the good' actually resides—is a live question for modern viewers even if phrased in classical terms.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "discourses-18-010",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "question": "What is a master anyway?",
+      "answer": "One person can't really master another.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly resolves the question by redefining/denying the concept of mastery, giving a real claim to check predictions against; the question stands alone as intelligible, and the premise (people trying to control or dominate others) is universally recognizable today.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-04-007",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "What's left then?",
+      "answer": "You need to practice this retreat into yourself often.",
+      "drift_verdict": "drifts",
+      "drift_reason": "The question 'What's left then?' depends entirely on unseen prior reasoning about what has been stripped away, so alone it is opaque; the answer shifts from naming what remains to instructing the reader to 'practice this retreat,' assuming a 'retreat' already established elsewhere rather than directly resolving the question, so it drifts into advice rather than answering; the advice itself is substantive and the idea of retreating inward is a premise modern readers still recognize.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "enchiridion-15-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "question": "Is something passed around to you?",
+      "answer": "Reach out and take a reasonable portion.",
+      "drift_verdict": "answers",
+      "drift_reason": "The question evokes a concrete, relatable scene (something being offered or shared with you) that a viewer can picture and predict against, and the answer directly resolves it with a substantive claim about moderation rather than a bare yes/no; the banquet-sharing premise still maps onto everyday situations like sharing food, resources, or opportunities.",
+      "standalone_intelligible": true,
+      "answer_has_substance": true,
+      "modern_premise": true
+    },
+    {
+      "card_id": "meditations-05-037",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "question": "Aren't you being foolish then?",
+      "answer": "You get puffed up with pride over these things.",
+      "drift_verdict": "answers",
+      "drift_reason": "The answer directly explains the foolishness the question points to (pride over unspecified 'things'), giving a real claim to check against, and the vice of vanity/pride is a premise any modern reader recognizes; but the question's 'then' and the answer's 'these things' both depend on unstated prior context, leaving a viewer with zero context unable to grasp what specific behavior is being judged.",
+      "standalone_intelligible": false,
+      "answer_has_substance": true,
+      "modern_premise": true
     }
   ]
 }

@@ -63,7 +63,7 @@ import {
   type QuestionEntry,
   type ObjectionEntry,
 } from "./premises.js";
-import { checkFaithfulness } from "./premises-scoring.js";
+import { checkFaithfulness, passesStoppingPower } from "./premises-scoring.js";
 import type { WallRubricResult } from "./premises-scoring.js";
 import { parsePoolFile } from "./pool-file.js";
 import { logger } from "./logger.js";
@@ -947,6 +947,19 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
  * scored pool carries no verdict (every Wall candidate already survived the
  * mechanical gate; the rubric only scores/selects a landing line), so every
  * scored Wall row is used as-is.
+ *
+ * T22: the Question pool ALSO requires `passesStoppingPower(entry)` — a
+ * SECOND, independent gate on top of `drift_verdict === "answers"`, not a
+ * replacement for it. Drift ("does the following sentence answer the
+ * question") and stopping power ("is this pair worth posting at all" — see
+ * `./premises-scoring.ts`'s `QuestionRubricResult` doc comment) are
+ * deliberately kept as two separate checks so a row can fail either one
+ * independently; both must pass for a row to reach the schedule. Same
+ * fail-closed contract as `drift_verdict` above: a row missing any of the
+ * three T22 boolean fields (e.g. a pre-T22 pool file scored before this
+ * dimension existed) is EXCLUDED, never admitted by default —
+ * `passesStoppingPower` itself enforces strict `=== true` for exactly this
+ * reason.
  */
 export async function loadFormatPools(
   premisesDir: string,
@@ -976,17 +989,33 @@ export async function loadFormatPools(
     }
   }
   if (existsSync(questionPath)) {
-    const { entries: scored } = parsePoolFile<QuestionEntry & { drift_verdict?: string }>(
-      JSON.parse(await readFile(questionPath, "utf-8")),
-    );
+    const { entries: scored } = parsePoolFile<
+      QuestionEntry & {
+        drift_verdict?: string;
+        standalone_intelligible?: boolean;
+        answer_has_substance?: boolean;
+        modern_premise?: boolean;
+      }
+    >(JSON.parse(await readFile(questionPath, "utf-8")));
     if (scored.length > 0) {
       question = scored.filter((e) => {
-        if (e.drift_verdict === "answers") return true;
-        console.warn(
-          `loadFormatPools: excluding Question pool row for card "${e.card_id}" — drift_verdict is ` +
-            `${JSON.stringify(e.drift_verdict)} (expected "answers").`,
-        );
-        return false;
+        if (e.drift_verdict !== "answers") {
+          console.warn(
+            `loadFormatPools: excluding Question pool row for card "${e.card_id}" — drift_verdict is ` +
+              `${JSON.stringify(e.drift_verdict)} (expected "answers").`,
+          );
+          return false;
+        }
+        if (!passesStoppingPower(e)) {
+          console.warn(
+            `loadFormatPools: excluding Question pool row for card "${e.card_id}" — failed stopping power ` +
+              `(standalone_intelligible=${JSON.stringify(e.standalone_intelligible)}, ` +
+              `answer_has_substance=${JSON.stringify(e.answer_has_substance)}, ` +
+              `modern_premise=${JSON.stringify(e.modern_premise)}).`,
+          );
+          return false;
+        }
+        return true;
       });
       source.question = "scored";
     } else {

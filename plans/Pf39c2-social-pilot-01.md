@@ -1413,10 +1413,95 @@ as being worth posting.
   105/105 green (98 baseline + 7 new). `npm test` — **780 pipeline tests** (773 baseline + 7 new) + **95 web unit
   tests**, all green, confirming no regression to T01-T20 or any other consumer. No API calls made; the committed
   `content/social/premises/wall.json` was read but not re-scored.
-- [ ] T22: Add a STOPPING-POWER dimension to the Question rubric, separate from drift. Real week-1 slots that
+- [x] T22: Add a STOPPING-POWER dimension to the Question rubric, separate from drift. Real week-1 slots that
   passed drift correctly but are not postable: "Do you have reason?" -> "Yes, I do." (question meaningless
   standalone, answer has no substance) and "Can't serve in the army?" -> "Then run for office." (presupposes an
   ancient situation no viewer is in). Score three things the drift check does not: the question's standalone
   intelligibility, the answer's substance, and whether the premise applies to a modern viewer. Re-score the 89
   (~$0.05). Acceptance: both quoted pairs are rejected; the surviving pool is a MEASURED number and still covers
   4 weeks (>=28).
+  **Note:** Extended `QuestionRubricResult` (`scripts/lib/premises-scoring.ts`) with three new required booleans —
+  `standalone_intelligible`, `answer_has_substance`, `modern_premise` — alongside the existing `verdict`/`reason`,
+  never folded into `verdict`. Added `passesStoppingPower(entry)`, a pure, synchronous combiner (`=== true` on all
+  three, so a MISSING field — not just a `false` one — fails closed) that is the single place "did this row clear
+  stopping power" is decided; `verdict`/`drift_verdict` stays a completely separate signal the whole way through, per
+  the task's explicit "keep it intact and separate" instruction. `parseQuestionRubricResponse` validates `verdict`
+  FIRST (unchanged ordering from T07, so cross-format rejection still fails on `verdict` before touching any new
+  field), then the three new booleans via a new `requireBoolean` helper (same field-naming-error convention as
+  `requireNumber`/`requireString`/`requireEnum`), then `reason` — and still tolerates any ADDITIVE unknown field via
+  the unchanged `logIgnoredFields` (T20's convention, unmodified). The Question system prompt
+  (`QUESTION_RUBRIC_TASK`) now asks the model to judge all four things independently in one call, spells out each of
+  the three new dimensions with the task's own two real failing examples and the real passing example
+  ("What is a master anyway?" -> "One person can't really master another.") built directly into the prompt text (not
+  invented), and the required JSON shape grew from two fields to five.
+  **`scripts/lib/premises-batch.ts`:** `ScoredQuestionEntry` carries the three new booleans alongside
+  `drift_verdict`/`drift_reason` (never merged), and `scoreQuestionSurvivors` merges them from the parsed rubric
+  response into every scored row, same pattern as every other field there.
+  **`scripts/lib/schedule.ts`'s `loadFormatPools`:** the Question branch now requires BOTH
+  `drift_verdict === "answers"` AND `passesStoppingPower(entry)` — two independent, separately-logged exclusion
+  reasons (`"drift_verdict is ..."` vs `"failed stopping power (standalone_intelligible=..., ...)"`), so a row
+  failing only one is diagnosable from the console warning alone, not just from the underlying data. FAIL-CLOSED per
+  T19/M6, extended rather than replaced: a row missing any of the three new fields is excluded exactly like a row
+  missing `drift_verdict` always was — `passesStoppingPower`'s own strict `=== true` check does this without any new
+  branching logic in `loadFormatPools` itself. The `parsePoolFile<...>` type parameter for the Question branch grew
+  three new OPTIONAL fields (`standalone_intelligible?`, `answer_has_substance?`, `modern_premise?`) rather than
+  required ones — this is what keeps the reader tolerant of the pre-T22 committed pool file shape (no runtime
+  validation happens at `parsePoolFile` itself, only at the filter step), exactly as instructed: before the re-score
+  ran, every one of the 89 pre-T22 rows correctly fell out via the fail-closed stopping-power check (logged, not
+  thrown), and after the re-score ran, real data populated those fields and the filter started passing rows again —
+  no crash, no special-casing, at either point.
+  **Re-scored the real 89-entry Question pool** (`zsh -ic 'npx tsx scripts/score-premises.ts --format question
+  --force --verbose'`, batch `msgbatch_01Nb8kUwCAqpUMJ4tzWSayEm`, ~6m47s, real Cost Report: 8,187 input / 46,444
+  output / 17,882 cache-creation / 112,003 cache-read tokens, **$0.4109** — higher than the task's own ~$0.05
+  estimate, because the extended four-judgment prompt produces a substantially longer `reason` per response than the
+  drift-only original; not tuned down, reported as measured). **83 of 89 requests succeeded** (6 dropped to
+  `"Could not extract JSON from response"` parse failures — a pre-existing `extractJSON` failure mode T20 already
+  investigated for Wall responses and did not fully eliminate; not re-investigated here, out of this task's scope,
+  flagged as a candidate follow-up below). Of the 83 successfully scored: **65 pass drift** (`verdict: "answers"`,
+  18 `"drifts"`); **54 pass stopping power** (`passesStoppingPower`); **48 pass BOTH** — the actual posting pool,
+  written to `content/social/premises/question.json` (envelope `meta`: `submitted: 89, succeeded: 83, dropped: 6`).
+  **48 clears the >=28 (4-week) floor the acceptance criterion names**, so no stop-and-decide was triggered.
+  **Both quoted pairs are confirmed rejected by the new dimension, from the real re-scored corpus, not a synthetic
+  stand-in:** `meditations-04-015` ("Do you have reason?" -> "Yes, I do.") scored `verdict: "answers"` (drift still
+  passes, unchanged) but `standalone_intelligible: false` AND `answer_has_substance: false`; `peace-of-mind-04-002`
+  ("Can't serve in the army?" -> "Then run for office.") scored `verdict: "answers"` but `modern_premise: false`.
+  The real strong-pair test case named in the task, `discourses-18-010` ("What is a master anyway?" -> "One person
+  can't really master another."), scored all three new booleans `true` and survives. **Author mix of the 48
+  survivors:** epictetus 29 (60.4%), marcus-aurelius 11 (22.9%), seneca 8 (16.7%) — MORE skewed toward epictetus
+  than the pre-T22 89-pool's 56/24/18% split (T05's Wall-side rebalancing, unchanged by this task, still applies on
+  top of whatever the Question pool's own natural mix is — see T05's own note for why the Question pool itself is
+  deliberately NOT rebalanced).
+  **Follow-up candidates (not actioned, out of this task's scope):** (1) the 6 `"Could not extract JSON from
+  response"` drops on this run — worth a future investigation into whether the longer four-judgment `reason` text is
+  triggering a NEW variant of the brace-matching edge case T20's `extractBalancedJSONObject` already handles one
+  form of, since the failure mode name is identical to what T20 saw for Wall; (2) 48/89 (54%) is a real, not
+  cosmetic, drop from the pre-T22 65/89 (73%) drift-only pool — comfortably above the 4-week floor today, but worth
+  keeping in mind if a future task adds MORE Question-format weekly cadence or a longer read-through, since the
+  margin above 28 is real but not huge (20 entries of headroom).
+  **Tests:** `scripts/lib/__tests__/premises-scoring.test.ts` — updated `validQuestionJSON` and every other
+  Question-shaped fixture used by a test that expects the parser to SUCCEED to carry the three new required fields
+  (fixtures used only to prove an EARLIER-checked field like `verdict` still fails first are deliberately left
+  untouched, since they must keep failing before ever reaching the new fields); added 2 new field-validation tests
+  (missing `standalone_intelligible`, wrong-typed `standalone_intelligible`); added a new
+  `describe("T22: stopping power — independent of drift")` block (7 tests) built directly on the real corpus
+  (`loadCorpus()`) pinning both real quoted-pair rejections and the real strong-pair pass by card id and verbatim
+  on-screen text, a same-row "fails only stopping power" vs "fails only drift" distinguishability test, and a
+  fail-closed-on-missing-field test; extended `buildQuestionRubricSystem`'s own describe block with 2 new tests
+  (prompt names all three new dimensions and both required field names; prompt contains the real motivating example
+  text verbatim). `npx vitest run scripts/lib/__tests__/premises-scoring.test.ts` — 88/88 green (79 baseline + 9
+  new). `scripts/lib/__tests__/premises-batch.test.ts` — updated 5 mocked LLM response payloads across
+  `scoreQuestionSurvivors`'/Objection-adjacent Question tests to carry the 3 new required fields (else the mocked
+  response fails to parse and every one of those tests silently asserts on a dropped-not-scored pool instead of what
+  it's actually testing), plus 1 new assertion block confirming the 3 new fields survive the merge into
+  `ScoredQuestionEntry`. `npx vitest run scripts/lib/__tests__/premises-batch.test.ts` — 32/32 green (unchanged
+  count, fixtures updated not added-to). `scripts/lib/__tests__/schedule.test.ts` — updated every existing Question
+  pool fixture that expects a row to be ADMITTED to also carry passing stopping-power fields (a new
+  `STOPPING_POWER_PASS` fixture constant), added 2 new tests (a row passing drift but failing stopping power is
+  excluded even though `drift_verdict === "answers"`; a row missing a stopping-power field entirely fails closed,
+  with the specific "stopping power" wording asserted in the logged warning so it's distinguishable from a
+  drift-verdict exclusion). `npx vitest run scripts/lib/__tests__/schedule.test.ts` — 107/107 green (105 baseline +
+  2 new); the two T21 tests that read the REAL `content/social/premises/` directory both still pass unchanged, now
+  against the freshly re-scored, real question.json — confirming end-to-end that the code change plus the real
+  re-score compose correctly, not just against synthetic fixtures. `npm test` — **791 pipeline tests** (780 baseline
+  + 11 new: 9 premises-scoring.test.ts + 2 schedule.test.ts) + **95 web unit tests**, all green, confirming no
+  regression to T01-T21 or any other consumer. This is the last task in the plan.

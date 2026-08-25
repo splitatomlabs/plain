@@ -334,6 +334,13 @@ export type ScoredWallEntry = RankedWallEntry & { rubric: WallRubricResult };
 export type ScoredQuestionEntry = QuestionEntry & {
   drift_verdict: QuestionRubricVerdict;
   drift_reason: string;
+  // T22: the stopping-power dimension, independent of drift_verdict above —
+  // see ./premises-scoring.ts's `QuestionRubricResult`/`passesStoppingPower`
+  // doc comments for why these three stay their own fields rather than
+  // folding into drift_verdict or into one another.
+  standalone_intelligible: boolean;
+  answer_has_substance: boolean;
+  modern_premise: boolean;
 };
 export type ScoredObjectionEntry = ObjectionEntry & { rubric: ObjectionRubricResult };
 
@@ -404,7 +411,14 @@ export async function scoreQuestionSurvivors(
     if (!assertFaithful("question", meta.card_id, "question", meta.question, card)) continue;
     if (!assertFaithful("question", meta.card_id, "answer", meta.answer, card)) continue;
 
-    scored.push({ ...meta, drift_verdict: parsed.verdict, drift_reason: parsed.reason });
+    scored.push({
+      ...meta,
+      drift_verdict: parsed.verdict,
+      drift_reason: parsed.reason,
+      standalone_intelligible: parsed.standalone_intelligible,
+      answer_has_substance: parsed.answer_has_substance,
+      modern_premise: parsed.modern_premise,
+    });
   }
   return scored;
 }

@@ -36,6 +36,12 @@ const gatePools: FormatPools = {
 };
 const poolSource = { wall: "gate-only" as const, question: "gate-only" as const, objection: "gate-only" as const };
 
+// T22: the three stopping-power booleans a scored Question pool row now
+// carries alongside drift_verdict. Fixtures below spread this in wherever a
+// row is meant to be ADMITTED (drift passing is no longer sufficient on its
+// own — see `loadFormatPools`'s Question branch).
+const STOPPING_POWER_PASS = { standalone_intelligible: true, answer_has_substance: true, modern_premise: true };
+
 function makeWeek(week: number, seed: number, priorUsedCardIds: Set<string> = new Set(), readThroughStartIndex = 0): WeekSchedule {
   return generateWeek({
     weekNumber: week,
@@ -432,14 +438,56 @@ describe("loadFormatPools", () => {
   it("filters a scored Question pool to only drift_verdict === 'answers'", async () => {
     const base = gatePools.question.slice(0, 2);
     const scoredQuestion = [
-      { ...base[0], drift_verdict: "answers", drift_reason: "resolves it" },
-      { ...base[1], drift_verdict: "drifts", drift_reason: "off topic" },
+      { ...base[0], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
+      { ...base[1], drift_verdict: "drifts", drift_reason: "off topic", ...STOPPING_POWER_PASS },
     ];
     await writeFile(path.join(tempDir, "question.json"), JSON.stringify(scoredQuestion));
     const { pools, source } = await loadFormatPools(tempDir, gatePools);
     expect(source.question).toBe("scored");
     expect(pools.question).toHaveLength(1);
     expect(pools.question[0].card_id).toBe(base[0].card_id);
+  });
+
+  // -------------------------------------------------------------------------
+  // T22: stopping power is a SECOND, independent gate on top of drift — a
+  // row can pass drift and still be excluded for failing stopping power.
+  // -------------------------------------------------------------------------
+  it("filters a scored Question pool to only rows that ALSO pass T22 stopping power, even when drift_verdict is 'answers'", async () => {
+    const base = gatePools.question.slice(0, 2);
+    const scoredQuestion = [
+      { ...base[0], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
+      {
+        ...base[1],
+        drift_verdict: "answers", // drift PASSES here
+        drift_reason: "resolves it",
+        standalone_intelligible: false, // but stopping power FAILS
+        answer_has_substance: true,
+        modern_premise: true,
+      },
+    ];
+    await writeFile(path.join(tempDir, "question.json"), JSON.stringify(scoredQuestion));
+    const { pools, source } = await loadFormatPools(tempDir, gatePools);
+    expect(source.question).toBe("scored");
+    expect(pools.question).toHaveLength(1);
+    expect(pools.question[0].card_id).toBe(base[0].card_id);
+  });
+
+  it("fails closed on a scored Question row missing a T22 stopping-power field entirely, even when drift_verdict is 'answers'", async () => {
+    const base = gatePools.question.slice(0, 2);
+    const scoredQuestion = [
+      { ...base[0], drift_verdict: "answers", drift_reason: "resolves it" }, // no stopping-power fields at all
+      { ...base[1], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
+    ];
+    await writeFile(path.join(tempDir, "question.json"), JSON.stringify(scoredQuestion));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const { pools } = await loadFormatPools(tempDir, gatePools);
+      expect(pools.question).toHaveLength(1);
+      expect(pools.question[0].card_id).toBe(base[1].card_id);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("stopping power"));
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
   it("filters a scored Objection pool to only rubric.verdict === 'accept'", async () => {
@@ -466,7 +514,7 @@ describe("loadFormatPools", () => {
     const base = gatePools.question.slice(0, 2);
     const scoredQuestion = [
       { ...base[0] }, // no drift_verdict field at all — must NOT be admitted
-      { ...base[1], drift_verdict: "answers", drift_reason: "resolves it" },
+      { ...base[1], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
     ];
     await writeFile(path.join(tempDir, "question.json"), JSON.stringify(scoredQuestion));
     const { pools } = await loadFormatPools(tempDir, gatePools);
@@ -505,8 +553,8 @@ describe("loadFormatPools", () => {
   it("reads a scored Question pool file in the envelope shape, still filtering to drift_verdict === 'answers'", async () => {
     const base = gatePools.question.slice(0, 2);
     const entries = [
-      { ...base[0], drift_verdict: "answers", drift_reason: "resolves it" },
-      { ...base[1], drift_verdict: "drifts", drift_reason: "off topic" },
+      { ...base[0], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
+      { ...base[1], drift_verdict: "drifts", drift_reason: "off topic", ...STOPPING_POWER_PASS },
     ];
     const meta = { submitted: 2, succeeded: 2, dropped: 0, limited: false, generated_at: "2026-08-25T00:00:00.000Z" };
     await writeFile(path.join(tempDir, "question.json"), JSON.stringify({ meta, entries }));

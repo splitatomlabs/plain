@@ -68,17 +68,68 @@ export interface WallRubricResult {
 }
 
 /**
- * The Question's rubric result (T04 layer (c) — topic drift). Verifies
- * that the candidate answer sentence ACTUALLY ANSWERS the question rather
- * than merely following it chronologically. A verdict, not a score: either
- * the answer resolves the question or it drifts off-topic.
+ * The Question's rubric result. Carries TWO INDEPENDENT signals, per T22 —
+ * neither one folds into the other:
+ *
+ * 1. `verdict` (T04 layer (c) — topic drift, UNCHANGED from before T22).
+ *    Verifies that the candidate answer sentence ACTUALLY ANSWERS the
+ *    question rather than merely following it chronologically.
+ *
+ * 2. STOPPING POWER (T22 — new). Drift asks "does the following sentence
+ *    answer the question"; that check can pass cleanly on a pair that is
+ *    still not worth posting, because the format's whole mechanic is a
+ *    viewer SILENTLY PREDICTING an answer before checking it against the
+ *    author's: `"Do you have reason?" -> "Yes, I do."` answers correctly
+ *    (verdict: "answers") but is meaningless with no context on screen and
+ *    has nothing to predict against; `"Can't serve in the army?" -> "Then
+ *    run for office."` also answers correctly but presupposes an ancient
+ *    situation no modern viewer is in. Stopping power scores three things
+ *    the drift check does not, each its own boolean so a failure is
+ *    diagnosable by WHICH dimension failed rather than a single opaque
+ *    reject:
+ *    - `standalone_intelligible` — does the QUESTION mean something with
+ *      zero context on screen?
+ *    - `answer_has_substance` — is there a real claim in the ANSWER to
+ *      check a silent prediction against, or is it a bare "Yes"/"No"/
+ *      restatement?
+ *    - `modern_premise` — is the situation the question presupposes one a
+ *      viewer TODAY is actually in?
+ *
+ * `passesStoppingPower` combines the three into a single pass/fail for
+ * pool-filtering purposes (see ./schedule.ts's `loadFormatPools`), but the
+ * three raw booleans are kept on the parsed/scored result too, so a pair
+ * that fails ONLY stopping power stays distinguishable from one that fails
+ * ONLY drift — both signals are independently readable off the same row,
+ * never merged into one.
  */
 export type QuestionRubricVerdict = "answers" | "drifts";
 export const QUESTION_RUBRIC_VERDICTS: readonly QuestionRubricVerdict[] = ["answers", "drifts"];
 
 export interface QuestionRubricResult {
   verdict: QuestionRubricVerdict;
+  standalone_intelligible: boolean;
+  answer_has_substance: boolean;
+  modern_premise: boolean;
   reason: string;
+}
+
+/**
+ * True only when all three T22 stopping-power dimensions are explicitly
+ * `true`. Deliberately strict equality (`=== true`), not mere truthiness:
+ * a row whose field is `undefined` (missing entirely — e.g. a pre-T22 pool
+ * file written before this dimension existed) must FAIL CLOSED rather than
+ * be treated as passing by accident. Pure and synchronous — no LLM call —
+ * because the three dimensions are already scored by the rubric; this
+ * function only combines already-scored booleans, never judges text itself.
+ */
+export function passesStoppingPower(entry: {
+  standalone_intelligible?: boolean;
+  answer_has_substance?: boolean;
+  modern_premise?: boolean;
+}): boolean {
+  return (
+    entry.standalone_intelligible === true && entry.answer_has_substance === true && entry.modern_premise === true
+  );
 }
 
 /**
@@ -139,6 +190,14 @@ function requireNumber(obj: Record<string, unknown>, field: string, min: number,
   return value;
 }
 
+function requireBoolean(obj: Record<string, unknown>, field: string): boolean {
+  const value = obj[field];
+  if (typeof value !== "boolean") {
+    throw new Error(`${field} must be a boolean (true or false), got ${JSON.stringify(value)}`);
+  }
+  return value;
+}
+
 function requireString(obj: Record<string, unknown>, field: string): string {
   const value = obj[field];
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -191,7 +250,13 @@ function logIgnoredFields(obj: Record<string, unknown>, allowedFields: readonly 
 }
 
 const WALL_RUBRIC_FIELDS = ["impenetrability_score", "landing_line_score", "chosen_landing_line", "reason"] as const;
-const QUESTION_RUBRIC_FIELDS = ["verdict", "reason"] as const;
+const QUESTION_RUBRIC_FIELDS = [
+  "verdict",
+  "standalone_intelligible",
+  "answer_has_substance",
+  "modern_premise",
+  "reason",
+] as const;
 const OBJECTION_RUBRIC_FIELDS = ["verdict", "classification", "reason"] as const;
 
 /**
@@ -220,18 +285,23 @@ export function parseWallRubricResponse(raw: string): WallRubricResult {
 /**
  * Parse a raw LLM response into a validated `QuestionRubricResult`. Same
  * contract as `parseWallRubricResponse`, applied to the Question's own
- * shape (`verdict` in `QUESTION_RUBRIC_VERDICTS` + `reason`). `verdict` is
- * checked before `reason` so a Wall- or Objection-shaped payload (which
- * lacks a valid Question `verdict`) always fails on the `verdict` field,
- * even when it happens to carry its own unrelated `reason`/`verdict`
- * value.
+ * (T22-extended) shape: `verdict` in `QUESTION_RUBRIC_VERDICTS`, the three
+ * T22 stopping-power booleans (`standalone_intelligible`,
+ * `answer_has_substance`, `modern_premise`), and `reason`. `verdict` is
+ * checked FIRST, before any of the new fields, so a Wall- or
+ * Objection-shaped payload (which lacks a valid Question `verdict`) always
+ * fails on the `verdict` field, even when it happens to carry its own
+ * unrelated `reason`/`verdict` value — unchanged from pre-T22 behavior.
  */
 export function parseQuestionRubricResponse(raw: string): QuestionRubricResult {
   const parsed = parseJSONResponse(raw);
   const verdict = requireEnum(parsed, "verdict", QUESTION_RUBRIC_VERDICTS);
+  const standalone_intelligible = requireBoolean(parsed, "standalone_intelligible");
+  const answer_has_substance = requireBoolean(parsed, "answer_has_substance");
+  const modern_premise = requireBoolean(parsed, "modern_premise");
   const reason = requireString(parsed, "reason");
   logIgnoredFields(parsed, QUESTION_RUBRIC_FIELDS, "Question");
-  return { verdict, reason };
+  return { verdict, standalone_intelligible, answer_has_substance, modern_premise, reason };
 }
 
 /**
@@ -449,14 +519,27 @@ const QUESTION_RUBRIC_TASK = `You are the final check for "The Question" — a f
 
 The question and candidate answer you see here have ALREADY passed deterministic checks: the question is short, unquoted, self-contained (no dangling pronoun or demonstrative), not a fragment, not exclamation-shaped, and not attributed to anyone else ("he asks," "you ask") — it reads as the author's own direct question to the reader. The candidate answer has ALREADY been checked to be a genuine declarative sentence: not another question (no Socratic chain), not an attribution leak, and not an empty pivot phrase ("Here's how it works.").
 
-Your ONLY job is TOPIC DRIFT: does the candidate answer ACTUALLY ANSWER the question — resolving what it asked — or does it merely happen to be the next sentence chronologically, drifting onto a related but different point? Do NOT re-check anything described above as already settled: self-containedness, attribution, fragment-ness, and Socratic chaining are not your concern here. Judge resolution only.
+You are judging FOUR things. Score all four independently — a pair can pass some and fail others, and each is reported separately, never merged into one verdict:
+
+1. TOPIC DRIFT (verdict) — does the candidate answer ACTUALLY ANSWER the question, resolving what it asked, or does it merely happen to be the next sentence chronologically, drifting onto a related but different point? Do NOT re-check anything described above as already settled: self-containedness, attribution, fragment-ness, and Socratic chaining are not your concern here. Judge resolution only.
+
+2. STANDALONE INTELLIGIBILITY (standalone_intelligible) — the question appears ALONE on screen with ZERO other context. Does it mean something to a viewer who has read nothing else at all? A question can answer correctly (pass #1) and still be meaningless standalone. Real example that FAILS this: "Do you have reason?" — with no context on screen, this reads as either trivially obvious or entirely opaque; there is nothing for the viewer to actually engage with.
+
+3. ANSWER SUBSTANCE (answer_has_substance) — the whole mechanic is the viewer silently PREDICTING an answer, then checking their prediction against the author's. That requires the answer to contain a real claim worth checking against. A bare "Yes," "No," "Yes, I do," or a one-word restatement of the question gives the viewer nothing to check their prediction against, even when it technically resolves the question. Real example that FAILS this: "Do you have reason?" -> "Yes, I do." — two words, no substance, nothing to predict against.
+
+4. MODERN APPLICABILITY (modern_premise) — is the SITUATION the question presupposes one an ordinary viewer today is actually in? A question can be perfectly self-contained and well-answered while still presupposing a premise no modern reader shares. Real example that FAILS this: "Can't serve in the army?" -> "Then run for office." — this presupposes an ancient civic structure (mandatory military or political service) no modern viewer is inside; it fails even though the answer directly and substantively resolves the question as asked.
+
+A pair that passes all four is strong. Real example that passes all four: "What is a master anyway?" -> "One person can't really master another." — standalone and intelligible with zero context, the answer makes a real claim worth checking a prediction against, and the premise (people claiming authority over each other) is one any viewer today recognizes from their own life.
 
 ${VOICE_REMINDER}
 
-Respond with ONLY this JSON (no other text) — EXACTLY these two fields, in this shape, and no others. Put ALL of your reasoning inside "reason"; do not invent additional fields:
+Respond with ONLY this JSON (no other text) — EXACTLY these five fields, in this shape, and no others. Put ALL of your reasoning inside "reason"; do not invent additional fields:
 {
   "verdict": "answers" | "drifts",
-  "reason": "<one sentence explaining your verdict>"
+  "standalone_intelligible": <true or false>,
+  "answer_has_substance": <true or false>,
+  "modern_premise": <true or false>,
+  "reason": "<one or two sentences explaining all four judgments>"
 }`;
 
 /** Static per-author system prompt for The Question rubric — cacheable across every Question card by that author. */

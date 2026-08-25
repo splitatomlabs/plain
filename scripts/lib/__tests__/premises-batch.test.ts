@@ -250,7 +250,7 @@ describe("scoreQuestionSurvivors", () => {
     const customId = requests[0].request.custom_id;
 
     mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "It resolves the question." })]),
+      asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "It resolves the question." })]),
     );
 
     const scored = await scoreQuestionSurvivors(entries, [card]);
@@ -259,6 +259,11 @@ describe("scoreQuestionSurvivors", () => {
     expect(scored[0].card_id).toBe("test-card-1");
     expect(scored[0].drift_verdict).toBe("answers");
     expect(scored[0].drift_reason).toBe("It resolves the question.");
+    // T22: the three stopping-power dimensions survive the merge too, kept
+    // as their own independent fields alongside (not folded into) drift_verdict.
+    expect(scored[0].standalone_intelligible).toBe(true);
+    expect(scored[0].answer_has_substance).toBe(true);
+    expect(scored[0].modern_premise).toBe(true);
     expect(faithfulnessStats.rejected).toBe(0);
   });
 
@@ -282,7 +287,7 @@ describe("scoreQuestionSurvivors", () => {
 
     mockStreamBatchResults.mockReturnValue(
       asyncIterFrom([
-        makeSucceededResult(okId, { verdict: "answers", reason: "Resolves it." }),
+        makeSucceededResult(okId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "Resolves it." }),
         makeErroredResult(badId),
       ]),
     );
@@ -677,7 +682,7 @@ describe("T09 faithfulness enforcement", () => {
       const requests = buildQuestionRequests(entries);
       const customId = requests[0].request.custom_id;
       mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "It resolves the question." })]),
+        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "It resolves the question." })]),
       );
 
       const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
@@ -708,7 +713,7 @@ describe("T09 faithfulness enforcement", () => {
       const requests = buildQuestionRequests(entries);
       const customId = requests[0].request.custom_id;
       mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "n/a" })]),
+        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "n/a" })]),
       );
 
       const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
@@ -735,7 +740,7 @@ describe("T09 faithfulness enforcement", () => {
       const requests = buildQuestionRequests(entries);
       const customId = requests[0].request.custom_id;
       mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", reason: "n/a" })]),
+        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "n/a" })]),
       );
 
       const scored = await scoreQuestionSurvivors(entries, [card]);

@@ -8,6 +8,7 @@ import {
   withinWallLandingLineLimit,
   withinQuestionLimit,
   withinObjectionLimit,
+  passesStoppingPower,
   WALL_SCORE_MIN,
   WALL_SCORE_MAX,
   OBJECTION_MAX_WORDS,
@@ -20,6 +21,7 @@ import {
   buildObjectionRubricSystem,
   buildObjectionRubricUser,
 } from "../premises-scoring.js";
+import { loadCorpus } from "../premises.js";
 import type { Card } from "../types.js";
 import type { AuthorSlug } from "../constants.js";
 
@@ -59,6 +61,9 @@ const validWallJSON = JSON.stringify({
 
 const validQuestionJSON = JSON.stringify({
   verdict: "answers",
+  standalone_intelligible: true,
+  answer_has_substance: true,
+  modern_premise: true,
   reason: "The following sentence directly resolves the question.",
 });
 
@@ -351,6 +356,9 @@ describe("The Question and Objection rubrics also tolerate additive unknown fiel
   it("Question parser parses successfully with an extra commentary field", () => {
     const raw = JSON.stringify({
       verdict: "answers",
+      standalone_intelligible: true,
+      answer_has_substance: true,
+      modern_premise: true,
       reason: "The following sentence directly resolves the question.",
       verdict_confidence: "high",
     });
@@ -397,7 +405,12 @@ describe("The Question rubric shape", () => {
   });
 
   it("rejects a payload missing reason", () => {
-    const bad = JSON.stringify({ verdict: "answers" });
+    const bad = JSON.stringify({
+      verdict: "answers",
+      standalone_intelligible: true,
+      answer_has_substance: true,
+      modern_premise: true,
+    });
     expect(() => parseQuestionRubricResponse(bad)).toThrow(/reason/i);
   });
 
@@ -414,6 +427,127 @@ describe("The Question rubric shape", () => {
     // validObjectionJSON's verdict is "accept", not a valid Question verdict
     // ("answers"/"drifts") — the real parser must reject on that basis.
     expect(() => parseQuestionRubricResponse(validObjectionJSON)).toThrow(/verdict/i);
+  });
+
+  it("rejects a payload missing a T22 stopping-power field (standalone_intelligible)", () => {
+    const bad = JSON.stringify({
+      verdict: "answers",
+      answer_has_substance: true,
+      modern_premise: true,
+      reason: "n/a",
+    });
+    expect(() => parseQuestionRubricResponse(bad)).toThrow(/standalone_intelligible/i);
+  });
+
+  it("rejects a payload with a wrong-typed T22 stopping-power field", () => {
+    const bad = JSON.stringify({
+      verdict: "answers",
+      standalone_intelligible: "yes", // string, not boolean
+      answer_has_substance: true,
+      modern_premise: true,
+      reason: "n/a",
+    });
+    expect(() => parseQuestionRubricResponse(bad)).toThrow(/standalone_intelligible/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T22: STOPPING-POWER — a dimension independent of drift. The Question's
+// drift check (verdict) alone lets a correctly-answered but unpostable pair
+// through; these tests pin the two REAL week-1 slots that motivated this
+// task, drawn from the actual corpus/committed pool rather than invented
+// text, plus a real pair that should still pass everything.
+// ---------------------------------------------------------------------------
+describe("T22: stopping power — independent of drift", () => {
+  const cards = loadCorpus();
+  const cardById = (id: string): Card => {
+    const card = cards.find((c) => c.id === id);
+    if (!card) throw new Error(`fixture card ${id} not found in real corpus`);
+    return card;
+  };
+
+  it("rejects the real 'Do you have reason?' pair (meditations-04-015) on BOTH standalone intelligibility and answer substance, even though drift passes", () => {
+    const card = cardById("meditations-04-015");
+    expect(card.plain_english).toContain("Do you have reason? Yes, I do.");
+
+    // What a real rubric response for this pair plausibly looks like: the
+    // answer DOES resolve the question (drift passes), but standalone
+    // intelligibility and answer substance both fail.
+    const parsed = {
+      verdict: "answers" as const,
+      standalone_intelligible: false,
+      answer_has_substance: false,
+      modern_premise: true,
+      reason: "The answer resolves the question, but the question is meaningless with no context and the answer has no substance to check a prediction against.",
+    };
+
+    expect(parsed.verdict).toBe("answers"); // drift passes
+    expect(passesStoppingPower(parsed)).toBe(false); // stopping power fails
+  });
+
+  it("rejects the real 'Can't serve in the army?' pair (peace-of-mind-04-002) on modern applicability, even though drift passes and the question/answer are otherwise fine", () => {
+    const card = cardById("peace-of-mind-04-002");
+    expect(card.plain_english).toContain("Can't serve in the army? Then run for office.");
+
+    const parsed = {
+      verdict: "answers" as const,
+      standalone_intelligible: true,
+      answer_has_substance: true,
+      modern_premise: false,
+      reason: "The answer directly and substantively resolves the question, but it presupposes an ancient civic structure no modern viewer is in.",
+    };
+
+    expect(parsed.verdict).toBe("answers"); // drift passes
+    expect(passesStoppingPower(parsed)).toBe(false); // stopping power fails
+  });
+
+  it("still passes a strong real pair ('What is a master anyway?' -> 'One person can't really master another.', discourses-18-010)", () => {
+    const card = cardById("discourses-18-010");
+    expect(card.plain_english).toContain("What is a master anyway? One person can't really master another.");
+
+    const parsed = {
+      verdict: "answers" as const,
+      standalone_intelligible: true,
+      answer_has_substance: true,
+      modern_premise: true,
+      reason: "Standalone and intelligible, the answer makes a real claim, and the premise applies to any reader today.",
+    };
+
+    expect(parsed.verdict).toBe("answers");
+    expect(passesStoppingPower(parsed)).toBe(true);
+  });
+
+  it("the two signals are independently readable: a pair failing ONLY stopping power is distinguishable from one failing ONLY drift", () => {
+    const failsOnlyStoppingPower = {
+      verdict: "answers" as const,
+      standalone_intelligible: false,
+      answer_has_substance: true,
+      modern_premise: true,
+      reason: "n/a",
+    };
+    const failsOnlyDrift = {
+      verdict: "drifts" as const,
+      standalone_intelligible: true,
+      answer_has_substance: true,
+      modern_premise: true,
+      reason: "n/a",
+    };
+
+    expect(failsOnlyStoppingPower.verdict).toBe("answers");
+    expect(passesStoppingPower(failsOnlyStoppingPower)).toBe(false);
+
+    expect(failsOnlyDrift.verdict).toBe("drifts");
+    expect(passesStoppingPower(failsOnlyDrift)).toBe(true);
+
+    // Neither row's failure mode is indistinguishable from the other's —
+    // each fails a DIFFERENT one of the two independent signals.
+    expect(failsOnlyStoppingPower.verdict === "answers" && !passesStoppingPower(failsOnlyStoppingPower)).toBe(true);
+    expect(failsOnlyDrift.verdict === "drifts" && passesStoppingPower(failsOnlyDrift)).toBe(true);
+  });
+
+  it("passesStoppingPower fails closed when a dimension is missing entirely (not just false)", () => {
+    expect(passesStoppingPower({ standalone_intelligible: true, answer_has_substance: true })).toBe(false);
+    expect(passesStoppingPower({})).toBe(false);
   });
 });
 
@@ -580,10 +714,30 @@ describe("buildQuestionRubricSystem", () => {
     expect(prompts.size).toBe(AUTHOR_SLUGS.length);
   });
 
-  it("scopes the judgement to topic drift only, not the deterministic layers' concerns", () => {
+  it("scopes topic drift to resolution only, not the deterministic layers' concerns", () => {
     const system = buildQuestionRubricSystem("seneca");
     expect(system).toMatch(/topic drift/i);
     expect(system).toMatch(/already (been )?(passed|checked)/i);
+  });
+
+  // T22: the rubric now ALSO scores stopping power, independent of drift —
+  // pin that the prompt names all three sub-dimensions and both required
+  // JSON field names, not just the drift verdict.
+  it("names all three T22 stopping-power dimensions and requires the extended JSON shape", () => {
+    const system = buildQuestionRubricSystem("epictetus");
+    expect(system).toMatch(/standalone/i);
+    expect(system).toMatch(/substance/i);
+    expect(system).toMatch(/modern/i);
+    expect(system).toContain("standalone_intelligible");
+    expect(system).toContain("answer_has_substance");
+    expect(system).toContain("modern_premise");
+  });
+
+  it("uses the real motivating examples so the rubric calibrates against genuine failure cases", () => {
+    const system = buildQuestionRubricSystem("marcus-aurelius");
+    expect(system).toContain("Do you have reason?");
+    expect(system).toContain("Can't serve in the army?");
+    expect(system).toContain("What is a master anyway?");
   });
 });
 
