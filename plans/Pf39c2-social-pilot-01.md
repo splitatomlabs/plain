@@ -1167,3 +1167,40 @@ the next-ranked passage — Book 2 carries disproportionately recognisable mater
   real `wallPool`/`questionPool`/`objectionPool` contents and could shift these exact solved weights and measured
   percentages somewhat — the mechanism and its reachable-floor behavior will not change, only the numbers. Worth a
   quick re-measure after T11 lands.
+
+- [x] T18: Update the retired model IDs in `scripts/lib/claude.ts` `API_MODEL_MAP`. `claude-sonnet-4-20250514` and
+  `claude-opus-4-20250514` both return `not_found_error` — found when the T11 smoke run failed all 30 requests.
+  This breaks the EXISTING content pipeline (generate.ts refine/translate) too, not just social scoring. Map to
+  the current IDs `claude-sonnet-5` / `claude-opus-5`, preserving each call site's existing sonnet-vs-opus choice.
+  Acceptance: a 3-request smoke run succeeds.
+  **Note:** Changed only the two map values in `API_MODEL_MAP` (`sonnet: "claude-sonnet-5"`, `opus:
+  "claude-opus-5"`) — no call site's tier choice (sonnet vs opus) was touched, so `generate.ts` refine/translate
+  and the premises rubrics keep asking for whichever tier they already asked for. Repo-wide grep for
+  `claude-sonnet-4`/`claude-opus-4`/`claude-3` also found two standalone dev scripts with hardcoded retired IDs —
+  `scripts/lib/__tests__/token-audit.ts` and `scripts/lib/__tests__/quality-comparison.ts`. Both are one-off
+  manual `npx tsx` scripts from an earlier plan (not `*.test.ts`, so `vitest.config.ts`'s
+  `include: ['scripts/lib/__tests__/**/*.test.ts']` never runs them, and `npm test` doesn't touch them) — left
+  as-is per this task's scope, flagged here for whoever next runs them by hand. No stale model ID found in any
+  `.md` doc (README, CLAUDE.md, `docs/`) — nothing to update there. SDK check: `@anthropic-ai/sdk` is pinned at
+  `^0.87.0` (installed: 0.87.0); confirmed sufficient for both this task's IDs and T08's `cache_control`
+  system-array shape — the SDK is a thin typed wrapper that passes the `model` string straight through to the API
+  with no client-side allowlist, and `resources/messages/messages.d.ts` already types `cache_control` on system
+  content blocks in this installed version. No SDK bump needed.
+  **Verified with a real API call**, per this task's explicit instruction (ran via `zsh -ic '...'` since
+  `ANTHROPIC_API_KEY` is exported from `~/.zshrc` and only visible in an interactive shell):
+  `npx tsx scripts/score-premises.ts --format objection --limit 3 --verbose` — batch `msgbatch_01GrtfiYVe6nZME22NahSPss`
+  ended `3/3 succeeded, 0 failed` in 2m49s. Score distribution: accept 2, reject 1. One accepted entry
+  (`discourses-53-010`, objection "But I want my children and wife with me.") — verdict `accept`, classification
+  `viewer_position`, reason: "This voices a universal, relatable wish (wanting one's family close) as a rhetorical
+  objection to the preceding argument, with no named character or staged incident." The rejected entry
+  (`discourses-64-004`) was correctly caught as `dramatized_scene` dialogue inside a staged gossip dispute, not a
+  viewer's own thought — confirms the rubric is discriminating, not just accepting everything. Cost: $0.0074
+  (962 input tokens, 221 output, 2,218 cache-creation, 1,109 cache-read). Per this task's explicit instruction,
+  deleted the pool file this smoke run wrote (`content/social/premises/objection.json`) immediately after —
+  `rm -f content/social/premises/*.json` — so the scheduler keeps falling back to the mechanical gates until T19
+  fixes the empty-pool-file trap. `npm test` — 724 pipeline tests + 95 web unit tests, all green (no regression;
+  this task only changed two string literals).
+- [ ] T19: Never write a pool file from a run that produced no scored entries. The failed smoke run wrote `[]` to
+  wall/question/objection.json; `loadFormatPools` treats a present-but-empty file as a real empty pool rather than
+  falling back to the gates, so `generate-schedule` died with "pools exhausted". Acceptance: a run with zero
+  successes leaves any existing pool file untouched and exits non-zero; a partial run warns loudly.

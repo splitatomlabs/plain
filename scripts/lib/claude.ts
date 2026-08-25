@@ -70,8 +70,8 @@ export function extractJSON(text: string): string {
 // ---------------------------------------------------------------------------
 
 const API_MODEL_MAP: Record<string, string> = {
-  sonnet: "claude-sonnet-4-20250514",
-  opus: "claude-opus-4-20250514",
+  sonnet: "claude-sonnet-5",
+  opus: "claude-opus-5",
 };
 
 /** Accumulated token usage for cost reporting */
