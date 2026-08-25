@@ -1987,3 +1987,293 @@ describe("M16: the weighted Wall pool excludes the read-through book, same as th
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T15: generalise the read-through from a WHOLE BOOK to a BOOK SLICE.
+//
+// The trap this guards against: excluding the read-through's cards from the
+// Wall/Question/Objection pools BY `book_slug` (as `generateWeek` did before
+// T15) is correct only when the read-through covers an entire book. Once the
+// read-through is sliced to a few chapters (T16's actual plan: Meditations
+// Books 2-3, 48 of Meditations' 576 cards), a `book_slug` exclusion would
+// silently strip EVERY Meditations card from the Wall/Question pools —
+// destroying T05's author balancing, which weights Wall toward
+// marcus-aurelius (~0.43) specifically because Meditations is its best
+// material. These tests assert the exclusion is by CARD ID, not book, and
+// that the default (no chapters) path is untouched.
+// ---------------------------------------------------------------------------
+
+describe("T15: read-through book slice", () => {
+  /**
+   * Same technique as T13's own `trueReadingOrder` above, restricted to a
+   * caller-supplied chapter list walked in the order given — an independent
+   * re-derivation of the ordering `buildReadThroughSequence` (schedule.ts)
+   * is expected to produce, so this test doesn't just re-assert the
+   * implementation's own logic back at itself.
+   */
+  function trueReadingOrderSlice(allCards: Card[], bookSlug: string, chapters: string[]): Card[] {
+    const bookCards = allCards.filter((c) => c.book_slug === bookSlug);
+    const byChapter = new Map<string, Card[]>();
+    for (const c of bookCards) {
+      if (!byChapter.has(c.chapter_slug)) byChapter.set(c.chapter_slug, []);
+      byChapter.get(c.chapter_slug)!.push(c);
+    }
+    const ordered: Card[] = [];
+    for (const slug of chapters) {
+      const group = [...(byChapter.get(slug) ?? [])].sort((a, b) => a.card_number - b.card_number);
+      ordered.push(...group);
+    }
+    return ordered;
+  }
+
+  const MEDITATIONS_SLICE_CHAPTERS = ["book-02", "book-03"];
+  const meditationsSlice = trueReadingOrderSlice(cards, "meditations", MEDITATIONS_SLICE_CHAPTERS);
+  const meditationsSliceIds = new Set(meditationsSlice.map((c) => c.id));
+
+  it("Meditations Books 2-3 have 48 cards combined — grounding this suite's own numbers", () => {
+    expect(meditationsSlice).toHaveLength(48);
+  });
+
+  // -------------------------------------------------------------------------
+  // Defaults must not change: omitting readThroughChapters reproduces
+  // today's whole-book behavior byte-for-byte.
+  // -------------------------------------------------------------------------
+  it("omitting readThroughChapters is byte-identical to not having the option at all", () => {
+    const withoutOption = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+    });
+    const withExplicitUndefined = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughChapters: undefined,
+      readThroughStartIndex: 0,
+    });
+    expect(JSON.stringify(withExplicitUndefined)).toBe(JSON.stringify(withoutOption));
+
+    // The pre-T15 JSON shape: no `read_through_chapters` key at all
+    // (JSON.stringify drops `undefined`-valued properties), and the total
+    // equals the whole book — exactly as before this option existed.
+    expect(JSON.stringify(withoutOption)).not.toContain("read_through_chapters");
+    const enchiridionCards = cards.filter((c) => c.book_slug === "enchiridion");
+    expect(withoutOption.read_through_total).toBe(enchiridionCards.length);
+  });
+
+  // -------------------------------------------------------------------------
+  // The slice sequence follows chapter order then card_number.
+  // -------------------------------------------------------------------------
+  it("a slice read-through follows chapter order then card_number, matching an independently derived ordering", () => {
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
+      readThroughStartIndex: 0,
+    });
+    const readThroughIds = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.card_id);
+    expect(readThroughIds).toEqual(meditationsSlice.slice(0, 7).map((c) => c.id));
+  });
+
+  it("a reversed chapter order (book-03 then book-02) walks book-03 first — the caller's order wins, not the book's own", () => {
+    const reversedExpected = trueReadingOrderSlice(cards, "meditations", ["book-03", "book-02"]);
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: ["book-03", "book-02"],
+      readThroughStartIndex: 0,
+    });
+    const readThroughIds = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.card_id);
+    expect(readThroughIds).toEqual(reversedExpected.slice(0, 7).map((c) => c.id));
+    expect(readThroughIds[0]).toMatch(/^meditations-03-/);
+  });
+
+  // -------------------------------------------------------------------------
+  // read_through_total and the counter label follow the slice length.
+  // -------------------------------------------------------------------------
+  it("read_through_total equals the slice length, and the counter label reads 'Card N of <slice length>'", () => {
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
+      readThroughStartIndex: 0,
+    });
+    expect(week.read_through_total).toBe(meditationsSlice.length);
+    expect(week.read_through_chapters).toEqual(MEDITATIONS_SLICE_CHAPTERS);
+    const counters = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.read_through_counter);
+    expect(counters).toEqual(
+      [1, 2, 3, 4, 5, 6, 7].map((n) => `Card ${n} of ${meditationsSlice.length}`),
+    );
+  });
+
+  // -------------------------------------------------------------------------
+  // THE central regression this task exists to prevent: excluding by card
+  // id, not book_slug — Meditations cards OUTSIDE the slice still appear in
+  // weighted slots.
+  // -------------------------------------------------------------------------
+  it("a slice read-through excludes ONLY its own cards — Meditations cards outside the slice still appear in weighted slots (protects T05's balancing)", () => {
+    let sawOutsideSliceMeditationsInWeightedSlot = false;
+    for (let seed = 1; seed <= 40 && !sawOutsideSliceMeditationsInWeightedSlot; seed++) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "meditations",
+        readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
+        readThroughStartIndex: 0,
+        // Maximize the chance slot 2 draws a Meditations Wall card — Wall is
+        // weighted toward marcus-aurelius (~0.43, see wallAuthorWeights).
+        weights: { wall: 100, question: 0, objection: 0 },
+      });
+      for (const slot of week.slots) {
+        if (slot.slot === 2 && slot.book_slug === "meditations" && !meditationsSliceIds.has(slot.card_id)) {
+          sawOutsideSliceMeditationsInWeightedSlot = true;
+        }
+      }
+    }
+    // Not vacuous — must actually observe at least one out-of-slice
+    // Meditations card land in a weighted slot across the seed sweep.
+    expect(sawOutsideSliceMeditationsInWeightedSlot).toBe(true);
+  });
+
+  it("the read-through's own slot never draws a card outside its slice", () => {
+    for (const seed of [1, 2, 3, 42]) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "meditations",
+        readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
+        readThroughStartIndex: 0,
+      });
+      for (const slot of week.slots) {
+        if (slot.read_through) expect(meditationsSliceIds.has(slot.card_id)).toBe(true);
+      }
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // Validation: unknown chapter, empty slice.
+  // -------------------------------------------------------------------------
+  it("throws a clear error for an unknown chapter slug", () => {
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 42,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "meditations",
+        readThroughChapters: ["book-02", "not-a-real-chapter"],
+        readThroughStartIndex: 0,
+      }),
+    ).toThrow(/unknown chapter/i);
+  });
+
+  it("throws a clear error for an empty slice (explicit empty chapter list)", () => {
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 42,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "meditations",
+        readThroughChapters: [],
+        readThroughStartIndex: 0,
+      }),
+    ).toThrow(/empty/i);
+  });
+
+  // -------------------------------------------------------------------------
+  // Determinism preserved for the slice path.
+  // -------------------------------------------------------------------------
+  it("is byte-identical across two independent runs with the same seed, for the slice path", () => {
+    const opts = {
+      weekNumber: 1,
+      seed: 7,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set<string>(),
+      readThroughBook: "meditations",
+      readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
+      readThroughStartIndex: 0,
+    };
+    const a = generateWeek(opts);
+    const b = generateWeek(opts);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+
+  it("advances the slice strictly sequentially across weeks, with no skip or repeat", () => {
+    const week1 = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
+      readThroughStartIndex: 0,
+    });
+    const week1Ids = new Set(week1.slots.map((s) => s.card_id));
+    const week2 = generateWeek({
+      weekNumber: 2,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: week1Ids,
+      readThroughBook: "meditations",
+      readThroughChapters: MEDITATIONS_SLICE_CHAPTERS,
+      readThroughStartIndex: 7,
+    });
+    const week2ReadThrough = week2.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.card_id);
+    expect(week2ReadThrough).toEqual(meditationsSlice.slice(7, 14).map((c) => c.id));
+  });
+});

@@ -42,6 +42,7 @@ const { values: args } = parseArgs({
     week: { type: "string" },
     seed: { type: "string" },
     book: { type: "string", default: "enchiridion" },
+    "read-through-chapters": { type: "string" },
     "read-through-format": { type: "string" },
     "wall-weight": { type: "string" },
     "question-weight": { type: "string" },
@@ -65,6 +66,11 @@ Options:
   --week <n>                    Week number to generate (1-based, required)
   --seed <n>                    RNG seed — same seed + weights + prior weeks = byte-identical output (required)
   --book <slug>                 Read-through book (default: enchiridion)
+  --read-through-chapters <s>   Comma-separated chapter slugs restricting the read-through to a SLICE
+                                of --book, walked in the order given (e.g. book-02,book-03). Default:
+                                unset — read through the entire book, exactly as before this flag
+                                existed. Throws if a named chapter doesn't exist in --book or if the
+                                resulting slice is empty.
   --read-through-format <fmt>   Force every read-through slot to render as one fixed format
                                 (${SCHEDULE_FORMATS.join(", ")}); throws if a card can't render it.
                                 Default: unset — each day's read-through slot draws its format
@@ -127,6 +133,18 @@ if (!Number.isInteger(week) || week < 1) {
 const seed = Number(args.seed);
 if (!Number.isInteger(seed)) {
   console.error(`Invalid --seed "${args.seed}" — must be an integer.`);
+  process.exit(1);
+}
+
+const readThroughChaptersRaw = args["read-through-chapters"];
+const readThroughChapters = readThroughChaptersRaw
+  ? readThroughChaptersRaw
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+  : undefined;
+if (readThroughChaptersRaw !== undefined && (readThroughChapters === undefined || readThroughChapters.length === 0)) {
+  console.error(`Invalid --read-through-chapters "${readThroughChaptersRaw}" — must name at least one chapter slug.`);
   process.exit(1);
 }
 
@@ -261,6 +279,7 @@ async function main(): Promise<void> {
     poolSource: source,
     priorUsedCardIds: usedCardIds,
     readThroughBook: book,
+    readThroughChapters,
     readThroughStartIndex: readThroughConsumed,
     weights,
     readThroughFormat,

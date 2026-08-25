@@ -956,3 +956,69 @@ full passage in context. Revives Three Voices, lifts One-Line Gut Punch, benefit
 npm test
 npx tsx scripts/score-premises.ts --dry-run --limit 5
 ```
+
+## Follow-up
+
+Added 2026-08-25 after reviewing the author mix and researching text popularity. The pilot's read-through ran on
+the Enchiridion (~3,316 Goodreads reviews) while Meditations (~379,000 ratings) is ~100x more recognised and is the
+universal gateway text. Amazon Kindle highlight data puts Meditations 2.14 at 18,635 highlighters against 1,680 for
+the next-ranked passage — Book 2 carries disproportionately recognisable material. Book 1 is the atypical
+"Debts and Lessons" acknowledgements and makes a weak opening 4 weeks.
+
+- [x] T15: Generalise the read-through from a WHOLE BOOK to a BOOK SLICE in `scripts/lib/schedule.ts` — accept a
+  book slug plus an optional chapter list, and exclude the read-through's cards from the Wall/Question/Objection
+  pools BY CARD ID rather than by `book_slug` (lines 527, 528, 545). Excluding by book slug would strip all 576
+  Meditations cards from the Wall pool and destroy T05's balancing, which weights Marcus at 0.43. Defaults
+  unchanged in this task. Acceptance: existing tests stay green; a slice read-through excludes only its own cards.
+  **Note:** Added `GenerateWeekOptions.readThroughChapters?: string[]` (chapter slugs, in reading order) and a new
+  `buildReadThroughSequence(cards, bookSlug, chapters?)` helper in `scripts/lib/schedule.ts`. Omitting `chapters`
+  returns the exact same `cards.filter((c) => c.book_slug === bookSlug)` expression `generateWeek` always used —
+  chosen specifically so the no-`chapters` path is byte-identical BY CONSTRUCTION, not by re-deriving an equivalent
+  sort and hoping it matches. When `chapters` is supplied, the sequence is built by walking the named chapters IN
+  THE ORDER GIVEN, sorting each chapter's own cards by `card_number` (never an id string sort — mirrors T13's own
+  `trueReadingOrder` test helper); throws naming the unknown slug if a chapter doesn't exist in the book, and throws
+  on an empty resulting slice (including an explicit empty `chapters` array). Replaced all three `e.book_slug !==
+  readThroughBook` / `e.book_slug === readThroughBook` pool-exclusion checks (Wall, Question, Objection) with
+  membership tests against `readThroughCardIds` — a `Set` built from the read-through sequence's own card ids — so
+  a sliced read-through only reserves the cards it actually uses, leaving the rest of that book's cards available to
+  the weighted pools (the exact regression this task exists to prevent: a book-slug exclusion would have stripped
+  all 576 Meditations cards, not just the 48-card Books 2-3 slice T16 needs, destroying T05's Wall author balancing).
+  `read_through_total` and the "Card N of M" counter now derive from the slice length automatically, since both
+  already read from the (now correctly-scoped) `bookCards`/sequence variable. Added `WeekSchedule.read_through_chapters?:
+  string[]` (present only when a slice was requested; `JSON.stringify` drops the `undefined` key when omitted, so a
+  whole-book schedule's JSON is unchanged). Wired `--read-through-chapters <comma-separated-slugs>` through
+  `scripts/generate-schedule.ts`, documented in `--help`, parsed as `string[] | undefined` (rejects an explicitly-set
+  but empty value with a clear CLI error before `generateWeek` ever runs). Added 11 new tests to
+  `scripts/lib/__tests__/schedule.test.ts` (new `describe("T15: read-through book slice")` block): omitting
+  `readThroughChapters` is byte-identical to not having the option at all (including a direct assertion that the
+  serialized JSON contains no `read_through_chapters` key); a Meditations Books 2-3 slice (measured 48 cards: 20 +
+  28) follows chapter order then `card_number` against an independently re-derived ordering (mirroring, not reusing,
+  T13's own `trueReadingOrder`); a reversed chapter order (`["book-03", "book-02"]`) walks book-03 first, proving the
+  caller's order wins over the book's own; `read_through_total`/the counter label follow the slice length; **the
+  regression test the task names explicitly** — a 40-seed sweep with Wall-dominant weights confirming Meditations
+  cards OUTSIDE the Books 2-3 slice still land in weighted slots (not vacuous — asserts at least one such draw was
+  observed); the read-through's own slot never draws outside its slice (4 seeds); an unknown chapter slug throws
+  (`/unknown chapter/i`); an empty slice throws (`/empty/i`); determinism preserved for the slice path (byte-identical
+  same-seed reruns); and cross-week sequential advancement with no skip/repeat for the sliced sequence. **Mutation-
+  checked each new guard by temporarily reintroducing the exact defect it exists to catch, confirming the relevant
+  test(s) failed, then restoring:** (1) reverted the three pool exclusions back to `book_slug`-based — the "excludes
+  ONLY its own cards" regression test failed as expected (`expected false to be true`), all others stayed green; (2)
+  short-circuited `buildReadThroughSequence` to always return the whole book regardless of `chapters` — 8 of the 11
+  new tests failed (everything depending on slicing at all); (3) removed the unknown-chapter throw (defaulted a
+  missing chapter to an empty group instead) — exactly the "unknown chapter" test failed; (4) reversed the
+  within-chapter sort direction (`b.card_number - a.card_number`) — exactly the three ordering-dependent tests failed
+  (chapter-order-then-card_number, reversed-chapter-order, and cross-week sequential advancement), all others stayed
+  green. All four mutations restored to the correct implementation afterward, confirmed 78/78 green again each time.
+  `npx vitest run scripts/lib/__tests__/schedule.test.ts` — 78/78 green (67 baseline + 11 new). `npm test` — 705
+  pipeline tests (694 baseline + 11 new) + 95 web unit tests, all green, confirming no regression to T01-T14 or any
+  other consumer. `git diff` shows no changes outside `scripts/lib/schedule.ts`, `scripts/lib/__tests__/schedule.test.ts`,
+  `scripts/generate-schedule.ts`, and this plan file.
+  **Follow-up for T16:** the flip to a Meditations Books 2-3 default is entirely mechanical from here — pass
+  `readThroughBook: "meditations", readThroughChapters: ["book-02", "book-03"]` as the new default in
+  `generate-schedule.ts` (and update its `--book`/`--read-through-chapters` default flags), update the CLI's
+  hardcoded `enchiridion` default and help text, and update every `schedule.test.ts` test that currently hardcodes
+  `readThroughBook: "enchiridion"` as an implicit default (T15 added no default-flip logic — `readThroughChapters`
+  is only ever passed explicitly today, exactly as scoped).
+- [ ] T16: Switch the read-through default to Meditations Books 2-3 (48 cards, 7 weeks) and update the counter
+  total, tests and CLI help. Acceptance: the combined mix reports Marcus as the majority author; the read-through
+  advances sequentially through book-02 then book-03; determinism and no-cross-week-reuse still hold.

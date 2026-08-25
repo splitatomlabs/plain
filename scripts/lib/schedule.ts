@@ -157,6 +157,13 @@ export interface WeekSchedule {
   weights: FormatWeights;
   read_through_book: string;
   /**
+   * The chapter slugs the read-through is sliced to (T15), in reading
+   * order — omitted (not `null`) when the read-through covers the whole
+   * book, so a whole-book schedule's JSON is byte-identical to a
+   * pre-T15 one (`JSON.stringify` drops `undefined`-valued keys).
+   */
+  read_through_chapters?: string[];
+  /**
    * `"dynamic"` (the default) means each day's read-through slot draws its
    * own format from `weights`, same as slot 2 — see the module doc comment.
    * A concrete `ScheduleFormat` means the caller forced every read-through
@@ -189,7 +196,17 @@ export interface GenerateWeekOptions {
   /** Every card id already used in prior weeks (and, defensively, this week — see `generateWeek`). */
   priorUsedCardIds: ReadonlySet<string>;
   readThroughBook: string;
-  /** 0-based index into the read-through book's sequential card list where this week should start. */
+  /**
+   * Optional slice of `readThroughBook`: chapter slugs (e.g. `["book-02",
+   * "book-03"]`), in the order the read-through should walk them. When
+   * omitted (the default), the read-through covers the ENTIRE book, in the
+   * corpus's own order — byte-identical to this option not existing at all
+   * (see `buildReadThroughSequence`). Every chapter named must actually
+   * exist in `readThroughBook`, and the resulting slice must be non-empty —
+   * both throw a clear error otherwise.
+   */
+  readThroughChapters?: string[];
+  /** 0-based index into the read-through slice's sequential card list where this week should start. */
   readThroughStartIndex: number;
   weights?: FormatWeights;
   /**
@@ -471,6 +488,62 @@ function assertFaithful(card: Card, content: SlotContent, day: number, slotNumbe
   }
 }
 
+/**
+ * T15: build the read-through's card sequence — either the ENTIRE book
+ * (when `chapters` is omitted, today's behavior, unchanged) or a SLICE of it
+ * (a caller-supplied chapter list, in the order given). Ordered by chapter
+ * order then `card_number` within each chapter — never a string sort on
+ * card id — mirroring T13's own `trueReadingOrder` test helper
+ * (schedule.test.ts), which independently verifies this is the book's true
+ * reading order for the real corpus.
+ *
+ * The no-`chapters` branch deliberately returns the exact same expression
+ * (`cards.filter((c) => c.book_slug === bookSlug)`) `generateWeek` has
+ * always used, rather than re-deriving an equivalent chapter-order sort —
+ * T15's own constraint is that omitting the new option must be
+ * BYTE-IDENTICAL to today, and reusing the untouched expression guarantees
+ * that by construction instead of by argument.
+ *
+ * Throws when the book has no cards at all, when a named chapter doesn't
+ * exist in the book, or when the resulting slice is empty (including an
+ * explicit empty `chapters` array).
+ */
+function buildReadThroughSequence(cards: Card[], bookSlug: string, chapters?: string[]): Card[] {
+  const bookCards = cards.filter((c) => c.book_slug === bookSlug);
+  if (bookCards.length === 0) {
+    throw new Error(`No cards found for read-through book "${bookSlug}"`);
+  }
+  if (chapters === undefined) {
+    return bookCards;
+  }
+
+  const byChapter = new Map<string, Card[]>();
+  for (const c of bookCards) {
+    if (!byChapter.has(c.chapter_slug)) byChapter.set(c.chapter_slug, []);
+    byChapter.get(c.chapter_slug)!.push(c);
+  }
+
+  const sequence: Card[] = [];
+  for (const chapterSlug of chapters) {
+    const group = byChapter.get(chapterSlug);
+    if (!group || group.length === 0) {
+      throw new Error(
+        `Unknown chapter "${chapterSlug}" for read-through book "${bookSlug}" — available chapters: ` +
+          `${[...byChapter.keys()].join(", ")}`,
+      );
+    }
+    sequence.push(...[...group].sort((a, b) => a.card_number - b.card_number));
+  }
+
+  if (sequence.length === 0) {
+    throw new Error(
+      `Read-through slice for book "${bookSlug}" with chapters [${chapters.join(", ")}] is empty.`,
+    );
+  }
+
+  return sequence;
+}
+
 // ---------------------------------------------------------------------------
 // The generator.
 // ---------------------------------------------------------------------------
@@ -489,6 +562,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     poolSource,
     priorUsedCardIds,
     readThroughBook,
+    readThroughChapters,
     readThroughStartIndex,
     weights = DEFAULT_FORMAT_WEIGHTS,
     readThroughFormat: forcedReadThroughFormat,
@@ -498,14 +572,20 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   const rng = createSeededRng(seed);
   const cardsById = new Map(cards.map((c) => [c.id, c]));
 
-  // The read-through book's cards, in strict sequential order. `cards` is
-  // expected to come from `loadCorpus()` (or preserve its order), which
-  // already sorts book directories and chapter files deterministically —
-  // filtering to one book preserves that same sequential order.
-  const bookCards = cards.filter((c) => c.book_slug === readThroughBook);
-  if (bookCards.length === 0) {
-    throw new Error(`No cards found for read-through book "${readThroughBook}"`);
-  }
+  // The read-through's card sequence, in strict order — the whole book by
+  // default, or a caller-supplied chapter slice (T15). See
+  // `buildReadThroughSequence`'s own doc comment for why the no-`chapters`
+  // path is guaranteed byte-identical to `generateWeek`'s pre-T15 behavior.
+  const bookCards = buildReadThroughSequence(cards, readThroughBook, readThroughChapters);
+
+  // T15: exclude the read-through's cards from the weighted pools BY CARD
+  // ID, not by `book_slug` — a book-slug exclusion would strip every card
+  // in `readThroughBook` from the Wall/Question/Objection pools even when
+  // the read-through only covers a SLICE of that book (e.g. two chapters of
+  // Meditations), which would silently destroy T05's author balancing (Wall
+  // weights marcus-aurelius at ~0.43, and Meditations is the Wall's best
+  // material). See the module doc comment and the `M16`/T15 tests below.
+  const readThroughCardIds = new Set(bookCards.map((c) => c.id));
 
   // Author weighting for The Wall (T05) is computed against the FULL,
   // unfiltered pools — a fixed correction reflecting the corpus's own
@@ -524,8 +604,8 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   // for the read-through alone avoids that by construction, not by
   // detecting the collision after the fact.
   const allUsed = new Set<string>(priorUsedCardIds);
-  const wallPool = pools.wall.filter((e) => !allUsed.has(e.card_id) && e.book_slug !== readThroughBook);
-  const questionPool = pools.question.filter((e) => !allUsed.has(e.card_id) && e.book_slug !== readThroughBook);
+  const wallPool = pools.wall.filter((e) => !allUsed.has(e.card_id) && !readThroughCardIds.has(e.card_id));
+  const questionPool = pools.question.filter((e) => !allUsed.has(e.card_id) && !readThroughCardIds.has(e.card_id));
   // Excludes entries whose reply is empty/whitespace-only — the format's
   // whole point is objection THEN reply, so one with nothing to answer it
   // isn't a valid candidate at all (see M3 in the PR #39 review). Filtered
@@ -542,7 +622,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   // field silently diverges from what's scheduled (see M9 in the PR #39
   // second review round).
   const objectionPool = pools.objection.filter((e) => {
-    if (allUsed.has(e.card_id) || e.book_slug === readThroughBook) return false;
+    if (allUsed.has(e.card_id) || readThroughCardIds.has(e.card_id)) return false;
     const entryCard = cardsById.get(e.card_id);
     if (!entryCard) throw new Error(`Card "${e.card_id}" from the objection pool was not found in the corpus`);
     return assembleObjectionReply(entryCard, e).length > 0;
@@ -655,6 +735,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     seed,
     weights,
     read_through_book: readThroughBook,
+    read_through_chapters: readThroughChapters,
     read_through_format: forcedReadThroughFormat ?? "dynamic",
     read_through_total: bookCards.length,
     max_objection_per_week: maxObjectionPerWeek,
