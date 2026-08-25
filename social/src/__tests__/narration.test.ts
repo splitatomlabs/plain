@@ -349,6 +349,51 @@ describe('synthesizeNarration — the drift gate is checked against the real aud
 		);
 	});
 
+	it('F13: a single-mark (one-word) collapsed Polly narration has no baseline to bound against, so the repair applies unconditionally', async () => {
+		const dir = await makeTempDir();
+		const outPath = path.join(dir, 'narration.mp3');
+		// `otherMarks` (`marks.slice(0, -1)`) is empty here, so
+		// `longestOtherMarkMs` reduces to its `0` initial value — the
+		// `longestOtherMarkMs > 0` bound-check branch never runs, and the
+		// collapsed mark must still be repaired to the probed file duration
+		// rather than rejected for "implying" the whole clip.
+		const SINGLE_WORD_COLLAPSED_MARKS: ProviderMark[] = [{ text: 'Duty', startMs: 0, endMs: 0 }];
+		const provider = fakeProvider(SINGLE_WORD_COLLAPSED_MARKS);
+
+		const result = await synthesizeNarration(['Duty'], 'epictetus', provider, {}, outPath);
+
+		expect(result.timings).toHaveLength(1);
+		expect(result.timings[0].startSeconds).toBe(0);
+		expect(result.timings[0].endSeconds * 1000).toBe(FIXTURE_AUDIO_DURATION_MS);
+	});
+
+	it('F13: a collapsed Polly narration whose OTHER marks are all zero-length also has no baseline to bound against, so the repair applies unconditionally', async () => {
+		const dir = await makeTempDir();
+		const outPath = path.join(dir, 'narration.mp3');
+		// Reachable through `parsePollySpeechMarks` (`audio/tts.ts`): that
+		// parser sets each non-final mark's `endMs` to the NEXT word event's
+		// own `time`, so if Polly ever reports the same `time` for a run of
+		// consecutive word events (e.g. a cluster of very short words),
+		// every one of those marks collapses to zero-length too — not just
+		// the final one. `longestOtherMarkMs` is then `0` even though
+		// `otherMarks` is non-empty (three marks, not zero, unlike the
+		// single-mark case above), so this exercises the same skip via a
+		// different path through the reduce.
+		const ALL_ZERO_LENGTH_OTHER_MARKS: ProviderMark[] = [
+			{ text: 'Duty', startMs: 0, endMs: 0 },
+			{ text: 'is', startMs: 0, endMs: 0 },
+			{ text: 'the', startMs: 0, endMs: 0 },
+			{ text: 'way.', startMs: 0, endMs: 0 }
+		];
+		const provider = fakeProvider(ALL_ZERO_LENGTH_OTHER_MARKS);
+
+		const result = await synthesizeNarration(SAMPLE_LINES, 'epictetus', provider, {}, outPath);
+
+		expect(result.timings).toHaveLength(1);
+		expect(result.timings[0].startSeconds).toBe(0);
+		expect(result.timings[0].endSeconds * 1000).toBe(FIXTURE_AUDIO_DURATION_MS);
+	});
+
 	it('boundary: passes when drift is exactly NARRATION_DRIFT_TOLERANCE_MS (120ms)', async () => {
 		const dir = await makeTempDir();
 		const outPath = path.join(dir, 'narration.mp3');
