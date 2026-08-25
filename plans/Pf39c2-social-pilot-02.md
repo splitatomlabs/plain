@@ -74,7 +74,7 @@ looks like Plain.
   overflows, correct accent per author. Acceptance: tests fail against an empty implementation.
 - [x] T04: Implement the Playwright card renderer, auto-fitting by binary-searching font size, mirroring
   `web/src/lib/utils/og.js`. Acceptance: T03 passes.
-- [~] T05: Build **The Wall** — the flagship. Frame 0.0 is a screen packed edge to edge with 150+ words of
+- [x] T05: Build **The Wall** — the flagship. Frame 0.0 is a screen packed edge to edge with 150+ words of
   small-set archaic text, already mid-push-in, no title card and no margins; a karaoke highlight races through at
   ~320wpm, past reading speed. **Silent.** At **2-3s: hard cut** — all motion stops, silence, one still plain
   sentence held a full 3 seconds. Then the rest of the plain passage, one still line at a time, quietly narrated.
@@ -94,9 +94,9 @@ looks like Plain.
   formats without reflowing them, and reads as a page number rather than branding.
 - [ ] T10: Implement the encoder. Acceptance: ffprobe confirms High/L4.0/yuv420p/1080x1920/30fps/AAC 48kHz and moov
   before mdat.
-- [ ] T11: Generate 5-8 calm ambient loopable instrumental beds, 60s each, no vocals. Run once, manually; commit the
+- [~] T11: Generate 5-8 calm ambient loopable instrumental beds, 60s each, no vocals. Run once, manually; commit the
   audio plus a README recording provider, licence and date. Acceptance: 5-8 tracks committed with provenance.
-- [ ] T12: Define the TTS provider interface — `synthesize(text, voice) -> audioPath`, satisfied by both ElevenLabs
+- [~] T12: Define the TTS provider interface — `synthesize(text, voice) -> audioPath`, satisfied by both ElevenLabs
   and Polly so swapping is config. Tests use recorded fixtures, never live calls. Acceptance: a simulated ElevenLabs
   failure produces Polly audio.
 - [ ] T13: Implement LINE-LEVEL narration timing — `social/src/audio/timing.ts`. Word-level sync is not needed: The

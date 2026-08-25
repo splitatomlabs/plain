@@ -25,12 +25,14 @@ export interface FitResult {
 const CHAR_WIDTH_RATIO = 0.52;
 
 /**
- * Estimates the wrapped-text height for `text` set at `fontSize`, using the
- * same word-wrap simulation as `calcOgFontSize` in `web/src/lib/utils/og.js`.
+ * Estimates how many lines `text` wraps into at `fontSize` within
+ * `maxWidth`, using the same word-wrap simulation as `calcOgFontSize` in
+ * `web/src/lib/utils/og.js`. Exported (additively) so callers that need the
+ * line count itself — not just whether it fits — don't have to duplicate
+ * this simulation (see `wall-timing.ts`'s `computeWallLayout`).
  */
-function estimateHeight(text: string, fontSize: number, maxWidth: number, lineHeightRatio: number): number {
+export function estimateWrappedLineCount(text: string, fontSize: number, maxWidth: number): number {
 	const avgCharWidth = fontSize * CHAR_WIDTH_RATIO;
-	const lineHeightPx = fontSize * lineHeightRatio;
 
 	const words = text.split(/\s+/);
 	let lines = 1;
@@ -46,7 +48,16 @@ function estimateHeight(text: string, fontSize: number, maxWidth: number, lineHe
 		}
 	}
 
-	return lines * lineHeightPx;
+	return lines;
+}
+
+/**
+ * Estimates the wrapped-text height for `text` set at `fontSize`, using the
+ * same word-wrap simulation as `calcOgFontSize` in `web/src/lib/utils/og.js`.
+ */
+function estimateHeight(text: string, fontSize: number, maxWidth: number, lineHeightRatio: number): number {
+	const lineHeightPx = fontSize * lineHeightRatio;
+	return estimateWrappedLineCount(text, fontSize, maxWidth) * lineHeightPx;
 }
 
 /**
