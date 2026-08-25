@@ -20,6 +20,19 @@
  * merely under-reporting mark set passes, while a genuinely drifted one
  * still throws.
  *
+ * F13 (final review, re-review of F09): the F09 repair was UNBOUNDED — it
+ * closed ANY collapsed final mark to the probed duration, and Polly
+ * collapses the final mark on every real result, so the repair always
+ * applied and the drift gate downstream could never fire for Polly at all.
+ * Demonstrated with real-shaped marks `[{Duty,0,100},{is,100,200},
+ * {the,200,300},{way.,300,300}]` replayed against the real (~1.2s)
+ * `polly-sample.mp3` fixture — audio far longer than the marks claim — which
+ * passed under F09. This file also proves the F13 fix: the repair now only
+ * closes the collapsed final mark when doing so implies a PLAUSIBLE
+ * final-word length (bounded by `POLLY_FINAL_WORD_MAX_STRETCH_FACTOR`,
+ * `narration.ts`), and throws otherwise — rejecting the reproduction above
+ * while still passing an ordinary under-reporting final mark.
+ *
  * `resolveVoice` (`audio/voices.js`) unconditionally throws while T14 is
  * blocked (`VOICES_ARE_UNSET` — see that module's doc comment), so it's
  * mocked here to return a fixed voice, matching the plan note that this
@@ -51,7 +64,7 @@ vi.mock('../audio/voices.js', () => ({
 	resolveVoice: () => ({ provider: 'polly' as const, voiceId: 'Matthew', label: 'test-voice' })
 }));
 
-import { synthesizeNarration } from '../narration.js';
+import { synthesizeNarration, POLLY_FINAL_WORD_MAX_STRETCH_FACTOR } from '../narration.js';
 
 const fixturesDir = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
@@ -104,6 +117,33 @@ const GENUINELY_DRIFTED_POLLY_MARKS: ProviderMark[] = [
 	{ text: 'way.', startMs: 760, endMs: 3000 }
 ];
 
+// F13's reviewer reproduction, verbatim: a COLLAPSED final mark (the shape
+// `parsePollySpeechMarks` actually emits on every real result — unlike
+// `GENUINELY_DRIFTED_POLLY_MARKS` above, which is non-collapsed and so
+// never reaches the F09 repair at all), with tight, plausible per-word
+// spacing (100ms each). Under F09 (unbounded repair) this passed, silently
+// stretching "way." from a claimed 0ms-long final word to whatever the
+// probed file duration happened to be — the fixture is roughly 4x longer
+// than these marks claim. F13 must reject it instead.
+const COLLAPSED_REAL_SHAPED_REPRODUCTION_MARKS: ProviderMark[] = [
+	{ text: 'Duty', startMs: 0, endMs: 100 },
+	{ text: 'is', startMs: 100, endMs: 200 },
+	{ text: 'the', startMs: 200, endMs: 300 },
+	{ text: 'way.', startMs: 300, endMs: 300 }
+];
+
+// Boundary mark sets for F13's plausibility bound, built in `beforeAll`
+// against the fixture's real (probed) duration. Both use the COLLAPSED
+// shape, so the F09 repair's bound check applies. The three "other" marks
+// fix `longestOtherMarkMs` at 200ms (the "the" mark), so
+// `maxPlausibleFinalMs = POLLY_FINAL_WORD_MAX_STRETCH_FACTOR * 200 +
+// NARRATION_DRIFT_TOLERANCE_MS`. The final mark's `startMs` is then chosen
+// so the IMPLIED final-word duration (`audioDurationMs - startMs`) lands
+// exactly at that bound (must pass — after repair the last line ends
+// exactly at the probed duration, zero drift) or 1ms past it (must throw).
+let AT_STRETCH_BOUND_MARKS: ProviderMark[];
+let OVER_STRETCH_BOUND_MARKS: ProviderMark[];
+
 // Boundary mark sets, built in `beforeAll` against the fixture's real
 // (probed) duration: one whose drift is exactly `NARRATION_DRIFT_TOLERANCE_MS`
 // (must pass — the gate only rejects drift strictly GREATER than tolerance)
@@ -145,6 +185,37 @@ beforeAll(async () => {
 			text: 'way.',
 			startMs: 760,
 			endMs: FIXTURE_AUDIO_DURATION_MS - NARRATION_DRIFT_TOLERANCE_MS - 1
+		}
+	];
+
+	// F13's plausibility bound, at and just past its edge. `longestOtherMarkMs`
+	// is fixed at 200ms via the "the" mark (0-20ms and 20-40ms for "Duty"/"is"
+	// keep them well short of that, so they can't become the longest). The
+	// final ("way.") mark is COLLAPSED (`endMs === startMs`) so the F09
+	// repair's bound check applies; its `startMs` is chosen so the implied
+	// final-word duration lands exactly on `maxPlausibleFinalMs` (passes) or
+	// 1ms past it (throws), against the fixture's real probed duration.
+	const longestOtherMarkMs = 200;
+	const maxPlausibleFinalMs =
+		POLLY_FINAL_WORD_MAX_STRETCH_FACTOR * longestOtherMarkMs + NARRATION_DRIFT_TOLERANCE_MS;
+	AT_STRETCH_BOUND_MARKS = [
+		{ text: 'Duty', startMs: 0, endMs: 20 },
+		{ text: 'is', startMs: 20, endMs: 40 },
+		{ text: 'the', startMs: 40, endMs: 40 + longestOtherMarkMs },
+		{
+			text: 'way.',
+			startMs: FIXTURE_AUDIO_DURATION_MS - maxPlausibleFinalMs,
+			endMs: FIXTURE_AUDIO_DURATION_MS - maxPlausibleFinalMs
+		}
+	];
+	OVER_STRETCH_BOUND_MARKS = [
+		{ text: 'Duty', startMs: 0, endMs: 20 },
+		{ text: 'is', startMs: 20, endMs: 40 },
+		{ text: 'the', startMs: 40, endMs: 40 + longestOtherMarkMs },
+		{
+			text: 'way.',
+			startMs: FIXTURE_AUDIO_DURATION_MS - maxPlausibleFinalMs - 1,
+			endMs: FIXTURE_AUDIO_DURATION_MS - maxPlausibleFinalMs - 1
 		}
 	];
 });
@@ -227,6 +298,54 @@ describe('synthesizeNarration — the drift gate is checked against the real aud
 
 		await expect(synthesizeNarration(SAMPLE_LINES, 'epictetus', provider, {}, outPath)).rejects.toThrow(
 			/narration drift exceeds tolerance/i
+		);
+	});
+
+	it('F13: rejects the reviewer\'s reproduction — collapsed real-shaped marks against a real fixture whose audio is far longer than the marks claim', async () => {
+		const dir = await makeTempDir();
+		const outPath = path.join(dir, 'narration.mp3');
+		const provider = fakeProvider(COLLAPSED_REAL_SHAPED_REPRODUCTION_MARKS);
+
+		// Sanity: this IS the collapsed shape (`endMs === startMs` on the
+		// final mark) `parsePollySpeechMarks` actually emits — unlike
+		// `GENUINELY_DRIFTED_POLLY_MARKS` above — so under F09 (unbounded
+		// repair) this would have silently PASSED, closing "way." to the
+		// fixture's real duration regardless of how implausible that is.
+		const last =
+			COLLAPSED_REAL_SHAPED_REPRODUCTION_MARKS[COLLAPSED_REAL_SHAPED_REPRODUCTION_MARKS.length - 1];
+		expect(last.endMs).toBe(last.startMs);
+		expect(FIXTURE_AUDIO_DURATION_MS - last.startMs).toBeGreaterThan(
+			POLLY_FINAL_WORD_MAX_STRETCH_FACTOR * 100 + NARRATION_DRIFT_TOLERANCE_MS
+		);
+
+		await expect(synthesizeNarration(SAMPLE_LINES, 'epictetus', provider, {}, outPath)).rejects.toThrow(
+			/refusing to repair a collapsed polly final mark/i
+		);
+	});
+
+	it('F13: boundary — implied final-word duration exactly at the plausibility bound PASSES', async () => {
+		const dir = await makeTempDir();
+		const outPath = path.join(dir, 'narration.mp3');
+		const provider = fakeProvider(AT_STRETCH_BOUND_MARKS);
+
+		const last = AT_STRETCH_BOUND_MARKS[AT_STRETCH_BOUND_MARKS.length - 1];
+		expect(last.endMs).toBe(last.startMs); // still the collapsed shape
+
+		const result = await synthesizeNarration(SAMPLE_LINES, 'epictetus', provider, {}, outPath);
+		// Repaired: the last line ends at the probed file duration exactly.
+		expect(result.timings[0].endSeconds * 1000).toBe(FIXTURE_AUDIO_DURATION_MS);
+	});
+
+	it('F13: boundary — implied final-word duration 1ms past the plausibility bound THROWS', async () => {
+		const dir = await makeTempDir();
+		const outPath = path.join(dir, 'narration.mp3');
+		const provider = fakeProvider(OVER_STRETCH_BOUND_MARKS);
+
+		const last = OVER_STRETCH_BOUND_MARKS[OVER_STRETCH_BOUND_MARKS.length - 1];
+		expect(last.endMs).toBe(last.startMs); // still the collapsed shape
+
+		await expect(synthesizeNarration(SAMPLE_LINES, 'epictetus', provider, {}, outPath)).rejects.toThrow(
+			/refusing to repair a collapsed polly final mark/i
 		);
 	});
 

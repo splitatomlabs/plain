@@ -176,7 +176,7 @@ looks like Plain.
   in `cli.test.ts`'s dry-run tests.
 - [x] F11: (re-review R3) `loadExclusions`'s two throw paths are untested — they are the only thing between a
   truncated or hand-edited artifact and a silently ungated schedule.
-- [~] F13: (final review R5) The F09 Polly repair is UNBOUNDED, so the drift gate still cannot fire. Polly collapses
+- [x] F13: (final review R5) The F09 Polly repair is UNBOUNDED, so the drift gate still cannot fire. Polly collapses
   the final mark on every real result, so the repair always applies and always rewrites the last line's end to the
   probed duration — demonstrated by passing marks claiming 300ms against a 1254ms file. Bound the stretch to a
   plausible final word and throw otherwise, and test with the mark SHAPE `parsePollySpeechMarks` actually emits.
