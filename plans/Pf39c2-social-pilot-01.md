@@ -842,8 +842,37 @@ daily job makes no LLM call at post time.
   `DEFAULT_FORMAT_WEIGHTS` acceptance tests plus five read-through-format-derivation/fallback/override tests).
   Regenerated `content/social/pilot-schedule-w01.json` and `-w02.json` with the fixed defaults (left in place,
   uncommitted, per this task's original instruction).
-- [ ] T13: Write schedule tests — determinism, no cross-week repeats, weighting honoured, and the read-through
+- [x] T13: Write schedule tests — determinism, no cross-week repeats, weighting honoured, and the read-through
   counter advancing strictly sequentially across weeks without skipping or repeating. Acceptance: green.
+  **Notes:** T12's existing 30 tests already proved the letter of all four properties (same-seed byte-identity,
+  week1-vs-week2 exclusion, Objection-cap/zero-weight directional checks, sequential read-through within/across two
+  weeks plus an exhaustion-throws test) but only shallowly per T12's own follow-up note. Added 17 tests to
+  `scripts/lib/__tests__/schedule.test.ts` (30 -> 47) going deeper on each: **determinism** — same seed with
+  different weights differs, same seed with different prior-week exclusion set differs, a recursive key-scan plus
+  ISO-8601 substring check proving no timestamp field can leak into the serialized week (byte-identity would
+  otherwise silently break), and week 3 regenerated twice from independent fresh disk reads (via `loadPriorWeeks`)
+  of weeks 1-2 already written to a temp dir, byte-identical; **no cross-week repeats** — a full 4-week
+  disk-persisted chain (mirroring `generate-schedule.ts`'s own `loadPriorWeeks` -> `generateWeek` -> write loop) with
+  the union of all 56 slots asserted duplicate-free, week 2 generated from a state object read fresh off disk (not
+  the in-memory week-1 value) to prove exclusion is genuinely disk-backed, and an explicit week-1-card-absent-from-
+  week-4 check; **weighting honoured** — an all-Wall weighting (`{wall:1,question:0,objection:0}`) yielding only
+  Wall in every non-read-through slot across 5 seeds, a zero-weight check for both Question and Objection (not just
+  Objection) across 5 seeds, the Objection cap re-checked across 10 seeds at an extreme weight (100000), and two
+  real distributional tests aggregating the weighted slot alone (excluding the read-through slot's own
+  fallback-driven Wall skew, a documented separate mechanism) over 40 independent non-overlapping weeks/seeds each:
+  a 1:1 Wall:Question weighting measured within 40-60% (expected 50%), and a 1:3 Wall:Question weighting measured
+  within 65-85% Question (expected 75%); **read-through sequencing** — a corpus-fact pin that Enchiridion has 70
+  cards (not the plan's stated 72), an independent `trueReadingOrder` helper built from each card's own
+  `chapter_slug`/`card_number` fields (grouped by chapter first-appearance, sorted by card_number within chapter) —
+  deliberately NOT a string sort on `id` — confirmed to match the corpus's actual load order, then a 4-week
+  disk-persisted chain asserting the combined 28 read-through cards equal `trueReadingOrder`'s first 28 entries
+  exactly (no gap, no repeat), each week is a contiguous 7-card block of that same order, exactly one read-through
+  slot per day holds for all 28 days, and the printed "Card N of 70" counters form exactly `1..28`; plus an
+  end-of-book boundary pair — a week landing exactly on cards 64-70 (index 63) succeeds cleanly with counters
+  `[64..70]`, and starting one card later throws the existing `/complete|exhausted/i` error rather than skipping,
+  repeating, or crashing differently. No existing test was weakened, loosened, or deleted. All seeds fixed (no
+  probabilistic/flaky assertions); no network or API key required. `npx vitest run scripts/lib/__tests__/schedule.test.ts`
+  — 47/47 green. Full suite `npx vitest run` — 641/641 green (624 baseline + 17 new).
 - [ ] T14: Add the weekly review step — before generating week N+1, read week N's retention data and choose the
   format weighting and hook changes deliberately. Acceptance: a written, dated note per week beside the schedule file.
 

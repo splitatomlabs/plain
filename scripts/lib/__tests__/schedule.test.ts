@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { loadCorpus, rankWall, questionGate, objectionGate, wallAuthorWeights } from "../premises.js";
@@ -9,6 +9,7 @@ import {
   loadPriorWeeks,
   DEFAULT_FORMAT_WEIGHTS,
   type FormatPools,
+  type FormatWeights,
   type WeekSchedule,
   type ScheduleFormat,
 } from "../schedule.js";
@@ -555,5 +556,544 @@ describe("DEFAULT_FORMAT_WEIGHTS", () => {
     // (`wallAuthorWeights`), not a change in the read-through's own output.
     const { epictetusShare } = aggregateDefaultWeeks(20);
     expect(epictetusShare).toBeLessThan(0.7);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T13: thorough coverage of the four acceptance properties.
+//
+// T12 already proves the LETTER of "byte-identical regeneration", "no
+// cross-week reuse", "weighting honoured" (directionally) and "sequential
+// read-through" (within/across two weeks, exhaustion throws). This block
+// goes further per T13's own scope: multi-seed/multi-weight determinism
+// divergence, disk-backed multi-week chains (4 weeks, the pilot's full
+// length), statistical weighting checks with a tolerance, and independent
+// verification of the read-through's ordering against the corpus's own
+// chapter_slug/card_number fields rather than a string sort on card id.
+// ---------------------------------------------------------------------------
+
+describe("T13: determinism (extended)", () => {
+  it("produces different output for the same seed when weights differ", () => {
+    const a = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+      weights: { wall: 7, question: 6, objection: 1 },
+    });
+    const b = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+      weights: { wall: 1, question: 1, objection: 1 },
+    });
+    expect(JSON.stringify(a)).not.toBe(JSON.stringify(b));
+  });
+
+  it("produces different output for the same seed when prior-week history differs", () => {
+    // Exclude a handful of real Wall-pool card ids (NOT from the read-through
+    // book, so the read-through slot's own fixed sequence is untouched) so
+    // only the weighted-slot pools differ between the two runs.
+    const excluded = new Set(gatePools.wall.slice(0, 5).map((e) => e.card_id));
+    const a = generateWeek({
+      weekNumber: 2,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+    });
+    const b = generateWeek({
+      weekNumber: 2,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: excluded,
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: 0,
+    });
+    expect(JSON.stringify(a)).not.toBe(JSON.stringify(b));
+  });
+
+  it("contains no timestamp-shaped field anywhere in the serialized week (a generation time would break byte-identity)", () => {
+    const week = makeWeek(1, 42);
+    const suspiciousKeyPattern = /time(?!_seconds)|timestamp|generated_at|created_at|updated_at|date/i;
+
+    function walk(value: unknown, path: string): void {
+      if (value === null || typeof value !== "object") return;
+      for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
+        expect(suspiciousKeyPattern.test(key)).toBe(false);
+        walk(v, `${path}.${key}`);
+      }
+    }
+    walk(week, "week");
+
+    // Belt-and-braces: no ISO-8601 timestamp substring anywhere in the JSON
+    // (would indicate a Date got serialized into a string field).
+    const serialized = JSON.stringify(week);
+    expect(serialized).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+  });
+
+  describe("across a disk-persisted multi-week chain", () => {
+    let tempDir: string;
+
+    beforeEach(async () => {
+      tempDir = await mkdtemp(path.join(tmpdir(), "schedule-t13-determinism-"));
+    });
+
+    afterEach(async () => {
+      await rm(tempDir, { recursive: true, force: true });
+    });
+
+    async function writeWeek(week: number, seed: number): Promise<WeekSchedule> {
+      const { usedCardIds, readThroughConsumed } = await loadPriorWeeks(tempDir, week);
+      const schedule = generateWeek({
+        weekNumber: week,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: usedCardIds,
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: readThroughConsumed,
+      });
+      await writeFile(
+        path.join(tempDir, `pilot-schedule-w${String(week).padStart(2, "0")}.json`),
+        JSON.stringify(schedule, null, 2) + "\n",
+        "utf-8",
+      );
+      return schedule;
+    }
+
+    it("regenerating week 3 twice, with weeks 1-2 already on disk, is byte-identical", async () => {
+      await writeWeek(1, 42);
+      await writeWeek(2, 42);
+
+      // Generate week 3 twice from independent fresh reads of the same
+      // on-disk prior weeks — do NOT persist either result, so the second
+      // read is unaffected by the first.
+      const { usedCardIds: used1, readThroughConsumed: rt1 } = await loadPriorWeeks(tempDir, 3);
+      const week3a = generateWeek({
+        weekNumber: 3,
+        seed: 42,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: used1,
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: rt1,
+      });
+      const { usedCardIds: used2, readThroughConsumed: rt2 } = await loadPriorWeeks(tempDir, 3);
+      const week3b = generateWeek({
+        weekNumber: 3,
+        seed: 42,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: used2,
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: rt2,
+      });
+
+      expect(JSON.stringify(week3a)).toBe(JSON.stringify(week3b));
+    });
+  });
+});
+
+describe("T13: no cross-week repeats (extended, disk-backed, 4-week chain)", () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(path.join(tmpdir(), "schedule-t13-no-repeat-"));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  async function generateChain(n: number, seed: number): Promise<WeekSchedule[]> {
+    const weeks: WeekSchedule[] = [];
+    for (let w = 1; w <= n; w++) {
+      // Loaded fresh from disk each iteration (not carried over in memory)
+      // — this is the same contract `scripts/generate-schedule.ts` relies on.
+      const { usedCardIds, readThroughConsumed } = await loadPriorWeeks(tempDir, w);
+      const schedule = generateWeek({
+        weekNumber: w,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: usedCardIds,
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: readThroughConsumed,
+      });
+      await writeFile(
+        path.join(tempDir, `pilot-schedule-w${String(w).padStart(2, "0")}.json`),
+        JSON.stringify(schedule, null, 2) + "\n",
+        "utf-8",
+      );
+      weeks.push(schedule);
+    }
+    return weeks;
+  }
+
+  it("has no duplicate card id across the union of 4 consecutive weeks (56 slots, the pilot's full length)", async () => {
+    const weeks = await generateChain(4, 42);
+    const allIds = weeks.flatMap((w) => w.slots.map((s) => s.card_id));
+    expect(allIds).toHaveLength(56);
+    expect(new Set(allIds).size).toBe(56);
+  });
+
+  it("excludes week 2's cards using state read from a fresh disk load of week 1 (not in-memory carryover)", async () => {
+    const week1 = await generateChain(1, 42).then((weeks) => weeks[0]);
+
+    // Simulate a completely separate process invocation: nothing from
+    // `week1` above is passed directly into the next call — only what
+    // `loadPriorWeeks` reads back off disk.
+    const { usedCardIds, readThroughConsumed } = await loadPriorWeeks(tempDir, 2);
+    const week2 = generateWeek({
+      weekNumber: 2,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: usedCardIds,
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: readThroughConsumed,
+    });
+
+    const week1Ids = new Set(week1.slots.map((s) => s.card_id));
+    for (const slot of week2.slots) {
+      expect(week1Ids.has(slot.card_id)).toBe(false);
+    }
+  });
+
+  it("still excludes a week-1 card from week 4", async () => {
+    const weeks = await generateChain(4, 42);
+    const week1Ids = new Set(weeks[0].slots.map((s) => s.card_id));
+    const week4Ids = weeks[3].slots.map((s) => s.card_id);
+    for (const id of week4Ids) {
+      expect(week1Ids.has(id)).toBe(false);
+    }
+    // And, concretely, a specific week-1 card is not merely "some card" but
+    // is genuinely absent — pin one by value.
+    const [pinnedCard] = weeks[0].slots;
+    expect(week4Ids).not.toContain(pinnedCard.card_id);
+  });
+});
+
+describe("T13: weighting honoured (statistical, with tolerance)", () => {
+  it("an all-Wall weighting yields only Wall in the weighted (non-read-through) slot, across several seeds", () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 1, question: 0, objection: 0 },
+      });
+      for (const slot of week.slots.filter((s) => !s.read_through)) {
+        expect(slot.content.format).toBe("wall");
+      }
+    }
+  });
+
+  it("a zero-weight format never appears in the weighted (non-read-through) slot, for both Question and Objection", () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const weekNoQuestion = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 5, question: 0, objection: 0 },
+      });
+      for (const slot of weekNoQuestion.slots.filter((s) => !s.read_through)) {
+        expect(slot.content.format).not.toBe("question");
+      }
+
+      const weekNoObjection = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 5, question: 5, objection: 0 },
+      });
+      for (const slot of weekNoObjection.slots.filter((s) => !s.read_through)) {
+        expect(slot.content.format).not.toBe("objection");
+      }
+    }
+  });
+
+  it("caps Objection at 1 per week across multiple seeds even at an extreme weight", () => {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights: { wall: 0, question: 0, objection: 100000 },
+        maxObjectionPerWeek: 1,
+      });
+      expect(week.format_counts.objection).toBeLessThanOrEqual(1);
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // A genuine distributional check: aggregate the WEIGHTED slot's format
+  // across many independent, non-overlapping weeks (fixed seeds, so this is
+  // deterministic and never flaky) and confirm the realized proportions
+  // track the requested weight ratio within a tolerance appropriate to the
+  // sample size. Restricted to slot 2 (the weighted slot) because slot 1's
+  // format can additionally cascade to Wall when its sequential card can't
+  // render the drawn candidate (`resolveReadThrough`) — a real and
+  // documented behaviour, but a different mechanism than "weighting", so
+  // mixing it in here would understate how closely the weighted slot itself
+  // tracks the requested ratio.
+  // -------------------------------------------------------------------------
+  function aggregateWeightedSlotCounts(weights: FormatWeights, n: number): Record<ScheduleFormat, number> {
+    const totals: Record<ScheduleFormat, number> = { wall: 0, question: 0, objection: 0 };
+    for (let seed = 1; seed <= n; seed++) {
+      const week = generateWeek({
+        weekNumber: 1,
+        seed,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: 0,
+        weights,
+      });
+      for (const slot of week.slots.filter((s) => !s.read_through)) {
+        totals[slot.content.format] += 1;
+      }
+    }
+    return totals;
+  }
+
+  it("tracks a 1:1 Wall:Question weighting within tolerance over 40 independent weeks (Objection weighted to 0)", () => {
+    const totals = aggregateWeightedSlotCounts({ wall: 1, question: 1, objection: 0 }, 40);
+    const total = totals.wall + totals.question + totals.objection;
+    expect(total).toBe(40 * 7); // one weighted slot per day, 7 days per week
+    expect(totals.objection).toBe(0);
+    const wallShare = totals.wall / total;
+    // Expected 0.5; over 280 draws a 10-point tolerance comfortably covers
+    // sampling noise from a fixed, non-cherry-picked seed range while still
+    // proving the weighting moved the distribution, not just "some of each".
+    expect(wallShare).toBeGreaterThan(0.4);
+    expect(wallShare).toBeLessThan(0.6);
+  });
+
+  it("tracks a 1:3 Wall:Question weighting within tolerance over 40 independent weeks (Question favoured)", () => {
+    const totals = aggregateWeightedSlotCounts({ wall: 1, question: 3, objection: 0 }, 40);
+    const total = totals.wall + totals.question + totals.objection;
+    expect(totals.objection).toBe(0);
+    const questionShare = totals.question / total;
+    // Expected 0.75.
+    expect(questionShare).toBeGreaterThan(0.65);
+    expect(questionShare).toBeLessThan(0.85);
+  });
+});
+
+describe("T13: read-through sequencing (strict, multi-week, order-verified)", () => {
+  const enchiridionCards = cards.filter((c) => c.book_slug === "enchiridion");
+
+  it("Enchiridion has 70 cards — grounding the pilot's own stated numbers (4 weeks / 28 cards does not exhaust it)", () => {
+    expect(enchiridionCards).toHaveLength(70);
+  });
+
+  /**
+   * Reconstruct the book's "true" reading order directly from each card's
+   * own `chapter_slug` / `card_number` fields — grouping chapters by first
+   * appearance and sorting within a chapter by `card_number` — rather than
+   * by sorting card ids as strings. This is independent of the id format
+   * (which happens to already encode chapter/card number) and would catch a
+   * regression where the corpus's file-read order stopped matching the
+   * book's own semantic chapter/card sequence.
+   */
+  function trueReadingOrder(allCards: Card[], bookSlug: string): Card[] {
+    const bookCards = allCards.filter((c) => c.book_slug === bookSlug);
+    const chapterOrder: string[] = [];
+    const byChapter = new Map<string, Card[]>();
+    for (const c of bookCards) {
+      if (!byChapter.has(c.chapter_slug)) {
+        byChapter.set(c.chapter_slug, []);
+        chapterOrder.push(c.chapter_slug);
+      }
+      byChapter.get(c.chapter_slug)!.push(c);
+    }
+    const ordered: Card[] = [];
+    for (const slug of chapterOrder) {
+      const group = [...byChapter.get(slug)!].sort((a, b) => a.card_number - b.card_number);
+      ordered.push(...group);
+    }
+    return ordered;
+  }
+
+  it("the corpus's own card order for Enchiridion matches its chapter_slug/card_number order (not merely an id string sort)", () => {
+    const expected = trueReadingOrder(cards, "enchiridion");
+    expect(enchiridionCards.map((c) => c.id)).toEqual(expected.map((c) => c.id));
+  });
+
+  describe("across a disk-persisted 4-week chain", () => {
+    let tempDir: string;
+
+    beforeEach(async () => {
+      tempDir = await mkdtemp(path.join(tmpdir(), "schedule-t13-readthrough-"));
+    });
+
+    afterEach(async () => {
+      await rm(tempDir, { recursive: true, force: true });
+    });
+
+    it("the read-through card numbers form exactly the contiguous sequence 1..28, one per day, in the book's true reading order", async () => {
+      const trueOrder = trueReadingOrder(cards, "enchiridion");
+      const readThroughSlotsByWeek: (typeof trueOrder)[] = [];
+      const allReadThroughCards: Card[] = [];
+
+      for (let w = 1; w <= 4; w++) {
+        const { usedCardIds, readThroughConsumed } = await loadPriorWeeks(tempDir, w);
+        const schedule = generateWeek({
+          weekNumber: w,
+          seed: 42,
+          cards,
+          pools: gatePools,
+          poolSource,
+          priorUsedCardIds: usedCardIds,
+          readThroughBook: "enchiridion",
+          readThroughStartIndex: readThroughConsumed,
+        });
+        await writeFile(
+          path.join(tempDir, `pilot-schedule-w${String(w).padStart(2, "0")}.json`),
+          JSON.stringify(schedule, null, 2) + "\n",
+          "utf-8",
+        );
+
+        // Exactly one slot per day carries the read-through, for every day
+        // of every week in the chain.
+        for (let day = 1; day <= 7; day++) {
+          const daySlots = schedule.slots.filter((s) => s.day === day);
+          expect(daySlots.filter((s) => s.read_through)).toHaveLength(1);
+        }
+
+        const weekReadThroughIds = schedule.slots
+          .filter((s) => s.read_through)
+          .sort((a, b) => a.day - b.day)
+          .map((s) => s.card_id);
+        const weekReadThroughCards = weekReadThroughIds.map((id) => cards.find((c) => c.id === id)!);
+        readThroughSlotsByWeek.push(weekReadThroughCards);
+        allReadThroughCards.push(...weekReadThroughCards);
+      }
+
+      // No gap, no repeat: the combined 28-card sequence is EXACTLY the
+      // book's own true reading order's first 28 cards, in that exact order.
+      expect(allReadThroughCards.map((c) => c.id)).toEqual(trueOrder.slice(0, 28).map((c) => c.id));
+      expect(new Set(allReadThroughCards.map((c) => c.id)).size).toBe(28);
+
+      // Each week is a contiguous 7-card block of that same sequence.
+      for (let w = 0; w < 4; w++) {
+        expect(readThroughSlotsByWeek[w].map((c) => c.id)).toEqual(trueOrder.slice(w * 7, w * 7 + 7).map((c) => c.id));
+      }
+
+      // The "Card N of 70" counters printed on-screen are themselves the
+      // contiguous sequence 1..28 with no skip and no repeat.
+      const allCounters = [];
+      for (let w = 1; w <= 4; w++) {
+        const raw = JSON.parse(await readFile(path.join(tempDir, `pilot-schedule-w${String(w).padStart(2, "0")}.json`), "utf-8")) as WeekSchedule;
+        const counters = raw.slots
+          .filter((s) => s.read_through)
+          .sort((a, b) => a.day - b.day)
+          .map((s) => Number(s.read_through_counter!.match(/Card (\d+) of/)![1]));
+        allCounters.push(...counters);
+      }
+      expect(allCounters).toEqual(Array.from({ length: 28 }, (_, i) => i + 1));
+    });
+  });
+
+  it("behaves sanely (throws a clear error, no skip or repeat) rather than crashing when the read-through book runs out mid-generation", () => {
+    // Start one day short of the end (69 cards used, 1 left: index 69, the
+    // 70th and final card) — the week's FIRST read-through slot (day 1)
+    // succeeds on that final card, but day 2 has nothing left.
+    expect(() =>
+      generateWeek({
+        weekNumber: 11,
+        seed: 42,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: enchiridionCards.length - 1,
+      }),
+    ).toThrow(/complete|exhausted/i);
+  });
+
+  it("a week landing exactly on the book's last card (index 63..69 of 70) succeeds with no skip, no repeat, no throw", () => {
+    const startIndex = enchiridionCards.length - 7; // 63 — the week's 7 days exactly consume cards 64..70
+    const week = generateWeek({
+      weekNumber: 10,
+      seed: 42,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "enchiridion",
+      readThroughStartIndex: startIndex,
+    });
+    const readThroughIds = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.card_id);
+    expect(readThroughIds).toEqual(enchiridionCards.slice(startIndex).map((c) => c.id));
+
+    const counters = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => Number(s.read_through_counter!.match(/Card (\d+) of (\d+)/)!.slice(1).map(Number)[0]));
+    expect(counters).toEqual([64, 65, 66, 67, 68, 69, 70]);
+
+    // One card past the end (day 8, i.e. a week starting one card later)
+    // throws sanely rather than skipping/repeating/crashing with something
+    // other than a clear error.
+    expect(() =>
+      generateWeek({
+        weekNumber: 11,
+        seed: 42,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(week.slots.filter((s) => s.read_through).map((s) => s.card_id)),
+        readThroughBook: "enchiridion",
+        readThroughStartIndex: startIndex + 7,
+      }),
+    ).toThrow(/complete|exhausted/i);
   });
 });
