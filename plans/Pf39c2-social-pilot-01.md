@@ -365,12 +365,92 @@ daily job makes no LLM call at post time.
   scripts/lib/__tests__/premises.test.ts` — 184/184 GREEN, untouched. `npx vitest run` (full pipeline suite) — 491
   total (440 baseline + 51 new): 440 passed, 51 failed, confirming zero regression to T01-T05 or any other existing
   consumer.
-- [ ] T07: Implement the three LLM rubrics and parsers. **The Objection's carries the most weight** — no regex
+- [x] T07: Implement the three LLM rubrics and parsers. **The Objection's carries the most weight** — no regex
   separates "a position the viewer might hold" from "a line spoken in a scene". System prompt cached per author,
   reusing the `buildTranslationSystem` pattern in `scripts/lib/prompt.ts`. Acceptance: T06 passes.
+  **Note:** Filled in every T06 stub in `scripts/lib/premises-scoring.ts`. Parsers (`parseWallRubricResponse`/
+  `parseQuestionRubricResponse`/`parseObjectionRubricResponse`) reuse `extractJSON` (./claude.js) unmodified for
+  fence/prose-stripping, then run field-level validation via shared `requireNumber`/`requireString`/`requireEnum`/
+  `optionalString`/`rejectUnknownFields` helpers — every thrown message names the specific field, matching T06's
+  message-specificity tests exactly. **Two field-check orderings were load-bearing, not incidental:** Question checks
+  `verdict` before `reason` (so a Wall-shaped payload, missing `verdict` entirely, always fails on `verdict` rather
+  than on its own present-but-irrelevant `reason`); Objection checks `classification` before `verdict` (so a
+  Question-shaped payload — `{verdict: "answers", reason}` — fails on the missing `classification`, not on
+  `"answers"` also being an invalid Objection verdict, per T06's own explanatory comment on that test). `reason` is
+  optional on the Wall result (per its `WallRubricResult` interface) and required on Question/Objection. Also added
+  `rejectUnknownFields` (not itself asserted by name in any T06 test, but required by the stub's own docstring
+  ("reject... an extra unrecognized field") — verified it doesn't false-positive against any of T06's valid payloads
+  before adding it). `checkFaithfulness` (nominally T09, but T06's tests cover it and T08 needs it to validate every
+  rubric response) is a thin two-field wrapper over T02's own `verbatim(line, source)`: exact substring against
+  EITHER `plain_english` OR `original_excerpt`, case-sensitive, no fuzzy matching — sufficient to reject every T06
+  case (paraphrase, embellishment, wholesale invention, the single-word "life"->"soul" near-miss, and text stitched
+  from two real-but-non-adjacent fragments) because none of those are literal substrings of either field; flagged in
+  the report below as a genuine T07/T09 scope overlap rather than silently absorbed. Length-limit functions are
+  one-line wrappers reusing `LANDING_LINE_MIN_WORDS`/`MAX_WORDS`/`QUESTION_MAX_WORDS` from `premises.ts` and the
+  new (T06) `OBJECTION_MAX_WORDS`/`WALL_ORIGINAL_MIN_WORDS` — no new bounds invented.
+  **Prompt builders** (`build{Wall,Question,Objection}RubricSystem(authorSlug)` +
+  `build{Wall,Question,Objection}RubricUser(...)`), mirroring `buildTranslationSystem`'s structure but keyed on
+  `authorSlug` ALONE (not book+author like the translate phase) since none of the three judgements depend on which
+  book a card came from — a genuine cache-hit improvement over the translate phase's per-book keying, and exactly
+  what the task asked for. Every system prompt is built from module-level string constants concatenated with
+  `AUTHOR_VOICE[authorSlug]` (exported from `./prompt.ts` for reuse — a one-line, behavior-preserving change,
+  confirmed `prompt.test.ts` still 13/13 green) or a per-author `OBJECTION_EXAMPLES` entry, so it is a pure function
+  of `authorSlug`: byte-identical across calls, asserted directly in new tests. `buildWallRubricUser(card)` calls
+  T02's `findLandingLines(card)` (not the single deterministic `selectLandingLine` pick) and lists every qualifying
+  candidate for the model to choose among verbatim — a multiple-choice design deliberately chosen over free
+  generation, since it makes `chosen_landing_line` mechanically checkable against a known-good list rather than
+  merely against the faithfulness substring check; throws if a card somehow has zero candidates (should be
+  unreachable for a real `wallGate` survivor, defensive only). `buildQuestionRubricUser` takes T04's own
+  `QuestionDriftRequest` shape directly, no new type invented. `buildObjectionRubricUser(quotedLine, card)` takes a
+  bare `(string, card)` pair rather than a bespoke `ObjectionCandidate` interface, because **no mechanical Objection
+  gate exists yet** — see the flagged plan gap below — so inventing a gate-result shape now risked not matching
+  whatever T08 (or an unassigned task) actually builds to produce Objection candidates.
+  **The Objection's system prompt — the heaviest, per the plan — carries real corpus examples, not invented ones.**
+  Scanned `content/output` (via `loadCorpus`) for the plan's own mechanical description (quoted span starting
+  "But"/a question word, <=14 words, no proper nouns) and measured **61 raw candidates** (epictetus 23, seneca 35,
+  marcus-aurelius 3) — close to, not identical to, the plan's own "~50 raw" estimate, same "measure it, document the
+  gap" treatment every prior task in this plan gave its own unreproducible estimates. Read the full card context for
+  ~20 of those to hand-classify real discriminators, then built each author's `OBJECTION_EXAMPLES` entry from
+  genuine corpus lines: Epictetus gets one real `viewer_position` accept (`discourses-53-011`, "But why did he bring
+  me into the world under these conditions?") and one real `dramatized_scene` reject (`discourses-64-004`, the
+  gossiping-friend exchange — "But it's not fair," you say. "I told you my neighbor's secrets..."); Marcus Aurelius
+  (only 3 raw candidates) gets one real `viewer_position` accept (`meditations-12-041`, the "only three acts are
+  done" theater metaphor) plus a note that most of his candidates read as private self-reflection rather than staged
+  dialogue; Seneca — per the task's explicit instruction to "LEAD WITH On Anger... whose objections are about the
+  reader's own life" and flag On the Happy Life's doctrinal disputes — gets two real `viewer_position` accepts from
+  On Anger (`on-anger-01-025`, "But some angry people stay in control," you might say; `on-anger-03-081`, "But this
+  person has already hurt me," you say), one real `dramatized_scene` reject (`peace-of-mind-14-004`, Kanus's "Why
+  are you upset?" spoken mid-execution-anecdote to specific friends), and two real `doctrinal_dispute` rejects from
+  On the Happy Life (`happy-life-11-002`/`happy-life-15-001`, both explicitly attributed to "our opponent" arguing
+  the Epicurean position on "the highest good") — chosen specifically because they are grammatically
+  indistinguishable in shape from a good `viewer_position` line, which is the whole reason this rubric needs an LLM
+  rather than a regex. **Flagged plan gap (reported, not silently patched):** the plan's own table names an Objection
+  "mechanical gate" (quoted span starting But/question-word, <=14 words, no proper nouns, ~50 raw survivors) as a
+  prerequisite for this rubric, but no task in T01-T14 is explicitly scoped to build it in `premises.ts` — T01 built
+  only `quotedSpeech` as a stated "Objection precursor" (>=2 `"` in plain_english, 308 cards), a much looser gate than
+  the one the rubric actually needs. This task's own scope ("prompt construction + response parsing + validation
+  ONLY... T08 owns batch orchestration") means it was correctly out of bounds to build that gate here; the ad hoc
+  scan above was written as a disposable one-off script (not committed, not exported) purely to source real prompt
+  examples, and is NOT the mechanical gate itself. **T08 (or a new task) will need to build the actual Objection
+  mechanical gate in `premises.ts` before it has anything to submit to `buildObjectionRubricUser`** — recommend
+  inserting that as an explicit T08 sub-step or a new T07.5, rather than assuming T08's "chunk, submit, poll, stream,
+  merge" scope silently includes writing a brand-new gate. Added 15 new tests (on top of T06's 51, now 66 total in
+  this file): per-rubric system-prompt determinism (same-author byte-identical) and cross-author divergence (3
+  distinct authors x 3 rubrics = 6 tests), content assertions that each system prompt names its own required JSON
+  fields and scoping language, and — the heaviest coverage — Objection-specific tests pinning all three
+  classification labels present per author and the exact real corpus example strings quoted above, so the discriminating
+  examples can't silently drift or be deleted in a future edit without a test failing. `npx vitest run
+  scripts/lib/__tests__/premises-scoring.test.ts` — 66/66 green (51 T06 baseline + 15 new). `npx vitest run` (full
+  pipeline suite) — 506/506 green (491 baseline + 15 new), confirming no regression to T01-T06 or any other consumer.
 - [ ] T08: Implement batch orchestration — chunk, submit, poll, stream, merge. Only T01/T02 survivors are sent. Log
   to `content/pipeline/social/premises.log` via the existing `logger`. Acceptance: `--dry-run` prints request counts
   with no API key set.
+  **Follow-up flagged by T07:** no prior task (T01-T07) built the Objection's own MECHANICAL gate (quoted span
+  starting "But"/a question word, <=14 words, no proper nouns — the plan's table names this, ~50 raw survivors) in
+  `premises.ts`; only the much looser `quotedSpeech` precursor (>=2 `"` in `plain_english`, 308 cards) exists. T08
+  needs real Objection candidates to submit against `buildObjectionRubricUser` — build that gate (in `premises.ts`,
+  alongside `wallGate`/`questionGate`) as an explicit first step of this task, or split it into its own task, before
+  writing the batch-submission code around it.
 - [ ] T09: Implement the faithfulness check — reject any output whose on-screen text is not a faithful subset of its
   source card. Acceptance: a synthetic hallucinated response is rejected in tests.
 - [ ] T10: Build `scripts/score-premises.ts` with `--format <wall|question|objection|still|all>`, `--dry-run`,

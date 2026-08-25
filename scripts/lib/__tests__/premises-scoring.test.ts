@@ -13,8 +13,17 @@ import {
   OBJECTION_MAX_WORDS,
   WALL_ORIGINAL_MIN_WORDS,
   wordCount,
+  buildWallRubricSystem,
+  buildWallRubricUser,
+  buildQuestionRubricSystem,
+  buildQuestionRubricUser,
+  buildObjectionRubricSystem,
+  buildObjectionRubricUser,
 } from "../premises-scoring.js";
 import type { Card } from "../types.js";
+import type { AuthorSlug } from "../constants.js";
+
+const AUTHOR_SLUGS: AuthorSlug[] = ["epictetus", "marcus-aurelius", "seneca"];
 
 function makeCard(overrides: Partial<Card> = {}): Card {
   return {
@@ -398,5 +407,123 @@ describe("length limits are per-format, not global", () => {
     const text150 = words(150);
     expect(withinWallOriginalLimit(wordCount(text150))).toBe(true);
     expect(withinQuestionLimit(text150)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. Prompt builders (T07)
+//    Each system prompt must be a pure function of authorSlug alone — static
+//    and byte-identical across calls for the same author (so the Anthropic
+//    prompt cache actually hits) — and must differ meaningfully across
+//    authors. The Objection's system prompt carries the heaviest weight per
+//    the plan, so it must contain real, discriminating examples of all
+//    three classifications.
+// ---------------------------------------------------------------------------
+
+describe("buildWallRubricSystem", () => {
+  it("is static and stable across calls for the same author", () => {
+    expect(buildWallRubricSystem("seneca")).toBe(buildWallRubricSystem("seneca"));
+  });
+
+  it("differs across authors", () => {
+    const prompts = new Set(AUTHOR_SLUGS.map((slug) => buildWallRubricSystem(slug)));
+    expect(prompts.size).toBe(AUTHOR_SLUGS.length);
+  });
+
+  it("names both rubric scores and explains impenetrability is about visual texture, not idea difficulty", () => {
+    const system = buildWallRubricSystem("marcus-aurelius");
+    expect(system).toMatch(/impenetrability_score/);
+    expect(system).toMatch(/landing_line_score/);
+    expect(system).toMatch(/not about how hard the ideas/i);
+  });
+});
+
+describe("buildWallRubricUser", () => {
+  it("embeds the original excerpt and lists qualifying landing line candidates verbatim", () => {
+    const card = makeCard();
+    const user = buildWallRubricUser(card);
+    expect(user).toContain(card.original_excerpt);
+    expect(user).toContain("The quality of your thoughts shapes the quality of your life.");
+  });
+
+  it("throws when a card has no qualifying landing line candidates", () => {
+    const card = makeCard({ plain_english: "But this, that." });
+    expect(() => buildWallRubricUser(card)).toThrow(/landing line/i);
+  });
+});
+
+describe("buildQuestionRubricSystem", () => {
+  it("is static and stable across calls for the same author", () => {
+    expect(buildQuestionRubricSystem("epictetus")).toBe(buildQuestionRubricSystem("epictetus"));
+  });
+
+  it("differs across authors", () => {
+    const prompts = new Set(AUTHOR_SLUGS.map((slug) => buildQuestionRubricSystem(slug)));
+    expect(prompts.size).toBe(AUTHOR_SLUGS.length);
+  });
+
+  it("scopes the judgement to topic drift only, not the deterministic layers' concerns", () => {
+    const system = buildQuestionRubricSystem("seneca");
+    expect(system).toMatch(/topic drift/i);
+    expect(system).toMatch(/already (been )?(passed|checked)/i);
+  });
+});
+
+describe("buildQuestionRubricUser", () => {
+  it("embeds the question and candidate answer verbatim", () => {
+    const request = {
+      card_id: "discourses-49-010",
+      question: "Was your desire in any danger?",
+      answer: "No, it wasn't.",
+    };
+    const user = buildQuestionRubricUser(request);
+    expect(user).toContain(request.question);
+    expect(user).toContain(request.answer);
+  });
+});
+
+describe("buildObjectionRubricSystem", () => {
+  it("is static and stable across calls for the same author", () => {
+    expect(buildObjectionRubricSystem("seneca")).toBe(buildObjectionRubricSystem("seneca"));
+  });
+
+  it("differs across authors", () => {
+    const prompts = new Set(AUTHOR_SLUGS.map((slug) => buildObjectionRubricSystem(slug)));
+    expect(prompts.size).toBe(AUTHOR_SLUGS.length);
+  });
+
+  it("names all three classifications", () => {
+    for (const slug of AUTHOR_SLUGS) {
+      const system = buildObjectionRubricSystem(slug);
+      expect(system).toContain("viewer_position");
+      expect(system).toContain("dramatized_scene");
+      expect(system).toContain("doctrinal_dispute");
+    }
+  });
+
+  it("Seneca's prompt leads with On Anger and flags On the Happy Life's doctrinal disputes", () => {
+    const system = buildObjectionRubricSystem("seneca");
+    expect(system).toMatch(/On Anger/);
+    expect(system).toMatch(/our opponent/);
+  });
+
+  it("carries a real corpus discriminating example for each author", () => {
+    expect(buildObjectionRubricSystem("epictetus")).toContain(
+      "But why did he bring me into the world under these conditions?",
+    );
+    expect(buildObjectionRubricSystem("marcus-aurelius")).toContain(
+      "But the play isn't finished yet — only three acts are done!",
+    );
+    expect(buildObjectionRubricSystem("seneca")).toContain("But some angry people stay in control");
+  });
+});
+
+describe("buildObjectionRubricUser", () => {
+  it("embeds the quoted line and the full card text for context", () => {
+    const card = makeCard();
+    const quotedLine = "But some angry people stay in control,";
+    const user = buildObjectionRubricUser(quotedLine, card);
+    expect(user).toContain(quotedLine);
+    expect(user).toContain(card.plain_english);
   });
 });
