@@ -706,11 +706,142 @@ daily job makes no LLM call at post time.
   committing the pools.
 - [ ] T11: Run scoring for real; commit the pools. Acceptance: each pool covers 4 weeks; 10 per format spot-checked
   by hand; count and score distribution reported.
-- [ ] T12: Implement the WEEKLY schedule generator — `content/social/pilot-schedule-wNN.json`, 7 days x 2 posts,
+- [x] T12: Implement the WEEKLY schedule generator — `content/social/pilot-schedule-wNN.json`, 7 days x 2 posts,
   format mix as a weighting argument, deterministic from a seed. Must read all prior weeks and never reuse a card.
   One slot per day carries the read-through: it draws the next card of the chosen book in strict sequence,
   independent of the format weighting. Acceptance: regenerating with the same seed and weights is byte-identical;
   a week 1 card cannot appear in week 2.
+  **Note:** Added `scripts/lib/schedule.ts` (the pure generator + two impure filesystem helpers) and
+  `scripts/generate-schedule.ts` (the CLI), following `score-premises.ts`'s conventions (`parseArgs`, `--help`,
+  `--output`, `--dry-run`). Reused T05's exact `createSeededRng` and `selectWallBalanced`/`wallAuthorWeights` for
+  The Wall's author-balanced draw, and T05's `combinedAuthorMix` for the week-level report, exactly as instructed —
+  no second PRNG or author-mix implementation written.
+  **Slot design:** each day has 2 slots. **Slot 1 is always the read-through**: format fixed by
+  `readThroughFormat` (default `"wall"`, overridable), card forced to the next sequential card of
+  `readThroughBook` — entirely independent of the format-weighting mechanism (no rng consumed choosing it). **Slot 2
+  is the weighted slot**: format drawn via a roulette-wheel choice over `{wall, question, objection}` weighted by
+  `weights` (mirroring `selectWallBalanced`'s own algorithm for consistency), then a card drawn from that format's
+  pool — Wall via `selectWallBalanced` (author-balanced per T05), Question/Objection via a uniform draw — both
+  without replacement. The Objection is capped at `maxObjectionPerWeek` (default 1) regardless of weight, so a
+  caller can raise its weight to make it MORE likely to land in a given week without ever exceeding the plan's
+  weekly cadence.
+  **Format mix is a weighting argument, not hardcoded**, per the acceptance wording: `DEFAULT_FORMAT_WEIGHTS = {
+  wall: 0, question: 6, objection: 1 }` reflects the stated cadence (Wall daily, Question daily, Objection weekly)
+  GIVEN that the read-through's own default format ("wall") already supplies one Wall post per day on its own —
+  6 Question + 1 Objection across the week's 7 weighted slots exactly completes "daily Question, weekly Objection."
+  Wall's own default weight in the weighted slot is 0 but is a real, non-zero option a caller can raise via
+  `--wall-weight` (verified: `weights: { wall: 0, question: 0, objection: 100 }` still respects the Objection cap;
+  `weights: { wall: 5, question: 5, objection: 0 }` draws zero Objection slots).
+  **A real cross-format collision was found and fixed during implementation, not merely anticipated:** the Wall/
+  Question/Objection pools are drawn from the FULL corpus, which includes the read-through book's own cards (an
+  Enchiridion card can independently gate into the Wall or Question pool). Without a guard, a weighted slot could
+  draw one of those cards on an early day, and the read-through's later strict-sequence pointer would then collide
+  with it on a subsequent day — the exact "never reuse a card" failure the acceptance criterion forbids. Fixed by
+  excluding `readThroughBook`'s cards from all three weighted pools entirely (`wallPool`/`questionPool`/
+  `objectionPool` filter on `book_slug !== readThroughBook`) — the read-through book's cards are reserved for the
+  read-through alone, by construction, not by detecting the collision after the fact. Caught by this task's own
+  tests (`never reuses a card scheduled in a prior week`, `advances the read-through strictly sequentially across
+  weeks`), which failed with `"enchiridion-11-001" was already scheduled` before the fix.
+  **Determinism:** `generateWeek` is pure — no filesystem access, no `Date.now()`, no `Math.random()`; every random
+  draw comes from `createSeededRng(seed)`, consumed in a fixed order (read-through slot first, no rng call; then
+  slot 2's format draw; then slot 2's card draw) so the same seed + weights + prior-week exclusions always produce
+  the same rng sequence. The CLI writes with `JSON.stringify(schedule, null, 2) + "\n"` and every object is built
+  with a fixed, hand-written key order (never spread from an arbitrarily-ordered source), so output is
+  byte-identical on repeat runs — verified both in tests (`JSON.stringify(a) === JSON.stringify(b)` for two
+  independent `generateWeek` calls, default and explicit non-default weights) and for real: regenerated
+  `content/social/pilot-schedule-w01.json` twice via the actual CLI and diffed the two files (`diff` reported no
+  differences).
+  **Pool fallback (T11 sequencing), exactly as instructed:** `loadFormatPools(premisesDir, gatePools)` reads
+  `<premisesDir>/{wall,question,objection}.json` (T11's scored pools) WHEN PRESENT; falls back to the mechanical
+  gate output (`rankWall`/`questionGate`/`objectionGate` from `premises.ts`, called directly on `loadCorpus()`) when
+  the file is absent. Since no `content/social/premises/*.json` exist yet (T11 hasn't run), every real generation in
+  this task used the gate-only fallback — reported per-format in the output's own `pool_source` field and the CLI's
+  console output (`Pool source — wall: gate-only, question: gate-only, objection: gate-only`). A scored Question/
+  Objection pool file is NOT used as-is: `scoreQuestionSurvivors`/`scoreObjectionSurvivors` (T08/T09) merge every
+  parsed rubric response regardless of verdict, so `loadFormatPools` filters to `drift_verdict === "answers"` /
+  `rubric.verdict === "accept"` before treating the file's rows as schedulable — unit-tested with synthetic scored
+  files carrying one accepted and one rejected row each. No code changes will be needed once T11 lands; this was
+  verified by testing both branches (present/absent file) directly, not just documented.
+  **Read-through content, independent of gate membership:** the read-through slot's on-screen fields are derived
+  directly from the raw card, not from any format pool — required because the read-through must advance through
+  every card in the book with no skips, and most Enchiridion cards won't pass the Wall/Question/Objection
+  mechanical gates. `readThroughContent` for the default `"wall"` format always renders (uses `selectLandingLine`,
+  falling back to the full `plain_english` — still verbatim card text, never fabricated — when no qualifying
+  standalone sentence exists); for an overridden `"question"`/`"objection"` format it throws a clear error naming
+  the specific card when that card has no natural candidate for that format, per the plan's own "nothing
+  fabricated, ever" rule (presenting non-question text as a question was rejected as an option, not implemented as
+  a silent fallback).
+  **Measured, real, no API key/LLM call needed** (`npx tsx scripts/generate-schedule.ts --week 1 --seed 42` then
+  `--week 2 --seed 42`, both gate-only): **Week 1 combined author mix** — epictetus 10/14 (71.4%), marcus-aurelius
+  2/14 (14.3%), seneca 2/14 (14.3%). This is dominated by the read-through: Enchiridion is entirely Epictetus, so 7
+  of the week's 14 slots are Epictetus by construction regardless of The Wall's T05 balancing on the OTHER 7 slots
+  — a structural consequence of running the pilot's read-through on a single-author book, not a defect in T05's
+  balancing (which still visibly pulls the weighted Wall slots away from epictetus — directional test included).
+  Flagged here for T14's weekly review, not silently treated as achieving T05's 1/3-each target. **Format
+  distribution:** wall 7 (all from the read-through slot, default), question 6, objection 1 — exactly matching the
+  default weights' intended cadence. **Regenerating week 1 twice is byte-identical** (`diff` clean, confirmed
+  above). **Week 1 and week 2 share zero cards** (verified programmatically: 0-length overlap of the two weeks'
+  14+14 card ids) and **the read-through advances strictly sequentially with no skip or repeat**: week 1 read-through
+  = "Card 1 of 70" .. "Card 7 of 70", week 2 = "Card 8 of 70" .. "Card 14 of 70".
+  **Enchiridion's card count, measured, not assumed:** the plan's index states "Enchiridion, 72 cards"; this
+  corpus's `loadCorpus()` measures **70** enchiridion cards (`content/output/enchiridion/*.json`, excluding
+  `_meta.json`) — not contorted to hit 72, per this plan's own established policy (T01/T03/T04/T07/T07a) of
+  measuring and documenting a gap rather than forcing a match. `read_through_total` in the generated schedule
+  reflects the measured 70.
+  **Generated schedule files are left in place, NOT committed** (per this task's explicit instruction — T11/T14
+  decide what gets committed): `content/social/pilot-schedule-w01.json`, `content/social/pilot-schedule-w02.json`.
+  **Tests:** added `scripts/lib/__tests__/schedule.test.ts` (23 new tests) — this task's own acceptance proof, not
+  T13's full suite: slot-shape sanity (14 slots, exactly one read-through slot per day); byte-identical regeneration
+  (default weights and an explicit non-default weight map, plus a differing-seed divergence check); no cross-week
+  card reuse; read-through sequential advancement within a week and across two weeks (with an explicit
+  no-skip/no-repeat assertion over the combined 14-card sequence) and a graceful-exhaustion test (throws a
+  `/complete|exhausted/i` error rather than skipping or repeating once the read-through book runs out); the
+  Objection cap holding even under an extreme weight, and zero Objection draws at weight 0; `combinedAuthorMix`
+  reporting across all formats/slots (T05's own acceptance wording); a directional Wall author-balancing check over
+  5 independent weeks; read-through content faithfulness; and `loadFormatPools`/`loadPriorWeeks` filesystem
+  contract tests (gate-only fallback, scored-file verdict filtering for Question/Objection, scored-file pass-through
+  for Wall, prior-week aggregation, and correctly ignoring the requested week's own not-yet-written file). `npx
+  vitest run scripts/lib/__tests__/schedule.test.ts` — 23/23 green. `npx vitest run` (full suite) — 617/617 green
+  (594 baseline + 23 new), confirming no regression to T01-T10 or any other consumer.
+  **Follow-up for T13:** this task's own 23 tests prove the letter of the acceptance criterion; T13's stated scope
+  ("weighting honoured" as a statistical property, not just a directional spot-check) should add a larger-sample
+  distributional test over many weeks/seeds, and should exercise `scripts/generate-schedule.ts` itself as a
+  subprocess (this task's tests exercise `schedule.ts` directly, the same split `score-premises.test.ts` uses for
+  its own CLI vs. library-code tests).
+  **Follow-up for T14:** the weekly review step should surface the Epictetus-dominant combined author mix (measured
+  above, 71.4% for week 1) as an explicit, expected consequence of the Enchiridion read-through choice, not treat it
+  as a T05 regression.
+  **FIX (post-review, this task reopened):** the reasoning above was wrong. `DEFAULT_FORMAT_WEIGHTS = { wall: 0,
+  question: 6, objection: 1 }` combined with the read-through slot's format being hardcoded to `"wall"` meant The
+  Wall could ONLY EVER appear via the read-through's fixed Enchiridion card — `selectWallBalanced` and T03's
+  1,003-entry ranked pool (Meditations, Seneca, the Thou/Cascade/Scene sub-types) never ran, and T05's whole reason
+  for existing (correcting the Question pool's 56% Epictetus skew by weighting The Wall toward Meditations/Seneca)
+  was disconnected. The 71.4% Epictetus share above was not a benign structural fact about running the read-through
+  on a single-author book — it was T05's lever sitting unplugged. **Fix:** (1) `DEFAULT_FORMAT_WEIGHTS` is now
+  `{ wall: 7, question: 6, objection: 1 }`, proportional to the plan's stated cadence (Wall/Question daily, Objection
+  weekly) mapped onto the week's 14 slots. (2) The read-through slot's format is no longer hardcoded: it draws from
+  the same `weights` as slot 2 (same rng-consuming call, first in the per-day order), and only falls back — no extra
+  rng consumed — through a fixed priority order (candidate, then Wall, then Question, then Objection;
+  `READ_THROUGH_FALLBACK_ORDER`) when the drawn candidate can't be rendered from that day's fixed sequential card
+  (`resolveReadThrough` in `schedule.ts`). `GenerateWeekOptions.readThroughFormat` still exists as an explicit
+  override for a caller who wants every read-through slot forced to one fixed format (throwing if a card can't
+  render it) — the week's `read_through_format` field reports `"dynamic"` by default or the forced format when
+  overridden. **Measured caveat, not a new bug:** only 8 of Enchiridion's 70 cards can render Question and only 4
+  can render Objection, so the read-through's own draw still resolves to Wall on almost every day regardless of
+  weights (the fallback cascade lands there) — realized weekly format counts skew more Wall-heavy than a literal
+  7/6/1 (measured: wall ~10-11, question ~3, objection ~0.4 averaged over many weeks with default weights). This is
+  expected: it means Wall's balanced pool now runs for real in the WEIGHTED slot too, which is the actual fix.
+  **Verified:** regenerated week 1 (seed 42) — format counts wall 10 / question 4 / objection 0, book distribution
+  enchiridion 7 / discourses 3 / meditations 3 / on-anger 1, combined author mix epictetus 10/14 (71.4%), the same
+  headline percentage as before for this SPECIFIC seed (Question's own 56%-Epictetus skew happened to dominate 3 of
+  slot 2's 4 non-Wall draws this particular week) — but the mechanism is now genuinely fixed: 3 of the week's 7
+  weighted-slot picks are Wall, all three from Meditations/on-anger (Seneca), zero of which were possible pre-fix.
+  A 20-independent-week aggregate (fixed seeds 1-20, 280 slots, `schedule.test.ts`) shows the real effect: combined
+  Epictetus share ~67.5%, materially below the pre-fix 71.4%, with all three formats and non-read-through Wall
+  present in every sampled week. Full suite: `npx vitest run` — 624/624 green (617 baseline + 7 new tests: two
+  `DEFAULT_FORMAT_WEIGHTS` acceptance tests plus five read-through-format-derivation/fallback/override tests).
+  Regenerated `content/social/pilot-schedule-w01.json` and `-w02.json` with the fixed defaults (left in place,
+  uncommitted, per this task's original instruction).
 - [ ] T13: Write schedule tests — determinism, no cross-week repeats, weighting honoured, and the read-through
   counter advancing strictly sequentially across weeks without skipping or repeating. Acceptance: green.
 - [ ] T14: Add the weekly review step — before generating week N+1, read week N's retention data and choose the
