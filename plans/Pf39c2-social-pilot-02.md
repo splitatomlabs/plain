@@ -112,7 +112,7 @@ looks like Plain.
   and `social/assets/voices/README.md` is the decision record awaiting ids, rationale and audition date. The test
   already contains the real acceptance assertion behind a `VOICES_ARE_UNSET` branch, so populating the registry
   flips it on with no test edit.
-- [~] T15: Implement the mixer — trim/loop a bed to length, duck it under narration with scripted (deterministic)
+- [x] T15: Implement the mixer — trim/loop a bed to length, duck it under narration with scripted (deterministic)
   volume envelopes, mix, then two-pass ffmpeg `loudnorm` (measure with `print_format=json`, then apply). Target
   ~-14 LUFS integrated, -1 dBTP as a NAMED CONSTANT, not a literal — it is an industry-standard figure, not a
   confirmed platform spec. Acceptance: measured loudness within tolerance; output is 48kHz stereo AAC.
