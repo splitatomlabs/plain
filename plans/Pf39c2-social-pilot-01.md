@@ -442,15 +442,72 @@ daily job makes no LLM call at post time.
   examples can't silently drift or be deleted in a future edit without a test failing. `npx vitest run
   scripts/lib/__tests__/premises-scoring.test.ts` — 66/66 green (51 T06 baseline + 15 new). `npx vitest run` (full
   pipeline suite) — 506/506 green (491 baseline + 15 new), confirming no regression to T01-T06 or any other consumer.
+- [x] T07a: Implement The Objection's MECHANICAL gate in `scripts/lib/premises.ts` (gap found during T07 — the
+  plan's format table specifies this gate but no task itemized it; T01 built only the looser `quotedSpeech`
+  precursor). Per the table: quoted span starting "But"/a question word, <=14 words, no proper nouns (~50 raw).
+  Acceptance: the raw pool is a MEASURED number near 50, unit-tested, and feeds the T07 Objection rubric.
+  **Note:** Added `OBJECTION_OPENERS`, `OBJECTION_GATE_MAX_WORDS`, `startsWithObjectionOpener`,
+  `hasObjectionProperNoun`, `ObjectionEntry`, and `objectionGate` to `scripts/lib/premises.ts`; exported the
+  previously-internal `looksLikeProperNoun` (T02) for reuse rather than duplicating proper-noun detection.
+  `objectionGate` walks `sentences(card.plain_english)` (T02's quote-aware splitter, reused not rewritten) and
+  extracts every `"..."` quoted span within each sentence via a plain regex; a span survives when its FULL content
+  (not each of its own internal sentences separately — see in-file rationale, judging by internal sentence nearly
+  doubles the raw pool to 148 by counting throwaway mid-quote continuations) starts with an `OBJECTION_OPENERS` word
+  (`But` plus a documented list of question-word/negative-interrogative openers — "isn't/aren't/don't/can't/
+  shouldn't" per the plan's own examples, plus natural extensions of the same shape), is <=14 words, and carries no
+  proper noun outside the sentence-initial position (`hasObjectionProperNoun`, built on the reused
+  `looksLikeProperNoun`, which already excludes bare "I"). `reply` (the author's answer) is defined as whatever
+  remains of the SAME sentence after the span's closing quote, followed by every later sentence in the card, joined
+  with a space — a deliberate simplification in the same spirit as T04's single-sentence "candidate answer," chosen
+  because it never truncates a genuine reply; can be empty when the objection is the card's last sentence (measured:
+  2 of 78). `buildObjectionRubricUser` (T07) doesn't need any code changes — it already takes the quoted line plus
+  the full card as context, exactly what `objectionGate`'s output can supply. Measured over the full corpus: **78**
+  raw candidates — epictetus 32, seneca 43, marcus-aurelius 3. This differs from both the plan's own ~50 estimate
+  (24/24/2) and the ad hoc 61 (23/35/3) an earlier scan reported while drafting T07's prompt — neither reproduces
+  under this or any other definition of the stated spec tried; 78 is what's implemented and measured, per the same
+  "don't contort to hit the estimate" policy T01/T03/T04 documented for their own unreproducible targets, and it's
+  in the same neighbourhood (epictetus/seneca-dominated, marcus-aurelius a small minority) as both prior figures.
+  Added unit tests for each opener, case-insensitivity, word-boundary (not prefix) matching, the proper-noun rule's
+  three required cases (proper noun after the opener rejected; sentence-initial-only capital not rejected; mid-span
+  "I" not rejected), quoted-vs-unquoted extraction, the >14-word rejection, and the reply-assembly logic (including
+  the empty-reply case) — plus corpus-level tests asserting the exact 78/32/43/3 counts, a 40-80 regression guard,
+  verbatim traceability of every `objection` string to its source card, and that every survivor actually satisfies
+  the word-count/opener rules. `npx vitest run scripts/lib/__tests__/premises.test.ts` — 204/204 green (178 baseline
+  + 26 new). `npx vitest run` (full pipeline suite) — 526/526 green, confirming no regression to T01-T07 or any
+  other consumer. `npm test` — 526 pipeline + 95 web unit tests, all green.
+  **Fix pass (floor added):** the 78-candidate pool had no MINIMUM length, so bare fragments/interjections survived
+  as "objections" even though nothing about them is a position a viewer could hold — real examples pulled from the
+  78: `"But,"` (happy-life-06-001, on-anger-01-024/030, peace-of-mind-03-002 — a bare conjunction+comma, 1 word),
+  `"Why?"`/`"What?"`/`"How,"` (bare interrogatives, 1 word each), `"How miserable."` (discourses-40-004, 2 words, no
+  proposition), `"What a beautiful sight!"`/`"What a kingly deed!"` (on-anger-02-012, exclamations not claims). Added
+  exported `OBJECTION_GATE_MIN_WORDS = 4` (chosen by inspecting every 1-6 word span in the raw pool: every 1-3 word
+  span measured is a fragment/interjection — `"Don't you care?"`, discourses-12-003, is the sole 3-word span and is
+  the closest real judgment call, but it's elliptical rather than a stated claim; every 4-word span that isn't
+  independently exclamation-shaped — `"But it's not fair,"`, `"Who are you threatening?"`, `"Shouldn't he be
+  punished?"`, etc. — is a genuine, self-contained position). Also added `isOpenerOnly` (rejects a span whose content
+  after the opener is empty/punctuation-only — the `"But,"` case specifically, kept independent of word count per
+  its own doc comment) and reused T04's `isExclamationShaped` (no second implementation written) to catch
+  exclamation-shaped 4-word survivors like `"What a beautiful sight!"` that clear the new word floor. Re-measured
+  over the full corpus with all three new checks applied: **59** raw candidates (down from 78) — epictetus 24, seneca
+  32, marcus-aurelius 3. On Anger's own share of the pool shrank somewhat more than other books (23/78 -> 15/59,
+  since several of its rejected spans were interjection-heavy dialogue: `"But,"` x2, `"Why?"`, `"How,"`, `"What a
+  beautiful sight!"`, `"What a kingly deed!"`) but it remains the SECOND-LARGEST single book in the pool (behind only
+  discourses' 19) and still the largest contributor within Seneca (15 of Seneca's 32) — the plan's "lead with On
+  Anger" guidance is not undermined by this floor. Updated the corpus-level tests to the new 59/24/32/3 counts and
+  narrowed the regression guard from 40-80 to 35-65 (still wide enough to absorb future corpus edits without being a
+  tautology); added floor-specific unit tests for each of the four fragment/interjection examples above (asserting
+  rejection) plus a counter-example at exactly the new minimum (`"But it's not fair,"`, discourses-64-004, 4 words,
+  asserted as an accept) and direct tests for `isOpenerOnly` and the corpus-wide "no survivor is opener-only or
+  exclamation-shaped" invariant. `npx vitest run` (full pipeline suite) — 534/534 green, confirming no regression to
+  T01-T07 or any other consumer.
 - [ ] T08: Implement batch orchestration — chunk, submit, poll, stream, merge. Only T01/T02 survivors are sent. Log
   to `content/pipeline/social/premises.log` via the existing `logger`. Acceptance: `--dry-run` prints request counts
   with no API key set.
-  **Follow-up flagged by T07:** no prior task (T01-T07) built the Objection's own MECHANICAL gate (quoted span
-  starting "But"/a question word, <=14 words, no proper nouns — the plan's table names this, ~50 raw survivors) in
-  `premises.ts`; only the much looser `quotedSpeech` precursor (>=2 `"` in `plain_english`, 308 cards) exists. T08
-  needs real Objection candidates to submit against `buildObjectionRubricUser` — build that gate (in `premises.ts`,
-  alongside `wallGate`/`questionGate`) as an explicit first step of this task, or split it into its own task, before
-  writing the batch-submission code around it.
+  **Resolved by T07a:** the Objection's own mechanical gate (`objectionGate` in `premises.ts`) is now built — 59 raw
+  candidates after the T07a fix pass's minimum-length/opener-only/exclamation-shape floor (epictetus 24 / seneca 32 /
+  marcus-aurelius 3; was 78 before the floor). T08 can submit `objectionGate(loadCorpus())` entries directly against
+  `buildObjectionRubricSystem`/`buildObjectionRubricUser`, the same way it submits `wallGate`/`questionGate`
+  survivors for the other two formats.
 - [ ] T09: Implement the faithfulness check — reject any output whose on-screen text is not a faithful subset of its
   source card. Acceptance: a synthetic hallucinated response is rejected in tests.
 - [ ] T10: Build `scripts/score-premises.ts` with `--format <wall|question|objection|still|all>`, `--dry-run`,

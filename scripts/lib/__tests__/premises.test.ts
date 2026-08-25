@@ -52,6 +52,13 @@ import {
   createSeededRng,
   BALANCED_AUTHOR_SHARE,
   DEFAULT_QUESTION_FRACTION,
+  OBJECTION_OPENERS,
+  OBJECTION_GATE_MAX_WORDS,
+  OBJECTION_GATE_MIN_WORDS,
+  startsWithObjectionOpener,
+  hasObjectionProperNoun,
+  isOpenerOnly,
+  objectionGate,
 } from "../premises.js";
 import type { Card } from "../types.js";
 import type { AuthorSlug } from "../constants.js";
@@ -1556,6 +1563,222 @@ describe("combined weekly selection proves the point of T05", () => {
       epictetus: { count: 3, share: 3 / 14 },
       "marcus-aurelius": { count: 5, share: 5 / 14 },
       seneca: { count: 6, share: 6 / 14 },
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T07a: The Objection's mechanical gate
+// ---------------------------------------------------------------------------
+
+describe("startsWithObjectionOpener", () => {
+  it("accepts every opener in OBJECTION_OPENERS", () => {
+    for (const opener of OBJECTION_OPENERS) {
+      expect(startsWithObjectionOpener(`${opener} would anyone believe that?`)).toBe(true);
+    }
+  });
+
+  it("is case-insensitive", () => {
+    expect(startsWithObjectionOpener("but this is unfair.")).toBe(true);
+    expect(startsWithObjectionOpener("BUT THIS IS UNFAIR.")).toBe(true);
+  });
+
+  it("matches at a word boundary, not a prefix", () => {
+    expect(startsWithObjectionOpener("Butter wouldn't melt in his mouth.")).toBe(false);
+  });
+
+  it("rejects a span that doesn't start with an opener", () => {
+    expect(startsWithObjectionOpener("This is not an objection at all.")).toBe(false);
+  });
+});
+
+describe("hasObjectionProperNoun", () => {
+  it("rejects a span containing a proper noun after the opening word", () => {
+    expect(hasObjectionProperNoun("But Socrates said otherwise?")).toBe(true);
+  });
+
+  it("does not reject a span whose only capital is the sentence-initial opener", () => {
+    expect(hasObjectionProperNoun("But why should anyone believe that?")).toBe(false);
+  });
+
+  it("does not reject a mid-span capitalized 'I'", () => {
+    expect(hasObjectionProperNoun("But why should I care about that?")).toBe(false);
+  });
+});
+
+describe("objectionGate", () => {
+  it("accepts a quoted span starting with 'But'", () => {
+    const card = makeCard({ plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.' });
+    const entries = objectionGate([card]);
+    expect(entries.map((e) => e.objection)).toContain("But why should I suffer for this?");
+  });
+
+  it("accepts a quoted span starting with a question word", () => {
+    const card = makeCard({ plain_english: 'She asked, "Why does this always happen to me?" No one answered.' });
+    const entries = objectionGate([card]);
+    expect(entries.map((e) => e.objection)).toContain("Why does this always happen to me?");
+  });
+
+  it("rejects a quoted span longer than 14 words", () => {
+    const longSpan =
+      "But why does this keep happening to me over and over again every single day without any relief at all";
+    expect(wordCount(longSpan)).toBeGreaterThan(OBJECTION_GATE_MAX_WORDS);
+    const card = makeCard({ plain_english: `He said, "${longSpan}?" and left.` });
+    const entries = objectionGate([card]);
+    expect(entries.map((e) => e.objection)).not.toContain(`${longSpan}?`);
+  });
+
+  it("rejects a quoted span containing a proper noun", () => {
+    const card = makeCard({ plain_english: 'He said, "But Socrates said otherwise." No one agreed.' });
+    const entries = objectionGate([card]);
+    expect(entries).toEqual([]);
+  });
+
+  it("does not reject a span with only a sentence-initial capital", () => {
+    const card = makeCard({ plain_english: 'He said, "But why should anyone accept that?" and shrugged.' });
+    const entries = objectionGate([card]);
+    expect(entries.map((e) => e.objection)).toContain("But why should anyone accept that?");
+  });
+
+  it("does not pick up an unquoted objection-shaped sentence", () => {
+    const card = makeCard({ plain_english: "But why should anyone accept that? No one knows." });
+    const entries = objectionGate([card]);
+    expect(entries).toEqual([]);
+  });
+
+  it("captures the reply as the text following the quoted span", () => {
+    const card = makeCard({
+      plain_english: 'He said, "But why should I suffer for this?" Everyone suffers eventually. That is the point.',
+    });
+    const entries = objectionGate([card]);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].reply).toBe("Everyone suffers eventually. That is the point.");
+  });
+
+  it("returns an empty reply when the objection is the last thing said in the card", () => {
+    const card = makeCard({ plain_english: 'He said, "But why should I suffer for this?"' });
+    const entries = objectionGate([card]);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].reply).toBe("");
+  });
+
+  // -------------------------------------------------------------------------
+  // Floor rejections: real survivors from the raw pool (before
+  // OBJECTION_GATE_MIN_WORDS/isOpenerOnly/isExclamationShaped existed) that
+  // are fragments or interjections, not propositions a viewer could argue
+  // with. See OBJECTION_GATE_MIN_WORDS's doc comment for the corpus
+  // inspection behind the floor.
+  // -------------------------------------------------------------------------
+  describe("floor rejections (real raw-pool survivors that are not propositions)", () => {
+    it("rejects a bare opener-plus-comma ('But,', from happy-life-06-001 / on-anger-01-024)", () => {
+      const card = makeCard({
+        plain_english: '"But," our opponent says, "the mind will have its own pleasures too." Fine, let it have them.',
+      });
+      const entries = objectionGate([card]);
+      expect(entries.map((e) => e.objection)).not.toContain("But,");
+    });
+
+    it("rejects a bare interrogative ('Why?', from on-anger-03-040)", () => {
+      const card = makeCard({
+        plain_english: 'When you\'re angry, you shouldn\'t be allowed to do anything. "Why?" you ask. Because it is not allowed.',
+      });
+      const entries = objectionGate([card]);
+      expect(entries.map((e) => e.objection)).not.toContain("Why?");
+    });
+
+    it("rejects a two-word non-statement ('How miserable.', from discourses-40-004)", () => {
+      const card = makeCard({
+        plain_english: 'We see someone in exile and think, "How miserable." We see a poor person and think otherwise.',
+      });
+      const entries = objectionGate([card]);
+      expect(entries.map((e) => e.objection)).not.toContain("How miserable.");
+    });
+
+    it("rejects an exclamation-shaped span ('What a beautiful sight!', from on-anger-02-012)", () => {
+      const card = makeCard({
+        plain_english: 'Hannibal saw a ditch filled with blood and cried out, "What a beautiful sight!" No one else agreed.',
+      });
+      const entries = objectionGate([card]);
+      expect(entries.map((e) => e.objection)).not.toContain("What a beautiful sight!");
+    });
+
+    it("accepts a genuine objection at exactly the minimum length ('But it's not fair,', from discourses-64-004)", () => {
+      const card = makeCard({
+        plain_english: '"But it\'s not fair," you say. "I told you my neighbor\'s secrets. Now you should tell me yours."',
+      });
+      const entries = objectionGate([card]);
+      expect(wordCount("But it's not fair,")).toBe(OBJECTION_GATE_MIN_WORDS);
+      expect(entries.map((e) => e.objection)).toContain("But it's not fair,");
+    });
+  });
+
+  describe("isOpenerOnly", () => {
+    it("is true for an opener followed only by punctuation", () => {
+      expect(isOpenerOnly("But,")).toBe(true);
+      expect(isOpenerOnly("Why?")).toBe(true);
+    });
+
+    it("is false once real content follows the opener", () => {
+      expect(isOpenerOnly("But it's not fair,")).toBe(false);
+    });
+  });
+
+  describe("over the full corpus", () => {
+    const cards = loadCorpus();
+    const entries = objectionGate(cards);
+
+    it("measures 59 raw candidates", () => {
+      // Was 78 before OBJECTION_GATE_MIN_WORDS/isOpenerOnly/isExclamationShaped
+      // existed. The 19 that dropped out were fragments/interjections, not
+      // propositions — see OBJECTION_GATE_MIN_WORDS's doc comment for the
+      // full corpus inspection. Author mix after the floor: epictetus 24,
+      // seneca 32, marcus-aurelius 3. Book mix within seneca: on-anger 15,
+      // happy-life 11, peace-of-mind 4, shortness-of-life 2 — on-anger
+      // remains the second-largest single book in the pool (after
+      // discourses' 19), so the new floor does not gut it specifically,
+      // even though its share of the pool (23/78 -> 15/59) did shrink
+      // somewhat more than other books, since several of its rejected
+      // spans ("But,", "Why?", "How,", "What a beautiful sight!", "What a
+      // kingly deed!") were interjection-heavy dialogue.
+      expect(entries.length).toBe(59);
+    });
+
+    it("is in the 35-65 raw-pool range (regression guard)", () => {
+      // Narrowed from 40-80 (measured against the pre-floor 78-candidate
+      // pool) to 35-65 now that the floor measures 59 — still wide enough
+      // to absorb corpus edits without the guard being a tautology.
+      expect(entries.length).toBeGreaterThanOrEqual(35);
+      expect(entries.length).toBeLessThanOrEqual(65);
+    });
+
+    it("splits epictetus 24 / seneca 32 / marcus-aurelius 3", () => {
+      const byAuthor: Record<string, number> = { epictetus: 0, "marcus-aurelius": 0, seneca: 0 };
+      for (const entry of entries) byAuthor[entry.author_slug] += 1;
+      expect(byAuthor).toEqual({ epictetus: 24, "marcus-aurelius": 3, seneca: 32 });
+    });
+
+    it("every entry's objection is a verbatim substring of its card's plain_english", () => {
+      const cardsById = new Map(cards.map((c) => [c.id, c]));
+      for (const entry of entries) {
+        const card = cardsById.get(entry.card_id);
+        expect(card).toBeDefined();
+        expect(card!.plain_english.includes(entry.objection)).toBe(true);
+      }
+    });
+
+    it("every entry's objection is between the min/max word bounds and starts with an opener", () => {
+      for (const entry of entries) {
+        expect(wordCount(entry.objection)).toBeGreaterThanOrEqual(OBJECTION_GATE_MIN_WORDS);
+        expect(wordCount(entry.objection)).toBeLessThanOrEqual(OBJECTION_GATE_MAX_WORDS);
+        expect(startsWithObjectionOpener(entry.objection)).toBe(true);
+      }
+    });
+
+    it("no entry's objection is opener-only or exclamation-shaped", () => {
+      for (const entry of entries) {
+        expect(isOpenerOnly(entry.objection)).toBe(false);
+        expect(isExclamationShaped(entry.objection)).toBe(false);
+      }
     });
   });
 });

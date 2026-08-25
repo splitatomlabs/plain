@@ -571,7 +571,7 @@ function isPluralNoun(word: string): boolean {
  * wrongly resolve "it"). Capitalization is the one cheap, reliable signal
  * this file has for "this token names a specific on-screen thing."
  */
-function looksLikeProperNoun(word: string): boolean {
+export function looksLikeProperNoun(word: string): boolean {
   const stripped = stripPunctuation(word);
   return stripped.length >= 2 && /^[A-Z]/.test(stripped) && looksLikeNoun(stripped);
 }
@@ -1767,4 +1767,284 @@ export function selectWallBalanced<T extends { author_slug: AuthorSlug }>(
   }
 
   return selected;
+}
+
+// ---------------------------------------------------------------------------
+// T07a: The Objection's mechanical gate. Format: ONE short quoted line
+// appears alone on screen — a claim the VIEWER instinctively wants to argue
+// with, staged as an objection the author anticipates — followed by the
+// author's own answer. This is a DIFFERENT structure inside the card than
+// the original-vs-plain contrast every other format runs on: it runs on a
+// second, internal structure — a quoted objection and its reply, both
+// entirely within `plain_english`.
+//
+// T01 already built the loose precursor for this format (`quotedSpeech`,
+// MechanicalGates.quotedSpeech — "plain_english contains >= 2 double
+// quotes", measured 308). This section builds the ACTUAL mechanical gate the
+// plan's format table specifies: a quoted span that starts with "But" or a
+// question word, is at most 14 words, and contains no proper noun. Judging
+// whether a surviving span reads as a position the VIEWER might hold (vs. a
+// line from a dramatised scene, or a doctrinal dispute) needs an LLM — see
+// `buildObjectionRubricSystem`/`buildObjectionRubricUser` in
+// ./premises-scoring.ts (T07) — so this gate's only job is narrowing the
+// full corpus down to a raw candidate pool cheaply, with no API calls.
+// ---------------------------------------------------------------------------
+
+/**
+ * Words a quoted span must START with to read as an objection rather than a
+ * plain statement: "But" (the classic anticipated-objection opener) plus a
+ * set of question-word openers, including the interrogative-negative
+ * contractions the plan calls out by example ("isn't"/"aren't"/"don't"/
+ * "can't"/"shouldn't") and a few natural extensions of that same shape
+ * ("wouldn't"/"won't"/"doesn't"/"didn't"/"couldn't"/"wasn't"/"weren't") —
+ * all rhetorical-question openers of the same "isn't it true that..." kind
+ * the plan's own list illustrates, not an exhaustive dictionary of every
+ * possible question word. Matched case-insensitively at the START of the
+ * (trimmed) span only — "starting with," not "containing."
+ */
+export const OBJECTION_OPENERS = [
+  "But",
+  "What",
+  "Why",
+  "How",
+  "Who",
+  "When",
+  "Where",
+  "Which",
+  "Whose",
+  "Whom",
+  "Isn't",
+  "Aren't",
+  "Don't",
+  "Can't",
+  "Shouldn't",
+  "Wouldn't",
+  "Won't",
+  "Doesn't",
+  "Didn't",
+  "Couldn't",
+  "Wasn't",
+  "Weren't",
+] as const;
+
+const OBJECTION_OPENER_RE = new RegExp(`^(${OBJECTION_OPENERS.join("|")})\\b`, "i");
+
+/** Word-count ceiling for a candidate objection span, per the plan's format table. */
+export const OBJECTION_GATE_MAX_WORDS = 14;
+
+/**
+ * Word-count floor for a candidate objection span. Below this, a quoted
+ * span is a fragment or a bare interjection, not "a position the viewer
+ * might hold" — the format's own requirement, from the plan, for what an
+ * objection has to be. An objection is a proposition; a proposition needs a
+ * subject and something said about it, which a 1-3 word span essentially
+ * never has room for.
+ *
+ * Chosen by inspecting every raw-pool span at 1-6 words against the real
+ * corpus (`content/output`) before picking a number, per the same
+ * measure-first policy the rest of this file follows:
+ *  - 1 word: `"But,"` (x4 across happy-life/on-anger/peace-of-mind),
+ *    `"Why?"`, `"What?"`, `"How,"` — every one of these is a bare
+ *    conjunction or interrogative with no proposition attached. Nothing to
+ *    argue with.
+ *  - 2 words: `"Don't eat,"`, `"How miserable."`, `"But wait,"`,
+ *    `"What then?"` — still fragments; none states a position.
+ *  - 3 words: `"Don't you care?"` (discourses-12-003) — the one 3-word
+ *    span in the pool, and it's borderline-real ("don't you care [about
+ *    this]?" gestures at a position), but it's an ELLIPTICAL rhetorical
+ *    jab, not a stated claim, and at 3 words it's indistinguishable in
+ *    shape from the 1-2 word fragments above without also reading the rest
+ *    of the sentence — exactly the judgement call this mechanical gate is
+ *    not supposed to make.
+ *  - 4 words: the first point where genuine, self-contained positions show
+ *    up reliably — `"But it's not fair,"` (discourses-64-004), `"But
+ *    you'll be godless."` (discourses-16-004), `"What about my
+ *    property?"` (discourses-01-004), `"Who are you threatening?"`
+ *    (discourses-18-002), `"Shouldn't he be punished?"` (on-anger-03-079),
+ *    `"Why are you upset?"` (peace-of-mind-14-004) — each one is a
+ *    complete claim or challenge a viewer could actually hold and argue
+ *    with. 4 words is also where the plan's own worked example,
+ *    `"But it's not fair,"`, lands, which is the clearest signal this is
+ *    the right floor rather than an arbitrary round number.
+ *
+ * 4 is therefore the floor: it rejects every 1-3 word fragment measured in
+ * the corpus while admitting every 4-word span that reads as a real
+ * position (the exclamation-shaped ones among those, e.g. `"What a
+ * beautiful sight!"`, are still caught separately by
+ * `isExclamationShaped` — see `objectionGate`).
+ */
+export const OBJECTION_GATE_MIN_WORDS = 4;
+
+/** True when `text` (a candidate quoted span, already stripped of its surrounding `"` marks) starts with an `OBJECTION_OPENERS` word. */
+export function startsWithObjectionOpener(text: string): boolean {
+  return OBJECTION_OPENER_RE.test(text.trim());
+}
+
+/**
+ * True when `text` is empty, or entirely punctuation/whitespace, once its
+ * leading `OBJECTION_OPENERS` word is stripped off — i.e. the opener is
+ * ALL the span has. `"But,"` is the real-corpus case this catches: it
+ * starts with a valid opener and (before this rule existed) nothing else
+ * disqualified it, but "But" plus a bare comma is not a position, it's a
+ * dangling conjunction. In this corpus every such span is also short
+ * enough to be caught by `OBJECTION_GATE_MIN_WORDS` already (a bare
+ * opener-plus-punctuation is at most 1-2 words), but this check is kept
+ * independent of word count so it also catches a hypothetical span like
+ * `"But, --- ,"` that could pad its way past a pure word-count floor
+ * without ever stating a claim.
+ */
+export function isOpenerOnly(text: string): boolean {
+  const trimmed = text.trim();
+  const match = OBJECTION_OPENER_RE.exec(trimmed);
+  const rest = match ? trimmed.slice(match[0].length) : trimmed;
+  return rest.replace(/[^a-zA-Z0-9]/g, "").length === 0;
+}
+
+/**
+ * True when `text` contains a capitalized word, anywhere EXCEPT the leading
+ * (sentence-initial) position, that reads as a proper noun — reusing T02's
+ * `looksLikeProperNoun` exactly as instructed ("reuse where it helps; do
+ * not rewrite"). `looksLikeProperNoun` already excludes bare "I" (its
+ * length check requires >= 2 characters after stripping punctuation), so
+ * this single reused predicate covers both parts of the spec's proper-noun
+ * rule at once: "a capitalized word that is not sentence-initial and is not
+ * 'I'." A proper noun makes the line about a SPECIFIC person in a scene
+ * rather than a position any viewer could hold as their own — exactly the
+ * dramatised-scene failure mode The Objection's LLM rubric (T07) exists to
+ * catch qualitatively for everything this mechanical check can't.
+ */
+export function hasObjectionProperNoun(text: string): boolean {
+  const words = text.trim().replace(/[—–]/g, " ").split(/\s+/);
+  return words.some((word, index) => index > 0 && looksLikeProperNoun(word));
+}
+
+/** Every `"..."` quoted span within `sentence`, in order, as `[fullMatchEndIndex, content]` pairs. */
+const QUOTE_SPAN_RE = /"([^"]+)"/g;
+
+export interface ObjectionEntry {
+  card_id: string;
+  book_slug: string;
+  author_slug: Card["author_slug"];
+  /** The quoted line itself, exactly as it will appear on screen — the on-screen text is this string alone, never the surrounding quotes. */
+  objection: string;
+  /**
+   * The author's answer to the objection: everything in `plain_english`
+   * that comes after the quoted span closes. See `objectionGate` for how
+   * this is assembled from the rest of the same sentence plus every
+   * sentence that follows it. Can be an empty string when the objection is
+   * the very last thing said in the card (measured: 2 of 78 raw
+   * candidates) — `objectionGate` does not filter these out; a consumer
+   * that requires a non-empty reply (the format's whole point is objection
+   * THEN answer) should filter on `reply.length > 0` itself.
+   */
+  reply: string;
+}
+
+/**
+ * The Objection's mechanical gate — no LLM calls.
+ *
+ * For each card, walks `sentences(card.plain_english)` (T02's quote-aware
+ * splitter, reused rather than rewritten) and extracts every `"..."`
+ * quoted span within each sentence. A span survives when its full content
+ * (trimmed of the surrounding quote marks):
+ *  - starts with an `OBJECTION_OPENERS` word (`startsWithObjectionOpener`);
+ *  - is between `OBJECTION_GATE_MIN_WORDS` (4) and `OBJECTION_GATE_MAX_WORDS`
+ *    (14) words, inclusive;
+ *  - is not just its opener plus punctuation (`isOpenerOnly`) — a floor
+ *    check independent of word count, see that function's doc comment;
+ *  - contains no proper noun beyond the sentence-initial word
+ *    (`hasObjectionProperNoun`);
+ *  - is not exclamation-shaped (`isExclamationShaped`, reused from T04) —
+ *    an exclamation ("What a beautiful sight!") is not a claim anyone
+ *    argues with, it's an interjection.
+ *
+ * The word-floor, opener-only, and exclamation-shape checks together exist
+ * because the format's requirement is that the objection be "a position
+ * the viewer might hold" — a proposition. A bare conjunction (`"But,"`), a
+ * bare interrogative (`"Why?"`), a two-word non-statement (`"How
+ * miserable."`), or an exclamation (`"What a beautiful sight!"`) are none
+ * of them propositions; nothing can be argued with any of them, so none of
+ * them belong even in the LLM rubric's candidate pool. See
+ * `OBJECTION_GATE_MIN_WORDS` for the corpus inspection behind the chosen
+ * floor.
+ *
+ * Deliberately checks the SPAN'S FULL CONTENT against these three rules,
+ * not each of the span's own internal sentences separately (a multi-
+ * sentence quote like `"It's not fair. But I said nothing."` is judged as
+ * one candidate and rejected here, since the whole span does not itself
+ * start with an opener) — measured against the real corpus, judging by
+ * internal sentence instead very nearly doubles the raw pool (148 vs. 78)
+ * by counting throwaway mid-quote continuation sentences that only
+ * incidentally start with a question word, not genuine anticipated
+ * objections. Iterating sentence-by-sentence via `sentences()` rather than
+ * regexing `card.plain_english` directly makes no difference to which
+ * spans are found in this corpus — a well-formed quote pair can never
+ * straddle a sentence boundary `sentences()` would introduce, by the same
+ * invariant `sentences()` itself relies on for its own quote-tracking — but
+ * it gets T02's defensive handling of malformed/unbalanced quote
+ * characters for free, and it's what makes `reply` (below) simple to
+ * assemble without re-deriving character offsets into the raw text.
+ *
+ * `reply` is the text following the quoted span: whatever remains of the
+ * SAME sentence after the span's closing quote mark, followed by every
+ * sentence after it in the card, joined with a single space. This is a
+ * deliberate simplification, in the same spirit as T04's single-sentence
+ * "candidate answer" — the format's own beat is "the quoted objection, then
+ * the author's answer," and taking everything that follows (rather than
+ * guessing how many sentences the "real" answer needs) is the simplest
+ * definition that never truncates a genuine reply. T07's rubric
+ * (`buildObjectionRubricUser`) doesn't consume this field directly — it
+ * passes the whole card's `plain_english` as judging context instead — so
+ * `reply` exists here for T08/rendering to use once a candidate is
+ * accepted, not for the rubric call itself.
+ *
+ * Measured over the full corpus (`content/output`): **78** raw candidates —
+ * epictetus 32, seneca 43, marcus-aurelius 3. This differs from the ad hoc
+ * 61 (23/35/3) an earlier scan reported while drafting T07's prompt: that
+ * scan was exploratory, not a formalized implementation of the plan's exact
+ * definition, and the plan's own stated estimate (~50, splitting 24/24/2)
+ * doesn't reproduce under this or any other definition tried either. 78 is
+ * what this implementation of the stated spec measures — not contorted to
+ * hit 50 or 61 — and it lands in the same neighbourhood as both prior
+ * estimates (author mix dominated by epictetus/seneca, marcus-aurelius a
+ * small minority), which is the check that matters: this pool still feeds
+ * T07's LLM rubric, which is expected to cut it down to the plan's target
+ * ~15-25 survivors.
+ */
+export function objectionGate(cards: Card[]): ObjectionEntry[] {
+  const entries: ObjectionEntry[] = [];
+
+  for (const card of cards) {
+    const sents = sentences(card.plain_english);
+
+    for (let i = 0; i < sents.length; i++) {
+      const sentence = sents[i];
+
+      for (const match of sentence.matchAll(QUOTE_SPAN_RE)) {
+        const content = match[1].trim();
+        if (!startsWithObjectionOpener(content)) continue;
+        const wc = wordCount(content);
+        if (wc > OBJECTION_GATE_MAX_WORDS) continue;
+        if (wc < OBJECTION_GATE_MIN_WORDS) continue;
+        if (isOpenerOnly(content)) continue;
+        if (hasObjectionProperNoun(content)) continue;
+        if (isExclamationShaped(content)) continue;
+
+        const matchEnd = (match.index ?? 0) + match[0].length;
+        const restOfSentence = sentence.slice(matchEnd).trim();
+        const restOfCard = sents.slice(i + 1).join(" ").trim();
+        const reply = restOfSentence ? `${restOfSentence} ${restOfCard}`.trim() : restOfCard;
+
+        entries.push({
+          card_id: card.id,
+          book_slug: card.book_slug,
+          author_slug: card.author_slug,
+          objection: content,
+          reply,
+        });
+      }
+    }
+  }
+
+  return entries;
 }
