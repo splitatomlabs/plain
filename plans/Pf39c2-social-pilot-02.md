@@ -232,3 +232,119 @@ npm test --prefix social
 npx tsx social/src/cli.ts render --date 2026-09-01 --slot 1
 ffprobe -v error -show_streams social/out/*.mp4
 ```
+
+## CURRENT STATE — handoff for refining The Wall (2026-08-26)
+
+Written for a fresh context. Everything below is committed on `social-pilot-02` (PR #40). The user's verdict on the
+renders so far: **not moving toward the right end result.** The Wall is the format to refine; the rest of the
+pipeline works and should not need re-litigating.
+
+### What The Wall does right now
+
+Frame 0 is the archaic passage set large, top of block flush with the frame top, ALREADY at full scroll velocity —
+no ease-in. It scrolls up linearly at a fixed rate for 2.5s, the cut lands mid-passage so it visibly never
+finishes, then all motion stops: the landing line alone, motionless, 3s, in silence, then the rest of the plain
+passage one still line at a time.
+
+| Constant | Value | Where |
+|---|---|---|
+| `WALL_SECONDS` | 2.5 (bounds 2-3) | `social/src/remotion/wall-timing.ts` |
+| `WALL_SCROLL_RATE_PX_PER_SEC` | 500 (~4x reading pace) | same |
+| `WALL_TARGET_BLOCK_HEIGHT_PX` | 3400 | same |
+| `WALL_FONT_FLOOR_PX` / `WALL_FONT_CAP_PX` | 39 / 92 | same |
+| fitted size across the real pool | 65-91px, mean 80.6, median 81 | measured |
+| `WALL_LINE_HEIGHT_RATIO` | 1.25 | same |
+| `WALL_INSET_PX` | 80 | same |
+| `WALL_LINE_ESTIMATE_OVERSHOOT` | 1.14 | calibrated against real Literata renders |
+| `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` | 3170 = `FRAME_HEIGHT + rate * seconds` | `wall-gate.ts` |
+
+Font size is fitted PER CARD to land the block near 3400px — short passages get larger type, long ones smaller.
+Files: `Wall.tsx`, `wall-timing.ts`, `wall-gate.ts`, `wall-pool.ts`, `wall-openings.ts`.
+
+### Three geometry attempts, and why each was rejected
+
+1. **Push-in + karaoke highlight** (T05, as the plan literally specified). A 1.02->1.05 zoom over 2.5s and an
+   accent highlight advancing at 320wpm. At that rate the highlight reached ~14 of 150 words. NOTHING TRAVELLED —
+   on a phone it read as a dense page sitting still. Rejected by the user, who said the intent was always that the
+   text scrolls past faster than it can be read.
+2. **Fixed 86px, 720px/s** (F15). Genuinely travelled and the cut landed mid-passage. Rejected on look: four or
+   five words a line, ~68 words on screen — large-print, not a wall.
+3. **Fixed 76px, 500px/s** (F16). Denser, but a fixed size collapsed supply: Wall 219/896, Question 12/88,
+   read-through 11/48, week 1 could not generate at all and only 4 of 14 slots rendered.
+4. **Per-card fit to block height** (F18, current). Recovered supply to 662/896. This is where it stands, and it
+   is still not landing for the user.
+
+### The arithmetic that binds any future attempt
+
+- **"Never finishes" is the expensive constraint.** It requires `blockHeight > FRAME_HEIGHT + rate * seconds`.
+  At 500px/s over 2.5s that is 3170px, i.e. ~1.65 screens of text MINIMUM.
+- **Block height scales with the SQUARE of font size**, so density is bought at a steep price: dropping 86px to
+  76px shrinks every block ~22%.
+- **The corpus cannot produce a true "wall".** The longest original excerpt in the entire corpus is 201 words;
+  1,326 cards are >=80 words, 816 >=120, 396 >=150. At any legible size a 150-word passage is roughly 1.8-2
+  screens, not an intimidating dense page. A real wall-of-text would need several times more text than exists.
+  **This is the deepest tension in the format and no geometry tweak resolves it.**
+- **The plan's own wording is ambiguous** and worth settling before building again: "the archaic text must be
+  ILLEGIBLE; do not shrink it to make it readable." Attempts 2-4 read that as "illegibility comes from speed";
+  attempt 1 read it as "illegibility comes from density". They pull in opposite directions.
+- Duration floor 15s / ceiling 59s (`duration-bounds.ts`) applies to every post. The Wall clears the floor
+  naturally; 44 pool cards breach the ceiling and are excluded.
+
+### Measured corpus numbers (from `content/social/render-exclusions.json`, regenerate with
+`npx tsx social/scripts/write-exclusions.ts --date <YYYY-MM-DD>`)
+
+| Pool | Renderable |
+|---|---|
+| Wall | 662 / 896 |
+| Question | 37 / 88 |
+| Objection | 27 / 59 |
+| Read-through slice (Meditations book-02+03) | 26 / 48 |
+| Still (fallback, same slice) | 48 / 48 |
+
+Longest run of CONSECUTIVE Wall-renderable cards, by chapter — the read-through's binding constraint, since it
+walks a slice in order and needs 7 per week:
+
+| Slice | Consecutive | Renderable |
+|---|---|---|
+| on-anger/book-1 | 17 | 56/69 |
+| on-anger/book-3 | 15 | 101/121 |
+| meditations/book-11 | 12 | 24/45 |
+| meditations/book-10 | 9 | 32/57 |
+| meditations/book-02+03 (current slice) | 5 | 26/48 |
+
+A no-skip 4-week read-through needs 28 consecutive. **No slice in the corpus supports that**, which is why the
+Still fallback exists.
+
+### Consequence the user has NOT yet accepted
+
+Week 1 is **6 Wall, 4 Question, 0 Objection, 4 Still**, and all four Stills are read-through days (1, 3, 4, 7).
+Across the whole Book 2-3 slice, 22 of 48 cards cannot be a Wall, so **~46% of read-through posts will be static
+cards**. The index plan wanted ONE still running deliberately as a pattern interrupt. Options if that reads as
+filler: move the slice (Book 11 is a similar ratio), loosen "never finishes" for short cards only (converts most
+Stills back to Walls, softens the mechanic on those days), or accept it as rhythm.
+
+### Open judgements, none of them code problems
+
+- Does the hard cut land somatically on a phone with sound? Never verified — that is T19.
+- Are the long Walls too long? Durations run 15s to 51s; a 51s Wall is one still line at a time for nearly a
+  minute. The lever would be a maximum line count on the pool, not a trim.
+- The Question and Objection are always exactly 15.0s because the floor pads them, so their final line holds ~8
+  of those seconds. May read as stillness, may read as dead air.
+- The music beds are ffmpeg-synthesized drones — clean, loopable, Content-ID-free, but drones.
+
+### What is deliberately NOT the Wall's problem
+
+Fonts are now embedded and correct (every MP4 rendered in Georgia until F17). The encoder, the mixer, the
+scheduler gating, the counter overlay, the CLI and the house-rule checks all work and are covered by 491 social
+tests plus 822 pipeline and 95 web tests. Blocked on the user: portraits (T02), voices (T14), the week review
+(T19). Deferred by decision: F04, F12.
+
+### Running things
+
+```
+npm test                                                    # all three suites
+npx tsx social/src/cli.ts render --date 2026-09-01 --slot 1  # one post -> social/out/
+npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force
+npx tsx social/scripts/write-exclusions.ts --date 2026-08-26
+```
+Week 1 maps to 2026-09-01 (day 1) through 2026-09-07, slots 1 and 2; slot 1 is the read-through.
