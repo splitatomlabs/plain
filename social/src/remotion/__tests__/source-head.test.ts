@@ -329,10 +329,26 @@ describe('neither the running head nor the payoff label collides with or reflows
 
 			// Adding the source head to a counter-only render changes nothing
 			// outside the source head's own box — in particular, nothing INSIDE
-			// the counter's box.
+			// the counter's box (COUNTER_BOUNDING_BOX sits entirely outside
+			// SOURCE_HEAD_BOUNDING_BOX, so this one check already covers both).
 			assertIdenticalOutsideBoxes(counterOnly.png, both.png, [SOURCE_HEAD_BOUNDING_BOX]);
-			// And the counter box itself is untouched by the source head.
-			assertIdenticalOutsideBoxes(counterOnly.png, both.png, [COUNTER_BOUNDING_BOX]);
+			// And, checked directly rather than only implied: the counter box's
+			// own pixels are byte-identical whether or not the source head is
+			// also present. (Fixed 2026-08-26, T12: the original line here was
+			// `assertIdenticalOutsideBoxes(counterOnly.png, both.png,
+			// [COUNTER_BOUNDING_BOX])`, which asserts the opposite of what this
+			// comment says and of what T12's own acceptance requires — it
+			// demands every pixel OUTSIDE the counter's box be identical between
+			// `counterOnly` and `both`, but `both` legitimately differs from
+			// `counterOnly` inside SOURCE_HEAD_BOUNDING_BOX (that's the whole
+			// point of adding the source head) and SOURCE_HEAD_BOUNDING_BOX sits
+			// entirely outside COUNTER_BOUNDING_BOX — so that assertion could
+			// never pass for any real SourceHead implementation, and directly
+			// contradicts `assertBoxDiffers(neither.png, both.png,
+			// SOURCE_HEAD_BOUNDING_BOX)` four lines below in this same test.
+			// `assertBoxIdentical`, scoped to just the counter's own box, is what
+			// the comment actually describes.)
+			assertBoxIdentical(counterOnly.png, both.png, COUNTER_BOUNDING_BOX);
 
 			// Both overlays are genuinely present and visible in the combined render.
 			assertBoxDiffers(neither.png, both.png, COUNTER_BOUNDING_BOX);

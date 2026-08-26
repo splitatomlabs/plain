@@ -51,6 +51,7 @@ import { loadOutputCard } from './remotion/wall-pool.js';
 import { loadChapterTextBlock } from './render/chapter-text.js';
 import { computeEligibleOpenings, type WallOpening } from './remotion/wall-openings.js';
 import { computeWallTiming, WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
+import { formatRunningHead } from './remotion/SourceHead.js';
 import { computeQuestionTiming } from './remotion/question-timing.js';
 import { computeObjectionTiming, OBJECTION_REPLY_LINE_COUNT } from './remotion/objection-timing.js';
 import { bedPath } from './audio/beds.js';
@@ -196,6 +197,14 @@ interface WallPlan {
 	 * `loadChapterTextBlock`.
 	 */
 	chapterBlock: string;
+	/**
+	 * The card's own `source_reference` (social pilot 02a T11/T12's framing
+	 * layer) — threaded into `Wall.tsx`'s `sourceReference` prop, which
+	 * derives the running head via `SourceHead.tsx`'s `formatRunningHead`
+	 * alongside `author`. Same "real card metadata, never hardcoded" pattern
+	 * `chapterBlock` set for T09.
+	 */
+	sourceReference: string;
 	landingLine: string;
 	plainLines: string[];
 	opening: WallOpening;
@@ -263,6 +272,7 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 				format: 'wall',
 				originalExcerpt: slot.content.original_excerpt,
 				chapterBlock,
+				sourceReference: card.source_reference,
 				landingLine: slot.content.landing_line,
 				plainLines,
 				opening,
@@ -330,6 +340,9 @@ function printPlan(plan: RenderPlan): void {
 			`  chapter block: ${plan.formatPlan.chapterBlock.split(/\s+/).filter(Boolean).length} words ` +
 				`(card's own excerpt: ${plan.formatPlan.originalExcerpt.split(/\s+/).filter(Boolean).length} words)`
 		);
+		console.log(
+			`  running head: "${formatRunningHead({ author_slug: plan.authorSlug as AuthorSlug, source_reference: plan.formatPlan.sourceReference })}"`
+		);
 	}
 	console.log('  narration: false (T14 not done — music-only)');
 }
@@ -346,6 +359,7 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 				...base,
 				originalExcerpt: plan.formatPlan.originalExcerpt,
 				chapterBlock: plan.formatPlan.chapterBlock,
+				sourceReference: plan.formatPlan.sourceReference,
 				landingLine: plan.formatPlan.landingLine,
 				plainLines: plan.formatPlan.plainLines,
 				opening: plan.formatPlan.opening,

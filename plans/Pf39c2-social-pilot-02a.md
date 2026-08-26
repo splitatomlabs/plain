@@ -656,8 +656,65 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   passing; the 13 failures are exactly this new file's render-dependent tests, nothing else regressed
   (`counter.test.ts` itself still 15/15 after the refactor). Did not touch `Wall.tsx`, `entry.tsx`, `Root.tsx`,
   narration/mixer, the opening rotation, or mid-chapter entry.
-- [ ] T12: Implement `SourceHead.tsx` and wire into `Wall.tsx` — running head `"MARCUS AURELIUS · MEDITATIONS,
-  BOOK 2"` from card metadata (never hardcoded), payoff label `"In plain English"`. Acceptance: T10 passes.
+- [x] T12: Implement `SourceHead.tsx` and wire into `Wall.tsx` — running head `"MARCUS AURELIUS · MEDITATIONS,
+  BOOK 2"` from card metadata (never hardcoded), payoff label `"In plain English"`. Acceptance: T11 passes (the
+  task text's own "T10" was a typo carried over — T10 is the payoff-polarity task; T11 is the framing-layer test
+  file this task's acceptance actually targets).
+  Done (2026-08-26): `formatRunningHead` derives the head from exactly the two fields
+  `RunningHeadCardMetadata` names — `author_slug` (`"marcus-aurelius"` -> hyphens to spaces, uppercased ->
+  `"MARCUS AURELIUS"`) and `source_reference` (`"Meditations, Book 2, Section 1"` -> strip the trailing `",
+  Section N"` clause, uppercase -> `"MEDITATIONS, BOOK 2"`), joined with `" · "` — matches the plan's own worked
+  example verbatim and all three real `source_reference` shapes T11's fixtures cover (three-part, two-part, and a
+  multi-word title). `SourceHead` renders either variant (`running-head` derived from the card, or the fixed
+  `PAYOFF_LABEL_TEXT`, `"In plain English"`) as a sibling `AbsoluteFill`, DM Sans (`SOURCE_HEAD_FONT_STACK`,
+  aliased to `Counter.tsx`'s `COUNTER_FONT_STACK`), `SECONDARY` ink, no motion primitive of any kind.
+  One real geometry decision T11's stub hadn't settled: the running head sits directly on top of the Wall's own
+  actively SCROLLING archaic text — the only moving content anywhere in the channel — so a transparent overlay
+  would let that background show (and change) through it, contradicting the "fixed" claim. `SourceHead` draws an
+  opaque PAPER backing PLATE spanning the entire, generous `SOURCE_HEAD_BOUNDING_BOX` (not just the text's own
+  tighter bounds) — a masthead band, not a floating label — so every pixel inside that box is deterministic frame
+  to frame regardless of what scrolls behind it. `Counter.tsx`'s own overlay never needed this because it is only
+  ever shown on already-still payoff frames, never over the scroll.
+  Wired into `Wall.tsx`: a new optional `sourceReference?: string` prop (additive, same "omitted -> renders
+  nothing" contract as `counter`/`chapterBlock` — every existing caller/test that hasn't been updated keeps
+  rendering exactly as before). When present, combined with the existing `author` prop (already the card's own
+  `author_slug`) to build `RunningHeadCardMetadata`: the running-head variant renders as a sibling of `WallPhase`
+  during the wall phase, and the payoff variant renders as a sibling of `PayoffLine`/`ReadThroughCounter` during
+  both the landing-line and rest-line phases — same slot, phase-dependent text, exactly the "book page -> not a
+  book page" grammar the plan calls for. `cli.ts` is the one real caller that supplies it: `WallPlan` gained
+  `sourceReference`, sourced from `loadOutputCard`'s own `card.source_reference` (added explicitly to
+  `wall-pool.ts`'s `OutputCard` interface, the same treatment T05 gave `chapter_slug`/`card_number` — required by
+  the corpus schema, `scripts/lib/validate.ts`, on every card) — threaded through `buildInputProps` alongside
+  `chapterBlock`. `--dry-run` also now prints the resolved running head text for visibility, via the same
+  `formatRunningHead` the component itself calls (not a duplicated derivation).
+  Framing text is never narrated: `narrationPlan` in `cli.ts` was not touched, and neither
+  `sourceReference`/`author` nor anything `SourceHead` renders is reachable from `narrationPlan`'s line-selection
+  logic — it only ever reads `formatPlan.plainLines`/`landingLine`/`answer`/`reply`/`text`.
+  One test bug found and fixed, flagged here per the task brief rather than silently patched: T11's own
+  `source-head.test.ts` had a self-contradictory assertion in the "counter and source head together" test —
+  `assertIdenticalOutsideBoxes(counterOnly.png, both.png, [COUNTER_BOUNDING_BOX])` demands every pixel OUTSIDE the
+  counter's own box be identical between a counter-only render and a counter+head render, but the two renders
+  legitimately differ inside `SOURCE_HEAD_BOUNDING_BOX` (that is the entire point of the "both" render), and
+  `SOURCE_HEAD_BOUNDING_BOX` sits entirely outside `COUNTER_BOUNDING_BOX` by construction — so that assertion
+  could never pass for ANY real `SourceHead` implementation, and directly contradicts
+  `assertBoxDiffers(neither.png, both.png, SOURCE_HEAD_BOUNDING_BOX)` four lines later in the same test. The
+  comment directly above it ("the counter box itself is untouched by the source head") describes a different,
+  correct check — replaced the call with `assertBoxIdentical(counterOnly.png, both.png, COUNTER_BOUNDING_BOX)`,
+  which is what that comment actually means, and left a comment explaining the fix and why the original could
+  never pass.
+  Verified: `npx vitest run src/remotion/__tests__/source-head.test.ts` — 25/25 pass. `cd social && npm test` —
+  29/29 test files, 552/552 tests pass (527 prior + 25 in this file, zero regressions elsewhere). `npx tsc
+  --noEmit` clean. Real render + frame inspection (`npx tsx social/src/cli.ts render --date 2026-09-06 --slot 1`,
+  `meditations-02-006`, 705 frames/23.5s): `--dry-run` confirms the running head resolves to the plan's own exact
+  worked example, `"MARCUS AURELIUS · MEDITATIONS, BOOK 2"`. A wall-phase frame (t=1.0s) shows that exact text
+  fixed above the scrolling archaic block — small, DM Sans, secondary grey, unmistakably distinct from the dense
+  serif body beneath it (this card's `opening: countdown`, T17, also renders on top in this same frame — the
+  "190" numeral badge and the running head's boxes DO overlap geometrically, since `WallOpeningBadge` claims the
+  whole top third of the frame; not a defect T12 owns — T17 deletes the opening rotation outright, and the running
+  head/counter's OWN mutual non-collision, the acceptance criterion this task actually owns, holds by construction
+  regardless). A payoff-phase frame (t=18.0s, a narrated rest line) shows `"In plain English"` in the exact same
+  top-left slot, with `"Card 6 of 48"` directly above it, no collision, no reflow. Render artifacts were
+  transient (gitignored `social/out/`) and removed after inspection.
 - [ ] T13: Extend the framing layer to `Question.tsx`, `Objection.tsx` and `Still.tsx` so the channel reads as one
   product. Acceptance: all four compositions carry it; plan 02's house-rule checks still pass on all four.
 - [ ] T14: Assert the narration contract under the new shape —

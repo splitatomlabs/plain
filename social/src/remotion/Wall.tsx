@@ -4,6 +4,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
 import { fitFontSize } from '../render/fit.js';
 import { ReadThroughCounter, COUNTER_FONT_STACK } from './Counter.js';
+import { SourceHead } from './SourceHead.js';
 import { assertWallCardRenderable } from './wall-gate.js';
 import {
 	computeOpeningData,
@@ -59,6 +60,19 @@ export interface WallProps extends Record<string, unknown> {
 	 * that supplies this from `loadChapterTextBlock`.
 	 */
 	chapterBlock?: string;
+	/**
+	 * The card's own `source_reference` field (e.g. `"Meditations, Book 2,
+	 * Section 1"`), verbatim from `content/output/` — social pilot 02a
+	 * T11/T12's framing layer. Combined with `author` (the card's own
+	 * `author_slug`) to derive the running head via `SourceHead.tsx`'s
+	 * `formatRunningHead` (never hardcoded). Optional and additive, same
+	 * pattern as `chapterBlock`/`counter`: when omitted, no running head or
+	 * payoff label renders at all, so every caller that hasn't been updated
+	 * yet (Remotion Studio's `defaultProps`, existing tests) keeps rendering
+	 * exactly as before — `cli.ts` is the one real caller that supplies this,
+	 * from the same `loadOutputCard` call that already resolves `author`.
+	 */
+	sourceReference?: string;
 	/** Verbatim plain sentence held in phase 2. */
 	landingLine: string;
 	/** The rest of the plain passage, verbatim and in order, excluding `landingLine`. */
@@ -146,6 +160,13 @@ export const Wall: React.FC<WallProps> = (props) => {
 	// not just this card's own excerpt. Falls back to `originalExcerpt`
 	// alone when `chapterBlock` is omitted.
 	const wallText = props.chapterBlock ?? props.originalExcerpt;
+	// social pilot 02a T11/T12 — the framing layer. `null` (not rendered at
+	// all) when the caller hasn't supplied `sourceReference`, matching
+	// `counter`'s own optional contract above.
+	const runningHead = props.sourceReference ? (
+		<SourceHead variant={{ kind: 'running-head', card: { author_slug: props.author, source_reference: props.sourceReference } }} />
+	) : null;
+	const payoffLabel = props.sourceReference ? <SourceHead variant={{ kind: 'payoff' }} /> : null;
 
 	if (frame < timing.wall.endFrame) {
 		// Rejects rather than renders an over-long card (too small to read,
@@ -205,6 +226,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 			<>
 				<WallPhase frame={frame} text={wallText} accent={accent} timing={timing} layout={layout} />
 				{openingBadge}
+				{runningHead}
 			</>
 		);
 	}
@@ -214,6 +236,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 			<>
 				<PayoffLine text={props.landingLine} />
 				<ReadThroughCounter label={counter} />
+				{payoffLabel}
 			</>
 		);
 	}
@@ -223,6 +246,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 		<>
 			<PayoffLine text={restLine ? restLine.text : ''} />
 			<ReadThroughCounter label={counter} />
+			{payoffLabel}
 		</>
 	);
 };

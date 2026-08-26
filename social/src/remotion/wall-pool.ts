@@ -51,6 +51,13 @@ export interface OutputCard {
 	original_excerpt: string;
 	plain_english: string;
 	author_slug: string;
+	/**
+	 * Added social pilot 02a T12, for `SourceHead.tsx`'s running head — e.g.
+	 * `"Meditations, Book 2, Section 1"`. Required by the corpus schema
+	 * (`scripts/lib/validate.ts`) on every card, same reasoning as
+	 * `chapter_slug`/`card_number` above.
+	 */
+	source_reference: string;
 	[key: string]: unknown;
 }
 

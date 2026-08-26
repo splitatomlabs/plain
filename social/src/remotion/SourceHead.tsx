@@ -1,22 +1,16 @@
 import React from 'react';
+import { AbsoluteFill } from 'remotion';
 
-import type { AuthorSlug } from '../render/theme.js';
+import { PAPER, SECONDARY, type AuthorSlug } from '../render/theme.js';
 import { COUNTER_FONT_STACK } from './Counter.js';
+import { SOURCE_HEAD_BOUNDING_BOX, SOURCE_HEAD_FONT_SIZE_PX, SOURCE_HEAD_SAFE_INSET_PX } from './source-head-layout.js';
 
 /**
- * social pilot 02a T11 (2026-08-26) STUB — written ahead of T12's real
- * implementation, purely so `__tests__/source-head.test.ts`'s new TDD tests
- * type-check under `tsc --noEmit` (Vitest/esbuild lets an import of a
- * genuinely missing export through as `undefined` at runtime, but
- * `tsc --noEmit` correctly hard-errors on it — same reasoning
- * `wall-timing.ts`'s `WALL_FONT_SIZE` stub documented for T07).
- *
- * Deliberately inert: every export below either throws when called/rendered,
- * or is a real constant that nothing in this file's own rendering yet
- * consumes. T12 replaces the `throw` in `formatRunningHead` and `SourceHead`
- * with the real implementation; this file changes no observable behaviour
- * anywhere else (`SourceHead` is not imported by `Wall.tsx` yet — that wiring
- * is T12's own job, "Implement `SourceHead.tsx` and wire into `Wall.tsx`").
+ * social pilot 02a T12 — the framing layer. Running head while the wall
+ * scrolls ("MARCUS AURELIUS · MEDITATIONS, BOOK 2", derived from the card,
+ * never hardcoded), payoff label ("In plain English") in the exact same slot
+ * once the composition reaches the still plain-English payoff. See
+ * `plans/Pf39c2-social-pilot-02a.md` T11/T12.
  *
  * FRAMING TEXT under Constraint 6 (see the index plan) — the running head
  * names the book, and the payoff label ("In plain English") names the
@@ -29,6 +23,12 @@ import { COUNTER_FONT_STACK } from './Counter.js';
  * `ACCENTS` colour (an accent here would read as branding, not a page
  * header — no progress bar, no watermark, no logo, no URL, same rationale
  * `Counter.tsx` documents at length).
+ *
+ * ZERO MOTION: this component takes no `frame` prop and calls no Remotion
+ * timing primitive — it renders byte-identical JSX for the entire duration
+ * either variant is mounted, matching `Counter.tsx`'s own discipline and the
+ * house rule ("the running head is fixed and the payoff label is static —
+ * neither introduces motion").
  */
 
 /**
@@ -78,23 +78,74 @@ export interface SourceHeadProps {
 }
 
 /**
- * STUB (T11) — see this file's top-of-file doc comment. T12 replaces this
- * `throw` with the real derivation: strip any trailing ", Section N" clause
- * from `source_reference`, uppercase it alongside the author's display name,
- * and join with " · ".
+ * Derives the running head from real card metadata — never hardcoded, never
+ * attributed to the author (it names the book, not "Marcus Aurelius wrote").
+ * `author_slug` (e.g. `"marcus-aurelius"`) becomes `"MARCUS AURELIUS"`
+ * (hyphens to spaces, uppercased); `source_reference` (e.g. `"Meditations,
+ * Book 2, Section 1"`) drops its trailing `", Section N"` clause, since the
+ * section number is too fine-grained for a running head (a book page header
+ * names the book/chapter, not the paragraph) — leaving `"MEDITATIONS, BOOK
+ * 2"`. The two halves join with " · ", matching the plan's own worked
+ * example verbatim: `"MARCUS AURELIUS · MEDITATIONS, BOOK 2"`.
  */
-export function formatRunningHead(_card: RunningHeadCardMetadata): string {
-	throw new Error(
-		'formatRunningHead: not implemented yet — see plans/Pf39c2-social-pilot-02a.md T12 ("Implement SourceHead.tsx and wire into Wall.tsx").'
-	);
+export function formatRunningHead(card: RunningHeadCardMetadata): string {
+	const authorName = card.author_slug.split('-').join(' ').toUpperCase();
+	const bookReference = card.source_reference.replace(/,\s*Section\s+\d+\s*$/i, '').toUpperCase();
+	return `${authorName} · ${bookReference}`;
 }
 
 /**
- * STUB (T11) — see this file's top-of-file doc comment. T12 replaces this
- * `throw` with the real fixed-position, zero-motion overlay.
+ * The framing layer's fixed-position, zero-motion overlay — same slot for
+ * both variants (`SOURCE_HEAD_BOUNDING_BOX`), so the visual grammar is one
+ * continuous element that simply changes text: book page -> not a book page.
+ * Rendered as a sibling `AbsoluteFill`, never a child of either payload
+ * layout, so it structurally cannot reflow anything else on screen — same
+ * NO REFLOW discipline `Counter.tsx` documents at length.
  */
-export function SourceHead(_props: SourceHeadProps): React.ReactElement {
-	throw new Error(
-		'SourceHead: not implemented yet — see plans/Pf39c2-social-pilot-02a.md T12 ("Implement SourceHead.tsx and wire into Wall.tsx").'
+export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
+	const text = variant.kind === 'running-head' ? formatRunningHead(variant.card) : PAYOFF_LABEL_TEXT;
+
+	return (
+		<AbsoluteFill style={{ pointerEvents: 'none' }}>
+			{/*
+			 * A solid backing PLATE spanning the entire, generous
+			 * `SOURCE_HEAD_BOUNDING_BOX` — not a transparent overlay sized to
+			 * the text. The running head sits directly on top of the Wall's own
+			 * actively SCROLLING text (the only moving content in the whole
+			 * channel), so every pixel inside this box must be deterministic
+			 * (the same PAPER colour every frame) rather than letting the
+			 * archaic text behind show through at the box's margins — a
+			 * masthead band, not a floating label. `pixel-proof.ts`'s tests
+			 * crop exactly this box, so it must be fully opaque and fully fill
+			 * it, not just the text's own tighter bounds.
+			 */}
+			<div
+				style={{
+					position: 'absolute',
+					top: SOURCE_HEAD_BOUNDING_BOX.top,
+					left: SOURCE_HEAD_BOUNDING_BOX.left,
+					width: SOURCE_HEAD_BOUNDING_BOX.width,
+					height: SOURCE_HEAD_BOUNDING_BOX.height,
+					backgroundColor: PAPER,
+					display: 'flex',
+					alignItems: 'center'
+				}}
+			>
+				<span
+					style={{
+						paddingLeft: SOURCE_HEAD_SAFE_INSET_PX,
+						fontFamily: SOURCE_HEAD_FONT_STACK,
+						fontWeight: 500,
+						fontSize: SOURCE_HEAD_FONT_SIZE_PX,
+						lineHeight: 1,
+						letterSpacing: '0.02em',
+						color: SECONDARY,
+						margin: 0
+					}}
+				>
+					{text}
+				</span>
+			</div>
+		</AbsoluteFill>
 	);
 }
