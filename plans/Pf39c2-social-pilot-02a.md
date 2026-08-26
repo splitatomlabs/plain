@@ -513,8 +513,71 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   each card's OWN single-card `original_excerpt`, not the chapter-sourced block — harmless today (the gate no
   longer rejects on block height at all, so this is a non-issue for supply), but worth noting so a future task
   doesn't assume these survey functions already exercise the real chapter-sourced render path Wall.tsx will use.
-- [ ] T09: Wire `Wall.tsx` to render the chapter block. Acceptance: renders from a real card; frame 0 shows the
+- [x] T09: Wire `Wall.tsx` to render the chapter block. Acceptance: renders from a real card; frame 0 shows the
   card's own first words at the top of the frame; the block is continuous verbatim chapter text below it.
+  Done (2026-08-26): `WallProps` gained an optional `chapterBlock?: string` — the moving wall phase's real
+  scrolling text now reads `props.chapterBlock ?? props.originalExcerpt` (`Wall.tsx`), falling back to the old
+  single-excerpt behavior when omitted so every existing caller (Root.tsx's `defaultWallProps`, `counter.test.ts`'s
+  `WALL_BASE_PROPS`, any direct render that hasn't been updated) keeps working unchanged. `originalExcerpt` itself
+  is untouched everywhere else — the gate (`assertWallCardRenderable`), the opening rotation's word count
+  (`computeOpeningData`), and `computeWallTiming`'s `wall.wordCount` all still key off the CARD's own excerpt, not
+  the chapter block, since none of those are about what phase 1 visually renders. `cli.ts` is the one real caller
+  that supplies `chapterBlock`: `WallPlan` gained the field, `buildRenderPlan`'s `'wall'` case computes it via
+  `loadChapterTextBlock(slot.book_slug, slot.card_id)` (`render/chapter-text.ts`, T06), and `buildInputProps`
+  threads it into the composition's `inputProps`. `printPlan` also logs the chapter block's word count next to the
+  card's own excerpt word count for `--dry-run` visibility. No change was needed to `Root.tsx`'s
+  `calculateMetadata` — durationInFrames depends only on `plainLines`/`narrationTimings`/`landingLine`, never on
+  how long the wall-phase text is (the wall phase's length is the fixed `WALL_SECONDS`, by design), so nothing
+  there reads `chapterBlock` at all.
+  T08's flag (`surveyWallPool`/`surveyReadThrough` still gate each card's own single-card excerpt, not the
+  chapter block) is CONSCIOUSLY KEPT, not resolved: confirmed `gateWallCard`'s only two reachable rejection axes
+  are `'duration'` and `'landingLine'` (T08 deleted the block-height axis entirely, not just narrowed it), so
+  which text `computeWallLayout` measures inside the gate cannot change any survey's pass/fail outcome — and
+  neither `wall-pool.ts` nor `write-exclusions.ts` writes `layout`/`blockHeight` numbers into any artifact a reader
+  could be misled by (confirmed by grep: `write-exclusions.ts` never touches `layout`/`blockHeight`/`screens`).
+  Changing those survey functions to chapter-source their gate calls would be a no-op on every measurable output,
+  so it's left alone rather than expanding this task's diff for zero effect — flagged here again in case a later
+  task (e.g. one that starts reporting `layout`/`blockHeight` for real) needs to revisit it.
+  Tests: new `social/src/remotion/__tests__/wall-chapter-block.test.ts` (3 tests), reusing `counter.test.ts`'s own
+  `bundle` + `selectComposition` + `renderStill` + `pngjs` machinery (no new rendering approach invented) against
+  the real card `meditations-02-006` (day 6 slot 1 of the committed week-1 schedule — the same card
+  `cli.test.ts`'s own Wall e2e test already renders). One sanity test restates chapter-text.ts's own already-tested
+  precondition (the real block starts with this card's excerpt and is >5x longer). The other two are the real
+  proof, pixel-based (Remotion renders to a canvas, not an inspectable DOM): render frame 0 twice, once with
+  `chapterBlock` omitted (the pre-T09 shape) and once with the real chapter block, then (a) assert every pixel
+  from the top down through the excerpt-alone render's own last line of ink is BYTE-IDENTICAL between the two
+  renders — chapter-sourcing must never change what frame 0 opens on — and (b) assert the chapter-block render has
+  ink well past where the excerpt-alone render runs out (measured: the 157-word excerpt alone fills to row
+  1156/1920; the two renders don't diverge until row 1166, comfortably past that boundary), proving continuous
+  chapter text renders below, not blank space. Confirmed both fail meaningfully against the pre-T09 `Wall.tsx` (via
+  a temporary `git stash` of just that file): the "continuous text below" test fails outright (`expected false to
+  be true`); the "frame 0 identical" test still passes (correctly — with no chapter-sourcing wired, both renders
+  reduce to the same excerpt-only text, so there is nothing to distinguish yet).
+  Verified: `npx tsc --noEmit` clean. `cd social && npm test` — 28/28 test files, 523/523 tests (520 pre-existing +
+  3 new), zero regressions. One transient failure was observed on a first full-suite run
+  (`wall-openings.test.ts`'s end-to-end smoke test hit vitest's 180s per-test timeout under full-suite parallel
+  load) and did NOT reproduce on a second full run or in isolation (2.3s) — resource contention from the suite's
+  now-larger set of real-render tests running in parallel, not a regression this task introduced; not something
+  this task's own scope should fix.
+  Real end-to-end render + frame inspection (`npx tsx social/src/cli.ts render --date 2026-09-06 --slot 1`, day 6
+  slot 1 of week 1 — a real, committed Wall slot, `meditations-02-006`): `--dry-run` confirms the chapter block is
+  2,196 words against the card's own 157-word excerpt. Extracted frames 0, 36 (mid-scroll), 74 (last wall frame,
+  an instant before the cut) and 80 (first payoff frame) with ffmpeg and read them directly. Frame 0: the card's
+  own opening words ("Theophrastus, where he compares sin with sin...") sit at the very top of the frame, exactly
+  as before T09, and by frame 21-22 of the visible ~35 lines the text has already crossed from this card's own
+  excerpt (ending "...merely resolve upon that action.") straight into the NEXT chapter card's excerpt
+  ("Whatsoever thou dost affect, whatsoever thou dost project...") with no gap, blank line, or repeat — real,
+  continuous, verbatim chapter text, not a loop of the same 157 words. At 44px/1.25 line-height (55px lines),
+  1920px of frame height holds ~35 visible lines at frame 0, averaging roughly 7-8 words/line (matching
+  `wall-timing.ts`'s own "~7.1 words/line" estimate) — a dense page of real body text, not the pre-geometry-rewrite
+  "large-print book" the plan's own Why section measured (was ~18 lines of ~3.5 words). Frame 74 (the hard cut)
+  still shows dense mid-passage archaic text (further into the same chapter-sourced continuation, past this
+  card's own excerpt), confirming the cut lands mid-passage rather than at the end of a short single-card excerpt.
+  Frame 80 shows the unaffected payoff ("Theophrastus compares different types of wrongdoing." + the "Card 6 of
+  48" counter) exactly as pre-T09. (This card's `opening: countdown`, T17, unrelated to this task, also renders
+  correctly on top — a "157"/"132"/"106"-style countdown badge — confirming the new chapter-sourced wall phase
+  composes fine with the existing opening rotation.) Render artifacts were transient (written under the
+  gitignored `social/out/`) and removed after inspection.
 - [ ] T10: Fix the payoff polarity — the payoff must be set LARGER than the wall. Raise `PAYOFF_MIN_FONT` above
   `WALL_FONT_SIZE` and assert the relationship as a test, not a coincidence. Acceptance: a test fails if wall
   type is ever ≥ payoff type.

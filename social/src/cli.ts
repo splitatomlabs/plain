@@ -48,6 +48,7 @@ import {
 } from './cli-plan.js';
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
+import { loadChapterTextBlock } from './render/chapter-text.js';
 import { computeEligibleOpenings, type WallOpening } from './remotion/wall-openings.js';
 import { computeWallTiming, WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
 import { computeQuestionTiming } from './remotion/question-timing.js';
@@ -187,6 +188,14 @@ async function loadWeekSchedule(week: number, scheduleDir: string): Promise<Week
 interface WallPlan {
 	format: 'wall';
 	originalExcerpt: string;
+	/**
+	 * The moving wall phase's real scrolling text (social pilot 02a T09) —
+	 * this card's own excerpt plus the surrounding chapter, in document
+	 * order, one full lap starting at this card. See `Wall.tsx`'s
+	 * `WallProps.chapterBlock` doc comment and `render/chapter-text.ts`'s
+	 * `loadChapterTextBlock`.
+	 */
+	chapterBlock: string;
 	landingLine: string;
 	plainLines: string[];
 	opening: WallOpening;
@@ -249,9 +258,11 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 			const plainLines = computeWallPlainLines(card.plain_english, slot.content.landing_line);
 			const eligibleOpenings = computeEligibleOpenings(slot.content.original_excerpt, card.plain_english);
 			const opening = chooseWallOpening(postIndex, eligibleOpenings);
+			const chapterBlock = loadChapterTextBlock(slot.book_slug, slot.card_id);
 			formatPlan = {
 				format: 'wall',
 				originalExcerpt: slot.content.original_excerpt,
+				chapterBlock,
 				landingLine: slot.content.landing_line,
 				plainLines,
 				opening,
@@ -315,6 +326,10 @@ function printPlan(plan: RenderPlan): void {
 	if (plan.formatPlan.format === 'wall') {
 		console.log(`  opening: ${plan.formatPlan.opening} (eligible: ${plan.formatPlan.eligibleOpenings.join(', ')})`);
 		console.log(`  plain lines after landing line: ${plan.formatPlan.plainLines.length}`);
+		console.log(
+			`  chapter block: ${plan.formatPlan.chapterBlock.split(/\s+/).filter(Boolean).length} words ` +
+				`(card's own excerpt: ${plan.formatPlan.originalExcerpt.split(/\s+/).filter(Boolean).length} words)`
+		);
 	}
 	console.log('  narration: false (T14 not done — music-only)');
 }
@@ -330,6 +345,7 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 			return {
 				...base,
 				originalExcerpt: plan.formatPlan.originalExcerpt,
+				chapterBlock: plan.formatPlan.chapterBlock,
 				landingLine: plan.formatPlan.landingLine,
 				plainLines: plan.formatPlan.plainLines,
 				opening: plan.formatPlan.opening,

@@ -34,8 +34,31 @@ import {
 // Remotion's `<Composition>` (which parameterizes over `Props extends
 // Record<string, unknown>`), not part of the domain model.
 export interface WallProps extends Record<string, unknown> {
-	/** Verbatim archaic text — must never be paraphrased or fabricated. */
+	/**
+	 * Verbatim archaic text — must never be paraphrased or fabricated. This
+	 * card's OWN excerpt (used by the gate, the opening rotation's word
+	 * count, and as the fallback wall-phase text below when `chapterBlock`
+	 * is omitted) — not necessarily what phase 1 renders; see `chapterBlock`.
+	 */
 	originalExcerpt: string;
+	/**
+	 * The moving wall phase's actual scrolling text (social pilot 02a
+	 * T05-T09) — verbatim text from this card's own excerpt PLUS the
+	 * surrounding chapter's other cards, in document order, one full lap
+	 * starting at this card (`social/src/render/chapter-text.ts`'s
+	 * `buildChapterTextBlock`/`loadChapterTextBlock`). Because the block
+	 * always starts with this card's own `original_excerpt`, frame 0 (offset
+	 * 0, before any scroll) still shows this card's own first words at the
+	 * top of the frame — the chapter-sourcing only extends what continues
+	 * BELOW that as the scroll travels, it never changes what frame 0 opens
+	 * on. Optional and falls back to `originalExcerpt` alone (the pre-T09
+	 * behavior) so every caller that hasn't been updated to supply a
+	 * chapter-sourced block yet (Remotion Studio's `defaultProps`, this
+	 * file's own gate call, any test that only cares about a single card)
+	 * keeps rendering exactly as before — `cli.ts` is the one real caller
+	 * that supplies this from `loadChapterTextBlock`.
+	 */
+	chapterBlock?: string;
 	/** Verbatim plain sentence held in phase 2. */
 	landingLine: string;
 	/** The rest of the plain passage, verbatim and in order, excluding `landingLine`. */
@@ -118,6 +141,11 @@ export const Wall: React.FC<WallProps> = (props) => {
 	// during the moving wall phase (it must not collide with the archaic
 	// wall). See `Counter.tsx`.
 	const counter = props.counter ?? null;
+	// social pilot 02a T09 — the moving wall phase scrolls through the
+	// chapter-sourced block (see `WallProps.chapterBlock`'s doc comment),
+	// not just this card's own excerpt. Falls back to `originalExcerpt`
+	// alone when `chapterBlock` is omitted.
+	const wallText = props.chapterBlock ?? props.originalExcerpt;
 
 	if (frame < timing.wall.endFrame) {
 		// Rejects rather than renders an over-long card (too small to read,
@@ -175,7 +203,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 
 		return (
 			<>
-				<WallPhase frame={frame} text={props.originalExcerpt} accent={accent} timing={timing} layout={layout} />
+				<WallPhase frame={frame} text={wallText} accent={accent} timing={timing} layout={layout} />
 				{openingBadge}
 			</>
 		);
