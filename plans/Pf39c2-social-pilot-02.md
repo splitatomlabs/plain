@@ -203,6 +203,12 @@ looks like Plain.
   exactly ONE screen" — the opposite of what a scroll needs. New axes: the block must be tall enough to travel, the
   type must clear the legibility floor, and the scroll must NOT finish before the cut. Then regenerate
   `content/social/render-exclusions.json` and week 1, since the pass/reject split will move.
+- [~] F18: The fixed 76px setting from F16 costs 76% of the Wall pool (219/896), 86% of Question (12/88), and
+  breaks the read-through outright (11/48 renderable, needing 7 CONSECUTIVE; longest run anywhere is 4), so week 1
+  cannot be generated and only 4/14 slots render. Cause is arithmetic, not a bug: "never finishes" needs a block
+  over 3,170px, and a FIXED font size only reaches that above ~130 words. Fix: stop fixing the font size, fix the
+  BLOCK HEIGHT — fit each card's type to land near a target block height, so short passages get larger type and
+  long ones smaller. Fixed rate and the never-finishes invariant both hold, and supply returns.
 - [ ] F12: (re-review, noted not blocking) The read-through's question/objection branches in `scripts/lib/schedule.ts`
   re-derive content via their own gates and are still ungated by `render-exclusions.json`. The current Meditations
   book-02/03 slice passes both gates with 0 rejections, so there is no live defect — recorded, not fixed.
