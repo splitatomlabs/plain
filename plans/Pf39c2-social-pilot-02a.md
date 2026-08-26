@@ -193,9 +193,18 @@ is fixable now against recorded fixtures without live voices, so it comes in her
 
 ## Tasks
 
-- [ ] T01: Test the landing-line requirement — `social/src/remotion/__tests__/wall-gate.test.ts`. A card whose
+- [x] T01: Test the landing-line requirement — `social/src/remotion/__tests__/wall-gate.test.ts`. A card whose
   `plain_english` yields no qualifying landing line is REJECTED by the gate; a card whose landing line exceeds a
   named max-words backstop is rejected by the composition. Acceptance: both fail against today's implementation.
+  Done: added a `describe('gateWallCard — the landing-line requirement (T02, not yet implemented)', ...)` block
+  (constant-existence check for a new `WALL_LANDING_LINE_MAX_WORDS` export, a `gateWallCard` rejection test using a
+  synthetic no-terminal-punctuation `plainEnglish` fixture sanity-checked against `landing-line.ts`'s own
+  `selectLandingLine`, and an `assertWallCardRenderable` throw test), plus one new composition-level test in the
+  existing `'the composition path surfaces the rejection (T06 wiring)'` block (`selectComposition` with a 45-word
+  `landingLine`). All 4 new tests fail against today's implementation (confirmed via `npx vitest run
+  src/remotion/__tests__/wall-gate.test.ts`); all 17 pre-existing tests in the file still pass. Named the new
+  `WallGateResult.failure` variant `'landingLine'` and the backstop constant `WALL_LANDING_LINE_MAX_WORDS` —
+  T02/T03's implementer should either match these names or update the tests alongside the implementation.
 - [ ] T02: Remove the whole-passage fallback — `scripts/lib/schedule.ts` (`tryReadThroughContent`),
   `social/src/remotion/wall-gate.ts`, `Wall.tsx`. No qualifying landing line → not a Wall → Still. Acceptance:
   T01 passes; `meditations-02-005` no longer renders as a Wall.

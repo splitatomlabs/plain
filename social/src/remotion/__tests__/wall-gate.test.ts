@@ -16,10 +16,22 @@ import {
 	assertWallCardRenderable,
 	WALL_REFERENCE_VIEWPORT_WIDTH,
 	WALL_MIN_LEGIBLE_FONT_PX,
-	WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX
+	WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX,
+	// Does not exist yet (social pilot 02a T01/T02) — the named max-words
+	// backstop the plan's Decisions section calls for: "Never fall back to
+	// the whole passage... a word-count backstop in the composition so a
+	// whole-passage payoff can never render again." Imported here (rather
+	// than only referenced inside a test) so its mere non-existence is its
+	// own assertion below, matching this file's existing style of importing
+	// every constant it checks. An import of a binding a module doesn't
+	// export resolves to `undefined` under this project's vitest/esbuild
+	// setup rather than throwing, so this does not break module load for the
+	// rest of the file's (pre-existing) tests.
+	WALL_LANDING_LINE_MAX_WORDS
 } from '../wall-gate.js';
 import { surveyWallPool, resolveWallCardExcerpt, loadOutputCard, type WallPoolEntry } from '../wall-pool.js';
 import { computeWallPlainLines } from '../../cli-plan.js';
+import { selectLandingLine } from '../landing-line.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -209,6 +221,114 @@ describe('the composition path surfaces the rejection (T06 wiring)', () => {
 		},
 		120_000
 	);
+
+	// T01 (social pilot 02a): the plan's decision is explicit — "Never fall
+	// back to the whole passage... a word-count backstop in the composition
+	// so a whole-passage payoff can never render again." Today, `Wall.tsx`
+	// renders whatever `landingLine` prop it's given with no word-count
+	// check of its own — `PayoffLine` just auto-fits the font size down,
+	// however long the text is. This proves that gap: a `landingLine` far
+	// longer than any real Wall payoff should ever be (well past the
+	// existing 18-word `LANDING_LINE_MAX_WORDS` mechanical selection bound
+	// duplicated in `landing-line.ts`/`scripts/lib/premises.ts`) must be
+	// REJECTED by the composition itself — not merely by the upstream
+	// mechanical gate that chose it — so a regression that feeds `Wall.tsx`
+	// an unselected/whole passage can never silently render.
+	it(
+		'selectComposition throws for a landingLine over the named max-words backstop',
+		async () => {
+			const longest = longestPoolEntry();
+			const excerpt = resolveWallCardExcerpt(longest, outputDir);
+
+			// Far longer than any real landing line: 45 words, more than
+			// double the existing 18-word mechanical selection cap.
+			const overLongLandingLine = Array.from({ length: 45 }, (_, i) => `word${i + 1}`).join(' ') + '.';
+
+			const bundleLocation = await bundle({
+				entryPoint: path.join(moduleDir, '..', 'entry.tsx'),
+				outDir: bundleDir,
+				webpackOverride: (config) => ({
+					...config,
+					resolve: {
+						...config.resolve,
+						extensionAlias: { '.js': ['.js', '.ts', '.tsx'] }
+					}
+				})
+			});
+
+			await expect(
+				selectComposition({
+					serveUrl: bundleLocation,
+					id: 'Wall',
+					inputProps: {
+						originalExcerpt: excerpt,
+						landingLine: overLongLandingLine,
+						plainLines: ['One short rest line.'],
+						author: 'marcus-aurelius'
+					}
+				})
+			).rejects.toThrow(/landing line/i);
+		},
+		120_000
+	);
+});
+
+// T01 (social pilot 02a): the payoff's whole-passage fallback
+// (`tryReadThroughContent`'s `selectLandingLine(card) ?? card.plain_english`
+// in `scripts/lib/schedule.ts`) is the defect this plan exists to fix. Per
+// the plan's Decisions section: "No qualifying landing line -> the card is
+// not a Wall. It becomes a Still... Enforced in the gate at survey time."
+// Today `gateWallCard` never looks at `plain_english`/the landing line at
+// all — it only checks the archaic `originalExcerpt` against the travel and
+// duration axes — so this describe block proves that gap.
+describe('gateWallCard — the landing-line requirement (T02, not yet implemented)', () => {
+	// A real slice of plain English with no terminal `.`/`!` anywhere — every
+	// "sentence" `sentences()` extracts from it is therefore a fragment, so
+	// `findLandingLines`/`selectLandingLine` can never find a qualifying line
+	// no matter its word count or self-containedness.
+	const NO_QUALIFYING_LANDING_LINE_PLAIN_ENGLISH =
+		'This opens mid thought with no terminal punctuation anywhere in the passage so nothing here can ever complete a sentence';
+
+	it('sanity: the fixture text really has no qualifying landing line (selectLandingLine returns null)', () => {
+		expect(selectLandingLine(NO_QUALIFYING_LANDING_LINE_PLAIN_ENGLISH)).toBeNull();
+	});
+
+	it('a named max-words backstop constant exists on wall-gate.ts', () => {
+		// Not 18 (LANDING_LINE_MAX_WORDS, the mechanical selection bound
+		// already enforced upstream in landing-line.ts/premises.ts) — this is
+		// meant as a defense-in-depth backstop against a whole passage ever
+		// reaching the composition, not a restatement of the selection rule.
+		expect(typeof WALL_LANDING_LINE_MAX_WORDS).toBe('number');
+	});
+
+	it('rejects a card whose plain_english yields no qualifying landing line', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+
+		// `plainEnglish` does not exist on `WallGateContentInput` yet (T02) —
+		// passed here as the shape T02's acceptance criterion requires this
+		// test to compile and pass against.
+		const result = gateWallCard(excerpt, { plainEnglish: NO_QUALIFYING_LANDING_LINE_PLAIN_ENGLISH } as Parameters<
+			typeof gateWallCard
+		>[1]);
+
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.failure).toBe('landingLine');
+			expect(result.reason).toMatch(/landing line/i);
+		}
+	});
+
+	it('assertWallCardRenderable throws naming the missing landing line', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+
+		expect(() =>
+			assertWallCardRenderable(excerpt, {
+				plainEnglish: NO_QUALIFYING_LANDING_LINE_PLAIN_ENGLISH
+			} as Parameters<typeof assertWallCardRenderable>[1])
+		).toThrow(/landing line/i);
+	});
 });
 
 describe('surveyWallPool — the real pool', () => {
