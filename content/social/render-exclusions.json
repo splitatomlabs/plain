@@ -30,8 +30,8 @@
     },
     "read_through": {
       "submitted": 48,
-      "succeeded": 26,
-      "dropped": 22
+      "succeeded": 16,
+      "dropped": 32
     },
     "still": {
       "submitted": 48,
@@ -2843,6 +2843,12 @@
       "reason": "Wall card rejected: 117 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
+      "card_id": "meditations-02-002",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
       "card_id": "meditations-02-003",
       "book_slug": "meditations",
       "axis": "travel",
@@ -2855,6 +2861,12 @@
       "reason": "Wall card rejected: 67 words reach only 2070px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
+      "card_id": "meditations-02-005",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
       "card_id": "meditations-02-007",
       "book_slug": "meditations",
       "axis": "travel",
@@ -2863,8 +2875,14 @@
     {
       "card_id": "meditations-02-008",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 108 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
+      "card_id": "meditations-02-009",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-02-010",
@@ -2875,8 +2893,8 @@
     {
       "card_id": "meditations-02-011",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 112 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-02-016",
@@ -2887,8 +2905,8 @@
     {
       "card_id": "meditations-02-017",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 63 words reach only 2070px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-02-019",
@@ -2897,10 +2915,16 @@
       "reason": "Wall card rejected: 84 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
+      "card_id": "meditations-03-001",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
       "card_id": "meditations-03-002",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 56 words reach only 2070px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-03-006",
@@ -2911,8 +2935,20 @@
     {
       "card_id": "meditations-03-007",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 93 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
+      "card_id": "meditations-03-009",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
+      "card_id": "meditations-03-010",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-03-013",
@@ -2923,14 +2959,26 @@
     {
       "card_id": "meditations-03-014",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 82 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
+      "card_id": "meditations-03-015",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
+      "card_id": "meditations-03-017",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-03-018",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 76 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-03-020",
@@ -2939,10 +2987,16 @@
       "reason": "Wall card rejected: 105 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
+      "card_id": "meditations-03-022",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
+    },
+    {
       "card_id": "meditations-03-023",
       "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 79 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
       "card_id": "meditations-03-024",
@@ -2967,6 +3021,12 @@
       "book_slug": "meditations",
       "axis": "travel",
       "reason": "Wall card rejected: 87 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+    },
+    {
+      "card_id": "meditations-03-028",
+      "book_slug": "meditations",
+      "axis": "landingLine",
+      "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     }
   ],
   "still": []

@@ -23,12 +23,13 @@
  * `tryReadThroughContent`), regardless of Wall-pool membership: surveying
  * only `wall.json` structurally can't cover a read-through card the pool
  * never scored. The read-through section survey uses the READ-THROUGH's OWN
- * landing-line derivation (`selectLandingLine(plainEnglish) ?? plainEnglish`
- * — see `../src/remotion/landing-line.ts`), not a scored pool's
- * `rubric.chosen_landing_line`: the two can compute different frame totals
- * for the same card (M2's own finding), so surveying with the wrong
- * derivation can give a wrong verdict even for a card the Wall pool DID
- * cover.
+ * landing-line derivation (`selectLandingLine(plainEnglish)` — see
+ * `../src/remotion/landing-line.ts` — with NO `?? plainEnglish` fallback,
+ * social pilot 02a T02/T04: a card with no qualifying landing line is not a
+ * Wall at all, full stop), not a scored pool's `rubric.chosen_landing_line`:
+ * the two can compute different frame totals for the same card (M2's own
+ * finding), so surveying with the wrong derivation can give a wrong verdict
+ * even for a card the Wall pool DID cover.
  *
  * F19 adds a FIFTH section — `still` — surveying that SAME read-through
  * slice through `../src/remotion/still-gate.ts`'s legibility gate, against
@@ -329,9 +330,30 @@ function surveyReadThrough(slice: OutputCard[], bookSlug: string, chapters: stri
 	let succeeded = 0;
 	for (const card of slice) {
 		const plainEnglish = String(card.plain_english);
-		const landingLine = selectLandingLine(plainEnglish) ?? plainEnglish;
+		// social pilot 02a T04: no more `?? plainEnglish` fallback — matches
+		// `scripts/lib/schedule.ts`'s post-T02 `tryReadThroughContent`, which
+		// returns `null` (not a Wall at all) the instant `selectLandingLine`
+		// finds nothing, before ever consulting the travel/duration gate. A
+		// card with no qualifying landing line is excluded here on that basis
+		// alone, without regard to whether its excerpt would otherwise clear
+		// `gateWallCard`'s travel or duration floors — the real scheduler
+		// never gets that far for this card either.
+		const landingLine = selectLandingLine(plainEnglish);
+		if (landingLine === null) {
+			rejections.push({
+				card_id: card.id,
+				book_slug: card.book_slug,
+				axis: 'landingLine',
+				reason:
+					'Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine ' +
+					'(landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card ' +
+					'cannot pay off as a Wall (matches scripts/lib/schedule.ts\'s tryReadThroughContent, which ' +
+					'returns null here rather than falling back to the whole passage).'
+			});
+			continue;
+		}
 		const plainLines = computeWallPlainLines(plainEnglish, landingLine);
-		const result = gateWallCard(card.original_excerpt, { plainLines });
+		const result = gateWallCard(card.original_excerpt, { plainEnglish, landingLine, plainLines });
 		if (result.ok) {
 			succeeded++;
 		} else {

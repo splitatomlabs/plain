@@ -13,13 +13,16 @@
  *
  * The final `describe` block is the M2 regression proof specifically: it
  * independently re-derives the READ-THROUGH's own landing line for every
- * card of the read-through slice (`selectLandingLine(plainEnglish) ??
- * plainEnglish` — the same derivation `scripts/lib/schedule.ts`'s
- * `tryReadThroughContent` uses, NOT a scored Wall pool entry's
- * `rubric.chosen_landing_line`) and asserts every slice card is EITHER on
- * the committed `read_through` exclusion list OR passes `gateWallCard`
- * under that derivation — the assertion that would have caught M2 (a card
- * absent from the Wall pool survey, or surveyed with the wrong landing
+ * card of the read-through slice (`selectLandingLine(plainEnglish)` — the
+ * same derivation `scripts/lib/schedule.ts`'s `tryReadThroughContent` uses,
+ * NOT a scored Wall pool entry's `rubric.chosen_landing_line` — with NO `??
+ * plainEnglish` fallback, social pilot 02a T02/T04: a card with no
+ * qualifying landing line is excluded on that basis alone, never gated
+ * against `gateWallCard`'s travel/duration floors, matching the real
+ * scheduler which never gets that far for such a card either) and asserts
+ * every slice card is EITHER on the committed `read_through` exclusion list
+ * OR passes that derivation — the assertion that would have caught M2 (a
+ * card absent from the Wall pool survey, or surveyed with the wrong landing
  * line, silently slipping through as schedulable).
  */
 import { describe, expect, it } from 'vitest';
@@ -284,17 +287,29 @@ describe('content/social/render-exclusions.json — the read-through slice (F06/
 		expect(committed.meta.read_through.dropped).toBe(committed.read_through.length);
 	});
 
+	/**
+	 * Re-derives one slice card's verdict exactly as `write-exclusions.ts`'s
+	 * `surveyReadThrough` does (social pilot 02a T04): no `?? plainEnglish`
+	 * fallback — a card with no qualifying landing line is rejected on that
+	 * basis alone, never reaching `gateWallCard`'s travel/duration checks,
+	 * matching `scripts/lib/schedule.ts`'s `tryReadThroughContent`.
+	 */
+	function rederiveOk(card: (typeof slice)[number]): boolean {
+		const plainEnglish = String(card.plain_english);
+		const landingLine = selectLandingLine(plainEnglish);
+		if (landingLine === null) return false;
+		const plainLines = computeWallPlainLines(plainEnglish, landingLine);
+		const result = gateWallCard(card.original_excerpt, { plainEnglish, landingLine, plainLines });
+		return result.ok;
+	}
+
 	it('every read-through slice card is EITHER on the committed exclusion list OR independently passes gateWallCard under the READ-THROUGH\'s own landing-line derivation', () => {
 		const excludedIds = new Set(committed.read_through.map((e) => e.card_id));
 		const wrongfullyPermitted: string[] = [];
 
 		for (const card of slice) {
 			if (excludedIds.has(card.id)) continue;
-			const plainEnglish = String(card.plain_english);
-			const landingLine = selectLandingLine(plainEnglish) ?? plainEnglish;
-			const plainLines = computeWallPlainLines(plainEnglish, landingLine);
-			const result = gateWallCard(card.original_excerpt, { plainLines });
-			if (!result.ok) {
+			if (!rederiveOk(card)) {
 				wrongfullyPermitted.push(card.id);
 			}
 		}
@@ -307,11 +322,7 @@ describe('content/social/render-exclusions.json — the read-through slice (F06/
 			const card = slice.find((c) => c.id === entry.card_id);
 			expect(card).toBeDefined();
 			if (!card) continue;
-			const plainEnglish = String(card.plain_english);
-			const landingLine = selectLandingLine(plainEnglish) ?? plainEnglish;
-			const plainLines = computeWallPlainLines(plainEnglish, landingLine);
-			const result = gateWallCard(card.original_excerpt, { plainLines });
-			expect(result.ok).toBe(false);
+			expect(rederiveOk(card)).toBe(false);
 		}
 	});
 });
