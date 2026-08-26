@@ -41,7 +41,7 @@ import {
 	applyChapterEntryOffset,
 	type ChapterTextCard
 } from '../chapter-text.js';
-import { loadBookCards } from '../../remotion/wall-pool.js';
+import { loadBookCards, loadOutputCard } from '../../remotion/wall-pool.js';
 import {
 	computeWallLayout,
 	FRAME_HEIGHT,
@@ -552,6 +552,139 @@ describe('buildChapterTextBlock — R02 acceptance: every non-excluded wall.json
 			// eslint-disable-next-line no-console
 			console.log(
 				`R02 sweep across ${nonExcludedEntries.length} non-excluded wall.json entries: ` +
+					`worst margin at offset 0 = ${worstMarginAtZero.toFixed(1)}px, ` +
+					`worst margin at worst-case offset = ${worstMarginAtWorstOffset.toFixed(1)}px ` +
+					`(travel floor ${TRAVEL_FLOOR_PX.toFixed(1)}px)`
+			);
+
+			expect(shortfallsAtZero, `${shortfallsAtZero.length} entries fail at offset 0`).toEqual([]);
+			expect(
+				shortfallsAtWorstOffset,
+				`${shortfallsAtWorstOffset.length} entries fail at their worst-case offset`
+			).toEqual([]);
+		}
+	);
+});
+
+// ---------------------------------------------------------------------------
+// social pilot 02a REVIEW R03 — `Question.tsx`'s own archaic wall phase was
+// still feeding `WallPhase` the card's own `originalExcerpt` alone (T09
+// wired only `Wall.tsx`'s wall phase to the chapter-sourced block; T13
+// extended the FRAMING layer to Question but not this). At `WALL_FONT_SIZE`
+// (44px) a single card's own excerpt (~100-200 words) falls well short of
+// the ~412-word/2538.75px travel floor, so the moving wall in EVERY
+// question-pool card finished its scroll and sat still, showing blank paper
+// under the running head, well before the phase's hard cut.
+//
+// This sweep is the Question-format sibling of R02's own wall.json sweep
+// above: every non-excluded entry of the real `content/social/premises/
+// question.json` pool (48 of 88 entries — the other 40 are already excluded
+// upstream, e.g. for the pool's own drift/standalone-intelligibility flags,
+// an axis unrelated to wall geometry — see `content/social/
+// render-exclusions.json`'s `question` section), using the exact same
+// `loadChapterTextBlock` + `applyChapterEntryOffset` pipeline `cli.ts`'s
+// `question` branch now calls (R03), at both offset 0 and each card's own
+// worst-case T18 mid-chapter offset.
+// ---------------------------------------------------------------------------
+
+describe('Question format (social pilot 02a R03) — the chapter block clears the travel floor for a real Discourses card', () => {
+	// `discourses-64-006` — the reviewer's own repro case: at 44px, its OWN
+	// `original_excerpt` alone rendered an archaic phase ~1100px tall against
+	// a 1920px frame, well short of the 2538.75px travel floor. It is a real,
+	// non-excluded entry of the question pool (see the sweep below), not a
+	// synthetic fixture.
+	const REPRO_BOOK = 'discourses';
+	const REPRO_CARD_ID = 'discourses-64-006';
+
+	it('discourses-64-006\'s own original_excerpt alone (the pre-R03 behaviour) falls short of the travel floor — grounds the defect this fix addresses', () => {
+		const card = loadOutputCard(REPRO_BOOK, REPRO_CARD_ID);
+		const layout = computeWallLayout(card.original_excerpt);
+		expect(layout.blockHeight).toBeLessThan(TRAVEL_FLOOR_PX);
+	});
+
+	it('the chapter block cli.ts now feeds Question (loadChapterTextBlock, offset 0) clears the travel floor for discourses-64-006', () => {
+		const block = loadChapterTextBlock(REPRO_BOOK, REPRO_CARD_ID, outputDir);
+		const layout = computeWallLayout(block);
+		expect(layout.blockHeight).toBeGreaterThan(TRAVEL_FLOOR_PX);
+	});
+
+	it('the chapter block still clears the travel floor after T18\'s worst-case mid-chapter entry offset for discourses-64-006', () => {
+		const card = loadOutputCard(REPRO_BOOK, REPRO_CARD_ID);
+		const rawBlock = loadChapterTextBlock(REPRO_BOOK, REPRO_CARD_ID, outputDir);
+		const excerptWordCount = card.original_excerpt.split(/\s+/).filter(Boolean).length;
+		const worstOffset = Math.max(0, excerptWordCount - 1);
+		const shifted = applyChapterEntryOffset(rawBlock, worstOffset);
+		const layout = computeWallLayout(shifted);
+		expect(layout.blockHeight).toBeGreaterThan(TRAVEL_FLOOR_PX);
+	});
+});
+
+describe('Question format (social pilot 02a R03 acceptance) — every non-excluded question.json entry clears the travel floor', () => {
+	const questionPoolPath = path.join(repoRoot, 'content', 'social', 'premises', 'question.json');
+	const exclusionsPath = path.join(repoRoot, 'content', 'social', 'render-exclusions.json');
+
+	const questionPool = JSON.parse(readFileSync(questionPoolPath, 'utf-8')) as {
+		entries: { card_id: string; book_slug: string }[];
+	};
+	const exclusions = JSON.parse(readFileSync(exclusionsPath, 'utf-8')) as {
+		question: { card_id: string }[];
+	};
+	const excludedIds = new Set(exclusions.question.map((e) => e.card_id));
+	const nonExcludedEntries = questionPool.entries.filter((e) => !excludedIds.has(e.card_id));
+
+	const bookCardsCache = new Map<string, ReturnType<typeof loadBookCards>>();
+	function getBookCards(bookSlug: string) {
+		let cards = bookCardsCache.get(bookSlug);
+		if (!cards) {
+			cards = loadBookCards(bookSlug, outputDir);
+			bookCardsCache.set(bookSlug, cards);
+		}
+		return cards;
+	}
+
+	it('grounds this suite\'s own numbers: 48 non-excluded question-pool entries, matching content/social/render-exclusions.json\'s own meta.question.succeeded count', () => {
+		expect(nonExcludedEntries.length).toBe(48);
+	});
+
+	it(
+		'every non-excluded question.json entry\'s chapter block clears the travel floor at offset 0 AND at its ' +
+			'own worst-case mid-chapter offset (excerptWordCount - 1) — the never-finishes invariant now holds ' +
+			'for Question exactly as it does for Wall',
+		() => {
+			const shortfallsAtZero: { id: string; book: string; blockHeight: number }[] = [];
+			const shortfallsAtWorstOffset: { id: string; book: string; worstOffset: number; blockHeight: number }[] = [];
+			let worstMarginAtZero = Infinity;
+			let worstMarginAtWorstOffset = Infinity;
+
+			for (const entry of nonExcludedEntries) {
+				const bookCards = getBookCards(entry.book_slug);
+				const block = buildChapterTextBlock(entry.card_id, bookCards);
+
+				const layoutAtZero = computeWallLayout(block);
+				worstMarginAtZero = Math.min(worstMarginAtZero, layoutAtZero.blockHeight - TRAVEL_FLOOR_PX);
+				if (!(layoutAtZero.blockHeight > TRAVEL_FLOOR_PX)) {
+					shortfallsAtZero.push({ id: entry.card_id, book: entry.book_slug, blockHeight: layoutAtZero.blockHeight });
+				}
+
+				const targetCard = bookCards.find((c) => c.id === entry.card_id)!;
+				const excerptWordCount = targetCard.original_excerpt.split(/\s+/).filter(Boolean).length;
+				const worstOffset = Math.max(0, excerptWordCount - 1);
+				const shifted = applyChapterEntryOffset(block, worstOffset);
+				const layoutAtWorstOffset = computeWallLayout(shifted);
+				worstMarginAtWorstOffset = Math.min(worstMarginAtWorstOffset, layoutAtWorstOffset.blockHeight - TRAVEL_FLOOR_PX);
+				if (!(layoutAtWorstOffset.blockHeight > TRAVEL_FLOOR_PX)) {
+					shortfallsAtWorstOffset.push({
+						id: entry.card_id,
+						book: entry.book_slug,
+						worstOffset,
+						blockHeight: layoutAtWorstOffset.blockHeight
+					});
+				}
+			}
+
+			// eslint-disable-next-line no-console
+			console.log(
+				`R03 sweep across ${nonExcludedEntries.length} non-excluded question.json entries: ` +
 					`worst margin at offset 0 = ${worstMarginAtZero.toFixed(1)}px, ` +
 					`worst margin at worst-case offset = ${worstMarginAtWorstOffset.toFixed(1)}px ` +
 					`(travel floor ${TRAVEL_FLOOR_PX.toFixed(1)}px)`

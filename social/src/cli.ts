@@ -226,6 +226,15 @@ export interface QuestionPlan {
 	answer: string;
 	originalExcerpt: string;
 	/**
+	 * The archaic wall phase's real scrolling text (social pilot 02a REVIEW
+	 * R03 — threading T09's chapter-sourced block into `Question.tsx`, which
+	 * T09 missed). Same "card's own excerpt plus the surrounding chapter,
+	 * one full lap, already past T18's mid-chapter entry offset" contract as
+	 * `WallPlan.chapterBlock` — see that field's doc comment, and
+	 * `Question.tsx`'s own `QuestionProps.chapterBlock` doc comment, for why.
+	 */
+	chapterBlock: string;
+	/**
 	 * The card's own `source_reference` (social pilot 02a T13 — extending the
 	 * framing layer to `Question.tsx`). Same "real card metadata, never
 	 * hardcoded" pattern `WallPlan.sourceReference` set for T11/T12.
@@ -300,11 +309,16 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 			break;
 		}
 		case 'question': {
+			// social pilot 02a REVIEW R03: mirrors the wall branch above —
+			// `applyChapterEntryOffset`, keyed off this render's own
+			// `postIndex`, exactly as T18 already applies it to the Wall.
+			const chapterBlock = applyChapterEntryOffset(loadChapterTextBlock(slot.book_slug, slot.card_id), postIndex);
 			formatPlan = {
 				format: 'question',
 				question: slot.content.question,
 				answer: slot.content.answer,
 				originalExcerpt: card.original_excerpt,
+				chapterBlock,
 				sourceReference: card.source_reference
 			};
 			compositionId = 'Question';
@@ -403,6 +417,7 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 				question: plan.formatPlan.question,
 				answer: plan.formatPlan.answer,
 				originalExcerpt: plan.formatPlan.originalExcerpt,
+				chapterBlock: plan.formatPlan.chapterBlock,
 				sourceReference: plan.formatPlan.sourceReference,
 				...(narrationTimings ? { narrationTimings } : {})
 			};

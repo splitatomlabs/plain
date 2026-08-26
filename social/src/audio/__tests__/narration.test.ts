@@ -100,6 +100,7 @@ const QUESTION_PLAN: QuestionPlan = {
 	question: 'Is this bare question ever narrated?',
 	answer: 'No — only this plain answer is ever narrated.',
 	originalExcerpt: 'Thys is ye archaick excerpte for the question wall phase.',
+	chapterBlock: 'Thys is ye archaick excerpte for the question wall phase, plus the surrounding chapter.',
 	sourceReference: 'Discourses, Book 3, Section 1'
 };
 

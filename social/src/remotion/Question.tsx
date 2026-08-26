@@ -28,6 +28,26 @@ export interface QuestionProps extends Record<string, unknown> {
 	/** Verbatim archaic original — must never be paraphrased or fabricated. */
 	originalExcerpt: string;
 	/**
+	 * The archaic wall phase's actual scrolling text (social pilot 02a T09 for
+	 * `Wall.tsx`; REVIEW R03 threads the same field into this composition,
+	 * which T09 missed — this phase reuses `Wall.tsx`'s `WallPhase` component
+	 * but, until R03, was still passing it `originalExcerpt` alone, a single
+	 * card's ~100-200 words against the ~412-word travel floor the fixed
+	 * 44px/4.5-lines-per-second scroll needs to outrun its hard cut — every
+	 * one of the 48 non-excluded question-pool cards under-filled the frame
+	 * as a result). Same contract as `WallProps.chapterBlock`: this card's
+	 * own excerpt plus the surrounding chapter's other cards, one full lap
+	 * starting at this card, already clearing the travel floor
+	 * (`render/chapter-text.ts`'s `buildChapterTextBlock`/
+	 * `loadChapterTextBlock`, R02) and already shifted by T18's mid-chapter
+	 * entry offset. Optional and falls back to `originalExcerpt` alone (the
+	 * pre-R03 behavior) so every caller that hasn't been updated yet
+	 * (Remotion Studio's `defaultProps`, existing tests) keeps rendering
+	 * exactly as before — `cli.ts` is the one real caller that supplies this,
+	 * mirroring its own `wall` branch.
+	 */
+	chapterBlock?: string;
+	/**
 	 * The card's own `source_reference` field, verbatim from `content/output/`
 	 * — social pilot 02a T13's extension of the framing layer (T11/T12) to
 	 * this composition. Combined with `author` to derive the running head via
@@ -133,13 +153,21 @@ export const Question: React.FC<QuestionProps> = (props) => {
 		const wallTiming = computeWallTiming({ originalExcerpt: props.originalExcerpt, plainLines: [] });
 		const layout = computeWallLayout(props.originalExcerpt);
 		const relativeFrame = frame - timing.wall.startFrame;
+		// social pilot 02a REVIEW R03 — mirrors `Wall.tsx`'s own
+		// `chapterBlock ?? originalExcerpt` fallback exactly: the moving wall
+		// phase scrolls through the chapter-sourced block (already cleared of
+		// the travel floor and already shifted by T18's mid-chapter entry
+		// offset — see `chapterBlock`'s own doc comment above), not just this
+		// card's own excerpt, so the scroll no longer runs out of text before
+		// the hard cut lands.
+		const wallText = props.chapterBlock ?? props.originalExcerpt;
 		// No counter here, deliberately — the moving archaic wall is not a
 		// still payoff frame, and the counter must never collide with it
 		// (see this component's `counter` doc comment above). It resumes on
 		// the answer payoff below.
 		return (
 			<>
-				<WallPhase frame={relativeFrame} text={props.originalExcerpt} accent={accent} timing={wallTiming} layout={layout} />
+				<WallPhase frame={relativeFrame} text={wallText} accent={accent} timing={wallTiming} layout={layout} />
 				{runningHead}
 			</>
 		);
