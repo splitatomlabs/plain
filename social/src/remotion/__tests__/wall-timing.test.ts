@@ -28,11 +28,18 @@ import {
 	DEFAULT_LINE_FRAMES,
 	WALL_FONT_SIZE,
 	WALL_SCROLL_LINES_PER_SEC,
+	PAYOFF_MIN_FONT,
+	PAYOFF_MAX_FONT,
+	PAYOFF_BOX_WIDTH,
+	PAYOFF_BOX_HEIGHT,
+	PAYOFF_LINE_HEIGHT_RATIO,
 	type NarrationLineTiming
 } from '../wall-timing.js';
 import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
+import { WALL_LANDING_LINE_MAX_WORDS } from '../wall-gate.js';
 import { resolveWallCardExcerpt, loadBookCards, type WallPoolEntry } from '../wall-pool.js';
 import { loadChapterTextBlock } from '../../render/chapter-text.js';
+import { fitFontSize } from '../../render/fit.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -319,6 +326,70 @@ describe('social pilot 02a T07 — WALL_FONT_SIZE is FIXED, not fit per card', (
 	it('the fixture card (150 words) and the longest real pool excerpt (201 words) both render at WALL_FONT_SIZE', () => {
 		expect(computeWallLayout(FIXTURE_CARD.original_excerpt).fontSize).toBe(WALL_FONT_SIZE);
 		expect(computeWallLayout(LONGEST_EXCERPT).fontSize).toBe(WALL_FONT_SIZE);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// social pilot 02a T10 — the payoff must read LARGER than the wall
+//
+// The defect this guards against, from the plan: "Type-size polarity runs
+// backwards... The hard text is set LARGER and airier than the easy text.
+// Eye reads big->small, sparse->dense. Nothing says refined." Before T08,
+// the wall was fit per-card at 65-91px while `PAYOFF_MIN_FONT` let the
+// payoff fall as low as 40px — i.e. the wall could out-size the very
+// sentence it's supposed to refine down to. T08 fixed the wall's own size
+// (`WALL_FONT_SIZE`, 44px) but left `PAYOFF_MIN_FONT` (40px) unchanged and
+// BELOW it — the polarity bug stayed live, just unasserted, since nothing
+// checked the relationship between the two constants at all. This suite
+// makes the relationship structural: it fails the build if
+// `PAYOFF_MIN_FONT` (or any real computed payoff size) is ever
+// <= `WALL_FONT_SIZE` again, rather than relying on the two constants
+// happening not to collide.
+// ---------------------------------------------------------------------------
+
+describe('social pilot 02a T10 — the payoff must read larger than the wall, not smaller', () => {
+	it('PAYOFF_MIN_FONT sits strictly above WALL_FONT_SIZE — fails if wall type is ever >= payoff type', () => {
+		expect(WALL_FONT_SIZE >= PAYOFF_MIN_FONT).toBe(false);
+		expect(PAYOFF_MIN_FONT).toBeGreaterThan(WALL_FONT_SIZE);
+	});
+
+	it('the gap is a genuine step up, not a 1px technicality', () => {
+		expect(PAYOFF_MIN_FONT - WALL_FONT_SIZE).toBeGreaterThanOrEqual(8);
+	});
+
+	it('every real landing line in the Wall pool (content/social/premises/wall.json) actually FITS and computes larger than WALL_FONT_SIZE — not just the floor constant, the real per-card result', () => {
+		const pool = JSON.parse(
+			readFileSync(path.join(repoRoot, 'content', 'social', 'premises', 'wall.json'), 'utf-8')
+		) as { entries: Array<{ landing_line: string }> };
+		expect(pool.entries.length).toBeGreaterThan(0);
+
+		for (const entry of pool.entries) {
+			const fit = fitFontSize(entry.landing_line, {
+				maxWidth: PAYOFF_BOX_WIDTH,
+				maxHeight: PAYOFF_BOX_HEIGHT,
+				minFont: PAYOFF_MIN_FONT,
+				maxFont: PAYOFF_MAX_FONT,
+				lineHeightRatio: PAYOFF_LINE_HEIGHT_RATIO
+			});
+			expect(fit.fits).toBe(true);
+			expect(fit.fontSize).toBeGreaterThan(WALL_FONT_SIZE);
+		}
+	});
+
+	it('a worst-case WALL_LANDING_LINE_MAX_WORDS (30-word) backstop line of unusually long (10-char) words still fits the payoff box at PAYOFF_MIN_FONT without overflow', () => {
+		const worstCase = Array.from({ length: WALL_LANDING_LINE_MAX_WORDS }, () => 'philosophy').join(' ');
+		expect(splitWords(worstCase).length).toBe(WALL_LANDING_LINE_MAX_WORDS);
+
+		const fit = fitFontSize(worstCase, {
+			maxWidth: PAYOFF_BOX_WIDTH,
+			maxHeight: PAYOFF_BOX_HEIGHT,
+			minFont: PAYOFF_MIN_FONT,
+			maxFont: PAYOFF_MAX_FONT,
+			lineHeightRatio: PAYOFF_LINE_HEIGHT_RATIO
+		});
+		expect(fit.fits).toBe(true);
+		expect(fit.fontSize).toBeGreaterThanOrEqual(PAYOFF_MIN_FONT);
+		expect(fit.fontSize).toBeGreaterThan(WALL_FONT_SIZE);
 	});
 });
 

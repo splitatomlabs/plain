@@ -578,9 +578,39 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   correctly on top — a "157"/"132"/"106"-style countdown badge — confirming the new chapter-sourced wall phase
   composes fine with the existing opening rotation.) Render artifacts were transient (written under the
   gitignored `social/out/`) and removed after inspection.
-- [ ] T10: Fix the payoff polarity — the payoff must be set LARGER than the wall. Raise `PAYOFF_MIN_FONT` above
+- [x] T10: Fix the payoff polarity — the payoff must be set LARGER than the wall. Raise `PAYOFF_MIN_FONT` above
   `WALL_FONT_SIZE` and assert the relationship as a test, not a coincidence. Acceptance: a test fails if wall
   type is ever ≥ payoff type.
+  Raised `PAYOFF_MIN_FONT` from 40 to 52 in `social/src/remotion/wall-timing.ts` — a genuine +8px (~18%) step
+  above the fixed `WALL_FONT_SIZE` (44px), not a 1px technicality. Verified the new floor before choosing it:
+  every one of the 896 real landing lines in `content/social/premises/wall.json` computes 81-88px regardless of
+  the floor's value (they're all ≤18 words, the mechanical `LANDING_LINE_MAX_WORDS` selection bound), so the
+  floor never actually binds in production; it only matters as a backstop against `WALL_LANDING_LINE_MAX_WORDS`
+  (30, the looser render-time ceiling in `wall-gate.ts`) — measured a synthetic worst-case 30-word line of
+  unusually long (10-char average) words and confirmed it still fits `PAYOFF_BOX_HEIGHT` (800px) at the new
+  floor without overflow (728px used, 72px of headroom), and that 56px would NOT (1176px, overflow). Also
+  checked the actual longest real landing line in the corpus by character count (`on-anger-01-034`, 123 chars/
+  18 words) and rendered it as a real Remotion still frame — six lines, comfortably inside the frame, no clip.
+  Added a new "social pilot 02a T10" describe block to `social/src/remotion/__tests__/wall-timing.test.ts` (4
+  tests) that asserts the relationship structurally rather than by convention: (1) `WALL_FONT_SIZE >=
+  PAYOFF_MIN_FONT` must be `false` — this is the exact "fails if wall type is ever ≥ payoff type" acceptance
+  criterion; (2) the gap is ≥8px, not a rounding artifact; (3) EVERY real landing line in the Wall pool, run
+  through the actual `fitFontSize` the composition calls, computes a fontSize strictly greater than
+  `WALL_FONT_SIZE` and `fits: true` — the real per-card computed result, not just the floor constant; (4) the
+  30-word backstop worst case still fits without overflow. Checked the REST LINES (the narrated lines after the
+  landing line, phase 3): `Wall.tsx` renders them through the exact same `PayoffLine` component as the landing
+  line itself (`<PayoffLine text={restLine ? restLine.text : ''} />`), sharing `PAYOFF_MIN_FONT`/`PAYOFF_MAX_FONT`
+  — no separate sizing path exists for them, so this fix covers them automatically; no change needed there.
+  `PAYOFF_MIN_FONT` is also shared with `objection-gate.ts`'s reply-sentence fit — checked the real 59-entry
+  objection pool before and after the change (`splitPayoffLines` + `fitFontSize` on every reply's first two
+  sentences): minimum computed size there is 58px at either floor (40 or 52), so raising the floor changed
+  nothing for Objection; `npm test`'s objection-gate suite still passes 27/59 pool entries, unchanged.
+  Verification: `npx tsc --noEmit` clean; `npm test` (social workspace) 527/527 passing (523 prior + 4 new T10
+  tests) across 28 files. Real render (`npx tsx social/src/cli.ts render --date 2026-09-06 --slot 1`,
+  `meditations-02-006`) confirms visually: a wall frame shows dense 44px archaic text with ~20 visible lines per
+  screen; the payoff frame ("Theophrastus compares different types of wrongdoing.") renders at the computed
+  88px (`PAYOFF_MAX_FONT`, the cap) — exactly 2x the wall's type size, unmistakably larger and clearer, reading
+  as the "refined" payoff the format promises rather than the reverse.
 - [ ] T11: Test the framing layer — `social/src/remotion/__tests__/source-head.test.ts`. Running head is fixed
   (identical at every wall frame); payoff label sits in the same position; neither collides with or reflows the
   read-through counter (retarget `counter.test.ts`'s pixel-level proof); both use DM Sans + secondary ink, never

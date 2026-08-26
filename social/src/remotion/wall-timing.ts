@@ -233,7 +233,35 @@ export function wallScrollOffsetAtFrame(frame: number): number {
 export const PAYOFF_PADDING_X = 96;
 export const PAYOFF_BOX_WIDTH = FRAME_WIDTH - PAYOFF_PADDING_X * 2;
 export const PAYOFF_BOX_HEIGHT = 800;
-export const PAYOFF_MIN_FONT = 40;
+
+/**
+ * social pilot 02a T10 (2026-08-26): raised from 40 to 52 — the polarity
+ * fix. Before T08, the wall was fit per-card at 65-91px while this floor
+ * let the payoff fall to 40px: "the hard text is set LARGER and airier than
+ * the easy text... nothing says refined" (the plan's own diagnosis). T08
+ * fixed the Wall at `WALL_FONT_SIZE` (44px) but left this floor unchanged,
+ * so the payoff could still, in principle, render SMALLER than the wall it
+ * follows — the format's whole promise ("a wall of archaic text refined
+ * into one plain sentence") runs backwards if the refined sentence is ever
+ * the smaller type.
+ *
+ * 52 is a genuine step up from `WALL_FONT_SIZE` (+8px, ~18% larger), not a
+ * 1px technicality, and is asserted as a structural relationship (not a
+ * coincidence) in `__tests__/wall-timing.test.ts`'s "payoff type must read
+ * larger than wall type" suite — that suite also fails the build if either
+ * constant ever drifts the wrong way again.
+ *
+ * In practice this floor never binds for a real, mechanically-selected
+ * landing line: every one of the 896 real entries in
+ * `content/social/premises/wall.json` (each ≤18 words, the mechanical
+ * `LANDING_LINE_MAX_WORDS` bound in `landing-line.ts`) fits at 81px or
+ * larger regardless of the floor's value. It only matters as a backstop
+ * for `WALL_LANDING_LINE_MAX_WORDS` (30, `wall-gate.ts`) — a much looser
+ * render-time ceiling than the 18-word mechanical selection bound — where
+ * it was measured to still fit `PAYOFF_BOX_HEIGHT` without overflow even
+ * for a worst-case 30-word line of unusually long (10-char average) words.
+ */
+export const PAYOFF_MIN_FONT = 52;
 export const PAYOFF_MAX_FONT = 88;
 export const PAYOFF_LINE_HEIGHT_RATIO = 1.4;
 
