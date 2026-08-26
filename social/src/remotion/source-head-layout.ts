@@ -94,3 +94,36 @@ export const SOURCE_HEAD_BOUNDING_BOX: CounterBoundingBox = {
  * metrics, so there is no need for an extra manual safety margin on top.
  */
 export const SOURCE_HEAD_TEXT_MAX_WIDTH_PX = SOURCE_HEAD_BOUNDING_BOX.width - SOURCE_HEAD_SAFE_INSET_PX;
+
+/**
+ * Social pilot 02a R07 (2026-08-26): vertical breathing room added to the
+ * clamped span's top/bottom, alongside R04's `overflow: hidden` (see that
+ * constant's own doc comment for the horizontal clamp this pairs with).
+ *
+ * R04's clamp fixed a real horizontal overflow (a 135-char Discourses
+ * running head spilling outside the 900px plate) but `overflow: hidden`
+ * clips on BOTH axes, not just the one R04 was guarding. At
+ * `SOURCE_HEAD_FONT_SIZE_PX` (32px) with `lineHeight: 1`, DM Sans' line box
+ * is exactly 32px tall, but the font's own ascent+descent content area is
+ * ~37px — taller than the line box it's centred in. For the all-caps
+ * running head (`formatRunningHead` uppercases everything) this is
+ * invisible, since capital letters have no descenders. But
+ * `PAYOFF_LABEL_TEXT` ("In plain English") is lowercase and has both an
+ * ascender-free top and descenders (the "p" and "g"), so at `lineHeight: 1`
+ * those descenders were being flat-cut by R04's clip on every render, for
+ * the entire payoff phase of Wall/Question/Objection.
+ *
+ * 8px top and bottom (16px total) rather than switching to a taller
+ * `lineHeight` value: this is a fixed, measured allowance (verified against
+ * real Chromium + the real embedded DM Sans font to give the ~37px content
+ * area room inside a 48px padding box, comfortably covering the ~2.5px of
+ * overflow on each edge) that changes nothing about how the text itself is
+ * laid out or measured — same line height, same baseline, same glyph
+ * metrics — it just gives the clip box enough room not to cut into them.
+ * `SOURCE_HEAD_BOUNDING_BOX.height` (120px) has ample room left over for
+ * this on top of `SOURCE_HEAD_FONT_SIZE_PX`, so it cannot push the span
+ * outside that box or collide with `COUNTER_BOUNDING_BOX` (see
+ * `SOURCE_HEAD_TOP_PX`'s own doc comment for why those two boxes are
+ * disjoint by construction).
+ */
+export const SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX = 8;

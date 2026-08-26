@@ -7,7 +7,8 @@ import {
 	SOURCE_HEAD_BOUNDING_BOX,
 	SOURCE_HEAD_FONT_SIZE_PX,
 	SOURCE_HEAD_SAFE_INSET_PX,
-	SOURCE_HEAD_TEXT_MAX_WIDTH_PX
+	SOURCE_HEAD_TEXT_MAX_WIDTH_PX,
+	SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX
 } from './source-head-layout.js';
 
 /**
@@ -181,6 +182,20 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 				 * `SOURCE_HEAD_TEXT_MAX_WIDTH_PX`'s own doc comment for why it is
 				 * deliberately not narrower than that — so that render is
 				 * unaffected by this change.
+				 *
+				 * R07 (2026-08-26): `paddingTop`/`paddingBottom:
+				 * SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX` guard the OTHER axis
+				 * `overflow: hidden` clips. At `lineHeight: 1`, DM Sans' line
+				 * box (32px, exactly `SOURCE_HEAD_FONT_SIZE_PX`) is shorter
+				 * than its own content area (~37px of ascent+descent), so
+				 * without this padding the clip flat-cuts descenders — invisible
+				 * on the all-caps running head (no descenders in capitals) but
+				 * cutting the "p" and "g" off `PAYOFF_LABEL_TEXT` ("In plain
+				 * English") on every payoff-phase frame. See
+				 * `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`'s own doc comment for
+				 * why 8/8 rather than a taller `lineHeight`, and why it cannot
+				 * overflow `SOURCE_HEAD_BOUNDING_BOX` or collide with
+				 * `COUNTER_BOUNDING_BOX`.
 				 */}
 				<span
 					style={{
@@ -191,6 +206,8 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 						whiteSpace: 'nowrap',
 						textOverflow: 'ellipsis',
 						paddingLeft: SOURCE_HEAD_SAFE_INSET_PX,
+						paddingTop: SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX,
+						paddingBottom: SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX,
 						fontFamily: SOURCE_HEAD_FONT_STACK,
 						fontWeight: 500,
 						fontSize: SOURCE_HEAD_FONT_SIZE_PX,

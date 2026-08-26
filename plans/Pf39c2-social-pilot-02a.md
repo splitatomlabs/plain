@@ -1413,3 +1413,50 @@ words. The work is correct for the slice it was tested against and breaks outsid
   text. (2) The Wall's non-final rest lines need the same floor this task added to Objection's two lines,
   generalized to an array of any length — `house-rules.test.ts`'s new Wall regression test is already in
   place to confirm the fix once it lands.
+
+- [x] R07: Fix R04's descender clip — `social/src/remotion/SourceHead.tsx` (span style, ~lines 187-197). The
+  `overflow: hidden` clamp added by R04 clips to the span's padding box, whose height is the 32px line box,
+  but DM Sans' content area at 32px/`lineHeight: 1` is 37px — so the `p` and `g` of `PAYOFF_LABEL_TEXT`
+  ("In plain English") are flat-cut on every render, across the whole payoff phase of Wall, Question AND
+  Objection. Measured in real Chromium: unclamped ink rows 47-78, clamped 47-75, 47 differing pixels;
+  `scrollHeight` 37 vs `clientHeight` 32. The all-caps running head is unaffected, which is why R04's own
+  corpus sweep (`source-head.test.ts:490`, which measures only `getBoundingClientRect().right`) and T11's
+  pixel proofs stayed green — nothing asserts the VERTICAL axis. Fix with `paddingTop`/`paddingBottom: 8`
+  (verified 0 differing pixels vs the pre-R04 payoff render, 135-char Discourses clamp unchanged), or
+  `lineHeight: 1.4`. Acceptance: a test asserts the PAYOFF variant's vertical ink extent — the axis the
+  existing sweep does not cover — and the Discourses horizontal clamp still holds.
+
+  Done (2026-08-26). Chose `paddingTop`/`paddingBottom: SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX` (8px, a new
+  export in `source-head-layout.ts`) over a taller `lineHeight`: padding is a fixed, measured allowance that
+  changes nothing about how the text is laid out or measured (same line height, same baseline, same glyph
+  metrics) — it only gives the clip box enough room not to cut into them — whereas `lineHeight: 1.4` would
+  have made the exact vertical-centring math depend on the browser's own half-leading distribution, one more
+  moving part than needed to fix a fixed, measured 5px shortfall (37px content vs 32px line box). Verified by
+  literally reproducing the reviewer's own measurement, not just trusting the fix by inspection: rendered the
+  real payoff variant through the harness/pixel-proof machinery this suite already uses, scanning
+  `SOURCE_HEAD_BOUNDING_BOX` (top 200, height 120) for non-PAPER rows. Pre-fix (padding 0, R04's shape):
+  ink rows 247-275 (relative 47-75). Post-fix: ink rows 247-278 (relative 47-78) — the exact 47-75-vs-47-78
+  split the reviewer reported, reproduced independently. Then rendered the real pre-R04 `SourceHead.tsx` (via
+  `git show 91b3a9f^`, before any clamp existed) and diffed it pixel-for-pixel against the post-R07 render:
+  **0 differing channel values across the entire 1080x1920 frame** — the padding fix is visually identical to
+  the original, pre-clamp payoff render, exactly as claimed. Re-rendered the 135-char Discourses running head
+  (R04's own worst case) and read the PNG: still a single line, ellipsis-truncated, fully inside the opaque
+  plate, wall text visible immediately outside it — unaffected, since `paddingTop`/`paddingBottom` don't
+  interact with the `maxWidth`/`overflow`/`whiteSpace` horizontal clamp (default `box-sizing: content-box`
+  means padding doesn't add to measured width either). Added a witness-pattern test pair to
+  `source-head.test.ts` (mirroring the file's own "wall text actually moved" witness for the fixed-head
+  proof): (1) a span built with zero vertical padding (the pre-R07 shape) has real-Chromium `scrollHeight`
+  strictly greater than `clientHeight` for `PAYOFF_LABEL_TEXT` — proves the probe itself can detect the bug,
+  not just that it's blind to it; (2) the real component's own span (`SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`)
+  never lets `scrollHeight` exceed `clientHeight` — proves the fix. Also updated the corpus sweep's mirrored
+  probe markup (`source-head.test.ts` ~line 514) to include the same vertical padding, so it stays a faithful
+  copy of the real component's inline styles per its own doc comment, even though vertical padding doesn't
+  affect that sweep's horizontal-only assertion. `SOURCE_HEAD_BOUNDING_BOX` (120px) has ample room left over
+  for the new 48px-tall padded span, so it cannot spill outside the plate or collide with
+  `COUNTER_BOUNDING_BOX` (documented in the new constant's own doc comment, referencing
+  `SOURCE_HEAD_TOP_PX`'s existing disjoint-by-construction proof).
+  Files: `social/src/remotion/SourceHead.tsx` (span style + R07 doc comment), `social/src/remotion/source-head-layout.ts`
+  (new `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX` export + doc comment), `social/src/remotion/__tests__/source-head.test.ts`
+  (new import, updated corpus-sweep probe markup, new "vertical ink extent" describe block with 2 tests).
+  `npx vitest run src/remotion/__tests__/source-head.test.ts` — 29/29 (up from 27). `npx tsc --noEmit` clean.
+  Root `npm test`: 819 pipeline + 95 web unit + 589 social, all green.

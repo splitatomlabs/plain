@@ -46,7 +46,8 @@ import {
 	SOURCE_HEAD_BOUNDING_BOX,
 	SOURCE_HEAD_FONT_SIZE_PX,
 	SOURCE_HEAD_SAFE_INSET_PX,
-	SOURCE_HEAD_TEXT_MAX_WIDTH_PX
+	SOURCE_HEAD_TEXT_MAX_WIDTH_PX,
+	SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX
 } from '../source-head-layout.js';
 import { COUNTER_BOUNDING_BOX } from '../counter-layout.js';
 import { COUNTER_FONT_STACK } from '../Counter.js';
@@ -511,7 +512,7 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 				await page.setContent(`
 					<style>${fontCss}</style>
 					<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
-						<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;"></span>
+						<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;padding-bottom:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;"></span>
 					</div>
 				`);
 
@@ -538,5 +539,85 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 			}
 		},
 		120_000
+	);
+});
+
+// ---------------------------------------------------------------------------
+// R07 (2026-08-26): the corpus sweep above proves the HORIZONTAL clamp
+// (`getBoundingClientRect().right`) never spills past the plate's right
+// edge — but `overflow: hidden` clips on both axes, and nothing above
+// measures the VERTICAL one. At `SOURCE_HEAD_FONT_SIZE_PX`/`lineHeight: 1`,
+// DM Sans' line box (32px) is shorter than its own glyph content area
+// (~37px of ascent+descent), so the clip flat-cut the descenders ("p", "g")
+// of `PAYOFF_LABEL_TEXT` ("In plain English") on every payoff-phase frame
+// of Wall/Question/Objection — invisible on the ALL-CAPS running head
+// (`formatRunningHead` uppercases everything, so it has no descenders),
+// which is exactly why the sweep above stayed green through R04.
+//
+// Same real-Chromium-DOM-measurement technique as the horizontal sweep
+// (`getBoundingClientRect()` there, `scrollHeight`/`clientHeight` here —
+// both real-layout-engine measurements of the exact clamped span, not an
+// approximation), but reused as a witness pair rather than a scan: first
+// proves the probe itself can DETECT the clip (mirroring the pre-R07 span,
+// with zero vertical padding, and showing its `scrollHeight` genuinely
+// exceeds its `clientHeight` for the real payoff text) — the same
+// discipline the "wall text actually moved" test above uses to prove a
+// pixel-identical result isn't trivially true — then proves the real,
+// current component's own span (with `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`)
+// no longer does.
+// ---------------------------------------------------------------------------
+
+describe('the payoff label\'s vertical ink extent stays inside the clamped span (real Chromium + real DM Sans)', () => {
+	let browser: Browser;
+
+	beforeAll(async () => {
+		browser = await chromium.launch({ headless: true });
+	}, 60_000);
+
+	afterAll(async () => {
+		await browser.close();
+	});
+
+	async function measurePayoffSpan(verticalPaddingPx: number): Promise<{ scrollHeight: number; clientHeight: number }> {
+		const fontCss = await getFontCss();
+		const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+		try {
+			// Same plate + span structure and inline styles as SourceHead.tsx
+			// (see that file and the corpus sweep above), with the vertical
+			// padding parameterised so this helper can render both the
+			// pre-R07 span (0px — the shape the bug shipped with) and the
+			// real, current component's span (`SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`).
+			await page.setContent(`
+				<style>${fontCss}</style>
+				<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
+					<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${verticalPaddingPx}px;padding-bottom:${verticalPaddingPx}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
+				</div>
+			`);
+
+			return await page.evaluate(() => {
+				const probe = document.getElementById('probe') as HTMLSpanElement;
+				return { scrollHeight: probe.scrollHeight, clientHeight: probe.clientHeight };
+			});
+		} finally {
+			await page.close();
+		}
+	}
+
+	it(
+		'witness: the probe itself detects the clip — a span with zero vertical padding (the pre-R07 shape) has scrollHeight strictly greater than clientHeight for the real payoff text, proving descenders were being cut, not that the probe is vacuously blind to the bug',
+		async () => {
+			const { scrollHeight, clientHeight } = await measurePayoffSpan(0);
+			expect(scrollHeight).toBeGreaterThan(clientHeight);
+		},
+		60_000
+	);
+
+	it(
+		'fix: the real component\'s own span (SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX) never lets scrollHeight exceed clientHeight for the payoff text — no vertical clip, descenders included',
+		async () => {
+			const { scrollHeight, clientHeight } = await measurePayoffSpan(SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX);
+			expect(scrollHeight).toBeLessThanOrEqual(clientHeight);
+		},
+		60_000
 	);
 });
