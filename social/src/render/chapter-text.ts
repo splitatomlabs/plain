@@ -12,12 +12,8 @@
  * another chapter or book. Every word in the block is a verbatim substring
  * of some card's `original_excerpt` — no fabrication, no paraphrase, no
  * reordering WITHIN an excerpt.
- *
- * STUB (social pilot 02a T05): only the shape this task's tests need to
- * type-check exists here. T06 implements the real behaviour; every export
- * below throws until then, so `chapter-text.test.ts` fails on BEHAVIOUR (the
- * task's acceptance criterion), not on a missing module.
  */
+import { loadBookCards } from '../remotion/wall-pool.js';
 
 /**
  * The subset of `wall-pool.ts`'s `OutputCard` this module actually needs,
@@ -40,24 +36,29 @@ export interface ChapterTextCard {
  * is responsible for filtering to the target card's own chapter internally
  * (`content/output/`'s `book_slug` + `chapter_slug`), never drawing text
  * from anywhere else.
- *
- * T06 implements this. Throws until then.
  */
 export function buildChapterTextBlock(targetCardId: string, bookCards: ChapterTextCard[]): string {
-	throw new Error(
-		`buildChapterTextBlock("${targetCardId}", ...) is not implemented yet (social pilot 02a T06).`
-	);
+	const targetCard = bookCards.find((c) => c.id === targetCardId);
+	if (!targetCard) {
+		throw new Error(`buildChapterTextBlock: no card with id "${targetCardId}" in the given cards.`);
+	}
+
+	const chapterCards = bookCards
+		.filter((c) => c.book_slug === targetCard.book_slug && c.chapter_slug === targetCard.chapter_slug)
+		.sort((a, b) => a.card_number - b.card_number);
+
+	const targetIndex = chapterCards.findIndex((c) => c.id === targetCardId);
+	const lap = [...chapterCards.slice(targetIndex), ...chapterCards.slice(0, targetIndex)];
+
+	return lap.map((c) => c.original_excerpt).join('\n\n');
 }
 
 /**
  * Disk-backed convenience: loads every card of `bookSlug` from
  * `content/output/` (via `wall-pool.ts`'s `loadBookCards`) and hands them to
  * `buildChapterTextBlock` for `cardId`.
- *
- * T06 implements this. Throws until then.
  */
 export function loadChapterTextBlock(bookSlug: string, cardId: string, outputDir?: string): string {
-	throw new Error(
-		`loadChapterTextBlock("${bookSlug}", "${cardId}") is not implemented yet (social pilot 02a T06).`
-	);
+	const bookCards = loadBookCards(bookSlug, outputDir);
+	return buildChapterTextBlock(cardId, bookCards);
 }

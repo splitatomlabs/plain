@@ -392,7 +392,17 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   already satisfies by throwing unconditionally) — this is the acceptance criterion, not a partial failure.
   `npx tsc --noEmit` clean. `cd social && npm test` — 26 of 27 test files pass, 508 of 521 individual tests pass
   (the 13 new failures are this task's own, expected ones; zero regressions in the other 508 pre-existing tests).
-- [ ] T06: Implement `social/src/render/chapter-text.ts`. Acceptance: T04 passes.
+- [x] T06: Implement `social/src/render/chapter-text.ts`. Acceptance: T04 passes.
+  Done (2026-08-26): implemented `buildChapterTextBlock` and `loadChapterTextBlock` exactly to T05's recorded
+  design — no amendment needed. `buildChapterTextBlock` finds the target card by id (throws if absent), filters
+  `bookCards` to that card's own `book_slug` + `chapter_slug`, sorts by `card_number`, rotates the sorted array so
+  the target card is first (`[...slice(targetIndex), ...slice(0, targetIndex)]` — one full lap starting at the
+  target and wrapping to the chapter's own earlier cards), and joins each card's `original_excerpt` verbatim with
+  `'\n\n'` — nothing else touches the text. `loadChapterTextBlock` is a thin disk-backed wrapper: `loadBookCards`
+  (`wall-pool.ts`) then `buildChapterTextBlock`.
+  Verified: `npx vitest run src/render/__tests__/chapter-text.test.ts` — 15/15 pass. `cd social && npm test` —
+  27/27 test files, 521/521 tests pass (up from 508/521 pre-T06; the 13 tests T05 left failing now pass, zero
+  regressions elsewhere). `npx tsc --noEmit` clean.
 - [ ] T07: Test the new wall geometry — `social/src/remotion/__tests__/wall-timing.test.ts`. Fixed font size;
   rate expressed in lines/sec; scroll never finishes before the cut (now by construction, not by gate); frame-0
   velocity is already full; no card in the corpus is rejected for block height. Acceptance: fails against the
