@@ -31,7 +31,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
@@ -186,7 +186,13 @@ async function loadWeekSchedule(week: number, scheduleDir: string): Promise<Week
 // print it and a real render can log exactly what it decided.
 // ---------------------------------------------------------------------------
 
-interface WallPlan {
+// Exported (social pilot 02a T14): so `audio/__tests__/narration.test.ts`
+// can construct real-shaped `FormatPlan` fixtures and call the exported
+// `wallSilentSpans`/`narrationPlan` below directly, without going through a
+// live render. Visibility only — no field or behavior here changes for T14;
+// see this file's entry-point guard (bottom of file) for how importing this
+// module is made safe for a test file to do at all.
+export interface WallPlan {
 	format: 'wall';
 	originalExcerpt: string;
 	/**
@@ -211,7 +217,7 @@ interface WallPlan {
 	eligibleOpenings: WallOpening[];
 }
 
-interface QuestionPlan {
+export interface QuestionPlan {
 	format: 'question';
 	question: string;
 	answer: string;
@@ -224,7 +230,7 @@ interface QuestionPlan {
 	sourceReference: string;
 }
 
-interface ObjectionPlan {
+export interface ObjectionPlan {
 	format: 'objection';
 	objection: string;
 	reply: string;
@@ -236,14 +242,14 @@ interface ObjectionPlan {
  * F19 — the read-through's fallback format. `text` is the card's raw
  * `plain_english`, verbatim, in full — see `remotion/Still.tsx`.
  */
-interface StillPlan {
+export interface StillPlan {
 	format: 'still';
 	text: string;
 	/** The card's own `source_reference` — social pilot 02a T13. See `QuestionPlan.sourceReference`. */
 	sourceReference: string;
 }
 
-type FormatPlan = WallPlan | QuestionPlan | ObjectionPlan | StillPlan;
+export type FormatPlan = WallPlan | QuestionPlan | ObjectionPlan | StillPlan;
 
 interface RenderPlan {
 	date: string;
@@ -436,7 +442,7 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
  * (`measured_I: -inf`) on its first pass (see F02,
  * `plans/Pf39c2-social-pilot-02.md`).
  */
-function wallSilentSpans(): TimeSpan[] {
+export function wallSilentSpans(): TimeSpan[] {
 	return [{ startMs: 0, endMs: ((WALL_FRAMES + LANDING_LINE_FRAMES) / FPS) * 1000 }];
 }
 
@@ -465,7 +471,7 @@ function wallSilentSpans(): TimeSpan[] {
  * those two formats' timing modules, not something this CLI can paper
  * over — flagged here rather than silently pretending it's solved.
  */
-function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: number } {
+export function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: number } {
 	switch (formatPlan.format) {
 		case 'wall': {
 			const timing = computeWallTiming({ originalExcerpt: formatPlan.originalExcerpt, plainLines: formatPlan.plainLines });
@@ -701,7 +707,19 @@ async function main(): Promise<void> {
 	await renderCommand(args);
 }
 
-main().catch((error) => {
-	console.error(error instanceof Error ? error.message : error);
-	process.exit(1);
-});
+// social pilot 02a T14: only auto-run `main()` when this file is the actual
+// process entry point (`npx tsx cli.ts render ...`, exactly how `cli.test.ts`
+// invokes it via a subprocess). Without this guard, merely IMPORTING this
+// module — which `narration.test.ts` needs to do, to unit-test the pure
+// `wallSilentSpans`/`narrationPlan` functions below against recorded
+// fixtures, without a live voice or a full Remotion render — would itself
+// parse `process.argv` as CLI args and call `process.exit()`, killing the
+// whole test worker. Identical runtime behavior for every real invocation:
+// `import.meta.url` and `pathToFileURL(process.argv[1]).href` both resolve
+// to this same file's URL when tsx runs it as the entry script.
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+	main().catch((error) => {
+		console.error(error instanceof Error ? error.message : error);
+		process.exit(1);
+	});
+}

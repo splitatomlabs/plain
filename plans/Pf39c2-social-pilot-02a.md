@@ -772,11 +772,35 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   counter) stacked directly above `"In plain English"` (the payoff label), both legible, no collision with the
   plain-English body text below. Did not touch narration/the mixer, `question-timing.ts`/`objection-timing.ts`'s
   narration acceptance, the opening rotation (`WallOpeningBadge` untouched), or mid-chapter entry.
-- [ ] T14: Assert the narration contract under the new shape —
+- [~] T14: Assert the narration contract under the new shape —
   `social/src/audio/__tests__/narration.test.ts`. the landing line ALONE is in `wallSilentSpans` (the scroll now carries the bed); rest
   lines are the only narrated set; framing text never reaches `synthesize`; a Wall whose `plain_english` is a
   single sentence (no rest lines) still produces a valid, non-silent mix. Acceptance: tests pass with voices
   still unset, using recorded fixtures.
+  Partial (2026-08-26): 13 of 14 tests pass today; ONE is deliberately RED, by design (the plan's own ordering —
+  T15, not T14, is what makes `wallSilentSpans` land-line-only). `cli.ts`'s `wallSilentSpans`/`narrationPlan` and
+  the `WallPlan`/`QuestionPlan`/`ObjectionPlan`/`StillPlan`/`FormatPlan` types are now `export`ed (visibility
+  only, no behavior change) so this file can assert on them directly; doing that safely required an entry-point
+  guard around `cli.ts`'s bottom-of-file `main()` call (it used to run unconditionally at import time and call
+  `process.exit()`, which would otherwise kill the test worker on `import`) — real invocations
+  (`npx tsx cli.ts render ...`, exactly how `cli.test.ts` already shells out) are unaffected; proven by the full
+  `cli.test.ts` suite (dry-run, `--require-narration`, `--help`, and four real end-to-end renders) still passing
+  unchanged. RED: `wallSilentSpans()` still spans `0 -> WALL_FRAMES + LANDING_LINE_FRAMES` (the whole
+  wall+landing-line window), not the landing line alone starting at `WALL_FRAMES` — exactly the defect this plan
+  names; T15 flips it. GREEN already, pinned as regression protection ahead of T15: rest lines are `narrationPlan`'s
+  only narrated set for the Wall (never the landing line, the original excerpt, or the chapter block) and
+  `offsetMs` lands exactly on the landing line's end frame; a single-sentence Wall (no rest lines) narrates
+  nothing; framing text (`formatRunningHead`'s output, `SourceHead.tsx`'s `PAYOFF_LABEL_TEXT`, each format's own
+  `sourceReference`) never appears in any of the four formats' `narrationPlan` lines nor in the exact `text`
+  string a recording fake `TtsProvider` observed reaching `synthesize` (Question narrates only the answer, never
+  the bare question; Objection narrates only its `OBJECTION_REPLY_LINE_COUNT`-capped reply sentences, never the
+  bare objection); the F02 edge case (single-sentence Wall, `mix()` fed `wallSilentSpans()` against the real
+  padded 15s duration and a real committed bed) succeeds with a finite, in-tolerance loudness measurement and
+  audible signal after the silent span, both under today's pre-T15 span and (by construction, since the check
+  reads the span's own bounds rather than hardcoding them) under T15's future shrunk one. Full social suite:
+  578/579 (the one named RED test, no other regressions); `npx tsc --noEmit` clean. No live API calls — the
+  recording fake `TtsProvider` writes the committed `polly-sample.mp3` fixture, same pattern
+  `social/src/__tests__/narration.test.ts` (F07/F09/F13) already uses; `resolveVoice` mocked the same way.
 - [ ] T15: Make the cut audible — `social/src/audio/mix.ts`, `wallSilentSpans` in `social/src/cli.ts`.
   The bed plays under the scroll at nominal level, hard-stops on the cut frame, stays at `SILENCE_FLOOR_DB` for
   the landing line only, and returns under the rest lines. Acceptance: `volumedetect` on a rendered Wall shows
