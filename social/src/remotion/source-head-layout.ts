@@ -68,3 +68,29 @@ export const SOURCE_HEAD_BOUNDING_BOX: CounterBoundingBox = {
 	width: 900,
 	height: 120
 };
+
+/**
+ * Social pilot 02a R04 (2026-08-26): the maximum on-screen width the running
+ * head / payoff label's text may occupy, in frame px — `SourceHead.tsx`
+ * clamps to exactly this with a single-line `overflow: hidden` +
+ * `textOverflow: 'ellipsis'` treatment (see that file for why: some real
+ * Discourses `source_reference` values are ~135 chars, which would otherwise
+ * wrap to 4 lines and spill outside `SOURCE_HEAD_BOUNDING_BOX`, directly over
+ * the scrolling wall).
+ *
+ * `SOURCE_HEAD_BOUNDING_BOX.width` (900) minus `SOURCE_HEAD_SAFE_INSET_PX`
+ * (the text's own existing left padding) — i.e. exactly the content width
+ * already available to the text today (before this constant existed, the
+ * text's effective right boundary was already the plate's own right edge,
+ * which is what made a long `source_reference` wrap onto additional lines
+ * rather than run off the frame). Deliberately NOT narrower than that: this
+ * constant converts an existing implicit wrap boundary into an explicit
+ * single-line clip boundary, it does not shrink it — shrinking it further
+ * would risk clipping the plan's own worked example
+ * ("MARCUS AURELIUS · MEDITATIONS, BOOK 2", 37 chars), which today already
+ * uses close to the full available width on its one line. `overflow:
+ * hidden` on the clipped span guarantees no painted pixel ever reaches the
+ * plate's right edge (x = 900) let alone beyond it, regardless of font
+ * metrics, so there is no need for an extra manual safety margin on top.
+ */
+export const SOURCE_HEAD_TEXT_MAX_WIDTH_PX = SOURCE_HEAD_BOUNDING_BOX.width - SOURCE_HEAD_SAFE_INSET_PX;

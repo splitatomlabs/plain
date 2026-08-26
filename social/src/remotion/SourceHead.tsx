@@ -3,7 +3,12 @@ import { AbsoluteFill } from 'remotion';
 
 import { PAPER, SECONDARY, type AuthorSlug } from '../render/theme.js';
 import { COUNTER_FONT_STACK } from './Counter.js';
-import { SOURCE_HEAD_BOUNDING_BOX, SOURCE_HEAD_FONT_SIZE_PX, SOURCE_HEAD_SAFE_INSET_PX } from './source-head-layout.js';
+import {
+	SOURCE_HEAD_BOUNDING_BOX,
+	SOURCE_HEAD_FONT_SIZE_PX,
+	SOURCE_HEAD_SAFE_INSET_PX,
+	SOURCE_HEAD_TEXT_MAX_WIDTH_PX
+} from './source-head-layout.js';
 
 /**
  * social pilot 02a T12 — the framing layer. Running head while the wall
@@ -131,8 +136,60 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 					alignItems: 'center'
 				}}
 			>
+				{/*
+				 * R04 (2026-08-26): clamped to a SINGLE LINE, never wrapped —
+				 * `formatRunningHead` can return up to ~135 chars for a real
+				 * Discourses card (Epictetus's chapter titles are full
+				 * descriptive clauses, not numbers), which at this font size
+				 * would otherwise wrap to 3-4 lines and spill outside
+				 * `SOURCE_HEAD_BOUNDING_BOX`'s fixed 120px plate, directly over
+				 * the scrolling wall — breaking both the opaque-plate contract
+				 * (`pixel-proof.ts`'s box crop) and the house rule that this
+				 * overlay is fixed and static (a multi-line reflow reads as
+				 * "wrapping", not motion, but is just as much a layout
+				 * violation the box exists to rule out).
+				 *
+				 * `overflow: hidden` + `whiteSpace: 'nowrap'` +
+				 * `textOverflow: 'ellipsis'`, clamped to
+				 * `SOURCE_HEAD_TEXT_MAX_WIDTH_PX`, rather than pre-truncating
+				 * the STRING by character count: the real browser/Chromium
+				 * text shaper that Remotion renders through measures the
+				 * actual DM Sans glyph widths for us, so this is correct for
+				 * every string this ever receives (short or long, today or
+				 * after any future book's `source_reference` shape), not just
+				 * the outliers profiled once and hard-coded. `minWidth: 0`
+				 * overrides the flex item's default `min-width: auto`, which
+				 * would otherwise let the span grow past its `maxWidth` and
+				 * defeat the clamp — a well-known flexbox-plus-ellipsis
+				 * gotcha, not a redundant style.
+				 *
+				 * Truncating with an ellipsis, rather than silently dropping
+				 * the tail, keeps the text FACTUALLY TRUE per Constraint 6: a
+				 * visible "…" signals "there is more, this is not the whole
+				 * title" rather than presenting a shortened phrase as
+				 * complete. And because `formatRunningHead` always puts the
+				 * author name and book title FIRST and any long descriptive
+				 * chapter clause LAST (see that function's own doc comment),
+				 * a right-hand ellipsis on the whole string naturally cuts
+				 * the least important part (the chapter clause) while always
+				 * preserving the most important part (author, then book) —
+				 * exactly the priority order this component's task called
+				 * for, with no special-casing needed. For the plan's own
+				 * worked example ("MARCUS AURELIUS · MEDITATIONS, BOOK 2", 37
+				 * chars) this clamp reproduces the exact same content width the
+				 * text already rendered inside today — see
+				 * `SOURCE_HEAD_TEXT_MAX_WIDTH_PX`'s own doc comment for why it is
+				 * deliberately not narrower than that — so that render is
+				 * unaffected by this change.
+				 */}
 				<span
 					style={{
+						display: 'block',
+						minWidth: 0,
+						maxWidth: SOURCE_HEAD_TEXT_MAX_WIDTH_PX,
+						overflow: 'hidden',
+						whiteSpace: 'nowrap',
+						textOverflow: 'ellipsis',
 						paddingLeft: SOURCE_HEAD_SAFE_INSET_PX,
 						fontFamily: SOURCE_HEAD_FONT_STACK,
 						fontWeight: 500,

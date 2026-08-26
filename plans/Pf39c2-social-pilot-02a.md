@@ -1223,17 +1223,73 @@ words. The work is correct for the slice it was tested against and breaks outsid
   (frame 74) — both now show text packed edge to edge, top to bottom, no blank paper under the running head.
   `npx tsc --noEmit` clean. `social` suite: 30 files, 568 tests green. Root `npm test`: 819 pipeline + 95 web
   unit + 568 social, all green.
-- [ ] R03: Thread the chapter block into `Question.tsx` — it still feeds `WallPhase` the card's own
+- [x] R03: Thread the chapter block into `Question.tsx` — it still feeds `WallPhase` the card's own
   `originalExcerpt` (T09 wired only `Wall.tsx`), so at 44px its archaic phase is ~1100px against a 1920px
   frame and ALL 48 non-excluded question-pool cards under-fill. Add `chapterBlock` to `QuestionProps`, load it
   in `cli.ts`'s question branch, and apply T18's entry offset consistently. Acceptance: rendered block height
   exceeds the travel floor for a real Discourses card; a frame shows no blank lower half.
-- [ ] R04: Clamp the running head — `social/src/remotion/SourceHead.tsx` paints into a fixed 900x120 plate
+  DONE 2026-08-26: Added optional `chapterBlock?: string` to `QuestionProps` (mirrors `WallProps.chapterBlock`'s
+  doc comment and contract exactly) and changed `Question.tsx`'s archaic-wall-phase render to
+  `const wallText = props.chapterBlock ?? props.originalExcerpt;` fed to `WallPhase` — same fallback pattern as
+  `Wall.tsx`, so any caller that hasn't been updated (Remotion Studio's `defaultProps`, existing component
+  tests) keeps rendering exactly as before. `cli.ts`'s `question` branch now calls
+  `applyChapterEntryOffset(loadChapterTextBlock(slot.book_slug, slot.card_id), postIndex)`, the identical call
+  the `wall` branch already made, and threads `chapterBlock` through `QuestionPlan` and `buildInputProps`.
+  `Root.tsx`'s Question `calculateMetadata` needed no change — duration there is `QUESTION_HOLD_FRAMES +
+  WALL_FRAMES + answerFrames`, none of which depend on the wall-phase text length (the wall phase's frame count
+  is fixed, same as `Wall.tsx`), and the wall-phase font/inset are fixed too (`WALL_FONT_SIZE`), so
+  `computeWallLayout`'s only text-dependent field (`blockHeight`) was already unused by `WallPhase`'s own
+  rendering — matches `Wall.tsx`'s own gate/layout-off-`originalExcerpt`-render-`chapterBlock` split precisely.
+  Added a new `chapter-text.test.ts` suite: (1) three targeted tests for `discourses-64-006` (the reviewer's
+  repro) proving its own bare `original_excerpt` alone falls short of the 2,538.75px travel floor but the
+  chapter block clears it at both offset 0 and T18's worst-case offset, and (2) an R03 acceptance sweep across
+  all 48 non-excluded `content/social/premises/question.json` entries (mirrors R02's wall.json sweep) — passes,
+  worst margins 486.3px (offset 0) and 101.3px (worst-case offset) over the floor, zero shortfalls. Rendered
+  `discourses-64-006` as a real Question via a scratch schedule fixture + `cli.ts render`: extracted the wall
+  phase's first frame (frame 45) and last frame (frame 119) with ffmpeg. Measured ink extent (darkest-pixel row
+  scan): BEFORE (reviewer's own report) — first frame ink ended at row 1155/1920, last frame at row 553/1920,
+  roughly two-thirds blank paper. AFTER (this fix) — first frame ink runs to row 1919/1920, last frame to row
+  1919/1920 — both frames full to the bottom edge, no blank lower half. `npx tsc --noEmit` clean. Root
+  `npm test`: 819 pipeline + 95 web unit + 573 social, all green (33 tests in `chapter-text.test.ts`, up from 28
+  pre-R03; also added the missing `chapterBlock` field to `narration.test.ts`'s `QUESTION_PLAN` fixture, which
+  the widened `QuestionPlan` interface now requires).
+- [x] R04: Clamp the running head — `social/src/remotion/SourceHead.tsx` paints into a fixed 900x120 plate
   with no wrap handling, but `formatRunningHead` returns up to 135 chars (Discourses chapter titles), which
   wraps to 4 lines / 128px and spills outside `SOURCE_HEAD_BOUNDING_BOX` over the scrolling wall, breaking
   T11's `assertIdenticalOutsideBoxes` proofs. 18 wall-pool + 3 question-pool cards exceed 110 chars.
   Acceptance: a `source-head.test.ts` case using a real long Discourses `source_reference` asserts rendered
   ink stays inside the bounding box.
+  DONE 2026-08-26: Clamped the running head/payoff span to a SINGLE LINE via CSS (`overflow: hidden`,
+  `whiteSpace: 'nowrap'`, `textOverflow: 'ellipsis'`, `minWidth: 0` to defeat the flex item's default
+  `min-width: auto`), rather than pre-truncating the string by character count — the real Chromium text
+  shaper Remotion renders through measures actual DM Sans glyph widths, so this is correct for every string,
+  not just today's profiled outliers. New `SOURCE_HEAD_TEXT_MAX_WIDTH_PX` (`source-head-layout.ts`) sets the
+  clamp width to `SOURCE_HEAD_BOUNDING_BOX.width - SOURCE_HEAD_SAFE_INSET_PX` (836px) — deliberately the SAME
+  content width the text already had today, not narrower, so the plan's own worked example ("MARCUS AURELIUS
+  · MEDITATIONS, BOOK 2", 37 chars) is provably unaffected (verified: its existing pixel-render test is
+  unmodified and still passes). Because `formatRunningHead` always puts author+book FIRST and any long
+  descriptive chapter clause LAST, a right-hand ellipsis on the whole string naturally cuts the least
+  important part while preserving the most important part — no special-casing needed, and the truncation
+  stays factually true (a visible "…" signals more exists, rather than silently dropping it). Longest real
+  `source_reference` in the corpus, verified by scanning every `content/output/` chapter file: 135 chars,
+  `discourses/that-when-we-cannot-fulfil-...json` → "EPICTETUS · DISCOURSES, THAT WHEN WE CANNOT FULFIL THAT
+  WHICH THE CHARACTER OF A MAN PROMISES, WE ASSUME THE CHARACTER OF A PHILOSOPHER". Two new proofs in
+  `source-head.test.ts`: (1) a real Remotion pixel-render of that longest card asserting ink stays inside
+  `SOURCE_HEAD_BOUNDING_BOX` (`assertIdenticalOutsideBoxes`) and does draw something (`assertBoxDiffers`); (2)
+  a fast real-Chromium-DOM-measurement sweep (Playwright directly, the same technique `render/card.ts` already
+  uses for its own overflow check, plus the real base64-embedded DM Sans via `render/fonts.ts`'s `getFontCss`)
+  across every one of the 83 distinct running-head strings the whole corpus actually produces, asserting each
+  clamped span's `getBoundingClientRect().right` never exceeds the plate's right edge — chosen over 83+ full
+  Remotion video-frame renders (~400ms each) for suite-runtime reasons, while still exercising real layout +
+  real font metrics for every distinct case, not a character-count heuristic. `npx tsc --noEmit` clean.
+  `source-head.test.ts`: 27/27 (up from 25). Root `npm test`: 819 pipeline + 95 web unit + 575 social, all
+  green (full suite run alongside R02/R03/R05/R06 landing concurrently). Rendered a real Wall composition (not
+  just the test harness) for `discourses-24-005` (same 135-char chapter title) at a mid-scroll frame and for
+  `meditations-02-001` at the same offset, extracted PNGs, and read them: the Discourses head renders
+  "EPICTETUS · DISCOURSES, THAT WHEN WE CAN…" on one line, fully inside its opaque plate, with the scrolling
+  wall text visible above and below but never showing through or overlapping it; the Meditations head still
+  renders "MARCUS AURELIUS · MEDITATIONS, BOOK 2" in full, unclipped, byte-for-byte the same as before this
+  change.
 - [ ] R05: Guard T15's hard stop — `social/src/audio/__tests__/mix.test.ts`. Neither the `FLOOR` →
   `HARD_STOP_RAMP_MS` branch nor the `asetnsamples=n=128` insertion is asserted anywhere; the existing
   silence test samples a full second inside the span, so it passes either way. Add (a) a `bedEnvelope` unit

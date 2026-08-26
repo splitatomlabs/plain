@@ -26,13 +26,14 @@
  * file does not change.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import { mkdtemp, rm } from 'node:fs/promises';
 
 import { bundle } from '@remotion/bundler';
+import { chromium, type Browser } from 'playwright';
 
 import {
 	formatRunningHead,
@@ -41,11 +42,17 @@ import {
 	type RunningHeadCardMetadata,
 	type SourceHeadVariant
 } from '../SourceHead.js';
-import { SOURCE_HEAD_BOUNDING_BOX } from '../source-head-layout.js';
+import {
+	SOURCE_HEAD_BOUNDING_BOX,
+	SOURCE_HEAD_FONT_SIZE_PX,
+	SOURCE_HEAD_SAFE_INSET_PX,
+	SOURCE_HEAD_TEXT_MAX_WIDTH_PX
+} from '../source-head-layout.js';
 import { COUNTER_BOUNDING_BOX } from '../counter-layout.js';
 import { COUNTER_FONT_STACK } from '../Counter.js';
 import { SERIF_STACK } from '../Wall.js';
 import { ACCENTS, type AuthorSlug } from '../../render/theme.js';
+import { getFontCss } from '../../render/fonts.js';
 import { renderFrameAsPng, assertIdenticalOutsideBoxes, assertBoxDiffers, assertBoxIdentical } from './pixel-proof.js';
 import type { SourceHeadHarnessProps } from './fixtures/source-head-harness.js';
 
@@ -85,6 +92,19 @@ const EPICTETUS_CARD = loadCard('enchiridion', 'section-01.json');
 
 // "On the Shortness of Life, Section 1" — two parts, a multi-word title.
 const SENECA_CARD = loadCard('shortness-of-life', 'section-01.json');
+
+// social pilot 02a R04 (2026-08-26): the single longest real
+// `formatRunningHead` output in the whole corpus (135 chars, verified by
+// scanning every chapter file in `content/output/` — see the sweep further
+// below) — Epictetus's Discourses use full descriptive chapter titles
+// rather than book/section numbers, so this is a genuine, not
+// worst-case-imagined, card. Renders to:
+// "EPICTETUS · DISCOURSES, THAT WHEN WE CANNOT FULFIL THAT WHICH THE
+// CHARACTER OF A MAN PROMISES, WE ASSUME THE CHARACTER OF A PHILOSOPHER"
+const LONGEST_DISCOURSES_CARD = loadCard(
+	'discourses',
+	'that-when-we-cannot-fulfil-that-which-the-character-of-a-man-promises-we-assume-the-character-of-a-philosopher.json'
+);
 
 // ---------------------------------------------------------------------------
 // Unit-level: `formatRunningHead` is a pure derivation from real card
@@ -362,4 +382,161 @@ describe('neither the running head nor the payoff label collides with or reflows
 		const counterBottom = COUNTER_BOUNDING_BOX.top + COUNTER_BOUNDING_BOX.height;
 		expect(headTop).toBeGreaterThanOrEqual(counterBottom);
 	});
+});
+
+// ---------------------------------------------------------------------------
+// R04 (2026-08-26): the running head must stay inside SOURCE_HEAD_BOUNDING_BOX
+// for EVERY card in the corpus, not just the short Meditations/Seneca-shaped
+// `source_reference` values T11/T12 were written against. Epictetus's
+// Discourses use full descriptive chapter titles (up to 135 chars) that, at
+// SOURCE_HEAD_FONT_SIZE_PX, would wrap to 3-4 lines and spill outside the
+// fixed 120px plate — directly over the scrolling wall — before
+// `SourceHead.tsx`'s single-line clamp existed. Two proofs, at two different
+// levels:
+//
+//   1. A real Remotion pixel-render, through the SAME harness/pixel-proof
+//      machinery every other end-to-end test above uses, against the single
+//      longest real `source_reference` in the corpus — literal "rendered
+//      ink stays inside the bounding box" proof for the worst real case.
+//   2. A fast, real-Chromium-DOM-measurement sweep (via Playwright directly,
+//      the same technique `render/card.ts` already uses for its own
+//      overflow check) across EVERY distinct real running head string
+//      `formatRunningHead` actually produces from `content/output/` — 83
+//      distinct book/chapter-level heads as of this writing (fewer than the
+//      690+ distinct author+source_reference pairs, since the section-level
+//      detail is dropped). A full Remotion video-frame render per string
+//      would be needlessly slow for a test suite (~400ms each); this sweep
+//      gets the same real-font, real-layout-engine confidence in a couple of
+//      seconds by measuring the clamped span's own
+//      `getBoundingClientRect()` directly, reusing the exact geometry
+//      constants (`SOURCE_HEAD_TEXT_MAX_WIDTH_PX`, `SOURCE_HEAD_FONT_SIZE_PX`,
+//      `SOURCE_HEAD_SAFE_INSET_PX`, `SOURCE_HEAD_FONT_STACK`) and font CSS
+//      (`getFontCss`, the same base64-embedded DM Sans `card.ts` and the
+//      Remotion bundle both already render from) the real component uses.
+// ---------------------------------------------------------------------------
+
+describe('the running head clamp stays inside the bounding box for the longest real card', () => {
+	it(
+		'the longest real Discourses running head (135 chars) draws only inside SOURCE_HEAD_BOUNDING_BOX, never outside it',
+		async () => {
+			const longHeadVariant: SourceHeadVariant = { kind: 'running-head', card: LONGEST_DISCOURSES_CARD };
+			const withoutHead = await renderFrameAsPng(bundleLocation, 'SourceHeadHarness', harnessProps({}), 0);
+			const withLongHead = await renderFrameAsPng(
+				bundleLocation,
+				'SourceHeadHarness',
+				harnessProps({ sourceHead: longHeadVariant }),
+				0
+			);
+
+			// The 135-char head does draw something (it isn't silently dropped)...
+			assertBoxDiffers(withoutHead.png, withLongHead.png, SOURCE_HEAD_BOUNDING_BOX);
+			// ...and every pixel it draws is INSIDE the box — if the un-clamped
+			// 4-line wrap this test guards against were still happening, this
+			// assertion would fail because the wall text below/around the box
+			// would be painted over.
+			assertIdenticalOutsideBoxes(withoutHead.png, withLongHead.png, [SOURCE_HEAD_BOUNDING_BOX]);
+		},
+		120_000
+	);
+
+	// Regression guard for the plan's own worked example (37 chars, well
+	// under the clamp — `SOURCE_HEAD_TEXT_MAX_WIDTH_PX` is deliberately sized
+	// to reproduce the exact content width this text already had, see that
+	// constant's own doc comment): NOT re-tested here, because it already is
+	// — verbatim, unmodified by R04 — by "source head alone draws only
+	// inside its own box" in the collision describe block above, which uses
+	// this exact same `RUNNING_HEAD_VARIANT`/`MARCUS_CARD`. A second render
+	// of the identical case here would only duplicate that proof, not add to
+	// it.
+});
+
+describe('the running head clamp holds for every distinct card in the corpus (real Chromium + real DM Sans)', () => {
+	const repoRootForCorpus = path.resolve(moduleDir, '..', '..', '..', '..');
+	const outputDirForCorpus = path.join(repoRootForCorpus, 'content', 'output');
+
+	// Every distinct (author_slug, source_reference) pair across every book's
+	// every chapter file — not just the three hand-picked fixtures above, and
+	// not just Discourses, so a future book with its own long-title shape is
+	// covered by the same sweep without anyone remembering to add a new case.
+	function collectCorpusRunningHeads(): string[] {
+		const heads = new Set<string>();
+		for (const bookSlug of readdirSync(outputDirForCorpus)) {
+			const bookDir = path.join(outputDirForCorpus, bookSlug);
+			if (!statSync(bookDir).isDirectory()) continue;
+			for (const chapterFile of readdirSync(bookDir)) {
+				if (!chapterFile.endsWith('.json') || chapterFile === '_meta.json') continue;
+				const cards = JSON.parse(readFileSync(path.join(bookDir, chapterFile), 'utf-8')) as Array<{
+					author_slug: AuthorSlug;
+					source_reference: string;
+				}>;
+				for (const card of cards) {
+					heads.add(formatRunningHead(card));
+				}
+			}
+		}
+		return Array.from(heads);
+	}
+
+	let browser: Browser;
+
+	beforeAll(async () => {
+		browser = await chromium.launch({ headless: true });
+	}, 60_000);
+
+	afterAll(async () => {
+		await browser.close();
+	});
+
+	it(
+		'every distinct running head string in the corpus renders with its clamped span ending at or before the plate\'s right edge',
+		async () => {
+			const heads = collectCorpusRunningHeads();
+			// Sanity on the sweep itself — if this ever collapses to a handful of
+			// strings, the sweep below would be trivially true for the wrong
+			// reason (e.g. a loader bug silently reading zero cards). Distinct
+			// STRINGS, not distinct cards: `formatRunningHead` drops the
+			// section-level detail, so many of the corpus's 1600+ cards (and
+			// 690+ distinct author+source_reference pairs) collapse onto the
+			// same book/chapter-level head — 83, as of this writing, across all
+			// seven books.
+			expect(heads.length).toBeGreaterThan(50);
+			expect(heads.some((h) => h.length > 110)).toBe(true);
+
+			const fontCss = await getFontCss();
+			const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+			try {
+				// Mirrors SourceHead.tsx's own plate + span structure and inline
+				// styles exactly (see that file), so this is a faithful measurement
+				// of the real component's geometry, not an approximation of it.
+				await page.setContent(`
+					<style>${fontCss}</style>
+					<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
+						<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;"></span>
+					</div>
+				`);
+
+				const rightEdges = await page.evaluate((allHeads: string[]) => {
+					const probe = document.getElementById('probe') as HTMLSpanElement;
+					return allHeads.map((text) => {
+						probe.textContent = text;
+						return probe.getBoundingClientRect().right;
+					});
+				}, heads);
+
+				const plateRightEdge = SOURCE_HEAD_BOUNDING_BOX.left + SOURCE_HEAD_BOUNDING_BOX.width;
+				const offenders: Array<{ head: string; right: number }> = [];
+				heads.forEach((head, i) => {
+					const right = rightEdges[i];
+					if (right === undefined || right > plateRightEdge) {
+						offenders.push({ head, right: right ?? NaN });
+					}
+				});
+
+				expect(offenders).toEqual([]);
+			} finally {
+				await page.close();
+			}
+		},
+		120_000
+	);
 });
