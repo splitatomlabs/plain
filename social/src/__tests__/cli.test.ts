@@ -125,13 +125,15 @@ describe('resolveSlot — against the real committed week-1 schedule', () => {
 		const slot = resolveSlot(WEEK_1_SCHEDULE, day, 1);
 		expect(slot.card_id).toBe('meditations-02-001');
 		expect(slot.book_slug).toBe('meditations');
-		// F19: under F18's per-card Wall fit, meditations-02-001 (117 words)
-		// fits only 3335px even at the font cap, short of the 3400px travel
-		// target — so this read-through slot falls all the way through the
-		// Wall/Question/Objection cascade to the STILL fallback (see
-		// `scripts/lib/schedule.ts`'s `resolveReadThrough`). This is exactly
-		// F19's own fix: the slot still renders, "Card 1 of 48" still holds.
-		expect(slot.content.format).toBe('still');
+		// Under the regenerated week-1 schedule, meditations-02-001's landing
+		// line ("There is only a certain amount of time given to you.") is a
+		// genuine substring of its plain_english, not the whole passage — so
+		// this read-through slot fits the Wall gate directly and never falls
+		// through to the Still fallback (contrast day 2's meditations-02-002
+		// and day 5's meditations-02-005 below, whose landing lines equal
+		// their ENTIRE plain_english and so do fall through — see
+		// `computeWallPlainLines`'s describe block below).
+		expect(slot.content.format).toBe('wall');
 		expect(slot.read_through).toBe(true);
 		expect(slot.read_through_counter).toBe('Card 1 of 48');
 	});
@@ -139,8 +141,8 @@ describe('resolveSlot — against the real committed week-1 schedule', () => {
 	it('2026-09-01 slot 2 resolves to the expected card and format', () => {
 		const { day } = dateToWeekDay('2026-09-01');
 		const slot = resolveSlot(WEEK_1_SCHEDULE, day, 2);
-		expect(slot.card_id).toBe('happy-life-25-001');
-		expect(slot.book_slug).toBe('happy-life');
+		expect(slot.card_id).toBe('peace-of-mind-17-005');
+		expect(slot.book_slug).toBe('peace-of-mind');
 		expect(slot.content.format).toBe('wall');
 		expect(slot.read_through).toBe(false);
 	});
@@ -179,8 +181,10 @@ describe('computeWallPlainLines', () => {
 		// substring, so there's a non-empty remainder to split (day 2's
 		// meditations-02-002 and day 5's meditations-02-005 both land a
 		// landing line equal to the ENTIRE plain_english, leaving nothing to
-		// split — see F19: day 1's own meditations-02-001 falls through to
-		// the Still fallback instead of Wall at all).
+		// split, so those two fall through to the Still fallback instead —
+		// see `render — end-to-end: The Still (F19)` below. Day 1's own
+		// meditations-02-001 has a genuine, non-whole-passage landing line
+		// and stays a Wall — see the `resolveSlot` describe block above).
 		const card = loadOutputCard('meditations', 'meditations-02-006');
 		const slot = resolveSlot(WEEK_1_SCHEDULE, 6, 1);
 		if (slot.content.format !== 'wall') throw new Error('expected a wall slot');
@@ -221,10 +225,10 @@ describe('--dry-run', () => {
 		const result = runCli(['render', '--date', '2026-09-01', '--slot', '1', '--out', outDir, '--dry-run']);
 		expect(result.status).toBe(0);
 		expect(result.stdout).toMatch(/meditations-02-001/);
-		// F19: day 1's read-through card (meditations-02-001) falls through
-		// the cascade to the Still fallback under the real committed week-1
-		// schedule — see the `resolveSlot` describe block above.
-		expect(result.stdout).toMatch(/Still/);
+		// Day 1's read-through card (meditations-02-001) is a genuine Wall
+		// slot under the real committed week-1 schedule — see the
+		// `resolveSlot` describe block above.
+		expect(result.stdout).toMatch(/composition: Wall/);
 		expect(result.stdout.toLowerCase()).toMatch(/dry run/);
 		expect(existsSync(outDir)).toBe(false);
 	});
@@ -236,13 +240,21 @@ describe('--dry-run', () => {
 	// same wiring. Still never shows a running head (see `Still.tsx`'s own
 	// doc comment), so `printPlan` reports "payoff label only", not a
 	// resolved running-head string the way the Wall branch does.
+	//
+	// Day 2, slot 1 — meditations-02-002, the real committed week-1
+	// schedule's Still slot. Its plain_english has no qualifying landing line
+	// (`selectLandingLine` finds no self-contained sentence within the
+	// mechanical bounds, so it can't pay off as a Wall — see
+	// `content/social/render-exclusions.json`'s `read_through` section), so
+	// it falls through to the Still fallback — see the `resolveSlot` and
+	// `computeWallPlainLines` describe blocks above.
 	it('threads the real card\'s source_reference through for a Still slot, reporting "payoff label only" (no running head in this format)', async () => {
 		parentDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-dry-'));
 		outDir = path.join(parentDir, 'out');
 
-		const result = runCli(['render', '--date', '2026-09-01', '--slot', '1', '--out', outDir, '--dry-run']);
+		const result = runCli(['render', '--date', '2026-09-02', '--slot', '1', '--out', outDir, '--dry-run']);
 		expect(result.status).toBe(0);
-		expect(result.stdout).toMatch(/source reference: "Meditations, Book 2, Section 1"/);
+		expect(result.stdout).toMatch(/source reference: "Meditations, Book 2, Section 2"/);
 		expect(result.stdout).toMatch(/payoff label only — no running head in this format/);
 	});
 });
@@ -291,15 +303,15 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 		'produces a house-profile-conformant MP4 (15s-59s), an IG feed JPEG, and a metadata sidecar with narration: false',
 		async () => {
 			// Day 6, slot 1 of the REAL committed week-1 schedule
-			// (meditations-02-006) — a real Wall read-through slot. (F19: day
-			// 1's own read-through card, meditations-02-001, falls through the
-			// cascade to the Still fallback instead — see the `resolveSlot`
-			// describe block above and `render — end-to-end: The Still (F19)`
-			// below. Days 2 and 5's own read-through cards, meditations-02-002
-			// and meditations-02-005, ALSO fall through to Still under the T02
-			// landing-line requirement — their landing lines used to equal the
-			// entire plain_english passage under the old whole-passage
-			// fallback; see `computeWallPlainLines`'s describe block above.)
+			// (meditations-02-006) — a real Wall read-through slot. (Days 2 and
+			// 5's own read-through cards, meditations-02-002 and
+			// meditations-02-005, fall through to the Still fallback instead
+			// under the T02 landing-line requirement — their landing lines
+			// equal the entire plain_english passage, leaving nothing to split;
+			// see `computeWallPlainLines`'s describe block above and
+			// `render — end-to-end: The Still (F19)` below. Day 1's own
+			// meditations-02-001 stays a Wall — see the `resolveSlot` describe
+			// block above.)
 			const slot = resolveSlot(WEEK_1_SCHEDULE, 6, 1);
 			if (slot.content.format !== 'wall') throw new Error('expected a wall slot');
 
@@ -479,13 +491,13 @@ describe('render — end-to-end: The Question', () => {
 });
 
 // ---------------------------------------------------------------------------
-// The Still (F19) — the read-through's fallback format. `meditations-02-003`
-// is one of the exact real cards the plan's own motivating example names
-// (58 words, structurally too short to reach the Wall gate's travel target
-// even at the font cap — see `content/social/render-exclusions.json`'s
-// `read_through` section), and it IS day 3's real committed read-through
-// slot in week 1 — this exercises the fallback through the real render path
-// end to end, not a synthetic fixture.
+// The Still (F19) — the read-through's fallback format. `meditations-02-002`
+// has no qualifying landing line (`selectLandingLine` finds no
+// self-contained sentence within the mechanical bounds, so it can't pay off
+// as a Wall — see `content/social/render-exclusions.json`'s `read_through`
+// section), and it IS day 2's real committed read-through slot in week 1 —
+// this exercises the fallback through the real render path end to end, not a
+// synthetic fixture.
 // ---------------------------------------------------------------------------
 
 describe('render — end-to-end: The Still (F19)', () => {
@@ -498,16 +510,17 @@ describe('render — end-to-end: The Still (F19)', () => {
 	it(
 		'renders a house-profile-conformant MP4, an IG feed JPEG, and a metadata sidecar with format: "still"',
 		async () => {
-			// Day 3, slot 1 — meditations-02-003, one of the exact cards the
-			// plan names as too short to be a Wall.
-			const slot = resolveSlot(WEEK_1_SCHEDULE, 3, 1);
+			// Day 2, slot 1 — meditations-02-002, whose plain_english has no
+			// qualifying landing line and so falls through to the Still
+			// fallback (see the `resolveSlot` describe block above).
+			const slot = resolveSlot(WEEK_1_SCHEDULE, 2, 1);
 			if (slot.content.format !== 'still') throw new Error('expected a still slot');
-			expect(slot.card_id).toBe('meditations-02-003');
-			const card = loadOutputCard('meditations', 'meditations-02-003');
+			expect(slot.card_id).toBe('meditations-02-002');
+			const card = loadOutputCard('meditations', 'meditations-02-002');
 			// Faithful, verbatim — never trimmed or reworded.
 			expect(slot.content.text).toBe(card.plain_english);
 
-			const date = weekDayToDate(1, 3);
+			const date = weekDayToDate(1, 2);
 			outDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-e2e-still-'));
 
 			const result = runCli(['render', '--date', date, '--slot', '1', '--out', outDir]);
