@@ -350,10 +350,48 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   were rewritten, none added or removed, and all still pass against the regenerated artifact). `npx vitest run
   scripts/lib/__tests__/schedule.test.ts` (repo root) — 123/123, unaffected (confirms the schedule generator's own
   landing-line logic was never the buggy code path; only the reporting artifact was stale).
-- [ ] T05: Test the chapter-text loader — `social/src/render/__tests__/chapter-text.test.ts`. Block starts at the
+- [x] T05: Test the chapter-text loader — `social/src/render/__tests__/chapter-text.test.ts`. Block starts at the
   target card's excerpt; continues with following cards in document order; wraps to preceding cards at chapter
   end; returns enough text to clear the travel requirement for every card in the slice; text is verbatim and
   unmodified. Acceptance: fails against an empty implementation.
+  Done (2026-08-26): added `social/src/render/chapter-text.ts` as an empty stub — two exports,
+  `buildChapterTextBlock(targetCardId, bookCards)` (pure) and `loadChapterTextBlock(bookSlug, cardId, outputDir?)`
+  (disk-backed convenience over `wall-pool.ts`'s `loadBookCards`), both throwing `"...is not implemented yet
+  (social pilot 02a T06)"`, plus a `ChapterTextCard` interface (`id`/`book_slug`/`chapter_slug`/`card_number`/
+  `original_excerpt`) — the minimal shape T06 needs, kept separate from `wall-pool.ts`'s `OutputCard` so a
+  synthetic test fixture doesn't have to fabricate every field `OutputCard`'s index signature allows. Chose a
+  concrete design for T06 to match or amend: `buildChapterTextBlock` filters `bookCards` internally to the target
+  card's own `book_slug` + `chapter_slug` (so callers can safely pass a whole book's cards, e.g. `loadBookCards`'s
+  output, covering two different read-through chapters from one call), sorts by `card_number`, and returns ONE
+  FULL LAP of that chapter starting at the target card and wrapping around — chosen over a length-driven partial
+  block because it's simplest, always satisfies the travel requirement by a wide margin (a chapter's total excerpt
+  word count, 2,196-3,305 for Meditations Books 2-3, dwarfs anything a 2.5-3s scroll could need), and needs no
+  extra parameter this task shouldn't be inventing ahead of T07/T08's real geometry numbers.
+  Added `social/src/render/__tests__/chapter-text.test.ts` (15 tests): a synthetic 5-card chapter (plus decoy
+  cards from a different chapter and a different book, in the same `bookCards` array) proves start position,
+  follow-order, wrap-around, chapter/book scoping, both chapter-boundary edge cases (starting from the first card
+  and the last card), a single-card-chapter edge case, and the not-found-id throw; a real-corpus block (Meditations
+  Books 2-3, loaded via `loadBookCards`) proves the same properties against real data, that `loadChapterTextBlock`
+  agrees with `buildChapterTextBlock` over the same cards, and — the acceptance criterion the plan singles out —
+  that all 48 real read-through slice cards clear `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` (`wall-gate.ts`, the CURRENT,
+  not-yet-deleted travel constant) once `computeWallLayout` (`wall-timing.ts`) is run against their chapter block
+  instead of their own excerpt alone. All order/verbatim assertions go through one shared helper,
+  `expectExactExcerptSequence(block, excerpts)`, which strips each expected excerpt off the front of the block in
+  order and requires everything in between and after to be pure whitespace — a single assertion that catches a
+  wrong start point, a skipped or reordered excerpt, a wrap into the wrong chapter, or any fabricated/paraphrased
+  text, all at once.
+  One incidental fix needed to make the real-corpus tests type-check: `wall-pool.ts`'s `OutputCard` interface
+  didn't type `chapter_slug`/`card_number` explicitly (only reachable via its `[key: string]: unknown` index
+  signature), which made `loadBookCards`'s return type incompatible with `ChapterTextCard[]`. Verified every card
+  across the entire `content/output/` corpus really does carry `chapter_slug: string` and `card_number: number`
+  (a Python sweep, zero mismatches), then added both fields to `OutputCard` explicitly — additive only, every
+  existing access pattern (e.g. `exclusions.test.ts`'s `String(c.chapter_slug)`) still type-checks unchanged.
+  Verified: `npx vitest run src/render/__tests__/chapter-text.test.ts` — 13 of 15 fail against the empty stub
+  (exactly the tests that call `buildChapterTextBlock`/`loadChapterTextBlock`); the 2 that pass don't exercise the
+  unimplemented behavior (a card-count sanity check on the real slice, and the not-found-id throw, which the stub
+  already satisfies by throwing unconditionally) — this is the acceptance criterion, not a partial failure.
+  `npx tsc --noEmit` clean. `cd social && npm test` — 26 of 27 test files pass, 508 of 521 individual tests pass
+  (the 13 new failures are this task's own, expected ones; zero regressions in the other 508 pre-existing tests).
 - [ ] T06: Implement `social/src/render/chapter-text.ts`. Acceptance: T04 passes.
 - [ ] T07: Test the new wall geometry — `social/src/remotion/__tests__/wall-timing.test.ts`. Fixed font size;
   rate expressed in lines/sec; scroll never finishes before the cut (now by construction, not by gate); frame-0

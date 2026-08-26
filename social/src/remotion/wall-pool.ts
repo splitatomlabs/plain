@@ -36,6 +36,18 @@ export interface WallPoolEntry {
 export interface OutputCard {
 	id: string;
 	book_slug: string;
+	/**
+	 * Added social pilot 02a T05, for `chapter-text.ts`'s chapter-sourced wall
+	 * block — every card in `content/output/` already carries these two
+	 * fields (confirmed across the whole corpus), they just weren't typed
+	 * explicitly before because nothing needed them typed (callers reached
+	 * them, if at all, through the index signature as `unknown` — e.g.
+	 * `exclusions.test.ts`'s `String(c.chapter_slug)`). Adding them here is
+	 * additive and backward-compatible: every existing access pattern still
+	 * type-checks.
+	 */
+	chapter_slug: string;
+	card_number: number;
 	original_excerpt: string;
 	plain_english: string;
 	author_slug: string;
