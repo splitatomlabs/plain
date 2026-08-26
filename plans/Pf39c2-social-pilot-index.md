@@ -176,9 +176,12 @@ full passage in context. One-time cost; revives Three Voices and lifts One-Line 
 2. `plans/Pf39c2-social-pilot-02.md` — Character system and rendering: three characters, per-format templates, encode
    - Status: [ ]
    - Depends on: 01
-3. `plans/Pf39c2-social-pilot-03.md` — Publish and measure: R2, Instagram + YouTube adapters, TikTok staging, readout
+2a. `plans/Pf39c2-social-pilot-02a.md` — The Wall refined: legible payoff, chapter-sourced scroll, framing layer
    - Status: [ ]
    - Depends on: 02
+3. `plans/Pf39c2-social-pilot-03.md` — Publish and measure: R2, Instagram + YouTube adapters, TikTok staging, readout
+   - Status: [ ]
+   - Depends on: 02a
 
 ## Cross-cutting constraints
 - **No logo, URL or watermark inside any video frame** — TikTok's watermark rule warns this "may also lead to
