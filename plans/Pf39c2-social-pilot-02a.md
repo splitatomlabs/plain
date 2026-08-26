@@ -1165,3 +1165,45 @@ ffprobe -v error -show_streams social/out/*.mp4
   SELECTION (an LLM pick like the pool's `rubric.chosen_landing_line`, extended to the whole read-through slice)
   rather than by loosening the mechanical word cap — measured above as buying 3 cards at the cost of payoff
   quality. Only 21 of the 48 slice cards are in the scored pool today.
+
+### Review follow-up (code review of PR #41, 2026-08-26)
+
+Six must-fix findings. M2/M3/M4 share one root cause: the plan's measurements and the read-through slice
+are both Meditations, which has by far the LONGEST chapters (median 5,355 words) and the SHORTEST source
+references in the corpus. Measured chapter medians: enchiridion **94**, happy-life 440, shortness-of-life
+502, peace-of-mind 709, discourses 812, meditations 5,355, on-anger 13,456. Never-finishes needs ~412
+words. The work is correct for the slice it was tested against and breaks outside it.
+
+- [ ] R01: Fix the red suite — `social/src/__tests__/cli.test.ts` (lines ~122, 139-142, 227, 245, 504) still
+  asserts the pre-T20 week-1 schedule. Repoint at the regenerated slots: day 1 slot 1 → `wall`
+  `meditations-02-001`, slot 2 → `peace-of-mind-17-005`; the Still e2e/dry-run tests → day 2 slot 1
+  (`meditations-02-002`). Acceptance: `npx vitest run src/__tests__/cli.test.ts` 22/22; root `npm test` green.
+- [ ] R02: Restore the never-finishes guarantee for SHORT chapters — `social/src/render/chapter-text.ts`.
+  `buildChapterTextBlock` returns exactly one lap, which clears the 2,538.75px travel floor only in
+  Meditations. Measured: 53 of 685 non-excluded Wall pool entries fail at offset 0, 25 more at T18's
+  worst-case offset (78 total, 11%). Repeat the lap until the block clears the floor (keeping the text
+  verbatim and the wrap honest), or restore a gate axis fed the CHAPTER BLOCK rather than the single card.
+  Acceptance: a test sweeping EVERY non-excluded entry of `content/social/premises/wall.json` — not the
+  48-card Meditations slice — asserts the block clears the floor at both offset 0 and `excerptWordCount - 1`.
+- [ ] R03: Thread the chapter block into `Question.tsx` — it still feeds `WallPhase` the card's own
+  `originalExcerpt` (T09 wired only `Wall.tsx`), so at 44px its archaic phase is ~1100px against a 1920px
+  frame and ALL 48 non-excluded question-pool cards under-fill. Add `chapterBlock` to `QuestionProps`, load it
+  in `cli.ts`'s question branch, and apply T18's entry offset consistently. Acceptance: rendered block height
+  exceeds the travel floor for a real Discourses card; a frame shows no blank lower half.
+- [ ] R04: Clamp the running head — `social/src/remotion/SourceHead.tsx` paints into a fixed 900x120 plate
+  with no wrap handling, but `formatRunningHead` returns up to 135 chars (Discourses chapter titles), which
+  wraps to 4 lines / 128px and spills outside `SOURCE_HEAD_BOUNDING_BOX` over the scrolling wall, breaking
+  T11's `assertIdenticalOutsideBoxes` proofs. 18 wall-pool + 3 question-pool cards exceed 110 chars.
+  Acceptance: a `source-head.test.ts` case using a real long Discourses `source_reference` asserts rendered
+  ink stays inside the bounding box.
+- [ ] R05: Guard T15's hard stop — `social/src/audio/__tests__/mix.test.ts`. Neither the `FLOOR` →
+  `HARD_STOP_RAMP_MS` branch nor the `asetnsamples=n=128` insertion is asserted anywhere; the existing
+  silence test samples a full second inside the span, so it passes either way. Add (a) a `bedEnvelope` unit
+  assertion that `{atMs: 2500, gainDb: 0}` is immediately followed by `{atMs: 2505, gainDb: -60}`, and (b) a
+  real `mix()` case asserting `meanVolumeDb(out, 2.6, 5.4) < -60` and `meanVolumeDb(out, 0.5, 2.4) > -30`.
+  Acceptance: (b) fails if `asetnsamples` is removed.
+- [ ] R06: Hold the 2.5s motionless floor in `objection-timing.ts` (lines ~182-191). T16 made
+  `replyLineFrames[0]` follow `narrationTimings[0]` with only a 1-frame floor, and unlike the second reply
+  line it is never extended by `padToMinimumDuration` — a ~1.8s narrated first sentence yields a 54-frame
+  motionless payoff, violating the house rule. Acceptance: a 1.5s first-line timing still yields
+  `endFrame - startFrame >= 75`.
