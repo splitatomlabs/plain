@@ -257,6 +257,35 @@ export const WALL_FONT_FLOOR_PX = WALL_MIN_LEGIBLE_FONT_PX;
 export const WALL_FONT_CAP_PX = 92;
 
 /**
+ * social pilot 02a T07 (2026-08-26) STUB — written ahead of T08's real
+ * implementation, purely so `wall-timing.test.ts`'s new TDD tests
+ * type-check under `tsc --noEmit` (the task's own instructions permit a
+ * minimal stub export for exactly this reason, "only if unavoidable" — it
+ * is unavoidable here: this project's Vitest/esbuild transform lets an
+ * import of a genuinely missing export through as `undefined` at runtime,
+ * but `tsc --noEmit` still, correctly, treats it as a hard compile error).
+ *
+ * NOT wired into `fitWallFontSize`/`computeWallLayout` or
+ * `WALL_SCROLL_RATE_PX_PER_SEC` below — doing so is T08's own job (delete
+ * the per-card fit, fix the font size, derive the scroll rate from
+ * `WALL_SCROLL_LINES_PER_SEC` below). Deliberately inert: this value is
+ * unread by anything else in this module, so its mere presence changes no
+ * existing behavior — every one of `wall-timing.test.ts`'s new T07 tests
+ * that assert this constant is actually USED (a fixed font size across
+ * every card; a derived scroll rate) still fails, correctly, against
+ * today's per-card fit.
+ */
+export const WALL_FONT_SIZE = 44;
+
+/**
+ * social pilot 02a T07 (2026-08-26) STUB — see `WALL_FONT_SIZE`'s doc
+ * comment immediately above for why this exists and why it is
+ * deliberately NOT wired into `WALL_SCROLL_RATE_PX_PER_SEC` yet (T08's
+ * job).
+ */
+export const WALL_SCROLL_LINES_PER_SEC = 4.5;
+
+/**
  * The wall's scroll rate, in px/s, in the composition's 1080x1920 frame
  * space — LINEAR, identical on every card, and the single source of the
  * wall's motion now that the karaoke highlight is gone (F15).

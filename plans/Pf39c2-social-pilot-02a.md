@@ -403,10 +403,50 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   Verified: `npx vitest run src/render/__tests__/chapter-text.test.ts` — 15/15 pass. `cd social && npm test` —
   27/27 test files, 521/521 tests pass (up from 508/521 pre-T06; the 13 tests T05 left failing now pass, zero
   regressions elsewhere). `npx tsc --noEmit` clean.
-- [ ] T07: Test the new wall geometry — `social/src/remotion/__tests__/wall-timing.test.ts`. Fixed font size;
+- [x] T07: Test the new wall geometry — `social/src/remotion/__tests__/wall-timing.test.ts`. Fixed font size;
   rate expressed in lines/sec; scroll never finishes before the cut (now by construction, not by gate); frame-0
   velocity is already full; no card in the corpus is rejected for block height. Acceptance: fails against the
   F18 per-card fit.
+  Done (2026-08-26): added 13 new tests in 5 describe blocks, TDD-style, against `wall-timing.ts` as it stands
+  today (F18's per-card fit). Confirmed empirically that a named ESM import of an export that does not exist
+  (`WALL_FONT_SIZE`, `WALL_SCROLL_LINES_PER_SEC`) resolves to `undefined` in this project's Vitest/esbuild
+  transform rather than throwing a module error — so a behavioral failure on those names wouldn't crash the file
+  — but `npx tsc --noEmit` DOES treat it as a hard compile error (`TS2724`), which the task's own instructions
+  anticipate ("adding a minimal stub export...acceptable ONLY if unavoidable"). Added two minimal, deliberately
+  INERT stub exports to `wall-timing.ts` for exactly that reason — `WALL_FONT_SIZE = 44` and
+  `WALL_SCROLL_LINES_PER_SEC = 4.5`, read by nothing else in the module (not wired into `fitWallFontSize`,
+  `computeWallLayout`, or `WALL_SCROLL_RATE_PX_PER_SEC` — that wiring is T08's job), so their mere presence
+  changes no existing behavior.
+  4 of the 13 new tests genuinely FAIL today (the task's own acceptance criterion), all on BEHAVIOR, not on the
+  stub's mere existence: `computeWallLayout` still returns a per-card-fitted size (92px for a short synthetic
+  excerpt, 77px for the 150-word fixture, 72px for the 201-word longest-pool excerpt) instead of the fixed
+  `WALL_FONT_SIZE` (44px) on every one of them (2 tests); `WALL_SCROLL_RATE_PX_PER_SEC` is still F16's bare
+  500px/s constant, not `WALL_SCROLL_LINES_PER_SEC * WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO` (247.5px/s) or
+  anything else derived from the lines/sec constant (2 tests). The remaining 9 new tests already pass today
+  (2 trivial "is WALL_FONT_SIZE/WALL_SCROLL_LINES_PER_SEC defined and in the plan's ~44px/~4.5 range" checks,
+  now true only because of the stub's own chosen value; 7 genuine forward-looking regression guards that must
+  keep passing after T08 lands): frame-0 velocity is already at full rate with no ramp (the offset formula is
+  rate-agnostic, so this holds regardless of what T08 does to the rate's value); every one of the 48 read-through
+  slice cards' CHAPTER-sourced block (T06) already outruns the wall phase without any per-card rejection; and the
+  14 real cards T04 measured failing the travel axis on their OWN single-card excerpt (verified they still do, on
+  that same excerpt, today) all clear `computeWallLayout.fits` once sourced from their chapter instead — proving
+  the "no card rejected for block height" claim is already earned by T06's chapter-sourcing, not something T08
+  still needs to invent.
+  All 37 pre-existing tests in this file are unaffected (still pass, unchanged) — the new failures are isolated,
+  ordinary assertion failures in their own `it` blocks.
+  T08 will need to delete or rewrite several PRE-EXISTING tests in this same file that assert F18's per-card-fit
+  behavior directly (not touched here, per this task's scope): the "block geometry at F18 numbers" describe (3
+  tests asserting fontSize 77/72px and per-card-search bounds), both "fitWallFontSize — a short/long excerpt..."
+  describes (2 tests asserting the now-to-be-deleted target/floor/cap clamp behavior), and the single assertion
+  `expect(travelFloor).toBe(3170)` inside "the scroll does not finish before the cut" (the 3170px figure is
+  `FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS` at F16/F18's 500px/s rate — T08's ~250px/s rate
+  changes this number, though the surrounding "still clears the floor" logic stays valid). Outside this file,
+  `wall-gate.test.ts` also has extensive coverage of `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`/`WALL_FONT_CAP_PX`/the
+  travel-rejection path that T08 (deleting `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` per its own acceptance criterion)
+  will need to touch too — out of scope for T07's file, flagged here for T08.
+  Verified: `npx tsc --noEmit` clean. `npx vitest run src/remotion/__tests__/wall-timing.test.ts` — 50 tests, 4
+  failed (the new behavioral ones, as intended), 46 passed (37 pre-existing + 9 new: 2 trivial stub-existence
+  checks + 7 forward-looking guards) — zero regressions.
 - [ ] T08: Rewrite the geometry in `wall-timing.ts` — fixed `WALL_FONT_SIZE` (~44px), `WALL_SCROLL_LINES_PER_SEC`
   (~4.5), delete `fitWallFontSize`'s block-height target, `WALL_TARGET_BLOCK_HEIGHT_PX`, `WALL_FONT_FLOOR_PX`/
   `CAP_PX` and `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`. Acceptance: T06 passes.

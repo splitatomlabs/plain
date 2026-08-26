@@ -30,10 +30,22 @@ import {
 	LANDING_LINE_FRAMES,
 	DEFAULT_LINE_SECONDS,
 	DEFAULT_LINE_FRAMES,
+	// social pilot 02a T07 (2026-08-26): neither of these exists on
+	// `wall-timing.ts` yet (F18 fits a font size PER CARD instead — see
+	// `fitWallFontSize`). Importing a name `wall-timing.ts` does not export
+	// resolves to `undefined` in this project's Vitest/esbuild ESM transform
+	// (confirmed empirically — it does not throw a module-resolution error),
+	// so the "T07 — the new wall geometry" describe blocks below fail as
+	// ordinary assertion failures against `undefined`, not as import crashes
+	// that would take the rest of this file's (pre-T07, already-passing)
+	// tests down with them. T08 adds these two real exports.
+	WALL_FONT_SIZE,
+	WALL_SCROLL_LINES_PER_SEC,
 	type NarrationLineTiming
 } from '../wall-timing.js';
 import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
-import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
+import { resolveWallCardExcerpt, loadBookCards, type WallPoolEntry } from '../wall-pool.js';
+import { loadChapterTextBlock } from '../../render/chapter-text.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -389,6 +401,153 @@ describe('the scroll does not finish before the cut — the invariant F15 requir
 
 		const longestLayout = computeWallLayout(LONGEST_EXCERPT);
 		expect(longestLayout.blockHeight).toBeGreaterThan(travelFloor);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// social pilot 02a T07 — the new wall geometry (TDD, written ahead of T08).
+//
+// The defect these guard against: "the wall reads as a large-print book, not
+// a wall" — F18's per-card fit (`fitWallFontSize`, above) buys travel by
+// magnifying type (block height scales with the SQUARE of font size), which
+// is the opposite of the dense, small-set look the format wants. T08's fix
+// (see `plans/Pf39c2-social-pilot-02a.md`): a FIXED font size (~44px, not a
+// per-card fit), a scroll rate expressed in LINES PER SECOND (~4.5, derived
+// into px/s from the fixed font size — not a bare px/s constant), and the
+// never-finishes invariant satisfied BY CONSTRUCTION once the block is
+// chapter-sourced (T05/T06, already landed) rather than by rejecting short
+// cards on a travel axis.
+//
+// Every describe block below is written against `wall-timing.ts` as it
+// stands TODAY (F18's per-card fit) — some fail outright (`WALL_FONT_SIZE`
+// and `WALL_SCROLL_LINES_PER_SEC` do not exist yet, so they import as
+// `undefined`); others (the chapter-sourced travel/no-rejection guards)
+// already hold today, because T06's chapter-text block is already long
+// enough to clear even F18's own target — those are kept as forward-looking
+// regression guards T08 must not break, not as tests this task expects to
+// fail. T08 is expected to make ALL of them pass; until then, this whole
+// section is this task's own documented acceptance criterion.
+// ---------------------------------------------------------------------------
+
+describe('social pilot 02a T07 — WALL_FONT_SIZE is FIXED, not fit per card', () => {
+	it('WALL_FONT_SIZE is defined and close to the plan\'s ~44px figure — FAILS today (no such export until T08)', () => {
+		expect(WALL_FONT_SIZE).toBeDefined();
+		expect(WALL_FONT_SIZE).toBeGreaterThanOrEqual(40);
+		expect(WALL_FONT_SIZE).toBeLessThanOrEqual(48);
+	});
+
+	it('computeWallLayout uses the SAME fontSize for a short passage and a long one — no per-card fit — FAILS today (F18 fits per card)', () => {
+		const shortExcerpt = 'one two three four five';
+		const longExcerpt = Array.from({ length: 600 }, (_, i) => `word${i}`).join(' ');
+		const shortLayout = computeWallLayout(shortExcerpt);
+		const longLayout = computeWallLayout(longExcerpt);
+		expect(shortLayout.fontSize).toBe(WALL_FONT_SIZE);
+		expect(longLayout.fontSize).toBe(WALL_FONT_SIZE);
+	});
+
+	it('the fixture card (150 words) and the longest real pool excerpt (201 words) both render at WALL_FONT_SIZE — FAILS today (F18 measures 77px/72px, a per-card fit, not a fixed size)', () => {
+		expect(computeWallLayout(FIXTURE_CARD.original_excerpt).fontSize).toBe(WALL_FONT_SIZE);
+		expect(computeWallLayout(LONGEST_EXCERPT).fontSize).toBe(WALL_FONT_SIZE);
+	});
+});
+
+describe('social pilot 02a T07 — the scroll rate is expressed in LINES PER SECOND, derived into px/s (not a bare px/s constant)', () => {
+	it('WALL_SCROLL_LINES_PER_SEC is defined and close to the plan\'s ~4.5 lines/s figure — FAILS today (no such export until T08)', () => {
+		expect(WALL_SCROLL_LINES_PER_SEC).toBeDefined();
+		expect(WALL_SCROLL_LINES_PER_SEC).toBeGreaterThanOrEqual(4);
+		expect(WALL_SCROLL_LINES_PER_SEC).toBeLessThanOrEqual(5);
+	});
+
+	it('WALL_SCROLL_RATE_PX_PER_SEC is DERIVED from WALL_SCROLL_LINES_PER_SEC and the fixed font size\'s line height — FAILS today (F16/F18\'s 500px/s is a bare constant, not derived from any lines/sec figure)', () => {
+		const lineHeightPx = WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO;
+		const derivedRatePxPerSec = WALL_SCROLL_LINES_PER_SEC * lineHeightPx;
+		expect(WALL_SCROLL_RATE_PX_PER_SEC).toBe(derivedRatePxPerSec);
+	});
+
+	it('at ~44px and ~4.5 lines/s the derived rate is roughly 250px/s, well under F16/F18\'s 500px/s — FAILS today', () => {
+		expect(WALL_SCROLL_RATE_PX_PER_SEC).toBeLessThan(400);
+	});
+});
+
+describe('social pilot 02a T07 — frame-0 velocity is already full under whatever rate ships (no ease-in ramp) — the house rule, re-checked against a rate that is about to change value', () => {
+	it('the frame-0-to-frame-1 delta already equals the full derived per-frame rate, not a fraction of it ramping up', () => {
+		const offsetAtZero = wallScrollOffsetAtFrame(0);
+		const offsetAtOne = wallScrollOffsetAtFrame(1);
+		expect(offsetAtOne - offsetAtZero).toBe(WALL_SCROLL_RATE_PX_PER_SEC / FPS);
+	});
+
+	it('offset(0) is exactly 0 regardless of the rate\'s value — the block top sits exactly at the frame top on frame 0', () => {
+		expect(wallScrollOffsetAtFrame(0)).toBe(0);
+	});
+});
+
+describe('social pilot 02a T07 — the scroll never finishes before the cut, BY CONSTRUCTION, for the whole read-through slice (chapter-sourced blocks, T05/T06)', () => {
+	const READ_THROUGH_BOOK = 'meditations';
+	const READ_THROUGH_CHAPTERS = ['book-02', 'book-03'];
+
+	const bookCards = loadBookCards(READ_THROUGH_BOOK, outputDir);
+	const readThroughSlice = bookCards
+		.filter((c) => READ_THROUGH_CHAPTERS.includes(String(c.chapter_slug)))
+		.sort((a, b) => {
+			const chapterOrder =
+				READ_THROUGH_CHAPTERS.indexOf(String(a.chapter_slug)) - READ_THROUGH_CHAPTERS.indexOf(String(b.chapter_slug));
+			return chapterOrder !== 0 ? chapterOrder : Number(a.card_number) - Number(b.card_number);
+		});
+
+	it('grounds this suite\'s own numbers: the read-through slice is 48 real cards (same slice T04/T06 measured)', () => {
+		expect(readThroughSlice.length).toBe(48);
+	});
+
+	it('every one of the 48 read-through slice cards\' CHAPTER-sourced block still outruns the wall phase — no per-card rejection needed', () => {
+		const offsetAtLastFrame = wallScrollOffsetAtFrame(WALL_FRAMES - 1);
+		const shortfalls: { id: string; blockHeight: number }[] = [];
+		for (const card of readThroughSlice) {
+			const block = loadChapterTextBlock(READ_THROUGH_BOOK, card.id, outputDir);
+			const layout = computeWallLayout(block);
+			const blockBottomY = layout.blockHeight - offsetAtLastFrame;
+			if (!(blockBottomY > FRAME_HEIGHT)) {
+				shortfalls.push({ id: card.id, blockHeight: layout.blockHeight });
+			}
+		}
+		expect(shortfalls).toEqual([]);
+	});
+});
+
+describe('social pilot 02a T07 — no read-through card is rejected for block height once the block is chapter-sourced (T04\'s 14 travel rejections must all clear)', () => {
+	const exclusions = JSON.parse(
+		readFileSync(path.join(repoRoot, 'content', 'social', 'render-exclusions.json'), 'utf-8')
+	) as { read_through: { card_id: string; book_slug: string; axis: string }[] };
+	const travelRejectedIds = exclusions.read_through.filter((e) => e.axis === 'travel').map((e) => e.card_id);
+
+	it('grounds this test\'s own numbers: T04 measured 14 read-through cards rejected on the travel axis under the per-card, single-excerpt fit', () => {
+		expect(travelRejectedIds.length).toBe(14);
+	});
+
+	it('confirms those same 14 cards DO fail computeWallLayout.fits on their OWN single-card excerpt today — the defect T05/T06/T07/T08 fix', () => {
+		const slice = loadBookCards('meditations', outputDir);
+		const stillPassingOnOwnExcerpt: string[] = [];
+		for (const cardId of travelRejectedIds) {
+			const card = slice.find((c) => c.id === cardId);
+			expect(card, `card ${cardId} not found in the meditations corpus`).toBeDefined();
+			if (!card) continue;
+			const layout = computeWallLayout(card.original_excerpt);
+			if (layout.fits) {
+				stillPassingOnOwnExcerpt.push(cardId);
+			}
+		}
+		expect(stillPassingOnOwnExcerpt).toEqual([]);
+	});
+
+	it('every one of those 14 cards clears computeWallLayout.fits once its own excerpt is replaced by its CHAPTER-sourced block', () => {
+		const stillFailing: string[] = [];
+		for (const cardId of travelRejectedIds) {
+			const block = loadChapterTextBlock('meditations', cardId, outputDir);
+			const layout = computeWallLayout(block);
+			if (!layout.fits) {
+				stillFailing.push(cardId);
+			}
+		}
+		expect(stillFailing).toEqual([]);
 	});
 });
 
