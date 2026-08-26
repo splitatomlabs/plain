@@ -426,24 +426,38 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 }
 
 /**
- * The Wall's silent phases (the moving wall + the mandated 3s landing-line
- * hold), in ms — see the module doc comment.
+ * The Wall's one true-silence phase — the mandated 3s landing-line hold —
+ * in ms. See the module doc comment.
  *
- * Deliberately uses the FIXED `WALL_FRAMES + LANDING_LINE_FRAMES` boundary
- * rather than `computeWallTiming(...).landingLine.endFrame`: when a card has
- * no plain-passage lines left after the landing line, `computeWallTiming`
- * extends `landingLine.endFrame` to absorb the 15s duration-floor pad (see
- * `duration-bounds.ts`'s `padToMinimumDuration`) so the PICTURE keeps
- * holding the landing line for the full post. That padding is not part of
- * the documented "silent, motionless" 5.5s window — it exists purely to
- * clear the MP4 duration floor. Silencing the bed for that padding too
- * meant the whole clip (bed included) went silent for any 0-plain-line Wall
- * card, which ffmpeg's loudnorm then measures as digital silence
+ * social pilot 02a T15 ("THE CUT MUST BE AUDIBLE"): this used to span
+ * `0 -> WALL_FRAMES + LANDING_LINE_FRAMES`, silencing the bed under the
+ * moving-wall scroll too ("silence means silence, the bed included"). That
+ * made the first 5.5s of every Wall dead air and the hard cut a silent
+ * event. Per the plan's decision, the bed now plays at nominal level under
+ * the scroll, hard-stops on the cut frame (`mix.ts`'s `bedEnvelope`/
+ * `intervalsToPoints` — a transition INTO a silent span is never a scripted
+ * duck), sits at the floor for the landing line ALONE, and returns under the
+ * rest lines. This span therefore starts at `WALL_FRAMES` (the cut frame,
+ * see `wall-timing.ts`'s `computeWallTiming` — `landingLine.startFrame` is
+ * always `wall.endFrame`, i.e. `WALL_FRAMES`), not at 0.
+ *
+ * Still deliberately uses the FIXED `WALL_FRAMES + LANDING_LINE_FRAMES` end
+ * boundary rather than `computeWallTiming(...).landingLine.endFrame`: when a
+ * card has no plain-passage lines left after the landing line,
+ * `computeWallTiming` extends `landingLine.endFrame` to absorb the 15s
+ * duration-floor pad (see `duration-bounds.ts`'s `padToMinimumDuration`) so
+ * the PICTURE keeps holding the landing line for the full post. That padding
+ * is not part of the documented "silent, motionless" 3s window — it exists
+ * purely to clear the MP4 duration floor. Silencing the bed for that padding
+ * too meant the whole clip (bed included) went silent for any 0-plain-line
+ * Wall card, which ffmpeg's loudnorm then measures as digital silence
  * (`measured_I: -inf`) on its first pass (see F02,
  * `plans/Pf39c2-social-pilot-02.md`).
  */
 export function wallSilentSpans(): TimeSpan[] {
-	return [{ startMs: 0, endMs: ((WALL_FRAMES + LANDING_LINE_FRAMES) / FPS) * 1000 }];
+	const wallEndMs = (WALL_FRAMES / FPS) * 1000;
+	const landingLineEndMs = ((WALL_FRAMES + LANDING_LINE_FRAMES) / FPS) * 1000;
+	return [{ startMs: wallEndMs, endMs: landingLineEndMs }];
 }
 
 // ---------------------------------------------------------------------------

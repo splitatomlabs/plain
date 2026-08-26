@@ -61,6 +61,21 @@ export const DUCK_ATTACK_MS = 250;
 /** Time for the bed to climb back to its nominal level once narration ends. */
 export const DUCK_RELEASE_MS = 600;
 
+/**
+ * social pilot 02a T15 ("THE CUT MUST BE AUDIBLE"): the ramp used whenever
+ * the bed transitions INTO a silent span (e.g. The Wall's cut frame, where
+ * the scroll ends and the landing line's silent hold begins) — a hard stop,
+ * not a scripted duck. Not exactly 0ms: two `VolumePoint`s at the identical
+ * `atMs` would make `buildVolumeExpr`'s per-segment `t1-t0` denominator zero,
+ * and a genuinely instantaneous amplitude discontinuity produces an audible
+ * click (a broadband transient) rather than a clean cut. 5ms is roughly a
+ * sixth of a single video frame (33.3ms at 30fps — see `FPS` in
+ * `wall-timing.ts`) and well under the ~10ms a human ear needs to perceive an
+ * amplitude change as a "fade" rather than a cut, so it reads, sounds, and
+ * measures as instantaneous while staying numerically well-defined.
+ */
+export const HARD_STOP_RAMP_MS = 5;
+
 /** Fade-in length at the very head of the bed, so it never starts abruptly. */
 export const BED_HEAD_FADE_MS = 1500;
 
@@ -77,6 +92,23 @@ const BED_NOMINAL_DB = 0;
  * zero or multiplies by a non-finite value.
  */
 const SILENCE_FLOOR_DB = -60;
+
+/**
+ * social pilot 02a T15: `volume=eval=frame` re-evaluates its expression once
+ * per audio FRAME as received from upstream, not once per sample — and
+ * without forcing a small frame size, that upstream frame size is whatever
+ * the decoder happens to hand off (measured against `bed-05-g-sus4.flac`:
+ * ~90-100ms FLAC blocks). A transition landing mid-frame is held at the
+ * PREVIOUS frame's stale gain for the rest of that frame, so
+ * `HARD_STOP_RAMP_MS` (or any ramp shorter than the upstream frame size) is
+ * silently ineffective — measured directly: without this, the bed's hard
+ * stop at the Wall's cut frame (2.5s) didn't actually land until ~2.6s, a
+ * full 100ms late. `asetnsamples=n=<this>` inserted immediately before every
+ * `volume=eval=frame` filter forces small, fixed-size frames so gain changes
+ * land within a couple of milliseconds of their scripted `atMs` — well under
+ * HARD_STOP_RAMP_MS. 128 samples is ~2.7ms at SAMPLE_RATE.
+ */
+const VOLUME_ENVELOPE_FRAME_SAMPLES = 128;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -200,7 +232,16 @@ function buildLevelIntervals(durationMs: number, narrationSpans: TimeSpan[], sil
 	return merged;
 }
 
-/** Turns level intervals into ramp points, using DUCK_ATTACK_MS/DUCK_RELEASE_MS at every transition. */
+/**
+ * Turns level intervals into ramp points, using DUCK_ATTACK_MS/
+ * DUCK_RELEASE_MS at every transition EXCEPT one: entering a silent span
+ * (`cur.level === 'FLOOR'`) uses HARD_STOP_RAMP_MS instead. Per T15 ("THE
+ * CUT MUST BE AUDIBLE"), silence must always arrive abruptly — "the beat of
+ * silence IS the drop" — never as a scripted duck-style fade, which is what
+ * made the previous full-clip silent span read as an absence rather than an
+ * event. Leaving FLOOR still uses the normal DUCK_RELEASE_MS ramp: only the
+ * entry into silence is a hard stop, not the return from it.
+ */
 function intervalsToPoints(intervals: Interval[]): VolumePoint[] {
 	const points: VolumePoint[] = [{ atMs: intervals[0].start, gainDb: levelDb(intervals[0].level) }];
 	for (let i = 1; i < intervals.length; i++) {
@@ -208,7 +249,7 @@ function intervalsToPoints(intervals: Interval[]): VolumePoint[] {
 		const cur = intervals[i];
 		if (cur.level === prev.level) continue;
 		const goingDown = levelDb(cur.level) < levelDb(prev.level);
-		const rawRampMs = goingDown ? DUCK_ATTACK_MS : DUCK_RELEASE_MS;
+		const rawRampMs = cur.level === 'FLOOR' ? HARD_STOP_RAMP_MS : goingDown ? DUCK_ATTACK_MS : DUCK_RELEASE_MS;
 		const rampMs = Math.min(rawRampMs, cur.end - cur.start);
 		points.push({ atMs: cur.start, gainDb: levelDb(prev.level) });
 		points.push({ atMs: cur.start + rampMs, gainDb: levelDb(cur.level) });
@@ -436,7 +477,8 @@ async function renderBedTrack(bedPath: string, durationSec: number, envelope: Vo
 		'-t',
 		String(durationSec),
 		'-af',
-		`volume=eval=frame:volume='${expr}',aformat=sample_fmts=fltp:sample_rates=${SAMPLE_RATE}:channel_layouts=stereo`,
+		`asetnsamples=n=${VOLUME_ENVELOPE_FRAME_SAMPLES},volume=eval=frame:volume='${expr}',` +
+			`aformat=sample_fmts=fltp:sample_rates=${SAMPLE_RATE}:channel_layouts=stereo`,
 		'-ar',
 		String(SAMPLE_RATE),
 		'-ac',
@@ -461,8 +503,8 @@ async function renderNarrationTrack(
 			narrationPath,
 			'-af',
 			// apad guarantees enough tail to cover the full duration if narration is shorter than the mix.
-			`apad,atrim=end=${durationSec},asetpts=PTS-STARTPTS,volume=eval=frame:volume='${expr}',` +
-				`aformat=sample_fmts=fltp:sample_rates=${SAMPLE_RATE}:channel_layouts=stereo`,
+			`apad,atrim=end=${durationSec},asetpts=PTS-STARTPTS,asetnsamples=n=${VOLUME_ENVELOPE_FRAME_SAMPLES},` +
+				`volume=eval=frame:volume='${expr}',aformat=sample_fmts=fltp:sample_rates=${SAMPLE_RATE}:channel_layouts=stereo`,
 			'-t',
 			String(durationSec),
 			'-ar',

@@ -772,7 +772,7 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   counter) stacked directly above `"In plain English"` (the payoff label), both legible, no collision with the
   plain-English body text below. Did not touch narration/the mixer, `question-timing.ts`/`objection-timing.ts`'s
   narration acceptance, the opening rotation (`WallOpeningBadge` untouched), or mid-chapter entry.
-- [~] T14: Assert the narration contract under the new shape —
+- [x] T14: Assert the narration contract under the new shape —
   `social/src/audio/__tests__/narration.test.ts`. the landing line ALONE is in `wallSilentSpans` (the scroll now carries the bed); rest
   lines are the only narrated set; framing text never reaches `synthesize`; a Wall whose `plain_english` is a
   single sentence (no rest lines) still produces a valid, non-silent mix. Acceptance: tests pass with voices
@@ -785,7 +785,7 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   `process.exit()`, which would otherwise kill the test worker on `import`) — real invocations
   (`npx tsx cli.ts render ...`, exactly how `cli.test.ts` already shells out) are unaffected; proven by the full
   `cli.test.ts` suite (dry-run, `--require-narration`, `--help`, and four real end-to-end renders) still passing
-  unchanged. RED: `wallSilentSpans()` still spans `0 -> WALL_FRAMES + LANDING_LINE_FRAMES` (the whole
+  unchanged. RED (2026-08-26): `wallSilentSpans()` still spans `0 -> WALL_FRAMES + LANDING_LINE_FRAMES` (the whole
   wall+landing-line window), not the landing line alone starting at `WALL_FRAMES` — exactly the defect this plan
   names; T15 flips it. GREEN already, pinned as regression protection ahead of T15: rest lines are `narrationPlan`'s
   only narrated set for the Wall (never the landing line, the original excerpt, or the chapter block) and
@@ -801,12 +801,52 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   578/579 (the one named RED test, no other regressions); `npx tsc --noEmit` clean. No live API calls — the
   recording fake `TtsProvider` writes the committed `polly-sample.mp3` fixture, same pattern
   `social/src/__tests__/narration.test.ts` (F07/F09/F13) already uses; `resolveVoice` mocked the same way.
-- [ ] T15: Make the cut audible — `social/src/audio/mix.ts`, `wallSilentSpans` in `social/src/cli.ts`.
+  Done (2026-08-26, T15): the one RED test now passes — `wallSilentSpans()` returns the landing line alone. Full
+  narration.test.ts: 14/14.
+- [x] T15: Make the cut audible — `social/src/audio/mix.ts`, `wallSilentSpans` in `social/src/cli.ts`.
   The bed plays under the scroll at nominal level, hard-stops on the cut frame, stays at `SILENCE_FLOOR_DB` for
   the landing line only, and returns under the rest lines. Acceptance: `volumedetect` on a rendered Wall shows
   audible level across 0-2.5s, floor across 2.5-5.5s, audible after; F02's named non-finite-loudnorm error still
   raises rather than surfacing raw ffmpeg output; `bedEnvelope` stays a pure, deterministic function of its
   inputs.
+  Done (2026-08-26): `wallSilentSpans()` now returns `[{ startMs: WALL_FRAMES/FPS*1000, endMs: (WALL_FRAMES +
+  LANDING_LINE_FRAMES)/FPS*1000 }]` — the landing line alone, starting at the cut frame (2.5s), not at 0.
+  `mix.ts`'s `intervalsToPoints` now ramps into a `'FLOOR'` level (any silent span) using a new named
+  `HARD_STOP_RAMP_MS` (5ms) instead of the scripted `DUCK_ATTACK_MS`/`DUCK_RELEASE_MS` — not exactly 0ms, because
+  two `VolumePoint`s at an identical `atMs` divide-by-zero `buildVolumeExpr`'s `t1-t0` denominator and a truly
+  instantaneous amplitude jump produces an audible click; 5ms is ~1/6 of one video frame and under the ~10ms a
+  human ear needs to read a level change as a "fade" rather than a cut. Leaving `FLOOR` still uses the normal
+  `DUCK_RELEASE_MS` (the return under the rest lines is not required to be a hard cut). `bedEnvelope` is unchanged
+  in shape/purity — still a pure function of `(durationMs, narrationSpans, silentSpans)`, no `Math.random()`/
+  `Date.now()`; the hard-stop behavior is driven entirely by the `'FLOOR'` level tag already present in
+  `buildLevelIntervals`'s output.
+  Real defect found and fixed en route (not anticipated by the plan): `volume=eval=frame` re-evaluates its gain
+  expression once per upstream audio FRAME, not once per sample. Without forcing a small frame size, ffmpeg hands
+  the filter whatever frame size the decoder produces — measured directly against the committed
+  `bed-05-g-sus4.flac`: ~90-100ms FLAC blocks. A transition landing mid-frame held the PREVIOUS frame's stale gain
+  for the rest of that frame, so `HARD_STOP_RAMP_MS` (or any ramp under ~100ms) was silently ineffective: the
+  bed's hard stop at the Wall's 2.5s cut frame didn't actually land until ~2.6s, a full 100ms late, and the
+  "floor" span measured only ~-30dB instead of the intended ~-75dB. Fixed with `asetnsamples=n=128` (~2.7ms of
+  frames) inserted immediately before every `volume=eval=frame` filter in both `renderBedTrack` and
+  `renderNarrationTrack`'s real-narration branch — forces small, fixed-size frames so gain changes land within a
+  couple of ms of their scripted `atMs`. This incidentally also tightens the existing `DUCK_ATTACK_MS`/
+  `DUCK_RELEASE_MS` narration-ducking transitions (250ms/600ms), which were subject to the same ~100ms smear
+  before this fix, unnoticed because nothing asserted their exact timing.
+  Measured (real render, `--date 2026-09-06 --slot 1`, card `meditations-02-006`, bed `bed-05-g-sus4`,
+  `ffmpeg volumedetect`): 0-2.5s (wall scroll) mean -17.4 dB; 2.5-5.5s (landing line) mean -44.9 dB — the coarse
+  whole-span mean is pulled up by the ~5-10ms hard-stop transition itself (a linear-in-power average is dominated
+  by even a few ms at nominal level); the steady-state floor once past that edge measures a clean -74.6 to -74.9
+  dB (checked at [2.51s,2.6s], [2.6s,5.5s], [3.0s,3.1s], [4.0s,5.4s]); 5.5-15s (rest lines) mean -15.4 dB;
+  15-23.5s (tail) mean -16.8 dB. Shape is audible / floor / audible, against the plan's own pre-fix baseline of
+  -75.3 / -76.9 / -15.2 dB (silent / silent / audible) — the intended inversion. Frame alignment verified directly
+  (not assumed): frame 74 (t=2.4667s, last wall-scroll frame) is dense scrolling archaic text; frame 75 (t=2.500s
+  = `WALL_FRAMES`/`FPS`, first landing-line frame) is the clean "Card 6 of 48" + payoff-label frame — the visual
+  cut is exactly at frame 75/t=2.500s, and the audio hard-stop (5ms ramp + ~2.7ms of `asetnsamples` frame
+  quantization) completes by ~2.505-2.51s, inside that same video frame's [2.500s, 2.5333s) window. F02's
+  `SilentMixError` guard untouched and still green (`mix.test.ts`'s "a deliberately all-silent input throws
+  SilentMixError" and `narration.test.ts`'s single-sentence-Wall F02 case). `npx vitest run
+  src/audio/__tests__/narration.test.ts src/audio/__tests__/mix.test.ts`: 34/34. Full social suite: 579/579.
+  `npx tsc --noEmit` clean. No live API calls (music-only render, no TTS/image-gen involved).
 - [ ] T16: F04 — make `question-timing.ts` and `objection-timing.ts` accept `narrationTimings` so their holds
   follow real narration instead of fixed frames, matching `computeWallTiming`. Acceptance: a drifted timing set
   moves the on-screen line boundaries; `assertNarrationInSync` still gates.
