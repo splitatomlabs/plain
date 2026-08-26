@@ -14,7 +14,9 @@ import {
 	discoverRegisteredCompositionIds,
 	stripComments
 } from '../house-rules.js';
-import { FPS } from '../../remotion/wall-timing.js';
+import { FPS, computeWallTiming } from '../../remotion/wall-timing.js';
+import { computeQuestionTiming } from '../../remotion/question-timing.js';
+import { computeObjectionTiming } from '../../remotion/objection-timing.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const remotionDir = path.resolve(moduleDir, '..', '..', 'remotion');
@@ -261,6 +263,104 @@ describe('checkPayoffMotionless', () => {
 		const result = checkPayoffMotionless({ totalFrames: 100 }, 'synthetic-timing');
 		expect(result.passed).toBe(false);
 		expect(result.violations.length).toBeGreaterThan(0);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// social pilot 02a R06 (2026-08-26) — narration-driven regression coverage.
+//
+// `checkAllFormats`'s FORMATS registry (below) always calls each format's
+// `compute*Timing` with NO `narrationTimings` — the fixed-duration fallback
+// path, which by construction already meets `PAYOFF_MIN_MOTIONLESS_SECONDS`
+// (every fallback constant IS 2.5s or more). That is why `checkAllFormats`
+// never caught T16 (F04)'s regression: `objection-timing.ts`'s first reply
+// line following real narration down to well under 2.5s with only a
+// 1-frame floor. `checkPayoffMotionless` itself is general-purpose and DOES
+// catch a too-short narration-driven hold the moment it's given one (proven
+// below) — the gap was entirely in what `FORMATS`' fixtures exercise, not
+// in the checker. These tests call the real `compute*Timing` functions with
+// deliberately short `narrationTimings` directly, so a future regression in
+// this class (a narration-driven hold with no floor) fails here even though
+// `checkAllFormats` itself still would not catch it.
+//
+// The Wall shares the exact same underlying gap for its NON-FINAL rest
+// lines (only the last rest line is protected by `padToMinimumDuration`,
+// and only when the schedule's raw total is still under the 15s MP4 floor
+// at that point) — confirmed with `checkPayoffMotionless` during R06's
+// investigation, but deliberately NOT fixed or asserted against here: R06's
+// scope is Objection (the reviewer's specific finding), and fixing Wall's
+// non-final rest lines is a distinct, larger change (every rest line, not
+// just the first, needs its own floor, mirroring what this task did for
+// Objection's two reply lines) that belongs in its own task rather than
+// folded in here unannounced.
+describe('social pilot 02a R06 — narration-driven schedules are checked for the payoff-motionless floor, not just the fixed-duration fallback', () => {
+	it('checkAllFormats\' FORMATS registry never supplies narrationTimings — confirming why it did not catch T16\'s regression', () => {
+		// Every format's fallback constant already meets the floor by
+		// construction, so calling compute*Timing with no narrationTimings
+		// (what checkAllFormats does) can never exercise the narration-driven
+		// branch this describe is about. This test documents that fact
+		// directly rather than asserting on checkAllFormats' internals.
+		const objectionDefault = computeObjectionTiming();
+		const questionDefault = computeQuestionTiming({ question: 'What is a master anyway?' });
+		expect(objectionDefault.replyLines[0].endFrame - objectionDefault.replyLines[0].startFrame).toBeGreaterThanOrEqual(
+			Math.round(PAYOFF_MIN_MOTIONLESS_SECONDS * FPS)
+		);
+		expect(questionDefault.answer.endFrame - questionDefault.answer.startFrame).toBeGreaterThanOrEqual(
+			Math.round(PAYOFF_MIN_MOTIONLESS_SECONDS * FPS)
+		);
+	});
+
+	it('The Objection: a short (1.5s) first-reply-line narration still passes checkPayoffMotionless (post-R06 fix)', () => {
+		const timing = computeObjectionTiming({ narrationTimings: [{ startSeconds: 0, endSeconds: 1.5 }] });
+		const result = checkPayoffMotionless(timing, 'objection-timing.ts (R06 regression)');
+		expect(result.passed).toBe(true);
+		expect(result.violations).toEqual([]);
+	});
+
+	it('The Objection: a short second reply line ALSO passes, even when the first line alone already clears the 15s pad point (the case padToMinimumDuration does not protect)', () => {
+		const timing = computeObjectionTiming({
+			narrationTimings: [
+				{ startSeconds: 0, endSeconds: 13.0 },
+				{ startSeconds: 0, endSeconds: 0.3 }
+			]
+		});
+		const result = checkPayoffMotionless(timing, 'objection-timing.ts (R06 regression, second line)');
+		expect(result.passed).toBe(true);
+		expect(result.violations).toEqual([]);
+	});
+
+	it('The Question: a very short (0.2s) narrated answer still passes checkPayoffMotionless — structurally protected, not just by luck', () => {
+		// Verifies the reviewer's claim (R06) rather than assuming it: The
+		// Question's answer is its only narrated phase, and the fixed
+		// question hold + wall phase ahead of it (120 frames total) is
+		// always well under the 450-frame/15s pad point on its own, so
+		// padToMinimumDuration ALWAYS fires and extends the answer to clear
+		// both the 15s floor and, incidentally, the 2.5s house-rule floor —
+		// for any narrated answer duration, not just this one example.
+		const timing = computeQuestionTiming({
+			question: 'What is a master anyway?',
+			narrationTimings: [{ startSeconds: 0, endSeconds: 0.2 }]
+		});
+		const result = checkPayoffMotionless(timing, 'question-timing.ts (R06 regression)');
+		expect(result.passed).toBe(true);
+		expect(result.violations).toEqual([]);
+	});
+
+	it('The Wall: a short (0.2s) NON-FINAL narrated rest line fails checkPayoffMotionless today — a known, separately-scoped gap, not fixed by R06', () => {
+		const timing = computeWallTiming({
+			originalExcerpt:
+				'Placeholder archaic excerpt text for this house-rule regression check only — needs to be ' +
+				'long enough to wrap several lines and clear the never-finishes travel floor comfortably so ' +
+				'the wall phase geometry here is representative of a real card excerpt in this pilot run.',
+			plainLines: ['A very short first narrated line.', 'A normal second narrated line.'],
+			narrationTimings: [
+				{ startSeconds: 0, endSeconds: 0.2 }, // non-final, short — the unprotected case
+				{ startSeconds: 0.2, endSeconds: 3.0 }
+			]
+		});
+		const result = checkPayoffMotionless(timing, 'wall-timing.ts (known gap, not fixed by R06)');
+		expect(result.passed).toBe(false);
+		expect(result.violations.some((v) => v.detail.includes('restLines[0]'))).toBe(true);
 	});
 });
 

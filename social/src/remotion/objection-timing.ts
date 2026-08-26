@@ -109,6 +109,8 @@ export const OBJECTION_REPLY_LINE_COUNT = 2;
 export const OBJECTION_REPLY_MIN_SECONDS = 2.5;
 export const OBJECTION_REPLY_LINE_SECONDS = 2.5;
 export const OBJECTION_REPLY_LINE_FRAMES = Math.round(OBJECTION_REPLY_LINE_SECONDS * FPS);
+/** `OBJECTION_REPLY_MIN_SECONDS` in frames — the floor `computeObjectionTiming` clamps a narration-driven reply-line hold to. See that constant's doc comment. */
+export const OBJECTION_REPLY_MIN_FRAMES = Math.round(OBJECTION_REPLY_MIN_SECONDS * FPS);
 
 // ---------------------------------------------------------------------------
 // Full schedule
@@ -132,7 +134,13 @@ export interface ObjectionTimingInput {
 	 * `wall-timing.ts`'s own `WallTimingInput.narrationTimings` contract
 	 * (see that module's `restLineFrameCounts`). Falls back to the fixed
 	 * `OBJECTION_REPLY_LINE_FRAMES` per line when absent, or per-index when
-	 * only one of the two is supplied.
+	 * only one of the two is supplied. A supplied line's DURATION is
+	 * clamped to `OBJECTION_REPLY_MIN_FRAMES` (social pilot 02a R06) — a
+	 * sentence narrated shorter than the house rule's 2.5s payoff floor
+	 * still HOLDS on screen for the full 2.5s; it just finishes speaking
+	 * before the hold ends. A beat of trailing silence is part of this
+	 * format's grammar (see the plan), so this is a deliberate floor, not a
+	 * clipped-audio bug.
 	 *
 	 * social pilot 02a T16 (F04): before this, both reply-line holds were
 	 * always exactly `OBJECTION_REPLY_LINE_FRAMES`, so real narration that
@@ -177,13 +185,32 @@ export function computeObjectionTiming(input: ObjectionTimingInput = {}): Object
 
 	// social pilot 02a T16 (F04) — narration-driven per reply line when
 	// supplied, else the fixed OBJECTION_REPLY_LINE_FRAMES fallback. Mirrors
-	// wall-timing.ts's `restLineFrameCounts`: only each entry's DURATION is
-	// read, floored at 1 frame so a very short line never vanishes.
+	// wall-timing.ts's `restLineFrameCounts`, with one deliberate departure:
+	// T16 only floored a narrated line at 1 frame (never vanish), which is
+	// enough to stop a line disappearing but not enough to hold THE HOUSE
+	// RULE's payoff-motionless floor (>= 2.5s, `OBJECTION_REPLY_MIN_FRAMES`).
+	//
+	// social pilot 02a R06 (2026-08-26): both reply lines are clamped to
+	// that floor here, not just the first. The fixed-length fallback below
+	// (no narrationTimings supplied) already equals the floor exactly, so
+	// this only ever changes the narration-driven branch. Line 1 (the
+	// final line) is ALSO extended by `padToMinimumDuration` below, which
+	// happens to guarantee its floor in the common case — but only when the
+	// schedule's raw total still falls under the 15s MP4 floor. A card
+	// whose first reply line runs long enough on its own (e.g. a long first
+	// sentence) can push the raw total past that floor before padding is
+	// even considered, leaving a genuinely short second sentence
+	// unprotected — so line 1 needs this same floor in its own right, not
+	// just line 0 (the case a genuinely short first sentence was flagged
+	// against — see objection-timing.test.ts's R06 describe for concrete
+	// frame numbers proving both).
 	const replyLineFrames: [number, number] = [0, 1].map((index) => {
 		const timing = input.narrationTimings?.[index];
-		return timing
-			? Math.max(1, Math.round((timing.endSeconds - timing.startSeconds) * FPS))
-			: OBJECTION_REPLY_LINE_FRAMES;
+		if (!timing) {
+			return OBJECTION_REPLY_LINE_FRAMES;
+		}
+		const narratedFrames = Math.max(1, Math.round((timing.endSeconds - timing.startSeconds) * FPS));
+		return Math.max(OBJECTION_REPLY_MIN_FRAMES, narratedFrames);
 	}) as [number, number];
 
 	const firstReplyLine: ObjectionPhaseWindow = {

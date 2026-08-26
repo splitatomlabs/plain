@@ -20,6 +20,7 @@ import {
 	OBJECTION_REPLY_LINE_FRAMES,
 	OBJECTION_REPLY_LINE_SECONDS,
 	OBJECTION_REPLY_MIN_SECONDS,
+	OBJECTION_REPLY_MIN_FRAMES,
 	FPS
 } from '../objection-timing.js';
 import { gateObjectionCard } from '../objection-gate.js';
@@ -214,6 +215,67 @@ describe('social pilot 02a T16 — narration-driven reply-line durations (F04)',
 		expect(drifted.totalFrames).toBe(495);
 		expect(drifted.totalFrames).not.toBe(fixedTiming.totalFrames);
 		expect(drifted.totalFrames).toBeGreaterThan(fixedTiming.totalFrames);
+	});
+});
+
+// social pilot 02a R06 (2026-08-26): T16 (F04) made each reply line's hold
+// follow real narration duration, but only floored a narrated line at 1
+// frame (never vanish) — nowhere near THE HOUSE RULE's own payoff-motionless
+// floor (>= 2.5s / 75 frames at this module's FPS). The second (final) reply
+// line was accidentally protected most of the time by `padToMinimumDuration`
+// (see the T18 describe below), but the FIRST reply line had no such
+// protection at all: a ~1.5s-2.4s narrated first sentence would hold on
+// screen for under 2.5s, a real house-rule violation. This describe proves
+// the floor now holds for both lines, including the case where line 1's
+// accidental protection does NOT apply (a long first line pushes the raw
+// total past the 15s pad point before line 1's own short duration is ever
+// considered).
+describe('social pilot 02a R06 — the 2.5s motionless floor holds even when narration runs short', () => {
+	it('OBJECTION_REPLY_MIN_FRAMES is exactly the house rule floor (2.5s at this module\'s FPS)', () => {
+		expect(OBJECTION_REPLY_MIN_FRAMES).toBe(Math.round(2.5 * FPS));
+	});
+
+	it('a 1.5s first-line timing still yields a >= 75-frame (2.5s) hold — the acceptance criterion', () => {
+		const timing = computeObjectionTiming({ narrationTimings: [{ startSeconds: 0, endSeconds: 1.5 }] });
+		const held = timing.replyLines[0].endFrame - timing.replyLines[0].startFrame;
+		expect(held).toBeGreaterThanOrEqual(75);
+		// Concrete numbers: a naively-narration-driven line would have been
+		// Math.round(1.5 * 30) = 45 frames — well under the floor. The floor
+		// clamps it up to OBJECTION_REPLY_MIN_FRAMES (75) instead.
+		expect(Math.round(1.5 * FPS)).toBe(45);
+		expect(held).toBe(OBJECTION_REPLY_MIN_FRAMES);
+	});
+
+	it('a short first line still hands off to the second line with no gap or overlap — the floor extends the hold, it does not desync the schedule', () => {
+		const timing = computeObjectionTiming({ narrationTimings: [{ startSeconds: 0, endSeconds: 1.5 }] });
+		expect(timing.replyLines[1].startFrame).toBe(timing.replyLines[0].endFrame);
+	});
+
+	it('a short SECOND line is also floored, even when the first line alone already clears the 15s pad point (the case padToMinimumDuration does not protect)', () => {
+		// First line narrated long (12s, well past the 450-frame/15s pad
+		// point on its own once the fixed 75-frame objection hold is added:
+		// 75 + 360 = 435, still short of 450 — bump it to 13s/390f so
+		// 75 + 390 = 465 already clears 450 and padFrames is genuinely 0).
+		// Second line narrated very short (0.3s) — the case the second
+		// (final) line's accidental protection from padToMinimumDuration
+		// does NOT reach, because padding never fires.
+		const timing = computeObjectionTiming({
+			narrationTimings: [
+				{ startSeconds: 0, endSeconds: 13.0 },
+				{ startSeconds: 0, endSeconds: 0.3 }
+			]
+		});
+		const rawFirstLineFrames = Math.round(13.0 * FPS);
+		expect(timing.objection.endFrame + rawFirstLineFrames).toBeGreaterThanOrEqual(450);
+
+		const secondLineHeld = timing.replyLines[1].endFrame - timing.replyLines[1].startFrame;
+		expect(secondLineHeld).toBeGreaterThanOrEqual(75);
+		expect(secondLineHeld).toBe(OBJECTION_REPLY_MIN_FRAMES);
+	});
+
+	it('narration well above the floor is untouched by the clamp (only short narration is affected)', () => {
+		const timing = computeObjectionTiming({ narrationTimings: [{ startSeconds: 0, endSeconds: 4.0 }] });
+		expect(timing.replyLines[0].endFrame - timing.replyLines[0].startFrame).toBe(Math.round(4.0 * FPS));
 	});
 });
 
