@@ -3,6 +3,7 @@ import { AbsoluteFill } from 'remotion';
 
 import { INK, PAPER } from '../render/theme.js';
 import { ReadThroughCounter } from './Counter.js';
+import { SourceHead } from './SourceHead.js';
 import { assertStillCardRenderable } from './still-gate.js';
 import { STILL_BOX_PADDING_X, STILL_LINE_HEIGHT_RATIO } from './still-timing.js';
 import { SERIF_STACK } from './Wall.js';
@@ -28,6 +29,21 @@ export interface StillProps extends Record<string, unknown> {
 	 * preview needs no counter to render. See `Counter.tsx`.
 	 */
 	counter?: string | null;
+	/**
+	 * The card's own `source_reference` field, verbatim from `content/output/`
+	 * — social pilot 02a T13's extension of the framing layer (T11/T12) to
+	 * this composition. Optional and additive, same pattern as `Wall.tsx`'s
+	 * own `sourceReference`: when omitted, no payoff label renders at all.
+	 *
+	 * The Still has no archaic phase at all — the whole composition, from
+	 * frame 0, IS the plain rewrite (see this file's own doc comment: "the
+	 * whole frame is the card's `plain_english`, VERBATIM"). So this is the
+	 * one composition where the payoff label is correct for the ENTIRE
+	 * duration, not just a later phase — there is no earlier phase where it
+	 * would be untrue. A running head never renders here, for the same
+	 * reason: there is no on-screen book text for it to name.
+	 */
+	sourceReference?: string;
 }
 
 /**
@@ -67,6 +83,10 @@ export const Still: React.FC<StillProps> = (props) => {
 	// Optional overlay (T09) — a sibling layer, never a participant in this
 	// format's own layout. See `Counter.tsx`.
 	const counter = props.counter ?? null;
+	// social pilot 02a T13 — the framing layer, extended from Wall.tsx. Only
+	// the payoff variant, for the whole duration — see the `sourceReference`
+	// doc comment above for why no running head ever renders in this format.
+	const payoffLabel = props.sourceReference ? <SourceHead variant={{ kind: 'payoff' }} /> : null;
 
 	return (
 		<>
@@ -95,6 +115,7 @@ export const Still: React.FC<StillProps> = (props) => {
 				</p>
 			</AbsoluteFill>
 			<ReadThroughCounter label={counter} />
+			{payoffLabel}
 		</>
 	);
 };

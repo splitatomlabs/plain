@@ -216,12 +216,20 @@ interface QuestionPlan {
 	question: string;
 	answer: string;
 	originalExcerpt: string;
+	/**
+	 * The card's own `source_reference` (social pilot 02a T13 — extending the
+	 * framing layer to `Question.tsx`). Same "real card metadata, never
+	 * hardcoded" pattern `WallPlan.sourceReference` set for T11/T12.
+	 */
+	sourceReference: string;
 }
 
 interface ObjectionPlan {
 	format: 'objection';
 	objection: string;
 	reply: string;
+	/** The card's own `source_reference` — social pilot 02a T13. See `QuestionPlan.sourceReference`. */
+	sourceReference: string;
 }
 
 /**
@@ -231,6 +239,8 @@ interface ObjectionPlan {
 interface StillPlan {
 	format: 'still';
 	text: string;
+	/** The card's own `source_reference` — social pilot 02a T13. See `QuestionPlan.sourceReference`. */
+	sourceReference: string;
 }
 
 type FormatPlan = WallPlan | QuestionPlan | ObjectionPlan | StillPlan;
@@ -286,7 +296,8 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 				format: 'question',
 				question: slot.content.question,
 				answer: slot.content.answer,
-				originalExcerpt: card.original_excerpt
+				originalExcerpt: card.original_excerpt,
+				sourceReference: card.source_reference
 			};
 			compositionId = 'Question';
 			break;
@@ -295,7 +306,8 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 			formatPlan = {
 				format: 'objection',
 				objection: slot.content.objection,
-				reply: slot.content.reply
+				reply: slot.content.reply,
+				sourceReference: card.source_reference
 			};
 			compositionId = 'Objection';
 			break;
@@ -303,7 +315,8 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 		case 'still': {
 			formatPlan = {
 				format: 'still',
-				text: slot.content.text
+				text: slot.content.text,
+				sourceReference: card.source_reference
 			};
 			compositionId = 'Still';
 			break;
@@ -343,6 +356,13 @@ function printPlan(plan: RenderPlan): void {
 		console.log(
 			`  running head: "${formatRunningHead({ author_slug: plan.authorSlug as AuthorSlug, source_reference: plan.formatPlan.sourceReference })}"`
 		);
+	} else {
+		// social pilot 02a T13 — Question/Objection/Still each carry
+		// `sourceReference` too, but none of them shows a running head (see
+		// each composition's own doc comment for why); only the payoff label
+		// ever renders for these three, so there is no running head string to
+		// print here the way the Wall branch above does.
+		console.log(`  source reference: "${plan.formatPlan.sourceReference}" (payoff label only — no running head in this format)`);
 	}
 	console.log('  narration: false (T14 not done — music-only)');
 }
@@ -375,13 +395,15 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 				...base,
 				question: plan.formatPlan.question,
 				answer: plan.formatPlan.answer,
-				originalExcerpt: plan.formatPlan.originalExcerpt
+				originalExcerpt: plan.formatPlan.originalExcerpt,
+				sourceReference: plan.formatPlan.sourceReference
 			};
 		case 'objection':
 			return {
 				...base,
 				objection: plan.formatPlan.objection,
-				reply: plan.formatPlan.reply
+				reply: plan.formatPlan.reply,
+				sourceReference: plan.formatPlan.sourceReference
 			};
 		case 'still':
 			// `base` carries `author`, unused by `Still.tsx` (no accent colour
@@ -391,7 +413,8 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 			// component.
 			return {
 				...base,
-				text: plan.formatPlan.text
+				text: plan.formatPlan.text,
+				sourceReference: plan.formatPlan.sourceReference
 			};
 	}
 }

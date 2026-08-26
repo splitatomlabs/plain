@@ -12,6 +12,7 @@ import {
 	OBJECTION_LINE_HEIGHT_RATIO,
 	type ObjectionTimingSchedule
 } from './objection-timing.js';
+import { SourceHead } from './SourceHead.js';
 import { PayoffLine, SERIF_STACK } from './Wall.js';
 
 // `extends Record<string, unknown>` is a structural-typing requirement of
@@ -28,6 +29,25 @@ export interface ObjectionProps extends Record<string, unknown> {
 	 */
 	reply: string;
 	author: AuthorSlug;
+	/**
+	 * The card's own `source_reference` field, verbatim from `content/output/`
+	 * — social pilot 02a T13's extension of the framing layer (T11/T12) to
+	 * this composition. Combined with `author` to derive the running head via
+	 * `SourceHead.tsx`'s `formatRunningHead` (never hardcoded). Optional and
+	 * additive, same pattern as `Wall.tsx`'s own `sourceReference`: when
+	 * omitted, no payoff label renders at all.
+	 *
+	 * The Objection has NO archaic-wall phase at all (unlike Wall/Question,
+	 * nothing in this format ever shows the book's own original text — see
+	 * this file's own doc comment), so a RUNNING HEAD is never rendered here:
+	 * there is no on-screen book text for it to truthfully name. Only the
+	 * payoff-label variant is used, and only once the reply — the plain
+	 * rewrite of the author's actual response — resolves in stillness. The
+	 * opening objection-alone phase (the reader's own hypothetical thought,
+	 * never attributed to the author) gets neither variant, for the same
+	 * "not factually true" reason `Question.tsx`'s opening phase does.
+	 */
+	sourceReference?: string;
 	/**
 	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
 	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
@@ -77,6 +97,11 @@ export const Objection: React.FC<ObjectionProps> = (props) => {
 	// Optional overlay (T09) — a sibling layer on every phase below, never a
 	// participant in any phase's own layout. See `Counter.tsx`.
 	const counter = props.counter ?? null;
+	// social pilot 02a T13 — the framing layer, extended from Wall.tsx. Only
+	// the payoff variant, and only on the reply phases — see the
+	// `sourceReference` doc comment above for why no running head ever
+	// renders in this format.
+	const payoffLabel = props.sourceReference ? <SourceHead variant={{ kind: 'payoff' }} /> : null;
 
 	if (frame < timing.objection.endFrame) {
 		// No overlay of any kind here, deliberately — frame 0 is the
@@ -93,6 +118,7 @@ export const Objection: React.FC<ObjectionProps> = (props) => {
 			<>
 				<PayoffLine text={gate.replyLines[0]} />
 				<ReadThroughCounter label={counter} />
+				{payoffLabel}
 			</>
 		);
 	}
@@ -101,6 +127,7 @@ export const Objection: React.FC<ObjectionProps> = (props) => {
 		<>
 			<PayoffLine text={gate.replyLines[1]} />
 			<ReadThroughCounter label={counter} />
+			{payoffLabel}
 		</>
 	);
 };

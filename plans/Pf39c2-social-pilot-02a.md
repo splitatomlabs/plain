@@ -715,8 +715,63 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   regardless). A payoff-phase frame (t=18.0s, a narrated rest line) shows `"In plain English"` in the exact same
   top-left slot, with `"Card 6 of 48"` directly above it, no collision, no reflow. Render artifacts were
   transient (gitignored `social/out/`) and removed after inspection.
-- [ ] T13: Extend the framing layer to `Question.tsx`, `Objection.tsx` and `Still.tsx` so the channel reads as one
+- [x] T13: Extend the framing layer to `Question.tsx`, `Objection.tsx` and `Still.tsx` so the channel reads as one
   product. Acceptance: all four compositions carry it; plan 02's house-rule checks still pass on all four.
+  Done (2026-08-26): each of the three formats gets its OWN variant contract, decided per-composition against
+  Constraint 6 ("factually true") rather than copying Wall's head-then-label pattern blind:
+  - **Question** has the same two-phase archaic->plain grammar as Wall (a moving wall phase, then a still
+    payoff), just prefixed by a phase Wall doesn't have — the opening question-alone hold. Running head only
+    during the wall phase (real book text is genuinely on screen there); payoff label only once the answer
+    resolves. The opening phase gets NEITHER: the question is neither a verbatim quote of the book nor the plain
+    rewrite, so labeling it as either would not be true.
+  - **Objection** has NO archaic-wall phase at all — nothing in this format ever shows the book's own original
+    text. A running head is therefore never rendered here, structurally (proven by a source-guard test, not just
+    implied by the render tests): there is no on-screen book text for it to truthfully name. Only the payoff
+    label renders, only on the two still reply-line phases — the plain rewrite of the author's actual response.
+    The opening objection-alone phase (a reader's own hypothetical thought, explicitly never attributed to the
+    author per this component's own doc comment) gets neither, for the same reason as Question's opening phase.
+  - **Still** has exactly one phase, and that phase already IS the plain rewrite from frame 0 — there is no
+    earlier phase where the label would be untrue. So the payoff label is correct for the ENTIRE duration, the
+    one format where it isn't phase-gated at all. A running head never renders here either (same source-guard
+    test as Objection), for the same "no book text on screen" reason.
+  All three get an additive, optional `sourceReference?: string` prop, same "omitted -> renders nothing"
+  contract T12 established for `Wall.tsx`. `cli.ts`: `QuestionPlan`/`ObjectionPlan`/`StillPlan` each gained
+  `sourceReference: card.source_reference` (the `card` each branch of `buildRenderPlan`'s switch already loads),
+  threaded through `buildInputProps`. `printPlan`'s dry-run output grew an `else` branch for these three formats
+  — `source reference: "..." (payoff label only — no running head in this format)` — since only the Wall branch
+  has a resolved running-head string to print.
+  New test file `social/src/remotion/__tests__/framing-question-objection-still.test.ts` (12 tests): unlike
+  `source-head.test.ts` (which predates T12's real `Wall.tsx` wiring and needed a test-only harness), these
+  render the real, production `Question`/`Objection`/`Still` compositions via `entry.tsx`, reusing the exact
+  fixtures `question-timing.test.ts`/`objection-timing.test.ts`/`still-timing.test.ts` already use (real cards,
+  real `source_reference` values pulled from `content/output/`). Proves, per phase and per format: the box is
+  identical between "no `sourceReference`" and "with `sourceReference`" renders exactly where the design says
+  nothing should show; `assertIdenticalOutsideBoxes`/`assertBoxDiffers` (no reflow, something genuinely drew)
+  wherever the design says one variant should show; and, for Question, that the running-head-phase box and the
+  payoff-phase box genuinely differ in content (the head->label grammar, not the same overlay rendered twice).
+  Plus a two-test source guard asserting `Objection.tsx`/`Still.tsx` never construct a `kind: 'running-head'`
+  variant anywhere in source. `cli.test.ts` gained one more `--dry-run` assertion covering the Still branch's new
+  `printPlan` output, against the real committed week-1 schedule's day-1 still slot (`meditations-02-001`).
+  Verified: `cd social && npm test` — 30/30 files, 565/565 tests pass (zero regressions; 552 prior + 12 in the
+  new framing file + 1 new `cli.test.ts` test = 565). `npx vitest run src/render/__tests__/house-rules.test.ts` — plan 02's own house-rule
+  checks (`checkAllFormats`, scanning every `.ts`/`.tsx` file in `social/src/remotion` for overshoot easing and
+  checking every format's `computeXTiming` payoff-motionless floor) — 36/36 pass, unaffected: `SourceHead.tsx`
+  itself takes no `frame` prop and calls no Remotion timing primitive (already proven by T11's own source guard),
+  so calling it from three more components adds no motion and touches no timing schedule. `npx tsc --noEmit`
+  clean. Real renders + frame inspection (music-only, T14 still pending) of one of each newly-framed format,
+  using real cards: `--date 2026-09-02 --slot 2` (Question, `meditations-08-045`, marcus-aurelius/Meditations Book
+  8 — a different real card from the `discourses-64-006`/epictetus fixture the new test file itself uses, not a
+  discrepancy), `--date 2026-09-08 --slot 2 --schedule-dir social/src/__tests__/fixtures`
+  (Objection, week-2 fixture schedule's one Objection slot, on-anger-03-079/Seneca), `--date 2026-09-01 --slot 1`
+  (Still, `meditations-02-001`, already the real committed week-1 schedule). Frames extracted with ffmpeg and
+  read directly: Question's opening hold (t=0.5s) shows the bare question, no framing of any kind; its wall
+  phase (t=2.5s) shows `"MARCUS AURELIUS · MEDITATIONS, BOOK 8"` fixed top-left over the scrolling archaic block,
+  no collision; its answer phase (t=6s) shows `"In plain English"` in the same slot. Objection's opening hold
+  (t=1s) shows the bare accent-coloured objection quote, no framing; its first reply line (t=3.5s) shows `"In
+  plain English"`, no collision with the reply text. Still's single frame (t=5s) shows `"Card 1 of 48"` (the
+  counter) stacked directly above `"In plain English"` (the payoff label), both legible, no collision with the
+  plain-English body text below. Did not touch narration/the mixer, `question-timing.ts`/`objection-timing.ts`'s
+  narration acceptance, the opening rotation (`WallOpeningBadge` untouched), or mid-chapter entry.
 - [ ] T14: Assert the narration contract under the new shape —
   `social/src/audio/__tests__/narration.test.ts`. the landing line ALONE is in `wallSilentSpans` (the scroll now carries the bed); rest
   lines are the only narrated set; framing text never reaches `synthesize`; a Wall whose `plain_english` is a

@@ -263,6 +263,23 @@ describe('--dry-run', () => {
 		expect(result.stdout.toLowerCase()).toMatch(/dry run/);
 		expect(existsSync(outDir)).toBe(false);
 	});
+
+	// social pilot 02a T13 — the framing layer, extended to the Still
+	// composition. The real card's own `source_reference` (never hardcoded)
+	// reaches `buildInputProps`/`printPlan` the same way `sourceReference`
+	// already did for the Wall (T11/T12) — this is the Still branch of that
+	// same wiring. Still never shows a running head (see `Still.tsx`'s own
+	// doc comment), so `printPlan` reports "payoff label only", not a
+	// resolved running-head string the way the Wall branch does.
+	it('threads the real card\'s source_reference through for a Still slot, reporting "payoff label only" (no running head in this format)', async () => {
+		parentDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-dry-'));
+		outDir = path.join(parentDir, 'out');
+
+		const result = runCli(['render', '--date', '2026-09-01', '--slot', '1', '--out', outDir, '--dry-run']);
+		expect(result.status).toBe(0);
+		expect(result.stdout).toMatch(/source reference: "Meditations, Book 2, Section 1"/);
+		expect(result.stdout).toMatch(/payoff label only — no running head in this format/);
+	});
 });
 
 describe('--require-narration', () => {

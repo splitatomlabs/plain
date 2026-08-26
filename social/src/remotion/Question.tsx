@@ -11,6 +11,7 @@ import {
 	QUESTION_LINE_HEIGHT_RATIO,
 	type QuestionTimingSchedule
 } from './question-timing.js';
+import { SourceHead } from './SourceHead.js';
 import { assertWallCardRenderable } from './wall-gate.js';
 import { computeWallLayout, computeWallTiming } from './wall-timing.js';
 import { PayoffLine, SERIF_STACK, WallPhase } from './Wall.js';
@@ -25,6 +26,26 @@ export interface QuestionProps extends Record<string, unknown> {
 	answer: string;
 	/** Verbatim archaic original — must never be paraphrased or fabricated. */
 	originalExcerpt: string;
+	/**
+	 * The card's own `source_reference` field, verbatim from `content/output/`
+	 * — social pilot 02a T13's extension of the framing layer (T11/T12) to
+	 * this composition. Combined with `author` to derive the running head via
+	 * `SourceHead.tsx`'s `formatRunningHead` (never hardcoded). Optional and
+	 * additive, same pattern as `Wall.tsx`'s own `sourceReference`: when
+	 * omitted, no running head or payoff label renders at all, so every
+	 * caller that hasn't been updated yet (Remotion Studio's `defaultProps`,
+	 * existing tests) keeps rendering exactly as before — `cli.ts` is the one
+	 * real caller that supplies this.
+	 *
+	 * Gated to exactly the two phases where it is FACTUALLY TRUE (Constraint
+	 * 6): the running head only while the moving wall phase shows this book's
+	 * actual archaic text, the payoff label only once the answer resolves as
+	 * the plain rewrite. The opening question-alone phase gets NEITHER — the
+	 * question is neither a verbatim quote of the book nor the plain rewrite
+	 * itself, so labeling it as either would not be true. See `Question`'s
+	 * own render logic below.
+	 */
+	sourceReference?: string;
 	author: AuthorSlug;
 	/**
 	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
@@ -65,6 +86,13 @@ export const Question: React.FC<QuestionProps> = (props) => {
 	// Optional overlay (T09) — a sibling layer on every phase below, never a
 	// participant in any phase's own layout. See `Counter.tsx`.
 	const counter = props.counter ?? null;
+	// social pilot 02a T13 — the framing layer, extended from Wall.tsx. `null`
+	// (not rendered at all) when the caller hasn't supplied `sourceReference`,
+	// matching `counter`'s own optional contract above.
+	const runningHead = props.sourceReference ? (
+		<SourceHead variant={{ kind: 'running-head', card: { author_slug: props.author, source_reference: props.sourceReference } }} />
+	) : null;
+	const payoffLabel = props.sourceReference ? <SourceHead variant={{ kind: 'payoff' }} /> : null;
 
 	if (frame < timing.question.endFrame) {
 		// Rejects rather than renders an over-long, illegible or
@@ -98,7 +126,12 @@ export const Question: React.FC<QuestionProps> = (props) => {
 		// still payoff frame, and the counter must never collide with it
 		// (see this component's `counter` doc comment above). It resumes on
 		// the answer payoff below.
-		return <WallPhase frame={relativeFrame} text={props.originalExcerpt} accent={accent} timing={wallTiming} layout={layout} />;
+		return (
+			<>
+				<WallPhase frame={relativeFrame} text={props.originalExcerpt} accent={accent} timing={wallTiming} layout={layout} />
+				{runningHead}
+			</>
+		);
 	}
 
 	// The wall drops away and the plain answer resolves in stillness — the
@@ -108,6 +141,7 @@ export const Question: React.FC<QuestionProps> = (props) => {
 		<>
 			<PayoffLine text={props.answer} />
 			<ReadThroughCounter label={counter} />
+			{payoffLabel}
 		</>
 	);
 };
