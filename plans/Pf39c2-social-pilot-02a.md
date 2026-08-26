@@ -1290,14 +1290,126 @@ words. The work is correct for the slice it was tested against and breaks outsid
   wall text visible above and below but never showing through or overlapping it; the Meditations head still
   renders "MARCUS AURELIUS · MEDITATIONS, BOOK 2" in full, unclipped, byte-for-byte the same as before this
   change.
-- [ ] R05: Guard T15's hard stop — `social/src/audio/__tests__/mix.test.ts`. Neither the `FLOOR` →
+- [x] R05: Guard T15's hard stop — `social/src/audio/__tests__/mix.test.ts`. Neither the `FLOOR` →
   `HARD_STOP_RAMP_MS` branch nor the `asetnsamples=n=128` insertion is asserted anywhere; the existing
   silence test samples a full second inside the span, so it passes either way. Add (a) a `bedEnvelope` unit
   assertion that `{atMs: 2500, gainDb: 0}` is immediately followed by `{atMs: 2505, gainDb: -60}`, and (b) a
   real `mix()` case asserting `meanVolumeDb(out, 2.6, 5.4) < -60` and `meanVolumeDb(out, 0.5, 2.4) > -30`.
   Acceptance: (b) fails if `asetnsamples` is removed.
-- [ ] R06: Hold the 2.5s motionless floor in `objection-timing.ts` (lines ~182-191). T16 made
+
+  Done (2026-08-26). Added two tests, not the ten-plus this entry originally sketched — two were enough to
+  cover both named gaps and both satisfy the real acceptance criterion (proven, not assumed — see below).
+  (a) A `bedEnvelope` unit case (`bedEnvelope(8000, [], [{startMs:2500,endMs:5500}])`) asserts the array
+  contains `{atMs:2500,gainDb:0}` immediately followed (next array element, not just "found somewhere") by
+  `{atMs: 2500 + HARD_STOP_RAMP_MS, gainDb: -60}` — imports and asserts the real `HARD_STOP_RAMP_MS` (5)
+  rather than hardcoding it; `-60` is hardcoded with a comment, since `SILENCE_FLOOR_DB` is a private,
+  unexported constant in `mix.ts` (matches how the pre-existing "silence is honoured" tests already assert
+  against unexported-constant-shaped thresholds, e.g. `-45`).
+  (b) A real `mix()` case renders `bed-05-g-sus4` (T15's own manually-verified bed) with
+  `silentSpans: [{startMs: 2500, endMs: 5500}]` (mirrors `cli.ts`'s `wallSilentSpans` shape exactly) and no
+  narration, then asserts `meanVolumeDb(out, 0.5, 2.4) > -30` (audible before the cut) and
+  `meanVolumeDb(out, 2.55, 5.4) < -60` (near-silent after it) — **deviated from the plan's literal `2.6`
+  lower bound to `2.55`, and this is load-bearing, not cosmetic**. Proved empirically (not assumed) before
+  committing to either number: temporarily stripped `asetnsamples=n=128` from `renderBedTrack` and re-ran
+  the real `mix()` pipeline (amix + two-pass loudnorm + AAC encode) at fine-grained windows. Through this
+  exact pipeline, removing `asetnsamples` delays the cut into audibility through `[2.55s, 2.6s)` (measured
+  ~-14dB there, ~-31.8dB over `[2.55s, 5.4s)`) but the stale frame has already resolved to silence by `2.6s`
+  either way (~-73dB with or without the fix) — so a window starting at `2.6s`, as the plan sketch specified,
+  does NOT discriminate the regression in the full pipeline (confirmed: with the literal `2.6` window, the
+  test stayed green even with `asetnsamples` removed — a worthless guard, exactly what this task exists to
+  avoid). This is a real, environment-specific measurement — the raw bed track *alone* (no amix/loudnorm/AAC)
+  showed the stale gain persisting slightly later (toward `2.6`-`2.65`), so the discriminating window shifts
+  once the rest of the pipeline (particularly the AAC encode) is in the loop; `2.55` is what's proven to work
+  against the actual code path this test exercises. Full remove-and-restore proof, run end to end:
+  (1) baseline `mix.test.ts` green (22/22) with `mix.ts` unmodified; (2) removed `asetnsamples=n=${VOLUME_ENVELOPE_FRAME_SAMPLES},`
+  from `renderBedTrack`'s filter string only — the new (b) test went red
+  (`expected -31.8 to be less than -60`), all 21 others stayed green; (3) restored `mix.ts` from a pre-edit
+  copy, confirmed byte-identical via `diff` and `git diff` (empty), reran — 22/22 green again. `git diff
+  social/src/audio/mix.ts` is empty at hand-off; only `mix.test.ts` changed. `npx tsc --noEmit` clean. Root
+  `npm test`: 819 pipeline + 95 web unit + 587 social, all green (full suite run alongside R06 landing
+  concurrently — see that entry's note on the "12 new mix.ts tests" figure it cites, which predates this
+  entry and should be read as 2, not 12).
+  Files: `social/src/audio/__tests__/mix.test.ts` (imports `HARD_STOP_RAMP_MS`; two new `it`s — one under
+  `describe('bedEnvelope', ...)`, one a new `describe` under `describe('mix', ...)`). `mix.ts` untouched (test-only task).
+- [x] R06: Hold the 2.5s motionless floor in `objection-timing.ts` (lines ~182-191). T16 made
   `replyLineFrames[0]` follow `narrationTimings[0]` with only a 1-frame floor, and unlike the second reply
   line it is never extended by `padToMinimumDuration` — a ~1.8s narrated first sentence yields a 54-frame
   motionless payoff, violating the house rule. Acceptance: a 1.5s first-line timing still yields
   `endFrame - startFrame >= 75`.
+
+  Done (2026-08-26). `computeObjectionTiming`'s reply-line map now clamps EACH narration-driven line's
+  duration to `OBJECTION_REPLY_MIN_FRAMES` (a new export, `Math.round(OBJECTION_REPLY_MIN_SECONDS * FPS)` =
+  75 frames), not just line 0 — investigation turned up that line 1 (the "final" line, previously assumed
+  protected by `padToMinimumDuration`) is ONLY protected when the schedule's raw pre-pad total still falls
+  under the 450-frame/15s pad point; a long first sentence (e.g. 13s) plus a genuinely short second sentence
+  (e.g. 0.3s, still gate-legal — the gate only requires two COMPLETE sentences, nothing about minimum length)
+  clears that pad point before padding is even considered and leaves line 1 at its raw, unfloored duration.
+  Both lines now get the same one-line clamp; the no-`narrationTimings` fallback path (`OBJECTION_REPLY_LINE_FRAMES`,
+  already exactly 2.5s) is untouched. Concrete numbers: a 1.5s narrated first line was 45 frames pre-fix, is
+  75 frames post-fix (`objection-timing.test.ts`'s new "R06" describe asserts this exactly, plus the
+  long-first/short-second edge case). Consequences considered and confirmed, not assumed:
+    - **Trailing silence is the intended tradeoff, not a bug**: when narration is shorter than the floor, the
+      line now holds up to ~1s longer than the voice — silence at the end of the hold. The plan already
+      treats a beat of silence as part of this format's grammar (T15's "the cut must be audible"), so this is
+      deliberate, documented in `ObjectionTimingInput`'s doc comment, not an accidental side effect.
+    - **59s ceiling**: the clamp only ever RAISES a duration already under 75 frames up to 75 — worst case
+      +74 frames (~2.5s) per line, and only when narration is unusually short (well under 2.5s, itself an
+      unusual case for a full sentence). `padToMinimumDuration` already throws if a schedule is over 1770
+      frames (59s) before padding; nothing in this change moves a schedule closer to that ceiling in any
+      realistic case — verified with the same 13.0s/0.3s edge-case fixture used in the test (total 507
+      frames, nowhere near 1770).
+    - **`assertNarrationInSync` (`audio/timing.ts`) is unaffected**: it operates on the raw
+      `NarrationLineTiming[]` array BEFORE it ever reaches `objection-timing.ts` — checks monotonic
+      ordering/no-overlap/non-positive-duration and drift of the LAST line's `endSeconds` against the actual
+      audio file duration. It has no visibility into the frame schedule at all, so holding a line's ON-SCREEN
+      window longer than its narrated duration cannot make this gate start failing (confirmed by reading the
+      function, not assumed).
+    - **A real architectural gap this fix does NOT close, flagged for follow-up**: `cli.ts`'s
+      `narrationPlan`/`prependSilence` synthesize The Objection's two reply sentences as ONE continuous TTS
+      clip, placed at a single fixed offset (`objection.endFrame`) and played straight through — the split
+      between line 0's speech and line 1's speech is whatever gap the TTS take itself has, not something
+      re-synced to the video's own (now-padded) per-line frame boundaries. Once T14's live voices land, a
+      real narrated first line under 2.5s will cause line 1's SPOKEN AUDIO to begin slightly before its own
+      TEXT appears on screen (audio arrives up to ~1s early relative to the padded hold), because only the
+      VIDEO schedule was taught to hold longer here — the audio track was not correspondingly delayed. Fixing
+      that requires splicing the two reply sentences into separately-placed audio clips in `cli.ts`/`narration.ts`
+      (each offset to its own frame window's start), which is out of this task's scope (`cli.ts` was on the
+      DO NOT TOUCH list) and a materially bigger change than a timing-module clamp. Not filed as a numbered
+      follow-up task in this plan — noted here for whoever picks up T14 next, since the gap is unreachable
+      (`VOICES_ARE_UNSET`) until then.
+    - **Question does NOT share this gap** (verified, not assumed): its answer phase is the only narrated
+      phase, and the fixed question hold + wall phase ahead of it (`QUESTION_HOLD_FRAMES + WALL_FRAMES` = 120
+      frames) is always far enough under the 450-frame pad point that `padToMinimumDuration` fires
+      unconditionally whenever the answer is short — proven algebraically (padding fires whenever
+      `120 + answerRaw < 450`, i.e. whenever `answerRaw < 330` frames = 11s, which is always true when
+      `answerRaw` is under the 75-frame floor being checked) and confirmed with a direct 0.2s-narrated-answer
+      test against `checkPayoffMotionless` (held 330 frames, 11x the floor).
+    - **The Wall has the SAME class of bug for its NON-FINAL rest lines** (confirmed with a concrete
+      `checkPayoffMotionless` fixture — a 0.2s-narrated non-final rest line holds only 6 frames, 0.2s, well
+      under the 2.5s floor) — only the LAST rest line is ever extended, and only when padding fires.
+      Deliberately NOT fixed here (report-only, per this task's explicit scope): fixing it needs the floor
+      applied to every rest line, not just the first, which is the Wall's own, separate follow-up.
+    - **`house-rules.test.ts`'s `checkAllFormats` did not, and still does not, catch this class of bug**,
+      because its `FORMATS` registry always calls every `compute*Timing` with no `narrationTimings` — the
+      fixed-duration fallback path, which by construction already meets the floor. `checkPayoffMotionless`
+      itself (the underlying checker) is general-purpose and DOES catch a too-short narration-driven hold the
+      moment it is given one — confirmed by feeding it real narration-driven schedules directly. Added a new
+      `describe` block to `house-rules.test.ts` (not touching `checkAllFormats`/`FORMATS` itself, to avoid
+      making the shared production registry start failing on Wall's separate, unfixed gap) that exercises
+      `computeObjectionTiming`/`computeQuestionTiming`/`computeWallTiming` with short narration directly
+      against `checkPayoffMotionless` — passing for Objection (post-fix) and Question (structurally
+      protected), and asserting Wall's known gap still fails today, so a future Wall fix has a test to flip
+      green rather than one to newly write.
+  Files: `social/src/remotion/objection-timing.ts` (the clamp + `OBJECTION_REPLY_MIN_FRAMES` export + doc
+  comments), `social/src/remotion/__tests__/objection-timing.test.ts` (new "R06" describe, 5 tests),
+  `social/src/render/__tests__/house-rules.test.ts` (new "R06" describe, 5 tests; imports
+  `computeWallTiming`/`computeQuestionTiming`/`computeObjectionTiming`). `npx tsc --noEmit` clean. Root
+  `npm test`: 819 pipeline + 95 web unit + 587 social (up from 575 — R05's 12 new mix.ts tests landed
+  concurrently plus this task's 10), all green.
+
+  Follow-up (not filed as a numbered task — flagged for whoever does T14 or the Wall non-final-line fix):
+  (1) The Objection's two-reply-sentence narration needs per-line audio splicing in `cli.ts`/`narration.ts`
+  once T14 lands, so a padded first-line hold doesn't let the second sentence's audio arrive before its own
+  text. (2) The Wall's non-final rest lines need the same floor this task added to Objection's two lines,
+  generalized to an array of any length — `house-rules.test.ts`'s new Wall regression test is already in
+  place to confirm the fix once it lands.

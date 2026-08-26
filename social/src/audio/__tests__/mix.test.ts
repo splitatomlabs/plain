@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bedPath } from '../beds.js';
 import {
 	BED_DUCK_DB,
+	HARD_STOP_RAMP_MS,
 	LOUDNESS_TOLERANCE_LU,
 	SilentMixError,
 	TARGET_LUFS,
@@ -267,6 +268,59 @@ describe('mix', () => {
 	});
 
 	/**
+	 * R05 (`plans/Pf39c2-social-pilot-02a.md`): guards T15's hard stop against
+	 * the latent `volume=eval=frame` defect its own doc comment on
+	 * `VOLUME_ENVELOPE_FRAME_SAMPLES` describes — without the
+	 * `asetnsamples=n=128` filter inserted before `volume=eval=frame` in
+	 * `renderBedTrack`, ffmpeg only re-evaluates the volume expression once
+	 * per upstream FLAC frame (~90-100ms against `bed-05-g-sus4.flac`), so a
+	 * transition landing mid-frame is held at the stale PREVIOUS gain for the
+	 * rest of that frame — the bed's hard stop at the 2.5s cut doesn't
+	 * actually land until ~2.6s, a full 100ms late. This mirrors the Wall's
+	 * real shape (`cli.ts`'s `wallSilentSpans`): bed audible under the scroll,
+	 * a silentSpan starting exactly at the cut frame. Sampling close to the
+	 * edge is deliberate — the existing "silence is honoured" test above
+	 * samples a full second inside its span and would pass whether or not
+	 * `asetnsamples` is present.
+	 *
+	 * The "after cut" window starts at 2.55s, not 2.6s: measured empirically
+	 * (through this exact `mix()` pipeline — amix + two-pass loudnorm + AAC
+	 * encode, not the raw bed track alone), removing `asetnsamples` delays the
+	 * cut into audibility through the [2.55s, 2.6s) window (measured ~-14dB)
+	 * but the stale frame has already resolved to silence by 2.6s (measured
+	 * ~-73dB either way) in this pipeline — so a window starting at 2.6s does
+	 * NOT discriminate the regression here, even though the defect is real
+	 * and clearly visible one video frame earlier.
+	 */
+	describe('the cut is audible: the bed hard-stops within ~100ms of the cut frame (T15/R05)', () => {
+		const DURATION_SEC = 8;
+		let outPath: string;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'hard-stop-mix.m4a');
+			await mix({
+				bedPath: bedPath('bed-05-g-sus4'),
+				narrationPath: undefined,
+				durationMs: DURATION_SEC * 1000,
+				narrationSpans: [],
+				// Mirrors wallSilentSpans: the cut lands at 2.5s, silence holds
+				// through the landing line to 5.5s.
+				silentSpans: [{ startMs: 2500, endMs: 5500 }],
+				outPath
+			});
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			'the bed is clearly audible just before the cut, and near-silent within 50ms after it',
+			() => {
+				expect(meanVolumeDb(outPath, 0.5, 2.4)).toBeGreaterThan(-30);
+				expect(meanVolumeDb(outPath, 2.55, 5.4)).toBeLessThan(-60);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
+	/**
 	 * Regression for F02 (`plans/Pf39c2-social-pilot-02.md`): a music-only
 	 * (no narration) Wall render whose card has no plain-passage lines left
 	 * after the landing line ends up with `durationMs` padded to the 15s
@@ -389,6 +443,25 @@ describe('bedEnvelope', () => {
 		const outsideSpan = sampleEnvelopeDb(env, 2500);
 
 		expect(outsideSpan - duringSpan).toBeCloseTo(-BED_DUCK_DB, 5);
+	});
+
+	it('entering a silentSpan is a hard stop: {atMs:2500,gainDb:0} is immediately followed by {atMs:2505,gainDb:-60} (T15/R05)', () => {
+		// Names the real constant values rather than trusting the hardcoded
+		// numbers below: HARD_STOP_RAMP_MS is 5ms (a scripted duck-length ramp
+		// like DUCK_ATTACK_MS would be wrong here), and the floor gain matches
+		// mix.ts's private SILENCE_FLOOR_DB (-60, not exported — hardcoded here
+		// deliberately, mirroring the "silence is honoured" tests above, which
+		// already assert against -45/-60 dB thresholds without an export).
+		expect(HARD_STOP_RAMP_MS).toBe(5);
+
+		const env = bedEnvelope(8000, [], [{ startMs: 2500, endMs: 5500 }]);
+		const cutIndex = env.findIndex((p) => p.atMs === 2500 && p.gainDb === 0);
+
+		expect(cutIndex).toBeGreaterThanOrEqual(0);
+		expect(env[cutIndex]).toEqual({ atMs: 2500, gainDb: 0 });
+		// Immediately the next point in the envelope — not a scripted ramp
+		// spread over DUCK_ATTACK_MS/DUCK_RELEASE_MS.
+		expect(env[cutIndex + 1]).toEqual({ atMs: 2500 + HARD_STOP_RAMP_MS, gainDb: -60 });
 	});
 
 	it('has a gentle fade-in at the head and fade-out at the tail (never starts/stops abruptly)', () => {
