@@ -521,14 +521,16 @@ function contentFromEntry(format: ScheduleFormat, entry: WallEntry | QuestionEnt
  * Build a read-through slot's on-screen fields DIRECTLY from the raw card —
  * the read-through must advance through every card in the book with no
  * skips, so it cannot depend on gate/pool membership. "wall" does NOT
- * always render (F05): every card has `original_excerpt` and
- * `plain_english`, and when `selectLandingLine` finds no qualifying
- * standalone sentence (some short Enchiridion cards won't), this falls back
- * to the full `plain_english` text rather than skipping the card — still
- * faithful (it's verbatim card text), never fabricated — BUT the renderer's
- * own gate (`social/src/remotion/wall-gate.ts`'s legibility floor and F03's
- * 59s duration ceiling) can still reject a card no matter how its landing
- * line is chosen, so `readThroughExclusions` (the renderer-derived
+ * always render (F05, tightened by T02): every card has `original_excerpt`
+ * and `plain_english`, but when `selectLandingLine` finds no qualifying
+ * standalone sentence (some short Enchiridion cards won't), this now returns
+ * `null` rather than falling back to the full `plain_english` text — the
+ * plan's decision is explicit: "No qualifying landing line -> the card is
+ * not a Wall. It becomes a Still" (never a wall whose "one still sentence"
+ * payoff is actually the whole passage). Separately, even a card WITH a
+ * qualifying landing line can still be rejected by the renderer's own gate
+ * (`social/src/remotion/wall-gate.ts`'s legibility floor and F03's 59s
+ * duration ceiling), so `readThroughExclusions` (the renderer-derived
  * read-through exclusion list loaded from `content/social/
  * render-exclusions.json`'s `read_through` section — see `./exclusions.ts`)
  * is consulted first: a card on that list returns
@@ -540,9 +542,10 @@ function contentFromEntry(format: ScheduleFormat, entry: WallEntry | QuestionEnt
  * the plan's "nothing fabricated, ever" rule, presenting non-question text
  * as a question is not an option here. Callers decide what a `null` means:
  * `resolveReadThrough` treats it as "try the next format in the fallback
- * order"; `readThroughContentOrThrow` (the forced-override path) treats it
- * as a hard error. `readThroughExclusions` is optional and defaults to
- * `undefined` (no exclusions applied) — a checkout with no
+ * order" (terminating, if every weighted format returns `null`, at F19's
+ * STILL fallback); `readThroughContentOrThrow` (the forced-override path)
+ * treats it as a hard error. `readThroughExclusions` is optional and
+ * defaults to `undefined` (no exclusions applied) — a checkout with no
  * `render-exclusions.json` on disk behaves exactly as before F05/F06.
  */
 function tryReadThroughContent(
@@ -553,7 +556,16 @@ function tryReadThroughContent(
   switch (format) {
     case "wall": {
       if (readThroughExclusions?.has(card.id)) return null;
-      const landingLine = selectLandingLine(card) ?? card.plain_english;
+      // T02 (social pilot 02a): no more `?? card.plain_english` fallback — a
+      // card with no qualifying landing line is not a Wall at all (the
+      // plan's decision: "No qualifying landing line -> the card is not a
+      // Wall. It becomes a Still."). Returning `null` here routes the card
+      // through the same fallback cascade an unsupported question/objection
+      // candidate already uses (`resolveReadThrough`), terminating at the
+      // Still fallback (F19) rather than rendering the whole passage as the
+      // "one still sentence" payoff.
+      const landingLine = selectLandingLine(card);
+      if (!landingLine) return null;
       return { format: "wall", original_excerpt: card.original_excerpt, landing_line: landingLine };
     }
     case "question": {

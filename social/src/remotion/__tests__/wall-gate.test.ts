@@ -17,16 +17,10 @@ import {
 	WALL_REFERENCE_VIEWPORT_WIDTH,
 	WALL_MIN_LEGIBLE_FONT_PX,
 	WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX,
-	// Does not exist yet (social pilot 02a T01/T02) — the named max-words
-	// backstop the plan's Decisions section calls for: "Never fall back to
-	// the whole passage... a word-count backstop in the composition so a
-	// whole-passage payoff can never render again." Imported here (rather
-	// than only referenced inside a test) so its mere non-existence is its
-	// own assertion below, matching this file's existing style of importing
-	// every constant it checks. An import of a binding a module doesn't
-	// export resolves to `undefined` under this project's vitest/esbuild
-	// setup rather than throwing, so this does not break module load for the
-	// rest of the file's (pre-existing) tests.
+	// The named max-words backstop the plan's Decisions section calls for
+	// (social pilot 02a T02): "Never fall back to the whole passage... a
+	// word-count backstop in the composition so a whole-passage payoff can
+	// never render again."
 	WALL_LANDING_LINE_MAX_WORDS
 } from '../wall-gate.js';
 import { surveyWallPool, resolveWallCardExcerpt, loadOutputCard, type WallPoolEntry } from '../wall-pool.js';
@@ -273,15 +267,15 @@ describe('the composition path surfaces the rejection (T06 wiring)', () => {
 	);
 });
 
-// T01 (social pilot 02a): the payoff's whole-passage fallback
-// (`tryReadThroughContent`'s `selectLandingLine(card) ?? card.plain_english`
-// in `scripts/lib/schedule.ts`) is the defect this plan exists to fix. Per
+// T01/T02 (social pilot 02a): the payoff's whole-passage fallback
+// (`tryReadThroughContent`'s old `selectLandingLine(card) ?? card.plain_english`
+// in `scripts/lib/schedule.ts`) was the defect this plan exists to fix. Per
 // the plan's Decisions section: "No qualifying landing line -> the card is
 // not a Wall. It becomes a Still... Enforced in the gate at survey time."
-// Today `gateWallCard` never looks at `plain_english`/the landing line at
-// all — it only checks the archaic `originalExcerpt` against the travel and
-// duration axes — so this describe block proves that gap.
-describe('gateWallCard — the landing-line requirement (T02, not yet implemented)', () => {
+// `gateWallCard` now looks at `plain_english`/the landing line too — not
+// only the archaic `originalExcerpt`'s travel and duration axes — so this
+// describe block proves that.
+describe('gateWallCard — the landing-line requirement (T02)', () => {
 	// A real slice of plain English with no terminal `.`/`!` anywhere — every
 	// "sentence" `sentences()` extracts from it is therefore a fragment, so
 	// `findLandingLines`/`selectLandingLine` can never find a qualifying line

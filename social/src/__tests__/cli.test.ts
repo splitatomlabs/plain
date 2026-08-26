@@ -308,16 +308,20 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 	it(
 		'produces a house-profile-conformant MP4 (15s-59s), an IG feed JPEG, and a metadata sidecar with narration: false',
 		async () => {
-			// Day 2, slot 1 of the REAL committed week-1 schedule
-			// (meditations-02-002) — a real Wall read-through slot. (F19: day
+			// Day 6, slot 1 of the REAL committed week-1 schedule
+			// (meditations-02-006) — a real Wall read-through slot. (F19: day
 			// 1's own read-through card, meditations-02-001, falls through the
 			// cascade to the Still fallback instead — see the `resolveSlot`
 			// describe block above and `render — end-to-end: The Still (F19)`
-			// below.)
-			const slot = resolveSlot(WEEK_1_SCHEDULE, 2, 1);
+			// below. Days 2 and 5's own read-through cards, meditations-02-002
+			// and meditations-02-005, ALSO fall through to Still under the T02
+			// landing-line requirement — their landing lines used to equal the
+			// entire plain_english passage under the old whole-passage
+			// fallback; see `computeWallPlainLines`'s describe block above.)
+			const slot = resolveSlot(WEEK_1_SCHEDULE, 6, 1);
 			if (slot.content.format !== 'wall') throw new Error('expected a wall slot');
 
-			const date = weekDayToDate(1, 2);
+			const date = weekDayToDate(1, 6);
 			outDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-e2e-'));
 
 			const result = runCli(['render', '--date', date, '--slot', '1', '--out', outDir]);

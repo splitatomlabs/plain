@@ -123,8 +123,14 @@ export function loadBookCards(bookSlug: string, outputDir: string = DEFAULT_OUTP
 export interface WallPoolRejection {
 	card_id: string;
 	book_slug: string;
-	/** Which `gateWallCard` axis rejected this card. */
-	axis: 'travel' | 'duration';
+	/**
+	 * Which `gateWallCard` axis rejected this card. `'landingLine'` (T02) is
+	 * unreachable via THIS survey today — it never passes `plainEnglish`/
+	 * `landingLine` to `gateWallCard` (a scored pool entry's landing line is
+	 * already vetted upstream, T07) — included only so this type stays in
+	 * sync with `WallGateResult['failure']`.
+	 */
+	axis: 'travel' | 'duration' | 'landingLine';
 	/** Verbatim `WallGateResult.reason` from `gateWallCard`. */
 	reason: string;
 }

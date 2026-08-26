@@ -301,14 +301,20 @@ describe("generateWeek — read-through content derivation", () => {
         const card = cards.find((c) => c.id === slot.card_id)!;
         if (slot.content.format === "wall") {
           expect(slot.content.original_excerpt).toBe(card.original_excerpt);
-          expect(card.plain_english.includes(slot.content.landing_line) || slot.content.landing_line === card.plain_english).toBe(
-            true,
-          );
+          // T02: no more whole-passage fallback — the landing line must be a
+          // real, qualifying substring of plain_english, never the full text.
+          expect(card.plain_english).toContain(slot.content.landing_line);
         } else if (slot.content.format === "question") {
           expect(card.plain_english).toContain(slot.content.question);
           expect(card.plain_english).toContain(slot.content.answer);
-        } else {
+        } else if (slot.content.format === "objection") {
           expect(card.plain_english).toContain(slot.content.objection);
+        } else {
+          // F19's STILL fallback — reachable here (unlike before T02) for a
+          // card with no qualifying landing line and no Question/Objection
+          // candidate either.
+          expect(slot.content.format).toBe("still");
+          expect(slot.content.text).toBe(card.plain_english);
         }
       }
     }
@@ -384,7 +390,11 @@ describe("generateWeek — read-through content derivation", () => {
       poolSource,
       priorUsedCardIds: new Set(),
       readThroughBook: "enchiridion",
-      readThroughStartIndex: 0,
+      // Index 30 (enchiridion-25-002) starts a 20-card run where every card
+      // has a real qualifying landing line (T02: `selectLandingLine` is
+      // never null) — unlike index 0's run, which hits enchiridion-01-004
+      // a few cards in and would now throw (no whole-passage fallback).
+      readThroughStartIndex: 30,
       readThroughFormat: "wall",
     });
     expect(week.read_through_format).toBe("wall");
@@ -1008,10 +1018,10 @@ describe("F19: the read-through STILL fallback", () => {
   });
 
   it("a card that CAN render a Wall still gets a Wall — the fallback must not steal normal cards", () => {
-    // meditations-02-002 — the very next card in the slice, NOT excluded —
-    // clears the Wall gate under the real (ungated-in-this-suite) mechanical
-    // pool, so a still fallback must never be reachable for it.
-    const normalCardIndex = meditationsSlice.findIndex((c) => c.id === "meditations-02-002");
+    // meditations-02-004 — not excluded, and (unlike meditations-02-002) has
+    // a real qualifying landing line (T02: `selectLandingLine` finds one),
+    // so a still fallback must never be reachable for it.
+    const normalCardIndex = meditationsSlice.findIndex((c) => c.id === "meditations-02-004");
     const week = generateWeek({
       weekNumber: 1,
       seed: 1,
@@ -1027,7 +1037,7 @@ describe("F19: the read-through STILL fallback", () => {
     });
 
     const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
-    expect(day1.card_id).toBe("meditations-02-002");
+    expect(day1.card_id).toBe("meditations-02-004");
     expect(day1.content.format).toBe("wall");
   });
 
@@ -2487,10 +2497,15 @@ describe("M14: read-through Objection's empty-reply guard falls back to Wall ins
     // Mirrors the one real corpus card this guard exists for
     // (`discourses-53-010`, whose `plain_english` ends `"But I want my
     // children and wife with me."`) with a fabricated equivalent so the test
-    // doesn't depend on that exact card surviving future corpus edits.
+    // doesn't depend on that exact card surviving future corpus edits. A
+    // leading sentence is included (T02) so the card has a real qualifying
+    // Wall landing line of its own — `selectLandingLine` never looks at the
+    // final quoted question (it isn't a complete non-question sentence) —
+    // proving the empty-reply guard falls back to a genuine Wall candidate,
+    // not the whole-passage fallback T02 removed.
     const emptyReplyRtCard = fabricatedCard(
       "m14-rt-1",
-      `He said, "But why should I bother with any of this?"`,
+      `Grief passes quickly when reason takes charge. He said, "But why should I bother with any of this?"`,
       "m14-readthrough",
     );
     // Days 2-7's read-through cards pose no quoted objection at all, so
@@ -2557,7 +2572,10 @@ describe("M14: read-through Objection's empty-reply guard falls back to Wall ins
     expect(day1Slot1.card_id).toBe(emptyReplyRtCard.id);
     expect(day1Slot1.content.format).toBe("wall");
     if (day1Slot1.content.format === "wall") {
-      expect(day1Slot1.content.landing_line).toBe(emptyReplyRtCard.plain_english);
+      // T02: never the whole `plain_english` — the card's own qualifying
+      // landing line (the leading sentence; the final quoted question
+      // never qualifies).
+      expect(day1Slot1.content.landing_line).toBe("Grief passes quickly when reason takes charge.");
     }
   });
 });

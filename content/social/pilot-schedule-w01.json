@@ -49,9 +49,8 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "wall",
-        "original_excerpt": "Let it be thy earnest and incessant care as a Roman and a man to perform whatsoever it is that thou art about, with true and unfeigned gravity, natural affection, freedom and justice: and as for all other cares, and imaginations, how thou mayest ease thy mind of them. Which thou shalt do; if thou shalt go about every action as thy last action, free from all vanity, all passionate and wilful aberration from reason, and from all hypocrisy, and self-love, and dislike of those things, which by the fates or appointment of God have happened unto thee. Thou seest that those things, which for a man to hold on in a prosperous course, and to live a divine life, are requisite and necessary, are not many, for the gods will require no more of any man, that shall but keep and observe these things.",
-        "landing_line": "Make it your constant focus as a Roman and as a human being to do whatever you're doing with real seriousness, natural kindness, honesty, and fairness. Let go of all other worries and thoughts that clutter your mind. You can do this if you approach every action as if it were your last. Be free from vanity, from emotional reactions that go against reason, from pretense, from selfishness, and from complaining about what fate or God has given you. You can see that the things needed to live well and to live like the gods intended are not many. The gods ask nothing more from anyone who keeps and follows these simple things."
+        "format": "still",
+        "text": "Make it your constant focus as a Roman and as a human being to do whatever you're doing with real seriousness, natural kindness, honesty, and fairness. Let go of all other worries and thoughts that clutter your mind. You can do this if you approach every action as if it were your last. Be free from vanity, from emotional reactions that go against reason, from pretense, from selfishness, and from complaining about what fate or God has given you. You can see that the things needed to live well and to live like the gods intended are not many. The gods ask nothing more from anyone who keeps and follows these simple things."
       },
       "read_through": true,
       "read_through_counter": "Card 2 of 48"
@@ -131,9 +130,8 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "wall",
-        "original_excerpt": "For not observing the state of another man's soul, scarce was ever any man known to be unhappy. Tell whosoever they be that intend not, and guide not by reason and discretion the motions of their own souls, they must of necessity be unhappy.\n\nThese things thou must always have in mind: What is the nature of the universe, and what is mine--in particular: This unto that what relation it hath: what kind of part, of what kind of universe it is: And that there is nobody that can hinder thee, but that thou mayest always both do and speak those things which are agreeable to that nature, whereof thou art a part.",
-        "landing_line": "People who don't pay attention to their own inner state are rarely happy. Those who don't use reason to guide their thoughts and feelings will always be miserable.\n\nAlways keep these things in mind: What is the nature of the whole universe? What is my own nature? How do I fit into the bigger picture? What kind of part am I in what kind of whole? Remember that no one can stop you from acting and speaking in ways that match your true nature as part of this universe."
+        "format": "still",
+        "text": "People who don't pay attention to their own inner state are rarely happy. Those who don't use reason to guide their thoughts and feelings will always be miserable.\n\nAlways keep these things in mind: What is the nature of the whole universe? What is my own nature? How do I fit into the bigger picture? What kind of part am I in what kind of whole? Remember that no one can stop you from acting and speaking in ways that match your true nature as part of this universe."
       },
       "read_through": true,
       "read_through_counter": "Card 5 of 48"
@@ -209,10 +207,10 @@
     }
   ],
   "format_counts": {
-    "wall": 6,
+    "wall": 4,
     "question": 4,
     "objection": 0,
-    "still": 4
+    "still": 6
   },
   "author_mix": {
     "epictetus": {

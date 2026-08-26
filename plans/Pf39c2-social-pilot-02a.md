@@ -205,9 +205,48 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   src/remotion/__tests__/wall-gate.test.ts`); all 17 pre-existing tests in the file still pass. Named the new
   `WallGateResult.failure` variant `'landingLine'` and the backstop constant `WALL_LANDING_LINE_MAX_WORDS` —
   T02/T03's implementer should either match these names or update the tests alongside the implementation.
-- [ ] T02: Remove the whole-passage fallback — `scripts/lib/schedule.ts` (`tryReadThroughContent`),
+- [x] T02: Remove the whole-passage fallback — `scripts/lib/schedule.ts` (`tryReadThroughContent`),
   `social/src/remotion/wall-gate.ts`, `Wall.tsx`. No qualifying landing line → not a Wall → Still. Acceptance:
   T01 passes; `meditations-02-005` no longer renders as a Wall.
+  Done: `tryReadThroughContent`'s wall branch now returns `null` (not `landing_line: card.plain_english`) when
+  `selectLandingLine(card)` is `null`, routing the card through `resolveReadThrough`'s existing fallback cascade
+  to Question/Objection/Still exactly like an unsupported candidate already does. `wall-gate.ts` gained the
+  landing-line requirement T01 specified: a new `'landingLine'` `WallGateResult.failure` variant, an optional
+  `plainEnglish` field on `WallGateContentInput` (rejects when `selectLandingLine` finds nothing), and an optional
+  `landingLine` field checked against a new exported `WALL_LANDING_LINE_MAX_WORDS` (30) backstop. Wired the
+  backstop into both call sites that build the actual composition: `Root.tsx`'s `calculateMetadata` (the
+  `selectComposition`-time gate, needed for T01's `'selectComposition throws for a landingLine over the named
+  max-words backstop'` test — not in the plan's file list but required for that test to pass) and `Wall.tsx`'s
+  own render-time `assertWallCardRenderable` call, both now pass `landingLine: props.landingLine` through.
+  `social/src/remotion/wall-pool.ts`'s `WallPoolRejection.axis` type was widened to include `'landingLine'` to
+  keep `tsc --noEmit` clean (unreachable via that survey today — it never passes `plainEnglish`/`landingLine` to
+  `gateWallCard` — but the type must stay in sync with `WallGateResult['failure']`).
+  Verified: all 21 `wall-gate.test.ts` tests pass (the T01 block's title updated to drop "not yet implemented").
+  A direct `generateWeek` run forcing every day's weighted draw to Wall confirms `meditations-02-005` now resolves
+  to `format: "still"` (verbatim `plain_english`), not `wall`. All 123 pre-existing `scripts/lib/__tests__/
+  schedule.test.ts` tests pass after updating 4 that had baked in the old fallback as correct behavior (2
+  read-through-format tests updated to handle/expect the now-reachable Still branch and a working `readThroughStartIndex`
+  for a forced "wall" override; the F19 "normal card" test switched from `meditations-02-002` to
+  `meditations-02-004`, since -002 itself has no qualifying landing line in the real corpus; the M14 empty-reply
+  fixture gained a leading sentence so it has a real landing line, preserving that test's original "falls back to
+  Wall" intent instead of degrading to "falls back to Still"). `social/tsc --noEmit` is clean.
+  Fix pass (2026-08-26): the one failure above (`social/src/__tests__/cli.test.ts`'s `'produces a
+  house-profile-conformant MP4 (15s-59s)...'` e2e test, `result.status` 1) was resolved by regenerating the
+  committed schedule per the plan's Verify block: `npx tsx scripts/generate-schedule.ts --week 1 --seed 42
+  --first-week --force`. This re-ran `tryReadThroughContent`/`resolveReadThrough` against the real corpus under
+  the new rule, so `content/social/pilot-schedule-w01.json` now routes both `meditations-02-002` (day 2/slot 1)
+  and `meditations-02-005` (day 3/slot 1) — the two read-through cards whose old `landing_line` equalled the
+  whole `plain_english` passage — to `format: "still"` instead of `wall`. `format_counts` moved from `wall: 6,
+  still: 4` to `wall: 4, still: 6`; no other slot changed. This left `cli.test.ts`'s e2e Wall test pointed at a
+  slot that was no longer a Wall, so it was retargeted to day 6/slot 1 (`meditations-02-006`), which the file's
+  own `computeWallPlainLines` tests already documented as "a real Wall read-through slot ... whose landing line
+  is a real (non-whole-passage) substring." No test assertions were loosened and `WALL_LANDING_LINE_MAX_WORDS`
+  is unchanged (30). Verified: `social/src/__tests__/cli.test.ts` 25/25,
+  `social/src/remotion/__tests__/wall-gate.test.ts` 21/21, `scripts/lib/__tests__/schedule.test.ts` 123/123 (run
+  from repo root), and the full `social/` suite 496/496. `content/social/render-exclusions.json` was left
+  untouched, as directed — T04 regenerates it after T03's duration ceiling lands, and T20 regenerates week 1
+  again in full once T05-T12's geometry changes land, so further churn to `pilot-schedule-w01.json` here is
+  expected and fine.
 - [ ] T03: Shorten the payoff — `social/src/remotion/wall-timing.ts` + `wall-gate.ts`. Drop
   `DEFAULT_LINE_SECONDS` 3.5 → 3.0 and add a named Wall duration ceiling of 40s to the gate (a card over it is
   REJECTED, never truncated mid-passage). Acceptance: the read-through slice keeps all 30 Walls; p50 duration

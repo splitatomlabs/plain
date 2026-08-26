@@ -68,15 +68,17 @@ export const RemotionRoot: React.FC = () => {
 				defaultProps={defaultWallProps}
 				calculateMetadata={({ props }) => {
 					// Runs before any frame renders — a card that's either too
-					// small to read (T06's legibility floor) or whose composition
-					// would exceed the MP4 duration ceiling (F03) throws here,
-					// failing composition selection and the render outright rather
-					// than producing an illegible frame or a duration the encoder
-					// (and `padToMinimumDuration`) would refuse anyway. See
+					// small to read (T06's legibility floor), whose composition
+					// would exceed the MP4 duration ceiling (F03), or whose
+					// `landingLine` runs over the whole-passage backstop (T02)
+					// throws here, failing composition selection and the render
+					// outright rather than producing an illegible frame, an
+					// over-long duration, or a whole-passage payoff. See
 					// `wall-gate.ts`.
 					assertWallCardRenderable(props.originalExcerpt, {
 						plainLines: props.plainLines,
-						narrationTimings: props.narrationTimings
+						narrationTimings: props.narrationTimings,
+						landingLine: props.landingLine
 					});
 					return {
 						durationInFrames: computeWallTiming({

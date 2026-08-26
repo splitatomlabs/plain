@@ -70,6 +70,7 @@ import {
 	type WallLayout
 } from './wall-timing.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from './duration-bounds.js';
+import { selectLandingLine } from './landing-line.js';
 
 // ---------------------------------------------------------------------------
 // The legibility floor — MOVED to `wall-timing.ts` in F18 (it's now also
@@ -119,24 +120,63 @@ if (WALL_TARGET_BLOCK_HEIGHT_PX <= WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX) {
 }
 
 // ---------------------------------------------------------------------------
+// The landing-line requirement (social pilot 02a T02)
+// ---------------------------------------------------------------------------
+
+/**
+ * Defense-in-depth backstop against the whole-passage payoff defect T02
+ * fixes: "never fall back to the whole passage... a word-count backstop in
+ * the composition so a whole-passage payoff can never render again." The
+ * primary fix is upstream — `scripts/lib/schedule.ts`'s `tryReadThroughContent`
+ * no longer falls back to `card.plain_english` when `selectLandingLine`
+ * finds no qualifying sentence — but this constant lets the gate itself
+ * refuse to render ANY `landingLine` long enough to look like a passage
+ * rather than a payoff sentence, independent of how upstream chose it.
+ *
+ * Deliberately NOT `landing-line.ts`'s own `LANDING_LINE_MAX_WORDS` (18) —
+ * that is the mechanical SELECTION bound (how a landing line is chosen);
+ * this is a much looser RENDER-TIME backstop (how long a chosen line is
+ * allowed to be before something has clearly gone wrong upstream), kept
+ * generously above it so it never rejects a real, correctly-selected
+ * landing line.
+ */
+export const WALL_LANDING_LINE_MAX_WORDS = 30;
+
+// ---------------------------------------------------------------------------
 // The gate
 // ---------------------------------------------------------------------------
 
 /**
  * Everything besides `originalExcerpt` the gate needs to also check the
- * `MAX_POST_DURATION_FRAMES` ceiling — both optional so every existing
- * single-argument call site (Question's reuse of the wall's archaic-text
- * phase, which has no `plainLines` of its own; the legibility-only tests
- * below) keeps working exactly as before: an omitted `plainLines` computes
- * a duration of just the fixed wall + landing-line phases (well under the
- * ceiling on its own), so the duration check is a no-op rather than a false
- * rejection for those callers.
+ * `MAX_POST_DURATION_FRAMES` ceiling and the landing-line requirement (T02)
+ * — all optional so every existing single-argument call site (Question's
+ * reuse of the wall's archaic-text phase, which has no `plainLines` of its
+ * own; the legibility-only tests below) keeps working exactly as before: an
+ * omitted `plainLines` computes a duration of just the fixed wall +
+ * landing-line phases (well under the ceiling on its own), so the duration
+ * check is a no-op rather than a false rejection for those callers, and
+ * omitting both `plainEnglish` and `landingLine` skips the landing-line
+ * check entirely.
  */
 export interface WallGateContentInput {
 	/** The rest of the plain passage, in order, excluding the landing line — see `WallTimingInput.plainLines`. */
 	plainLines?: string[];
 	/** Optional per-line narration timing — see `WallTimingInput.narrationTimings`. */
 	narrationTimings?: NarrationLineTiming[];
+	/**
+	 * The card's raw `plain_english` (T02). When supplied, the gate requires
+	 * `selectLandingLine` (`./landing-line.js`) to find a qualifying sentence
+	 * — "no qualifying landing line -> not a Wall" (the plan's decision),
+	 * enforced here as well as in `scripts/lib/schedule.ts`'s
+	 * `tryReadThroughContent`.
+	 */
+	plainEnglish?: string;
+	/**
+	 * The landing line the composition would actually render (T02) — checked
+	 * against `WALL_LANDING_LINE_MAX_WORDS` as a backstop so a whole passage
+	 * fed into this prop by a regression can never render as a payoff.
+	 */
+	landingLine?: string;
 }
 
 export type WallGateResult =
@@ -144,8 +184,8 @@ export type WallGateResult =
 	| {
 			ok: false;
 			reason: string;
-			/** Which floor/ceiling rejected the card — lets callers (e.g. `surveyWallPool`) tally the two separately. */
-			failure: 'travel' | 'duration';
+			/** Which floor/ceiling/requirement rejected the card — lets callers (e.g. `surveyWallPool`) tally them separately. */
+			failure: 'travel' | 'duration' | 'landingLine';
 			blockHeight?: number;
 			wordCount?: number;
 			totalFrames?: number;
@@ -153,7 +193,7 @@ export type WallGateResult =
 	  };
 
 /**
- * Runs `computeWallLayout` for `originalExcerpt` and rejects it when EITHER:
+ * Runs `computeWallLayout` for `originalExcerpt` and rejects it when ANY of:
  *   1. `layout.fits` is false — even `WALL_FONT_CAP_PX` (the largest font
  *      `fitWallFontSize` will use before a card would read as large-print)
  *      cannot reach `WALL_TARGET_BLOCK_HEIGHT_PX`, so the card cannot be set
@@ -161,15 +201,22 @@ export type WallGateResult =
  *      before the cut AND keeps the wall's dense-set identity (F16 found
  *      this axis; F18 re-derived it around a per-card fit instead of one
  *      fixed size — see `wall-timing.ts`'s `fitWallFontSize`);
- *   2. the composition's pre-padding duration (wall + landing line + every
+ *   2. `content.plainEnglish` is supplied and has no qualifying landing line
+ *      (T02) — "no qualifying landing line -> not a Wall", so a card that
+ *      would otherwise fall back to rendering its whole passage as the
+ *      payoff is rejected instead;
+ *   3. `content.landingLine` is supplied and runs over `WALL_LANDING_LINE_MAX_WORDS`
+ *      (T02) — the render-time backstop against the same whole-passage
+ *      payoff, independent of how the line was chosen;
+ *   4. the composition's pre-padding duration (wall + landing line + every
  *      rest line from `content.plainLines`) exceeds `MAX_POST_DURATION_FRAMES`
  *      — the same ceiling `padToMinimumDuration` enforces, but caught here,
  *      at pool-survey time, instead of at render time (see `duration-bounds.ts`
  *      and F03).
- * Never renders a card whose scroll would finish early, and never trims to
- * the duration ceiling — a rejection is a rejection, to be excluded
- * upstream (see `surveyWallPool`) or to fail a render outright (see
- * `assertWallCardRenderable`).
+ * Never renders a card whose scroll would finish early, never falls back to
+ * the whole passage, and never trims to the duration ceiling — a rejection
+ * is a rejection, to be excluded upstream (see `surveyWallPool`) or to fail
+ * a render outright (see `assertWallCardRenderable`).
  */
 export function gateWallCard(originalExcerpt: string, content: WallGateContentInput = {}): WallGateResult {
 	const layout = computeWallLayout(originalExcerpt);
@@ -188,6 +235,31 @@ export function gateWallCard(originalExcerpt: string, content: WallGateContentIn
 			blockHeight: layout.blockHeight,
 			wordCount
 		};
+	}
+
+	if (content.plainEnglish !== undefined && selectLandingLine(content.plainEnglish) === null) {
+		return {
+			ok: false,
+			failure: 'landingLine',
+			reason:
+				'Wall card rejected: plain_english has no qualifying landing line — selectLandingLine ' +
+				'(landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card ' +
+				'cannot pay off as a Wall. No whole-passage fallback: route it to Still instead.'
+		};
+	}
+
+	if (content.landingLine !== undefined) {
+		const landingLineWordCount = splitWords(content.landingLine).length;
+		if (landingLineWordCount > WALL_LANDING_LINE_MAX_WORDS) {
+			return {
+				ok: false,
+				failure: 'landingLine',
+				reason:
+					`Wall card rejected: the landing line is ${landingLineWordCount} words, over the ` +
+					`${WALL_LANDING_LINE_MAX_WORDS}-word backstop — a landing line this long reads as a whole ` +
+					'passage, not a one-sentence payoff, and must never reach the composition.'
+			};
+		}
 	}
 
 	const plainLines = content.plainLines ?? [];
