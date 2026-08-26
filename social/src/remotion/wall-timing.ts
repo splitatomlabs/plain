@@ -154,16 +154,25 @@ export const WALL_LINE_ESTIMATE_OVERSHOOT = 1.14;
  * The fix that makes a small, fixed size viable again is NOT a bigger font —
  * it's a bigger BLOCK. `chapter-text.ts` (T05/T06) sources the wall's
  * scrolling text from the surrounding CHAPTER, not the single card, so the
- * block a card scrolls through is thousands of words long (2,196-3,305 for
- * Meditations Books 2-3) rather than 100-200. At 44px/4.5 lines-per-second
- * (`WALL_SCROLL_LINES_PER_SEC`), "never finishes before the cut" needs only
- * 412 words (see `WALL_SCROLL_RATE_PX_PER_SEC`'s doc comment for the
- * arithmetic) — a chapter block clears that by an order of magnitude, so the
- * constraint stops binding entirely. The never-finishes invariant is now
- * satisfied BY CONSTRUCTION (a long-enough source block, T06) rather than by
- * a gate rejecting cards whose own excerpt is too short — see
- * `wall-gate.ts`'s module doc comment for why the travel-floor rejection
- * axis is gone, not just relaxed.
+ * block a card scrolls through is typically thousands of words long
+ * (2,196-3,305 for Meditations Books 2-3) rather than 100-200. At 44px/4.5
+ * lines-per-second (`WALL_SCROLL_LINES_PER_SEC`), "never finishes before the
+ * cut" needs only ≈412 words (see `WALL_SCROLL_RATE_PX_PER_SEC`'s doc
+ * comment for the arithmetic) — a Meditations-length chapter block clears
+ * that by an order of magnitude.
+ *
+ * social pilot 02a REVIEW R02 (2026-08-26): that "order of magnitude" was
+ * true for Meditations but NOT for the rest of the corpus — Enchiridion's 51
+ * chapters median just 94 words (min 24), nowhere near 412, and T08's
+ * original claim that "the constraint stops binding entirely" turned out to
+ * be a Meditations-only measurement quietly generalized to every book. The
+ * never-finishes invariant is now held by `chapter-text.ts`'s
+ * `buildChapterTextBlock` directly (R02: it repeats a too-short chapter's
+ * one lap whole, as many times as needed to clear this module's own travel
+ * floor, verbatim, never fabricating or padding) rather than by "the chapter
+ * block is always big enough" being true unconditionally — see that
+ * function's own doc comment for the reasoning and the measured repeat
+ * counts across the real pool (worst case 6 laps, median 1).
  */
 export const WALL_FONT_SIZE = 44;
 
@@ -203,8 +212,11 @@ export const WALL_SCROLL_LINES_PER_SEC = 4.5;
  * (100-200 words) cannot clear that alone — the chapter-sourced block
  * (`chapter-text.ts`, T05/T06) is what supplies the length now, not a bigger
  * font (see `WALL_FONT_SIZE`'s own doc comment). This is why the invariant is
- * no longer enforced as a `wall-gate.ts` rejection: it holds by construction
- * once the source block is chapter-length, not by rejecting short cards.
+ * no longer enforced as a `wall-gate.ts` rejection: it holds by construction —
+ * `chapter-text.ts`'s `buildChapterTextBlock` (R02) repeats a too-short
+ * chapter's own lap, whole and verbatim, until it clears exactly this floor,
+ * so no card is ever rejected on this axis regardless of how short its own
+ * chapter is.
  */
 export const WALL_SCROLL_RATE_PX_PER_SEC = WALL_SCROLL_LINES_PER_SEC * WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO;
 

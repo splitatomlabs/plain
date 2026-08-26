@@ -30,6 +30,7 @@
  *      whitespace between them.
  */
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -82,6 +83,39 @@ function expectExactExcerptSequence(block: string, excerpts: string[]): void {
 		remaining = remaining.slice(idx + excerpt.length);
 	}
 	expect(remaining.trim(), `unexpected trailing text after the last excerpt: ${JSON.stringify(remaining)}`).toBe('');
+}
+
+/**
+ * R02: `buildChapterTextBlock` no longer returns exactly ONE lap — a
+ * chapter too short to clear the never-finishes travel floor gets its one
+ * lap sequence repeated whole, as many times as needed (see
+ * `chapter-text.ts`'s module doc comment). This is `expectExactExcerptSequence`'s
+ * sibling for that case: asserts the block is nothing but WHOLE, unbroken
+ * repeats of exactly `excerpts`, in order — no decoy content, no partial
+ * trailing repeat — and returns how many repeats it found (>= 1) so a
+ * caller can assert on the count itself where that matters.
+ */
+function expectRepeatedExcerptSequence(block: string, excerpts: string[]): number {
+	let remaining = block;
+	let repeats = 0;
+	while (remaining.trim().length > 0) {
+		for (const [i, excerpt] of excerpts.entries()) {
+			const idx = remaining.indexOf(excerpt);
+			expect(
+				idx,
+				`repeat #${repeats}, excerpt #${i} not found (in order) in the remaining block`
+			).toBeGreaterThanOrEqual(0);
+			const before = remaining.slice(0, idx);
+			expect(
+				before.trim(),
+				`repeat #${repeats}, unexpected non-whitespace text before excerpt #${i}: ${JSON.stringify(before)}`
+			).toBe('');
+			remaining = remaining.slice(idx + excerpt.length);
+		}
+		repeats++;
+	}
+	expect(repeats, 'expected at least one full repeat of the lap sequence').toBeGreaterThanOrEqual(1);
+	return repeats;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,10 +175,11 @@ describe('buildChapterTextBlock — ordering, wrap-around, and chapter scoping (
 		expect(block.startsWith(CH1_CARD_3.original_excerpt)).toBe(true);
 	});
 
-	it('continues with the following cards, in document order, before wrapping', () => {
+	it('continues with the following cards, in document order, before wrapping (repeated whole-lap by whole-lap — R02, this synthetic chapter is short enough to need repeats)', () => {
 		const block = buildChapterTextBlock(CH1_CARD_3.id, SYNTHETIC_BOOK_CARDS);
-		// Full lap starting at card 3: 3, 4, 5, then wrap to 1, 2.
-		expectExactExcerptSequence(block, [
+		// Full lap starting at card 3: 3, 4, 5, then wrap to 1, 2 — repeated as
+		// many whole times as buildChapterTextBlock needed to clear the floor.
+		expectRepeatedExcerptSequence(block, [
 			CH1_CARD_3.original_excerpt,
 			CH1_CARD_4.original_excerpt,
 			CH1_CARD_5.original_excerpt,
@@ -173,9 +208,9 @@ describe('buildChapterTextBlock — ordering, wrap-around, and chapter scoping (
 		expect(block).not.toContain(OTHER_BOOK_CARD.original_excerpt);
 	});
 
-	it('starting from the chapter\'s FIRST card still produces a full lap (wraps trivially — nothing precedes it)', () => {
+	it('starting from the chapter\'s FIRST card still produces a full lap (wraps trivially — nothing precedes it), repeated as needed', () => {
 		const block = buildChapterTextBlock(CH1_CARD_1.id, SYNTHETIC_BOOK_CARDS);
-		expectExactExcerptSequence(block, [
+		expectRepeatedExcerptSequence(block, [
 			CH1_CARD_1.original_excerpt,
 			CH1_CARD_2.original_excerpt,
 			CH1_CARD_3.original_excerpt,
@@ -184,9 +219,9 @@ describe('buildChapterTextBlock — ordering, wrap-around, and chapter scoping (
 		]);
 	});
 
-	it('starting from the chapter\'s LAST card wraps immediately to the first', () => {
+	it('starting from the chapter\'s LAST card wraps immediately to the first, repeated as needed', () => {
 		const block = buildChapterTextBlock(CH1_CARD_5.id, SYNTHETIC_BOOK_CARDS);
-		expectExactExcerptSequence(block, [
+		expectRepeatedExcerptSequence(block, [
 			CH1_CARD_5.original_excerpt,
 			CH1_CARD_1.original_excerpt,
 			CH1_CARD_2.original_excerpt,
@@ -195,10 +230,15 @@ describe('buildChapterTextBlock — ordering, wrap-around, and chapter scoping (
 		]);
 	});
 
-	it('a single-card chapter is just that card\'s own excerpt, verbatim', () => {
+	it('a single-card chapter is just that card\'s own excerpt, verbatim, repeated whole as many times as R02\'s travel floor needs', () => {
 		const soloCard = chapterCard(1, 'The only card in its chapter.');
 		const block = buildChapterTextBlock(soloCard.id, [soloCard, OTHER_CHAPTER_CARD, OTHER_BOOK_CARD]);
-		expectExactExcerptSequence(block, [soloCard.original_excerpt]);
+		const repeats = expectRepeatedExcerptSequence(block, [soloCard.original_excerpt]);
+		// This solo excerpt (6 words) is nowhere near the ~412-word travel
+		// floor on its own — sanity-check that R02's repeat behaviour
+		// actually engaged rather than this test accidentally passing on a
+		// single, unrepeated copy.
+		expect(repeats).toBeGreaterThan(1);
 	});
 
 	it('throws when the target card id is not present in the given cards', () => {
@@ -288,9 +328,19 @@ describe('applyChapterEntryOffset — never mid-word, honest (drawn from the tar
 		}
 	});
 
-	it('a single-card chapter (no "\\n\\n" in the block) still offsets correctly', () => {
-		const soloCard = chapterCard(1, 'One two three four five six seven eight nine ten.');
-		const block = buildChapterTextBlock(soloCard.id, [soloCard]);
+	it('a block with no "\\n\\n" at all (applyChapterEntryOffset\'s own guard branch) still offsets correctly', () => {
+		// R02: `buildChapterTextBlock` itself can no longer be relied on to
+		// produce a real "\n\n"-free block for a short solo-card chapter — it
+		// now repeats a too-short lap (joined with "\n\n") until the block
+		// clears the travel floor, so even a single-card chapter's block
+		// contains "\n\n" once it needs more than one repeat. This test
+		// exercises `applyChapterEntryOffset`'s own defensive guard for a
+		// chapterBlock with NO paragraph break at all directly, by
+		// constructing that string by hand rather than via
+		// `buildChapterTextBlock` — the guard branch (`paragraphBreak === -1`)
+		// stays real code to test even though this exact shape is no longer
+		// what R02's `buildChapterTextBlock` itself would hand it.
+		const block = 'One two three four five six seven eight nine ten.';
 		const shifted = applyChapterEntryOffset(block, 3);
 		expect(shifted.startsWith('four')).toBe(true);
 	});
@@ -418,4 +468,100 @@ describe('buildChapterTextBlock / loadChapterTextBlock — the real read-through
 			expectExactExcerptSequence(block, expectedOrder);
 		}
 	});
+});
+
+// ---------------------------------------------------------------------------
+// R02's own acceptance test — sweeps EVERY non-excluded entry of the real
+// `content/social/premises/wall.json` pool (685 of 896 entries; the other
+// 211 are already excluded upstream for `duration`, an unrelated axis — see
+// `content/social/render-exclusions.json`'s `wall` section), not just the
+// 48-card Meditations read-through slice above. That slice alone couldn't
+// have caught this defect: every Meditations chapter is thousands of words
+// long, so T05-T09's tests against it never exercised a chapter anywhere
+// near the travel floor. This sweep spans every book in the real Wall pool
+// — including Enchiridion, whose 51 chapters median just 94 words — so a
+// regression that only shows up on a short chapter can't hide behind a
+// Meditations-only fixture again.
+// ---------------------------------------------------------------------------
+
+describe('buildChapterTextBlock — R02 acceptance: every non-excluded wall.json entry clears the travel floor', () => {
+	const wallPoolPath = path.join(repoRoot, 'content', 'social', 'premises', 'wall.json');
+	const exclusionsPath = path.join(repoRoot, 'content', 'social', 'render-exclusions.json');
+
+	const wallPool = JSON.parse(readFileSync(wallPoolPath, 'utf-8')) as {
+		entries: { card_id: string; book_slug: string }[];
+	};
+	const exclusions = JSON.parse(readFileSync(exclusionsPath, 'utf-8')) as {
+		wall: { card_id: string }[];
+	};
+	const excludedIds = new Set(exclusions.wall.map((e) => e.card_id));
+	const nonExcludedEntries = wallPool.entries.filter((e) => !excludedIds.has(e.card_id));
+
+	const bookCardsCache = new Map<string, ReturnType<typeof loadBookCards>>();
+	function getBookCards(bookSlug: string) {
+		let cards = bookCardsCache.get(bookSlug);
+		if (!cards) {
+			cards = loadBookCards(bookSlug, outputDir);
+			bookCardsCache.set(bookSlug, cards);
+		}
+		return cards;
+	}
+
+	it('grounds this suite\'s own numbers: the pool has non-excluded entries across more than one book (not just Meditations)', () => {
+		expect(nonExcludedEntries.length).toBeGreaterThan(600);
+		const books = new Set(nonExcludedEntries.map((e) => e.book_slug));
+		expect(books.size).toBeGreaterThan(1);
+		expect(books.has('enchiridion')).toBe(true);
+	});
+
+	it(
+		'every non-excluded wall.json entry clears the travel floor at offset 0 AND at its own worst-case ' +
+			'mid-chapter offset (excerptWordCount - 1) — the never-finishes invariant R02 restores',
+		() => {
+			const shortfallsAtZero: { id: string; book: string; blockHeight: number }[] = [];
+			const shortfallsAtWorstOffset: { id: string; book: string; worstOffset: number; blockHeight: number }[] = [];
+			let worstMarginAtZero = Infinity;
+			let worstMarginAtWorstOffset = Infinity;
+
+			for (const entry of nonExcludedEntries) {
+				const bookCards = getBookCards(entry.book_slug);
+				const block = buildChapterTextBlock(entry.card_id, bookCards);
+
+				const layoutAtZero = computeWallLayout(block);
+				worstMarginAtZero = Math.min(worstMarginAtZero, layoutAtZero.blockHeight - TRAVEL_FLOOR_PX);
+				if (!(layoutAtZero.blockHeight > TRAVEL_FLOOR_PX)) {
+					shortfallsAtZero.push({ id: entry.card_id, book: entry.book_slug, blockHeight: layoutAtZero.blockHeight });
+				}
+
+				const targetCard = bookCards.find((c) => c.id === entry.card_id)!;
+				const excerptWordCount = targetCard.original_excerpt.split(/\s+/).filter(Boolean).length;
+				const worstOffset = Math.max(0, excerptWordCount - 1);
+				const shifted = applyChapterEntryOffset(block, worstOffset);
+				const layoutAtWorstOffset = computeWallLayout(shifted);
+				worstMarginAtWorstOffset = Math.min(worstMarginAtWorstOffset, layoutAtWorstOffset.blockHeight - TRAVEL_FLOOR_PX);
+				if (!(layoutAtWorstOffset.blockHeight > TRAVEL_FLOOR_PX)) {
+					shortfallsAtWorstOffset.push({
+						id: entry.card_id,
+						book: entry.book_slug,
+						worstOffset,
+						blockHeight: layoutAtWorstOffset.blockHeight
+					});
+				}
+			}
+
+			// eslint-disable-next-line no-console
+			console.log(
+				`R02 sweep across ${nonExcludedEntries.length} non-excluded wall.json entries: ` +
+					`worst margin at offset 0 = ${worstMarginAtZero.toFixed(1)}px, ` +
+					`worst margin at worst-case offset = ${worstMarginAtWorstOffset.toFixed(1)}px ` +
+					`(travel floor ${TRAVEL_FLOOR_PX.toFixed(1)}px)`
+			);
+
+			expect(shortfallsAtZero, `${shortfallsAtZero.length} entries fail at offset 0`).toEqual([]);
+			expect(
+				shortfallsAtWorstOffset,
+				`${shortfallsAtWorstOffset.length} entries fail at their worst-case offset`
+			).toEqual([]);
+		}
+	);
 });

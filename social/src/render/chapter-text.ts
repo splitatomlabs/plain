@@ -12,8 +12,51 @@
  * another chapter or book. Every word in the block is a verbatim substring
  * of some card's `original_excerpt` — no fabrication, no paraphrase, no
  * reordering WITHIN an excerpt.
+ *
+ * social pilot 02a REVIEW R02 (2026-08-26): T08's own justification for
+ * deleting the travel-floor gate ("chapters hold 2,196-3,305 words, the
+ * constraint stops binding entirely") was measured against Meditations
+ * ONLY — the read-through slice every T05-T09 test used. Across the real
+ * corpus, chapter length varies by two orders of magnitude: Enchiridion's
+ * 51 chapters median just 94 words (min 24), a fraction of the ~412 words
+ * the wall's fixed 44px/4.5-lines-per-second scroll needs to outrun its
+ * 2.5s hard cut (`wall-timing.ts`'s `WALL_SCROLL_RATE_PX_PER_SEC` doc
+ * comment). A SINGLE lap of a short chapter (this function's pre-R02
+ * behaviour) left 53 of 685 non-excluded Wall pool entries finishing their
+ * scroll before the cut at offset 0, 25 more at T18's own worst-case
+ * mid-chapter offset — the wall goes still, showing blank paper under a
+ * floating running head, for 11% of the real pool.
+ *
+ * THE FIX: repeat the one-lap sequence above, in its entirety, as many
+ * times as needed for the block to clear the travel floor even after T18's
+ * worst-case offset (`excerptWordCount - 1` words trimmed off the very
+ * front) — see `repeatLapUntilTravelFloorClears` below. This was chosen
+ * over restoring a gate axis fed the chapter block (the plan's other
+ * option) because that alternative's cost was measured directly and found
+ * severe: Enchiridion's median chapter (94 words) doesn't clear the floor
+ * even at ONE lap, so gating on a single lap would have rejected roughly
+ * that book's whole Wall pool outright, not just its short tail. Repeating
+ * is cheap by comparison — measured across the whole non-excluded pool
+ * (685 entries), the worst case needs only 6 laps (median 1, i.e. most
+ * chapters already clear the floor unmodified) even at T18's worst-case
+ * offset, and repeating a verbatim chapter is not a new KIND of thing this
+ * function does — the pre-R02 code already wraps from the chapter's last
+ * card back to its first once per lap; this only continues wrapping past
+ * that same seam instead of stopping after one revolution. The text stays
+ * exactly as verbatim as before: the block is still nothing but
+ * `original_excerpt` fields, in chapter order, repeated whole — no
+ * fabrication, no padding, no truncation.
+ *
+ * On the visibility of the repeat: at the wall's scroll rate (~1,900wpm,
+ * ~7.5x normal reading pace), nobody reads far enough into a 2.5s wall to
+ * consciously notice a chapter looping back on itself — the repeat is only
+ * ever inspectable by pausing the render frame by frame, the same way the
+ * chapter's own single-lap wrap-around seam (already present pre-R02) is.
+ * A short chapter's wall necessarily shows the same short passage's texture
+ * more than once in that case; it never shows a blank frame instead.
  */
 import { loadBookCards } from '../remotion/wall-pool.js';
+import { computeWallLayout, FRAME_HEIGHT, WALL_SCROLL_RATE_PX_PER_SEC, WALL_SECONDS, splitWords } from '../remotion/wall-timing.js';
 
 /**
  * The subset of `wall-pool.ts`'s `OutputCard` this module actually needs,
@@ -30,12 +73,96 @@ export interface ChapterTextCard {
 }
 
 /**
+ * The never-finishes travel floor, in px — the block's wrapped height must
+ * exceed this for the wall's scroll to still be travelling (not have
+ * reached its own bottom edge) when `WALL_SECONDS`' hard cut lands.
+ * Re-derived here from `wall-timing.ts`'s own constants (not imported as a
+ * single value) so this module and `wall-timing.test.ts`/
+ * `chapter-text.test.ts` can never silently disagree about what the floor
+ * IS, only ever about whether a given block clears it — mirrors
+ * `chapter-text.test.ts`'s own independent re-derivation (`TRAVEL_FLOOR_PX`).
+ */
+const WALL_TRAVEL_FLOOR_PX = FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS;
+
+/**
+ * Defensive-only cap on lap repeats. Mathematically, repeating always
+ * converges: `removeWorstCaseOffset` below only ever trims words off the
+ * FIRST lap (by construction, at most `excerptWordCount - 1` of them,
+ * leaving at least one word of that first lap's own text), so every
+ * SUBSEQUENT full lap appended keeps adding its whole, untrimmed height —
+ * for any chapter with at least one non-empty excerpt, some finite number
+ * of laps clears the floor. Measured directly across the whole real,
+ * non-excluded Wall pool (685 entries, R02): worst case needs 6 laps. 100
+ * is not a "just in case" tuning knob but a loud failure mode should some
+ * future corpus edit produce a chapter this can't converge for (e.g. an
+ * accidentally-empty `original_excerpt`) — `buildChapterTextBlock` throws
+ * rather than silently shipping a block that still doesn't clear the floor.
+ */
+const MAX_LAP_REPEATS = 100;
+
+/**
+ * Returns `text` with the first `wordCount` whitespace-delimited words
+ * removed — the same word-boundary-only trimming `applyChapterEntryOffset`
+ * (below) performs on a real block, factored out so both that function and
+ * `repeatLapUntilTravelFloorClears`'s worst-case simulation use identical
+ * word-boundary semantics rather than two regexes that could drift apart.
+ */
+function removeLeadingWords(text: string, wordCount: number): string {
+	if (wordCount <= 0) {
+		return text;
+	}
+	const words = [...text.matchAll(/\S+/g)];
+	const startIndex = words[wordCount]?.index;
+	return startIndex === undefined ? '' : text.slice(startIndex);
+}
+
+/**
+ * Repeats `lapText` (already one full, chapter-ordered lap starting at the
+ * target card) whole-lap by whole-lap until the result clears
+ * `WALL_TRAVEL_FLOOR_PX` even after T18's worst-case mid-chapter offset —
+ * up to `worstCaseOffsetWords` (`excerptWordCount - 1`) words trimmed off
+ * the very front, simulated here with `removeLeadingWords` rather than
+ * `applyChapterEntryOffset` itself (that function operates on a whole block
+ * string and doesn't know about repeats-in-progress; the trimming semantics
+ * are identical either way since the offset never exceeds the target
+ * excerpt's own length, which is always the block's first paragraph
+ * regardless of how many laps follow it).
+ */
+function repeatLapUntilTravelFloorClears(lapText: string, worstCaseOffsetWords: number): string {
+	const clears = (block: string) =>
+		computeWallLayout(removeLeadingWords(block, worstCaseOffsetWords)).blockHeight > WALL_TRAVEL_FLOOR_PX;
+
+	let repeats = 1;
+	let block = lapText;
+	while (!clears(block) && repeats < MAX_LAP_REPEATS) {
+		repeats++;
+		block = Array.from({ length: repeats }, () => lapText).join('\n\n');
+	}
+
+	if (!clears(block)) {
+		throw new Error(
+			`buildChapterTextBlock: still short of the ${WALL_TRAVEL_FLOOR_PX.toFixed(1)}px travel floor after ` +
+				`${MAX_LAP_REPEATS} repeated laps — this chapter cannot be made to clear the never-finishes ` +
+				'invariant by repetition alone (likely an empty or near-empty original_excerpt somewhere in the ' +
+				'chapter); investigate before rendering this card as a Wall.'
+		);
+	}
+
+	return block;
+}
+
+/**
  * Builds the verbatim scrolling block for `targetCardId`. `bookCards` may
  * contain cards from other chapters or even other books (e.g. a whole
  * book's cards, as `wall-pool.ts`'s `loadBookCards` returns) — this function
  * is responsible for filtering to the target card's own chapter internally
  * (`content/output/`'s `book_slug` + `chapter_slug`), never drawing text
  * from anywhere else.
+ *
+ * R02: the returned block always clears `WALL_TRAVEL_FLOOR_PX` — see the
+ * module-level doc comment above for why (a short chapter's one-lap
+ * sequence is repeated whole as many times as needed, never padded,
+ * fabricated, or truncated).
  */
 export function buildChapterTextBlock(targetCardId: string, bookCards: ChapterTextCard[]): string {
 	const targetCard = bookCards.find((c) => c.id === targetCardId);
@@ -49,8 +176,16 @@ export function buildChapterTextBlock(targetCardId: string, bookCards: ChapterTe
 
 	const targetIndex = chapterCards.findIndex((c) => c.id === targetCardId);
 	const lap = [...chapterCards.slice(targetIndex), ...chapterCards.slice(0, targetIndex)];
+	const lapText = lap.map((c) => c.original_excerpt).join('\n\n');
 
-	return lap.map((c) => c.original_excerpt).join('\n\n');
+	// T18's mid-chapter entry (`applyChapterEntryOffset`, below) can trim at
+	// most `excerptWordCount - 1` words off the target card's own excerpt —
+	// the block's own first "paragraph" — regardless of how many laps
+	// follow it. Simulate that worst case here so the block this function
+	// RETURNS already clears the floor under it, not just at offset 0.
+	const worstCaseOffsetWords = Math.max(0, splitWords(targetCard.original_excerpt).length - 1);
+
+	return repeatLapUntilTravelFloorClears(lapText, worstCaseOffsetWords);
 }
 
 /**

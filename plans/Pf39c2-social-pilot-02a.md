@@ -1174,17 +1174,55 @@ references in the corpus. Measured chapter medians: enchiridion **94**, happy-li
 502, peace-of-mind 709, discourses 812, meditations 5,355, on-anger 13,456. Never-finishes needs ~412
 words. The work is correct for the slice it was tested against and breaks outside it.
 
-- [ ] R01: Fix the red suite — `social/src/__tests__/cli.test.ts` (lines ~122, 139-142, 227, 245, 504) still
+- [x] R01: Fix the red suite — `social/src/__tests__/cli.test.ts` (lines ~122, 139-142, 227, 245, 504) still
   asserts the pre-T20 week-1 schedule. Repoint at the regenerated slots: day 1 slot 1 → `wall`
   `meditations-02-001`, slot 2 → `peace-of-mind-17-005`; the Still e2e/dry-run tests → day 2 slot 1
   (`meditations-02-002`). Acceptance: `npx vitest run src/__tests__/cli.test.ts` 22/22; root `npm test` green.
-- [ ] R02: Restore the never-finishes guarantee for SHORT chapters — `social/src/render/chapter-text.ts`.
+  DONE 2026-08-26: Verified the reviewer's suggested slots against the regenerated
+  `content/social/pilot-schedule-w01.json` — they matched exactly. Repointed 5 assertions plus their
+  explanatory comments (day 1 slot 1 is genuinely `wall` now — its landing line is a real substring, not the
+  whole passage; day 1 slot 2 is `peace-of-mind-17-005`; the Still dry-run and e2e tests moved to day 2 slot 1,
+  `meditations-02-002`, whose plain_english has no qualifying landing line per
+  `render-exclusions.json`'s `read_through` section, so it genuinely falls through to Still). Also fixed three
+  other now-stale "day 1 falls through to Still" comments elsewhere in the same file (the `computeWallPlainLines`
+  test and the Wall/Still e2e describe blocks) for consistency, since they made the same now-false claim.
+  `npx vitest run src/__tests__/cli.test.ts` — 22/22. `npx tsc --noEmit` — clean. Root `npm test` — green
+  (819 pipeline, 95 web unit, 566-568 social depending on concurrent R02 work landing mid-run; one transient
+  failure in `social/src/render/__tests__/chapter-text.test.ts` during a run that overlapped with R02's
+  in-flight edit — unrelated to this task, confirmed by an isolated rerun passing 28/28, and by a subsequent
+  full `npm test` passing clean).
+- [x] R02: Restore the never-finishes guarantee for SHORT chapters — `social/src/render/chapter-text.ts`.
   `buildChapterTextBlock` returns exactly one lap, which clears the 2,538.75px travel floor only in
   Meditations. Measured: 53 of 685 non-excluded Wall pool entries fail at offset 0, 25 more at T18's
   worst-case offset (78 total, 11%). Repeat the lap until the block clears the floor (keeping the text
   verbatim and the wrap honest), or restore a gate axis fed the CHAPTER BLOCK rather than the single card.
   Acceptance: a test sweeping EVERY non-excluded entry of `content/social/premises/wall.json` — not the
   48-card Meditations slice — asserts the block clears the floor at both offset 0 and `excerptWordCount - 1`.
+  DONE 2026-08-26: Chose repeat-the-lap over restoring the gate axis — measured both options directly before
+  deciding. A single lap (the gate-axis option's own input) already fails to clear the floor for Enchiridion's
+  MEDIAN chapter (94 words, one lap), so gating on it would have rejected roughly that whole book's Wall pool,
+  not just its short tail; repeating is provably convergent instead (every extra whole lap adds its full,
+  untrimmed height — T18's worst-case offset only ever trims the FIRST lap, by at most `excerptWordCount - 1`
+  words, never a later one) and measured cheap: across all 685 non-excluded pool entries, worst case needs 6
+  laps (median 1, i.e. most chapters already clear the floor unmodified), and 0 entries fail to converge even
+  at a 100-lap defensive cap. `buildChapterTextBlock` now repeats its one-lap sequence whole (verbatim,
+  `\n\n`-joined, same as the existing chapter-wrap seam) until `computeWallLayout` on the block — simulated at
+  T18's own worst-case offset — clears `WALL_TRAVEL_FLOOR_PX`; throws (rather than silently under-supplying)
+  if the 100-lap cap is ever hit, which no real chapter does. Supply is UNCHANGED (still 685/896 Wall,
+  unaffected `render-exclusions.json` — no gate axis touched, no regeneration needed). On honesty: the repeat
+  is only ever visible by pausing frame-by-frame (confirmed below); at ~1,900wpm nobody reads far enough into
+  a 2.5s wall to consciously notice a short chapter looping, and looping is not a new KIND of thing this
+  function does — it already wraps chapter-end back to chapter-start once per lap; this only continues past
+  that same seam. Added a new `chapter-text.test.ts` suite sweeping all 685 non-excluded `wall.json` entries
+  (not just the 48-card Meditations slice) at offset 0 AND at each entry's own worst-case offset — passes,
+  reporting worst margins of 706.3px (offset 0) and 46.3px (worst-case offset) over the 2,538.75px floor.
+  Updated 4 synthetic-fixture tests whose short strings now legitimately repeat (added
+  `expectRepeatedExcerptSequence`) and one T18 guard test to construct its no-`\n\n` input directly rather than
+  via `buildChapterTextBlock` (which can no longer produce that shape for a short solo-card chapter). Rendered
+  `discourses-37-001` (the reviewer's repro: a single-card, 89-word chapter) frame 0 and the last wall frame
+  (frame 74) — both now show text packed edge to edge, top to bottom, no blank paper under the running head.
+  `npx tsc --noEmit` clean. `social` suite: 30 files, 568 tests green. Root `npm test`: 819 pipeline + 95 web
+  unit + 568 social, all green.
 - [ ] R03: Thread the chapter block into `Question.tsx` — it still feeds `WallPhase` the card's own
   `originalExcerpt` (T09 wired only `Wall.tsx`), so at 44px its archaic phase is ~1100px against a 1920px
   frame and ALL 48 non-excluded question-pool cards under-fill. Add `chapterBlock` to `QuestionProps`, load it

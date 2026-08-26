@@ -33,11 +33,23 @@
  * enforce still holds — but now BY CONSTRUCTION: the wall's font size is
  * fixed again (`WALL_FONT_SIZE`, 44px, `wall-timing.ts`) and the block it
  * scrolls through is sourced from the surrounding CHAPTER, not the single
- * card (`chapter-text.ts`, T05/T06) — thousands of words long, comfortably
- * clearing the ~412 words a 44px/4.5-lines-per-second scroll needs to
- * outrun its `WALL_SECONDS` hard cut. A card is never too SHORT to set as a
- * wall anymore, because the wall was never really about that one card's own
- * excerpt length in the first place.
+ * card (`chapter-text.ts`, T05/T06), comfortably clearing the ~412 words a
+ * 44px/4.5-lines-per-second scroll needs to outrun its `WALL_SECONDS` hard
+ * cut. A card is never too SHORT to set as a wall anymore, because the wall
+ * was never really about that one card's own excerpt length in the first
+ * place.
+ *
+ * T08's own measurement of "comfortably clearing" was Meditations-only
+ * (thousands of words per chapter there) and didn't generalize — social
+ * pilot 02a REVIEW R02 (2026-08-26) found 53 of 685 non-excluded real Wall
+ * pool entries whose own chapter (Enchiridion's median chapter is 94 words)
+ * fell short of the floor on a single lap. Rather than reintroducing this
+ * axis as a rejection, `chapter-text.ts`'s `buildChapterTextBlock` now
+ * repeats a too-short chapter's own lap — whole, verbatim, never
+ * fabricated or padded — until IT clears the floor, so the never-finishes
+ * invariant holds unconditionally, by construction, for every chapter
+ * length in the real corpus, not just Meditations'. See that function's own
+ * doc comment for the reasoning and the measured repeat counts.
  *
  * The legibility floor (`WALL_MIN_LEGIBLE_FONT_PX`, defined in
  * `wall-timing.ts`, re-exported here unchanged for every existing caller)
