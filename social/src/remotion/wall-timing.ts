@@ -337,8 +337,21 @@ export const LANDING_LINE_FRAMES = Math.round(LANDING_LINE_SECONDS * FPS);
 /**
  * Fallback duration for a plain line when no narration timing is supplied.
  * Narration (T13) will normally drive this via `narrationTimings`.
+ *
+ * social pilot 02a T03 (2026-08-26): dropped from 3.5s to 3.0s. The
+ * read-through's 30 Walls can carry up to 11 payoff lines each (per-card
+ * word count, not a fixed cap — see `wall-gate.ts`'s
+ * `WALL_MAX_DURATION_SECONDS` doc comment for why a line CAP was rejected in
+ * favour of this pacing change), and at 3.5s/line eleven hard cuts of
+ * centred text read as a slideshow (p50 26.5s, p75 30s, max 44s across the
+ * read-through). 3.0s keeps p50 at ~23.5s while leaving 0.5s of margin over
+ * the house rule's 2.5s motionless floor per payoff line — the rule "payoff
+ * frame motionless >= 2.5s" is a floor this constant must clear, not a
+ * target to sit on. This fallback only drives the MUSIC-ONLY case: once
+ * T14's voices land, `narrationTimings` (not `DEFAULT_LINE_FRAMES`) sets
+ * each line's real duration.
  */
-export const DEFAULT_LINE_SECONDS = 3.5;
+export const DEFAULT_LINE_SECONDS = 3.0;
 export const DEFAULT_LINE_FRAMES = Math.round(DEFAULT_LINE_SECONDS * FPS);
 
 // ---------------------------------------------------------------------------

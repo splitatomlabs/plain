@@ -143,6 +143,45 @@ if (WALL_TARGET_BLOCK_HEIGHT_PX <= WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX) {
 export const WALL_LANDING_LINE_MAX_WORDS = 30;
 
 // ---------------------------------------------------------------------------
+// The Wall-specific duration ceiling (social pilot 02a T03)
+// ---------------------------------------------------------------------------
+
+/**
+ * A Wall-specific duration ceiling, well under `duration-bounds.ts`'s shared
+ * `MAX_POST_DURATION_SECONDS` (59s) — the plan's "shorten the payoff by
+ * pacing, not by rejecting cards" decision. A per-card line CAP was measured
+ * and rejected: capping payoff lines at 6 keeps the read-through's Walls
+ * shortest but costs 11 of its 30 Walls (19/29 Wall/Still); no cap at all
+ * keeps all 30 but produces up to 11 hard cuts over ~38-44s, which reads as
+ * a slideshow. Pairing `DEFAULT_LINE_SECONDS`'s drop (3.5s -> 3.0s) with
+ * THIS ceiling instead rejects a card only when it is genuinely too long at
+ * that pacing (measured: zero of the read-through's 30 real Walls cross it),
+ * rather than truncating a card's payoff mid-passage to force it under a
+ * line count.
+ *
+ * 40s, not `MAX_POST_DURATION_FRAMES`'s 59s: chosen so the read-through's
+ * measured max (real cards, `DEFAULT_LINE_SECONDS` at 3.0s) sits under it
+ * with margin, while a card whose payoff runs long enough to approach the
+ * shared 59s ceiling anyway is caught here FIRST, at a threshold specific to
+ * what actually reads well for this format, rather than only at the point
+ * every format's encode profile refuses to ship at all.
+ *
+ * Reuses the existing `'duration'` `WallGateResult.failure` variant (see
+ * `gateWallCard` below) rather than adding a new one — this is the same
+ * KIND of rejection (composition runs too long) as the shared 59s ceiling,
+ * just checked against a Wall-specific, stricter threshold; the reason
+ * string is what distinguishes which ceiling actually rejected a card.
+ *
+ * Caveat carried forward from the plan: this fallback pacing lever (and
+ * this ceiling) governs the MUSIC-ONLY case. Once T14's voices land, real
+ * line durations come from `narrationTimings`, not `DEFAULT_LINE_FRAMES` —
+ * at that point this ceiling may start rejecting cards it does not reject
+ * today, which is expected, not a regression to re-tune around blindly.
+ */
+export const WALL_MAX_DURATION_SECONDS = 40;
+export const WALL_MAX_DURATION_FRAMES = Math.round(WALL_MAX_DURATION_SECONDS * FPS);
+
+// ---------------------------------------------------------------------------
 // The gate
 // ---------------------------------------------------------------------------
 
@@ -212,11 +251,15 @@ export type WallGateResult =
  *      rest line from `content.plainLines`) exceeds `MAX_POST_DURATION_FRAMES`
  *      — the same ceiling `padToMinimumDuration` enforces, but caught here,
  *      at pool-survey time, instead of at render time (see `duration-bounds.ts`
- *      and F03).
+ *      and F03);
+ *   5. that same pre-padding duration exceeds `WALL_MAX_DURATION_FRAMES`
+ *      (T03) — a Wall-specific ceiling stricter than #4's shared one, paired
+ *      with `wall-timing.ts`'s `DEFAULT_LINE_SECONDS` pacing so a card with
+ *      many payoff lines is rejected outright rather than truncated mid-passage.
  * Never renders a card whose scroll would finish early, never falls back to
- * the whole passage, and never trims to the duration ceiling — a rejection
- * is a rejection, to be excluded upstream (see `surveyWallPool`) or to fail
- * a render outright (see `assertWallCardRenderable`).
+ * the whole passage, and never trims to either duration ceiling — a
+ * rejection is a rejection, to be excluded upstream (see `surveyWallPool`)
+ * or to fail a render outright (see `assertWallCardRenderable`).
  */
 export function gateWallCard(originalExcerpt: string, content: WallGateContentInput = {}): WallGateResult {
 	const layout = computeWallLayout(originalExcerpt);
@@ -278,6 +321,27 @@ export function gateWallCard(originalExcerpt: string, content: WallGateContentIn
 				`(${(totalFrames / FPS).toFixed(1)}s) across ${plainLines.length} plain-passage ` +
 				`line${plainLines.length === 1 ? '' : 's'}, over the ${MAX_POST_DURATION_FRAMES}-frame ` +
 				`(${MAX_POST_DURATION_SECONDS}s) ceiling.`,
+			totalFrames,
+			lineCount: plainLines.length
+		};
+	}
+
+	// social pilot 02a T03: a second, Wall-specific ceiling — stricter than
+	// the shared 59s bound above, and checked second so a card already
+	// caught by the shared ceiling reports against that ceiling's own
+	// number rather than this one. See `WALL_MAX_DURATION_SECONDS`'s doc
+	// comment for why pacing (`DEFAULT_LINE_SECONDS`), not a line cap, is
+	// paired with this ceiling — never truncated mid-passage, only rejected.
+	if (totalFrames > WALL_MAX_DURATION_FRAMES) {
+		return {
+			ok: false,
+			failure: 'duration',
+			reason:
+				`Wall card rejected: composition computes to ${totalFrames} frames ` +
+				`(${(totalFrames / FPS).toFixed(1)}s) across ${plainLines.length} plain-passage ` +
+				`line${plainLines.length === 1 ? '' : 's'}, over the ${WALL_MAX_DURATION_FRAMES}-frame ` +
+				`(${WALL_MAX_DURATION_SECONDS}s) Wall-specific ceiling (the shared ` +
+				`${MAX_POST_DURATION_SECONDS}s post ceiling is not the binding one here).`,
 			totalFrames,
 			lineCount: plainLines.length
 		};

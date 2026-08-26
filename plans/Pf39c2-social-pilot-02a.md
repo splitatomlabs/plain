@@ -247,14 +247,65 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   untouched, as directed — T04 regenerates it after T03's duration ceiling lands, and T20 regenerates week 1
   again in full once T05-T12's geometry changes land, so further churn to `pilot-schedule-w01.json` here is
   expected and fine.
-- [ ] T03: Shorten the payoff — `social/src/remotion/wall-timing.ts` + `wall-gate.ts`. Drop
+- [x] T03: Shorten the payoff — `social/src/remotion/wall-timing.ts` + `wall-gate.ts`. Drop
   `DEFAULT_LINE_SECONDS` 3.5 → 3.0 and add a named Wall duration ceiling of 40s to the gate (a card over it is
   REJECTED, never truncated mid-passage). Acceptance: the read-through slice keeps all 30 Walls; p50 duration
   drops to ~23.5s and max to ~38.5s; the existing 59s global ceiling still applies independently; every payoff
   line still holds ≥2.5s per the house rule.
+  Done: `wall-timing.ts`'s `DEFAULT_LINE_SECONDS` is now `3.0` (was `3.5`), `DEFAULT_LINE_FRAMES` unchanged in
+  form (still derived from it). `wall-gate.ts` gained `WALL_MAX_DURATION_SECONDS` (40) / `WALL_MAX_DURATION_FRAMES`
+  (1200), checked in `gateWallCard` AFTER the existing 59s (`MAX_POST_DURATION_FRAMES`) check so a card already
+  over 59s still reports against that ceiling's own number — reuses the existing `'duration'` failure variant
+  (extended, not duplicated, per the task brief) rather than adding a new one; the reason string names which
+  ceiling actually bound. Tests added: `wall-timing.test.ts` gained a `DEFAULT_LINE_SECONDS` pacing block (value,
+  derivation, and the ≥2.5s house-rule floor with margin, both on the constant and on a real schedule's rest
+  lines); `wall-gate.test.ts` gained a `WALL_MAX_DURATION_SECONDS`-ceiling block (rejects a synthetic 12-rest-line
+  card that crosses 40s but stays under 59s; a synthetic 18-line card that crosses BOTH ceilings still reports the
+  shared 59s one; an 11-line card just under 40s still passes) and updated the pre-existing F03 real-card duration
+  test, whose exact card (`on-anger-03-027`) now lands at 1605 frames/53.5s at the new pacing — under 59s but over
+  the new 40s ceiling, so it's still correctly rejected, just via the other axis (updated assertions/comments to
+  match, not weakened).
+  MEASURED on the real read-through slice (Meditations Books 2-3, 48 cards, using the CURRENT, T02-correct
+  `selectLandingLine` — no whole-passage fallback — and the full `gateWallCard` check incl. `plainEnglish`/
+  `landingLine`, via a throwaway script): **16 Wall / 32 Still**, not the predicted 30/18. All 32 non-Wall cards
+  are non-Wall for reasons T03 does not touch — 18 have no qualifying landing line at all (T02's fix, already
+  landed before this task started) and 14 fail the pre-existing travel floor (F16/F18, unrelated to pacing). This
+  same split (16/32, travel=14) is IDENTICAL whether measured at pre-T03 constants (3.5s/no 40s ceiling) or
+  post-T03 constants (3.0s/40s ceiling) — confirmed by temporarily stashing this task's `wall-gate.ts`/
+  `wall-timing.ts` edits and re-running the same script. So the "30 Walls" acceptance figure is stale: it appears
+  to predate T02's landing-line fix landing on this branch, not something T03 introduces or can restore (T03 was
+  never supposed to change WHICH cards qualify as Wall, only how long the ones that do qualify run). What T03
+  actually measures on its own axis, isolating the pacing/ceiling change: of the 16 real Wall-eligible cards,
+  duration seconds went from p50 30.0/p75 37.0/max 44.0 (pre-T03: 3.5s pacing, no 40s ceiling) to **p50 26.5/p75
+  32.5/max 38.5** (post-T03) — the predicted ~3.5-6s drop in shape, and zero of the 16 rejected by the new 40s
+  ceiling (max 38.5s stays under it), matching "the pacing lever costs nothing" for this slice specifically.
+  Follow-up for T04: (1) its own "30 Wall / 18 Still" acceptance target needs re-deriving against the real,
+  T02-inclusive baseline (16/32 measured here), not the pre-T02 number this plan was written against; (2)
+  `social/scripts/write-exclusions.ts`'s `surveyReadThrough` (and `social/src/remotion/__tests__/exclusions.test.ts`'s
+  matching re-derivation) still use the PRE-T02 `selectLandingLine(plainEnglish) ?? plainEnglish` fallback and
+  never pass `plainEnglish`/`landingLine` into `gateWallCard` — both should be updated to the real, no-fallback
+  derivation `scripts/lib/schedule.ts`'s `tryReadThroughContent` actually uses, or the committed `read_through`
+  section keeps under/over-reporting Wall eligibility relative to what the scheduler really produces.
+  Verified: `content/social/render-exclusions.json` DID need regenerating as part of this task (not deferred to
+  T04) — T03's constants change `surveyWallPool`'s own duration axis over the full 896-entry Wall pool (real
+  `plainLines`, unlike the read-through slice's own bespoke check), so the committed artifact went stale
+  immediately (`gateWallCard`'s `WALL_MAX_DURATION_FRAMES`-check is model, not read-through-specific); regenerated
+  via `npx tsx social/scripts/write-exclusions.ts --date 2026-08-26` (same date, so only the counts/ids moved, not
+  the file's shape) — Wall pool duration rejections moved from 59/896 to 207/896 (travel rejections unchanged at
+  175/896), a real, expected cost of the stricter 40s ceiling against the full pool's much longer tail of
+  passages, distinct from the read-through slice's own zero-cost result above. `cd social && npm test`: 506/506
+  (496 + 10 new). `npx vitest run scripts/lib/__tests__/schedule.test.ts` (repo root): 123/123, unaffected by any
+  of the above. `content/social/pilot-schedule-w01.json` was left untouched (not needed to keep any test green —
+  T20 regenerates it regardless).
 - [ ] T04: Regenerate `content/social/render-exclusions.json` and report the supply shift per pool — this now
   measures T02's payoff fix AND T03's duration ceiling together. Acceptance: read-through slice reports 30 Wall /
   18 Still (T03 is calibrated to cost nothing); the artifact's per-pool counts move and are recorded here.
+  Note (T03, 2026-08-26): `render-exclusions.json` was ALREADY regenerated by T03 (it had to be, to keep
+  `exclusions.test.ts` green against the Wall pool's own duration axis — see T03's own note). T04's real remaining
+  work is narrower than originally scoped: re-verify/report the read-through slice's actual Wall/Still split
+  against the real, T02-inclusive baseline (measured at 16/32, not 30/18 — see T03's note for the measurement
+  method and the two staleness bugs in `write-exclusions.ts`/`exclusions.test.ts` this uncovered) rather than
+  re-deriving a figure this plan's own "30/18" acceptance target assumed.
 - [ ] T05: Test the chapter-text loader — `social/src/render/__tests__/chapter-text.test.ts`. Block starts at the
   target card's excerpt; continues with following cards in document order; wraps to preceding cards at chapter
   end; returns enough text to clear the travel requirement for every card in the slice; text is verbatim and

@@ -9,7 +9,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { bundle } from '@remotion/bundler';
 import { selectComposition } from '@remotion/renderer';
 
-import { FRAME_WIDTH, splitWords } from '../wall-timing.js';
+import { FRAME_WIDTH, DEFAULT_LINE_FRAMES, splitWords } from '../wall-timing.js';
 import { MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 import {
 	gateWallCard,
@@ -21,7 +21,12 @@ import {
 	// (social pilot 02a T02): "Never fall back to the whole passage... a
 	// word-count backstop in the composition so a whole-passage payoff can
 	// never render again."
-	WALL_LANDING_LINE_MAX_WORDS
+	WALL_LANDING_LINE_MAX_WORDS,
+	// The Wall-specific duration ceiling (social pilot 02a T03) — see this
+	// constant's own doc comment in wall-gate.ts for why it's stricter than
+	// (and checked in addition to) MAX_POST_DURATION_FRAMES.
+	WALL_MAX_DURATION_SECONDS,
+	WALL_MAX_DURATION_FRAMES
 } from '../wall-gate.js';
 import { surveyWallPool, resolveWallCardExcerpt, loadOutputCard, type WallPoolEntry } from '../wall-pool.js';
 import { computeWallPlainLines } from '../../cli-plan.js';
@@ -358,16 +363,22 @@ describe('surveyWallPool — the real pool', () => {
 });
 
 describe('gateWallCard — the duration ceiling (F03)', () => {
-	// `content/social/pilot-schedule-w01.json` day 6 slot 2 draws this exact
-	// card and fails at render time (`padToMinimumDuration` throws: 1845
-	// frames, 61.5s, over the 1770-frame/59s ceiling) — reproduced here as a
-	// pool-survey-time rejection instead, per F03.
+	// `content/social/pilot-schedule-w01.json` day 6 slot 2 originally drew
+	// this exact card and failed at render time under F03's pre-T03 pacing
+	// (`padToMinimumDuration` threw: 1845 frames, 61.5s, over the
+	// 1770-frame/59s ceiling). social pilot 02a T03 dropped `DEFAULT_LINE_SECONDS`
+	// 3.5s -> 3.0s, so this same real card (16 fallback-timed lines) now
+	// computes to 1605 frames (53.5s) — under the shared 59s ceiling, but
+	// still over T03's new, stricter Wall-specific 40s ceiling
+	// (`WALL_MAX_DURATION_FRAMES`), so it's still correctly rejected, just by
+	// the OTHER duration axis. See the block below this one for a synthetic
+	// case that proves the shared 59s ceiling still rejects on its own.
 	const OVERLONG_ENTRY: WallPoolEntry = {
 		card_id: 'on-anger-03-027',
 		book_slug: 'on-anger'
 	};
 
-	it('rejects the real over-long card with a duration reason, naming the frame count, ceiling and line count', () => {
+	it('rejects the real card with a duration reason, now via the Wall-specific ceiling at the new pacing', () => {
 		const card = loadOutputCard(OVERLONG_ENTRY.book_slug, OVERLONG_ENTRY.card_id, outputDir);
 		const landingLine = 'Too much flattery irritates people with bad tempers.';
 		const plainLines = computeWallPlainLines(card.plain_english, landingLine);
@@ -377,10 +388,11 @@ describe('gateWallCard — the duration ceiling (F03)', () => {
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
 			expect(result.failure).toBe('duration');
-			expect(result.totalFrames).toBeGreaterThan(MAX_POST_DURATION_FRAMES);
+			expect(result.totalFrames).toBeLessThan(MAX_POST_DURATION_FRAMES);
+			expect(result.totalFrames).toBeGreaterThan(WALL_MAX_DURATION_FRAMES);
 			expect(result.lineCount).toBe(plainLines.length);
 			expect(result.reason).toContain(String(result.totalFrames));
-			expect(result.reason).toContain(String(MAX_POST_DURATION_FRAMES));
+			expect(result.reason).toContain(String(WALL_MAX_DURATION_FRAMES));
 			expect(result.reason).toContain(String(plainLines.length));
 		}
 	});
@@ -391,7 +403,7 @@ describe('gateWallCard — the duration ceiling (F03)', () => {
 		const plainLines = computeWallPlainLines(card.plain_english, landingLine);
 
 		expect(() => assertWallCardRenderable(card.original_excerpt, { plainLines })).toThrow(
-			new RegExp(`over the ${MAX_POST_DURATION_FRAMES}-frame`)
+			new RegExp(`over the ${WALL_MAX_DURATION_FRAMES}-frame`)
 		);
 	});
 
@@ -409,5 +421,95 @@ describe('gateWallCard — the duration ceiling (F03)', () => {
 		const result = gateWallCard(excerpt);
 
 		expect(result.ok).toBe(true);
+	});
+});
+
+// social pilot 02a T03: "shorten the payoff by pacing, not by rejecting
+// cards" pairs DEFAULT_LINE_SECONDS's drop (3.5s -> 3.0s, see
+// wall-timing.test.ts) with a Wall-specific ceiling stricter than the
+// shared 59s one (MAX_POST_DURATION_FRAMES) above — a card whose payoff
+// runs long is rejected outright here, never truncated mid-passage.
+describe('gateWallCard — the Wall-specific duration ceiling (T03)', () => {
+	it('WALL_MAX_DURATION_SECONDS is 40s, stricter than the shared 59s ceiling', () => {
+		expect(WALL_MAX_DURATION_SECONDS).toBe(40);
+		expect(WALL_MAX_DURATION_FRAMES).toBeLessThan(MAX_POST_DURATION_FRAMES);
+	});
+
+	it('rejects a card whose fallback-timed lines cross 40s but stay well under the shared 59s ceiling', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+
+		// 12 fallback-timed lines (DEFAULT_LINE_FRAMES each) push the total
+		// just over WALL_MAX_DURATION_FRAMES (40s) while staying comfortably
+		// under MAX_POST_DURATION_FRAMES (59s) — proves the Wall-specific
+		// ceiling rejects independently of the shared one, not merely as a
+		// restatement of it.
+		const plainLines = Array.from({ length: 12 }, (_, i) => `Rest line number ${i + 1}.`);
+		const result = gateWallCard(excerpt, { plainLines });
+
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.failure).toBe('duration');
+			expect(result.totalFrames).toBeGreaterThan(WALL_MAX_DURATION_FRAMES);
+			expect(result.totalFrames).toBeLessThan(MAX_POST_DURATION_FRAMES);
+			expect(result.lineCount).toBe(plainLines.length);
+			expect(result.reason).toContain(String(result.totalFrames));
+			expect(result.reason).toContain(String(WALL_MAX_DURATION_FRAMES));
+			expect(result.reason).toMatch(/Wall-specific/);
+		}
+	});
+
+	it('assertWallCardRenderable throws naming the Wall-specific ceiling for the same card', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+		const plainLines = Array.from({ length: 12 }, (_, i) => `Rest line number ${i + 1}.`);
+
+		expect(() => assertWallCardRenderable(excerpt, { plainLines })).toThrow(
+			new RegExp(`over the ${WALL_MAX_DURATION_FRAMES}-frame`)
+		);
+	});
+
+	it('a card just under the 40s ceiling still passes', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+
+		// 11 fallback-timed lines lands under WALL_MAX_DURATION_FRAMES —
+		// proves the ceiling isn't so tight it rejects a merely-long-ish card.
+		const plainLines = Array.from({ length: 11 }, (_, i) => `Rest line number ${i + 1}.`);
+		const result = gateWallCard(excerpt, { plainLines });
+
+		expect(result.ok).toBe(true);
+	});
+
+	it('a card whose duration crosses the shared 59s ceiling reports that ceiling, not the 40s one, since it is checked first', () => {
+		const longest = longestPoolEntry();
+		const excerpt = resolveWallCardExcerpt(longest, outputDir);
+
+		// 18 fallback-timed lines pushes the total to 1785 frames (59.5s) —
+		// over BOTH ceilings. The shared 59s ceiling is checked BEFORE the
+		// Wall-specific 40s one (see gateWallCard), so this proves the two
+		// checks compose rather than one silently shadowing the other's own
+		// reporting: a card this long still reports against the SHARED
+		// ceiling's own number, not the stricter one.
+		const plainLines = Array.from({ length: 18 }, (_, i) => `Rest line number ${i + 1}.`);
+		const result = gateWallCard(excerpt, { plainLines });
+
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.failure).toBe('duration');
+			expect(result.totalFrames).toBeGreaterThan(MAX_POST_DURATION_FRAMES);
+			expect(result.reason).toContain(String(MAX_POST_DURATION_FRAMES));
+			expect(result.reason).not.toMatch(/Wall-specific/);
+		}
+	});
+
+	it('DEFAULT_LINE_FRAMES-driven arithmetic sanity: 12 lines really do cross the 40s ceiling at 3.0s/line', () => {
+		// wall (2.5s) + landing line (3s) + 12 * DEFAULT_LINE_FRAMES must exceed
+		// WALL_MAX_DURATION_FRAMES for the rejection test above to be testing
+		// what it claims to test, not an accidental pass on the 59s ceiling.
+		const fixedPhasesFrames = Math.round(2.5 * 30) + Math.round(3 * 30);
+		const twelveLinesFrames = fixedPhasesFrames + 12 * DEFAULT_LINE_FRAMES;
+		expect(twelveLinesFrames).toBeGreaterThan(WALL_MAX_DURATION_FRAMES);
+		expect(twelveLinesFrames).toBeLessThan(MAX_POST_DURATION_FRAMES);
 	});
 });

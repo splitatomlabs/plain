@@ -28,6 +28,7 @@ import {
 	WALL_SCROLL_PX_PER_FRAME,
 	WALL_SECONDS,
 	LANDING_LINE_FRAMES,
+	DEFAULT_LINE_SECONDS,
 	DEFAULT_LINE_FRAMES,
 	type NarrationLineTiming
 } from '../wall-timing.js';
@@ -201,6 +202,36 @@ describe('T18 — the composed total clears the 15s MP4 duration floor', () => {
 		expect(timing.restLines[0].endFrame - timing.restLines[0].startFrame).toBe(DEFAULT_LINE_FRAMES);
 		expect(timing.restLines[1].endFrame - timing.restLines[1].startFrame).toBeGreaterThanOrEqual(DEFAULT_LINE_FRAMES);
 		expect(timing.totalFrames).toBe(timing.restLines[1].endFrame);
+	});
+});
+
+// social pilot 02a T03: "shorten the payoff by pacing, not by rejecting
+// cards" — DEFAULT_LINE_SECONDS dropped from 3.5s to 3.0s, paired with
+// wall-gate.ts's new WALL_MAX_DURATION_SECONDS ceiling (see that file's own
+// test coverage for the ceiling side of this change).
+describe('social pilot 02a T03 — the payoff pacing fallback', () => {
+	it('DEFAULT_LINE_SECONDS is 3.0s, not the pre-T03 3.5s', () => {
+		expect(DEFAULT_LINE_SECONDS).toBe(3.0);
+	});
+
+	it('DEFAULT_LINE_FRAMES is derived from DEFAULT_LINE_SECONDS at FPS, not hardcoded', () => {
+		expect(DEFAULT_LINE_FRAMES).toBe(Math.round(DEFAULT_LINE_SECONDS * FPS));
+	});
+
+	it('still clears the house rule\'s >=2.5s motionless-payoff floor, with margin', () => {
+		// The house rule: "payoff frame motionless >= 2.5s". 3.0s leaves 0.5s
+		// of margin — this is a floor to clear, not a target to sit exactly on.
+		expect(DEFAULT_LINE_SECONDS).toBeGreaterThanOrEqual(2.5);
+		expect(DEFAULT_LINE_SECONDS).toBeGreaterThan(2.5);
+	});
+
+	it('every fallback-timed rest line in a real schedule holds for at least 2.5s (75 frames)', () => {
+		const shortLines = ['A short first line.', 'A short second line.', 'A short third line.'];
+		const timing = computeWallTiming({ originalExcerpt: 'one two three', plainLines: shortLines });
+		const houseRuleFloorFrames = Math.round(2.5 * FPS);
+		for (const line of timing.restLines) {
+			expect(line.endFrame - line.startFrame).toBeGreaterThanOrEqual(houseRuleFloorFrames);
+		}
 	});
 });
 
