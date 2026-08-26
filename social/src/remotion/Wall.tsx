@@ -16,8 +16,7 @@ import {
 } from './wall-openings.js';
 import {
 	computeWallTiming,
-	splitWords,
-	wallScaleAtFrame,
+	wallScrollOffsetAtFrame,
 	WALL_LINE_HEIGHT_RATIO,
 	FRAME_HEIGHT,
 	PAYOFF_BOX_WIDTH,
@@ -61,7 +60,7 @@ export interface WallProps extends Record<string, unknown> {
 	 * Which of the Wall's three OPENING treatments (T17) this render uses —
 	 * `standard` (the packed wall exactly as it renders today), `countdown`
 	 * ("190 -> 97", the original's word count counting down live in step
-	 * with the karaoke sweep to the plain word count), or `grade`
+	 * with the scroll to the plain word count — see F15), or `grade`
 	 * ("Grade 14", the original's computed reading grade as a bare
 	 * measurement — original only). See `wall-openings.ts`. Defaults to
 	 * `standard` so every existing caller and test is unaffected — this
@@ -88,16 +87,23 @@ export interface WallProps extends Record<string, unknown> {
 export const SERIF_STACK = "'Literata Variable', 'Literata', Georgia, serif";
 
 /**
- * The Wall — the flagship. Frame 0 is already a packed, mid-push-in wall of
- * archaic text, silent, with a karaoke highlight racing past reading speed.
- * A hard cut (no transition of any kind) drops into a motionless plain
- * payoff: one still sentence held a full 3s, then the rest of the passage
- * one still line at a time.
+ * The Wall — the flagship. Frame 0 is already a packed wall of archaic text,
+ * silent, SCROLLING past at a fixed rate already at full velocity (see
+ * `wallScrollOffsetAtFrame` in `wall-timing.ts`) — faster than anyone can
+ * read, and the hard cut always lands mid-passage, never at the end (see
+ * `WALL_SCROLL_RATE_PX_PER_SEC`'s doc comment for the arithmetic that
+ * guarantees it). A hard cut (no transition of any kind) drops into a
+ * motionless plain payoff: one still sentence held a full 3s, then the rest
+ * of the passage one still line at a time.
+ *
+ * (F15, social pilot 02: this replaces an earlier version that used a
+ * 1.02->1.05 push-in zoom plus a karaoke highlight — reviewed on a phone,
+ * nothing actually travelled. The scroll is the whole motion now; there is
+ * no separate highlight.)
  *
  * Every frame boundary lives in `wall-timing.ts` — this component only
  * turns those numbers into JSX. No overshoot easing anywhere (remotion's
- * spring function is forbidden here): linear or ease-out only, per the
- * house rule.
+ * spring function is forbidden here): linear only, per the house rule.
  */
 export const Wall: React.FC<WallProps> = (props) => {
 	const frame = useCurrentFrame();
@@ -150,8 +156,9 @@ export const Wall: React.FC<WallProps> = (props) => {
 				// (`timing.wall.endFrame` itself is already the payoff phase —
 				// see the `frame < timing.landingLine.endFrame` branch below),
 				// so `countdownValueAtFrame` lands exactly on
-				// `plainWordCount` there, not one frame late.
-				const value = countdownValueAtFrame(frame, timing.karaoke, timing.wall.endFrame - 1, openingData);
+				// `plainWordCount` there, not one frame late. Driven by scroll
+				// progress (F15) — see `wall-openings.ts`'s doc comment.
+				const value = countdownValueAtFrame(frame, timing.wall.endFrame - 1, openingData);
 				openingBadge = <WallOpeningBadge value={formatCountdownLabel(value)} accent={accent} />;
 			} else {
 				// `grade`: ORIGINAL ONLY, bare measurement — never the plain
@@ -191,15 +198,28 @@ export const Wall: React.FC<WallProps> = (props) => {
 };
 
 /**
- * Phase 1 — the wall itself. Set edge to edge with no margins, already
- * mid-push-in at frame 0, karaoke sweep tinting swept words in the author's
- * accent behind ink text that never changes colour.
+ * Phase 1 — the wall itself. Set edge to edge with no left/right margins,
+ * SCROLLING past at a fixed, linear rate already at full velocity at frame 0
+ * (see `wallScrollOffsetAtFrame` in `wall-timing.ts`) — there is no
+ * highlight of any kind (F15 dropped the karaoke sweep entirely: the scroll
+ * itself is the motion, and a per-word tint would now just compete with it).
  *
  * Layout comes entirely from `computeWallLayout` — this function renders
- * exactly the font size, line height and inset that module resolved; it
- * never recomputes its own fit, so the "packed edge to edge, no clipped
- * glyphs" geometry tested in `wall-timing.test.ts` is the geometry that
- * actually ships.
+ * exactly the font size and inset that module resolved; it never recomputes
+ * its own fit, so the "block runs 2-3 screen-heights tall, no clipped
+ * left/right glyphs" geometry tested in `wall-timing.test.ts` is the
+ * geometry that actually ships.
+ *
+ * `text` is rendered as a SINGLE flowed paragraph rather than a per-word
+ * span map — there is nothing left to tint per word now that the karaoke
+ * highlight is gone, so the extra DOM structure would be pure overhead.
+ *
+ * `accent` and `timing` are accepted but unused by this function's own
+ * rendering — kept in the signature (rather than removed) purely so
+ * `Question.tsx`'s existing call site, which reuses this exact component for
+ * its own archaic-wall phase, needs no change here. Retained as parameters,
+ * not dropped, so a future caller that DOES need them (e.g. a per-format
+ * accent treatment) has them already threaded through.
  *
  * Exported (additively) so `Question.tsx` reuses this exact JSX for its
  * archaic-wall phase rather than forking a second copy — see that file's
@@ -209,18 +229,15 @@ export const Wall: React.FC<WallProps> = (props) => {
 export function WallPhase({
 	frame,
 	text,
-	accent,
-	timing,
 	layout
 }: {
 	frame: number;
 	text: string;
-	accent: string;
-	timing: WallTimingSchedule;
+	accent?: string;
+	timing?: WallTimingSchedule;
 	layout: WallLayout;
 }): React.ReactElement {
-	const words = splitWords(text);
-	const scale = wallScaleAtFrame(frame, timing.wall.endFrame);
+	const offset = wallScrollOffsetAtFrame(frame);
 
 	return (
 		<AbsoluteFill
@@ -228,16 +245,17 @@ export function WallPhase({
 				background: PAPER,
 				overflow: 'hidden',
 				boxSizing: 'border-box',
-				padding: layout.insetPx,
-				display: 'flex',
-				alignItems: 'center'
+				// Horizontal inset only — never top/bottom, so the block's top
+				// sits exactly at the frame's top at frame 0 (offset 0) and the
+				// scroll crops top/bottom by design as `frame` advances. See
+				// `WALL_INSET_PX`'s doc comment in `wall-timing.ts`.
+				padding: `0 ${layout.insetPx}px`
 			}}
 		>
 			<div
 				style={{
 					width: '100%',
-					transform: `scale(${scale})`,
-					transformOrigin: '50% 50%'
+					transform: `translateY(-${offset}px)`
 				}}
 			>
 				<p
@@ -251,21 +269,7 @@ export function WallPhase({
 						padding: 0
 					}}
 				>
-					{words.map((word, i) => {
-						const w = timing.karaoke[i];
-						const active = w ? frame >= w.startFrame && frame < w.endFrame : false;
-						const swept = w ? frame >= w.startFrame : false;
-						// Quiet but clearly the author's accent, never a neutral grey:
-						// a stronger fill on the current word, a visible (not faint)
-						// trailing tint on words the sweep has already passed.
-						const background = active ? `${accent}CC` : swept ? `${accent}66` : 'transparent';
-						return (
-							<span key={i} style={{ background, color: INK }}>
-								{word}
-								{i < words.length - 1 ? ' ' : ''}
-							</span>
-						);
-					})}
+					{text}
 				</p>
 			</div>
 		</AbsoluteFill>

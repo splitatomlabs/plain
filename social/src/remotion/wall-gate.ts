@@ -1,18 +1,52 @@
 /**
- * The Wall's legibility gate (T06).
+ * The Wall's renderability gate.
  *
- * `wall-timing.ts`'s `computeWallLayout` auto-fits archaic text into the
- * wall box, up to `WALL_MAX_FONT`, down to `WALL_MIN_FONT` — but a fit that
- * bottoms out at a small size is still "a fit". The house rule is that the
- * wall must be ILLEGIBLE because of density, archaism and the racing
- * highlight, never because the type itself has shrunk below what a phone
- * screen can actually resolve. This module is the other side of that rule:
- * it observes the layout T05 already computed and REJECTS any card whose
- * fitted size falls under the legibility floor, rather than shrinking
- * further or rendering anyway.
+ * social pilot 02 F16 (2026-08-26) rewrote this module's whole objective.
+ * T05/T06 originally auto-fit archaic text into the wall box up to some
+ * `WALL_MAX_FONT`, down to some `WALL_MIN_FONT`, and rejected a card whose
+ * fitted size bottomed out too small to read — the risk was a card too LONG
+ * to fit ONE screen legibly. F15 replaced the auto-fit with a single FIXED
+ * `WALL_FONT_SIZE` and turned the wall into a SCROLL, which inverted that
+ * risk entirely: since every card renders at the exact same size, no card
+ * can ever fail to fit legibly. The risk F16 identified instead was a card
+ * too SHORT to keep scrolling for the whole `WALL_SECONDS` wall phase,
+ * whose block would finish travelling — its bottom edge reaching the
+ * frame's bottom edge — BEFORE the hard cut, breaking the format's "you
+ * never even reach the end" invariant. F16 gated that axis with a single
+ * fixed-size travel floor (`WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`, below) — but a
+ * SINGLE fixed font size can only clear that floor above ~130 words, so it
+ * cost 76% of the real Wall pool (219/896 renderable) and broke the
+ * read-through outright (no run of 7+ consecutive renderable cards existed
+ * anywhere in the corpus).
  *
- * Nothing here re-derives or tunes the T05 layout numbers — see
- * `computeWallLayout` for the single source of truth on font fitting.
+ * F18 (2026-08-26) keeps the travel floor as the axis (still derived from
+ * the same scroll geometry, still named `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`
+ * below) but fixes the ROOT CAUSE: `computeWallLayout` (`wall-timing.ts`) no
+ * longer uses one fixed font size — it fits each card's own size to a
+ * TRAVEL TARGET (`WALL_TARGET_BLOCK_HEIGHT_PX`, comfortably above the
+ * travel floor) via `fitWallFontSize`'s binary search, clamped to
+ * `[WALL_FONT_FLOOR_PX, WALL_FONT_CAP_PX]`. `gateWallCard` below now checks
+ * `layout.fits` — false only when even `WALL_FONT_CAP_PX` (the largest
+ * allowed, "any bigger reads as large-print" size) can't reach the target,
+ * i.e. the card is too short to set at all without abandoning the wall's
+ * dense-set identity. A card that DOES fit is, by the target's own margin
+ * over the travel floor, structurally guaranteed to clear
+ * `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` too — see `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`'s
+ * doc comment for why that check is kept as a belt-and-braces module-load
+ * invariant rather than dropped.
+ *
+ * The legibility floor (`WALL_MIN_LEGIBLE_FONT_PX`, moved to and now defined
+ * in `wall-timing.ts` — re-exported here unchanged for every existing
+ * caller) does double duty since F18: it's still `question-gate.ts`'s and
+ * `objection-gate.ts`'s own floor for their real per-card `fitFontSize`
+ * searches, AND it's now `fitWallFontSize`'s own `WALL_FONT_FLOOR_PX` too —
+ * restoring (for a different mechanical reason) the role it played
+ * pre-F15/F16, before a fixed wall size made it briefly dead weight for the
+ * Wall specifically.
+ *
+ * Nothing here re-derives or tunes `wall-timing.ts`'s layout numbers — see
+ * `computeWallLayout`/`fitWallFontSize` for the single source of truth on
+ * font size and block geometry.
  *
  * Deliberately dependency-free (no `node:fs`, nothing Node-only): both
  * `Wall.tsx` and `Root.tsx`'s `calculateMetadata` import from this module
@@ -25,57 +59,62 @@ import {
 	computeWallRawTotalFrames,
 	splitWords,
 	FPS,
-	FRAME_WIDTH,
-	WALL_MIN_FONT,
+	FRAME_HEIGHT,
+	WALL_SECONDS,
+	WALL_SCROLL_RATE_PX_PER_SEC,
+	WALL_TARGET_BLOCK_HEIGHT_PX,
+	WALL_FONT_CAP_PX,
+	WALL_REFERENCE_VIEWPORT_WIDTH,
+	WALL_MIN_LEGIBLE_FONT_PX,
 	type NarrationLineTiming,
 	type WallLayout
 } from './wall-timing.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from './duration-bounds.js';
 
 // ---------------------------------------------------------------------------
-// The legibility floor
+// The legibility floor — MOVED to `wall-timing.ts` in F18 (it's now also
+// `fitWallFontSize`'s own `WALL_FONT_FLOOR_PX` — see this module's doc
+// comment). Re-exported here, unchanged, for every caller that already
+// imports it from this module (`question-gate.ts` imports its own
+// independent floor; `objection-gate.ts` imports THIS one, via
+// `OBJECTION_REPLY_MIN_LEGIBLE_FONT_PX`) and every test that does the same.
+// ---------------------------------------------------------------------------
+
+export { WALL_REFERENCE_VIEWPORT_WIDTH, WALL_MIN_LEGIBLE_FONT_PX };
+
+// ---------------------------------------------------------------------------
+// The travel floor — the axis that actually governs The Wall (F16, kept by F18)
 // ---------------------------------------------------------------------------
 
 /**
- * CSS width, in px, of the reference phone the legibility floor is set
- * against — an iPhone 12/13/14-class device (390 CSS px logical width).
- * This is the same class of screen the wall is watched on: a story/reel
- * viewed full-bleed on a phone, not a desktop preview.
+ * The minimum `WallLayout.blockHeight` (px) a card's fitted archaic text
+ * must exceed for the scroll to survive the full `WALL_SECONDS` wall phase
+ * without finishing before the hard cut. Derived directly from the same
+ * geometry `wall-timing.ts`'s `wallScrollOffsetAtFrame` uses, not
+ * hardcoded: at the LAST wall frame the scroll has travelled
+ * `WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS` px, and the block's bottom
+ * edge must still sit below the frame's bottom edge — i.e.
+ * `blockHeight - (WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS) > FRAME_HEIGHT`,
+ * which rearranges to `blockHeight > FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC
+ * * WALL_SECONDS` — exactly this constant. At F16/F18's numbers
+ * (`FRAME_HEIGHT` 1920, `WALL_SCROLL_RATE_PX_PER_SEC` 500, `WALL_SECONDS`
+ * 2.5): `1920 + 500 * 2.5` = `3170`.
+ *
+ * F18 no longer checks this directly in `gateWallCard` (which now checks
+ * `layout.fits`, driven by `WALL_TARGET_BLOCK_HEIGHT_PX` instead — see this
+ * module's doc comment) — kept, exported, and asserted as a module-load
+ * invariant below purely as a belt-and-braces cross-check: a card
+ * `fitWallFontSize` accepts is only SUPPOSED to clear this by construction
+ * (the target sits safely above it), and this constant is what lets that
+ * assumption be verified rather than merely assumed.
  */
-export const WALL_REFERENCE_VIEWPORT_WIDTH = 390;
+export const WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX = FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS;
 
-/**
- * The smallest CSS font size treated as legible body text on a phone —
- * below this, small text reads as a grey smear rather than words, per the
- * house rule that illegibility must come from density and archaism, not
- * from undersized type.
- */
-const WALL_MIN_LEGIBLE_CSS_PX = 14;
-
-/**
- * `WALL_MIN_LEGIBLE_CSS_PX` converted into the composition's 1080-wide
- * frame space, rounded UP so the floor is never more permissive than the
- * CSS px it stands in for. Derived from `WALL_MIN_LEGIBLE_CSS_PX`,
- * `FRAME_WIDTH` and `WALL_REFERENCE_VIEWPORT_WIDTH` rather than hardcoded,
- * so the ~39px figure cannot silently drift from its definition:
- * `14 * (1080 / 390)` ≈ 38.8 → 39.
- */
-export const WALL_MIN_LEGIBLE_FONT_PX = Math.ceil(
-	WALL_MIN_LEGIBLE_CSS_PX * (FRAME_WIDTH / WALL_REFERENCE_VIEWPORT_WIDTH)
-);
-
-// `WALL_MIN_FONT` (16) is `fitFontSize`'s absolute fallback — what it
-// returns when nothing in `[WALL_MIN_FONT, WALL_MAX_FONT]` fits at all. As
-// long as that fallback sits below the legibility floor (it does: 16 < 39),
-// "does not fit at all" and "fits, but too small" are the same observable
-// failure — both surface as `layout.fontSize < WALL_MIN_LEGIBLE_FONT_PX` —
-// so `gateWallCard` needs only one check. This assertion makes that
-// assumption fail loudly instead of silently if either constant ever moves.
-if (WALL_MIN_FONT >= WALL_MIN_LEGIBLE_FONT_PX) {
+if (WALL_TARGET_BLOCK_HEIGHT_PX <= WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX) {
 	throw new Error(
-		`invariant violated: WALL_MIN_FONT (${WALL_MIN_FONT}) must stay below WALL_MIN_LEGIBLE_FONT_PX ` +
-			`(${WALL_MIN_LEGIBLE_FONT_PX}) — otherwise a card that fails to fit at all would report a ` +
-			`fontSize the gate mistakes for a legible fit.`
+		`invariant violated: WALL_TARGET_BLOCK_HEIGHT_PX (${WALL_TARGET_BLOCK_HEIGHT_PX}) must stay above ` +
+			`WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX (${WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX}) — otherwise a card ` +
+			'`fitWallFontSize` accepts as reaching the target could still finish scrolling before the cut.'
 	);
 }
 
@@ -106,8 +145,8 @@ export type WallGateResult =
 			ok: false;
 			reason: string;
 			/** Which floor/ceiling rejected the card — lets callers (e.g. `surveyWallPool`) tally the two separately. */
-			failure: 'legibility' | 'duration';
-			fontSize?: number;
+			failure: 'travel' | 'duration';
+			blockHeight?: number;
 			wordCount?: number;
 			totalFrames?: number;
 			lineCount?: number;
@@ -115,31 +154,38 @@ export type WallGateResult =
 
 /**
  * Runs `computeWallLayout` for `originalExcerpt` and rejects it when EITHER:
- *   1. the fitted font size falls below `WALL_MIN_LEGIBLE_FONT_PX` (which,
- *      per the invariant above, also covers the "did not fit at all" case);
+ *   1. `layout.fits` is false — even `WALL_FONT_CAP_PX` (the largest font
+ *      `fitWallFontSize` will use before a card would read as large-print)
+ *      cannot reach `WALL_TARGET_BLOCK_HEIGHT_PX`, so the card cannot be set
+ *      as a scroll that both survives the wall phase without finishing
+ *      before the cut AND keeps the wall's dense-set identity (F16 found
+ *      this axis; F18 re-derived it around a per-card fit instead of one
+ *      fixed size — see `wall-timing.ts`'s `fitWallFontSize`);
  *   2. the composition's pre-padding duration (wall + landing line + every
  *      rest line from `content.plainLines`) exceeds `MAX_POST_DURATION_FRAMES`
  *      — the same ceiling `padToMinimumDuration` enforces, but caught here,
  *      at pool-survey time, instead of at render time (see `duration-bounds.ts`
  *      and F03).
- * Never shrinks below the floor, never trims to the ceiling, and never
- * renders anyway — a rejection is a rejection, to be excluded upstream (see
- * `surveyWallPool`) or to fail a render outright (see
+ * Never renders a card whose scroll would finish early, and never trims to
+ * the duration ceiling — a rejection is a rejection, to be excluded
+ * upstream (see `surveyWallPool`) or to fail a render outright (see
  * `assertWallCardRenderable`).
  */
 export function gateWallCard(originalExcerpt: string, content: WallGateContentInput = {}): WallGateResult {
 	const layout = computeWallLayout(originalExcerpt);
 	const wordCount = splitWords(originalExcerpt).length;
 
-	if (layout.fontSize < WALL_MIN_LEGIBLE_FONT_PX) {
+	if (!layout.fits) {
 		return {
 			ok: false,
-			failure: 'legibility',
+			failure: 'travel',
 			reason:
-				`Wall card rejected: ${wordCount} words fit the wall box only at ${layout.fontSize}px, ` +
-				`below the ${WALL_MIN_LEGIBLE_FONT_PX}px legibility floor (the 1080-frame equivalent of ` +
-				`${WALL_MIN_LEGIBLE_CSS_PX}px on a ${WALL_REFERENCE_VIEWPORT_WIDTH}px-wide reference phone).`,
-			fontSize: layout.fontSize,
+				`Wall card rejected: ${wordCount} words reach only ${Math.round(layout.blockHeight)}px even at the ` +
+				`${WALL_FONT_CAP_PX}px font cap, short of the ${WALL_TARGET_BLOCK_HEIGHT_PX}px target block height ` +
+				`(the minimum with enough margin over the ${WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX}px travel floor for the ` +
+				`scroll to survive ${WALL_SECONDS}s at ${WALL_SCROLL_RATE_PX_PER_SEC}px/s without finishing before ` +
+				`the cut) — setting it any larger would read as large-print rather than a dense wall.`,
+			blockHeight: layout.blockHeight,
 			wordCount
 		};
 	}
@@ -170,8 +216,8 @@ export function gateWallCard(originalExcerpt: string, content: WallGateContentIn
 
 /**
  * `gateWallCard`, but throws instead of returning a result — the shape a
- * render pipeline needs so an over-long or illegible card fails the render
- * outright rather than producing a bad frame. Wired into `Root.tsx`'s
+ * render pipeline needs so an un-renderable card fails the render outright
+ * rather than producing a bad frame. Wired into `Root.tsx`'s
  * `calculateMetadata` (which Remotion runs before any frame is rendered)
  * and into `Wall.tsx` itself, so both the composition-selection path and a
  * direct render of the component reject the same cards.

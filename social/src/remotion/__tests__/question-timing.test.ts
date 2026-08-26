@@ -18,7 +18,7 @@ import {
 	ANSWER_SECONDS,
 	ANSWER_MIN_SECONDS
 } from '../question-timing.js';
-import { WALL_FRAMES, KARAOKE_WPM, FPS } from '../wall-timing.js';
+import { WALL_FRAMES, WALL_SCROLL_RATE_PX_PER_SEC, FPS } from '../wall-timing.js';
 import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
 import { FORBIDDEN_TESTING_VOCABULARY } from '../question-gate.js';
 import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
@@ -42,16 +42,19 @@ const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
 const outputDir = path.join(repoRoot, 'content', 'output');
 
 // --- Real fixture — a passing entry from content/social/premises/question.json ---
-// discourses-18-010: drift_verdict "answers", standalone_intelligible true,
+// discourses-64-006: drift_verdict "answers", standalone_intelligible true,
 // answer_has_substance true — i.e. it PASSES the pool's own gate flags, not
-// one of the entries the pool file records as a failure.
-
+// one of the entries the pool file records as a failure. F16 (2026-08-26):
+// swapped from discourses-18-010, whose 152-word archaic excerpt no longer
+// clears `wall-gate.ts`'s new travel floor at the smaller 76px/500px-s
+// geometry (blockHeight 3040px, under the 3170px floor) — this fixture's
+// 176-word excerpt clears it with real margin (blockHeight 3420px).
 const FIXTURE_ENTRY: WallPoolEntry = {
-	card_id: 'discourses-18-010',
+	card_id: 'discourses-64-006',
 	book_slug: 'discourses'
 };
-const FIXTURE_QUESTION = 'What is a master anyway?';
-const FIXTURE_ANSWER = "One person can't really master another.";
+const FIXTURE_QUESTION = 'You want me to trust you with my business?';
+const FIXTURE_ANSWER = "You're a man who has corrupted his own will.";
 const FIXTURE_ORIGINAL_EXCERPT = resolveWallCardExcerpt(FIXTURE_ENTRY, outputDir);
 const FIXTURE_AUTHOR = 'epictetus';
 
@@ -98,8 +101,8 @@ describe('phase 2 — the archaic original arrives as the moving wall', () => {
 		expect(timing.wall.endFrame - timing.wall.startFrame).toBe(WALL_FRAMES);
 	});
 
-	it('reuses KARAOKE_WPM (320) as the authoritative sweep rate, imported not copied', () => {
-		expect(KARAOKE_WPM).toBe(320);
+	it('reuses WALL_SCROLL_RATE_PX_PER_SEC (500) as the authoritative scroll rate, imported not copied (F15/F16)', () => {
+		expect(WALL_SCROLL_RATE_PX_PER_SEC).toBe(500);
 	});
 
 	it('question-timing.ts imports WALL_FRAMES from wall-timing.js rather than redefining it', () => {

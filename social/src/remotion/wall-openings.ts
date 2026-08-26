@@ -13,7 +13,7 @@
  *   - `standard`  — the packed wall exactly as `Wall.tsx` renders it today.
  *     Unchanged.
  *   - `countdown` — "190 -> 97": the original's word count as a large
- *     numeral, counting down live in step with the karaoke sweep and
+ *     numeral, counting down live in step with the wall's scroll (F15) and
  *     landing on the plain version's word count, so the first frame
  *     carries a number instead of a wall.
  *   - `grade`     — "Grade 14": the original's computed reading grade,
@@ -38,7 +38,7 @@
 // content pipeline.
 import rs from 'text-readability';
 
-import { splitWords, type KaraokeWordTiming } from './wall-timing.js';
+import { splitWords, wallScrollOffsetAtFrame } from './wall-timing.js';
 
 export type WallOpening = 'standard' | 'countdown' | 'grade';
 
@@ -87,30 +87,17 @@ export function computeOpeningData(originalExcerpt: string, plainText: string): 
 }
 
 // ---------------------------------------------------------------------------
-// Countdown numeral — tracks the karaoke sweep, not a second clock
+// Countdown numeral — tracks SCROLL PROGRESS, not a second clock
 // ---------------------------------------------------------------------------
-
-/**
- * How many of `karaoke`'s words have started sweeping by `frame` — the SAME
- * word-index-over-time signal `WallPhase` (`Wall.tsx`) reads per word
- * (`frame >= w.startFrame`) to decide which spans carry the trailing accent
- * tint. The countdown numeral below reads this identical count, so it
- * structurally cannot drift out of step with the visual sweep — it is not a
- * second, independently-timed animation. `karaoke` is sorted by ascending
- * `startFrame` (see `computeKaraokeWordTimings`), so this can stop at the
- * first not-yet-swept word.
- */
-export function karaokeSweptWordCount(frame: number, karaoke: readonly KaraokeWordTiming[]): number {
-	let count = 0;
-	for (const word of karaoke) {
-		if (frame >= word.startFrame) {
-			count++;
-		} else {
-			break;
-		}
-	}
-	return count;
-}
+//
+// social pilot 02 F15 (2026-08-26): the countdown numeral used to track how
+// many words the karaoke highlight had swept. The karaoke highlight is gone
+// — the wall's only motion now is the scroll (`wallScrollOffsetAtFrame` in
+// `wall-timing.ts`) — so the numeral is re-derived from SCROLL PROGRESS
+// instead: the same fraction-of-the-way-through-the-wall-phase signal that
+// now drives what's on screen. It still starts at `originalWordCount` at
+// frame 0 and lands exactly on `plainWordCount` at the cut (CONSTRAINT 6's
+// "factually true" numerals, unchanged).
 
 /**
  * The countdown numeral's value at `frame` within the wall phase —
@@ -119,43 +106,35 @@ export function karaokeSweptWordCount(frame: number, karaoke: readonly KaraokeWo
  * renders — `Wall.tsx` passes `timing.wall.endFrame - 1`, since
  * `timing.wall.endFrame` itself is already the payoff phase).
  *
- * The interpolation parameter is `karaokeSweptWordCount`'s own progress
- * (words swept so far, over words swept by `cutFrame`) — NOT a raw
- * word-count subtraction. At `KARAOKE_WPM` the sweep only reaches a
- * handful of the excerpt's words before the cut (see `wall-timing.ts`'s
- * `KARAOKE_WPM` doc comment: "the wall outruns the viewer"), so subtracting
- * swept words directly from `originalWordCount` would never reach anywhere
- * near `plainWordCount`. Normalizing the SAME swept-word signal against its
- * own value at the cut keeps the numeral driven by the karaoke sweep
- * (in step with it) while still landing exactly on the two real word
- * counts at the two ends of the window.
+ * The interpolation parameter is scroll progress — `wallScrollOffsetAtFrame`
+ * at `frame`, over its own value at `cutFrame` — NOT a raw word-count
+ * subtraction and not a frame-count fraction: `wallScrollOffsetAtFrame` is
+ * linear in `frame` (see that function's doc comment), so in practice this
+ * reduces to the same thing as a frame fraction, but reading it from the
+ * scroll function directly (rather than re-deriving an equivalent formula
+ * here) is what keeps this numeral structurally unable to drift out of step
+ * if the scroll's own rate function ever changes shape.
  *
- * The progress fraction is normalized against `karaokeSweptWordCount`'s OWN
- * frame-0 baseline, not a bare `0`: word 0's highlight window already
- * covers frame 0 (`startFrame` 0), so `karaokeSweptWordCount(0, karaoke)`
- * is 1, not 0 (`WallPhase` already treats word 0 as both `active` and
- * `swept` at frame 0 — see `Wall.tsx`). Subtracting that baseline is what
- * makes progress exactly `0` at frame 0 (so the numeral is exactly
- * `originalWordCount`, not one word short of it) and exactly `1` at
- * `cutFrame` (so it's exactly `plainWordCount`).
+ * Unlike the old karaoke-driven version, no baseline subtraction is needed:
+ * `wallScrollOffsetAtFrame(0)` is exactly `0` (the scroll has covered zero
+ * distance at frame 0 — see that function's "already at full velocity, but
+ * zero distance so far" doc comment), so progress is already exactly `0` at
+ * frame 0 without correcting for an off-by-one baseline.
  */
 export function countdownValueAtFrame(
 	frame: number,
-	karaoke: readonly KaraokeWordTiming[],
 	cutFrame: number,
 	data: Pick<OpeningData, 'originalWordCount' | 'plainWordCount'>
 ): number {
-	const sweptAtStart = karaokeSweptWordCount(0, karaoke);
-	const sweptAtCut = karaokeSweptWordCount(cutFrame, karaoke);
-	const span = sweptAtCut - sweptAtStart;
-	if (span <= 0) {
-		// Degenerate — the sweep doesn't advance at all before the cut (e.g.
-		// an excerpt too short to have a second word, or `cutFrame` <= 0).
-		// Hold at the original count rather than dividing by zero.
+	const offsetAtCut = wallScrollOffsetAtFrame(cutFrame);
+	if (offsetAtCut <= 0) {
+		// Degenerate — `cutFrame` is at or before frame 0, so the scroll
+		// hasn't moved at all. Hold at the original count rather than
+		// dividing by zero.
 		return data.originalWordCount;
 	}
-	const sweptNow = karaokeSweptWordCount(frame, karaoke);
-	const progress = Math.min(1, Math.max(0, (sweptNow - sweptAtStart) / span));
+	const offsetNow = wallScrollOffsetAtFrame(Math.min(frame, cutFrame));
+	const progress = Math.min(1, Math.max(0, offsetNow / offsetAtCut));
 	const value = data.originalWordCount - progress * (data.originalWordCount - data.plainWordCount);
 	return Math.round(value);
 }

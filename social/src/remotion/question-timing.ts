@@ -8,12 +8,12 @@
  *
  * The Question's middle phase — the archaic original arriving as a moving
  * wall — is NOT reimplemented here. It is the exact same visual grammar as
- * The Wall (packed, push-in already underway, karaoke sweep at
- * `KARAOKE_WPM`), so this module imports and re-exports `wall-timing.ts`'s
- * `WALL_FRAMES`, `computeWallTiming`, `computeWallLayout` and friends for
- * that phase rather than forking a second copy of the layout/scale/karaoke
- * math. Only the two things genuinely new to this format — the opening
- * question hold and the closing answer hold — are defined here.
+ * The Wall (packed, scrolling at `WALL_SCROLL_RATE_PX_PER_SEC`, already at
+ * full velocity — see F15), so this module imports and re-exports
+ * `wall-timing.ts`'s `WALL_FRAMES`, `computeWallTiming`, `computeWallLayout`
+ * and friends for that phase rather than forking a second copy of the
+ * layout/scroll math. Only the two things genuinely new to this format —
+ * the opening question hold and the closing answer hold — are defined here.
  */
 
 import { fitFontSize } from '../render/fit.js';

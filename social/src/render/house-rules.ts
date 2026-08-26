@@ -29,6 +29,7 @@ import { assertVoiceSettingsWithinHouseRule, type VoiceSettingsInput } from '../
 import { FPS, computeWallTiming } from '../remotion/wall-timing.js';
 import { computeQuestionTiming } from '../remotion/question-timing.js';
 import { computeObjectionTiming } from '../remotion/objection-timing.js';
+import { computeStillTiming } from '../remotion/still-timing.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 /** `social/src/remotion` — every composition source file lives here. */
@@ -461,6 +462,11 @@ const FORMATS: FormatEntry[] = [
 		id: 'Objection',
 		timingModuleFile: 'objection-timing.ts',
 		computeTiming: () => computeObjectionTiming()
+	},
+	{
+		id: 'Still',
+		timingModuleFile: 'still-timing.ts',
+		computeTiming: () => computeStillTiming()
 	}
 ];
 

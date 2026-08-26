@@ -309,11 +309,12 @@ describe('checkAllFormats', () => {
 		expect(result.passed).toBe(true);
 	});
 
-	it('covers every composition Root.tsx registers — Wall, Question, and Objection', () => {
+	it('covers every composition Root.tsx registers — Wall, Question, Objection, and Still', () => {
 		const rootSource = readFileSync(path.join(remotionDir, 'Root.tsx'), 'utf-8');
 		expect(rootSource).toContain('id="Wall"');
 		expect(rootSource).toContain('id="Question"');
 		expect(rootSource).toContain('id="Objection"');
+		expect(rootSource).toContain('id="Still"');
 
 		// checkAllFormats() completing at all (not throwing) is itself proof
 		// its internal registry covers these three — see the next test for
@@ -329,9 +330,11 @@ describe('checkAllFormats', () => {
 		// at least the known composition and timing files — if this list
 		// ever shrinks unexpectedly, checkAllFormats's own file scan would
 		// silently cover less too.
-		expect(files).toEqual(expect.arrayContaining(['Wall.tsx', 'Question.tsx', 'Objection.tsx', 'Root.tsx']));
 		expect(files).toEqual(
-			expect.arrayContaining(['wall-timing.ts', 'question-timing.ts', 'objection-timing.ts'])
+			expect.arrayContaining(['Wall.tsx', 'Question.tsx', 'Objection.tsx', 'Still.tsx', 'Root.tsx'])
+		);
+		expect(files).toEqual(
+			expect.arrayContaining(['wall-timing.ts', 'question-timing.ts', 'objection-timing.ts', 'still-timing.ts'])
 		);
 	});
 

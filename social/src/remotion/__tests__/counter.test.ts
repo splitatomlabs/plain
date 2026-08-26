@@ -71,14 +71,18 @@ const WALL_BASE_PROPS = {
 	author: WALL_CARD.author_slug
 };
 
+// F16 (2026-08-26): swapped from discourses-18-010, whose 152-word archaic
+// excerpt no longer clears `wall-gate.ts`'s new travel floor at the
+// smaller 76px/500px-s geometry — see `question-timing.test.ts`'s matching
+// fixture comment for the numbers.
 const QUESTION_ENTRY: WallPoolEntry = {
-	card_id: 'discourses-18-010',
+	card_id: 'discourses-64-006',
 	book_slug: 'discourses'
 };
 
 const QUESTION_BASE_PROPS = {
-	question: 'What is a master anyway?',
-	answer: "One person can't really master another.",
+	question: 'You want me to trust you with my business?',
+	answer: "You're a man who has corrupted his own will.",
 	originalExcerpt: resolveWallCardExcerpt(QUESTION_ENTRY, outputDir),
 	author: 'epictetus'
 };

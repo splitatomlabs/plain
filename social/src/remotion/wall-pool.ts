@@ -124,15 +124,15 @@ export interface WallPoolRejection {
 	card_id: string;
 	book_slug: string;
 	/** Which `gateWallCard` axis rejected this card. */
-	axis: 'legibility' | 'duration';
+	axis: 'travel' | 'duration';
 	/** Verbatim `WallGateResult.reason` from `gateWallCard`. */
 	reason: string;
 }
 
 export interface WallPoolSurveyResult {
 	passed: number;
-	/** Cards the legibility floor rejected — see `WALL_MIN_LEGIBLE_FONT_PX`. */
-	rejectedForLegibility: number;
+	/** Cards the travel floor rejected (F16) — see `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`. */
+	rejectedForTravel: number;
 	/** Cards the `MAX_POST_DURATION_FRAMES` ceiling rejected — see F03. */
 	rejectedForDuration: number;
 	rejectedIds: string[];
@@ -166,7 +166,7 @@ function resolveEntryLandingLine(entry: WallPoolEntry): string {
  * should never reach `Wall.tsx` in the first place, though
  * `assertWallCardRenderable` remains the backstop if one slips through.
  *
- * `rejectedForLegibility` and `rejectedForDuration` are reported separately
+ * `rejectedForTravel` and `rejectedForDuration` are reported separately
  * (F03) rather than as one combined `rejected` count, so a pipeline log can
  * tell "too small to read" apart from "too long to ship" at a glance.
  */
@@ -175,7 +175,7 @@ export function surveyWallPool(
 	outputDir: string = DEFAULT_OUTPUT_DIR
 ): WallPoolSurveyResult {
 	let passed = 0;
-	let rejectedForLegibility = 0;
+	let rejectedForTravel = 0;
 	let rejectedForDuration = 0;
 	const rejectedIds: string[] = [];
 	const rejections: WallPoolRejection[] = [];
@@ -198,10 +198,10 @@ export function surveyWallPool(
 			if (result.failure === 'duration') {
 				rejectedForDuration++;
 			} else {
-				rejectedForLegibility++;
+				rejectedForTravel++;
 			}
 		}
 	}
 
-	return { passed, rejectedForLegibility, rejectedForDuration, rejectedIds, rejections };
+	return { passed, rejectedForTravel, rejectedForDuration, rejectedIds, rejections };
 }

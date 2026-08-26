@@ -206,7 +206,16 @@ interface ObjectionPlan {
 	reply: string;
 }
 
-type FormatPlan = WallPlan | QuestionPlan | ObjectionPlan;
+/**
+ * F19 — the read-through's fallback format. `text` is the card's raw
+ * `plain_english`, verbatim, in full — see `remotion/Still.tsx`.
+ */
+interface StillPlan {
+	format: 'still';
+	text: string;
+}
+
+type FormatPlan = WallPlan | QuestionPlan | ObjectionPlan | StillPlan;
 
 interface RenderPlan {
 	date: string;
@@ -217,7 +226,7 @@ interface RenderPlan {
 	bookSlug: string;
 	authorSlug: string;
 	counter: string | null;
-	compositionId: 'Wall' | 'Question' | 'Objection';
+	compositionId: 'Wall' | 'Question' | 'Objection' | 'Still';
 	formatPlan: FormatPlan;
 	postIndex: number;
 	bedId: string;
@@ -268,6 +277,14 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 				reply: slot.content.reply
 			};
 			compositionId = 'Objection';
+			break;
+		}
+		case 'still': {
+			formatPlan = {
+				format: 'still',
+				text: slot.content.text
+			};
+			compositionId = 'Still';
 			break;
 		}
 	}
@@ -336,6 +353,16 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 				objection: plan.formatPlan.objection,
 				reply: plan.formatPlan.reply
 			};
+		case 'still':
+			// `base` carries `author`, unused by `Still.tsx` (no accent colour
+			// in this format — see that component's own doc comment); kept
+			// here only so `Still`'s props follow the same `{...base, ...}`
+			// shape as every other format's, harmlessly ignored by the
+			// component.
+			return {
+				...base,
+				text: plan.formatPlan.text
+			};
 	}
 }
 
@@ -400,6 +427,12 @@ function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: num
 			const lines = splitPayoffLines(formatPlan.reply).slice(0, OBJECTION_REPLY_LINE_COUNT);
 			return { lines, offsetMs: (timing.objection.endFrame / FPS) * 1000 };
 		}
+		case 'still': {
+			// The Still has no silent/moving phase to wait out — the whole
+			// composition is the payoff frame from frame 0 (see
+			// `still-timing.ts`), so narration begins immediately.
+			return { lines: splitPayoffLines(formatPlan.text), offsetMs: 0 };
+		}
 	}
 }
 
@@ -412,6 +445,11 @@ function feedStillText(formatPlan: FormatPlan): string {
 			return formatPlan.question;
 		case 'objection':
 			return formatPlan.objection;
+		case 'still':
+			// The Still's feed still and its video frame are the SAME text —
+			// there is no shorter "hook" line for this format; the whole
+			// point is the full passage, verbatim (see `Still.tsx`).
+			return formatPlan.text;
 	}
 }
 

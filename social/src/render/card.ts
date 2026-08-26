@@ -1,11 +1,10 @@
-import { readFile, stat } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { stat } from 'node:fs/promises';
 import { chromium, type Browser, type Page } from 'playwright';
 
 import type { AuthorSlug } from './theme.js';
 import { SIZES, formatForSize, type SizeName } from './sizes.js';
 import { fitFontSize } from './fit.js';
+import { getFontCss } from './fonts.js';
 import { buildCardHtml, textBoxHeight, textBoxWidth } from './template.js';
 
 export interface RenderCardRequest {
@@ -32,8 +31,6 @@ const MAX_FONT = 96;
 // enforces on feed media, without a visible quality hit at this resolution.
 const JPEG_QUALITY = 90;
 
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-
 let browserPromise: Promise<Browser> | null = null;
 
 /** Lazily launches a single shared Chromium instance, reused across calls. */
@@ -56,46 +53,6 @@ export async function closeRenderer(): Promise<void> {
 	const browser = await browserPromise;
 	browserPromise = null;
 	await browser.close();
-}
-
-async function loadFontFileBase64(relativeToNodeModules: string): Promise<string> {
-	const absolutePath = path.join(moduleDir, '..', '..', 'node_modules', relativeToNodeModules);
-	const buf = await readFile(absolutePath);
-	return buf.toString('base64');
-}
-
-let fontCssPromise: Promise<string> | null = null;
-
-/**
- * Builds `@font-face` CSS with the Literata and DM Sans variable-font files
- * inlined as base64 data URLs, so the rendered document makes no network
- * requests. Read from disk once per process and cached in module scope.
- */
-function getFontCss(): Promise<string> {
-	if (!fontCssPromise) {
-		fontCssPromise = (async () => {
-			const [literataBase64, dmSansBase64] = await Promise.all([
-				loadFontFileBase64('@fontsource-variable/literata/files/literata-latin-wght-normal.woff2'),
-				loadFontFileBase64('@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2')
-			]);
-
-			return `
-@font-face {
-	font-family: 'Literata Variable';
-	font-style: normal;
-	font-weight: 100 900;
-	src: url(data:font/woff2;base64,${literataBase64}) format('woff2');
-}
-@font-face {
-	font-family: 'DM Sans Variable';
-	font-style: normal;
-	font-weight: 100 900;
-	src: url(data:font/woff2;base64,${dmSansBase64}) format('woff2');
-}
-`;
-		})();
-	}
-	return fontCssPromise;
 }
 
 /** True if the rendered text overflows the visible text box. */

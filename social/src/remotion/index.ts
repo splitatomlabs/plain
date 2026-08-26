@@ -28,31 +28,27 @@ export {
 export {
 	computeWallLayout,
 	computeWallTiming,
-	computeKaraokeWordTimings,
-	wallScaleAtFrame,
+	wallScrollOffsetAtFrame,
 	splitWords,
 	FPS,
 	FRAME_WIDTH,
 	FRAME_HEIGHT,
-	KARAOKE_WPM,
-	FRAMES_PER_WORD,
 	WALL_MIN_SECONDS,
 	WALL_MAX_SECONDS,
 	WALL_MIN_FRAMES,
 	WALL_MAX_FRAMES,
 	WALL_SECONDS,
 	WALL_FRAMES,
-	WALL_SCALE_AT_FRAME_ZERO,
-	WALL_SCALE_AT_CUT,
-	REST_SCALE,
 	WALL_INSET_PX,
-	WALL_MAX_CROP_PX,
 	WALL_BOX_WIDTH,
-	WALL_BOX_HEIGHT,
-	WALL_MIN_FONT,
-	WALL_MAX_FONT,
+	WALL_FONT_FLOOR_PX,
+	WALL_FONT_CAP_PX,
+	WALL_TARGET_BLOCK_HEIGHT_PX,
+	fitWallFontSize,
+	WALL_LINE_ESTIMATE_OVERSHOOT,
+	WALL_SCROLL_RATE_PX_PER_SEC,
+	WALL_SCROLL_PX_PER_FRAME,
 	WALL_LINE_HEIGHT_RATIO,
-	WALL_MIN_FILL_RATIO,
 	PAYOFF_PADDING_X,
 	PAYOFF_BOX_WIDTH,
 	PAYOFF_BOX_HEIGHT,
@@ -64,7 +60,6 @@ export {
 	DEFAULT_LINE_SECONDS,
 	DEFAULT_LINE_FRAMES,
 	type WallLayout,
-	type KaraokeWordTiming,
 	type WallPhaseWindow,
 	type WallRestLine,
 	type WallTimingInput,
@@ -77,6 +72,7 @@ export {
 	assertWallCardRenderable,
 	WALL_REFERENCE_VIEWPORT_WIDTH,
 	WALL_MIN_LEGIBLE_FONT_PX,
+	WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX,
 	type WallGateResult,
 	type WallGateContentInput
 } from './wall-gate.js';
@@ -90,7 +86,6 @@ export {
 } from './wall-pool.js';
 export {
 	computeOpeningData,
-	karaokeSweptWordCount,
 	countdownValueAtFrame,
 	formatCountdownLabel,
 	formatGradeLabel,
@@ -181,3 +176,24 @@ export {
 	type ObjectionPoolSurveyEntry,
 	type ObjectionPoolSurveyResult
 } from './objection-gate.js';
+export { Still, type StillProps } from './Still.js';
+export {
+	computeStillLayout,
+	computeStillTiming,
+	STILL_BOX_PADDING_X,
+	STILL_BOX_WIDTH,
+	STILL_BOX_HEIGHT,
+	STILL_MIN_FONT,
+	STILL_MAX_FONT,
+	STILL_LINE_HEIGHT_RATIO,
+	type StillLayout,
+	type StillPhaseWindow,
+	type StillTimingSchedule
+} from './still-timing.js';
+export {
+	gateStillCard,
+	assertStillCardRenderable,
+	STILL_MIN_LEGIBLE_FONT_PX,
+	type StillGateAxis,
+	type StillGateResult
+} from './still-gate.js';

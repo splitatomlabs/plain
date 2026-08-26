@@ -306,13 +306,14 @@ async function main(): Promise<void> {
     readThroughFormat,
     maxObjectionPerWeek,
     readThroughExclusions: exclusions?.readThrough ?? undefined,
+    stillExclusions: exclusions?.still ?? undefined,
   });
 
   console.log(`Week ${week} (seed ${seed}):`);
   console.log(`  Pool source — wall: ${source.wall}, question: ${source.question}, objection: ${source.objection}`);
   console.log(
     `  Format counts — wall ${schedule.format_counts.wall}, question ${schedule.format_counts.question}, ` +
-      `objection ${schedule.format_counts.objection}`,
+      `objection ${schedule.format_counts.objection}, still ${schedule.format_counts.still}`,
   );
   console.log(`  Read-through: ${schedule.read_through_book}, cards ${readThroughConsumed + 1}-${readThroughConsumed + 7} of ${schedule.read_through_total}`);
   console.log("  Author mix (combined, across all formats and the read-through):");

@@ -16,6 +16,7 @@ import {
   type FormatWeights,
   type WeekSchedule,
   type ScheduleFormat,
+  type RenderedFormat,
   type WallPoolEntry,
 } from "../schedule.js";
 import { logger } from "../logger.js";
@@ -642,12 +643,17 @@ describe("F05/F06: renderer-derived exclusions", () => {
     question?: ExclusionFixture[];
     objection?: ExclusionFixture[];
     read_through?: ExclusionFixture[];
+    // F19: the Still fallback's own section — see `./exclusions.ts`'s doc
+    // comment. Defaults to `[]` (nothing excluded), same as every other
+    // section, so existing callers of this helper need no change.
+    still?: ExclusionFixture[];
   }): Promise<string> {
     const filePath = path.join(tempDir, "render-exclusions.json");
     const wall = sections.wall ?? [];
     const question = sections.question ?? [];
     const objection = sections.objection ?? [];
     const readThrough = sections.read_through ?? [];
+    const still = sections.still ?? [];
     await writeFile(
       filePath,
       JSON.stringify({
@@ -659,17 +665,20 @@ describe("F05/F06: renderer-derived exclusions", () => {
           question_min_legible_font_px: 78,
           question_max_words: 12,
           objection_min_legible_font_px: 78,
+          still_min_legible_font_px: 39,
           read_through_book: "meditations",
           read_through_chapters: ["book-02", "book-03"],
           wall: { submitted: 896, succeeded: 896 - wall.length, dropped: wall.length },
           question: { submitted: 88, succeeded: 88 - question.length, dropped: question.length },
           objection: { submitted: 59, succeeded: 59 - objection.length, dropped: objection.length },
           read_through: { submitted: 48, succeeded: 48 - readThrough.length, dropped: readThrough.length },
+          still: { submitted: 48, succeeded: 48 - still.length, dropped: still.length },
         },
         wall,
         question,
         objection,
         read_through: readThrough,
+        still,
       }),
     );
     return filePath;
@@ -757,10 +766,11 @@ describe("F05/F06: renderer-derived exclusions", () => {
       warnSpy.mockRestore();
     }
 
-    const excludedByFormat: Record<ScheduleFormat, Set<string>> = {
+    const excludedByFormat: Record<RenderedFormat, Set<string>> = {
       wall: new Set(["on-anger-03-027"]),
       question: new Set(["discourses-50-008"]),
       objection: new Set([gatePools.objection[0]!.card_id]),
+      still: new Set(),
     };
 
     for (let seed = 1; seed <= 50; seed++) {
@@ -912,6 +922,178 @@ describe("F05/F06: renderer-derived exclusions", () => {
     // With no exclusion list, the forced-wall candidate renders as wall,
     // exactly as it always has.
     expect(day1.content.format).toBe("wall");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// F19: the read-through's STILL FALLBACK — resolveReadThrough's terminal
+// step, reached only once Wall/Question/Objection are all exhausted (see
+// `RenderedFormat`, `StillSlotContent`, and this file's own doc comment).
+// Uses the REAL default Meditations Books 2-3 slice, whose 48 cards have
+// ZERO Question/Objection candidates anywhere (verified directly against
+// `questionGate`/`objectionGate` for this suite) — so a card excluded from
+// Wall has nowhere to go but the Still fallback, exactly the scenario F19
+// exists for.
+// ---------------------------------------------------------------------------
+
+describe("F19: the read-through STILL fallback", () => {
+  // Chapter-then-card_number order (book-02 in full, then book-03 in full)
+  // — mirrors `buildReadThroughSequence`'s own ordering exactly (grouping by
+  // chapter FIRST, in the given chapter order, then sorting each group by
+  // card_number) rather than a flat sort across both chapters combined,
+  // which would wrongly interleave the two chapters' own independent
+  // card_number sequences.
+  const meditationsSlice = ["book-02", "book-03"].flatMap((chapterSlug) =>
+    cards
+      .filter((c) => c.book_slug === "meditations" && c.chapter_slug === chapterSlug)
+      .sort((a, b) => a.card_number - b.card_number),
+  );
+
+  // Grounding: zero Question/Objection candidates anywhere in this slice —
+  // the precondition every test below relies on.
+  it("the default Meditations Books 2-3 slice has no Question or Objection candidate anywhere", () => {
+    expect(questionGate(meditationsSlice)).toHaveLength(0);
+    expect(objectionGate(meditationsSlice)).toHaveLength(0);
+  });
+
+  // meditations-02-003 (58-word original_excerpt) is one of the plan's own
+  // named examples of a card too short to clear the Wall gate's travel
+  // target.
+  const shortCardIndex = meditationsSlice.findIndex((c) => c.id === "meditations-02-003");
+
+  it("resolves to the STILL fallback when Wall is excluded and no Question/Objection candidate exists", () => {
+    const readThroughExclusions = new Set(["meditations-02-003"]);
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: ["book-02", "book-03"],
+      readThroughStartIndex: shortCardIndex,
+      // Force the weighted candidate draw to "wall" every time, so the
+      // cascade is exercised deterministically rather than by luck of seed.
+      weights: { wall: 100, question: 0, objection: 0 },
+      readThroughExclusions,
+    });
+
+    const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
+    expect(day1.card_id).toBe("meditations-02-003");
+    expect(day1.content.format).toBe("still");
+  });
+
+  it("the still content is the card's plain_english, verbatim, in full — never trimmed or reworded", () => {
+    const readThroughExclusions = new Set(["meditations-02-003"]);
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: ["book-02", "book-03"],
+      readThroughStartIndex: shortCardIndex,
+      weights: { wall: 100, question: 0, objection: 0 },
+      readThroughExclusions,
+    });
+
+    const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
+    if (day1.content.format !== "still") throw new Error("expected a still slot");
+    const card = cards.find((c) => c.id === "meditations-02-003")!;
+    expect(day1.content.text).toBe(card.plain_english);
+  });
+
+  it("a card that CAN render a Wall still gets a Wall — the fallback must not steal normal cards", () => {
+    // meditations-02-002 — the very next card in the slice, NOT excluded —
+    // clears the Wall gate under the real (ungated-in-this-suite) mechanical
+    // pool, so a still fallback must never be reachable for it.
+    const normalCardIndex = meditationsSlice.findIndex((c) => c.id === "meditations-02-002");
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: ["book-02", "book-03"],
+      readThroughStartIndex: normalCardIndex,
+      weights: { wall: 100, question: 0, objection: 0 },
+      // No readThroughExclusions — this card is not excluded from anything.
+    });
+
+    const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
+    expect(day1.card_id).toBe("meditations-02-002");
+    expect(day1.content.format).toBe("wall");
+  });
+
+  it("throws when even the STILL fallback is excluded — nothing left to fall back to", () => {
+    const readThroughExclusions = new Set(["meditations-02-003"]);
+    const stillExclusions = new Set(["meditations-02-003"]);
+
+    expect(() =>
+      generateWeek({
+        weekNumber: 1,
+        seed: 1,
+        cards,
+        pools: gatePools,
+        poolSource,
+        priorUsedCardIds: new Set(),
+        readThroughBook: "meditations",
+        readThroughChapters: ["book-02", "book-03"],
+        readThroughStartIndex: shortCardIndex,
+        weights: { wall: 100, question: 0, objection: 0 },
+        readThroughExclusions,
+        stillExclusions,
+      }),
+    ).toThrow(/STILL fallback/i);
+  });
+
+  it("without stillExclusions passed at all, the Still fallback runs ungated (accepts every card)", () => {
+    const readThroughExclusions = new Set(["meditations-02-003"]);
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: ["book-02", "book-03"],
+      readThroughStartIndex: shortCardIndex,
+      weights: { wall: 100, question: 0, objection: 0 },
+      readThroughExclusions,
+      // stillExclusions deliberately omitted.
+    });
+
+    const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
+    expect(day1.content.format).toBe("still");
+  });
+
+  it("format_counts tallies still slots under their own key, not folded into wall/question/objection", () => {
+    const readThroughExclusions = new Set(["meditations-02-003", "meditations-02-004", "meditations-02-007"]);
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 1,
+      cards,
+      pools: gatePools,
+      poolSource,
+      priorUsedCardIds: new Set(),
+      readThroughBook: "meditations",
+      readThroughChapters: ["book-02", "book-03"],
+      readThroughStartIndex: shortCardIndex,
+      weights: { wall: 100, question: 0, objection: 0 },
+      readThroughExclusions,
+    });
+
+    const stillSlots = week.slots.filter((s) => s.content.format === "still");
+    expect(stillSlots.length).toBeGreaterThan(0);
+    expect(week.format_counts.still).toBe(stillSlots.length);
   });
 });
 
@@ -1463,8 +1645,12 @@ describe("T13: weighting honoured (statistical, with tolerance)", () => {
   // mixing it in here would understate how closely the weighted slot itself
   // tracks the requested ratio.
   // -------------------------------------------------------------------------
-  function aggregateWeightedSlotCounts(weights: FormatWeights, n: number): Record<ScheduleFormat, number> {
-    const totals: Record<ScheduleFormat, number> = { wall: 0, question: 0, objection: 0 };
+  function aggregateWeightedSlotCounts(weights: FormatWeights, n: number): Record<RenderedFormat, number> {
+    // The weighted (slot 2) format is only ever wall/question/objection —
+    // "still" is exclusively a read-through fallback (F19, see
+    // `RenderedFormat`) — but `ScheduleSlot.content.format` is typed across
+    // all four, so the accumulator must be too.
+    const totals: Record<RenderedFormat, number> = { wall: 0, question: 0, objection: 0, still: 0 };
     for (let seed = 1; seed <= n; seed++) {
       const week = generateWeek({
         weekNumber: 1,

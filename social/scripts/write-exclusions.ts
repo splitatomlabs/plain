@@ -30,6 +30,13 @@
  * derivation can give a wrong verdict even for a card the Wall pool DID
  * cover.
  *
+ * F19 adds a FIFTH section — `still` — surveying that SAME read-through
+ * slice through `../src/remotion/still-gate.ts`'s legibility gate, against
+ * each card's raw `plain_english` (never a derived landing line — the Still
+ * shows the whole passage verbatim, see `Still.tsx`). This is the
+ * read-through cascade's terminal fallback (`scripts/lib/schedule.ts`'s
+ * `resolveReadThrough`): a card excluded here has nowhere left to go.
+ *
  * This is a regenerable, one-off/periodic CLI, not part of the daily render
  * path — re-run it whenever `content/social/premises/{wall,question,
  * objection}.json` or `content/output/` changes in a way that could shift a
@@ -62,12 +69,19 @@ import { parseArgs } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { surveyWallPool, loadBookCards, type WallPoolEntry, type OutputCard } from '../src/remotion/wall-pool.js';
+import {
+	surveyWallPool,
+	loadBookCards,
+	resolveWallCardExcerpt,
+	type WallPoolEntry,
+	type OutputCard
+} from '../src/remotion/wall-pool.js';
 import { computeWallPlainLines } from '../src/cli-plan.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from '../src/remotion/duration-bounds.js';
-import { gateWallCard, WALL_MIN_LEGIBLE_FONT_PX } from '../src/remotion/wall-gate.js';
+import { gateWallCard, WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX } from '../src/remotion/wall-gate.js';
 import { gateQuestionCard, QUESTION_MIN_LEGIBLE_FONT_PX, QUESTION_MAX_WORDS } from '../src/remotion/question-gate.js';
 import { gateObjectionCard, OBJECTION_MIN_LEGIBLE_FONT_PX } from '../src/remotion/objection-gate.js';
+import { gateStillCard, STILL_MIN_LEGIBLE_FONT_PX } from '../src/remotion/still-gate.js';
 import { selectLandingLine } from '../src/remotion/landing-line.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -177,18 +191,32 @@ function readPoolEntries<T>(filePath: string, raw: unknown): T[] {
 function surveyWall(entries: WallPoolEntry[], corpusDir: string) {
 	const result = surveyWallPool(entries, corpusDir);
 	console.log(
-		`  Wall: passed ${result.passed}, rejected for legibility: ${result.rejectedForLegibility}, ` +
+		`  Wall: passed ${result.passed}, rejected for travel: ${result.rejectedForTravel}, ` +
 			`rejected for duration: ${result.rejectedForDuration}`
 	);
 	return { submitted: entries.length, succeeded: result.passed, rejections: result.rejections as ExclusionEntry[] };
 }
 
 // ---------------------------------------------------------------------------
-// The Question (F06) — `gateQuestionCard` needs only the entry's own text
-// and pool flags, no corpus resolution.
+// The Question (F06) — `gateQuestionCard` checks the entry's own text and
+// pool flags (no corpus resolution needed for that part), but `Question.tsx`
+// ALSO reuses `wall-gate.ts`'s `assertWallCardRenderable` for its own
+// archaic-wall phase (see that composition's `calculateMetadata`) — a
+// card whose QUESTION passes every one of `gateQuestionCard`'s checks can
+// still fail to render if its ARCHAIC EXCERPT doesn't. That reused check
+// was safe to omit here before social pilot 02 F16: the Wall gate's
+// legibility floor (all F16 replaced) was VACUOUS pre-F16 (every card
+// cleared it trivially), so it could never actually reject anything. F16's
+// travel floor is NOT vacuous — surveyed directly against the real 88-entry
+// pool, only 12 of the 48 entries `gateQuestionCard` alone passes also
+// clear the Wall gate's travel floor; the other 36 would fail at render
+// time exactly like `discourses-18-010` and `meditations-11-005` did (see
+// `social/src/__tests__/fixtures/README.md`'s `pilot-schedule-w01.json`
+// section). This function now runs BOTH checks, so the scheduler can never
+// draw one of those 36 for a future week.
 // ---------------------------------------------------------------------------
 
-function surveyQuestion(entries: QuestionPoolEntry[]) {
+function surveyQuestion(entries: QuestionPoolEntry[], corpusDir: string) {
 	const rejections: ExclusionEntry[] = [];
 	let succeeded = 0;
 	for (const entry of entries) {
@@ -199,10 +227,22 @@ function surveyQuestion(entries: QuestionPoolEntry[]) {
 			standalone_intelligible: entry.standalone_intelligible,
 			answer_has_substance: entry.answer_has_substance
 		});
-		if (result.ok) {
+		if (!result.ok) {
+			rejections.push({ card_id: entry.card_id, book_slug: entry.book_slug, axis: result.axis, reason: result.reason });
+			continue;
+		}
+
+		const excerpt = resolveWallCardExcerpt({ card_id: entry.card_id, book_slug: entry.book_slug }, corpusDir);
+		const wallResult = gateWallCard(excerpt);
+		if (wallResult.ok) {
 			succeeded++;
 		} else {
-			rejections.push({ card_id: entry.card_id, book_slug: entry.book_slug, axis: result.axis, reason: result.reason });
+			rejections.push({
+				card_id: entry.card_id,
+				book_slug: entry.book_slug,
+				axis: `wall_${wallResult.failure}`,
+				reason: `Question card's archaic excerpt fails the reused Wall gate: ${wallResult.reason}`
+			});
 		}
 	}
 	console.log(`  Question: passed ${succeeded}, rejected ${rejections.length}`);
@@ -267,7 +307,12 @@ function buildReadThroughSlice(cards: OutputCard[], chapters: string[]): OutputC
 	return sequence;
 }
 
-function surveyReadThrough(bookSlug: string, chapters: string[], corpusDir: string) {
+/**
+ * Resolves the read-through's own sequential card slice — shared by
+ * `surveyReadThrough` (below) and `surveyStill` (F19), so both sections
+ * survey the exact same cards in the exact same order.
+ */
+function resolveReadThroughSlice(bookSlug: string, chapters: string[], corpusDir: string): OutputCard[] {
 	const bookCards = loadBookCards(bookSlug, corpusDir);
 	if (bookCards.length === 0) {
 		throw new Error(`No cards found for read-through book "${bookSlug}" under ${corpusDir}`);
@@ -276,7 +321,10 @@ function surveyReadThrough(bookSlug: string, chapters: string[], corpusDir: stri
 	if (slice.length === 0) {
 		throw new Error(`Read-through slice for book "${bookSlug}" with chapters [${chapters.join(', ')}] is empty.`);
 	}
+	return slice;
+}
 
+function surveyReadThrough(slice: OutputCard[], bookSlug: string, chapters: string[]) {
 	const rejections: ExclusionEntry[] = [];
 	let succeeded = 0;
 	for (const card of slice) {
@@ -291,6 +339,31 @@ function surveyReadThrough(bookSlug: string, chapters: string[], corpusDir: stri
 		}
 	}
 	console.log(`  Read-through (${bookSlug}${chapters.length ? `, ${chapters.join('+')}` : ', full book'}): passed ${succeeded}, rejected ${rejections.length}`);
+	return { submitted: slice.length, succeeded, rejections };
+}
+
+// ---------------------------------------------------------------------------
+// The Still fallback (F19) — surveys the SAME read-through slice through
+// `still-gate.ts`'s legibility gate, against each card's raw `plain_english`
+// (never a derived landing line). This is the read-through cascade's
+// terminal step (`scripts/lib/schedule.ts`'s `resolveReadThrough`) — a card
+// excluded here has nowhere left to fall back to.
+// ---------------------------------------------------------------------------
+
+function surveyStill(slice: OutputCard[], bookSlug: string, chapters: string[]) {
+	const rejections: ExclusionEntry[] = [];
+	let succeeded = 0;
+	for (const card of slice) {
+		const result = gateStillCard(String(card.plain_english));
+		if (result.ok) {
+			succeeded++;
+		} else {
+			rejections.push({ card_id: card.id, book_slug: card.book_slug, axis: result.axis, reason: result.reason });
+		}
+	}
+	console.log(
+		`  Still fallback (${bookSlug}${chapters.length ? `, ${chapters.join('+')}` : ', full book'}): passed ${succeeded}, rejected ${rejections.length}`
+	);
 	return { submitted: slice.length, succeeded, rejections };
 }
 
@@ -322,13 +395,15 @@ async function main(): Promise<void> {
 
 	console.log(
 		`Surveying ${wallEntries.length} Wall, ${questionEntries.length} Question, ${objectionEntries.length} ` +
-			`Objection pool entries, plus the ${readThroughBook} read-through slice...`
+			`Objection pool entries, plus the ${readThroughBook} read-through slice (and its Still fallback)...`
 	);
 
 	const wall = surveyWall(wallEntries, corpusDir);
-	const question = surveyQuestion(questionEntries);
+	const question = surveyQuestion(questionEntries, corpusDir);
 	const objection = surveyObjection(objectionEntries);
-	const readThrough = surveyReadThrough(readThroughBook, readThroughChapters, corpusDir);
+	const readThroughSlice = resolveReadThroughSlice(readThroughBook, readThroughChapters, corpusDir);
+	const readThrough = surveyReadThrough(readThroughSlice, readThroughBook, readThroughChapters);
+	const still = surveyStill(readThroughSlice, readThroughBook, readThroughChapters);
 
 	const generatedAt = `${args.date}T00:00:00.000Z`;
 
@@ -344,10 +419,11 @@ async function main(): Promise<void> {
 			generated_at: generatedAt,
 			max_post_duration_frames: MAX_POST_DURATION_FRAMES,
 			max_post_duration_seconds: MAX_POST_DURATION_SECONDS,
-			wall_min_legible_font_px: WALL_MIN_LEGIBLE_FONT_PX,
+			wall_min_travel_block_height_px: WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX,
 			question_min_legible_font_px: QUESTION_MIN_LEGIBLE_FONT_PX,
 			question_max_words: QUESTION_MAX_WORDS,
 			objection_min_legible_font_px: OBJECTION_MIN_LEGIBLE_FONT_PX,
+			still_min_legible_font_px: STILL_MIN_LEGIBLE_FONT_PX,
 			read_through_book: readThroughBook,
 			read_through_chapters: readThroughChapters,
 			wall: { submitted: wall.submitted, succeeded: wall.succeeded, dropped: wall.rejections.length },
@@ -357,19 +433,22 @@ async function main(): Promise<void> {
 				submitted: readThrough.submitted,
 				succeeded: readThrough.succeeded,
 				dropped: readThrough.rejections.length
-			}
+			},
+			still: { submitted: still.submitted, succeeded: still.succeeded, dropped: still.rejections.length }
 		},
 		wall: sortedEntries(wall.rejections),
 		question: sortedEntries(question.rejections),
 		objection: sortedEntries(objection.rejections),
-		read_through: sortedEntries(readThrough.rejections)
+		read_through: sortedEntries(readThrough.rejections),
+		still: sortedEntries(still.rejections)
 	};
 
 	await mkdir(path.dirname(outPath), { recursive: true });
 	await writeFile(outPath, JSON.stringify(payload, null, 2) + '\n', 'utf-8');
 	console.log(
 		`\nWrote ${outPath} (${payload.wall.length} Wall, ${payload.question.length} Question, ` +
-			`${payload.objection.length} Objection, ${payload.read_through.length} read-through exclusions)`
+			`${payload.objection.length} Objection, ${payload.read_through.length} read-through, ` +
+			`${payload.still.length} still exclusions)`
 	);
 }
 

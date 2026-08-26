@@ -32,7 +32,19 @@ export interface ObjectionSlotContent {
 	reply: string;
 }
 
-export type SlotContent = WallSlotContent | QuestionSlotContent | ObjectionSlotContent;
+/**
+ * F19 — social pilot 02: the read-through's fallback format. `text` is the
+ * card's raw `plain_english`, verbatim, in full — see
+ * `../remotion/Still.tsx` and `scripts/lib/schedule.ts`'s `StillSlotContent`
+ * (this is that same shape, mirrored per this file's own top-of-file
+ * comment on why `social/` never imports the root pipeline's types).
+ */
+export interface StillSlotContent {
+	format: 'still';
+	text: string;
+}
+
+export type SlotContent = WallSlotContent | QuestionSlotContent | ObjectionSlotContent | StillSlotContent;
 
 export interface ScheduleSlot {
 	/** 1-based, 1-7. */

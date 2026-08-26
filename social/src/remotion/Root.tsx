@@ -1,6 +1,12 @@
 import React from 'react';
 import { Composition } from 'remotion';
 
+// F17 — registers the real Literata/DM Sans faces inside the Remotion
+// bundle (a side-effect import: see that module's doc comment). Imported
+// FIRST, before any composition module, so the `delayRender` it registers
+// is in place before webpack finishes evaluating this file.
+import './register-fonts.js';
+
 import { computeWallTiming, FPS } from './wall-timing.js';
 import { assertWallCardRenderable } from './wall-gate.js';
 import { Wall, type WallProps } from './Wall.js';
@@ -10,6 +16,9 @@ import { Question, type QuestionProps } from './Question.js';
 import { computeObjectionTiming } from './objection-timing.js';
 import { assertObjectionRenderable } from './objection-gate.js';
 import { Objection, type ObjectionProps } from './Objection.js';
+import { computeStillTiming } from './still-timing.js';
+import { assertStillCardRenderable } from './still-gate.js';
+import { Still, type StillProps } from './Still.js';
 
 // 1080x1920 @ 30fps — the vertical story/reel frame every format in this
 // workspace renders to (see `social/src/render/sizes.ts`).
@@ -37,6 +46,12 @@ const defaultObjectionProps: ObjectionProps = {
 	objection: 'Placeholder objection standing in for a real card excerpt.',
 	reply: 'This is a placeholder first sentence. This is a placeholder second sentence.',
 	author: 'seneca'
+};
+
+// F19 — the read-through's fallback format. No `author` field: the Still
+// never uses an accent colour (see `Still.tsx`'s own doc comment).
+const defaultStillProps: StillProps = {
+	text: 'This is placeholder plain English text standing in for a real card, held motionless as the whole post.'
 };
 
 export const RemotionRoot: React.FC = () => {
@@ -114,6 +129,26 @@ export const RemotionRoot: React.FC = () => {
 					});
 					return {
 						durationInFrames: computeObjectionTiming().totalFrames
+					};
+				}}
+			/>
+			<Composition<any, StillProps>
+				id="Still"
+				component={Still}
+				width={WIDTH}
+				height={HEIGHT}
+				fps={FPS}
+				durationInFrames={computeStillTiming().totalFrames}
+				defaultProps={defaultStillProps}
+				calculateMetadata={({ props }) => {
+					// Runs before any frame renders — a card whose plain_english
+					// cannot be set legibly even as a full-screen still throws
+					// here, failing composition selection and the render
+					// outright rather than producing illegible text. See
+					// `still-gate.ts` (F19).
+					assertStillCardRenderable(props.text);
+					return {
+						durationInFrames: computeStillTiming().totalFrames
 					};
 				}}
 			/>

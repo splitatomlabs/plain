@@ -18,6 +18,15 @@
  * card (a read-through card is excluded from the weighted pools entirely —
  * see `generateWeek`'s own `readThroughCardIds` filtering).
  *
+ * F19 adds a FIFTH section — `still` — the renderer's verdict on the SAME
+ * read-through slice, gated by `social/src/remotion/still-gate.ts` against
+ * each card's raw `plain_english` (never a derived landing line — the Still
+ * shows the whole passage verbatim). This is the terminal step of the
+ * read-through's fallback cascade (see `./schedule.ts`'s `resolveReadThrough`
+ * and `READ_THROUGH_FALLBACK_ORDER`'s own doc comment): a card excluded here
+ * has nowhere left to go, so the cascade throws rather than scheduling
+ * something the renderer would refuse.
+ *
  * Deliberately does NOT import anything from `social/` — the root pipeline
  * (`scripts/`) and `social/` are separate npm packages, and the whole point
  * of this module is to read the committed JSON ARTIFACT the renderer
@@ -69,7 +78,9 @@ export interface ExclusionsMeta {
   question_max_words: number;
   /** `objection-gate.ts`'s `OBJECTION_MIN_LEGIBLE_FONT_PX` at generation time. */
   objection_min_legible_font_px: number;
-  /** The read-through book surveyed for the `read_through` section. */
+  /** `still-gate.ts`'s `STILL_MIN_LEGIBLE_FONT_PX` at generation time (F19). */
+  still_min_legible_font_px: number;
+  /** The read-through book surveyed for the `read_through`/`still` sections. */
   read_through_book: string;
   /** The read-through chapter slice surveyed (empty array = the whole book). */
   read_through_chapters: string[];
@@ -77,6 +88,8 @@ export interface ExclusionsMeta {
   question: ExclusionsCounts;
   objection: ExclusionsCounts;
   read_through: ExclusionsCounts;
+  /** F19: the Still fallback's own survey of the same read-through slice. */
+  still: ExclusionsCounts;
 }
 
 export interface ExclusionsFile {
@@ -85,6 +98,8 @@ export interface ExclusionsFile {
   question: ExclusionEntry[];
   objection: ExclusionEntry[];
   read_through: ExclusionEntry[];
+  /** F19: card ids the Still fallback's legibility gate rejects. */
+  still: ExclusionEntry[];
 }
 
 export interface LoadedExclusions {
@@ -92,6 +107,8 @@ export interface LoadedExclusions {
   question: Set<string>;
   objection: Set<string>;
   readThrough: Set<string>;
+  /** F19: card ids the Still fallback's legibility gate rejects — see `./schedule.ts`'s `resolveReadThrough`. */
+  still: Set<string>;
 }
 
 function toSet(entries: unknown, filePath: string, section: string): Set<string> {
@@ -116,7 +133,7 @@ export async function loadExclusions(filePath: string): Promise<LoadedExclusions
   if (!raw || typeof raw !== "object") {
     throw new Error(
       `loadExclusions: unrecognized shape at "${filePath}" — expected { meta, wall, question, objection, ` +
-        `read_through } as written by social/scripts/write-exclusions.ts.`,
+        `read_through, still } as written by social/scripts/write-exclusions.ts.`,
     );
   }
   const file = raw as Partial<ExclusionsFile>;
@@ -125,5 +142,6 @@ export async function loadExclusions(filePath: string): Promise<LoadedExclusions
     question: toSet(file.question, filePath, "question"),
     objection: toSet(file.objection, filePath, "objection"),
     readThrough: toSet(file.read_through, filePath, "read_through"),
+    still: toSet(file.still, filePath, "still"),
   };
 }

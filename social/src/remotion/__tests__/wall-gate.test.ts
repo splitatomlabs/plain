@@ -9,9 +9,15 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { bundle } from '@remotion/bundler';
 import { selectComposition } from '@remotion/renderer';
 
-import { FRAME_WIDTH, WALL_MIN_FONT, splitWords } from '../wall-timing.js';
+import { FRAME_WIDTH, splitWords } from '../wall-timing.js';
 import { MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
-import { gateWallCard, assertWallCardRenderable, WALL_REFERENCE_VIEWPORT_WIDTH, WALL_MIN_LEGIBLE_FONT_PX } from '../wall-gate.js';
+import {
+	gateWallCard,
+	assertWallCardRenderable,
+	WALL_REFERENCE_VIEWPORT_WIDTH,
+	WALL_MIN_LEGIBLE_FONT_PX,
+	WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX
+} from '../wall-gate.js';
 import { surveyWallPool, resolveWallCardExcerpt, loadOutputCard, type WallPoolEntry } from '../wall-pool.js';
 import { computeWallPlainLines } from '../../cli-plan.js';
 
@@ -70,9 +76,20 @@ describe('WALL_MIN_LEGIBLE_FONT_PX', () => {
 		expect(WALL_MIN_LEGIBLE_FONT_PX).toBe(39);
 	});
 
-	it('sits strictly above WALL_MIN_FONT, so a total non-fit is also caught by the floor check', () => {
-		expect(WALL_MIN_FONT).toBeLessThan(WALL_MIN_LEGIBLE_FONT_PX);
-	});
+	// F16 (2026-08-26): the "sits strictly above WALL_MIN_FONT" invariant
+	// test that used to live here is gone along with `WALL_MIN_FONT` and the
+	// runtime assertion in `wall-gate.ts` it checked — F16's `computeWallLayout`
+	// used a single FIXED `WALL_FONT_SIZE`, not a per-card search, so "did the
+	// fit bottom out below the floor" was not a reachable failure mode for
+	// `gateWallCard` to guard against at the time. F18 (2026-08-26) restored a
+	// real per-card search (`fitWallFontSize`) — `WALL_MIN_LEGIBLE_FONT_PX` is
+	// its own `WALL_FONT_FLOOR_PX` now, so bottoming out at the floor IS
+	// reachable again, just no longer a `gateWallCard` REJECTION path: the
+	// floor is a clamp `fitWallFontSize` returns (see `wall-gate.test.ts`'s own
+	// `WALL_FONT_CAP_PX`-side coverage below for the actual rejection axis).
+	// `WALL_MIN_LEGIBLE_FONT_PX` was never dead outside the Wall either:
+	// `question-gate.ts` and `objection-gate.ts` also run a real per-card
+	// `fitFontSize` search against it — see `wall-gate.ts`'s module doc comment.
 });
 
 describe('gateWallCard — the real longest card in the pool', () => {
@@ -100,57 +117,70 @@ describe('gateWallCard — the real longest card in the pool', () => {
 	});
 });
 
-describe('gateWallCard — rejection path (synthetic over-long excerpt)', () => {
-	// Built from the real longest card's own text, repeated until it cannot
-	// possibly fit at >=39px in the wall box — proves the rejection path
-	// without fudging the floor or fabricating unrelated text.
-	function syntheticOverLongExcerpt(): string {
+// F16 (2026-08-26): the rejection path this describe block proves is no
+// longer "too LONG to fit legibly" — it is now too SHORT for the scroll to
+// survive the wall phase without finishing before the cut. F18 (2026-08-26)
+// re-derived the same axis around a per-card fit (`fitWallFontSize`) instead
+// of F16's single fixed size, but the axis itself — and this describe
+// block's rejection story — is unchanged: a card whose block can't reach
+// `WALL_TARGET_BLOCK_HEIGHT_PX` even at `WALL_FONT_CAP_PX` still rejects,
+// just via `layout.fits === false` now rather than a raw blockHeight
+// comparison. These three tests replace (not weaken) the three the old
+// "synthetic over-long excerpt" story covered — same rigor, the new axis.
+describe('gateWallCard — rejection path (synthetic too-short excerpt)', () => {
+	// A short, real slice of the real longest card's own text (the first 20
+	// words) — nowhere near the real pool's empirical minimum passing word
+	// count (97 words, `meditations-12-017` — see `wall-timing.ts`'s
+	// `WALL_FONT_CAP_PX` doc comment) — proves the rejection path without
+	// fabricating unrelated text.
+	function syntheticTooShortExcerpt(): string {
 		const longest = longestPoolEntry();
 		const excerpt = resolveWallCardExcerpt(longest, outputDir);
-		return Array(6).fill(excerpt).join(' ');
+		return splitWords(excerpt).slice(0, 20).join(' ');
 	}
 
-	it('rejects — ok is false, not a silent shrink below the floor', () => {
-		const synthetic = syntheticOverLongExcerpt();
+	it('rejects — ok is false, not a silent pass below the travel floor', () => {
+		const synthetic = syntheticTooShortExcerpt();
 		const result = gateWallCard(synthetic);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
-			expect(result.fontSize).toBeLessThan(WALL_MIN_LEGIBLE_FONT_PX);
+			expect(result.failure).toBe('travel');
+			expect(result.blockHeight).toBeLessThanOrEqual(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX);
 			expect(result.wordCount).toBe(splitWords(synthetic).length);
-			// The reason names the measured size, the floor, and the word count.
-			expect(result.reason).toContain(String(result.fontSize));
-			expect(result.reason).toContain(String(WALL_MIN_LEGIBLE_FONT_PX));
+			// The reason names the measured block height, the floor, and the word count.
+			expect(result.reason).toContain(String(Math.round(result.blockHeight!)));
+			expect(result.reason).toContain(String(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX));
 			expect(result.reason).toContain(String(result.wordCount));
 		}
 	});
 
-	it('no ok:true result is ever returned below the floor (never a silent shrink)', () => {
-		const synthetic = syntheticOverLongExcerpt();
+	it('no ok:true result is ever returned at or under the travel floor (never a silent pass)', () => {
+		const synthetic = syntheticTooShortExcerpt();
 		const result = gateWallCard(synthetic);
 		if (result.ok) {
-			// If this ever ran, it would mean the gate rendered an illegible
-			// card instead of rejecting it — that is the exact failure this
-			// gate exists to prevent.
-			expect(result.layout.fontSize).toBeGreaterThanOrEqual(WALL_MIN_LEGIBLE_FONT_PX);
+			// If this ever ran, it would mean the gate rendered a card whose
+			// scroll finishes before the cut instead of rejecting it — that is
+			// the exact failure this gate exists to prevent.
+			expect(result.layout.blockHeight).toBeGreaterThan(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX);
 		} else {
 			expect(result.ok).toBe(false);
 		}
 	});
 
-	it('assertWallCardRenderable throws a clear error naming the size, floor and word count', () => {
-		const synthetic = syntheticOverLongExcerpt();
-		expect(() => assertWallCardRenderable(synthetic)).toThrow(/below the 39px legibility floor/);
+	it('assertWallCardRenderable throws a clear error naming the block height, cap and word count', () => {
+		const synthetic = syntheticTooShortExcerpt();
+		expect(() => assertWallCardRenderable(synthetic)).toThrow(/even at the \d+px font cap/);
 	});
 });
 
 describe('the composition path surfaces the rejection (T06 wiring)', () => {
 	it(
-		'selectComposition throws for an over-long card, before any frame renders',
+		'selectComposition throws for a too-short card, before any frame renders',
 		async () => {
 			const longest = longestPoolEntry();
 			const excerpt = resolveWallCardExcerpt(longest, outputDir);
-			const synthetic = Array(6).fill(excerpt).join(' ');
+			const synthetic = splitWords(excerpt).slice(0, 20).join(' ');
 
 			const bundleLocation = await bundle({
 				entryPoint: path.join(moduleDir, '..', 'entry.tsx'),
@@ -175,7 +205,7 @@ describe('the composition path surfaces the rejection (T06 wiring)', () => {
 						author: 'marcus-aurelius'
 					}
 				})
-			).rejects.toThrow(/below the 39px legibility floor/);
+			).rejects.toThrow(/even at the \d+px font cap/);
 		},
 		120_000
 	);
@@ -184,7 +214,7 @@ describe('the composition path surfaces the rejection (T06 wiring)', () => {
 describe('surveyWallPool — the real pool', () => {
 	it('runs the gate over every entry and reports counts that sum to the pool size', () => {
 		const result = surveyWallPool(POOL.entries, outputDir);
-		expect(result.passed + result.rejectedForLegibility + result.rejectedForDuration).toBe(POOL.entries.length);
+		expect(result.passed + result.rejectedForTravel + result.rejectedForDuration).toBe(POOL.entries.length);
 		expect(result.passed).toBeGreaterThan(0);
 	});
 
@@ -205,7 +235,7 @@ describe('surveyWallPool — the real pool', () => {
 		}
 	});
 
-	it('reports the duration ceiling exclusions separately from legibility exclusions (F03)', () => {
+	it('reports the duration ceiling exclusions separately from travel exclusions (F03)', () => {
 		const result = surveyWallPool(POOL.entries, outputDir);
 		// The real over-long card below proves this is >0, not just structurally present.
 		expect(result.rejectedForDuration).toBeGreaterThan(0);
@@ -251,7 +281,7 @@ describe('gateWallCard — the duration ceiling (F03)', () => {
 		);
 	});
 
-	it('a normal card (short plainLines) still passes both the legibility and duration checks', () => {
+	it('a normal card (short plainLines) still passes both the travel and duration checks', () => {
 		const longest = longestPoolEntry();
 		const excerpt = resolveWallCardExcerpt(longest, outputDir);
 		const result = gateWallCard(excerpt, { plainLines: ['One short rest line.', 'Another short rest line.'] });

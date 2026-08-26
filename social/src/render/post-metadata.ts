@@ -14,12 +14,14 @@ import { writeFile } from 'node:fs/promises';
 import type { WallOpening } from '../remotion/wall-openings.js';
 
 /**
- * Mirrors `scripts/lib/schedule.ts`'s `ScheduleFormat` union
- * (`"wall" | "question" | "objection"`) — kept as a local literal type
- * rather than an import, since `social/` is a self-contained npm project
- * (see T01) and does not depend on the root content-pipeline package.
+ * Mirrors `scripts/lib/schedule.ts`'s `RenderedFormat` union
+ * (`"wall" | "question" | "objection" | "still"`) — kept as a local literal
+ * type rather than an import, since `social/` is a self-contained npm
+ * project (see T01) and does not depend on the root content-pipeline
+ * package. `"still"` (F19) is the read-through's fallback format — see
+ * `../remotion/Still.tsx`.
  */
-export type PostFormat = 'wall' | 'question' | 'objection';
+export type PostFormat = 'wall' | 'question' | 'objection' | 'still';
 
 export interface PostMetadata {
 	card_id: string;

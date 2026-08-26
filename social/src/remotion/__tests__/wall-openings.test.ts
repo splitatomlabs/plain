@@ -14,7 +14,6 @@ import rs from 'text-readability';
 
 import {
 	computeOpeningData,
-	karaokeSweptWordCount,
 	countdownValueAtFrame,
 	formatGradeLabel,
 	formatCountdownLabel,
@@ -27,7 +26,7 @@ import {
 	type WallOpening,
 	type WallOpeningEligibilityEntry
 } from '../wall-openings.js';
-import { computeKaraokeWordTimings, computeWallTiming, splitWords } from '../wall-timing.js';
+import { computeWallTiming, wallScrollOffsetAtFrame, splitWords } from '../wall-timing.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -140,8 +139,7 @@ describe('computeOpeningData', () => {
 	});
 });
 
-describe('karaokeSweptWordCount / countdownValueAtFrame — driven by the shared sweep signal', () => {
-	const karaoke = computeKaraokeWordTimings(FIXTURE_CARD.original_excerpt);
+describe('countdownValueAtFrame — driven by scroll progress (F15)', () => {
 	const timing = computeWallTiming({
 		originalExcerpt: FIXTURE_CARD.original_excerpt,
 		plainLines: FIXTURE_PLAIN_LINES
@@ -150,45 +148,44 @@ describe('karaokeSweptWordCount / countdownValueAtFrame — driven by the shared
 	const plainText = [FIXTURE_LANDING_LINE, ...FIXTURE_PLAIN_LINES].join(' ');
 	const data = computeOpeningData(FIXTURE_CARD.original_excerpt, plainText);
 
-	it('is non-decreasing in frame (the sweep never un-sweeps a word)', () => {
+	it('the underlying scroll offset is non-decreasing in frame (the scroll never reverses)', () => {
 		let prev = 0;
 		for (let f = 0; f <= cutFrame; f += 3) {
-			const count = karaokeSweptWordCount(f, karaoke);
-			expect(count).toBeGreaterThanOrEqual(prev);
-			prev = count;
+			const offset = wallScrollOffsetAtFrame(f);
+			expect(offset).toBeGreaterThanOrEqual(prev);
+			prev = offset;
 		}
 	});
 
 	it('at frame 0, the countdown equals the original word count exactly', () => {
-		expect(countdownValueAtFrame(0, karaoke, cutFrame, data)).toBe(data.originalWordCount);
+		expect(countdownValueAtFrame(0, cutFrame, data)).toBe(data.originalWordCount);
 	});
 
 	it('at the cut (the last wall frame), the countdown equals the plain word count exactly', () => {
-		expect(countdownValueAtFrame(cutFrame, karaoke, cutFrame, data)).toBe(data.plainWordCount);
+		expect(countdownValueAtFrame(cutFrame, cutFrame, data)).toBe(data.plainWordCount);
 	});
 
 	it('is monotonically non-increasing across the wall phase (counts down, never up)', () => {
 		let prev = Infinity;
 		for (let f = 0; f <= cutFrame; f += 3) {
-			const value = countdownValueAtFrame(f, karaoke, cutFrame, data);
+			const value = countdownValueAtFrame(f, cutFrame, data);
 			expect(value).toBeLessThanOrEqual(prev);
 			prev = value;
 		}
 	});
 
-	it('tracks karaokeSweptWordCount directly — not a copy of the same math', () => {
-		// A independently-computed midpoint frame, using the exact same
+	it('tracks wallScrollOffsetAtFrame directly — not a copy of the same math', () => {
+		// An independently-computed midpoint frame, using the exact same
 		// shared function this module exports, must reproduce
 		// `countdownValueAtFrame`'s own progress fraction.
 		const midFrame = Math.floor(cutFrame / 2);
-		const sweptAtStart = karaokeSweptWordCount(0, karaoke);
-		const sweptAtCut = karaokeSweptWordCount(cutFrame, karaoke);
-		const sweptAtMid = karaokeSweptWordCount(midFrame, karaoke);
-		const expectedProgress = (sweptAtMid - sweptAtStart) / (sweptAtCut - sweptAtStart);
+		const offsetAtCut = wallScrollOffsetAtFrame(cutFrame);
+		const offsetAtMid = wallScrollOffsetAtFrame(midFrame);
+		const expectedProgress = offsetAtMid / offsetAtCut;
 		const expectedValue = Math.round(
 			data.originalWordCount - expectedProgress * (data.originalWordCount - data.plainWordCount)
 		);
-		expect(countdownValueAtFrame(midFrame, karaoke, cutFrame, data)).toBe(expectedValue);
+		expect(countdownValueAtFrame(midFrame, cutFrame, data)).toBe(expectedValue);
 	});
 });
 

@@ -22,9 +22,8 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "wall",
-        "original_excerpt": "Remember how long thou hast already put off these things, and how often a certain day and hour as it were, having been set unto thee by the gods, thou hast neglected it. It is high time for thee to understand the true nature both of the world, whereof thou art a part; and of that Lord and Governor of the world, from whom, as a channel from the spring, thou thyself didst flow: and that there is but a certain limit of time appointed unto thee, which if thou shalt not make use of to calm and allay the many distempers of thy soul, it will pass away and thou with it, and never after return.",
-        "landing_line": "There is only a certain amount of time given to you."
+        "format": "still",
+        "text": "Remember how long you have been putting these things off. Again and again you have been given the chance, and you have let it pass. It is time to understand the true nature of the world you are part of. And to understand that Lord and Governor of the world, from whom you yourself flowed like water from a spring. There is only a certain amount of time given to you. If you don't use it to calm the troubles of your soul, it will pass away and you with it, and never return."
       },
       "read_through": true,
       "read_through_counter": "Card 1 of 48"
@@ -32,13 +31,13 @@
     {
       "day": 1,
       "slot": 2,
-      "card_id": "shortness-of-life-02-004",
-      "book_slug": "shortness-of-life",
+      "card_id": "happy-life-25-001",
+      "book_slug": "happy-life",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "But all duration is time, not life: vices press upon us and surround us on every side, and do not permit us to regain our feet, or to raise our eyes and gaze upon truth, but when we are down keep us prostrate and chained to low desires. Men who are in this condition are never allowed to come to themselves: if ever by chance they obtain any rest, they roll to and fro like the deep sea, which heaves and tosses after a gale, and they never have any respite from their lusts. Do you suppose that I speak of those whose ills are notorious? Nay, look at those whose prosperity all men run to see: they are choked by their own good things. To how many men do riches prove a heavy burden? how many men's eloquence and continual desire to display their own cleverness has cost them their lives? how many are sallow with constant sensual indulgence? how many have no freedom left them by the tribe of clients that surges around them?",
-        "landing_line": "Just existing isn't the same as truly living."
+        "original_excerpt": "Learn, then, since we both agree that they are desirable, what my reason is amongst counting them among good things, and in what respects I should behave differently to you if I possessed them. Place me as master in the house of a very rich man: place me where gold and silver plate is used for the commonest purposes; I shall not think more of myself because of things which even though they are in my house are yet no part of me. Take me away to the wooden bridge[5] and put me down there among the beggars: I shall not despise myself because I am sitting among those who hold out their hands for alms: for what can the lack of a piece of bread matter to one who does not lack the power of dying? Well, then? I prefer the magnificent house to the beggar's bridge. Place me among magnificent furniture and all the appliances of luxury: I shall not think myself any happier because my cloak is soft, because my guests rest upon purple.",
+        "landing_line": "I prefer the magnificent house to the beggar's bridge."
       },
       "read_through": false,
       "read_through_counter": null
@@ -60,13 +59,13 @@
     {
       "day": 2,
       "slot": 2,
-      "card_id": "meditations-11-005",
+      "card_id": "meditations-08-045",
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
         "format": "question",
-        "question": "Have I done anything kind?",
-        "answer": "Then I have gained from it."
+        "question": "Are you caught up in pain or pleasure?",
+        "answer": "Let your senses deal with that."
       },
       "read_through": false,
       "read_through_counter": null
@@ -78,9 +77,8 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "wall",
-        "original_excerpt": "Do, soul, do; abuse and contemn thyself; yet a while and the time for thee to respect thyself, will be at an end. Every man's happiness depends from himself, but behold thy life is almost at an end, whiles affording thyself no respect, thou dost make thy happiness to consist in the souls, and conceits of other men.",
-        "landing_line": "You're letting your happiness depend on what other people think and say."
+        "format": "still",
+        "text": "Come on, soul, keep hurting yourself. Keep thinking you're worthless. Soon enough, your time to value yourself will be over. Each person's happiness comes from within. But look — your life is almost done, and you're still refusing to respect yourself. You're letting your happiness depend on what other people think and say."
       },
       "read_through": true,
       "read_through_counter": "Card 3 of 48"
@@ -88,13 +86,13 @@
     {
       "day": 3,
       "slot": 2,
-      "card_id": "discourses-18-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
+      "card_id": "meditations-11-014",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
       "content": {
         "format": "question",
-        "question": "What makes something good?",
-        "answer": "A certain kind of will."
+        "question": "Will someone look down on me?",
+        "answer": "Let them worry about their reasons."
       },
       "read_through": false,
       "read_through_counter": null
@@ -106,9 +104,8 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "wall",
-        "original_excerpt": "Why should any of these things that happen externally, so much distract thee? Give thyself leisure to learn some good thing, and cease roving and wandering to and fro. Thou must also take heed of another kind of wandering, for they are idle in their actions, who toil and labour in this life, and have no certain scope to which to direct all their motions, and desires.",
-        "landing_line": "You must also watch out for another kind of wandering."
+        "format": "still",
+        "text": "Why do these outside events distract you so much? Give yourself time to learn something worthwhile, and stop wandering around aimlessly. You must also watch out for another kind of wandering. Some people stay busy with work and effort, but they have no clear purpose to guide their actions and desires."
       },
       "read_through": true,
       "read_through_counter": "Card 4 of 48"
@@ -116,13 +113,13 @@
     {
       "day": 4,
       "slot": 2,
-      "card_id": "on-anger-03-108",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
+      "card_id": "discourses-24-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
       "content": {
         "format": "question",
-        "question": "Someone has insulted you?",
-        "answer": "It's probably not worse than what happened to the Stoic philosopher Diogenes."
+        "question": "What is a human being?",
+        "answer": "A thinking, mortal creature."
       },
       "read_through": false,
       "read_through_counter": null
@@ -144,13 +141,13 @@
     {
       "day": 5,
       "slot": 2,
-      "card_id": "happy-life-12-002",
-      "book_slug": "happy-life",
+      "card_id": "peace-of-mind-14-003",
+      "book_slug": "peace-of-mind",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "Let them no longer, then, join incongruous matters together, or connect pleasure with virtue, a mistake whereby they court the worst of men. The reckless profligate, always in liquor and belching out the fumes of wine, believes that he lives with virtue, because he knows that he lives with pleasure, for he hears it said that pleasure cannot exist apart from virtue; consequently he dubs his vices with the title of wisdom and parades all that he ought to conceal. So, men are not encouraged by Epicurus to run riot, but the vicious hide their excesses in the lap of philosophy, and flock to the schools in which they hear the praises of pleasure. They do not consider how sober and temperate—for so, by Hercules, I believe it to be—that \"pleasure\" of Epicurus is, but they rush at his mere name, seeking to obtain some protection and cloak for their vices.",
-        "landing_line": "Epicurus doesn't encourage people to go wild."
+        "original_excerpt": "Julius Kanus, a man of peculiar greatness, whom even the fact of his having been born in this century does not prevent our admiring, had a long dispute with Gaius, and when as he was going away that Phalaris of a man said to him, \"That you may not delude yourself with any foolish hopes, I have ordered you to be executed,\" he answered, \"I thank you, most excellent prince.\" I am not sure what he meant: for many ways of explaining his conduct occur to me. Did he wish to be reproachful, and to show him how great his cruelty must be if death became a kindness? or did he upbraid him with his accustomed insanity? for even those whose children were put to death, and whose goods were confiscated, used to thank him: or was it that he willingly received death, regarding it as freedom? Whatever he meant, it was a magnanimous answer. Some one may say, \"After this Gaius might have let him live.\" Kanus had no fear of this: the good faith with which Gaius carried out such orders as these was well known.",
+        "landing_line": "Julius Kanus was a man of remarkable greatness."
       },
       "read_through": false,
       "read_through_counter": null
@@ -172,13 +169,13 @@
     {
       "day": 6,
       "slot": 2,
-      "card_id": "happy-life-16-001",
-      "book_slug": "happy-life",
+      "card_id": "on-anger-03-067",
+      "book_slug": "on-anger",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "True happiness, therefore, consists in virtue: and what will this virtue bid you do? Not to think anything bad or good which is connected neither with virtue nor with wickedness: and in the next place, both to endure unmoved the assaults of evil, and, as far as is right, to form a god out of what is good. What reward does she promise you for this campaign? an enormous one, and one that raises you to the level of the gods: you shall be subject to no restraint and to no want; you shall be free, safe, unhurt; you shall fail in nothing that you attempt; you shall be debarred from nothing; everything shall turn out according to your wish; no misfortune shall befal you; nothing shall happen to you except what you expect and hope for.",
-        "landing_line": "True happiness comes from virtue."
+        "original_excerpt": "He thereupon devoted all the resources of his army to this object, and remained working until by cutting one hundred and eighty channels across the bed of the river he divided it into three hundred and sixty brooks, and left the bed dry, the waters flowing through other channels. Thus he lost time, which is very important in great operations, and lost, also, the soldiers’ courage, which was broken by useless labour, and the opportunity of falling upon his enemy unprepared, while he was waging against the river the war which he had declared against his foes. This frenzy, for what else can you call it, has befallen Romans also, for G. Caesar destroyed a most beautiful villa at Herculaneum because his mother was once imprisoned in it, and has thus made the place notorious by its misfortune; for while it stood, we used to sail past it without noticing it, but now people inquire why it is in ruins.",
+        "landing_line": "Gaius Caesar destroyed a beautiful villa at Herculaneum just because his mother had once been imprisoned there."
       },
       "read_through": false,
       "read_through_counter": null
@@ -190,9 +187,8 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "wall",
-        "original_excerpt": "Whatsoever thou dost affect, whatsoever thou dost project, so do, and so project all, as one who, for aught thou knowest, may at this very present depart out of this life. And as for death, if there be any gods, it is no grievous thing to leave the society of men. The gods will do thee no hurt, thou mayest be sure.",
-        "landing_line": "You can be sure the gods will not harm you."
+        "format": "still",
+        "text": "Whatever you want to do, whatever you plan to do, do it all as someone who might die right now. And as for death, if there are gods, leaving human society is nothing terrible. You can be sure the gods will not harm you."
       },
       "read_through": true,
       "read_through_counter": "Card 7 of 48"
@@ -213,9 +209,10 @@
     }
   ],
   "format_counts": {
-    "wall": 10,
+    "wall": 6,
     "question": 4,
-    "objection": 0
+    "objection": 0,
+    "still": 4
   },
   "author_mix": {
     "epictetus": {
@@ -223,12 +220,12 @@
       "share": 0.14285714285714285
     },
     "marcus-aurelius": {
-      "count": 8,
-      "share": 0.5714285714285714
+      "count": 9,
+      "share": 0.6428571428571429
     },
     "seneca": {
-      "count": 4,
-      "share": 0.2857142857142857
+      "count": 3,
+      "share": 0.21428571428571427
     }
   },
   "pool_source": {

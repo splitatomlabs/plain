@@ -29,11 +29,24 @@
  * the renderer-published READ-THROUGH exclusion list (F06 —
  * `content/social/render-exclusions.json`'s `read_through` section, surveyed
  * with the read-through's own landing-line derivation; see `./exclusions.ts`
- * and `tryReadThroughContent`'s wall branch) — the cascade can in principle
- * exhaust all three formats now, which `resolveReadThrough` surfaces as a
- * real thrown error rather than the old "unreachable" guarantee. F06 also
- * gates the WEIGHTED slot's Question and Objection pools the same way F05
- * gated Wall's — see `loadFormatPools`'s own doc comment.
+ * and `tryReadThroughContent`'s wall branch) — the cascade could in
+ * principle exhaust all three weighted formats. F06 also gates the WEIGHTED
+ * slot's Question and Objection pools the same way F05 gated Wall's — see
+ * `loadFormatPools`'s own doc comment.
+ *
+ * F19: exhausting all three weighted formats is not just theoretical — the
+ * pilot's default read-through slice (Meditations Books 2-3) has no
+ * Question/Objection candidate anywhere in it, and the longest run of
+ * consecutive Wall-renderable cards anywhere in the corpus (measured per
+ * chapter) is 17, short of the 28 consecutive read-through days a 4-week
+ * pilot needs. So `resolveReadThrough` now has a FOURTH, terminal step after
+ * `READ_THROUGH_FALLBACK_ORDER` is exhausted: the STILL fallback
+ * (`StillSlotContent` — the card's own `plain_english`, verbatim, motionless
+ * — see `social/src/remotion/Still.tsx`). It is gated too (against
+ * `content/social/render-exclusions.json`'s `still` section, surveyed by
+ * `social/src/remotion/still-gate.ts`'s legibility floor), so only a card
+ * that fails EVERY format — including Still — still produces the real
+ * thrown error described above.
  *
  * `generateWeek` is a pure function: no filesystem access, no `Date.now()`,
  * no `Math.random()`. Every random choice is drawn from `createSeededRng`
@@ -132,6 +145,15 @@ export const DEFAULT_FORMAT_WEIGHTS: FormatWeights = { wall: 7, question: 6, obj
  * (see `resolveReadThrough`) — mirrors the plan's own listed format order
  * (Wall, Question, Objection). Not consulted at all for slot 2, whose format
  * is drawn straight from the weights against real pool availability.
+ *
+ * F19: once every entry here has been tried and failed, `resolveReadThrough`
+ * falls back ONE step further — to `"still"` (see `StillSlotContent`) — as
+ * its terminal, unconditional-except-for-legibility step. `"still"` is
+ * deliberately NOT a member of this list (and not a member of
+ * `ScheduleFormat`/`SCHEDULE_FORMATS` at all): it is never drawn from
+ * `weights`, never a candidate the weighted draw can pick, and never
+ * available to slot 2 — only ever reached as the read-through cascade's
+ * last resort.
  */
 export const READ_THROUGH_FALLBACK_ORDER: readonly ScheduleFormat[] = ["wall", "question", "objection"];
 
@@ -233,7 +255,28 @@ export interface ObjectionSlotContent {
   reply: string;
 }
 
-export type SlotContent = WallSlotContent | QuestionSlotContent | ObjectionSlotContent;
+/**
+ * F19: the read-through's FALLBACK format — never drawn from `weights`, and
+ * never tried before Wall/Question/Objection (see `READ_THROUGH_FALLBACK_ORDER`
+ * and `resolveReadThrough`'s own doc comments). `text` is the card's raw
+ * `plain_english`, verbatim, in full — see `social/src/remotion/Still.tsx`.
+ */
+export interface StillSlotContent {
+  format: "still";
+  text: string;
+}
+
+export type SlotContent = WallSlotContent | QuestionSlotContent | ObjectionSlotContent | StillSlotContent;
+
+/**
+ * Every format `SlotContent.format` can actually be — the three WEIGHTED
+ * formats (`ScheduleFormat`) plus the read-through-only `"still"` fallback
+ * (F19). Kept distinct from `ScheduleFormat` because `"still"` is never
+ * drawn from `weights`, never appears in `READ_THROUGH_FALLBACK_ORDER`, and
+ * is structurally unreachable from the weighted (slot 2) draw — see
+ * `resolveReadThrough`.
+ */
+export type RenderedFormat = ScheduleFormat | "still";
 
 export interface ScheduleSlot {
   day: number; // 1-7
@@ -271,7 +314,7 @@ export interface WeekSchedule {
   read_through_total: number;
   max_objection_per_week: number;
   slots: ScheduleSlot[];
-  format_counts: Record<ScheduleFormat, number>;
+  format_counts: Record<RenderedFormat, number>;
   author_mix: Record<AuthorSlug, AuthorMixEntry>;
   pool_source: Record<ScheduleFormat, "scored" | "gate-only">;
 }
@@ -343,6 +386,19 @@ export interface GenerateWeekOptions {
    * leave undefined to run ungated, exactly as before F05/F06.
    */
   readThroughExclusions?: ReadonlySet<string>;
+  /**
+   * F19: the renderer-derived STILL-FALLBACK exclusion list — card ids of
+   * the read-through's own book/chapter slice that `social/src/remotion/
+   * still-gate.ts`'s legibility gate would reject (surveyed against each
+   * card's raw `plain_english` — see `content/social/render-exclusions.json`'s
+   * `still` section and `./exclusions.ts`). Consulted ONLY as the terminal
+   * step of the read-through's fallback cascade (`resolveReadThrough`),
+   * after `READ_THROUGH_FALLBACK_ORDER` is exhausted — a card excluded here
+   * has no format left to fall back to, and the cascade throws. Optional:
+   * leave undefined to run the Still fallback ungated (every card accepted),
+   * exactly like `readThroughExclusions` defaults to ungated.
+   */
+  stillExclusions?: ReadonlySet<string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -557,28 +613,44 @@ function readThroughContentOrThrow(
  * tried) and skipping Objection when `objectionAvailable` is false (weekly
  * cap already reached). Before F05, Wall always rendered, so this cascade
  * always terminated; now that `tryReadThroughContent`'s wall branch can
- * also return `null` (a card on `readThroughExclusions`), the cascade can in
- * principle exhaust all three formats — see the thrown error below, which
- * is a real, actionable failure now rather than the old "unreachable" dead
- * code.
+ * also return `null` (a card on `readThroughExclusions`), the cascade could
+ * in principle exhaust all three weighted formats — F19 gives it one more
+ * place to go before that becomes a hard failure: the STILL FALLBACK
+ * (below), the terminal step of this cascade. A card that clears NONE of
+ * Wall/Question/Objection still renders — as its own `plain_english`,
+ * verbatim, motionless (see `social/src/remotion/Still.tsx`) — so "Card N of
+ * 48" stays literally true and no read-through card is ever skipped. Only a
+ * card the Still's OWN legibility gate also rejects (`stillExclusions`, an
+ * expected-to-be-empty edge case — see `still-gate.ts`) still throws.
  */
 function resolveReadThrough(
   candidate: ScheduleFormat,
   card: Card,
   objectionAvailable: boolean,
   readThroughExclusions?: ReadonlySet<string>,
-): { format: ScheduleFormat; content: SlotContent } {
+  stillExclusions?: ReadonlySet<string>,
+): { format: RenderedFormat; content: SlotContent } {
   const order = [candidate, ...READ_THROUGH_FALLBACK_ORDER.filter((f) => f !== candidate)];
   for (const format of order) {
     if (format === "objection" && !objectionAvailable) continue;
     const content = tryReadThroughContent(format, card, readThroughExclusions);
     if (content) return { format, content };
   }
+
+  // F19: THE STILL FALLBACK — reached ONLY here, after every weighted
+  // format has been tried and failed. Never drawn from `weights`, never a
+  // candidate itself — see `RenderedFormat`'s and `StillSlotContent`'s own
+  // doc comments. `text` is the card's raw `plain_english`, verbatim, never
+  // sliced or reworded — faithful by construction, not merely checked.
+  if (!stillExclusions?.has(card.id)) {
+    return { format: "still", content: { format: "still", text: card.plain_english } };
+  }
+
   throw new Error(
-    `Read-through card "${card.id}" could not render any format — Wall is excluded by the renderer's gate ` +
-      `(content/social/render-exclusions.json's read_through section) and no Question/Objection candidate ` +
-      `exists for this card either. Choose a different read-through book/chapter slice, or regenerate the ` +
-      `corpus/exclusion list.`,
+    `Read-through card "${card.id}" could not render any format, including the STILL fallback — Wall/Question/` +
+      `Objection are all excluded or have no candidate, and the renderer's still-gate.ts legibility floor also ` +
+      `rejects this card's plain_english (content/social/render-exclusions.json's "still" section). Choose a ` +
+      `different read-through book/chapter slice, or regenerate the corpus/exclusion list.`,
   );
 }
 
@@ -604,6 +676,8 @@ function contentFieldsToCheck(content: SlotContent): [field: string, text: strin
         ["objection", content.objection],
         ["reply", content.reply],
       ];
+    case "still":
+      return [["text", content.text]];
   }
 }
 
@@ -722,6 +796,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     readThroughFormat: forcedReadThroughFormat,
     maxObjectionPerWeek = DEFAULT_MAX_OBJECTION_PER_WEEK,
     readThroughExclusions,
+    stillExclusions,
   } = options;
 
   // T16: `readThroughBook` and `readThroughChapters` default TOGETHER, only
@@ -848,7 +923,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
       throw new Error(`Read-through card "${rtCard.id}" was already scheduled — read-through position is out of sync.`);
     }
 
-    let rtFormat: ScheduleFormat;
+    let rtFormat: RenderedFormat;
     let rtContent: SlotContent;
     if (forcedReadThroughFormat !== undefined) {
       rtFormat = forcedReadThroughFormat;
@@ -857,7 +932,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
       const objectionAvailable = objectionUsedThisWeek < maxObjectionPerWeek;
       const rtAvailable = SCHEDULE_FORMATS.filter((f) => f !== "objection" || objectionAvailable);
       const rtCandidate = weightedFormatChoice(weights, rtAvailable, rng);
-      const resolved = resolveReadThrough(rtCandidate, rtCard, objectionAvailable, readThroughExclusions);
+      const resolved = resolveReadThrough(rtCandidate, rtCard, objectionAvailable, readThroughExclusions, stillExclusions);
       rtFormat = resolved.format;
       rtContent = resolved.content;
       if (rtFormat === "objection") objectionUsedThisWeek += 1;
@@ -941,7 +1016,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     allUsed.add(entry.card_id);
   }
 
-  const formatCounts: Record<ScheduleFormat, number> = { wall: 0, question: 0, objection: 0 };
+  const formatCounts: Record<RenderedFormat, number> = { wall: 0, question: 0, objection: 0, still: 0 };
   for (const s of slots) formatCounts[s.content.format] += 1;
 
   const authorMixResult = combinedAuthorMix(slots.map((s) => ({ author_slug: s.author_slug })));

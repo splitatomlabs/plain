@@ -185,9 +185,16 @@ describe('gateQuestionCard — pool validation flags', () => {
 	});
 });
 
+// F16 (2026-08-26): swapped from discourses-18-010 ("What is a master
+// anyway?"), whose 152-word archaic excerpt no longer clears
+// `wall-gate.ts`'s new travel floor at the smaller 76px/500px-s geometry
+// (blockHeight 3040px, under the 3170px floor) — see
+// `question-timing.test.ts`'s matching fixture comment for the numbers.
+// discourses-64-006's 176-word excerpt clears it with real margin
+// (blockHeight 3420px).
 describe('gateQuestionCard — a REAL validated pool entry passes', () => {
-	it('discourses-18-010 ("What is a master anyway?") passes every check', () => {
-		const entry = POOL.entries.find((e) => e.card_id === 'discourses-18-010');
+	it('discourses-64-006 ("You want me to trust you with my business?") passes every check', () => {
+		const entry = POOL.entries.find((e) => e.card_id === 'discourses-64-006');
 		expect(entry).toBeDefined();
 		if (!entry) return;
 		expect(entry.drift_verdict).toBe('answers');
@@ -209,7 +216,7 @@ describe('gateQuestionCard — a REAL validated pool entry passes', () => {
 
 	it('also resolves and gates its archaic excerpt via the Wall gate (reused, not re-derived)', async () => {
 		const { gateWallCard } = await import('../wall-gate.js');
-		const entry: WallPoolEntry = { card_id: 'discourses-18-010', book_slug: 'discourses' };
+		const entry: WallPoolEntry = { card_id: 'discourses-64-006', book_slug: 'discourses' };
 		const excerpt = resolveWallCardExcerpt(entry, outputDir);
 		const result = gateWallCard(excerpt);
 		expect(result.ok).toBe(true);

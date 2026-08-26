@@ -27,10 +27,10 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { surveyWallPool, loadBookCards, type WallPoolEntry } from '../wall-pool.js';
+import { surveyWallPool, loadBookCards, resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
 import { computeWallPlainLines } from '../../cli-plan.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from '../duration-bounds.js';
-import { gateWallCard, WALL_MIN_LEGIBLE_FONT_PX } from '../wall-gate.js';
+import { gateWallCard, WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX } from '../wall-gate.js';
 import { gateQuestionCard, QUESTION_MIN_LEGIBLE_FONT_PX, QUESTION_MAX_WORDS } from '../question-gate.js';
 import { gateObjectionCard, OBJECTION_MIN_LEGIBLE_FONT_PX } from '../objection-gate.js';
 import { selectLandingLine } from '../landing-line.js';
@@ -73,7 +73,7 @@ interface ExclusionsFile {
 		generated_at: string;
 		max_post_duration_frames: number;
 		max_post_duration_seconds: number;
-		wall_min_legible_font_px: number;
+		wall_min_travel_block_height_px: number;
 		question_min_legible_font_px: number;
 		question_max_words: number;
 		objection_min_legible_font_px: number;
@@ -105,13 +105,13 @@ describe('content/social/render-exclusions.json matches a fresh survey — Wall'
 	it('records the same constants the gate is currently computed against', () => {
 		expect(committed.meta.max_post_duration_frames).toBe(MAX_POST_DURATION_FRAMES);
 		expect(committed.meta.max_post_duration_seconds).toBe(MAX_POST_DURATION_SECONDS);
-		expect(committed.meta.wall_min_legible_font_px).toBe(WALL_MIN_LEGIBLE_FONT_PX);
+		expect(committed.meta.wall_min_travel_block_height_px).toBe(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX);
 	});
 
 	it('meta counts match a fresh survey of the same pool', () => {
 		expect(committed.meta.wall.submitted).toBe(wallPool.entries.length);
 		expect(committed.meta.wall.succeeded).toBe(survey.passed);
-		expect(committed.meta.wall.dropped).toBe(survey.rejectedForLegibility + survey.rejectedForDuration);
+		expect(committed.meta.wall.dropped).toBe(survey.rejectedForTravel + survey.rejectedForDuration);
 		expect(committed.wall.length).toBe(committed.meta.wall.dropped);
 	});
 
@@ -136,6 +136,12 @@ describe('content/social/render-exclusions.json matches a fresh survey — Wall'
 });
 
 describe('content/social/render-exclusions.json matches a fresh survey — Question (F06)', () => {
+	// F16 (2026-08-26): `survey()` here must mirror `write-exclusions.ts`'s
+	// `surveyQuestion` EXACTLY, including its post-F16 addition — checking
+	// the reused Wall gate against each entry's archaic excerpt, not just
+	// `gateQuestionCard`'s own checks — or this test just re-proves the
+	// STALE pre-F16 logic against itself. See that function's own doc
+	// comment for why the reused check is no longer safe to omit.
 	function survey() {
 		const rejections: ExclusionEntry[] = [];
 		let passed = 0;
@@ -147,10 +153,21 @@ describe('content/social/render-exclusions.json matches a fresh survey — Quest
 				standalone_intelligible: entry.standalone_intelligible,
 				answer_has_substance: entry.answer_has_substance
 			});
-			if (result.ok) {
+			if (!result.ok) {
+				rejections.push({ card_id: entry.card_id, book_slug: entry.book_slug, axis: result.axis, reason: result.reason });
+				continue;
+			}
+			const excerpt = resolveWallCardExcerpt({ card_id: entry.card_id, book_slug: entry.book_slug }, outputDir);
+			const wallResult = gateWallCard(excerpt);
+			if (wallResult.ok) {
 				passed++;
 			} else {
-				rejections.push({ card_id: entry.card_id, book_slug: entry.book_slug, axis: result.axis, reason: result.reason });
+				rejections.push({
+					card_id: entry.card_id,
+					book_slug: entry.book_slug,
+					axis: `wall_${wallResult.failure}`,
+					reason: `Question card's archaic excerpt fails the reused Wall gate: ${wallResult.reason}`
+				});
 			}
 		}
 		return { passed, rejections };
