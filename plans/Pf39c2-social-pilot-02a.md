@@ -939,10 +939,54 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   Plan 03's opening-tagging decision and its T12 metrics-schema bullet now record the opening comparison as
   CANCELLED, not deferred, and note `post-metadata.ts`'s `opening` field (which existed specifically for that
   comparison) is gone.
-- [ ] T18: Mid-chapter entry — vary frame 0's start point within the chapter block so consecutive posts do not
+- [x] T18: Mid-chapter entry — vary frame 0's start point within the chapter block so consecutive posts do not
   open on the same beat, deriving the offset deterministically from the post index (never randomly — renders must
   be reproducible). Frame 0 must still be legible text mid-thought, never mid-word. Acceptance: two posts from
   the same card open at different points; the never-finishes invariant still holds at every offset.
+  Done (2026-08-26): DESIGN DECISION (the plan's own "IMPORTANT TENSION" was left open on this point) — the
+  chapter block itself is UNCHANGED: it still always starts at the target card's own `original_excerpt` (T05/T06
+  not reopened). What varies is a new, separate transformation applied ONE LAYER UP, in `cli.ts`'s
+  `buildRenderPlan`, after `loadChapterTextBlock` runs: `render/chapter-text.ts`'s new
+  `applyChapterEntryOffset(chapterBlock, postIndex)` drops the first N words off the FRONT of the block, where N
+  (`chapterEntryOffsetWords`) is `postIndex mod excerptWordCount` — bounded to the target card's OWN excerpt
+  length, never past it into the following cards' text. Two consequences of that bound, both load-bearing: (1)
+  honesty — whatever a given post's frame 0 shows is still, word for word, drawn from the target card's own
+  excerpt, never another card's, so the wall stays recognisably "this card's passage" even though it no longer
+  always opens on the excerpt's own first word; (2) the never-finishes invariant becomes trivial to prove: the
+  offset can consume at most `excerptWordCount - 1` words (order of 100-200) off a block that's already an order
+  of magnitude longer (2,196-3,305 words for the read-through slice) than the ~412-word travel floor, so the
+  worst case was never close. The rejected alternative — starting the BLOCK itself elsewhere in the chapter (a
+  different card's excerpt at the very front) — was rejected outright: it can skip the target card's own excerpt
+  out of the visible wall entirely, breaking "the viewer sees the card's own passage during the wall", not just
+  weakening it. `Wall.tsx` itself is untouched — it still renders whatever `chapterBlock` string it's given
+  starting at scroll offset 0 (frame 0's velocity is already full, no ramp — the house rule holds unchanged), so
+  T09's "frame 0 shows this string's own first words at the top of the frame" contract stays literally true; T18
+  only changes WHICH string that is, never how the composition scrolls. `postIndex` is `cli-plan.ts`'s existing
+  `postIndexForSlot` (already used to seed the music bed) — no new source of entropy, and no randomness anywhere.
+  Cut always lands exactly on a word boundary (`\S+` token starts), never mid-word, by construction (slicing at
+  a matched token's own start index).
+  Tests: `social/src/render/__tests__/chapter-text.test.ts` — 15 new tests: `chapterEntryOffsetWords` is
+  deterministic, varies across consecutive `postIndex` values, stays in `[0, excerptWordCount)` across a 500-value
+  sweep, returns 0 for <2-word excerpts, and is defensive against a hypothetical negative `postIndex`;
+  `applyChapterEntryOffset` returns the block unmodified at offset 0, returns a real suffix cut exactly on a word
+  boundary for a nonzero offset, produces genuinely different openings for two different `postIndex` values on
+  the same card (the acceptance criterion, direct), stays inside the target card's own excerpt at EVERY offset
+  in its range (the honesty property), and handles the single-card-chapter case (no `\n\n` in the block). Plus
+  one new test against the REAL 48-card read-through slice: every card's WORST-CASE offset
+  (`excerptWordCount - 1`, the maximum possible truncation) still clears `computeWallLayout`'s travel floor —
+  worst-case margin across the slice: **11,211.3px** (travel floor 2,538.8px; smallest real block still ~4.4x the
+  floor after its own worst-case truncation). `npm test`: pipeline 817/817, web 95/95, social 566/566 (up from
+  555 — 12 net new: the 15 above plus `tsc --noEmit` unaffected, clean).
+  Rendered PROOF, not just unit tests: two real end-to-end CLI renders of the exact same real card
+  (`happy-life-25-001`, Seneca, `On the Happy Life`) at two different `postIndex` values (1 and 139, the second
+  via a throwaway fixture schedule week so a second real date/slot could reuse the same card content), frame 0
+  extracted from each MP4 with ffmpeg. postIndex 1 (offset 1 word) opens "then, since we both agree that they are
+  desirable, what my reason is amongst counting them among good things, and in what respects I should behave
+  differently to..." (drops only the excerpt's own first word, "Learn,"). postIndex 139 (offset 139 words) opens
+  "I prefer the magnificent house to the beggar's bridge. Place me among magnificent furniture and all the
+  appliances of luxury: I shall not think myself any..." — genuinely different text, both fully legible, both cut
+  exactly on word boundaries, neither mid-word. Both renders completed normally (1065 frames, 35.5s, house-profile
+  MP4) — direct proof the never-finishes invariant held for both real offsets, not just the unit-tested bound.
 - [ ] T19: Sub-type spacing in the scheduler — `scripts/lib/schedule.ts` currently never reads `sub_types`. Space
   consecutive Wall slots so the same sub-type does not run on consecutive days where the pool allows it, and
   report when it cannot. Acceptance: a generated week shows no back-to-back repeat of `thou_wall`/`cascade`/

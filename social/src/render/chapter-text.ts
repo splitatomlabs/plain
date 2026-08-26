@@ -62,3 +62,107 @@ export function loadChapterTextBlock(bookSlug: string, cardId: string, outputDir
 	const bookCards = loadBookCards(bookSlug, outputDir);
 	return buildChapterTextBlock(cardId, bookCards);
 }
+
+// ---------------------------------------------------------------------------
+// Mid-chapter entry (social pilot 02a T18) — varying frame 0's start point
+// within the chapter block so consecutive posts don't open on the same beat.
+//
+// DESIGN DECISION (T18 was left open by the plan on exactly this point): the
+// block above still ALWAYS starts at the target card's own `original_excerpt`
+// (T05/T06 unchanged, not reopened here) — what varies is where WITHIN that
+// same block a given post's render starts READING from. Concretely, the
+// offset is bounded to the target card's own excerpt (never past it, into
+// the following cards' text) — the entry point moves to a different WORD of
+// the card's own passage, never past it. Two things this buys, both required
+// by the plan's own "IMPORTANT TENSION" framing:
+//   1. Honesty: whatever a given post's frame 0 shows is still, word for
+//      word, drawn from the target card's OWN excerpt — never another
+//      card's — so the wall stays recognisably "this card's passage",
+//      exactly as its plain-English payoff is about to claim.
+//   2. The never-finishes invariant becomes trivial to hold at every offset:
+//      the offset can consume at most `excerptWordCount - 1` words off the
+//      FRONT of a chapter block that's already an order of magnitude longer
+//      than the ~412-word travel floor (`wall-timing.ts`'s
+//      `WALL_SCROLL_RATE_PX_PER_SEC` doc comment) — the remaining block after
+//      the offset is shortened by, at most, one card's own excerpt length,
+//      never by a meaningful fraction of the chapter. (Verified directly,
+//      not just argued, in `chapter-text.test.ts`'s "every slice card clears
+//      the travel requirement at its own worst-case offset" case.)
+//
+// The alternative this rejects — starting the BLOCK itself somewhere else in
+// the chapter (a different card's excerpt at the very front) — was rejected
+// because it can skip the target card's own excerpt out of the visible wall
+// entirely, breaking the "the viewer sees the card's own passage during the
+// wall" requirement outright, not just weakening it.
+// ---------------------------------------------------------------------------
+
+/**
+ * The deterministic word offset (into the target card's own excerpt — see
+ * the module-level "mid-chapter entry" comment above) for a given
+ * `postIndex` (`cli-plan.ts`'s `postIndexForSlot` — the same deterministic,
+ * date/slot-derived integer already used to seed the music bed, NEVER
+ * `Date.now()` or `Math.random()`). Pure arithmetic, no I/O, so it's cheap to
+ * exhaustively test.
+ *
+ * `postIndex` increments by exactly 1 per scheduled slot (`postIndexForSlot`
+ * = `(week-1)*14 + (day-1)*2 + (slotNumber-1)`), so consecutive posts get
+ * consecutive offsets modulo `excerptWordCount` — a different word almost
+ * every time, cycling back only once `excerptWordCount` posts have gone by.
+ * `((postIndex % excerptWordCount) + excerptWordCount) % excerptWordCount`
+ * rather than a bare `%` so a hypothetical negative `postIndex` (not
+ * produced by `postIndexForSlot` today, but this function makes no
+ * assumption about its caller) still lands in range rather than returning a
+ * negative array index to `applyChapterEntryOffset` below.
+ *
+ * Returns 0 (no offset — frame 0 opens exactly at the excerpt's own first
+ * word, the pre-T18 behaviour) for any excerpt with fewer than 2 words:
+ * there is no interior word boundary to enter on, and offsetting by 0 words
+ * is never wrong, just not varied.
+ */
+export function chapterEntryOffsetWords(postIndex: number, excerptWordCount: number): number {
+	if (excerptWordCount < 2) {
+		return 0;
+	}
+	return ((postIndex % excerptWordCount) + excerptWordCount) % excerptWordCount;
+}
+
+/**
+ * Applies T18's mid-chapter entry to a chapter block already built by
+ * `buildChapterTextBlock`/`loadChapterTextBlock`: returns the SUFFIX of
+ * `chapterBlock` starting at the `chapterEntryOffsetWords(postIndex, ...)`-th
+ * word of the target card's own excerpt (the block's own first "paragraph" —
+ * see `buildChapterTextBlock`'s `\n\n`-joined shape, and the guard below for
+ * the single-card-chapter case where there is no `\n\n` at all). Never
+ * mutates the text itself — no fabrication, no reordering, no truncation of
+ * words — it only moves WHERE the returned string starts, always exactly on
+ * a word boundary (`\S+` token starts), so a caller can never open on half a
+ * word.
+ *
+ * `Wall.tsx` itself is unchanged by this: it still renders whatever string
+ * `chapterBlock` prop it's given starting at scroll offset 0 (frame 0's
+ * scroll offset is exactly 0 by construction — see `wallScrollOffsetAtFrame`
+ * in `wall-timing.ts`), so the "frame 0 shows this string's own first words
+ * at the top of the frame" contract T09 established stays literally true —
+ * this function only changes WHICH string that is, one layer up
+ * (`cli.ts`'s `buildRenderPlan`), never how the Wall composition scrolls.
+ */
+export function applyChapterEntryOffset(chapterBlock: string, postIndex: number): string {
+	const paragraphBreak = chapterBlock.indexOf('\n\n');
+	const targetExcerpt = paragraphBreak === -1 ? chapterBlock : chapterBlock.slice(0, paragraphBreak);
+
+	const words = [...targetExcerpt.matchAll(/\S+/g)];
+	const offsetWords = chapterEntryOffsetWords(postIndex, words.length);
+	if (offsetWords === 0) {
+		return chapterBlock;
+	}
+
+	const startIndex = words[offsetWords]?.index;
+	if (startIndex === undefined) {
+		// Defensive only — chapterEntryOffsetWords is bounded to
+		// [0, words.length - 1] by construction, so this can't happen for any
+		// real caller. Falling back to the unmodified block (rather than
+		// throwing) keeps this function total.
+		return chapterBlock;
+	}
+	return chapterBlock.slice(startIndex);
+}

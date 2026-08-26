@@ -33,7 +33,13 @@ import { describe, expect, it } from 'vitest';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildChapterTextBlock, loadChapterTextBlock, type ChapterTextCard } from '../chapter-text.js';
+import {
+	buildChapterTextBlock,
+	loadChapterTextBlock,
+	chapterEntryOffsetWords,
+	applyChapterEntryOffset,
+	type ChapterTextCard
+} from '../chapter-text.js';
 import { loadBookCards } from '../../remotion/wall-pool.js';
 import {
 	computeWallLayout,
@@ -201,6 +207,96 @@ describe('buildChapterTextBlock — ordering, wrap-around, and chapter scoping (
 });
 
 // ---------------------------------------------------------------------------
+// Mid-chapter entry (social pilot 02a T18) — `chapterEntryOffsetWords` /
+// `applyChapterEntryOffset`. See `chapter-text.ts`'s own "DESIGN DECISION"
+// comment for the reasoning these tests hold it to.
+// ---------------------------------------------------------------------------
+
+describe('chapterEntryOffsetWords — deterministic, in range, never mid-word', () => {
+	it('is deterministic: the same (postIndex, excerptWordCount) always returns the same offset', () => {
+		expect(chapterEntryOffsetWords(7, 42)).toBe(chapterEntryOffsetWords(7, 42));
+	});
+
+	it('varies across consecutive postIndex values (the acceptance criterion: consecutive posts differ)', () => {
+		const offsets = [0, 1, 2, 3, 4].map((i) => chapterEntryOffsetWords(i, 50));
+		expect(new Set(offsets).size).toBeGreaterThan(1);
+	});
+
+	it('is always in range [0, excerptWordCount) for a wide sweep of postIndex values', () => {
+		for (let postIndex = 0; postIndex < 500; postIndex++) {
+			const offset = chapterEntryOffsetWords(postIndex, 37);
+			expect(offset).toBeGreaterThanOrEqual(0);
+			expect(offset).toBeLessThan(37);
+		}
+	});
+
+	it('returns 0 for excerpts with fewer than 2 words (no interior word boundary to enter on)', () => {
+		expect(chapterEntryOffsetWords(3, 0)).toBe(0);
+		expect(chapterEntryOffsetWords(3, 1)).toBe(0);
+	});
+
+	it('handles a hypothetical negative postIndex without going out of range (defensive — postIndexForSlot never actually produces one)', () => {
+		const offset = chapterEntryOffsetWords(-5, 12);
+		expect(offset).toBeGreaterThanOrEqual(0);
+		expect(offset).toBeLessThan(12);
+	});
+});
+
+describe('applyChapterEntryOffset — never mid-word, honest (drawn from the target card\'s own excerpt only)', () => {
+	const FIVE_CARD_BLOCK = buildChapterTextBlock(CH1_CARD_3.id, SYNTHETIC_BOOK_CARDS);
+
+	it('offset 0 (postIndex a multiple of the excerpt\'s word count) returns the block unmodified', () => {
+		const excerptWordCount = CH1_CARD_3.original_excerpt.split(/\s+/).filter(Boolean).length;
+		expect(applyChapterEntryOffset(FIVE_CARD_BLOCK, excerptWordCount)).toBe(FIVE_CARD_BLOCK);
+	});
+
+	it('a nonzero offset returns a real suffix of the block, never mid-word', () => {
+		const shifted = applyChapterEntryOffset(FIVE_CARD_BLOCK, 2);
+		expect(FIVE_CARD_BLOCK.endsWith(shifted)).toBe(true);
+		expect(shifted.length).toBeLessThan(FIVE_CARD_BLOCK.length);
+		// Never mid-word: the character immediately before the cut (in the
+		// original block) must be whitespace or the string's own start —
+		// i.e. the cut lands exactly on a word boundary, never inside one.
+		const cutIndex = FIVE_CARD_BLOCK.length - shifted.length;
+		expect(cutIndex).toBeGreaterThan(0);
+		expect(/\s/.test(FIVE_CARD_BLOCK[cutIndex - 1])).toBe(true);
+		// And the shifted text itself starts with a real word, not whitespace.
+		expect(/^\S/.test(shifted)).toBe(true);
+	});
+
+	it('two different postIndex values on the same card open at different points (the acceptance criterion, direct)', () => {
+		const openingA = applyChapterEntryOffset(FIVE_CARD_BLOCK, 1).slice(0, 20);
+		const openingB = applyChapterEntryOffset(FIVE_CARD_BLOCK, 3).slice(0, 20);
+		expect(openingA).not.toBe(openingB);
+	});
+
+	it('honesty: every offset within the excerpt\'s own word count still opens somewhere INSIDE the target card\'s own excerpt, never past it', () => {
+		const excerptWordCount = CH1_CARD_3.original_excerpt.split(/\s+/).filter(Boolean).length;
+		for (let postIndex = 0; postIndex < excerptWordCount; postIndex++) {
+			const shifted = applyChapterEntryOffset(FIVE_CARD_BLOCK, postIndex);
+			// The shifted opening must still be a substring of the target
+			// card's OWN excerpt (plus whatever follows it in the block) —
+			// concretely: the excerpt itself, from some interior point
+			// onward, must still be a PREFIX of what's left.
+			const offsetWords = chapterEntryOffsetWords(postIndex, excerptWordCount);
+			const excerptWords = CH1_CARD_3.original_excerpt.split(/\s+/).filter(Boolean);
+			const expectedExcerptTail = excerptWords.slice(offsetWords).join(' ');
+			// Loose containment check (whitespace between words in the source
+			// text need not be single spaces) — the FIRST word of the
+			// expected tail must be the first word of what's shifted.
+			expect(shifted.split(/\s+/)[0]).toBe(expectedExcerptTail.split(' ')[0]);
+		}
+	});
+
+	it('a single-card chapter (no "\\n\\n" in the block) still offsets correctly', () => {
+		const soloCard = chapterCard(1, 'One two three four five six seven eight nine ten.');
+		const block = buildChapterTextBlock(soloCard.id, [soloCard]);
+		const shifted = applyChapterEntryOffset(block, 3);
+		expect(shifted.startsWith('four')).toBe(true);
+	});
+});
+
+// ---------------------------------------------------------------------------
 // Real corpus — the read-through slice this exists for (Meditations Books
 // 2-3, 48 cards). Confirms the loader's behaviour holds against real card
 // data, not just a synthetic fixture, and that every one of the 48 cards
@@ -272,6 +368,40 @@ describe('buildChapterTextBlock / loadChapterTextBlock — the real read-through
 		}
 		expect(shortfalls).toEqual([]);
 	});
+
+	it(
+		'T18: every one of the 48 read-through slice cards STILL clears the real travel requirement at its own ' +
+			'WORST-CASE mid-chapter entry offset (excerptWordCount - 1 words consumed off the front) — the ' +
+			'never-finishes invariant holds at every offset the scheme can produce, not just offset 0',
+		() => {
+			const results: { id: string; worstOffset: number; blockHeight: number; marginPx: number }[] = [];
+			const shortfalls: typeof results = [];
+			for (const card of slice) {
+				const rawBlock = loadChapterTextBlock(READ_THROUGH_BOOK, card.id, outputDir);
+				const excerptWordCount = card.original_excerpt.split(/\s+/).filter(Boolean).length;
+				const worstOffset = Math.max(0, excerptWordCount - 1);
+				const shifted = applyChapterEntryOffset(rawBlock, worstOffset);
+				const layout = computeWallLayout(shifted);
+				const marginPx = layout.blockHeight - TRAVEL_FLOOR_PX;
+				const row = { id: card.id, worstOffset, blockHeight: layout.blockHeight, marginPx };
+				results.push(row);
+				if (!(layout.blockHeight > TRAVEL_FLOOR_PX)) {
+					shortfalls.push(row);
+				}
+			}
+			expect(shortfalls).toEqual([]);
+			// Report the worst-case (smallest) margin across the whole slice —
+			// this is the number the task asks to be reported, not just a
+			// pass/fail.
+			const worstMargin = results.reduce((min, r) => Math.min(min, r.marginPx), Infinity);
+			// eslint-disable-next-line no-console
+			console.log(
+				`T18 never-finishes worst-case margin across the 48-card slice: ${worstMargin.toFixed(1)}px ` +
+					`(travel floor ${TRAVEL_FLOOR_PX.toFixed(1)}px)`
+			);
+			expect(worstMargin).toBeGreaterThan(0);
+		}
+	);
 
 	it('the block for every slice card is verbatim: every substring is drawn only from original_excerpt fields in its own chapter', () => {
 		for (const card of slice) {

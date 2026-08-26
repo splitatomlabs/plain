@@ -46,7 +46,7 @@ import {
 } from './cli-plan.js';
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
-import { loadChapterTextBlock } from './render/chapter-text.js';
+import { loadChapterTextBlock, applyChapterEntryOffset } from './render/chapter-text.js';
 import { computeWallTiming, WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
 import { formatRunningHead } from './remotion/SourceHead.js';
 import { computeQuestionTiming } from './remotion/question-timing.js';
@@ -198,6 +198,14 @@ export interface WallPlan {
 	 * order, one full lap starting at this card. See `Wall.tsx`'s
 	 * `WallProps.chapterBlock` doc comment and `render/chapter-text.ts`'s
 	 * `loadChapterTextBlock`.
+	 *
+	 * social pilot 02a T18: mid-chapter entry has already been applied by
+	 * the time this field is set — `render/chapter-text.ts`'s
+	 * `applyChapterEntryOffset`, keyed off this render's own `postIndex`, has
+	 * shifted the block's start point to a different word of the card's own
+	 * excerpt (never past it) so consecutive posts of the same card don't
+	 * open on the same beat. See that function's own doc comment for the
+	 * design decision.
 	 */
 	chapterBlock: string;
 	/**
@@ -276,7 +284,10 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 	switch (slot.content.format) {
 		case 'wall': {
 			const plainLines = computeWallPlainLines(card.plain_english, slot.content.landing_line);
-			const chapterBlock = loadChapterTextBlock(slot.book_slug, slot.card_id);
+			// social pilot 02a T18: mid-chapter entry, deterministic from this
+			// render's own postIndex — see `applyChapterEntryOffset`'s doc
+			// comment (`render/chapter-text.ts`) for the design.
+			const chapterBlock = applyChapterEntryOffset(loadChapterTextBlock(slot.book_slug, slot.card_id), postIndex);
 			formatPlan = {
 				format: 'wall',
 				originalExcerpt: slot.content.original_excerpt,
