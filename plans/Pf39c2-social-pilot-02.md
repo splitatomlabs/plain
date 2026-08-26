@@ -192,7 +192,14 @@ looks like Plain.
   and genuinely travels — illegibility comes from speed, not from squinting; (c) DROP the karaoke highlight, the
   scroll is the motion. The countdown opening currently derives its numeral from the karaoke sweep, so it must be
   re-derived from scroll progress.
-- [ ] F16: Re-derive the Wall gate around the scroll (depends on F15). The current gate's objective is "auto-fit to
+- [~] F17: The Remotion compositions render in GEORGIA, not Literata. `SERIF_STACK` names 'Literata Variable' but
+  no `@font-face` is registered anywhere in the bundle, so every MP4 falls back — while the Playwright feed still
+  DOES embed the fonts, so the JPEG and the MP4 of the same post are set in different typefaces. On a Linux
+  container there is no Georgia either. This is the plan's own named top failure mode ("Fonts must be INSTALLED in
+  the container, not merely referenced"). Must land BEFORE F16: F15's line-count calibration was measured against
+  Georgia's metrics, so the geometry has to be re-derived once the real face is in.
+- [~] F16: Set the agreed scroll geometry and re-derive the Wall gate around it (depends on F15 and F17). User chose
+  the middle setting: 76px type at ~500px/s (denser than F15's 86px/720px/s, still visibly outrunning the reader). The current gate's objective is "auto-fit to
   exactly ONE screen" — the opposite of what a scroll needs. New axes: the block must be tall enough to travel, the
   type must clear the legibility floor, and the scroll must NOT finish before the cut. Then regenerate
   `content/social/render-exclusions.json` and week 1, since the pass/reject split will move.
