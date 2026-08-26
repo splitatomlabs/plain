@@ -2,7 +2,19 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { loadCorpus, rankWall, questionGate, objectionGate, wallAuthorWeights, sentences, passesLayerA, passesLayerB } from "../premises.js";
+import {
+  loadCorpus,
+  rankWall,
+  questionGate,
+  objectionGate,
+  wallAuthorWeights,
+  sentences,
+  passesLayerA,
+  passesLayerB,
+  classifyWallSubTypes,
+  type RankedWallEntry,
+  type WallSubType,
+} from "../premises.js";
 import { checkFaithfulness } from "../premises-scoring.js";
 import {
   generateWeek,
@@ -3431,6 +3443,253 @@ describe("T21: Wall selection respects rubric scores", () => {
       const warnMessages = warnSpy.mock.calls.map((call) => String(call[0]));
       expect(warnMessages.some((m) => /Wall strong pool exhausted/i.test(m))).toBe(true);
       expect(warnMessages.some((m) => /0 strong entries remain/i.test(m))).toBe(true);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T19: sub-type spacing.
+//
+// The read-through's CARD is fixed by sequence (never reordered — the
+// plan's own hard constraint), so its Wall sub-type, when it renders as
+// Wall, is whatever `classifyWallSubTypes` finds on that exact card: there
+// is no pool of alternatives to draw a spaced one from. The free slot
+// (slot 2) DOES have a pool, so it's the only slot the scheduler can
+// actively space. Both halves are covered below: a fully hand-traced
+// synthetic fixture proves the mechanism itself (prefers a disjoint
+// sub-type when the pool allows it; reports, rather than silently accepts,
+// once the disjoint pool is exhausted — including the read-through's own
+// unavoidable case), and a real-corpus multi-week chain proves the
+// mechanism holds against the actual scored pool, with an EXACT
+// correspondence between real back-to-back repeats and logged reports (no
+// silent repeat, no false-alarm report).
+// ---------------------------------------------------------------------------
+describe("T19: Wall sub-type spacing", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // Confirmed against premises.test.ts's own classifyWallSubTypes suite:
+  // exactly 3 archaic-marker occurrences ("Thou"/"hath"/"thy") -> thou_wall
+  // only; exactly 3 semicolons -> cascade only. Neither string matches the
+  // other sub-type, so each fixture card below has an unambiguous,
+  // single-entry `sub_types` array.
+  const THOU_WALL_EXCERPT = "Thou hath spoken, and thy word is true.";
+  const CASCADE_EXCERPT = "One; two; three; four of these matters remain unresolved.";
+
+  function makeReadThroughCard(n: number): Card {
+    return {
+      id: `spacing-book-${String(n).padStart(2, "0")}`,
+      book_slug: "spacing-book",
+      chapter_slug: "chapter-01",
+      card_number: n,
+      total_cards_in_chapter: 7,
+      // A distinct, self-contained 5-18 word sentence (no leading
+      // But/So/This/It/And, no mid-sentence he/she/it/this/etc.) for every
+      // card, so `selectLandingLine` succeeds unconditionally — this is
+      // what forces every read-through slot to Wall, deterministically, no
+      // rng-dependent branching.
+      plain_english: `Genuine calm on day ${n} comes only from within, never from the world outside.`,
+      original_excerpt: THOU_WALL_EXCERPT,
+      source_reference: `Spacing Test, Card ${n}`,
+      author_slug: "marcus-aurelius",
+      tags: ["calm-your-mind"],
+      reading_time_seconds: 20,
+    };
+  }
+
+  function makeFreePoolCard(n: number, kind: "thou_wall" | "cascade"): Card {
+    return {
+      id: `free-pool-${String(n).padStart(2, "0")}`,
+      book_slug: "free-pool-book",
+      chapter_slug: "chapter-01",
+      card_number: n,
+      total_cards_in_chapter: 8,
+      plain_english: `Free pool card number ${n}, kind ${kind}, used only as a Wall landing line.`,
+      original_excerpt: kind === "thou_wall" ? THOU_WALL_EXCERPT : CASCADE_EXCERPT,
+      source_reference: `Free Pool Test, Card ${n}`,
+      author_slug: "seneca",
+      tags: ["calm-your-mind"],
+      reading_time_seconds: 20,
+    };
+  }
+
+  function makeFreePoolEntry(card: Card, subTypes: WallSubType[]): RankedWallEntry {
+    return {
+      card_id: card.id,
+      book_slug: card.book_slug,
+      author_slug: card.author_slug,
+      original_word_count: 100,
+      landing_line: card.plain_english, // trivially verbatim (assertFaithful)
+      sub_types: subTypes,
+      reserve: subTypes.length === 0,
+      archaic_marker_count: 0,
+      semicolon_count: 0,
+      quote_count: 0,
+      original_grade: 8,
+    };
+  }
+
+  it("prefers a disjoint sub-type for the free slot while the pool allows it, and reports every back-to-back repeat once it can't — hand-traced, fully deterministic fixture", () => {
+    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+
+    const readThroughCards = Array.from({ length: 7 }, (_, i) => makeReadThroughCard(i + 1));
+
+    // 4 thou_wall + 4 cascade free-pool entries — enough for exactly 7
+    // slot-2 draws (one per day) with 1 spare, so the pool never runs out
+    // entirely (a separate failure mode from "can't space").
+    const freePoolCards: Card[] = [];
+    const freePoolEntries: RankedWallEntry[] = [];
+    let n = 0;
+    for (let i = 0; i < 4; i++) {
+      n += 1;
+      const card = makeFreePoolCard(n, "thou_wall");
+      freePoolCards.push(card);
+      freePoolEntries.push(makeFreePoolEntry(card, ["thou_wall"]));
+    }
+    for (let i = 0; i < 4; i++) {
+      n += 1;
+      const card = makeFreePoolCard(n, "cascade");
+      freePoolCards.push(card);
+      freePoolEntries.push(makeFreePoolEntry(card, ["cascade"]));
+    }
+
+    const pools: FormatPools = { wall: freePoolEntries, question: [], objection: [] };
+
+    const week = generateWeek({
+      weekNumber: 1,
+      seed: 42,
+      cards: [...readThroughCards, ...freePoolCards],
+      pools,
+      poolSource: { wall: "gate-only", question: "gate-only", objection: "gate-only" },
+      priorUsedCardIds: new Set(),
+      readThroughBook: "spacing-book",
+      readThroughStartIndex: 0,
+      // wall-only weighting (question/objection both weight 0 AND have
+      // empty pools) forces every one of the 14 slots to resolve to Wall,
+      // deterministically — no rng-dependent branching anywhere in this
+      // fixture.
+      weights: { wall: 1, question: 0, objection: 0 },
+    });
+
+    expect(week.format_counts.wall).toBe(14);
+    expect(week.format_counts.question + week.format_counts.objection + week.format_counts.still).toBe(0);
+
+    // THE HARD CONSTRAINT: the read-through's card order is untouched — the
+    // exact 7-card sequence, in order, no skip/repeat/substitution.
+    const rtIds = week.slots
+      .filter((s) => s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => s.card_id);
+    expect(rtIds).toEqual(readThroughCards.map((c) => c.id));
+
+    // Classify every drawn slot-2 card id back to "thou_wall"/"cascade" via
+    // the fixture's own known split — not re-derived from the schedule.
+    const thouWallIds = new Set(freePoolEntries.filter((e) => e.sub_types.includes("thou_wall")).map((e) => e.card_id));
+    const cascadeIds = new Set(freePoolEntries.filter((e) => e.sub_types.includes("cascade")).map((e) => e.card_id));
+    const slot2Kinds = week.slots
+      .filter((s) => !s.read_through)
+      .sort((a, b) => a.day - b.day)
+      .map((s) => (thouWallIds.has(s.card_id) ? "thou_wall" : cascadeIds.has(s.card_id) ? "cascade" : "unknown"));
+
+    // Hand-derived: every read-through slot is thou_wall (fixed, by
+    // construction). Days 1-4 space away from it by drawing the 4 disjoint
+    // cascade entries (exactly enough for 4 days); by day 5 the cascade
+    // supply is exhausted, so the only entries left are thou_wall, which
+    // DOES repeat the read-through's fixed sub-type on days 5-7.
+    expect(slot2Kinds).toEqual(["cascade", "cascade", "cascade", "cascade", "thou_wall", "thou_wall", "thou_wall"]);
+
+    // Every repeat that occurred was reported. Hand-derived from the full
+    // 14-slot sequence (thou,casc, thou,casc, thou,casc, thou,casc,
+    // thou,thou, thou,thou, thou,thou): exactly 5 adjacent pairs share a
+    // sub-type — day 5's own slot1/slot2 pair (reported by slot 2), day
+    // 5-slot2-to-day-6-slot1 (reported by slot 1), day 6's own pair
+    // (reported by slot 2), day 6-slot2-to-day-7-slot1 (reported by slot
+    // 1), day 7's own pair (reported by slot 2). 3 slot-2 reports, 2
+    // slot-1 reports.
+    const warnMessages = warnSpy.mock.calls.map((call) => String(call[0]));
+    const spacingMessages = warnMessages.filter((m) => /Wall sub-type spacing could not be honored/.test(m));
+    const slot2Warnings = spacingMessages.filter((m) => /\bslot 2\b/.test(m));
+    const slot1Warnings = spacingMessages.filter((m) => /\bslot 1\b/.test(m));
+
+    expect(spacingMessages).toHaveLength(5);
+    expect(slot2Warnings).toHaveLength(3);
+    expect(slot1Warnings).toHaveLength(2);
+    expect(slot2Warnings.every((m) => /\bday (5|6|7)\b/.test(m))).toBe(true);
+    expect(slot1Warnings.every((m) => /\bday (6|7)\b/.test(m))).toBe(true);
+    // The read-through's own report explicitly names WHY it's unavoidable
+    // (never reordered/substituted), distinct from slot 2's "pool does not
+    // allow spacing here" reasoning.
+    expect(slot1Warnings.every((m) => /card order is never reordered/i.test(m))).toBe(true);
+    expect(slot2Warnings.every((m) => /pool does not allow spacing here/i.test(m))).toBe(true);
+  });
+
+  describe("against the real corpus (multi-week, wall-dominant chain)", () => {
+    const premisesDir = path.join(process.cwd(), "content", "social", "premises");
+
+    it("every back-to-back Wall sub-type repeat within a generated week is exactly the set that gets reported — no silent repeat, no false-alarm report", async () => {
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      const { pools, source } = await loadFormatPools(premisesDir, gatePools);
+      expect(source.wall).toBe("scored"); // exercising the real scored pool's own sub_types field
+      const wallEntries = pools.wall as RankedWallEntry[];
+      const subTypesByPoolCardId = new Map(wallEntries.map((e) => [e.card_id, e.sub_types]));
+      const cardsById = new Map(cards.map((c) => [c.id, c]));
+
+      const priorUsedCardIds = new Set<string>();
+      let readThroughCursor = 0;
+      let totalRepeats = 0;
+      let totalSpacingWarnings = 0;
+
+      for (let week = 1; week <= 8; week++) {
+        warnSpy.mockClear();
+        const schedule = generateWeek({
+          weekNumber: week,
+          seed: 6000 + week,
+          cards,
+          pools,
+          poolSource: source,
+          priorUsedCardIds,
+          readThroughBook: "enchiridion",
+          readThroughStartIndex: readThroughCursor,
+          weights: { wall: 20, question: 1, objection: 1 },
+        });
+
+        // Re-derive each Wall slot's sub_types the SAME way generateWeek
+        // itself does: the read-through's own `classifyWallSubTypes(card)`
+        // (it isn't in the wall pool at all — excluded by book), the free
+        // slot's own pool entry `sub_types` (exactly what the scheduler's
+        // spacing filter matched candidates against).
+        const ordered = [...schedule.slots].sort((a, b) => a.day - b.day || a.slot - b.slot);
+        for (let i = 1; i < ordered.length; i++) {
+          const prev = ordered[i - 1];
+          const cur = ordered[i];
+          if (prev.content.format !== "wall" || cur.content.format !== "wall") continue;
+          const prevSub = prev.read_through
+            ? classifyWallSubTypes(cardsById.get(prev.card_id)!).sub_types
+            : subTypesByPoolCardId.get(prev.card_id);
+          const curSub = cur.read_through
+            ? classifyWallSubTypes(cardsById.get(cur.card_id)!).sub_types
+            : subTypesByPoolCardId.get(cur.card_id);
+          expect(prevSub).toBeDefined();
+          expect(curSub).toBeDefined();
+          if (prevSub!.some((t) => curSub!.includes(t))) totalRepeats += 1;
+        }
+
+        const spacingWarnings = warnSpy.mock.calls
+          .map((call) => String(call[0]))
+          .filter((m) => /Wall sub-type spacing could not be honored/.test(m));
+        totalSpacingWarnings += spacingWarnings.length;
+
+        for (const slot of schedule.slots) priorUsedCardIds.add(slot.card_id);
+        readThroughCursor += schedule.slots.filter((s) => s.read_through).length;
+      }
+
+      // The mechanism actually exercised both paths over this real, 8-week
+      // chain (a vacuous 0/0 would not prove anything).
+      expect(totalRepeats + totalSpacingWarnings).toBeGreaterThan(0);
+      // The exact correspondence: every real repeat was reported, and
+      // nothing was reported that didn't actually repeat.
+      expect(totalSpacingWarnings).toBe(totalRepeats);
     });
   });
 });

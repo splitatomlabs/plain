@@ -987,10 +987,78 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   appliances of luxury: I shall not think myself any..." — genuinely different text, both fully legible, both cut
   exactly on word boundaries, neither mid-word. Both renders completed normally (1065 frames, 35.5s, house-profile
   MP4) — direct proof the never-finishes invariant held for both real offsets, not just the unit-tested bound.
-- [ ] T19: Sub-type spacing in the scheduler — `scripts/lib/schedule.ts` currently never reads `sub_types`. Space
+- [x] T19: Sub-type spacing in the scheduler — `scripts/lib/schedule.ts` currently never reads `sub_types`. Space
   consecutive Wall slots so the same sub-type does not run on consecutive days where the pool allows it, and
   report when it cannot. Acceptance: a generated week shows no back-to-back repeat of `thou_wall`/`cascade`/
   `scene`; the read-through's card order is NEVER reordered to achieve it (it walks the book in order).
+  Done (2026-08-26): worked out which slots are actually free to space BEFORE touching anything, per the task's own
+  instruction. Slot 1 (the read-through) has NO pool at all — its card is fixed by sequence, so when it renders as
+  Wall its sub-type is whatever `classifyWallSubTypes` finds on that exact, un-substitutable card; there is nothing
+  to space it WITH. Slot 2 (the weighted free slot) DOES draw from a real pool (`RankedWallEntry[]`, which already
+  carries `sub_types` from T07/T08/T21's own `rankWall`/scored-pool work) — this is the only slot the scheduler can
+  actively space. So the implementation is two halves: slot 2 actively PREFERS a pool entry whose `sub_types` don't
+  overlap the immediately preceding Wall slot's (filtering the candidate array before the existing single
+  `selectWallBalanced` call, so rng consumption is byte-identical to before this task); slot 1 only ever REPORTS
+  when its fixed card's sub-type repeats — it never swaps its own format to dodge a repeat, since that would
+  perturb the Wall/Still ratio T02-T04 already tuned and measured, which is not this task's job and not what "the
+  card order is never reordered" licenses touching.
+  "Consecutive" is defined as immediately-adjacent slots in the week's own day/slot emission order (day N slot 1,
+  day N slot 2, day N+1 slot 1, ...) — a non-Wall slot in between (Question/Objection/Still) already breaks
+  "back-to-back" on its own (those formats look nothing alike at frame 0 to begin with), so the spacing state
+  (`previousSlotWasWall`/`previousWallSubTypes`) resets to inactive after any non-Wall slot, tracked fresh within
+  each `generateWeek` call (cross-week continuity was explicitly out of scope — the VERIFY block only asks for ONE
+  generated week — and `generateWeek` stays pure/stateless across calls exactly as before; flagged as a followup
+  below, not silently assumed away). The intersection check is non-exclusive-aware (`wallSubTypesIntersect`): a
+  card matching `thou_wall` AND `cascade` shares "the same sub-type" with a purely-`cascade` neighbor and must
+  still be avoided; a `reserve` entry (`sub_types: []`) never intersects anything, since it has no texture to
+  repeat. Reports are `logger.warn` calls (same mechanism T21's own reserve-pool-exhaustion warning already uses,
+  not a new field or channel) naming week/day/slot and the exact sub-type(s) that couldn't be avoided.
+  Tests (`scripts/lib/__tests__/schedule.test.ts`, +2, both new, 123 -> 125): (1) a fully hand-traced, deterministic
+  synthetic fixture — 7 read-through cards all fixed to `thou_wall` (guaranteed via a crafted qualifying landing
+  line on every card, no rng-dependent branching) and an 8-entry free-slot pool split 4 `thou_wall`/4 `cascade`,
+  with `weights: { wall: 1, question: 0, objection: 0 }` forcing every one of the 14 slots to Wall. Hand-derived and
+  confirmed: days 1-4 space away from the fixed `thou_wall` by drawing the 4 disjoint `cascade` entries; once that
+  supply is exhausted (day 5), the only entries left are `thou_wall`, which DOES repeat — and is reported, not
+  silently accepted, on days 5-7 (5 total back-to-back-Wall pairs in the final 14-slot sequence, all 5 exactly
+  reported: 3 slot-2 warnings, 2 slot-1 warnings, matched by day number and by each warning's own distinct wording).
+  Also proves the hard constraint directly: the 7-card read-through sequence is unchanged and in order. (2) a
+  real-corpus, 8-week, wall-dominant chain against the actual scored `content/social/premises/wall.json` pool,
+  asserting an EXACT correspondence between real back-to-back sub-type repeats (independently re-derived per slot:
+  `classifyWallSubTypes(card)` for read-through slots, the scored pool's own `sub_types` field for free-slot
+  draws — i.e. the same source of truth `generateWeek` itself consults) and the count of logged spacing warnings —
+  proving both that no repeat goes unreported AND that nothing is reported that didn't actually repeat.
+  MEASURED on the real, seed-42, first-week generation (`npx tsx scripts/generate-schedule.ts --week 1 --seed 42
+  --first-week --force`, inspected then reverted — see the note below on why it wasn't kept): per-day format/card
+  sequence — day1 wall(`meditations-02-001`)/wall(`peace-of-mind-17-005`), day2 still(`meditations-02-002`)/
+  question(`meditations-11-005`), day3 wall(`meditations-02-003`)/question(`discourses-18-001`), day4
+  wall(`meditations-02-004`)/question(`on-anger-03-108`), day5 still(`meditations-02-005`)/wall(`on-anger-02-100`),
+  day6 wall(`meditations-02-006`)/wall(`on-anger-01-027`), day7 wall(`meditations-02-007`)/question(`discourses-64-006`).
+  Sub-types of every Wall card: `meditations-02-001`->`[thou_wall]`, `peace-of-mind-17-005`->`[]`,
+  `meditations-02-003`->`[thou_wall]`, `meditations-02-004`->`[]`, `on-anger-02-100`->`[]`,
+  `meditations-02-006`->`[thou_wall]`, `on-anger-01-027`->`[]`, `meditations-02-007`->`[thou_wall]`. The 4
+  immediately-adjacent Wall pairs this real week actually produces — (day1 slot1, day1 slot2), (day5 slot2, day6
+  slot1), (day6 slot1, day6 slot2), (day6 slot2, day7 slot1) — each pair has one `thou_wall` side and one `[]`
+  (reserve) side, so NONE overlap: zero back-to-back sub-type repeats, and zero spacing warnings were logged for
+  this run (confirmed by grep over stderr) — the acceptance criterion holds for real, not just in the synthetic
+  fixture. Read-through order proof: captured the slot-1 `card_id` sequence from the previously-committed schedule
+  before regenerating (`[meditations-02-001..007]`), regenerated, and confirmed the sequence is byte-identical
+  after — the read-through was never reordered.
+  Did NOT keep the regenerated `content/social/pilot-schedule-w01.json` — `git checkout --` reverted it back to the
+  committed version after inspection. The regeneration command in this task's own VERIFY block is for INSPECTION;
+  permanently regenerating week 1 is explicitly T20's job (the task brief's own "DO NOT touch" list), and the
+  committed schedule is already known-stale relative to `content/social/render-exclusions.json`/`premises/wall.json`
+  (both committed hours after the schedule file, per `git log`) for reasons entirely unrelated to this task (T08's
+  travel-floor deletion and later premises work, not sub-type spacing) — regenerating it here would have bundled an
+  unrelated, larger diff into this task's own commit.
+  Follow-up (not built here, flagged for whoever owns it): true CROSS-WEEK spacing (the last Wall slot of week N
+  vs. the first slot of week N+1) is out of scope — `generateWeek` stays a pure, single-week function with no
+  memory of a prior week's trailing format, matching its existing architecture (`loadPriorWeeks` only tracks used
+  card ids and the read-through cursor, never format history) and matching the task's own acceptance criterion,
+  which only asks about "a generated week." If this matters later, it needs a new optional `GenerateWeekOptions`
+  field (e.g. `priorLastWallSubTypes`) threaded through the CLI the same way `priorUsedCardIds` already is.
+  Verified: `npx vitest run scripts/lib/__tests__/schedule.test.ts` — 125/125 (123 pre-existing + 2 new, zero
+  regressions). `npm test` from repo root — pipeline 819/819 (up from 817), web 95/95, social 566/566 (unchanged —
+  this task never touches `social/`). `cd social && npx tsc --noEmit` — clean.
 - [ ] T20: Regenerate week 1 and render all 14 posts; re-measure durations against the 15s/59s bounds and record
   the new Wall/Question/Objection/Still mix in this file. Acceptance: all 14 render; ffprobe confirms the profile;
   frames extracted at 0.0s / mid-scroll / cut / payoff show the intended reduction. Then T19's phone review.

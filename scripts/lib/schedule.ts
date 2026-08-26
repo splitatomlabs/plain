@@ -79,6 +79,7 @@ import {
   DEFAULT_QUESTION_FRACTION,
   selectWallBalanced,
   selectLandingLine,
+  classifyWallSubTypes,
   questionGate,
   objectionGate,
   type AuthorMixEntry,
@@ -86,6 +87,7 @@ import {
   type RankedWallEntry,
   type QuestionEntry,
   type ObjectionEntry,
+  type WallSubType,
 } from "./premises.js";
 import { checkFaithfulness, passesStoppingPower } from "./premises-scoring.js";
 import type { WallRubricResult } from "./premises-scoring.js";
@@ -433,6 +435,22 @@ function weightedFormatChoice(weights: FormatWeights, available: ScheduleFormat[
     }
   }
   return picked;
+}
+
+/**
+ * T19: true when two Wall sub-type lists share at least one entry — the
+ * definition of "the same sub-type runs on consecutive [Wall] days/slots"
+ * the plan asks the scheduler to avoid. Non-exclusive by design
+ * (`classifyWallSubTypes` — a card can match `thou_wall` AND `cascade`), so
+ * "no overlap" (not "different first element") is the correct check. An
+ * empty list on either side (a `reserve` entry, matching none of the three
+ * sub-types) never intersects anything, which is correct: a reserve Wall
+ * has no texture to repeat.
+ */
+function wallSubTypesIntersect(a: readonly WallSubType[], b: readonly WallSubType[]): boolean {
+  if (a.length === 0 || b.length === 0) return false;
+  const bSet = new Set(b);
+  return a.some((t) => bSet.has(t));
 }
 
 // ---------------------------------------------------------------------------
@@ -914,6 +932,19 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   let objectionUsedThisWeek = 0;
   let readThroughCursor = readThroughStartIndex;
 
+  // T19: sub-type spacing state. Tracks only the IMMEDIATELY PRECEDING
+  // scheduled slot (day/slot order, i.e. this same loop's own emission
+  // order: day N slot 1, day N slot 2, day N+1 slot 1, ...) — not "the most
+  // recent Wall seen so far". A non-Wall slot in between (Question,
+  // Objection, Still) already reads as visually distinct at frame 0, so it
+  // breaks "consecutive" for this purpose; only two Wall slots with NOTHING
+  // else between them count as "back-to-back". `previousWallSubTypes` is
+  // meaningless when `previousSlotWasWall` is false — always gate on the
+  // flag, never on the array being empty (a real Wall `reserve` entry
+  // also has an empty `sub_types` array).
+  let previousSlotWasWall = false;
+  let previousWallSubTypes: WallSubType[] = [];
+
   for (let day = 1; day <= 7; day++) {
     // Slot 1: the read-through. The CARD is always the next sequential card
     // of `readThroughBook`, independent of format weighting. The FORMAT is
@@ -952,6 +983,28 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
 
     assertFaithful(rtCard, rtContent, day, 1);
 
+    // T19: sub-type spacing report — READ-ONLY here, deliberately. The
+    // read-through's CARD is fixed by sequence and is NEVER reordered or
+    // substituted (the plan's own hard constraint), so when it renders as
+    // Wall its sub-type is whatever `classifyWallSubTypes` finds on that
+    // exact card: there is no pool of alternatives to draw a spaced one
+    // from, unlike slot 2 below. When that fixed sub-type repeats the
+    // immediately preceding Wall slot's, this is REPORTED, not silently
+    // "fixed" by swapping the read-through's format — doing that would
+    // perturb the Wall/Still ratio T02-T04 already tuned and measured, which
+    // is not this task's job.
+    const rtSubTypes: WallSubType[] = rtFormat === "wall" ? classifyWallSubTypes(rtCard).sub_types : [];
+    if (previousSlotWasWall && rtFormat === "wall" && wallSubTypesIntersect(previousWallSubTypes, rtSubTypes)) {
+      logger.warn(
+        `generateWeek: Wall sub-type spacing could not be honored for week ${weekNumber} day ${day} slot 1 ` +
+          `(read-through card "${rtCard.id}") — its sub-type(s) [${rtSubTypes.join(", ")}] repeat the ` +
+          `immediately preceding Wall slot's [${previousWallSubTypes.join(", ")}]. The read-through's card order ` +
+          `is never reordered or substituted to avoid this, so this back-to-back repeat is unavoidable from here.`,
+      );
+    }
+    previousSlotWasWall = rtFormat === "wall";
+    previousWallSubTypes = rtSubTypes;
+
     slots.push({
       day,
       slot: 1,
@@ -977,6 +1030,13 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     const chosenFormat = weightedFormatChoice(weights, available, rng);
 
     let entry: WallEntry | QuestionEntry | ObjectionEntry;
+    // T19: captured directly from the chosen `RankedWallEntry` at the point
+    // of selection (before `entry`'s declared union type would erase
+    // `sub_types`) — this is the SAME field the spacing filter above just
+    // matched candidates against, so the state this slot leaves behind for
+    // the next one is guaranteed consistent with what was actually checked,
+    // not a separate re-derivation that could in principle drift from it.
+    let chosenWallSubTypes: WallSubType[] = [];
     if (chosenFormat === "wall") {
       // T21: draw from the STRONG subset first (both rubric scores >= the
       // named threshold, or no rubric at all — see `isStrongWallEntry`);
@@ -992,6 +1052,7 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
       const remaining = wallPool.filter((e) => !allUsed.has(e.card_id));
       const strongRemaining = remaining.filter(isStrongWallEntry);
       let wallSourcePool = strongRemaining;
+      const wallPoolLabel = strongRemaining.length > 0 ? "strong" : "reserve";
       if (strongRemaining.length === 0) {
         const reserveRemaining = remaining.filter((e) => !isStrongWallEntry(e));
         logger.warn(
@@ -1000,7 +1061,34 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
         );
         wallSourcePool = reserveRemaining;
       }
-      [entry] = selectWallBalanced(wallSourcePool, wallAuthorWeightsMap, 1, rng);
+
+      // T19: sub-type spacing — THIS is the slot where the scheduler
+      // actually has a pool of alternatives to choose from, unlike the
+      // read-through's slot 1. Prefer entries whose `sub_types` don't
+      // overlap the immediately preceding Wall slot's; fall back to the
+      // full (unspaced) pool and REPORT when every remaining entry in the
+      // current strong/reserve pool shares a sub-type — i.e. the pool does
+      // not allow spacing here. Filters the candidate array in place,
+      // before the single `selectWallBalanced` call below, so this
+      // consumes exactly the same rng draws as before this task (required
+      // for byte-identical regeneration from a seed).
+      if (previousSlotWasWall && previousWallSubTypes.length > 0) {
+        const spaced = wallSourcePool.filter((e) => !wallSubTypesIntersect(e.sub_types, previousWallSubTypes));
+        if (spaced.length > 0) {
+          wallSourcePool = spaced;
+        } else {
+          logger.warn(
+            `generateWeek: Wall sub-type spacing could not be honored for week ${weekNumber} day ${day} slot 2 — ` +
+              `every remaining ${wallPoolLabel} Wall pool entry shares a sub-type with the immediately preceding ` +
+              `Wall slot's [${previousWallSubTypes.join(", ")}]; scheduling unspaced (the pool does not allow ` +
+              `spacing here).`,
+          );
+        }
+      }
+
+      const [wallEntry] = selectWallBalanced(wallSourcePool, wallAuthorWeightsMap, 1, rng);
+      entry = wallEntry;
+      chosenWallSubTypes = wallEntry.sub_types;
     } else if (chosenFormat === "question") {
       const remaining = questionPool.filter((e) => !allUsed.has(e.card_id));
       entry = uniformPick(remaining, rng);
@@ -1026,6 +1114,17 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
       read_through_counter: null,
     });
     allUsed.add(entry.card_id);
+
+    // T19: sub-type spacing state, for the NEXT slot to check against (either
+    // this same day's already-emitted slot 1, moot now, or tomorrow's slot
+    // 1 — see the state's own doc comment above the day loop).
+    if (chosenFormat === "wall") {
+      previousSlotWasWall = true;
+      previousWallSubTypes = chosenWallSubTypes;
+    } else {
+      previousSlotWasWall = false;
+      previousWallSubTypes = [];
+    }
   }
 
   const formatCounts: Record<RenderedFormat, number> = { wall: 0, question: 0, objection: 0, still: 0 };
