@@ -18,13 +18,13 @@
  */
 
 import { fitFontSize } from '../render/fit.js';
-import { FPS, FRAME_WIDTH } from './wall-timing.js';
+import { FPS, FRAME_WIDTH, type NarrationLineTiming } from './wall-timing.js';
 import { padToMinimumDuration } from './duration-bounds.js';
 
 // Re-exported so `Objection.tsx` and callers can import everything they
 // need from this module's "timing" surface without also reaching into
 // `wall-timing.ts` directly for the shared frame-rate/frame-size constants.
-export { FPS, FRAME_WIDTH } from './wall-timing.js';
+export { FPS, FRAME_WIDTH, type NarrationLineTiming } from './wall-timing.js';
 
 // ---------------------------------------------------------------------------
 // Phase 1 — the objection alone, still (frame 0)
@@ -123,6 +123,25 @@ export interface ObjectionPhaseWindow {
 	motionless: boolean;
 }
 
+export interface ObjectionTimingInput {
+	/**
+	 * Optional per-reply-line narration timing (native provider data — see
+	 * T13). `narrationTimings[0]` drives the first reply line's hold,
+	 * `narrationTimings[1]` the second — only each entry's DURATION is
+	 * read, never its absolute position on the timeline, exactly mirroring
+	 * `wall-timing.ts`'s own `WallTimingInput.narrationTimings` contract
+	 * (see that module's `restLineFrameCounts`). Falls back to the fixed
+	 * `OBJECTION_REPLY_LINE_FRAMES` per line when absent, or per-index when
+	 * only one of the two is supplied.
+	 *
+	 * social pilot 02a T16 (F04): before this, both reply-line holds were
+	 * always exactly `OBJECTION_REPLY_LINE_FRAMES`, so real narration that
+	 * ran longer or shorter than that fixed window could drift out of sync
+	 * with the on-screen line.
+	 */
+	narrationTimings?: NarrationLineTiming[];
+}
+
 export interface ObjectionTimingSchedule {
 	totalFrames: number;
 	/** Phase 1 — the objection alone, still. Zero motion at frame 0. */
@@ -143,24 +162,39 @@ export interface ObjectionTimingSchedule {
  * input because, unlike `computeWallTiming`/`computeQuestionTiming`, none
  * of these boundaries vary by card content — the gate has already reduced
  * every renderable card to the same fixed shape (one held objection, two
- * held reply lines) before this schedule is ever consulted.
+ * held reply lines) before this schedule is ever consulted. `input` is
+ * optional (defaults to `{}`) so every existing no-argument call site
+ * (Remotion Studio's `defaultProps`, most tests) keeps working unchanged —
+ * social pilot 02a T16 (F04) added `narrationTimings` as the one field that
+ * DOES vary this schedule, once real narration is available.
  */
-export function computeObjectionTiming(): ObjectionTimingSchedule {
+export function computeObjectionTiming(input: ObjectionTimingInput = {}): ObjectionTimingSchedule {
 	const objection: ObjectionPhaseWindow = {
 		startFrame: 0,
 		endFrame: OBJECTION_HOLD_FRAMES,
 		motionless: true
 	};
 
+	// social pilot 02a T16 (F04) — narration-driven per reply line when
+	// supplied, else the fixed OBJECTION_REPLY_LINE_FRAMES fallback. Mirrors
+	// wall-timing.ts's `restLineFrameCounts`: only each entry's DURATION is
+	// read, floored at 1 frame so a very short line never vanishes.
+	const replyLineFrames: [number, number] = [0, 1].map((index) => {
+		const timing = input.narrationTimings?.[index];
+		return timing
+			? Math.max(1, Math.round((timing.endSeconds - timing.startSeconds) * FPS))
+			: OBJECTION_REPLY_LINE_FRAMES;
+	}) as [number, number];
+
 	const firstReplyLine: ObjectionPhaseWindow = {
 		startFrame: objection.endFrame,
-		endFrame: objection.endFrame + OBJECTION_REPLY_LINE_FRAMES,
+		endFrame: objection.endFrame + replyLineFrames[0],
 		motionless: true
 	};
 
 	const secondReplyLine: ObjectionPhaseWindow = {
 		startFrame: firstReplyLine.endFrame,
-		endFrame: firstReplyLine.endFrame + OBJECTION_REPLY_LINE_FRAMES,
+		endFrame: firstReplyLine.endFrame + replyLineFrames[1],
 		motionless: true
 	};
 

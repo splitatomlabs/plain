@@ -107,7 +107,10 @@ export const RemotionRoot: React.FC = () => {
 					assertQuestionRenderable({ question: props.question, answer: props.answer });
 					assertWallCardRenderable(props.originalExcerpt);
 					return {
-						durationInFrames: computeQuestionTiming({ question: props.question }).totalFrames
+						durationInFrames: computeQuestionTiming({
+							question: props.question,
+							narrationTimings: props.narrationTimings
+						}).totalFrames
 					};
 				}}
 			/>
@@ -130,7 +133,7 @@ export const RemotionRoot: React.FC = () => {
 						reply: props.reply
 					});
 					return {
-						durationInFrames: computeObjectionTiming().totalFrames
+						durationInFrames: computeObjectionTiming({ narrationTimings: props.narrationTimings }).totalFrames
 					};
 				}}
 			/>

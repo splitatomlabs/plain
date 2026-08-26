@@ -390,10 +390,12 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 				plainLines: plan.formatPlan.plainLines,
 				opening: plan.formatPlan.opening,
 				eligibleOpenings: plan.formatPlan.eligibleOpenings,
-				// Only The Wall's timing adapts to real per-line narration
-				// duration (`computeWallTiming`'s `narrationTimings` input) —
-				// The Question/The Objection have a fixed shape (see
-				// `narrationOffsetMs`'s doc comment) and take no such prop.
+				// social pilot 02a T16 (F04): every format's timing now adapts
+				// to real per-line narration duration when supplied
+				// (`computeWallTiming`/`computeQuestionTiming`/
+				// `computeObjectionTiming`'s own `narrationTimings` input) —
+				// see `narrationPlan`'s doc comment for how each format's
+				// `lines` maps onto this array.
 				...(narrationTimings ? { narrationTimings } : {})
 			};
 		case 'question':
@@ -402,14 +404,16 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 				question: plan.formatPlan.question,
 				answer: plan.formatPlan.answer,
 				originalExcerpt: plan.formatPlan.originalExcerpt,
-				sourceReference: plan.formatPlan.sourceReference
+				sourceReference: plan.formatPlan.sourceReference,
+				...(narrationTimings ? { narrationTimings } : {})
 			};
 		case 'objection':
 			return {
 				...base,
 				objection: plan.formatPlan.objection,
 				reply: plan.formatPlan.reply,
-				sourceReference: plan.formatPlan.sourceReference
+				sourceReference: plan.formatPlan.sourceReference,
+				...(narrationTimings ? { narrationTimings } : {})
 			};
 		case 'still':
 			// `base` carries `author`, unused by `Still.tsx` (no accent colour
@@ -476,14 +480,16 @@ export function wallSilentSpans(): TimeSpan[] {
  * after `WALL_FRAMES + LANDING_LINE_FRAMES`. The Question narrates its
  * answer, starting after `QUESTION_HOLD_FRAMES + WALL_FRAMES`. The
  * Objection narrates its two capped reply sentences as one continuous
- * clip, starting after `OBJECTION_HOLD_FRAMES` — NOTE: unlike The Wall,
- * neither The Question's nor The Objection's own timing module accepts a
- * `narrationTimings` input (their schedules are fixed shapes — see
- * `question-timing.ts`/`objection-timing.ts`), so if the real narration
- * ever runs long or short of their fixed per-line holds, the audio and the
- * on-screen line can drift out of step. That's a real, acknowledged gap in
- * those two formats' timing modules, not something this CLI can paper
- * over — flagged here rather than silently pretending it's solved.
+ * clip, starting after `OBJECTION_HOLD_FRAMES`.
+ *
+ * social pilot 02a T16 (F04): every format's own timing module now accepts
+ * a `narrationTimings` input (`computeWallTiming`/`computeQuestionTiming`/
+ * `computeObjectionTiming` — see each module's own doc comment), so once
+ * T14 lands and `renderCommand` below calls `synthesizeNarration`, the
+ * returned per-line timings are threaded into `buildInputProps` for every
+ * format, not just the Wall, and the on-screen line boundaries move with
+ * the real narration instead of holding a fixed duration regardless of how
+ * long the audio actually runs.
  */
 export function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: number } {
 	switch (formatPlan.format) {
@@ -567,7 +573,12 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 			const provider = buildTtsProvider(process.env);
 			const rawNarrationPath = path.join(workDir, 'narration-raw.mp3');
 			const narration = await synthesizeNarration(lines, plan.authorSlug as AuthorSlug, provider, process.env, rawNarrationPath);
-			if (plan.formatPlan.format === 'wall') {
+			// social pilot 02a T16 (F04): The Still has no per-line timing
+			// input at all (its whole composition is one held payoff frame —
+			// see `still-timing.ts`), so it's the one format excluded here;
+			// every other format's own `compute*Timing` now accepts
+			// `narrationTimings` (`buildInputProps` threads this through).
+			if (plan.formatPlan.format !== 'still') {
 				narrationTimings = narration.timings;
 			}
 			narrationAudioPath = path.join(workDir, 'narration-aligned.mp3');

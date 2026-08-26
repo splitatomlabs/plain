@@ -10,7 +10,8 @@ import {
 	quoteObjection,
 	OBJECTION_BOX_PADDING_X,
 	OBJECTION_LINE_HEIGHT_RATIO,
-	type ObjectionTimingSchedule
+	type ObjectionTimingSchedule,
+	type NarrationLineTiming
 } from './objection-timing.js';
 import { SourceHead } from './SourceHead.js';
 import { PayoffLine, SERIF_STACK } from './Wall.js';
@@ -49,6 +50,13 @@ export interface ObjectionProps extends Record<string, unknown> {
 	 */
 	sourceReference?: string;
 	/**
+	 * Optional per-reply-line narration timing (native provider data — see
+	 * T13). Falls back to a fixed duration per line when absent. social
+	 * pilot 02a T16 (F04) — see `objection-timing.ts`'s
+	 * `ObjectionTimingInput.narrationTimings` doc comment.
+	 */
+	narrationTimings?: NarrationLineTiming[];
+	/**
 	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
 	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
 	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
@@ -82,7 +90,7 @@ export interface ObjectionProps extends Record<string, unknown> {
  */
 export const Objection: React.FC<ObjectionProps> = (props) => {
 	const frame = useCurrentFrame();
-	const timing: ObjectionTimingSchedule = computeObjectionTiming();
+	const timing: ObjectionTimingSchedule = computeObjectionTiming({ narrationTimings: props.narrationTimings });
 
 	// Rejects rather than renders a pool-invalidated card, a reply that
 	// cannot be cleanly capped at two sentences without truncating

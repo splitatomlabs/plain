@@ -17,13 +17,13 @@
  */
 
 import { fitFontSize } from '../render/fit.js';
-import { FPS, FRAME_WIDTH, WALL_FRAMES, splitWords } from './wall-timing.js';
+import { FPS, FRAME_WIDTH, WALL_FRAMES, splitWords, type NarrationLineTiming } from './wall-timing.js';
 import { padToMinimumDuration } from './duration-bounds.js';
 
 // Re-exported so `Question.tsx` and callers can import everything they need
 // from this module's "timing" surface without also reaching into
 // `wall-timing.ts` directly for the shared archaic-phase constant.
-export { FPS, FRAME_WIDTH, WALL_FRAMES, splitWords } from './wall-timing.js';
+export { FPS, FRAME_WIDTH, WALL_FRAMES, splitWords, type NarrationLineTiming } from './wall-timing.js';
 
 // ---------------------------------------------------------------------------
 // Phase 1 — the question alone, still (NEW to this format)
@@ -121,6 +121,25 @@ export interface QuestionPhaseWindow {
 
 export interface QuestionTimingInput {
 	question: string;
+	/**
+	 * Optional per-line narration timing for the answer phase (native
+	 * provider data — see T13). Only `narrationTimings[0]` is read (the
+	 * answer is a single held line, unlike The Wall's variable-length
+	 * `restLines`) — its DURATION, never its absolute position on the
+	 * timeline, exactly mirroring `wall-timing.ts`'s own
+	 * `WallTimingInput.narrationTimings` contract. Falls back to the fixed
+	 * `ANSWER_FRAMES` when absent.
+	 *
+	 * social pilot 02a T16 (F04): before this, The Question's answer hold
+	 * was always exactly `ANSWER_FRAMES`, so real narration that ran longer
+	 * or shorter than that fixed window could drift out of sync with the
+	 * on-screen line. See `checkPayoffMotionless` (`render/house-rules.ts`)
+	 * for why this is not required to enforce the house rule's 2.5s floor
+	 * itself — `wall-timing.ts`'s own narration-driven `restLines` don't
+	 * either (see that module's `restLineFrameCounts`), so this matches
+	 * rather than diverging from the existing precedent.
+	 */
+	narrationTimings?: NarrationLineTiming[];
 }
 
 export interface QuestionTimingSchedule {
@@ -143,7 +162,7 @@ export interface QuestionTimingSchedule {
  * `Question.tsx` reads the result and never computes a frame boundary
  * itself.
  */
-export function computeQuestionTiming(_input: QuestionTimingInput): QuestionTimingSchedule {
+export function computeQuestionTiming(input: QuestionTimingInput): QuestionTimingSchedule {
 	const question: QuestionPhaseWindow = {
 		startFrame: 0,
 		endFrame: QUESTION_HOLD_FRAMES,
@@ -156,9 +175,18 @@ export function computeQuestionTiming(_input: QuestionTimingInput): QuestionTimi
 		motionless: false
 	};
 
+	// social pilot 02a T16 (F04) — narration-driven when supplied, else the
+	// fixed ANSWER_FRAMES fallback. Mirrors wall-timing.ts's
+	// `restLineFrameCounts`: only the DURATION of the timing entry is read,
+	// floored at 1 frame so a very short answer never vanishes.
+	const answerTiming = input.narrationTimings?.[0];
+	const answerFrames = answerTiming
+		? Math.max(1, Math.round((answerTiming.endSeconds - answerTiming.startSeconds) * FPS))
+		: ANSWER_FRAMES;
+
 	const answer: QuestionPhaseWindow = {
 		startFrame: wall.endFrame,
-		endFrame: wall.endFrame + ANSWER_FRAMES,
+		endFrame: wall.endFrame + answerFrames,
 		motionless: true
 	};
 

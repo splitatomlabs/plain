@@ -847,9 +847,58 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   SilentMixError" and `narration.test.ts`'s single-sentence-Wall F02 case). `npx vitest run
   src/audio/__tests__/narration.test.ts src/audio/__tests__/mix.test.ts`: 34/34. Full social suite: 579/579.
   `npx tsc --noEmit` clean. No live API calls (music-only render, no TTS/image-gen involved).
-- [ ] T16: F04 — make `question-timing.ts` and `objection-timing.ts` accept `narrationTimings` so their holds
+- [x] T16: F04 — make `question-timing.ts` and `objection-timing.ts` accept `narrationTimings` so their holds
   follow real narration instead of fixed frames, matching `computeWallTiming`. Acceptance: a drifted timing set
   moves the on-screen line boundaries; `assertNarrationInSync` still gates.
+  Done (2026-08-26): matched `computeWallTiming`'s contract exactly, including the one behavior it was worth
+  copying rather than inventing: neither module enforces the house rule's 2.5s floor on an individual
+  narration-driven line itself (confirmed `wall-timing.ts`'s own `restLineFrameCounts`/its existing
+  `'respects supplied narration timings...'` test does the same — narration timings can produce a sub-2.5s
+  window on their own, same as the Wall already allows; the 15s MP4 floor's own padding, `duration-bounds.ts`, is
+  the only thing that can stretch a too-short result back out, and that logic was untouched).
+  `question-timing.ts`: `QuestionTimingInput` gained `narrationTimings?: NarrationLineTiming[]` (type imported/
+  re-exported from `wall-timing.js`, same as `WALL_FRAMES`); `computeQuestionTiming` (param renamed `_input` ->
+  `input`, since it's now read) derives the answer phase's length from `narrationTimings[0]`'s duration when
+  present (`Math.max(1, Math.round((end-start)*FPS))`), else the fixed `ANSWER_FRAMES` — question/wall phases
+  never move.
+  `objection-timing.ts`: new `ObjectionTimingInput` interface (`narrationTimings?: NarrationLineTiming[]`);
+  `computeObjectionTiming` changed from a zero-arg function to `(input: ObjectionTimingInput = {})` (the default
+  keeps every existing no-argument call site — Root.tsx defaultProps, most tests — compiling unchanged, and
+  keeps `computeObjectionTiming.length === 0`, which `narration.test.ts` asserts directly); each reply line's
+  length is derived independently from `narrationTimings[0]`/`[1]`, falling back per-index to the fixed
+  `OBJECTION_REPLY_LINE_FRAMES`.
+  Threaded through both compositions (`Question.tsx`/`Objection.tsx` gained a `narrationTimings` prop, passed
+  straight to their `compute*Timing` call) and `Root.tsx` (`calculateMetadata` for both compositions now passes
+  `props.narrationTimings` through to the real duration calculation, matching the Wall's existing pattern).
+  Wired `cli.ts`: `buildInputProps`'s `question`/`objection` branches now spread `narrationTimings` in exactly
+  the same conditional-spread style the `wall` branch already used; the `if (plan.formatPlan.format === 'wall')`
+  gate that captured `synthesizeNarration`'s returned timings was widened to `!== 'still'` (Still has no
+  per-line timing input at all — its whole composition is one held frame, see `still-timing.ts`); updated the
+  now-stale doc comments on `buildInputProps` and `narrationPlan` that used to say Question/Objection "have a
+  fixed shape... and take no such prop" / documented this as "a real, acknowledged gap."
+  Tests: `question-timing.test.ts` +5, `objection-timing.test.ts` +5 (both follow the existing files'
+  `describe`/`it` conventions) proving (a) the unwired default is unchanged, (b) a supplied timing is respected,
+  (c) a DRIFTED timing set moves real on-screen boundaries with concrete frame numbers asserted directly (see
+  below), (d) a too-short timing still gets padded to the 15s floor like the fallback does, (e) sibling phases
+  are untouched. `audio/__tests__/narration.test.ts` +4: a full pipeline proof (hand-built provider marks, no
+  live call — `lineTimingsFromMarks` -> `assertNarrationInSync` -> `compute{Question,Objection}Timing`) that (a)
+  a real, in-sync derived timing set both PASSES `assertNarrationInSync` and moves the schedule, and (b) a
+  deliberately desynced/overlapping timing set for the exact same real card text is STILL REJECTED by
+  `assertNarrationInSync` before it could ever reach either timing module — the gate itself
+  (`audio/timing.ts`) was not touched by this task at all.
+  Concrete frame numbers (Question, fixture question from `question-timing.test.ts`, FPS=30): fixed-hold
+  default answer window is `[120, 450)` (330 frames — already padded to the 15s/450-frame floor, since the
+  format's raw 195-frame shape is always under it); a 12s narrated answer gives `[120, 480)`; a 20s narrated
+  answer gives `[120, 720)`. Concrete frame numbers (Objection): fixed-hold default is objection `[0, 75)`,
+  reply1 `[75, 150)`, reply2 `[150, 450)`; a 4.0s narrated first line alone gives reply1 `[75, 195)`, reply2
+  `[195, 450)` (same padded total, moved internal boundary); 4.0s + 10.0s narrated for both lines gives reply1
+  `[75, 195)`, reply2 `[195, 495)`, `totalFrames` 495 (clears the 15s floor on its own, so `totalFrames` itself
+  moves too, not just the internal boundary).
+  Verified: `cd social && npx tsc --noEmit` clean. `cd social && npm test` — 31/31 test files, 593/593 tests
+  (up from 579/579; +14 new, zero regressions). No live API calls anywhere — every new test uses hand-built
+  `ProviderMark[]`/`NarrationLineTiming[]` literals or the same recorded-fixture `TtsProvider` pattern
+  `audio/__tests__/narration.test.ts` already used.
+  Not touched, per the task's own scope: T17 (opening rotation), T18 (mid-chapter entry), T19 (scheduler).
 - [ ] T17: Retire the opening rotation — DELETE `social/src/remotion/wall-openings.ts` outright, along with
   `Wall.tsx`'s `opening`/`eligibleOpenings` props and `WallOpeningBadge`, `scripts/lib/premises.ts`'s
   `eligibleWallOpenings`, the `eligible_openings` field in a regenerated `content/social/premises/wall.json`,

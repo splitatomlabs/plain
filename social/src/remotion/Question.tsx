@@ -9,7 +9,8 @@ import {
 	computeQuestionTiming,
 	QUESTION_BOX_PADDING_X,
 	QUESTION_LINE_HEIGHT_RATIO,
-	type QuestionTimingSchedule
+	type QuestionTimingSchedule,
+	type NarrationLineTiming
 } from './question-timing.js';
 import { SourceHead } from './SourceHead.js';
 import { assertWallCardRenderable } from './wall-gate.js';
@@ -48,6 +49,13 @@ export interface QuestionProps extends Record<string, unknown> {
 	sourceReference?: string;
 	author: AuthorSlug;
 	/**
+	 * Optional per-line narration timing for the answer phase (native
+	 * provider data — see T13). Falls back to a fixed duration when absent.
+	 * social pilot 02a T16 (F04) — see `question-timing.ts`'s
+	 * `QuestionTimingInput.narrationTimings` doc comment.
+	 */
+	narrationTimings?: NarrationLineTiming[];
+	/**
 	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
 	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
 	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
@@ -81,7 +89,10 @@ export interface QuestionProps extends Record<string, unknown> {
  */
 export const Question: React.FC<QuestionProps> = (props) => {
 	const frame = useCurrentFrame();
-	const timing: QuestionTimingSchedule = computeQuestionTiming({ question: props.question });
+	const timing: QuestionTimingSchedule = computeQuestionTiming({
+		question: props.question,
+		narrationTimings: props.narrationTimings
+	});
 	const accent = ACCENTS[props.author];
 	// Optional overlay (T09) — a sibling layer on every phase below, never a
 	// participant in any phase's own layout. See `Counter.tsx`.

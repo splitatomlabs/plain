@@ -121,6 +121,102 @@ describe('phase 2 — the reply resolves in stillness, one line at a time', () =
 	});
 });
 
+// social pilot 02a T16 (F04): computeObjectionTiming now accepts an
+// optional narrationTimings input, matching computeWallTiming's own
+// contract, so real narration drives each reply-line hold instead of the
+// fixed OBJECTION_REPLY_LINE_FRAMES fallback.
+//
+// Unlike The Question's single answer phase, only the SECOND (final) reply
+// line is ever padded to clear the 15s MP4 floor (see T18's own describe
+// below) — the first reply line's duration is never touched by padding, so
+// a drifted narrationTimings[0] alone is enough to move a real on-screen
+// boundary without needing to out-run the pad point the way the Question's
+// single-phase tests above do.
+describe('social pilot 02a T16 — narration-driven reply-line durations (F04)', () => {
+	it('with no narrationTimings supplied, both reply lines hold their fixed default durations (unchanged behavior)', () => {
+		const timing = computeObjectionTiming();
+		expect(timing.replyLines[0].endFrame - timing.replyLines[0].startFrame).toBe(OBJECTION_REPLY_LINE_FRAMES);
+		// The second line is already padded to the 15s floor by default (see
+		// the T18 describe below) — its raw, unpadded length would also be
+		// OBJECTION_REPLY_LINE_FRAMES, but this describe cares about the
+		// REAL, on-screen boundary, which is the padded one.
+		expect(timing.totalFrames).toBe(timing.replyLines[1].endFrame);
+	});
+
+	it('respects a supplied narration timing for the first reply line — a real, unpadded boundary move', () => {
+		const timing = computeObjectionTiming({ narrationTimings: [{ startSeconds: 0, endSeconds: 4.0 }] });
+		const expectedFrames = Math.round(4.0 * FPS);
+		expect(timing.replyLines[0].endFrame - timing.replyLines[0].startFrame).toBe(expectedFrames);
+		expect(expectedFrames).not.toBe(OBJECTION_REPLY_LINE_FRAMES);
+	});
+
+	it('respects supplied narration timings for both reply lines independently', () => {
+		const timing = computeObjectionTiming({
+			narrationTimings: [
+				{ startSeconds: 0, endSeconds: 4.0 },
+				{ startSeconds: 0, endSeconds: 10.0 }
+			]
+		});
+		expect(timing.replyLines[0].endFrame - timing.replyLines[0].startFrame).toBe(Math.round(4.0 * FPS));
+		expect(timing.replyLines[1].endFrame - timing.replyLines[1].startFrame).toBe(Math.round(10.0 * FPS));
+	});
+
+	it('a DRIFTED narration timing set moves the on-screen reply-line boundaries — concrete frame numbers', () => {
+		const fixedTiming = computeObjectionTiming();
+
+		// "Drifted" here means: real narration audio for the first reply line
+		// running a genuinely different length (4.0s) than the fixed
+		// OBJECTION_REPLY_LINE_FRAMES fallback (2.5s) would have produced —
+		// the acceptance criterion this test exists to prove. The second
+		// line is left to its own fallback, same as the default schedule.
+		const drifted = computeObjectionTiming({ narrationTimings: [{ startSeconds: 0, endSeconds: 4.0 }] });
+
+		// The objection hold (phase 1) never moves.
+		expect(drifted.objection).toEqual(fixedTiming.objection);
+
+		// The first reply line's END — a real on-screen boundary — moves.
+		expect(drifted.replyLines[0].endFrame).not.toBe(fixedTiming.replyLines[0].endFrame);
+		// Consequently the second reply line's START also moves (it always
+		// starts exactly where the first ends).
+		expect(drifted.replyLines[1].startFrame).not.toBe(fixedTiming.replyLines[1].startFrame);
+
+		// Concrete frame numbers, for the record. OBJECTION_HOLD_FRAMES=75:
+		// fixed default: objection [0,75), reply1 [75,150) (75f, fallback),
+		// reply2 [150,450) (300f, padded to the 15s floor).
+		expect(fixedTiming.objection.endFrame).toBe(75);
+		expect(fixedTiming.replyLines[0].endFrame).toBe(150);
+		expect(fixedTiming.replyLines[1].startFrame).toBe(150);
+		expect(fixedTiming.replyLines[1].endFrame).toBe(450);
+
+		// Drifted (4.0s first line = 120f): reply1 [75,195) (120f, narrated),
+		// reply2 [195,450) (255f, still padded to the SAME 15s floor total —
+		// the total didn't move, but the boundary between the two lines did).
+		expect(drifted.replyLines[0].endFrame).toBe(195);
+		expect(drifted.replyLines[1].startFrame).toBe(195);
+		expect(drifted.replyLines[1].endFrame).toBe(450);
+		expect(drifted.totalFrames).toBe(450);
+	});
+
+	it('a drifted set that clears the 15s pad point on its own moves totalFrames too, not just the internal boundary', () => {
+		const fixedTiming = computeObjectionTiming();
+		const drifted = computeObjectionTiming({
+			narrationTimings: [
+				{ startSeconds: 0, endSeconds: 4.0 },
+				{ startSeconds: 0, endSeconds: 10.0 }
+			]
+		});
+
+		// reply1 [75,195) (120f), reply2 raw [195,495) (300f) — raw total
+		// (495f) already clears MIN_POST_DURATION_FRAMES (450f), so no
+		// padding applies and totalFrames genuinely differs from the default.
+		expect(drifted.replyLines[0].endFrame).toBe(195);
+		expect(drifted.replyLines[1].endFrame).toBe(495);
+		expect(drifted.totalFrames).toBe(495);
+		expect(drifted.totalFrames).not.toBe(fixedTiming.totalFrames);
+		expect(drifted.totalFrames).toBeGreaterThan(fixedTiming.totalFrames);
+	});
+});
+
 describe('T18 — the composed total clears the 15s MP4 duration floor', () => {
 	it('the fixed shape (225 raw frames / 7.5s) is padded up to MIN_POST_DURATION_FRAMES', () => {
 		const timing = computeObjectionTiming();

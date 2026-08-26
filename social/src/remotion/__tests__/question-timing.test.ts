@@ -154,6 +154,105 @@ describe('phase 3 — the answer resolves in stillness', () => {
 	});
 });
 
+// social pilot 02a T16 (F04): computeQuestionTiming now accepts
+// narrationTimings, matching computeWallTiming's own contract, so real
+// narration drives the answer hold instead of the fixed ANSWER_FRAMES
+// fallback.
+//
+// Important wrinkle, shared with T18's own coverage above: The Question's
+// fixed shape (195 raw frames / 6.5s) is always well under the 15s MP4
+// floor (MIN_POST_DURATION_FRAMES), so `padToMinimumDuration` ALWAYS
+// extends the answer hold to fill it — with no narrationTimings, the
+// fallback ANSWER_FRAMES (75) never survives as the real answer duration;
+// it's padded to `MIN_POST_DURATION_FRAMES - wall.endFrame` (330 frames)
+// every time. A narrationTimings duration that is ALSO under that same pad
+// point therefore lands on the exact same padded total as the no-narration
+// default — that's real, correct behavior (the 15s floor is a floor
+// regardless of source), not something these tests should paper over. To
+// prove a drifted timing set actually MOVES the boundary (this task's own
+// acceptance criterion), the fixture durations below are chosen to clear
+// the pad point, so the difference is real and not masked by padding.
+describe('social pilot 02a T16 — narration-driven answer duration (F04)', () => {
+	// The exact pad point below which any duration (whether the fallback or
+	// a real narration timing) is masked by the 15s floor.
+	const padPointFrames = MIN_POST_DURATION_FRAMES - WALL_FRAMES - Math.round(QUESTION_HOLD_SECONDS * FPS);
+
+	it('with no narrationTimings supplied, the answer holds for the padded default (ANSWER_FRAMES extended to clear the 15s floor)', () => {
+		const timing = computeQuestionTiming({ question: FIXTURE_QUESTION });
+		expect(timing.answer.endFrame - timing.answer.startFrame).toBe(padPointFrames);
+		expect(padPointFrames).toBeGreaterThan(ANSWER_FRAMES);
+	});
+
+	it('respects a supplied narration timing that clears the 15s pad point instead of the padded default duration', () => {
+		const narrationTimings = [{ startSeconds: 0, endSeconds: 14 }];
+		const timing = computeQuestionTiming({ question: FIXTURE_QUESTION, narrationTimings });
+		const expectedFrames = Math.round(14 * FPS);
+		expect(timing.answer.endFrame - timing.answer.startFrame).toBe(expectedFrames);
+		// Sanity: this is a real change from BOTH the bare fallback and the
+		// padded default, not a coincidence.
+		expect(expectedFrames).not.toBe(ANSWER_FRAMES);
+		expect(expectedFrames).not.toBe(padPointFrames);
+	});
+
+	it('a DRIFTED narration timing set moves the on-screen answer-frame boundary — concrete frame numbers, not masked by the 15s pad floor', () => {
+		const fixedTiming = computeQuestionTiming({ question: FIXTURE_QUESTION });
+		// "Drifted" here means: real narration audio running a genuinely
+		// different length than the fixed fallback would have produced — the
+		// acceptance criterion this test exists to prove. Both durations
+		// below (12s, 20s) clear the 15s pad point so the difference is real.
+		const driftedShorter = computeQuestionTiming({
+			question: FIXTURE_QUESTION,
+			narrationTimings: [{ startSeconds: 0, endSeconds: 12 }]
+		});
+		const driftedLonger = computeQuestionTiming({
+			question: FIXTURE_QUESTION,
+			narrationTimings: [{ startSeconds: 0, endSeconds: 20 }]
+		});
+
+		// The answer phase starts at the same frame regardless (the wall
+		// phase's own length never changes) — only its END, and therefore
+		// totalFrames, moves.
+		expect(driftedShorter.answer.startFrame).toBe(fixedTiming.answer.startFrame);
+		expect(driftedLonger.answer.startFrame).toBe(fixedTiming.answer.startFrame);
+
+		expect(driftedShorter.answer.endFrame).not.toBe(fixedTiming.answer.endFrame);
+		expect(driftedLonger.answer.endFrame).not.toBe(fixedTiming.answer.endFrame);
+		expect(driftedShorter.answer.endFrame).not.toBe(driftedLonger.answer.endFrame);
+
+		expect(driftedLonger.answer.endFrame).toBeGreaterThan(driftedShorter.answer.endFrame);
+		expect(driftedLonger.answer.endFrame).toBeGreaterThan(fixedTiming.answer.endFrame);
+		expect(driftedLonger.totalFrames).toBeGreaterThan(fixedTiming.totalFrames);
+
+		// Concrete frame numbers, for the record: fixed default answer window
+		// is [120, 450); a 12s narrated answer is [120, 480); a 20s narrated
+		// answer is [120, 720).
+		expect(fixedTiming.answer.startFrame).toBe(120);
+		expect(fixedTiming.answer.endFrame).toBe(450);
+		expect(driftedShorter.answer.endFrame).toBe(480);
+		expect(driftedLonger.answer.endFrame).toBe(720);
+	});
+
+	it('a very short narration timing (below the 15s pad point) is padded up to the same floor as the fixed-hold fallback — never left shorter than MIN_POST_DURATION_FRAMES', () => {
+		const timing = computeQuestionTiming({
+			question: FIXTURE_QUESTION,
+			narrationTimings: [{ startSeconds: 0, endSeconds: 0.5 }]
+		});
+		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
+		expect(timing.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
+		expect(timing.totalFrames).toBe(timing.answer.endFrame);
+	});
+
+	it('the question and wall phases are unaffected by narrationTimings — only the answer phase moves', () => {
+		const fixedTiming = computeQuestionTiming({ question: FIXTURE_QUESTION });
+		const narratedTiming = computeQuestionTiming({
+			question: FIXTURE_QUESTION,
+			narrationTimings: [{ startSeconds: 0, endSeconds: 14 }]
+		});
+		expect(narratedTiming.question).toEqual(fixedTiming.question);
+		expect(narratedTiming.wall).toEqual(fixedTiming.wall);
+	});
+});
+
 describe('T18 — the composed total clears the 15s MP4 duration floor', () => {
 	it('the fixed shape (195 raw frames / 6.5s) is padded up to MIN_POST_DURATION_FRAMES, by extending only the answer hold', () => {
 		const timing = computeQuestionTiming({ question: FIXTURE_QUESTION });
