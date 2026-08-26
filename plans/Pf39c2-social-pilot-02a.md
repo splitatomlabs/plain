@@ -1059,9 +1059,97 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   Verified: `npx vitest run scripts/lib/__tests__/schedule.test.ts` — 125/125 (123 pre-existing + 2 new, zero
   regressions). `npm test` from repo root — pipeline 819/819 (up from 817), web 95/95, social 566/566 (unchanged —
   this task never touches `social/`). `cd social && npx tsc --noEmit` — clean.
-- [ ] T20: Regenerate week 1 and render all 14 posts; re-measure durations against the 15s/59s bounds and record
+- [x] T20: Regenerate week 1 and render all 14 posts; re-measure durations against the 15s/59s bounds and record
   the new Wall/Question/Objection/Still mix in this file. Acceptance: all 14 render; ffprobe confirms the profile;
   frames extracted at 0.0s / mid-scroll / cut / payoff show the intended reduction. Then T19's phone review.
+  Done (2026-08-26): ran the plan's own Verify block exactly, in order.
+  `npm test` (repo root, all three suites): **pipeline 819/819, web 95/95, social 566/566** — clean baseline before
+  touching any artifact, confirms T01-T19 landed in a fully green state.
+  `npx tsx social/scripts/write-exclusions.ts --date 2026-08-26`: Wall 685 passed/211 rejected (duration only, the
+  travel axis stays gone per T08), Question 48/40, Objection 27/32, **read-through 30 passed/18 rejected** — the
+  first time this branch has reproduced the plan's own headline "30 Wall / 18 Still" figure for real (T04 could only
+  measure 16/32 pre-T08; T08 itself measured 30/18 against the pool but didn't regenerate the read-through-specific
+  artifact past that one confirmation run). `content/social/render-exclusions.json` changed only in that it's
+  byte-identical to what T08 already produced at this same date — no drift since.
+  `npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force`: **format_counts { wall: 8,
+  question: 4, objection: 0, still: 2 }**, author mix epictetus 2 (14.3%), marcus-aurelius 8 (57.1%), seneca 4
+  (28.6%). Per-slot mix (day/slot/format/card/author):
+
+  | day | slot | format | card | author | duration |
+  |---|---|---|---|---|---|
+  | 1 | 1 | wall | meditations-02-001 | marcus-aurelius | 20.501s |
+  | 1 | 2 | wall | peace-of-mind-17-005 | seneca | 35.520s |
+  | 2 | 1 | still | meditations-02-002 | marcus-aurelius | 15.018s |
+  | 2 | 2 | question | meditations-11-005 | marcus-aurelius | 15.018s |
+  | 3 | 1 | wall | meditations-02-003 | marcus-aurelius | 20.501s |
+  | 3 | 2 | question | discourses-18-001 | epictetus | 15.018s |
+  | 4 | 1 | wall | meditations-02-004 | marcus-aurelius | 15.018s |
+  | 4 | 2 | question | on-anger-03-108 | seneca | 15.018s |
+  | 5 | 1 | still | meditations-02-005 | marcus-aurelius | 15.018s |
+  | 5 | 2 | wall | on-anger-02-100 | seneca | 38.506s |
+  | 6 | 1 | wall | meditations-02-006 | marcus-aurelius | 23.509s |
+  | 6 | 2 | wall | on-anger-01-027 | seneca | 23.509s |
+  | 7 | 1 | wall | meditations-02-007 | marcus-aurelius | 15.018s |
+  | 7 | 2 | question | discourses-64-006 | epictetus | 15.018s |
+
+  This confirms T19's own real-week measurement (the schedule it inspected and reverted) reproduces byte-identical
+  on a second, kept generation: same 8 read-through slot-1 cards in the same order, same free-slot picks, zero
+  back-to-back Wall sub-type repeats (re-checked: the four adjacent Wall pairs this week produces — day1
+  slot1/slot2, day5 slot2/day6 slot1, day6 slot1/slot2, day6 slot2/day7 slot1 — each pairs a `thou_wall` card
+  against a `[]`-reserve card, never two of the same texture).
+  Rendered all 14 (`for d in 01..07; for s in 1 2; ... render --date 2026-09-$d --slot $s`, split across two Bash
+  calls only because of the tool's own 2-minute per-call timeout, not a render failure — every one of the 14
+  exited 0 with no retries or fixes needed). `social/out/` holds exactly 8 wall / 4 question / 2 still MP4s (0
+  objection, matching `format_counts`), each with matching `-feed.jpg` and `.json` metadata sidecar. Every metadata
+  sidecar reads `"narration": false` (no `ELEVENLABS_API_KEY` set, so every render is the music-only path — no live
+  API calls anywhere in this task, per its own instructions).
+  **Duration check (15s floor / 59s global ceiling / 40s Wall ceiling):** all 14 durations are in the table above;
+  every one is ≥15.018s (the encoder's own floor-padding rounds the nominal 15.000s up slightly) and ≤38.506s.
+  Zero cards hit the 59s global ceiling (nothing above 38.506s). Zero Walls hit the 40s Wall-specific ceiling (max
+  38.506s, `on-anger-02-100`, 1.494s of headroom) — matches T03's own predicted "p50 23.5s / p75 26.5-32.5s / max
+  38.5s" shape almost exactly (this week's 8 real Walls: sorted 15.018, 15.018, 20.501, 20.501, 23.509, 23.509,
+  35.520, 38.506 — median 22.0s, max 38.506s).
+  **ffprobe profile:** the plan's own literal `ffprobe -v error -show_streams social/out/*.mp4` errors immediately
+  — ffprobe only ever accepts ONE input file; passing a shell glob of 14 files makes it reject the 2nd+ as
+  duplicate `-i` args (`Argument '...' provided as input filename, but '...' was already specified.`), a tool
+  limitation not a render defect. Ran the equivalent per-file instead (`for f in social/out/*.mp4; do ffprobe -v
+  error -show_entries format=duration -show_entries
+  stream=index,codec_type,codec_name,width,height,pix_fmt,r_frame_rate,sample_rate,channels,profile,level ...;
+  done`) across all 14: **every file** reports video `h264, profile=High, level=40, 1080x1920, yuv420p, 30/1 fps`
+  and audio `aac, profile=LC, 48000Hz, 2 channels` — the full house profile, zero violations, zero exceptions.
+  **Frame inspection** (Wall `meditations-02-001`, `social/out/wall-2026-09-01-slot1.mp4`, 20.501s, `WALL_FRAMES`
+  75/2.5s, `LANDING_LINE_FRAMES` 90/3.0s — cut at frame 75, landing line frames 75-164): extracted frames 0
+  (0.000s), 36 (1.200s, mid-scroll), 74 (2.4667s, the last wall frame, an instant before the cut), and 80 (2.667s,
+  inside the landing-line window) with ffmpeg and read all four directly.
+  - Frame 0: dense archaic body text, ~35 visible lines averaging ~7-8 words/line (counted: "Remember how long
+    thou hast already put / off these things, and how often a certain day / and hour as it were, having been set
+    unto / thee by the gods, thou hast neglected it..." continuing through "...man's happiness depends from
+    himself, but" at the bottom edge) — a real page of a real book, not large print. The fixed running head
+    `"MARCUS AURELIUS · MEDITATIONS, BOOK 2"` sits on an opaque backing plate partway down the frame (small,
+    DM Sans, secondary grey `#736B62`-toned, unmistakably distinct from the dense serif body); the scrolling text
+    is visibly interrupted at the plate's edges (fragment "ie" / "art a" bleeding at either side) proving the plate
+    masks rather than composites over the moving text. **No numeral anywhere** — T17's deletion holds.
+  - Frame 36 (mid-scroll): continuous, verbatim chapter text — the block has scrolled past this card's own excerpt
+    ending ("...and never after return.") straight into "Let it be thy earnest and incessant care as a Roman and a
+    man to perform whatsoever it is that thou art about..." with no gap, blank line, loop-back, or repeat. Same
+    running head, same fixed position, still masking the scroll cleanly.
+  - Frame 74 (the hard cut, an instant before it fires): still dense mid-passage archaic text, further into the
+    same chapter continuation ("...Every man's happiness depends from himself, but behold thy life is almost at an
+    end..."), confirming the cut lands mid-passage, not at a convenient excerpt boundary.
+  - Frame 80 (first payoff window, 2.667s into the landing-line phase): **ONE plain sentence** — "There is only a
+    certain amount of time given to you." — set dramatically larger than the wall's 44px body (measured earlier at
+    T10 as 81-88px on this exact card's landing line), centred, motionless, with `"In plain English"` sitting in
+    the exact slot the running head occupied during the wall phase, and `"Card 1 of 48"` (the read-through counter)
+    above it. Large -> small, dense -> sparse is now visibly reversed from the pre-plan defect: eye reads
+    wall (small, dense, archaic) -> cut -> payoff (large, sparse, plain), matching every acceptance bullet the task
+    names: dense 44px wall (not large print), no numeral, continuous verbatim scroll, an audible/visual hard cut,
+    and a single larger plain sentence with the "In plain English" label in the framing slot.
+  Verified: `cd social && npx tsc --noEmit` clean (unaffected — no source touched, only regenerated artifacts and
+  fresh renders). `content/social/render-exclusions.json` and `content/social/pilot-schedule-w01.json` both changed
+  in the working tree as expected (this task owns their regeneration) — left uncommitted per instructions.
+  `social/out/` (gitignored) holds all 14 renders plus feed JPEGs and metadata sidecars; not committed.
+  **T19's phone review is a human step and was not performed here** — the renders are in `social/out/` for that
+  review. Everything else in this task's acceptance criteria is met.
 
 ## Verify
 ```

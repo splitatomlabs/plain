@@ -22,8 +22,9 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "still",
-        "text": "Remember how long you have been putting these things off. Again and again you have been given the chance, and you have let it pass. It is time to understand the true nature of the world you are part of. And to understand that Lord and Governor of the world, from whom you yourself flowed like water from a spring. There is only a certain amount of time given to you. If you don't use it to calm the troubles of your soul, it will pass away and you with it, and never return."
+        "format": "wall",
+        "original_excerpt": "Remember how long thou hast already put off these things, and how often a certain day and hour as it were, having been set unto thee by the gods, thou hast neglected it. It is high time for thee to understand the true nature both of the world, whereof thou art a part; and of that Lord and Governor of the world, from whom, as a channel from the spring, thou thyself didst flow: and that there is but a certain limit of time appointed unto thee, which if thou shalt not make use of to calm and allay the many distempers of thy soul, it will pass away and thou with it, and never after return.",
+        "landing_line": "There is only a certain amount of time given to you."
       },
       "read_through": true,
       "read_through_counter": "Card 1 of 48"
@@ -31,13 +32,13 @@
     {
       "day": 1,
       "slot": 2,
-      "card_id": "happy-life-25-001",
-      "book_slug": "happy-life",
+      "card_id": "peace-of-mind-17-005",
+      "book_slug": "peace-of-mind",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "Learn, then, since we both agree that they are desirable, what my reason is amongst counting them among good things, and in what respects I should behave differently to you if I possessed them. Place me as master in the house of a very rich man: place me where gold and silver plate is used for the commonest purposes; I shall not think more of myself because of things which even though they are in my house are yet no part of me. Take me away to the wooden bridge[5] and put me down there among the beggars: I shall not despise myself because I am sitting among those who hold out their hands for alms: for what can the lack of a piece of bread matter to one who does not lack the power of dying? Well, then? I prefer the magnificent house to the beggar's bridge. Place me among magnificent furniture and all the appliances of luxury: I shall not think myself any happier because my cloak is soft, because my guests rest upon purple.",
-        "landing_line": "I prefer the magnificent house to the beggar's bridge."
+        "original_excerpt": "We must not force crops from rich fields, for an unbroken course of heavy crops will soon exhaust their fertility, and so also the liveliness of our minds will be destroyed by unceasing labour, but they will recover their strength after a short period of rest and relief: for continuous toil produces a sort of numbness and sluggishness. Men would not be so eager for this, if play and amusement did not possess natural attractions for them, although constant indulgence in them takes away all gravity and all strength from the mind: for sleep, also, is necessary for our refreshment, yet if you prolong it for days and nights together it will become death. There is a great difference between slackening your hold of a thing and letting it go.",
+        "landing_line": "You can't force crops from rich soil forever."
       },
       "read_through": false,
       "read_through_counter": null
@@ -58,13 +59,13 @@
     {
       "day": 2,
       "slot": 2,
-      "card_id": "meditations-08-045",
+      "card_id": "meditations-11-005",
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
         "format": "question",
-        "question": "Are you caught up in pain or pleasure?",
-        "answer": "Let your senses deal with that."
+        "question": "Have I done anything kind?",
+        "answer": "Then I have gained from it."
       },
       "read_through": false,
       "read_through_counter": null
@@ -76,8 +77,9 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "still",
-        "text": "Come on, soul, keep hurting yourself. Keep thinking you're worthless. Soon enough, your time to value yourself will be over. Each person's happiness comes from within. But look — your life is almost done, and you're still refusing to respect yourself. You're letting your happiness depend on what other people think and say."
+        "format": "wall",
+        "original_excerpt": "Do, soul, do; abuse and contemn thyself; yet a while and the time for thee to respect thyself, will be at an end. Every man's happiness depends from himself, but behold thy life is almost at an end, whiles affording thyself no respect, thou dost make thy happiness to consist in the souls, and conceits of other men.",
+        "landing_line": "You're letting your happiness depend on what other people think and say."
       },
       "read_through": true,
       "read_through_counter": "Card 3 of 48"
@@ -85,13 +87,13 @@
     {
       "day": 3,
       "slot": 2,
-      "card_id": "meditations-11-014",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
+      "card_id": "discourses-18-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
       "content": {
         "format": "question",
-        "question": "Will someone look down on me?",
-        "answer": "Let them worry about their reasons."
+        "question": "What makes something good?",
+        "answer": "A certain kind of will."
       },
       "read_through": false,
       "read_through_counter": null
@@ -103,8 +105,9 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "still",
-        "text": "Why do these outside events distract you so much? Give yourself time to learn something worthwhile, and stop wandering around aimlessly. You must also watch out for another kind of wandering. Some people stay busy with work and effort, but they have no clear purpose to guide their actions and desires."
+        "format": "wall",
+        "original_excerpt": "Why should any of these things that happen externally, so much distract thee? Give thyself leisure to learn some good thing, and cease roving and wandering to and fro. Thou must also take heed of another kind of wandering, for they are idle in their actions, who toil and labour in this life, and have no certain scope to which to direct all their motions, and desires.",
+        "landing_line": "You must also watch out for another kind of wandering."
       },
       "read_through": true,
       "read_through_counter": "Card 4 of 48"
@@ -112,13 +115,13 @@
     {
       "day": 4,
       "slot": 2,
-      "card_id": "discourses-24-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
+      "card_id": "on-anger-03-108",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
       "content": {
         "format": "question",
-        "question": "What is a human being?",
-        "answer": "A thinking, mortal creature."
+        "question": "Someone has insulted you?",
+        "answer": "It's probably not worse than what happened to the Stoic philosopher Diogenes."
       },
       "read_through": false,
       "read_through_counter": null
@@ -139,13 +142,13 @@
     {
       "day": 5,
       "slot": 2,
-      "card_id": "peace-of-mind-14-003",
-      "book_slug": "peace-of-mind",
+      "card_id": "on-anger-02-100",
+      "book_slug": "on-anger",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "Julius Kanus, a man of peculiar greatness, whom even the fact of his having been born in this century does not prevent our admiring, had a long dispute with Gaius, and when as he was going away that Phalaris of a man said to him, \"That you may not delude yourself with any foolish hopes, I have ordered you to be executed,\" he answered, \"I thank you, most excellent prince.\" I am not sure what he meant: for many ways of explaining his conduct occur to me. Did he wish to be reproachful, and to show him how great his cruelty must be if death became a kindness? or did he upbraid him with his accustomed insanity? for even those whose children were put to death, and whose goods were confiscated, used to thank him: or was it that he willingly received death, regarding it as freedom? Whatever he meant, it was a magnanimous answer. Some one may say, \"After this Gaius might have let him live.\" Kanus had no fear of this: the good faith with which Gaius carried out such orders as these was well known.",
-        "landing_line": "Julius Kanus was a man of remarkable greatness."
+        "original_excerpt": "Some angry people, as Sextius remarks, have been benefited by looking at the glass: they have been struck by so great an alteration in their own appearance: they have been, as it were, brought into their own presence and have not recognized themselves: yet how small a part of the real hideousness of anger did that reflected image in the mirror reproduce? Could the mind be displayed or made to appear through any substance, we should be confounded when we beheld how black and stained, how agitated, distorted, and swollen it looked: even at present it is very ugly when seen through all the screens of blood, bones, and so forth: what would it be, were it displayed uncovered? You say, that you do not believe that any one was ever scared out of anger by a mirror: and why not? Because when he came to the mirror to change his mind, he had changed it already: to angry men no face looks fairer than one that is fierce and savage and such as they wish to look like.",
+        "landing_line": "Some angry people, as Sextius points out, have been helped by looking in a mirror."
       },
       "read_through": false,
       "read_through_counter": null
@@ -167,13 +170,13 @@
     {
       "day": 6,
       "slot": 2,
-      "card_id": "on-anger-03-067",
+      "card_id": "on-anger-01-027",
       "book_slug": "on-anger",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "He thereupon devoted all the resources of his army to this object, and remained working until by cutting one hundred and eighty channels across the bed of the river he divided it into three hundred and sixty brooks, and left the bed dry, the waters flowing through other channels. Thus he lost time, which is very important in great operations, and lost, also, the soldiers’ courage, which was broken by useless labour, and the opportunity of falling upon his enemy unprepared, while he was waging against the river the war which he had declared against his foes. This frenzy, for what else can you call it, has befallen Romans also, for G. Caesar destroyed a most beautiful villa at Herculaneum because his mother was once imprisoned in it, and has thus made the place notorious by its misfortune; for while it stood, we used to sail past it without noticing it, but now people inquire why it is in ruins.",
-        "landing_line": "Gaius Caesar destroyed a beautiful villa at Herculaneum just because his mother had once been imprisoned there."
+        "original_excerpt": "If, therefore, anger allows limits to be imposed upon it, it must be called by some other name, and ceases to be anger, which I understand to be unbridled and unmanageable: and if it does not allow limits to be imposed upon it, it is harmful and not to be counted among aids: wherefore either anger is not anger, or it is useless: for if any man demands the infliction of punishment, not because he is eager for the punishment itself, but because it is right to inflict it, he ought not to be counted as an angry man: that will be the useful soldier, who knows how to obey orders: the passions cannot obey any more than they can command.",
+        "landing_line": "Real anger is wild and uncontrollable."
       },
       "read_through": false,
       "read_through_counter": null
@@ -185,8 +188,9 @@
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
-        "format": "still",
-        "text": "Whatever you want to do, whatever you plan to do, do it all as someone who might die right now. And as for death, if there are gods, leaving human society is nothing terrible. You can be sure the gods will not harm you."
+        "format": "wall",
+        "original_excerpt": "Whatsoever thou dost affect, whatsoever thou dost project, so do, and so project all, as one who, for aught thou knowest, may at this very present depart out of this life. And as for death, if there be any gods, it is no grievous thing to leave the society of men. The gods will do thee no hurt, thou mayest be sure.",
+        "landing_line": "You can be sure the gods will not harm you."
       },
       "read_through": true,
       "read_through_counter": "Card 7 of 48"
@@ -207,10 +211,10 @@
     }
   ],
   "format_counts": {
-    "wall": 4,
+    "wall": 8,
     "question": 4,
     "objection": 0,
-    "still": 6
+    "still": 2
   },
   "author_mix": {
     "epictetus": {
@@ -218,12 +222,12 @@
       "share": 0.14285714285714285
     },
     "marcus-aurelius": {
-      "count": 9,
-      "share": 0.6428571428571429
+      "count": 8,
+      "share": 0.5714285714285714
     },
     "seneca": {
-      "count": 3,
-      "share": 0.21428571428571427
+      "count": 4,
+      "share": 0.2857142857142857
     }
   },
   "pool_source": {
