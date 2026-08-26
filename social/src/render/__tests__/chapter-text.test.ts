@@ -16,10 +16,14 @@
  *      chapter's end — one full lap, reordered to start at the target.
  *   4. It never draws from another chapter or book, even when the input
  *      cards include them.
- *   5. It returns enough text to clear the travel requirement
- *      (`WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`, `wall-gate.ts`) for EVERY card in
- *      the real read-through slice (Meditations Books 2-3, 48 cards) — this
- *      is the whole point of sourcing from the chapter instead of the card.
+ *   5. It returns enough text to clear the travel requirement (the scroll
+ *      never finishing before the wall phase's hard cut — see
+ *      `wall-timing.ts`'s `WALL_SCROLL_RATE_PX_PER_SEC`/`WALL_SECONDS`, and
+ *      social pilot 02a T08, which deleted the gate-side constant this
+ *      comment used to name once the invariant started holding by
+ *      construction instead) for EVERY card in the real read-through slice
+ *      (Meditations Books 2-3, 48 cards) — this is the whole point of
+ *      sourcing from the chapter instead of the card.
  *   6. The text is VERBATIM and UNMODIFIED — no fabrication, no paraphrase,
  *      no reordering within an excerpt; the block is nothing but the
  *      expected excerpts themselves, in the expected order, with only
@@ -31,8 +35,24 @@ import { fileURLToPath } from 'node:url';
 
 import { buildChapterTextBlock, loadChapterTextBlock, type ChapterTextCard } from '../chapter-text.js';
 import { loadBookCards } from '../../remotion/wall-pool.js';
-import { computeWallLayout } from '../../remotion/wall-timing.js';
-import { WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX } from '../../remotion/wall-gate.js';
+import {
+	computeWallLayout,
+	FRAME_HEIGHT,
+	WALL_SCROLL_RATE_PX_PER_SEC,
+	WALL_SECONDS
+} from '../../remotion/wall-timing.js';
+
+/**
+ * social pilot 02a T08 (2026-08-26): `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` was
+ * deleted from `wall-gate.ts` along with the gate rejection it drove — the
+ * never-finishes invariant this test guards now holds BY CONSTRUCTION (a
+ * chapter-sourced block is always long enough at the fixed `WALL_FONT_SIZE`),
+ * not by a gate check. Re-derived locally (matches
+ * `wall-timing.test.ts`'s own independent re-derivation) so this file keeps
+ * proving the real arithmetic rather than importing a constant that no
+ * longer exists.
+ */
+const TRAVEL_FLOOR_PX = FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS;
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 /** `social/src/render/__tests__` -> `render` -> `src` -> `social` -> repo root — same depth as `remotion/__tests__`'s own `repoRoot`. */
@@ -246,7 +266,7 @@ describe('buildChapterTextBlock / loadChapterTextBlock — the real read-through
 		for (const card of slice) {
 			const block = loadChapterTextBlock(READ_THROUGH_BOOK, card.id, outputDir);
 			const layout = computeWallLayout(block);
-			if (!(layout.blockHeight > WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX) || !layout.fits) {
+			if (!(layout.blockHeight > TRAVEL_FLOOR_PX)) {
 				shortfalls.push({ id: card.id, blockHeight: layout.blockHeight });
 			}
 		}

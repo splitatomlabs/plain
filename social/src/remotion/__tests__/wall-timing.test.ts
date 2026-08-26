@@ -11,7 +11,6 @@ import { renderStill, selectComposition } from '@remotion/renderer';
 
 import {
 	computeWallLayout,
-	fitWallFontSize,
 	computeWallTiming,
 	wallScrollOffsetAtFrame,
 	splitWords,
@@ -21,24 +20,12 @@ import {
 	WALL_MIN_FRAMES,
 	WALL_MAX_FRAMES,
 	WALL_LINE_HEIGHT_RATIO,
-	WALL_FONT_FLOOR_PX,
-	WALL_FONT_CAP_PX,
-	WALL_TARGET_BLOCK_HEIGHT_PX,
 	WALL_SCROLL_RATE_PX_PER_SEC,
 	WALL_SCROLL_PX_PER_FRAME,
 	WALL_SECONDS,
 	LANDING_LINE_FRAMES,
 	DEFAULT_LINE_SECONDS,
 	DEFAULT_LINE_FRAMES,
-	// social pilot 02a T07 (2026-08-26): neither of these exists on
-	// `wall-timing.ts` yet (F18 fits a font size PER CARD instead — see
-	// `fitWallFontSize`). Importing a name `wall-timing.ts` does not export
-	// resolves to `undefined` in this project's Vitest/esbuild ESM transform
-	// (confirmed empirically — it does not throw a module-resolution error),
-	// so the "T07 — the new wall geometry" describe blocks below fail as
-	// ordinary assertion failures against `undefined`, not as import crashes
-	// that would take the rest of this file's (pre-T07, already-passing)
-	// tests down with them. T08 adds these two real exports.
 	WALL_FONT_SIZE,
 	WALL_SCROLL_LINES_PER_SEC,
 	type NarrationLineTiming
@@ -280,163 +267,47 @@ describe('frame 0 scroll velocity — already in motion, no ease-in', () => {
 	});
 });
 
-// F18 (2026-08-26): retired F16's single FIXED `WALL_FONT_SIZE` (76px) —
-// `computeWallLayout` now calls `fitWallFontSize`, which binary-searches
-// `[WALL_FONT_FLOOR_PX, WALL_FONT_CAP_PX]` for the smallest font size whose
-// block reaches `WALL_TARGET_BLOCK_HEIGHT_PX`. A fixed size cost 76% of the
-// real Wall pool (219/896 renderable) because "never finishes before the
-// cut" needs a block over the travel floor, and 76px only reached that
-// above ~130 words. The per-card fit restores supply: short cards get a
-// LARGER font (to reach the target), long cards a SMALLER one (to avoid
-// wildly overshooting it) — `screens` is still descriptive/reporting only;
-// the load-bearing invariant is the travel floor checked below.
-describe('block geometry at F18 numbers — real cards, real Playwright-measured Literata', () => {
-	it('the fixture card (150 words, the Wall word floor) computes the exact real-measured geometry', () => {
-		const layout = computeWallLayout(FIXTURE_CARD.original_excerpt);
-		expect(layout.fits).toBe(true);
-		expect(layout.blockHeight).toBe(layout.estimatedLines * layout.lineHeight);
-		expect(layout.blockHeight).toBeGreaterThanOrEqual(WALL_TARGET_BLOCK_HEIGHT_PX);
-		// Real Playwright `boundingClientRect` measurement (real Literata
-		// Variable) at this card's own fitted size (77px): 35 real wrapped
-		// lines, 3368.75px tall — comfortably above both the 3170px real
-		// travel floor and the (lower) estimate. `computeWallLayout`'s
-		// estimate at this same size (36 estimated lines, 3465px) is the SAFE
-		// direction for the TRAVEL FLOOR specifically even though it slightly
-		// OVER-counts real here — see `WALL_LINE_ESTIMATE_OVERSHOOT`'s doc
-		// comment for the full-pool false-positive sweep this is drawn from
-		// (this exact overshoot/target pairing was chosen because it produces
-		// zero false positives across the real pool, not because every single
-		// card's estimate sits on one side of real).
-		expect(layout.fontSize).toBe(77);
-		expect(layout.estimatedLines).toBe(36);
-		expect(layout.blockHeight).toBe(3465);
-	});
-
-	it('the longest real excerpt in the pool (201 words) computes real-measured geometry too', () => {
-		const layout = computeWallLayout(LONGEST_EXCERPT);
-		expect(layout.fits).toBe(true);
-		expect(layout.blockHeight).toBeGreaterThanOrEqual(WALL_TARGET_BLOCK_HEIGHT_PX);
-		// Real measurement at this card's own fitted size (72px): 40 real
-		// wrapped lines, 3600px — the estimate (38 lines, 3420px) under-counts
-		// slightly here, the safe direction for the travel floor.
-		expect(layout.fontSize).toBe(72);
-		expect(layout.estimatedLines).toBe(38);
-		expect(layout.blockHeight).toBe(3420);
-	});
-
-	it('uses a tight line height (<= 1.3), not comfortable reading spacing', () => {
-		expect(WALL_LINE_HEIGHT_RATIO).toBeLessThanOrEqual(1.3);
-	});
-
-	it('fits every candidate font size within [WALL_FONT_FLOOR_PX, WALL_FONT_CAP_PX]', () => {
-		for (const excerpt of [FIXTURE_CARD.original_excerpt, LONGEST_EXCERPT]) {
-			const layout = computeWallLayout(excerpt);
-			expect(layout.fontSize).toBeGreaterThanOrEqual(WALL_FONT_FLOOR_PX);
-			expect(layout.fontSize).toBeLessThanOrEqual(WALL_FONT_CAP_PX);
-		}
-	});
-});
-
-describe('fitWallFontSize — a short excerpt cannot reach the target within the cap', () => {
-	it('returns fits: false and clamps fontSize at WALL_FONT_CAP_PX rather than searching past it', () => {
-		// The first 20 words of the longest real pool excerpt — short enough
-		// that even the largest allowed font size can't reach the target
-		// block height (see `wall-gate.test.ts`'s equivalent rejection-path
-		// coverage for the gate itself).
-		const synthetic = splitWords(LONGEST_EXCERPT).slice(0, 20).join(' ');
-		const layout = fitWallFontSize(synthetic);
-		expect(layout.fits).toBe(false);
-		expect(layout.fontSize).toBe(WALL_FONT_CAP_PX);
-		expect(layout.blockHeight).toBeLessThan(WALL_TARGET_BLOCK_HEIGHT_PX);
-	});
-});
-
-describe('fitWallFontSize — an extremely long excerpt clamps at the floor rather than searching smaller', () => {
-	it('returns fits: true at exactly WALL_FONT_FLOOR_PX when even the floor overshoots the target', () => {
-		const veryLong = Array.from({ length: 600 }, (_, i) => `word${i}`).join(' ');
-		const layout = fitWallFontSize(veryLong);
-		expect(layout.fits).toBe(true);
-		expect(layout.fontSize).toBe(WALL_FONT_FLOOR_PX);
-		expect(layout.blockHeight).toBeGreaterThanOrEqual(WALL_TARGET_BLOCK_HEIGHT_PX);
-	});
-});
-
-describe('the scroll does not finish before the cut — the invariant F15 requires, F16 re-derives, and F18\'s per-card fit still guarantees for EVERY renderable card', () => {
-	it('at the last wall frame, the fixture block is still taller than what has scrolled past — its bottom is below the frame bottom', () => {
-		const layout = computeWallLayout(FIXTURE_CARD.original_excerpt);
-		const lastWallFrame = WALL_FRAMES - 1;
-		const offsetAtLastFrame = wallScrollOffsetAtFrame(lastWallFrame);
-		// The block's bottom edge, in frame-space, after scrolling: blockHeight - offset.
-		// "Below the frame's bottom edge" means this is still > FRAME_HEIGHT.
-		const blockBottomY = layout.blockHeight - offsetAtLastFrame;
-		expect(blockBottomY).toBeGreaterThan(FRAME_HEIGHT);
-	});
-
-	it('holds for the longest real excerpt in the pool too', () => {
-		const layout = computeWallLayout(LONGEST_EXCERPT);
-		const offsetAtLastFrame = wallScrollOffsetAtFrame(WALL_FRAMES - 1);
-		expect(layout.blockHeight - offsetAtLastFrame).toBeGreaterThan(FRAME_HEIGHT);
-	});
-
-	it('matches the documented arithmetic: rate * wallPhaseSeconds < blockHeight - FRAME_HEIGHT', () => {
-		const layout = computeWallLayout(FIXTURE_CARD.original_excerpt);
-		const totalTravel = WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS;
-		expect(totalTravel).toBeLessThan(layout.blockHeight - FRAME_HEIGHT);
-	});
-
-	// F16 inverts F15's framing here: F15 derived a "safe rate ceiling" from
-	// an ASSUMED worst-case block (2 screens); F16 instead derives the
-	// travel floor a card's block must clear FROM the chosen rate — see
-	// `wall-gate.ts`'s `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`, which is the actual
-	// figure `gateWallCard` checks every real card against. This test
-	// re-derives that same arithmetic independently (without importing
-	// `wall-gate.ts`, keeping this file's own dependency graph unchanged)
-	// and checks it against both real fixture cards directly.
-	it('the derived travel floor (FRAME_HEIGHT + rate * WALL_SECONDS) is exactly 3170px, and both fixtures clear it', () => {
-		const travelFloor = FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS;
-		expect(travelFloor).toBe(3170);
-
-		const fixtureLayout = computeWallLayout(FIXTURE_CARD.original_excerpt);
-		expect(fixtureLayout.blockHeight).toBeGreaterThan(travelFloor);
-
-		const longestLayout = computeWallLayout(LONGEST_EXCERPT);
-		expect(longestLayout.blockHeight).toBeGreaterThan(travelFloor);
-	});
-});
+// social pilot 02a T08 (2026-08-26): DELETED four F18-era describe blocks
+// that lived here and asserted the per-card fit directly —
+// "block geometry at F18 numbers" (fontSize 77/72px on a single card's own
+// excerpt), both "fitWallFontSize — a short/long excerpt..." blocks (the
+// now-deleted target/floor/cap clamp behavior), and "the scroll does not
+// finish before the cut" (F15/F16/F18's version, which asserted the
+// invariant against a single card's own excerpt directly — no longer true
+// at a fixed 44px font: a single ~150-200 word card's own excerpt does NOT
+// clear the new travel floor on its own; only a chapter-sourced block does,
+// which is why this coverage was replaced, not merely re-numbered). The
+// same invariant, correctly re-derived against chapter-sourced blocks and
+// the real read-through slice, lives in the "T07 — the new wall geometry"
+// section below ("the scroll never finishes before the cut, BY
+// CONSTRUCTION..."). `fitWallFontSize` itself is gone from `wall-timing.ts`
+// — `computeWallLayout` no longer searches, it measures once at the fixed
+// `WALL_FONT_SIZE`.
 
 // ---------------------------------------------------------------------------
-// social pilot 02a T07 — the new wall geometry (TDD, written ahead of T08).
+// social pilot 02a T07 — the new wall geometry (TDD, written ahead of T08;
+// T08 implements the geometry these tests describe — see `wall-timing.ts`).
 //
 // The defect these guard against: "the wall reads as a large-print book, not
-// a wall" — F18's per-card fit (`fitWallFontSize`, above) buys travel by
-// magnifying type (block height scales with the SQUARE of font size), which
-// is the opposite of the dense, small-set look the format wants. T08's fix
-// (see `plans/Pf39c2-social-pilot-02a.md`): a FIXED font size (~44px, not a
-// per-card fit), a scroll rate expressed in LINES PER SECOND (~4.5, derived
-// into px/s from the fixed font size — not a bare px/s constant), and the
-// never-finishes invariant satisfied BY CONSTRUCTION once the block is
-// chapter-sourced (T05/T06, already landed) rather than by rejecting short
-// cards on a travel axis.
-//
-// Every describe block below is written against `wall-timing.ts` as it
-// stands TODAY (F18's per-card fit) — some fail outright (`WALL_FONT_SIZE`
-// and `WALL_SCROLL_LINES_PER_SEC` do not exist yet, so they import as
-// `undefined`); others (the chapter-sourced travel/no-rejection guards)
-// already hold today, because T06's chapter-text block is already long
-// enough to clear even F18's own target — those are kept as forward-looking
-// regression guards T08 must not break, not as tests this task expects to
-// fail. T08 is expected to make ALL of them pass; until then, this whole
-// section is this task's own documented acceptance criterion.
+// a wall" — F18's per-card fit bought travel by magnifying type (block
+// height scales with the SQUARE of font size), which is the opposite of the
+// dense, small-set look the format wants. T08's fix (see
+// `plans/Pf39c2-social-pilot-02a.md`): a FIXED font size (`WALL_FONT_SIZE`,
+// 44px, not a per-card fit), a scroll rate expressed in LINES PER SECOND
+// (`WALL_SCROLL_LINES_PER_SEC`, ~4.5, derived into px/s from the fixed font
+// size — not a bare px/s constant), and the never-finishes invariant
+// satisfied BY CONSTRUCTION once the block is chapter-sourced (T05/T06)
+// rather than by rejecting short cards on a travel axis.
 // ---------------------------------------------------------------------------
 
 describe('social pilot 02a T07 — WALL_FONT_SIZE is FIXED, not fit per card', () => {
-	it('WALL_FONT_SIZE is defined and close to the plan\'s ~44px figure — FAILS today (no such export until T08)', () => {
+	it('WALL_FONT_SIZE is defined and close to the plan\'s ~44px figure (implemented T08)', () => {
 		expect(WALL_FONT_SIZE).toBeDefined();
 		expect(WALL_FONT_SIZE).toBeGreaterThanOrEqual(40);
 		expect(WALL_FONT_SIZE).toBeLessThanOrEqual(48);
 	});
 
-	it('computeWallLayout uses the SAME fontSize for a short passage and a long one — no per-card fit — FAILS today (F18 fits per card)', () => {
+	it('computeWallLayout uses the SAME fontSize for a short passage and a long one — no per-card fit', () => {
 		const shortExcerpt = 'one two three four five';
 		const longExcerpt = Array.from({ length: 600 }, (_, i) => `word${i}`).join(' ');
 		const shortLayout = computeWallLayout(shortExcerpt);
@@ -445,26 +316,26 @@ describe('social pilot 02a T07 — WALL_FONT_SIZE is FIXED, not fit per card', (
 		expect(longLayout.fontSize).toBe(WALL_FONT_SIZE);
 	});
 
-	it('the fixture card (150 words) and the longest real pool excerpt (201 words) both render at WALL_FONT_SIZE — FAILS today (F18 measures 77px/72px, a per-card fit, not a fixed size)', () => {
+	it('the fixture card (150 words) and the longest real pool excerpt (201 words) both render at WALL_FONT_SIZE', () => {
 		expect(computeWallLayout(FIXTURE_CARD.original_excerpt).fontSize).toBe(WALL_FONT_SIZE);
 		expect(computeWallLayout(LONGEST_EXCERPT).fontSize).toBe(WALL_FONT_SIZE);
 	});
 });
 
 describe('social pilot 02a T07 — the scroll rate is expressed in LINES PER SECOND, derived into px/s (not a bare px/s constant)', () => {
-	it('WALL_SCROLL_LINES_PER_SEC is defined and close to the plan\'s ~4.5 lines/s figure — FAILS today (no such export until T08)', () => {
+	it('WALL_SCROLL_LINES_PER_SEC is defined and close to the plan\'s ~4.5 lines/s figure (implemented T08)', () => {
 		expect(WALL_SCROLL_LINES_PER_SEC).toBeDefined();
 		expect(WALL_SCROLL_LINES_PER_SEC).toBeGreaterThanOrEqual(4);
 		expect(WALL_SCROLL_LINES_PER_SEC).toBeLessThanOrEqual(5);
 	});
 
-	it('WALL_SCROLL_RATE_PX_PER_SEC is DERIVED from WALL_SCROLL_LINES_PER_SEC and the fixed font size\'s line height — FAILS today (F16/F18\'s 500px/s is a bare constant, not derived from any lines/sec figure)', () => {
+	it('WALL_SCROLL_RATE_PX_PER_SEC is DERIVED from WALL_SCROLL_LINES_PER_SEC and the fixed font size\'s line height', () => {
 		const lineHeightPx = WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO;
 		const derivedRatePxPerSec = WALL_SCROLL_LINES_PER_SEC * lineHeightPx;
 		expect(WALL_SCROLL_RATE_PX_PER_SEC).toBe(derivedRatePxPerSec);
 	});
 
-	it('at ~44px and ~4.5 lines/s the derived rate is roughly 250px/s, well under F16/F18\'s 500px/s — FAILS today', () => {
+	it('at ~44px and ~4.5 lines/s the derived rate is roughly 250px/s, well under F16/F18\'s 500px/s', () => {
 		expect(WALL_SCROLL_RATE_PX_PER_SEC).toBeLessThan(400);
 	});
 });
@@ -514,36 +385,66 @@ describe('social pilot 02a T07 — the scroll never finishes before the cut, BY 
 });
 
 describe('social pilot 02a T07 — no read-through card is rejected for block height once the block is chapter-sourced (T04\'s 14 travel rejections must all clear)', () => {
-	const exclusions = JSON.parse(
-		readFileSync(path.join(repoRoot, 'content', 'social', 'render-exclusions.json'), 'utf-8')
-	) as { read_through: { card_id: string; book_slug: string; axis: string }[] };
-	const travelRejectedIds = exclusions.read_through.filter((e) => e.axis === 'travel').map((e) => e.card_id);
+	// social pilot 02a T08 (2026-08-26): a FROZEN snapshot of the 14 card ids
+	// T04 measured as rejected on the (now-deleted) travel axis, taken from
+	// `content/social/render-exclusions.json` as committed at T04
+	// (`git show <T04-era commit>:content/social/render-exclusions.json`) —
+	// NOT read live from that file anymore. `gateWallCard` no longer produces
+	// a `'travel'` axis at all once T08 lands (see `wall-gate.ts`'s own doc
+	// comment), so a fresh regeneration of the committed artifact (which T08
+	// itself triggers) reports zero `'travel'` entries — reading the axis
+	// live here would make this test's own grounding assertion vacuous
+	// (`0 !== 14`) the moment the artifact catches up with the code. The
+	// historical fact this test needs — "these particular 14 real cards were
+	// too short to survive the wall phase on their own single-card excerpt" —
+	// doesn't depend on the gate's CURRENT axis taxonomy, so it's pinned here
+	// instead.
+	const TRAVEL_REJECTED_IDS = [
+		'meditations-02-001',
+		'meditations-02-003',
+		'meditations-02-004',
+		'meditations-02-007',
+		'meditations-02-010',
+		'meditations-02-016',
+		'meditations-02-019',
+		'meditations-03-006',
+		'meditations-03-013',
+		'meditations-03-020',
+		'meditations-03-024',
+		'meditations-03-025',
+		'meditations-03-026',
+		'meditations-03-027'
+	];
 
 	it('grounds this test\'s own numbers: T04 measured 14 read-through cards rejected on the travel axis under the per-card, single-excerpt fit', () => {
-		expect(travelRejectedIds.length).toBe(14);
+		expect(TRAVEL_REJECTED_IDS.length).toBe(14);
 	});
 
-	it('confirms those same 14 cards DO fail computeWallLayout.fits on their OWN single-card excerpt today — the defect T05/T06/T07/T08 fix', () => {
+	it('confirms those same 14 cards\' OWN single-card excerpt still does not survive the wall phase at the new fixed-size geometry — the defect T05/T06/T07/T08 fix', () => {
 		const slice = loadBookCards('meditations', outputDir);
-		const stillPassingOnOwnExcerpt: string[] = [];
-		for (const cardId of travelRejectedIds) {
+		const offsetAtLastFrame = wallScrollOffsetAtFrame(WALL_FRAMES - 1);
+		const stillSurvivingOnOwnExcerpt: string[] = [];
+		for (const cardId of TRAVEL_REJECTED_IDS) {
 			const card = slice.find((c) => c.id === cardId);
 			expect(card, `card ${cardId} not found in the meditations corpus`).toBeDefined();
 			if (!card) continue;
 			const layout = computeWallLayout(card.original_excerpt);
-			if (layout.fits) {
-				stillPassingOnOwnExcerpt.push(cardId);
+			const blockBottomY = layout.blockHeight - offsetAtLastFrame;
+			if (blockBottomY > FRAME_HEIGHT) {
+				stillSurvivingOnOwnExcerpt.push(cardId);
 			}
 		}
-		expect(stillPassingOnOwnExcerpt).toEqual([]);
+		expect(stillSurvivingOnOwnExcerpt).toEqual([]);
 	});
 
-	it('every one of those 14 cards clears computeWallLayout.fits once its own excerpt is replaced by its CHAPTER-sourced block', () => {
+	it('every one of those 14 cards clears the wall phase once its own excerpt is replaced by its CHAPTER-sourced block', () => {
+		const offsetAtLastFrame = wallScrollOffsetAtFrame(WALL_FRAMES - 1);
 		const stillFailing: string[] = [];
-		for (const cardId of travelRejectedIds) {
+		for (const cardId of TRAVEL_REJECTED_IDS) {
 			const block = loadChapterTextBlock('meditations', cardId, outputDir);
 			const layout = computeWallLayout(block);
-			if (!layout.fits) {
+			const blockBottomY = layout.blockHeight - offsetAtLastFrame;
+			if (!(blockBottomY > FRAME_HEIGHT)) {
 				stillFailing.push(cardId);
 			}
 		}

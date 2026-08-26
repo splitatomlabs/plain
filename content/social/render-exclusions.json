@@ -3,7 +3,6 @@
     "generated_at": "2026-08-26T00:00:00.000Z",
     "max_post_duration_frames": 1770,
     "max_post_duration_seconds": 59,
-    "wall_min_travel_block_height_px": 3170,
     "question_min_legible_font_px": 78,
     "question_max_words": 12,
     "objection_min_legible_font_px": 78,
@@ -15,13 +14,13 @@
     ],
     "wall": {
       "submitted": 896,
-      "succeeded": 514,
-      "dropped": 382
+      "succeeded": 685,
+      "dropped": 211
     },
     "question": {
       "submitted": 88,
-      "succeeded": 37,
-      "dropped": 51
+      "succeeded": 48,
+      "dropped": 40
     },
     "objection": {
       "submitted": 59,
@@ -30,8 +29,8 @@
     },
     "read_through": {
       "submitted": 48,
-      "succeeded": 16,
-      "dropped": 32
+      "succeeded": 30,
+      "dropped": 18
     },
     "still": {
       "submitted": 48,
@@ -77,12 +76,6 @@
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-07-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 101 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-08-003",
       "book_slug": "discourses",
       "axis": "duration",
@@ -97,8 +90,8 @@
     {
       "card_id": "discourses-08-006",
       "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
       "card_id": "discourses-10-001",
@@ -137,12 +130,6 @@
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-12-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-13-002",
       "book_slug": "discourses",
       "axis": "duration",
@@ -155,40 +142,16 @@
       "reason": "Wall card rejected: composition computes to 1785 frames (59.5s) across 18 plain-passage lines, over the 1770-frame (59s) ceiling."
     },
     {
-      "card_id": "discourses-13-005",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 110 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-13-007",
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-14-002",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 96 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-14-003",
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-15-001",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2415px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-15-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 89 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-15-005",
@@ -201,18 +164,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-17-002",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 113 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-17-005",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 99 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-17-006",
@@ -231,12 +182,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-18-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-18-005",
@@ -295,14 +240,8 @@
     {
       "card_id": "discourses-22-002",
       "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 99 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-22-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 112 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
       "card_id": "discourses-22-005",
@@ -341,12 +280,6 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-23-006",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 100 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-23-008",
       "book_slug": "discourses",
       "axis": "duration",
@@ -363,18 +296,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1875 frames (62.5s) across 19 plain-passage lines, over the 1770-frame (59s) ceiling."
-    },
-    {
-      "card_id": "discourses-24-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 105 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-24-005",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-25-001",
@@ -413,24 +334,6 @@
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-28-002",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 111 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-28-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-28-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 93 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-28-005",
       "book_slug": "discourses",
       "axis": "duration",
@@ -461,12 +364,6 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-31-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-31-004",
       "book_slug": "discourses",
       "axis": "duration",
@@ -477,12 +374,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-31-007",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 93 words reach only 2300px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-32-001",
@@ -507,12 +398,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-33-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-33-005",
@@ -551,12 +436,6 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-37-001",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 89 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-38-001",
       "book_slug": "discourses",
       "axis": "duration",
@@ -569,34 +448,16 @@
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-39-005",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 116 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-39-007",
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1605 frames (53.5s) across 16 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-40-001",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-40-003",
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 21 plain-passage lines, over the 1770-frame (59s) ceiling."
-    },
-    {
-      "card_id": "discourses-40-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 98 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-40-005",
@@ -617,34 +478,10 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-43-001",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 113 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-43-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 102 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-43-005",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 112 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-43-006",
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-43-007",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 109 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-44-001",
@@ -671,24 +508,6 @@
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-44-007",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 83 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-45-001",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 105 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-46-002",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 100 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-46-003",
       "book_slug": "discourses",
       "axis": "duration",
@@ -713,22 +532,10 @@
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-48-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 85 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-48-005",
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1605 frames (53.5s) across 16 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-48-008",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-49-002",
@@ -753,30 +560,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-49-009",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 110 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-49-010",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 99 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-49-011",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 109 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-49-012",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 110 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-50-001",
@@ -825,12 +608,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-50-012",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 100 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-50-017",
@@ -893,18 +670,6 @@
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-53-019",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-55-001",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 100 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-55-003",
       "book_slug": "discourses",
       "axis": "duration",
@@ -915,24 +680,6 @@
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-56-003",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-56-007",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 105 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-56-010",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 91 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-57-004",
@@ -953,12 +700,6 @@
       "reason": "Wall card rejected: composition computes to 1965 frames (65.5s) across 20 plain-passage lines, over the 1770-frame (59s) ceiling."
     },
     {
-      "card_id": "discourses-57-010",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 93 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-59-003",
       "book_slug": "discourses",
       "axis": "duration",
@@ -971,28 +712,10 @@
       "reason": "Wall card rejected: composition computes to 2235 frames (74.5s) across 23 plain-passage lines, over the 1770-frame (59s) ceiling."
     },
     {
-      "card_id": "discourses-59-005",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 111 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-59-006",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 106 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-61-001",
       "book_slug": "discourses",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "discourses-61-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 102 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-61-006",
@@ -1013,24 +736,6 @@
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "discourses-64-002",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 112 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-64-004",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "discourses-64-005",
-      "book_slug": "discourses",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-64-006",
       "book_slug": "discourses",
       "axis": "duration",
@@ -1049,18 +754,6 @@
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "enchiridion-05-001",
-      "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 98 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "enchiridion-06-001",
-      "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "enchiridion-07-001",
       "book_slug": "enchiridion",
       "axis": "duration",
@@ -1069,14 +762,8 @@
     {
       "card_id": "enchiridion-11-001",
       "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 82 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "enchiridion-22-001",
-      "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 100 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
       "card_id": "enchiridion-24-003",
@@ -1115,76 +802,16 @@
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "enchiridion-36-001",
-      "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "enchiridion-39-001",
-      "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "enchiridion-47-001",
-      "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "enchiridion-48-001",
       "book_slug": "enchiridion",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1605 frames (53.5s) across 16 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "enchiridion-50-003",
-      "book_slug": "enchiridion",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-01-005",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 99 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-03-001",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 91 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "happy-life-04-001",
       "book_slug": "happy-life",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "happy-life-04-004",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 92 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-06-002",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-07-002",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 94 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-08-002",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "happy-life-09-001",
@@ -1199,52 +826,16 @@
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "happy-life-14-002",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "happy-life-16-001",
       "book_slug": "happy-life",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "happy-life-22-004",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-24-001",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 112 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-24-002",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "happy-life-24-003",
       "book_slug": "happy-life",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "happy-life-25-004",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "happy-life-26-002",
-      "book_slug": "happy-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 81 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-01-014",
@@ -1259,76 +850,10 @@
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "meditations-02-001",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 117 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-02-010",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-02-019",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-03-006",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-03-020",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 105 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-03-024",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 92 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-03-027",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-04-007",
       "book_slug": "meditations",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "meditations-04-012",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-04-025",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 82 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-04-027",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 92 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-04-028",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-05-002",
@@ -1337,82 +862,10 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "meditations-05-004",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 107 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-05-005",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 105 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-05-019",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 105 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-05-022",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 89 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-05-026",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 82 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-05-037",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 96 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-05-048",
       "book_slug": "meditations",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "meditations-05-049",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-05-051",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 91 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-06-004",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 95 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-06-035",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-06-044",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 96 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-06-049",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-06-051",
@@ -1421,70 +874,10 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "meditations-06-053",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-001",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 102 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-07-004",
       "book_slug": "meditations",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "meditations-07-005",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-016",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-020",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 106 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-026",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 81 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-030",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 114 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-034",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 106 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-051",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 81 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-07-057",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-08-002",
@@ -1493,40 +886,10 @@
       "reason": "Wall card rejected: composition computes to 1695 frames (56.5s) across 17 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "meditations-08-003",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 101 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-08-028",
       "book_slug": "meditations",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1605 frames (53.5s) across 16 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "meditations-08-030",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 81 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-08-041",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 101 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-08-044",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 80 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-08-046",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-08-053",
@@ -1535,94 +898,16 @@
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "meditations-09-015",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 85 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-09-016",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 80 words reach only 2415px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-09-027",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-09-034",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 94 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-09-039",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-09-046",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 80 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-09-054",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-10-001",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 99 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-10-009",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 86 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-10-027",
       "book_slug": "meditations",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "meditations-10-029",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-10-036",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 81 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-10-041",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 80 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-10-044",
       "book_slug": "meditations",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "meditations-10-046",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 92 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-10-048",
@@ -1637,34 +922,10 @@
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "meditations-10-055",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-11-016",
       "book_slug": "meditations",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "meditations-12-006",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 81 words reach only 2415px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-12-007",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 107 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-12-032",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 93 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-12-041",
@@ -1699,8 +960,8 @@
     {
       "card_id": "on-anger-01-013",
       "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 93 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
+      "axis": "duration",
+      "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
       "card_id": "on-anger-01-015",
@@ -1713,12 +974,6 @@
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "on-anger-01-038",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 93 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-01-041",
@@ -1745,22 +1000,10 @@
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-01-047",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 99 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-01-065",
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 2055 frames (68.5s) across 21 plain-passage lines, over the 1770-frame (59s) ceiling."
-    },
-    {
-      "card_id": "on-anger-02-002",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 106 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-02-003",
@@ -1773,12 +1016,6 @@
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "on-anger-02-017",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 91 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-02-020",
@@ -1799,12 +1036,6 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-02-031",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-02-034",
       "book_slug": "on-anger",
       "axis": "duration",
@@ -1817,64 +1048,10 @@
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-02-041",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 91 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "on-anger-02-044",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-02-046",
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1605 frames (53.5s) across 16 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "on-anger-02-050",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 95 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "on-anger-02-054",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "on-anger-02-060",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 107 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "on-anger-02-068",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 86 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "on-anger-02-072",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "on-anger-02-084",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "on-anger-02-086",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 102 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-02-092",
@@ -1889,34 +1066,16 @@
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-02-095",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 106 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-02-097",
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-02-103",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-03-004",
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "on-anger-03-006",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 89 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-03-013",
@@ -1937,12 +1096,6 @@
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-03-025",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 98 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-03-027",
       "book_slug": "on-anger",
       "axis": "duration",
@@ -1959,12 +1112,6 @@
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "on-anger-03-046",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 94 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-03-051",
@@ -1991,12 +1138,6 @@
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-03-068",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-03-075",
       "book_slug": "on-anger",
       "axis": "duration",
@@ -2007,12 +1148,6 @@
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "on-anger-03-090",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 106 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-03-092",
@@ -2027,22 +1162,10 @@
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "on-anger-03-095",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 98 words reach only 3105px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "on-anger-03-101",
       "book_slug": "on-anger",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "on-anger-03-102",
-      "book_slug": "on-anger",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "on-anger-03-107",
@@ -2075,46 +1198,16 @@
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "peace-of-mind-02-002",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 89 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "peace-of-mind-02-004",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "peace-of-mind-02-010",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 103 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "peace-of-mind-02-011",
       "book_slug": "peace-of-mind",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1515 frames (50.5s) across 15 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "peace-of-mind-03-006",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 104 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "peace-of-mind-04-002",
       "book_slug": "peace-of-mind",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "peace-of-mind-04-004",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 98 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "peace-of-mind-04-005",
@@ -2135,12 +1228,6 @@
       "reason": "Wall card rejected: composition computes to 1605 frames (53.5s) across 16 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "peace-of-mind-08-005",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 107 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "peace-of-mind-09-001",
       "book_slug": "peace-of-mind",
       "axis": "duration",
@@ -2159,22 +1246,10 @@
       "reason": "Wall card rejected: composition computes to 1605 frames (53.5s) across 16 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "peace-of-mind-10-004",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "peace-of-mind-11-002",
       "book_slug": "peace-of-mind",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "peace-of-mind-12-001",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 102 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "peace-of-mind-12-004",
@@ -2189,82 +1264,16 @@
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "peace-of-mind-14-002",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 85 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "peace-of-mind-14-003",
       "book_slug": "peace-of-mind",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1425 frames (47.5s) across 14 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
     },
     {
-      "card_id": "peace-of-mind-14-006",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 108 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "peace-of-mind-15-002",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 97 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "peace-of-mind-15-003",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 98 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "peace-of-mind-15-005",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 91 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "peace-of-mind-16-001",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 111 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "peace-of-mind-16-004",
-      "book_slug": "peace-of-mind",
-      "axis": "travel",
-      "reason": "Wall card rejected: 95 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "shortness-of-life-02-005",
       "book_slug": "shortness-of-life",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "shortness-of-life-03-004",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 89 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "shortness-of-life-06-004",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 98 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "shortness-of-life-07-005",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 91 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "shortness-of-life-08-004",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 88 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "shortness-of-life-09-001",
@@ -2277,30 +1286,6 @@
       "book_slug": "shortness-of-life",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1335 frames (44.5s) across 13 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "shortness-of-life-10-005",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 89 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "shortness-of-life-11-002",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 92 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "shortness-of-life-12-001",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 95 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "shortness-of-life-14-004",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 100 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "shortness-of-life-15-003",
@@ -2319,18 +1304,6 @@
       "book_slug": "shortness-of-life",
       "axis": "duration",
       "reason": "Wall card rejected: composition computes to 1245 frames (41.5s) across 12 plain-passage lines, over the 1200-frame (40s) Wall-specific ceiling (the shared 59s post ceiling is not the binding one here)."
-    },
-    {
-      "card_id": "shortness-of-life-19-003",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 81 words reach only 2415px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "shortness-of-life-20-004",
-      "book_slug": "shortness-of-life",
-      "axis": "travel",
-      "reason": "Wall card rejected: 82 words reach only 2645px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     }
   ],
   "question": [
@@ -2357,12 +1330,6 @@
       "book_slug": "discourses",
       "axis": "pool_flags",
       "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
-    },
-    {
-      "card_id": "discourses-15-001",
-      "book_slug": "discourses",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 84 words reach only 2415px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-17-007",
@@ -2407,12 +1374,6 @@
       "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
     },
     {
-      "card_id": "discourses-28-003",
-      "book_slug": "discourses",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 103 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "discourses-30-003",
       "book_slug": "discourses",
       "axis": "pool_flags",
@@ -2441,12 +1402,6 @@
       "book_slug": "discourses",
       "axis": "pool_flags",
       "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
-    },
-    {
-      "card_id": "discourses-48-003",
-      "book_slug": "discourses",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 85 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "discourses-49-007",
@@ -2485,22 +1440,10 @@
       "reason": "Question card rejected: the pool flagged the answer as lacking substance."
     },
     {
-      "card_id": "enchiridion-11-001",
-      "book_slug": "enchiridion",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 82 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "enchiridion-24-002",
       "book_slug": "enchiridion",
       "axis": "pool_flags",
       "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
-    },
-    {
-      "card_id": "enchiridion-45-001",
-      "book_slug": "enchiridion",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 63 words reach only 1955px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "happy-life-02-003",
@@ -2515,12 +1458,6 @@
       "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
     },
     {
-      "card_id": "happy-life-27-004",
-      "book_slug": "happy-life",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 63 words reach only 2070px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-04-007",
       "book_slug": "meditations",
       "axis": "pool_flags",
@@ -2533,28 +1470,10 @@
       "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
     },
     {
-      "card_id": "meditations-04-028",
-      "book_slug": "meditations",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 90 words reach only 2990px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-04-047",
-      "book_slug": "meditations",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 70 words reach only 2185px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-05-021",
       "book_slug": "meditations",
       "axis": "pool_flags",
       "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
-    },
-    {
-      "card_id": "meditations-05-037",
-      "book_slug": "meditations",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 96 words reach only 2875px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-07-001",
@@ -2567,12 +1486,6 @@
       "book_slug": "meditations",
       "axis": "pool_flags",
       "reason": "Question card rejected: the pool flagged the question as not standing alone without context."
-    },
-    {
-      "card_id": "meditations-07-016",
-      "book_slug": "meditations",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 84 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-07-049",
@@ -2597,12 +1510,6 @@
       "book_slug": "meditations",
       "axis": "pool_flags",
       "reason": "Question card rejected: drift_verdict is \"drifts\", not \"answers\" — the answer does not resolve the question."
-    },
-    {
-      "card_id": "meditations-11-005",
-      "book_slug": "meditations",
-      "axis": "wall_travel",
-      "reason": "Question card's archaic excerpt fails the reused Wall gate: Wall card rejected: 69 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-12-039",
@@ -2837,40 +1744,16 @@
   ],
   "read_through": [
     {
-      "card_id": "meditations-02-001",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 117 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-02-002",
       "book_slug": "meditations",
       "axis": "landingLine",
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
-      "card_id": "meditations-02-003",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 58 words reach only 1840px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-02-004",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 67 words reach only 2070px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-02-005",
       "book_slug": "meditations",
       "axis": "landingLine",
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
-    },
-    {
-      "card_id": "meditations-02-007",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 62 words reach only 1955px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-02-008",
@@ -2885,34 +1768,16 @@
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
-      "card_id": "meditations-02-010",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-02-011",
       "book_slug": "meditations",
       "axis": "landingLine",
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
-      "card_id": "meditations-02-016",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 57 words reach only 1725px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-02-017",
       "book_slug": "meditations",
       "axis": "landingLine",
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
-    },
-    {
-      "card_id": "meditations-02-019",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 84 words reach only 2530px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-03-001",
@@ -2925,12 +1790,6 @@
       "book_slug": "meditations",
       "axis": "landingLine",
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
-    },
-    {
-      "card_id": "meditations-03-006",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 90 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-03-007",
@@ -2949,12 +1808,6 @@
       "book_slug": "meditations",
       "axis": "landingLine",
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
-    },
-    {
-      "card_id": "meditations-03-013",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 49 words reach only 1610px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-03-014",
@@ -2981,12 +1834,6 @@
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
     },
     {
-      "card_id": "meditations-03-020",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 105 words reach only 3220px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
       "card_id": "meditations-03-022",
       "book_slug": "meditations",
       "axis": "landingLine",
@@ -2997,30 +1844,6 @@
       "book_slug": "meditations",
       "axis": "landingLine",
       "reason": "Read-through card rejected: plain_english has no qualifying landing line — selectLandingLine (landing-line.ts) found no self-contained sentence within the mechanical bounds, so this card cannot pay off as a Wall (matches scripts/lib/schedule.ts's tryReadThroughContent, which returns null here rather than falling back to the whole passage)."
-    },
-    {
-      "card_id": "meditations-03-024",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 92 words reach only 3335px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-03-025",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 67 words reach only 2300px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-03-026",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 74 words reach only 2185px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
-    },
-    {
-      "card_id": "meditations-03-027",
-      "book_slug": "meditations",
-      "axis": "travel",
-      "reason": "Wall card rejected: 87 words reach only 2760px even at the 92px font cap, short of the 3400px target block height (the minimum with enough margin over the 3170px travel floor for the scroll to survive 2.5s at 500px/s without finishing before the cut) — setting it any larger would read as large-print rather than a dense wall."
     },
     {
       "card_id": "meditations-03-028",

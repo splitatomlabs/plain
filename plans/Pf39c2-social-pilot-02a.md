@@ -447,9 +447,72 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   Verified: `npx tsc --noEmit` clean. `npx vitest run src/remotion/__tests__/wall-timing.test.ts` — 50 tests, 4
   failed (the new behavioral ones, as intended), 46 passed (37 pre-existing + 9 new: 2 trivial stub-existence
   checks + 7 forward-looking guards) — zero regressions.
-- [ ] T08: Rewrite the geometry in `wall-timing.ts` — fixed `WALL_FONT_SIZE` (~44px), `WALL_SCROLL_LINES_PER_SEC`
+- [x] T08: Rewrite the geometry in `wall-timing.ts` — fixed `WALL_FONT_SIZE` (~44px), `WALL_SCROLL_LINES_PER_SEC`
   (~4.5), delete `fitWallFontSize`'s block-height target, `WALL_TARGET_BLOCK_HEIGHT_PX`, `WALL_FONT_FLOOR_PX`/
-  `CAP_PX` and `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`. Acceptance: T06 passes.
+  `CAP_PX` and `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`. Acceptance: T07's geometry tests pass (the plan's own "Acceptance:
+  T06 passes" was a typo for T07 — T06 is the chapter-text loader, already landed; T07 is the geometry test file
+  this task's acceptance criterion actually targets).
+  Done (2026-08-26): `wall-timing.ts` wires `WALL_FONT_SIZE` (44px, was T07's inert stub) in as the Wall's single
+  fixed size — `computeWallLayout` now measures ONCE at that size (no search) instead of calling the deleted
+  `fitWallFontSize` binary search. `WALL_SCROLL_RATE_PX_PER_SEC` is now DERIVED —
+  `WALL_SCROLL_LINES_PER_SEC * WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO` = `4.5 * 44 * 1.25` = `247.5px/s` (was F16/
+  F18's bare `500`) — rather than a bare constant. Deleted `WALL_TARGET_BLOCK_HEIGHT_PX`, `WALL_FONT_FLOOR_PX`,
+  `WALL_FONT_CAP_PX` from `wall-timing.ts`; deleted `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` from `wall-gate.ts` along with
+  its module-load invariant check. `WallLayout.fits` is GONE (not merely defaulted true) — there is no longer any
+  concept of a card "not fitting"; `gateWallCard`'s block-height rejection is gone entirely (not narrowed), so the
+  never-finishes invariant now holds purely by construction (T05/T06's chapter-sourced block is always long enough
+  at 44px/4.5 lines-per-second — needs ~412 words, chapters hold 2,196-3,305). Confirmed by direct measurement that
+  a SINGLE card's own excerpt (100-200 words) still does NOT clear the new, lower travel floor
+  (`FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS` ≈ 2538.75px, down from F16/F18's 3170px) on its own —
+  the chapter block is what makes the invariant true, not the smaller font/rate alone.
+  Removed the `'travel'` axis from `WallGateResult['failure']` and `WallPoolRejection.axis` (wall-pool.ts) since it
+  is now structurally unreachable — `gateWallCard` never rejects on block height, so the only reachable axes are
+  `'duration'` and `'landingLine'`. Updated every caller: `wall-pool.ts`'s `surveyWallPool` dropped its
+  `rejectedForTravel` counter; `write-exclusions.ts` dropped its `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` import and the
+  `wall_min_travel_block_height_px` meta field it wrote; `social/src/remotion/index.ts`'s barrel export list updated
+  to match (removed the four deleted symbols, added `WALL_FONT_SIZE`/`WALL_SCROLL_LINES_PER_SEC`).
+  Test changes, per T07's own recorded list plus two it flagged for a later task but that in fact broke immediately
+  under the real T08 numbers (verified by direct measurement, not assumed): deleted the "block geometry at F18
+  numbers" describe, both "fitWallFontSize — a short/long excerpt" describes, and the old F15/F16/F18 "the scroll
+  does not finish before the cut" describe from `wall-timing.test.ts` (T07 predicted only its one `3170px` literal
+  would need updating; measurement showed the WHOLE describe was invalid at the new geometry, since it asserted the
+  invariant against a single card's own excerpt directly, which no longer clears the new, lower floor without a
+  chapter-sourced block — superseded by T07's own "BY CONSTRUCTION" describe, which already uses chapter blocks).
+  Rewrote T07's "no read-through card is rejected" describe: it read `content/social/render-exclusions.json`'s
+  `'travel'`-axis entries live, which vanish the instant the artifact is regenerated under this task's own code (no
+  `'travel'` axis can exist anymore) — replaced with a frozen, hardcoded snapshot of the same 14 real card ids (from
+  `git show HEAD:content/social/render-exclusions.json` at the pre-T08 commit) and rewrote its `.fits`-based
+  assertions as direct `wallScrollOffsetAtFrame`/`blockHeight` comparisons, matching the sibling describe's own
+  technique (`.fits` no longer exists on `WallLayout`). In `wall-gate.test.ts`: deleted the "rejection path
+  (synthetic too-short excerpt)" describe (3 tests) and the "selectComposition throws for a too-short card" test
+  (both asserted the now-gone travel rejection); updated `WALL_MIN_LEGIBLE_FONT_PX`'s and `surveyWallPool`'s describe
+  comments/assertions to drop `rejectedForTravel`. In `exclusions.test.ts`: dropped `wall_min_travel_block_height_px`
+  from the meta interface/assertion and `rejectedForTravel` from the dropped-count sum. In
+  `chapter-text.test.ts`: replaced its `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` import (now deleted) with a locally
+  re-derived travel floor, matching `wall-timing.test.ts`'s own independent re-derivation. One test outside this
+  task's named files also broke on the rate's new numeric value:
+  `question-timing.test.ts`'s "reuses WALL_SCROLL_RATE_PX_PER_SEC (500)..." hardcoded the old bare constant; rewrote
+  it to assert against the real derivation instead of a literal, preserving its actual intent (question-timing.ts
+  reuses whatever rate wall-timing.ts defines, never a copy).
+  MEASURED supply shift (regenerated via `npx tsx social/scripts/write-exclusions.ts --date 2026-08-26`): the
+  read-through slice moved from **16 Wall / 32 Still** (T04's baseline) to **30 Wall / 18 Still** — exactly the
+  plan's headline number, and exactly what T07's tests predicted (all 14 travel rejections cleared; the 18
+  `landingLine` rejections are untouched by this task, as expected). Wall pool (896 entries): travel rejections
+  dropped from 175 to 0 (axis deleted, not merely relaxed), duration rejections rose slightly (207 → 211, real
+  count drift from the corpus, not a T08 change), passed rose 514 → 685. Question pool (88 entries), which reuses
+  `gateWallCard` for its own archaic-excerpt phase: passed rose 37 → 48 (the 11 `wall_travel`-axis rejections all
+  cleared), rejected dropped 51 → 40. Objection pool (59 entries) and the Still fallback (48/48/0) are unaffected —
+  neither calls `gateWallCard`.
+  Verified: `cd social && npx vitest run src/remotion/__tests__/wall-timing.test.ts` — 40/40 pass. `cd social &&
+  npm test` — 27/27 test files, 520/520 tests pass (up from 519 pre-fix once `question-timing.test.ts`'s stale
+  literal was corrected; zero regressions elsewhere). `npx vitest run scripts/lib/__tests__/schedule.test.ts` (repo
+  root) — 123/123, unaffected. `cd social && npx tsc --noEmit` — clean. Confirmed by grep that
+  `WALL_TARGET_BLOCK_HEIGHT_PX`, `WALL_FONT_FLOOR_PX`, `WALL_FONT_CAP_PX` and `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` have
+  zero remaining references outside historical doc comments.
+  Follow-up for T09: `wall-pool.ts`'s `surveyWallPool` and `write-exclusions.ts`'s `surveyReadThrough` still gate
+  each card's OWN single-card `original_excerpt`, not the chapter-sourced block — harmless today (the gate no
+  longer rejects on block height at all, so this is a non-issue for supply), but worth noting so a future task
+  doesn't assume these survey functions already exercise the real chapter-sourced render path Wall.tsx will use.
 - [ ] T09: Wire `Wall.tsx` to render the chapter block. Acceptance: renders from a real card; frame 0 shows the
   card's own first words at the top of the frame; the block is continuous verbatim chapter text below it.
 - [ ] T10: Fix the payoff polarity — the payoff must be set LARGER than the wall. Raise `PAYOFF_MIN_FONT` above

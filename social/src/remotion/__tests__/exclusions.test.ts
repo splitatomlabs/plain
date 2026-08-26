@@ -18,7 +18,7 @@
  * NOT a scored Wall pool entry's `rubric.chosen_landing_line` — with NO `??
  * plainEnglish` fallback, social pilot 02a T02/T04: a card with no
  * qualifying landing line is excluded on that basis alone, never gated
- * against `gateWallCard`'s travel/duration floors, matching the real
+ * against `gateWallCard`'s duration ceilings, matching the real
  * scheduler which never gets that far for such a card either) and asserts
  * every slice card is EITHER on the committed `read_through` exclusion list
  * OR passes that derivation — the assertion that would have caught M2 (a
@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { surveyWallPool, loadBookCards, resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
 import { computeWallPlainLines } from '../../cli-plan.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from '../duration-bounds.js';
-import { gateWallCard, WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX } from '../wall-gate.js';
+import { gateWallCard } from '../wall-gate.js';
 import { gateQuestionCard, QUESTION_MIN_LEGIBLE_FONT_PX, QUESTION_MAX_WORDS } from '../question-gate.js';
 import { gateObjectionCard, OBJECTION_MIN_LEGIBLE_FONT_PX } from '../objection-gate.js';
 import { selectLandingLine } from '../landing-line.js';
@@ -76,7 +76,6 @@ interface ExclusionsFile {
 		generated_at: string;
 		max_post_duration_frames: number;
 		max_post_duration_seconds: number;
-		wall_min_travel_block_height_px: number;
 		question_min_legible_font_px: number;
 		question_max_words: number;
 		objection_min_legible_font_px: number;
@@ -108,13 +107,12 @@ describe('content/social/render-exclusions.json matches a fresh survey — Wall'
 	it('records the same constants the gate is currently computed against', () => {
 		expect(committed.meta.max_post_duration_frames).toBe(MAX_POST_DURATION_FRAMES);
 		expect(committed.meta.max_post_duration_seconds).toBe(MAX_POST_DURATION_SECONDS);
-		expect(committed.meta.wall_min_travel_block_height_px).toBe(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX);
 	});
 
 	it('meta counts match a fresh survey of the same pool', () => {
 		expect(committed.meta.wall.submitted).toBe(wallPool.entries.length);
 		expect(committed.meta.wall.succeeded).toBe(survey.passed);
-		expect(committed.meta.wall.dropped).toBe(survey.rejectedForTravel + survey.rejectedForDuration);
+		expect(committed.meta.wall.dropped).toBe(survey.rejectedForDuration);
 		expect(committed.wall.length).toBe(committed.meta.wall.dropped);
 	});
 
@@ -291,7 +289,7 @@ describe('content/social/render-exclusions.json — the read-through slice (F06/
 	 * Re-derives one slice card's verdict exactly as `write-exclusions.ts`'s
 	 * `surveyReadThrough` does (social pilot 02a T04): no `?? plainEnglish`
 	 * fallback — a card with no qualifying landing line is rejected on that
-	 * basis alone, never reaching `gateWallCard`'s travel/duration checks,
+	 * basis alone, never reaching `gateWallCard`'s duration checks,
 	 * matching `scripts/lib/schedule.ts`'s `tryReadThroughContent`.
 	 */
 	function rederiveOk(card: (typeof slice)[number]): boolean {

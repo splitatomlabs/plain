@@ -18,7 +18,14 @@ import {
 	ANSWER_SECONDS,
 	ANSWER_MIN_SECONDS
 } from '../question-timing.js';
-import { WALL_FRAMES, WALL_SCROLL_RATE_PX_PER_SEC, FPS } from '../wall-timing.js';
+import {
+	WALL_FRAMES,
+	WALL_SCROLL_RATE_PX_PER_SEC,
+	WALL_SCROLL_LINES_PER_SEC,
+	WALL_FONT_SIZE,
+	WALL_LINE_HEIGHT_RATIO,
+	FPS
+} from '../wall-timing.js';
 import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
 import { FORBIDDEN_TESTING_VOCABULARY } from '../question-gate.js';
 import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
@@ -101,8 +108,14 @@ describe('phase 2 — the archaic original arrives as the moving wall', () => {
 		expect(timing.wall.endFrame - timing.wall.startFrame).toBe(WALL_FRAMES);
 	});
 
-	it('reuses WALL_SCROLL_RATE_PX_PER_SEC (500) as the authoritative scroll rate, imported not copied (F15/F16)', () => {
-		expect(WALL_SCROLL_RATE_PX_PER_SEC).toBe(500);
+	it('reuses WALL_SCROLL_RATE_PX_PER_SEC as the authoritative scroll rate, imported not copied (F15/F16)', () => {
+		// social pilot 02a T08 (2026-08-26): the rate itself is no longer a bare
+		// px/s constant (F16/F18's 500) — it's derived from WALL_SCROLL_LINES_PER_SEC
+		// and the fixed WALL_FONT_SIZE (see wall-timing.ts). This test's own
+		// point — that question-timing.ts REUSES whatever that rate is, rather
+		// than hardcoding a second copy — doesn't depend on its numeric value,
+		// so it's checked against the real derivation, not a hardcoded literal.
+		expect(WALL_SCROLL_RATE_PX_PER_SEC).toBe(WALL_SCROLL_LINES_PER_SEC * WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO);
 	});
 
 	it('question-timing.ts imports WALL_FRAMES from wall-timing.js rather than redefining it', () => {

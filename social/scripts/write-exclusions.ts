@@ -79,7 +79,7 @@ import {
 } from '../src/remotion/wall-pool.js';
 import { computeWallPlainLines } from '../src/cli-plan.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from '../src/remotion/duration-bounds.js';
-import { gateWallCard, WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX } from '../src/remotion/wall-gate.js';
+import { gateWallCard } from '../src/remotion/wall-gate.js';
 import { gateQuestionCard, QUESTION_MIN_LEGIBLE_FONT_PX, QUESTION_MAX_WORDS } from '../src/remotion/question-gate.js';
 import { gateObjectionCard, OBJECTION_MIN_LEGIBLE_FONT_PX } from '../src/remotion/objection-gate.js';
 import { gateStillCard, STILL_MIN_LEGIBLE_FONT_PX } from '../src/remotion/still-gate.js';
@@ -191,10 +191,7 @@ function readPoolEntries<T>(filePath: string, raw: unknown): T[] {
 
 function surveyWall(entries: WallPoolEntry[], corpusDir: string) {
 	const result = surveyWallPool(entries, corpusDir);
-	console.log(
-		`  Wall: passed ${result.passed}, rejected for travel: ${result.rejectedForTravel}, ` +
-			`rejected for duration: ${result.rejectedForDuration}`
-	);
+	console.log(`  Wall: passed ${result.passed}, rejected for duration: ${result.rejectedForDuration}`);
 	return { submitted: entries.length, succeeded: result.passed, rejections: result.rejections as ExclusionEntry[] };
 }
 
@@ -441,7 +438,6 @@ async function main(): Promise<void> {
 			generated_at: generatedAt,
 			max_post_duration_frames: MAX_POST_DURATION_FRAMES,
 			max_post_duration_seconds: MAX_POST_DURATION_SECONDS,
-			wall_min_travel_block_height_px: WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX,
 			question_min_legible_font_px: QUESTION_MIN_LEGIBLE_FONT_PX,
 			question_max_words: QUESTION_MAX_WORDS,
 			objection_min_legible_font_px: OBJECTION_MIN_LEGIBLE_FONT_PX,

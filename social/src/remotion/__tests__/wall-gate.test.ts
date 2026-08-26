@@ -9,14 +9,13 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { bundle } from '@remotion/bundler';
 import { selectComposition } from '@remotion/renderer';
 
-import { FRAME_WIDTH, DEFAULT_LINE_FRAMES, splitWords } from '../wall-timing.js';
+import { FRAME_WIDTH, DEFAULT_LINE_FRAMES } from '../wall-timing.js';
 import { MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 import {
 	gateWallCard,
 	assertWallCardRenderable,
 	WALL_REFERENCE_VIEWPORT_WIDTH,
 	WALL_MIN_LEGIBLE_FONT_PX,
-	WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX,
 	// The named max-words backstop the plan's Decisions section calls for
 	// (social pilot 02a T02): "Never fall back to the whole passage... a
 	// word-count backstop in the composition so a whole-passage payoff can
@@ -92,15 +91,15 @@ describe('WALL_MIN_LEGIBLE_FONT_PX', () => {
 	// runtime assertion in `wall-gate.ts` it checked — F16's `computeWallLayout`
 	// used a single FIXED `WALL_FONT_SIZE`, not a per-card search, so "did the
 	// fit bottom out below the floor" was not a reachable failure mode for
-	// `gateWallCard` to guard against at the time. F18 (2026-08-26) restored a
-	// real per-card search (`fitWallFontSize`) — `WALL_MIN_LEGIBLE_FONT_PX` is
-	// its own `WALL_FONT_FLOOR_PX` now, so bottoming out at the floor IS
-	// reachable again, just no longer a `gateWallCard` REJECTION path: the
-	// floor is a clamp `fitWallFontSize` returns (see `wall-gate.test.ts`'s own
-	// `WALL_FONT_CAP_PX`-side coverage below for the actual rejection axis).
-	// `WALL_MIN_LEGIBLE_FONT_PX` was never dead outside the Wall either:
-	// `question-gate.ts` and `objection-gate.ts` also run a real per-card
-	// `fitFontSize` search against it — see `wall-gate.ts`'s module doc comment.
+	// `gateWallCard` to guard against at the time. F18 (2026-08-26) briefly
+	// restored a real per-card search (`fitWallFontSize`), making
+	// `WALL_MIN_LEGIBLE_FONT_PX` load-bearing for the Wall again as its own
+	// floor. social pilot 02a T08 (2026-08-26) deleted that search — the Wall's
+	// font size is fixed again (`WALL_FONT_SIZE`, comfortably above this
+	// floor) — so `WALL_MIN_LEGIBLE_FONT_PX` is once again dead weight for the
+	// Wall specifically, though it stays load-bearing for `question-gate.ts`
+	// and `objection-gate.ts`, which still run real per-card `fitFontSize`
+	// searches against it — see `wall-gate.ts`'s module doc comment.
 });
 
 describe('gateWallCard — the real longest card in the pool', () => {
@@ -110,17 +109,18 @@ describe('gateWallCard — the real longest card in the pool', () => {
 		expect(longest.original_word_count).toBeLessThan(220);
 	});
 
-	it('measures a real, reportable fitted font size', () => {
+	it('measures a real, reportable font size at the fixed WALL_FONT_SIZE', () => {
 		const longest = longestPoolEntry();
 		const excerpt = resolveWallCardExcerpt(longest, outputDir);
 		const result = gateWallCard(excerpt);
 
-		// The corpus's longest original excerpt (~201 words) is not actually
-		// long enough to breach the 39px legibility floor — it fits at a
-		// generous size. That is the correct, honest result: we assert what
-		// the gate actually reports rather than forcing a rejection. The
-		// rejection path itself is proven separately below with a synthetic
-		// excerpt built from this same real text.
+		// social pilot 02a T08: every card renders at the same fixed font size
+		// now — no per-card fit, no rejection on block height — so this is
+		// always `ok: true` (the composition's font size and legibility floor
+		// were never in tension in the first place; the never-finishes
+		// invariant this excerpt alone couldn't clear is now satisfied by the
+		// chapter-sourced block, not by this single-card excerpt — see
+		// `chapter-text.ts` and `wall-timing.test.ts`'s own T07 coverage).
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.layout.fontSize).toBeGreaterThanOrEqual(WALL_MIN_LEGIBLE_FONT_PX);
@@ -128,99 +128,7 @@ describe('gateWallCard — the real longest card in the pool', () => {
 	});
 });
 
-// F16 (2026-08-26): the rejection path this describe block proves is no
-// longer "too LONG to fit legibly" — it is now too SHORT for the scroll to
-// survive the wall phase without finishing before the cut. F18 (2026-08-26)
-// re-derived the same axis around a per-card fit (`fitWallFontSize`) instead
-// of F16's single fixed size, but the axis itself — and this describe
-// block's rejection story — is unchanged: a card whose block can't reach
-// `WALL_TARGET_BLOCK_HEIGHT_PX` even at `WALL_FONT_CAP_PX` still rejects,
-// just via `layout.fits === false` now rather than a raw blockHeight
-// comparison. These three tests replace (not weaken) the three the old
-// "synthetic over-long excerpt" story covered — same rigor, the new axis.
-describe('gateWallCard — rejection path (synthetic too-short excerpt)', () => {
-	// A short, real slice of the real longest card's own text (the first 20
-	// words) — nowhere near the real pool's empirical minimum passing word
-	// count (97 words, `meditations-12-017` — see `wall-timing.ts`'s
-	// `WALL_FONT_CAP_PX` doc comment) — proves the rejection path without
-	// fabricating unrelated text.
-	function syntheticTooShortExcerpt(): string {
-		const longest = longestPoolEntry();
-		const excerpt = resolveWallCardExcerpt(longest, outputDir);
-		return splitWords(excerpt).slice(0, 20).join(' ');
-	}
-
-	it('rejects — ok is false, not a silent pass below the travel floor', () => {
-		const synthetic = syntheticTooShortExcerpt();
-		const result = gateWallCard(synthetic);
-
-		expect(result.ok).toBe(false);
-		if (!result.ok) {
-			expect(result.failure).toBe('travel');
-			expect(result.blockHeight).toBeLessThanOrEqual(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX);
-			expect(result.wordCount).toBe(splitWords(synthetic).length);
-			// The reason names the measured block height, the floor, and the word count.
-			expect(result.reason).toContain(String(Math.round(result.blockHeight!)));
-			expect(result.reason).toContain(String(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX));
-			expect(result.reason).toContain(String(result.wordCount));
-		}
-	});
-
-	it('no ok:true result is ever returned at or under the travel floor (never a silent pass)', () => {
-		const synthetic = syntheticTooShortExcerpt();
-		const result = gateWallCard(synthetic);
-		if (result.ok) {
-			// If this ever ran, it would mean the gate rendered a card whose
-			// scroll finishes before the cut instead of rejecting it — that is
-			// the exact failure this gate exists to prevent.
-			expect(result.layout.blockHeight).toBeGreaterThan(WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX);
-		} else {
-			expect(result.ok).toBe(false);
-		}
-	});
-
-	it('assertWallCardRenderable throws a clear error naming the block height, cap and word count', () => {
-		const synthetic = syntheticTooShortExcerpt();
-		expect(() => assertWallCardRenderable(synthetic)).toThrow(/even at the \d+px font cap/);
-	});
-});
-
-describe('the composition path surfaces the rejection (T06 wiring)', () => {
-	it(
-		'selectComposition throws for a too-short card, before any frame renders',
-		async () => {
-			const longest = longestPoolEntry();
-			const excerpt = resolveWallCardExcerpt(longest, outputDir);
-			const synthetic = splitWords(excerpt).slice(0, 20).join(' ');
-
-			const bundleLocation = await bundle({
-				entryPoint: path.join(moduleDir, '..', 'entry.tsx'),
-				outDir: bundleDir,
-				webpackOverride: (config) => ({
-					...config,
-					resolve: {
-						...config.resolve,
-						extensionAlias: { '.js': ['.js', '.ts', '.tsx'] }
-					}
-				})
-			});
-
-			await expect(
-				selectComposition({
-					serveUrl: bundleLocation,
-					id: 'Wall',
-					inputProps: {
-						originalExcerpt: synthetic,
-						landingLine: 'This is the landing line.',
-						plainLines: ['This is the rest of the plain passage.'],
-						author: 'marcus-aurelius'
-					}
-				})
-			).rejects.toThrow(/even at the \d+px font cap/);
-		},
-		120_000
-	);
-
+describe('the composition path surfaces the rejection (T02 wiring)', () => {
 	// T01 (social pilot 02a): the plan's decision is explicit — "Never fall
 	// back to the whole passage... a word-count backstop in the composition
 	// so a whole-passage payoff can never render again." Today, `Wall.tsx`
@@ -332,8 +240,14 @@ describe('gateWallCard — the landing-line requirement (T02)', () => {
 
 describe('surveyWallPool — the real pool', () => {
 	it('runs the gate over every entry and reports counts that sum to the pool size', () => {
+		// social pilot 02a T08: `rejectedForTravel` is gone along with the axis
+		// it counted (`gateWallCard` no longer rejects on block height) —
+		// `passed + rejectedForDuration` is the whole pool now, since
+		// `surveyWallPool` never passes `plainEnglish`/`landingLine` (the only
+		// other reachable axis is structurally unreachable here — see
+		// `WallPoolRejection.axis`'s own doc comment).
 		const result = surveyWallPool(POOL.entries, outputDir);
-		expect(result.passed + result.rejectedForTravel + result.rejectedForDuration).toBe(POOL.entries.length);
+		expect(result.passed + result.rejectedForDuration).toBe(POOL.entries.length);
 		expect(result.passed).toBeGreaterThan(0);
 	});
 
@@ -354,7 +268,7 @@ describe('surveyWallPool — the real pool', () => {
 		}
 	});
 
-	it('reports the duration ceiling exclusions separately from travel exclusions (F03)', () => {
+	it('reports a real, non-trivial count of duration ceiling exclusions (F03)', () => {
 		const result = surveyWallPool(POOL.entries, outputDir);
 		// The real over-long card below proves this is >0, not just structurally present.
 		expect(result.rejectedForDuration).toBeGreaterThan(0);

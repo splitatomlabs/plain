@@ -141,17 +141,19 @@ export interface WallPoolRejection {
 	 * `landingLine` to `gateWallCard` (a scored pool entry's landing line is
 	 * already vetted upstream, T07) — included only so this type stays in
 	 * sync with `WallGateResult['failure']`.
+	 *
+	 * social pilot 02a T08 (2026-08-26): `'travel'` removed — `gateWallCard`
+	 * no longer rejects on block height at all (see `wall-gate.ts`'s own doc
+	 * comment for why that axis is gone, not merely relaxed).
 	 */
-	axis: 'travel' | 'duration' | 'landingLine';
+	axis: 'duration' | 'landingLine';
 	/** Verbatim `WallGateResult.reason` from `gateWallCard`. */
 	reason: string;
 }
 
 export interface WallPoolSurveyResult {
 	passed: number;
-	/** Cards the travel floor rejected (F16) — see `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`. */
-	rejectedForTravel: number;
-	/** Cards the `MAX_POST_DURATION_FRAMES` ceiling rejected — see F03. */
+	/** Cards the `MAX_POST_DURATION_FRAMES`/`WALL_MAX_DURATION_FRAMES` ceilings rejected — see F03/T03. */
 	rejectedForDuration: number;
 	rejectedIds: string[];
 	/** Every rejection, WITH its axis and reason (F05) — same cards as `rejectedIds`, in the same order. */
@@ -184,16 +186,17 @@ function resolveEntryLandingLine(entry: WallPoolEntry): string {
  * should never reach `Wall.tsx` in the first place, though
  * `assertWallCardRenderable` remains the backstop if one slips through.
  *
- * `rejectedForTravel` and `rejectedForDuration` are reported separately
- * (F03) rather than as one combined `rejected` count, so a pipeline log can
- * tell "too small to read" apart from "too long to ship" at a glance.
+ * social pilot 02a T08 (2026-08-26): `rejectedForTravel` (F03) is gone along
+ * with the axis it counted — `gateWallCard` no longer rejects on block
+ * height, so `rejectedForDuration` is the only rejection count this survey
+ * can ever produce today (`'landingLine'` stays unreachable via this survey,
+ * as before — see `WallPoolRejection.axis`'s own doc comment).
  */
 export function surveyWallPool(
 	entries: WallPoolEntry[],
 	outputDir: string = DEFAULT_OUTPUT_DIR
 ): WallPoolSurveyResult {
 	let passed = 0;
-	let rejectedForTravel = 0;
 	let rejectedForDuration = 0;
 	const rejectedIds: string[] = [];
 	const rejections: WallPoolRejection[] = [];
@@ -215,11 +218,9 @@ export function surveyWallPool(
 			});
 			if (result.failure === 'duration') {
 				rejectedForDuration++;
-			} else {
-				rejectedForTravel++;
 			}
 		}
 	}
 
-	return { passed, rejectedForTravel, rejectedForDuration, rejectedIds, rejections };
+	return { passed, rejectedForDuration, rejectedIds, rejections };
 }
