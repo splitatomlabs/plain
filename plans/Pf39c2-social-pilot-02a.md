@@ -611,10 +611,51 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   screen; the payoff frame ("Theophrastus compares different types of wrongdoing.") renders at the computed
   88px (`PAYOFF_MAX_FONT`, the cap) — exactly 2x the wall's type size, unmistakably larger and clearer, reading
   as the "refined" payoff the format promises rather than the reverse.
-- [ ] T11: Test the framing layer — `social/src/remotion/__tests__/source-head.test.ts`. Running head is fixed
+- [x] T11: Test the framing layer — `social/src/remotion/__tests__/source-head.test.ts`. Running head is fixed
   (identical at every wall frame); payoff label sits in the same position; neither collides with or reflows the
   read-through counter (retarget `counter.test.ts`'s pixel-level proof); both use DM Sans + secondary ink, never
   `SERIF_STACK` and never an accent. Acceptance: fails against an empty implementation.
+  Studied `Counter.tsx`/`counter-layout.ts`/`counter.test.ts` (the framing-text + pixel-proof precedent), `Wall.tsx`
+  (`WallPhase`/`PayoffLine`/`SERIF_STACK`, both exported and reusable), `render/theme.ts` (`SECONDARY`, `INK`,
+  `ACCENTS`), and real card JSON in `content/output/` for the `author_slug`/`source_reference` fields the running
+  head must derive from. Confirmed `source_reference` covers three real shapes across the corpus —
+  `"Meditations, Book 2, Section 1"` (title + chapter + section), `"The Enchiridion, Section 1"` (title + section,
+  no chapter number) and `"On the Shortness of Life, Section 1"` (multi-word title + section, matching
+  `validate.ts`'s own documented `"Discourses, About Cynicism"` no-section shape too) — so the running head's
+  derivation rule (strip any trailing `", Section N"`, uppercase, join with the author's display name via
+  `" · "`) is provably general, not fit to one book.
+  Added, all under `social/src/remotion/`: `source-head-layout.ts` (real, final geometry — `SOURCE_HEAD_BOUNDING_BOX`
+  computed FROM `COUNTER_BOUNDING_BOX` so the two framing elements are non-overlapping by construction, stacked
+  in the one platform-chrome-safe top-left corner rather than trading it for an unsafe one — same T07-precedent
+  pattern of "real constants, deliberately not yet wired into behaviour" `wall-timing.ts` used for `WALL_FONT_SIZE`);
+  `SourceHead.tsx` (the required throwing/inert stub — `formatRunningHead` and `SourceHead` both throw; real
+  constants `SOURCE_HEAD_FONT_STACK` (aliased to `Counter.tsx`'s own `COUNTER_FONT_STACK`, not a second literal),
+  `PAYOFF_LABEL_TEXT`, and the `RunningHeadCardMetadata`/`SourceHeadVariant`/`SourceHeadProps` types T12 implements
+  against). Factored `counter.test.ts`'s own pixel-proof helpers (`renderFrameAsPng`, the no-reflow walk, the
+  box-differs walk) out into a new shared `__tests__/pixel-proof.ts` (plus a new `assertBoxIdentical`) — this IS
+  the "retarget `counter.test.ts`'s pixel-level proof" the task calls for: `counter.test.ts` now imports the same
+  machinery `source-head.test.ts` uses, unchanged in behavior (still 15/15 green). Added a test-only harness
+  (`__tests__/fixtures/source-head-harness.tsx` + `source-head-entry.tsx`, mirroring the existing
+  `font-probe-entry.tsx` pattern) that mounts `WallPhase` + `ReadThroughCounter` + `SourceHead` as siblings so
+  `source-head.test.ts` can render real frames and diff pixels without waiting on T12's `Wall.tsx` wiring —
+  deliberately NOT added to `entry.tsx`/`Root.tsx` (production wiring stays T12's job).
+  `source-head.test.ts` (25 tests): unit-level `formatRunningHead` derivation (including the plan's own worked
+  example, `"MARCUS AURELIUS · MEDITATIONS, BOOK 2"`, verbatim, from a real `meditations/book-02.json` card, plus
+  a same-metadata-different-card proof that three real cards' heads are pairwise distinct); a `Counter.tsx`-style
+  source guard (no `SERIF_STACK`, no `ACCENTS`/accent hex, `SECONDARY` not `INK`, DM Sans, no motion primitive,
+  no `frame` prop, no URL); and three real-render pixel proofs via the harness — fixed position across frame 0
+  vs. frame 90 of a genuinely scrolling wall (`assertBoxIdentical` inside the box, and a companion test proving
+  the wall truly moved outside it, so the fixed-proof isn't vacuous); running-head vs. payoff variants pixel-
+  identical outside their shared box and differing inside it (same slot, different text); and a counter/head
+  matrix (neither, head-only, counter-only, both) proving neither overlay reflows or overwrites the other, with
+  a final pure-geometry test that the two boxes are disjoint by construction.
+  Verification: `npx tsc --noEmit` clean. `npx vitest run src/remotion/__tests__/source-head.test.ts` — 13
+  failed / 12 passed (the 12 passing are the pure-geometry and some source-guard checks that don't require
+  `SourceHead` to render; every render-dependent assertion fails against the throwing stub, satisfying "fails
+  against an empty implementation"). Full social suite: `npx vitest run` — 28/29 files green, 539/552 tests
+  passing; the 13 failures are exactly this new file's render-dependent tests, nothing else regressed
+  (`counter.test.ts` itself still 15/15 after the refactor). Did not touch `Wall.tsx`, `entry.tsx`, `Root.tsx`,
+  narration/mixer, the opening rotation, or mid-chapter entry.
 - [ ] T12: Implement `SourceHead.tsx` and wire into `Wall.tsx` — running head `"MARCUS AURELIUS · MEDITATIONS,
   BOOK 2"` from card metadata (never hardcoded), payoff label `"In plain English"`. Acceptance: T10 passes.
 - [ ] T13: Extend the framing layer to `Question.tsx`, `Objection.tsx` and `Still.tsx` so the channel reads as one

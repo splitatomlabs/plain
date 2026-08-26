@@ -7,16 +7,15 @@ import os from 'node:os';
 import { mkdtemp, rm } from 'node:fs/promises';
 
 import { bundle } from '@remotion/bundler';
-import { renderStill, selectComposition } from '@remotion/renderer';
-import { PNG } from 'pngjs';
 
 import { ReadThroughCounter } from '../Counter.js';
-import { COUNTER_BOUNDING_BOX, type CounterBoundingBox } from '../counter-layout.js';
+import { COUNTER_BOUNDING_BOX } from '../counter-layout.js';
 import { ACCENTS } from '../../render/theme.js';
 import { computeWallTiming } from '../wall-timing.js';
 import { computeQuestionTiming } from '../question-timing.js';
 import { computeObjectionTiming } from '../objection-timing.js';
 import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
+import { renderFrameAsPng, assertIdenticalOutsideBoxes, assertBoxDiffers } from './pixel-proof.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -182,82 +181,13 @@ describe('source guard — reads as a page number, not branding', () => {
 // End-to-end: renders as an overlay over all three formats without reflow
 // ---------------------------------------------------------------------------
 
-interface DecodedFrame {
-	png: PNG;
-}
-
-async function renderFrameAsPng(
-	bundleLocation: string,
-	id: string,
-	inputProps: Record<string, unknown>,
-	frame: number
-): Promise<DecodedFrame> {
-	const composition = await selectComposition({ serveUrl: bundleLocation, id, inputProps });
-	const outPath = path.join(
-		os.tmpdir(),
-		`plain-counter-${id}-${frame}-${Math.random().toString(36).slice(2)}.png`
-	);
-	await renderStill({
-		composition,
-		serveUrl: bundleLocation,
-		output: outPath,
-		frame,
-		inputProps,
-		imageFormat: 'png'
-	});
-	return { png: PNG.sync.read(readFileSync(outPath)) };
-}
-
-function isInsideBox(x: number, y: number, box: CounterBoundingBox): boolean {
-	return x >= box.left && x < box.left + box.width && y >= box.top && y < box.top + box.height;
-}
-
-/**
- * The structural no-reflow proof: every pixel OUTSIDE the counter's own
- * bounding box must be byte-identical between the with-counter and
- * without-counter renders of the same frame. This is the acceptance
- * criterion made mechanical — if the counter reflowed anything, some pixel
- * belonging to the format's own content (which sits entirely outside this
- * small top-left box) would move or change, and this fails.
- */
-function assertIdenticalOutsideCounterBox(withCounter: PNG, withoutCounter: PNG, box: CounterBoundingBox): void {
-	expect(withCounter.width).toBe(withoutCounter.width);
-	expect(withCounter.height).toBe(withoutCounter.height);
-
-	const { width, height } = withCounter;
-	for (let y = 0; y < height; y++) {
-		for (let x = 0; x < width; x++) {
-			if (isInsideBox(x, y, box)) continue;
-			const idx = (width * y + x) << 2;
-			for (let channel = 0; channel < 4; channel++) {
-				const a = withCounter.data[idx + channel];
-				const b = withoutCounter.data[idx + channel];
-				if (a !== b) {
-					throw new Error(
-						`Pixel outside the counter's bounding box changed at (${x}, ${y}) channel ${channel}: ` +
-							`${a} (with counter) vs ${b} (without counter). The overlay reflowed the composition.`
-					);
-				}
-			}
-		}
-	}
-}
-
-/** Proof the counter actually drew something — the inverse of the box test above. */
-function assertBoxDiffers(withCounter: PNG, withoutCounter: PNG, box: CounterBoundingBox): void {
-	const { width, height } = withCounter;
-	for (let y = box.top; y < Math.min(box.top + box.height, height); y++) {
-		for (let x = box.left; x < Math.min(box.left + box.width, width); x++) {
-			const idx = (width * y + x) << 2;
-			for (let channel = 0; channel < 4; channel++) {
-				if (withCounter.data[idx + channel] !== withoutCounter.data[idx + channel]) {
-					return;
-				}
-			}
-		}
-	}
-	throw new Error('Expected the counter to draw something inside its own bounding box, but found no difference.');
-}
+// social pilot 02a T11 (2026-08-26): `renderFrameAsPng`/`assertIdenticalOutsideBoxes`/
+// `assertBoxDiffers` used to be defined locally here — factored out to
+// `./pixel-proof.js` so `source-head.test.ts` can reuse the exact same
+// no-reflow proof machinery rather than reimplementing a parallel copy (the
+// "retarget `counter.test.ts`'s pixel-level proof" the T11 task called for).
+// Behaviour here is unchanged: still a per-pixel comparison outside the
+// counter's own bounding box.
 
 describe('end-to-end: overlay composes over all three formats without reflow', () => {
 	it(
@@ -367,7 +297,7 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 
 					// The structural no-reflow proof holds regardless of whether
 					// this particular frame is expected to show the counter.
-					assertIdenticalOutsideCounterBox(withCounter.png, withoutCounter.png, COUNTER_BOUNDING_BOX);
+					assertIdenticalOutsideBoxes(withCounter.png, withoutCounter.png, [COUNTER_BOUNDING_BOX]);
 
 					if (expectCounter) {
 						assertBoxDiffers(withCounter.png, withoutCounter.png, COUNTER_BOUNDING_BOX);
@@ -375,12 +305,7 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 						// Deliberately no counter on this frame (see above) — the
 						// counter box itself must ALSO be identical, i.e. the two
 						// renders are fully identical, not just identical outside it.
-						assertIdenticalOutsideCounterBox(withCounter.png, withoutCounter.png, {
-							top: 0,
-							left: 0,
-							width: 0,
-							height: 0
-						});
+						assertIdenticalOutsideBoxes(withCounter.png, withoutCounter.png, []);
 					}
 				}
 			}

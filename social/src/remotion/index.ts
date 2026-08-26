@@ -15,6 +15,22 @@ export {
 	type CounterBoundingBox
 } from './counter-layout.js';
 export {
+	SourceHead,
+	formatRunningHead,
+	SOURCE_HEAD_FONT_STACK,
+	PAYOFF_LABEL_TEXT,
+	type RunningHeadCardMetadata,
+	type SourceHeadVariant,
+	type SourceHeadProps
+} from './SourceHead.js';
+export {
+	SOURCE_HEAD_SAFE_INSET_PX,
+	SOURCE_HEAD_GAP_BELOW_COUNTER_PX,
+	SOURCE_HEAD_TOP_PX,
+	SOURCE_HEAD_FONT_SIZE_PX,
+	SOURCE_HEAD_BOUNDING_BOX
+} from './source-head-layout.js';
+export {
 	Wall,
 	WallPhase,
 	WallOpeningBadge,
