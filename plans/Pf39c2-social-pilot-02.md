@@ -209,6 +209,13 @@ looks like Plain.
   over 3,170px, and a FIXED font size only reaches that above ~130 words. Fix: stop fixing the font size, fix the
   BLOCK HEIGHT — fit each card's type to land near a target block height, so short passages get larger type and
   long ones smaller. Fixed rate and the never-finishes invariant both hold, and supply returns.
+- [~] F19: The read-through cannot be a no-skip sequence under the Wall gate — it needs 28 consecutive renderable
+  cards over a 4-week pilot and the longest run anywhere in the corpus is 17 (measured per chapter; Meditations
+  book-02+03 manages 5, book-11 manages 12, on-anger book-1 manages 17). User's decision: give the read-through a
+  STILL fallback so nothing is ever skipped and "Card N of 48" stays literally true. A card too short to be a Wall
+  renders as plain text on warm paper, motionless, over the music bed. The index plan already wants one still
+  running deliberately as a pattern interrupt, so this uses an asset it asked for rather than inventing a format.
+  The slice stays Meditations book-02+03 — with a universal fallback the original rationale holds.
 - [ ] F12: (re-review, noted not blocking) The read-through's question/objection branches in `scripts/lib/schedule.ts`
   re-derive content via their own gates and are still ungated by `render-exclusions.json`. The current Meditations
   book-02/03 slice passes both gates with 0 rejections, so there is no live defect — recorded, not fixed.
