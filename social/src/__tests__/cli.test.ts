@@ -10,12 +10,10 @@ import { dateToWeekDay, weekDayToDate, PILOT_WEEK_1_START } from '../pilot-confi
 import {
 	resolveSlot,
 	postIndexForSlot,
-	chooseWallOpening,
 	chooseBed,
 	computeWallPlainLines,
 	scheduleFileName
 } from '../cli-plan.js';
-import { computeEligibleOpenings, WALL_OPENINGS } from '../remotion/wall-openings.js';
 import { loadOutputCard } from '../remotion/wall-pool.js';
 import { gateObjectionCard } from '../remotion/objection-gate.js';
 import { probe, assertMeetsProfile } from '../render/encode.js';
@@ -149,39 +147,6 @@ describe('resolveSlot — against the real committed week-1 schedule', () => {
 
 	it('throws a clear error for a day/slot the schedule has no entry for', () => {
 		expect(() => resolveSlot(WEEK_1_SCHEDULE, 99, 1)).toThrow(/day 99/);
-	});
-});
-
-// ---------------------------------------------------------------------------
-// Deterministic opening choice
-// ---------------------------------------------------------------------------
-
-describe('chooseWallOpening — deterministic and always eligible', () => {
-	const card = loadOutputCard('meditations', 'meditations-02-001');
-	const eligible = computeEligibleOpenings(card.original_excerpt, card.plain_english);
-	const seed = postIndexForSlot('2026-09-01', 1);
-
-	it('is deterministic for a given date+slot', () => {
-		const first = chooseWallOpening(seed, eligible);
-		const second = chooseWallOpening(seed, eligible);
-		expect(first).toBe(second);
-	});
-
-	it('is always one of the card\'s eligible openings', () => {
-		const opening = chooseWallOpening(seed, eligible);
-		expect(eligible).toContain(opening);
-	});
-
-	it('falls back to "standard" (always eligible) when the rotation candidate is not eligible', () => {
-		// A seed whose rotateOpening candidate is NOT "standard" (index 1 -> "countdown"),
-		// gated against a card only eligible for "standard".
-		const opening = chooseWallOpening(1, ['standard']);
-		expect(opening).toBe('standard');
-	});
-
-	it('every WALL_OPENINGS entry is reachable across a run of consecutive seeds when everything is eligible', () => {
-		const seen = new Set(Array.from({ length: WALL_OPENINGS.length }, (_, i) => chooseWallOpening(i, WALL_OPENINGS)));
-		expect(seen.size).toBe(WALL_OPENINGS.length);
 	});
 });
 
@@ -362,7 +327,9 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 			expect(metadata.format).toBe('wall');
 			expect(metadata.narration).toBe(false);
 			expect(metadata.rendered_at).toBe(`${date}T00:00:00.000Z`);
-			expect(WALL_OPENINGS).toContain(metadata.opening);
+			// T17 retired the opening rotation entirely — the sidecar carries
+			// no opening field at all, for any format.
+			expect(metadata.opening).toBeUndefined();
 
 			const feedBuf = readFileSync(feedPath);
 			// JPEG magic bytes.
@@ -446,8 +413,8 @@ describe('render — end-to-end: The Objection (F08)', () => {
 			const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
 			expect(metadata.card_id).toBe(slot.card_id);
 			expect(metadata.format).toBe('objection');
-			// Openings are a Wall-only mechanic.
-			expect(metadata.opening).toBeNull();
+			// T17 retired the opening rotation entirely — no opening field.
+			expect(metadata.opening).toBeUndefined();
 
 			const feedBuf = readFileSync(feedPath);
 			expect(feedBuf.subarray(0, 2).toString('hex')).toBe('ffd8');
@@ -472,7 +439,7 @@ describe('render — end-to-end: The Question', () => {
 	});
 
 	it(
-		'renders a house-profile-conformant MP4, an IG feed JPEG, and a metadata sidecar with opening: null',
+		'renders a house-profile-conformant MP4, an IG feed JPEG, and a metadata sidecar',
 		async () => {
 			// Day 2, slot 2 of the REAL committed week-1 schedule
 			// (meditations-08-045) — one of the four committed Question slots.
@@ -501,8 +468,8 @@ describe('render — end-to-end: The Question', () => {
 			const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
 			expect(metadata.card_id).toBe(slot.card_id);
 			expect(metadata.format).toBe('question');
-			// Openings are a Wall-only mechanic.
-			expect(metadata.opening).toBeNull();
+			// T17 retired the opening rotation entirely — no opening field.
+			expect(metadata.opening).toBeUndefined();
 
 			const feedBuf = readFileSync(feedPath);
 			expect(feedBuf.subarray(0, 2).toString('hex')).toBe('ffd8');
@@ -529,7 +496,7 @@ describe('render — end-to-end: The Still (F19)', () => {
 	});
 
 	it(
-		'renders a house-profile-conformant MP4, an IG feed JPEG, and a metadata sidecar with format: "still" and opening: null',
+		'renders a house-profile-conformant MP4, an IG feed JPEG, and a metadata sidecar with format: "still"',
 		async () => {
 			// Day 3, slot 1 — meditations-02-003, one of the exact cards the
 			// plan names as too short to be a Wall.
@@ -564,8 +531,8 @@ describe('render — end-to-end: The Still (F19)', () => {
 			expect(metadata.format).toBe('still');
 			expect(metadata.narration).toBe(false);
 			expect(metadata.rendered_at).toBe(`${date}T00:00:00.000Z`);
-			// The Still has no opening rotation of its own — a Wall-only mechanic.
-			expect(metadata.opening).toBeNull();
+			// T17 retired the opening rotation entirely — no opening field.
+			expect(metadata.opening).toBeUndefined();
 
 			const feedBuf = readFileSync(feedPath);
 			// JPEG magic bytes.

@@ -173,7 +173,9 @@ is fixable now against recorded fixtures without live voices, so it comes in her
 - `scripts/lib/premises.ts`, `content/social/premises/wall.json` — drop `eligible_openings` entirely
 - `social/src/render/post-metadata.ts` — drop the `opening` field
 - `scripts/lib/schedule.ts` — space consecutive Wall slots by `sub_types`
-- `plans/Pf39c2-social-pilot-index.md` — amend the opening-rotation paragraph (three-way → two-way)
+- `plans/Pf39c2-social-pilot-index.md` — amend the opening-rotation paragraph to record full retirement (not a
+  two-way rotation — the rotation is gone outright, no numeral replaces it)
+- `plans/Pf39c2-social-pilot-03.md` — record the opening comparison as CANCELLED, not deferred
 - `social/src/audio/mix.ts`, `social/src/cli.ts` — `wallSilentSpans` becomes landing-line-only; bed under the scroll
 - `social/src/cli.ts` — pass chapter block + framing props
 - `social/scripts/write-exclusions.ts`, `content/social/render-exclusions.json` — regenerate
@@ -899,12 +901,44 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   `ProviderMark[]`/`NarrationLineTiming[]` literals or the same recorded-fixture `TtsProvider` pattern
   `audio/__tests__/narration.test.ts` already used.
   Not touched, per the task's own scope: T17 (opening rotation), T18 (mid-chapter entry), T19 (scheduler).
-- [ ] T17: Retire the opening rotation — DELETE `social/src/remotion/wall-openings.ts` outright, along with
+- [x] T17: Retire the opening rotation — DELETE `social/src/remotion/wall-openings.ts` outright, along with
   `Wall.tsx`'s `opening`/`eligibleOpenings` props and `WallOpeningBadge`, `scripts/lib/premises.ts`'s
   `eligibleWallOpenings`, the `eligible_openings` field in a regenerated `content/social/premises/wall.json`,
   `chooseWallOpening` in `social/src/cli.ts`, and the `opening` field in `social/src/render/post-metadata.ts`.
   Amend the index plan's opening-rotation paragraph and plan 03's opening comparison. Acceptance: no numeral can
   be rendered over the wall in any composition; `npm test` green with the opening tests DELETED, not skipped.
+  **Note:** deleted `wall-openings.ts` and its test file outright (no numeral, no rotation, no third numeral
+  replacing them). Removed from `Wall.tsx`: the `opening`/`eligibleOpenings` props, `WallOpeningBadge`, its three
+  `WALL_OPENING_*` constants, and the `computeOpeningData`/`assertOpeningRenderable`/`countdownValueAtFrame`
+  import block — this also drops the now-unused `COUNTER_FONT_STACK`/`FRAME_HEIGHT` imports and, per T12's own
+  prediction, resolves the badge's overlap with the running head (verified visually below). Removed from
+  `scripts/lib/premises.ts`: `WallOpening`, `eligibleWallOpenings`, `WALL_COUNTDOWN_DELTA_MIN`,
+  `WALL_ORIGINAL_GRADE_MIN`, and the `eligible_openings` field on `RankedWallEntry` — kept `originalReadingGrade`/
+  `original_grade` as plain measured data (never part of the deleted task list, and no longer tied to any opening
+  mechanic). Stripped `eligible_openings` from all 896 entries of `content/social/premises/wall.json` (a pure
+  field removal — every other field, including the LLM-scored `rubric`, is untouched, so this is byte-equivalent
+  to what a full pipeline re-run would produce now that `rankWall` no longer computes that field). Removed
+  `chooseWallOpening`/`rotateOpening` from `cli-plan.ts` and its `WallPlan.opening`/`eligibleOpenings` fields,
+  the `opening`/`eligibleOpenings` console.log and inputProps wiring, and the metadata `opening` field from
+  `cli.ts`; removed the `opening` field and its doc comment from `render/post-metadata.ts`. Deleted the
+  `chooseWallOpening` describe block from `cli.test.ts` and the whole `wall-openings.test.ts` file (not skipped);
+  updated the remaining metadata assertions across all four e2e render tests to `expect(metadata.opening)
+  .toBeUndefined()` — a positive check that the field is gone, not just an unasserted absence. Fixed one call
+  site outside the task's own list: `audio/__tests__/narration.test.ts`'s `WallPlan` fixture still set
+  `opening`/`eligibleOpenings`, which `tsc --noEmit` caught immediately.
+  Verified: `cd social && npx tsc --noEmit` clean. `npm test` from repo root — pipeline 817/817, web 95/95,
+  social 555/555 (down from 593/593; the deleted `wall-openings.test.ts` plus the deleted
+  `chooseWallOpening`/`eligibleWallOpenings` describe blocks account for the drop — deletion, not skipping).
+  Rendered the exact card T12 flagged (`meditations-02-006`, week 1 day 6 slot 1, `--date 2026-09-06 --slot 1`)
+  and read frame 0 and an early mid-scroll frame: no numeral anywhere over the wall, and the running head
+  ("MARCUS AURELIUS · MEDITATIONS, BOOK 2") now sits in its own unobstructed band exactly where T12 predicted
+  the badge used to collide with it. The metadata sidecar carries no `opening` key at all.
+  Also amended: the index plan's "Opening rotation for The Wall" paragraph now documents full retirement (not a
+  two-way rotation) and names the three textual axes that replace the pressure it existed to answer
+  (T18/T11-T12/T19); its Wall supply-table row and "Variation comes from..." sentence were updated to match.
+  Plan 03's opening-tagging decision and its T12 metrics-schema bullet now record the opening comparison as
+  CANCELLED, not deferred, and note `post-metadata.ts`'s `opening` field (which existed specifically for that
+  comparison) is gone.
 - [ ] T18: Mid-chapter entry — vary frame 0's start point within the chapter block so consecutive posts do not
   open on the same beat, deriving the offset deterministically from the post index (never randomly — renders must
   be reproducible). Frame 0 must still be legible text mid-thought, never mid-word. Acceptance: two posts from

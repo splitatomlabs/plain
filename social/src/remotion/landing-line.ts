@@ -4,10 +4,9 @@
  * root content pipeline's `scripts/lib/premises.ts`.
  *
  * DUPLICATED, NEVER IMPORTED — `social/` is a self-contained npm project
- * (see T01) that does not depend on the root `scripts/` package, same
- * reasoning as `wall-openings.ts`'s `WALL_ORIGINAL_GRADE_MIN`/
- * `computeEligibleOpenings`. This is the one piece of that pipeline's logic
- * the read-through render path actually needs on this side of the boundary:
+ * (see T01) that does not depend on the root `scripts/` package. This is
+ * the one piece of that pipeline's logic the read-through render path
+ * actually needs on this side of the boundary:
  * `scripts/lib/schedule.ts`'s read-through wall branch
  * (`tryReadThroughContent`) calls `selectLandingLine(card) ?? card.plain_english`
  * to choose what's shown, and `social/scripts/write-exclusions.ts` needs the
@@ -21,8 +20,7 @@
  * `scripts/lib/premises.ts`'s `wordCount`/`isSelfContainedOpening`/
  * `sentences`/`hasUnresolvedReference`/`findLandingLines`/`selectLandingLine`
  * (and their private helpers) whenever that file changes — there is no
- * automated check that keeps the two in sync (same caveat as
- * `wall-openings.ts`'s duplicated constants).
+ * automated check that keeps the two in sync.
  */
 
 // ---------------------------------------------------------------------------

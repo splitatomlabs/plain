@@ -30,12 +30,11 @@ describe('postMetadataPathFor', () => {
 });
 
 describe('writePostMetadata', () => {
-	it('round-trips a Wall record with a chosen opening as JSON', async () => {
+	it('round-trips a Wall record as JSON', async () => {
 		const outPath = path.join(dir, 'wall-2026-09-01-slot1.json');
 		const metadata: PostMetadata = {
 			card_id: 'meditations-07-031',
 			format: 'wall',
-			opening: 'countdown',
 			rendered_at: '2026-09-01T00:00:00.000Z'
 		};
 
@@ -46,12 +45,11 @@ describe('writePostMetadata', () => {
 		expect(parsed).toEqual(metadata);
 	});
 
-	it('round-trips a non-Wall record with opening: null', async () => {
+	it('round-trips a non-Wall record', async () => {
 		const outPath = path.join(dir, 'question-2026-09-01-slot2.json');
 		const metadata: PostMetadata = {
 			card_id: 'discourses-17-002',
 			format: 'question',
-			opening: null,
 			rendered_at: '2026-09-01T00:00:00.000Z'
 		};
 
@@ -68,7 +66,6 @@ describe('writePostMetadata', () => {
 		await writePostMetadata(outPath, {
 			card_id: 'meditations-07-031',
 			format: 'wall',
-			opening: 'grade',
 			rendered_at: fixedTimestamp
 		});
 

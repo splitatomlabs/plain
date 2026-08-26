@@ -33,10 +33,6 @@ export {
 export {
 	Wall,
 	WallPhase,
-	WallOpeningBadge,
-	WALL_OPENING_VALUE_FONT_SIZE,
-	WALL_OPENING_SUBLABEL_FONT_SIZE,
-	WALL_OPENING_REGION_HEIGHT,
 	PayoffLine,
 	SERIF_STACK,
 	type WallProps
@@ -97,25 +93,6 @@ export {
 	type WallPoolSurveyResult,
 	type OutputCard
 } from './wall-pool.js';
-export {
-	computeOpeningData,
-	countdownValueAtFrame,
-	formatCountdownLabel,
-	formatGradeLabel,
-	GRADE_LABEL_PREFIX,
-	gateOpening,
-	assertOpeningRenderable,
-	rotateOpening,
-	computeEligibleOpenings,
-	WALL_OPENINGS,
-	WALL_COUNTDOWN_DELTA_MIN,
-	WALL_ORIGINAL_GRADE_MIN,
-	FORBIDDEN_GRADE_VOCABULARY,
-	type WallOpening,
-	type OpeningData,
-	type WallOpeningEligibilityEntry,
-	type GateOpeningResult
-} from './wall-openings.js';
 export { Question, type QuestionProps } from './Question.js';
 export {
 	computeQuestionTiming,

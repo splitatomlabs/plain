@@ -92,9 +92,7 @@ const WALL_PLAN: WallPlan = {
 	chapterBlock: 'Thys is ye archaick excerpte that scrolles by, never itself narrated, plus the surrounding chapter.',
 	sourceReference: 'Meditations, Book 7, Section 3',
 	landingLine: 'This is the landing line, held in silence.',
-	plainLines: ['This is the first rest line.', 'This is the second rest line.'],
-	opening: 'standard',
-	eligibleOpenings: ['standard']
+	plainLines: ['This is the first rest line.', 'This is the second rest line.']
 };
 
 const QUESTION_PLAN: QuestionPlan = {

@@ -785,14 +785,19 @@ export function wallGate(cards: Card[]): WallEntry[] {
 // others (thick with "thou"/"hath"-style archaic diction, cascading
 // semicolon clauses, or a scene rendered in dialogue). Three deterministic,
 // non-exclusive sub-types capture that visual quality; a card matching none
-// of them is `reserve`. In the same pass, every ranked entry is flagged for
-// which of the format's OPENING treatments it's eligible for — the two
-// numeric openings ("190 -> 97", a word-count countdown, and "Grade 14", a
-// bare reading-grade readout) are conditional; every entry can always take
-// the plain "standard" opening.
+// of them is `reserve`.
 //
 // All three sub-type checks run against `original_excerpt` (not
 // plain_english) — the wall of text the viewer actually sees in phase 1.
+//
+// T17 (social pilot 02a) retired the two numeric OPENING treatments this
+// pass used to also flag every entry for ("190 -> 97", a word-count
+// countdown, and "Grade 14", a bare reading-grade readout) — see that
+// plan's own paragraph for why: neither replaces the other, both are
+// deleted outright, no third numeral takes their place. `original_grade`
+// (below, via `originalReadingGrade`) survives as plain measured data on
+// every ranked entry; `eligible_openings`/`eligibleWallOpenings`/
+// `WallOpening` do not.
 // ---------------------------------------------------------------------------
 
 /**
@@ -831,15 +836,6 @@ export const WALL_CASCADE_SEMICOLON_MIN = 3;
 export const WALL_SCENE_QUOTE_MIN = 2;
 
 export type WallSubType = "thou_wall" | "cascade" | "scene";
-
-/**
- * The Wall's two conditional openings, plus the always-available baseline.
- * `countdown` is the "190 -> 97" treatment (original word count counting
- * down live to the plain version's word count); `grade` is the "Grade 14"
- * treatment (the original's computed reading grade shown as a bare
- * measurement).
- */
-export type WallOpening = "standard" | "countdown" | "grade";
 
 export interface WallSubTypeClassification {
   sub_types: WallSubType[];
@@ -890,45 +886,15 @@ export function classifyWallSubTypes(card: Card): WallSubTypeClassification {
   };
 }
 
-/** Minimum `lengthDelta` for the "190 -> 97" countdown opening to be worth showing (else the countdown barely moves). */
-export const WALL_COUNTDOWN_DELTA_MIN = 30;
-
-/**
- * Minimum original-text reading grade for the "Grade 14" opening to be
- * worth showing as a bare measurement. Grade 12 is the sensible floor: it's
- * the same "too difficult" ceiling `validateReadability` (`scripts/lib/
- * validate.ts`) uses for the PLAIN version, so a Wall original clearing
- * that same bar is unambiguously harder reading than anything the app
- * otherwise ships — worth calling out on screen. Measured over the
- * 1,326-card >=80-word gate: 856 cards clear grade >=12.
- */
-export const WALL_ORIGINAL_GRADE_MIN = 12;
-
 /**
  * The original excerpt's Flesch-Kincaid grade level, via the same
  * `text-readability` call `validateReadability` uses on the plain version
  * (`scripts/lib/validate.ts`) — kept identical so grades are comparable
- * across the pipeline.
+ * across the pipeline. Plain measured data on every ranked entry
+ * (`RankedWallEntry.original_grade`) — not tied to any opening mechanic.
  */
 export function originalReadingGrade(card: Card): number {
   return rs.fleschKincaidGrade(card.original_excerpt);
-}
-
-/**
- * Which openings a card is eligible for. Every card can always take
- * `standard`. `countdown` requires the plain version to be meaningfully
- * shorter than the original (`lengthDelta(card) >= WALL_COUNTDOWN_DELTA_MIN`
- * — the same threshold as `MechanicalGates.lengthDelta30`), or the
- * countdown animation barely moves. `grade` requires the original's
- * reading grade to clear `WALL_ORIGINAL_GRADE_MIN`. An entry failing both
- * conditional checks carries only `["standard"]`; an entry passing both
- * carries all three.
- */
-export function eligibleWallOpenings(card: Card): WallOpening[] {
-  const openings: WallOpening[] = ["standard"];
-  if (lengthDelta(card) >= WALL_COUNTDOWN_DELTA_MIN) openings.push("countdown");
-  if (originalReadingGrade(card) >= WALL_ORIGINAL_GRADE_MIN) openings.push("grade");
-  return openings;
 }
 
 export interface RankedWallEntry extends WallEntry {
@@ -938,12 +904,11 @@ export interface RankedWallEntry extends WallEntry {
   semicolon_count: number;
   quote_count: number;
   original_grade: number;
-  eligible_openings: WallOpening[];
 }
 
 /**
  * Rank every T02 `wallGate` survivor (a card that already has a landing
- * line) by visual-archaism sub-type and opening eligibility.
+ * line) by visual-archaism sub-type.
  *
  * The sub-type counts here are necessarily SMALLER than
  * `classifyWallSubTypes`'s own corpus-wide counts (222/204/137): those are
@@ -967,7 +932,6 @@ export function rankWall(cards: Card[]): RankedWallEntry[] {
       ...entry,
       ...classification,
       original_grade: originalReadingGrade(card),
-      eligible_openings: eligibleWallOpenings(card),
     };
   });
 }

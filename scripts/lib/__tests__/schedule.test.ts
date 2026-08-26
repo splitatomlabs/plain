@@ -2009,7 +2009,6 @@ describe("M3: empty-reply Objection entries are excluded from the pool", () => {
       semicolon_count: 0,
       quote_count: 0,
       original_grade: 5,
-      eligible_openings: ["standard" as const],
     }));
 
     const week = generateWeek({
@@ -2189,7 +2188,6 @@ describe("M9: Objection filtering validates the ASSEMBLED reply, not the persist
       semicolon_count: 0,
       quote_count: 0,
       original_grade: 5,
-      eligible_openings: ["standard" as const],
     }));
 
     const week = generateWeek({
@@ -2374,7 +2372,6 @@ describe("M11: assembleObjectionReply's error path and correct-occurrence resolu
       semicolon_count: 0,
       quote_count: 0,
       original_grade: 5,
-      eligible_openings: ["standard" as const],
     }));
 
     const gated = objectionGate([card]);
@@ -2550,7 +2547,6 @@ describe("M14: read-through Objection's empty-reply guard falls back to Wall ins
       semicolon_count: 0,
       quote_count: 0,
       original_grade: 5,
-      eligible_openings: ["standard" as const],
     }));
 
     const week = generateWeek({

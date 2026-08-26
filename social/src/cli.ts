@@ -12,10 +12,9 @@
  *
  * Deterministic by policy, same as every other tool in this pipeline
  * (`scripts/generate-schedule.ts`, `scripts/review-week.ts`): the date
- * always comes from `--date`, never `Date.now()`; the Wall's opening and
- * the music bed are both seeded from `--date`/`--slot` alone
- * (`cli-plan.ts`'s `postIndexForSlot`), so re-running the same
- * `--date`/`--slot` always makes the same choices.
+ * always comes from `--date`, never `Date.now()`; the music bed is seeded
+ * from `--date`/`--slot` alone (`cli-plan.ts`'s `postIndexForSlot`), so
+ * re-running the same `--date`/`--slot` always makes the same choice.
  *
  * NARRATION IS BLOCKED (T14 — `audio/voices.ts`'s `VOICES_ARE_UNSET`):
  * there are no auditioned voice ids yet, so every render here is
@@ -41,7 +40,6 @@ import {
 	scheduleFileName,
 	resolveSlot,
 	postIndexForSlot,
-	chooseWallOpening,
 	chooseBed,
 	computeWallPlainLines,
 	renderAssetPaths
@@ -49,7 +47,6 @@ import {
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
 import { loadChapterTextBlock } from './render/chapter-text.js';
-import { computeEligibleOpenings, type WallOpening } from './remotion/wall-openings.js';
 import { computeWallTiming, WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
 import { formatRunningHead } from './remotion/SourceHead.js';
 import { computeQuestionTiming } from './remotion/question-timing.js';
@@ -213,8 +210,6 @@ export interface WallPlan {
 	sourceReference: string;
 	landingLine: string;
 	plainLines: string[];
-	opening: WallOpening;
-	eligibleOpenings: WallOpening[];
 }
 
 export interface QuestionPlan {
@@ -281,8 +276,6 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 	switch (slot.content.format) {
 		case 'wall': {
 			const plainLines = computeWallPlainLines(card.plain_english, slot.content.landing_line);
-			const eligibleOpenings = computeEligibleOpenings(slot.content.original_excerpt, card.plain_english);
-			const opening = chooseWallOpening(postIndex, eligibleOpenings);
 			const chapterBlock = loadChapterTextBlock(slot.book_slug, slot.card_id);
 			formatPlan = {
 				format: 'wall',
@@ -290,9 +283,7 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 				chapterBlock,
 				sourceReference: card.source_reference,
 				landingLine: slot.content.landing_line,
-				plainLines,
-				opening,
-				eligibleOpenings
+				plainLines
 			};
 			compositionId = 'Wall';
 			break;
@@ -353,7 +344,6 @@ function printPlan(plan: RenderPlan): void {
 	console.log(`  post index: ${plan.postIndex}`);
 	console.log(`  bed: ${plan.bedId}`);
 	if (plan.formatPlan.format === 'wall') {
-		console.log(`  opening: ${plan.formatPlan.opening} (eligible: ${plan.formatPlan.eligibleOpenings.join(', ')})`);
 		console.log(`  plain lines after landing line: ${plan.formatPlan.plainLines.length}`);
 		console.log(
 			`  chapter block: ${plan.formatPlan.chapterBlock.split(/\s+/).filter(Boolean).length} words ` +
@@ -388,8 +378,6 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 				sourceReference: plan.formatPlan.sourceReference,
 				landingLine: plan.formatPlan.landingLine,
 				plainLines: plan.formatPlan.plainLines,
-				opening: plan.formatPlan.opening,
-				eligibleOpenings: plan.formatPlan.eligibleOpenings,
 				// social pilot 02a T16 (F04): every format's timing now adapts
 				// to real per-line narration duration when supplied
 				// (`computeWallTiming`/`computeQuestionTiming`/
@@ -670,7 +658,6 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 		const metadata: PostMetadata = {
 			card_id: plan.cardId,
 			format: plan.compositionId.toLowerCase() as PostFormat,
-			opening: plan.formatPlan.format === 'wall' ? plan.formatPlan.opening : null,
 			rendered_at: `${plan.date}T00:00:00.000Z`
 		};
 		const fullMetadata = { ...metadata, ...narrationFields(plan, !VOICES_ARE_UNSET) };

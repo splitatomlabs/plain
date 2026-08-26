@@ -51,8 +51,7 @@ import './fonts.generated.css';
 const FONT_LOAD_SPECS = [
 	// Literata Variable — Wall.tsx's SERIF_STACK, weight 400 (Wall/PayoffLine/Question body text).
 	`400 76px 'Literata Variable'`,
-	// DM Sans Variable — Counter.tsx's COUNTER_FONT_STACK, weight 700 (WallOpeningBadge) and 500 (the counter itself).
-	`700 76px 'DM Sans Variable'`,
+	// DM Sans Variable — Counter.tsx's COUNTER_FONT_STACK, weight 500 (the counter itself).
 	`500 28px 'DM Sans Variable'`
 ];
 

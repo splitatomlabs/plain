@@ -16,14 +16,11 @@ import {
   verbatim,
   hasUnresolvedReference,
   classifyWallSubTypes,
-  eligibleWallOpenings,
   originalReadingGrade,
   rankWall,
   WALL_THOU_MARKER_MIN,
   WALL_CASCADE_SEMICOLON_MIN,
   WALL_SCENE_QUOTE_MIN,
-  WALL_COUNTDOWN_DELTA_MIN,
-  WALL_ORIGINAL_GRADE_MIN,
   QUESTION_MAX_WORDS,
   QUESTION_SENTENCE_WINDOW,
   QUESTION_OPENING_REJECTS,
@@ -735,60 +732,6 @@ describe("classifyWallSubTypes", () => {
 });
 
 // ---------------------------------------------------------------------------
-// T03: opening eligibility
-// ---------------------------------------------------------------------------
-
-describe("eligibleWallOpenings", () => {
-  it("always includes standard", () => {
-    const card = makeCard({ original_excerpt: "A short original excerpt.", plain_english: "A short plain line." });
-    expect(eligibleWallOpenings(card)).toContain("standard");
-  });
-
-  it("excludes countdown when lengthDelta is one below the threshold", () => {
-    const original = Array.from({ length: 30 }, (_, i) => `word${i}`).join(" ");
-    const plain = Array.from({ length: 1 }, (_, i) => `word${i}`).join(" ");
-    const card = makeCard({ original_excerpt: original, plain_english: plain });
-    expect(lengthDelta(card)).toBe(WALL_COUNTDOWN_DELTA_MIN - 1);
-    expect(eligibleWallOpenings(card)).not.toContain("countdown");
-  });
-
-  it("includes countdown when lengthDelta is exactly at the threshold", () => {
-    const original = Array.from({ length: 31 }, (_, i) => `word${i}`).join(" ");
-    const plain = Array.from({ length: 1 }, (_, i) => `word${i}`).join(" ");
-    const card = makeCard({ original_excerpt: original, plain_english: plain });
-    expect(lengthDelta(card)).toBe(WALL_COUNTDOWN_DELTA_MIN);
-    expect(eligibleWallOpenings(card)).toContain("countdown");
-  });
-
-  it("excludes grade when the original's reading grade is below the threshold", () => {
-    const card = makeCard({ original_excerpt: "The cat sat. The dog ran. Sam ate cake." });
-    expect(originalReadingGrade(card)).toBeLessThan(WALL_ORIGINAL_GRADE_MIN);
-    expect(eligibleWallOpenings(card)).not.toContain("grade");
-  });
-
-  it("includes grade when the original's reading grade clears the threshold", () => {
-    const card = makeCard({
-      original_excerpt:
-        "Notwithstanding the aforementioned circumstances, the substantiality of metaphysical apprehension necessitates an exceedingly convoluted philosophical elucidation typically eschewed by unsophisticated interlocutors.",
-    });
-    expect(originalReadingGrade(card)).toBeGreaterThanOrEqual(WALL_ORIGINAL_GRADE_MIN);
-    expect(eligibleWallOpenings(card)).toContain("grade");
-  });
-
-  it("can qualify for both conditional openings at once", () => {
-    const original =
-      "Notwithstanding the aforementioned circumstances, the substantiality of metaphysical apprehension necessitates an exceedingly convoluted philosophical elucidation typically eschewed by unsophisticated interlocutors, whose brevity the plain rendering below entirely lacks, and whose ponderous, multiply-subordinated syntax further exemplifies the very obscurity under discussion.";
-    const card = makeCard({ original_excerpt: original, plain_english: "Keep it simple." });
-    expect(lengthDelta(card)).toBeGreaterThanOrEqual(WALL_COUNTDOWN_DELTA_MIN);
-    expect(originalReadingGrade(card)).toBeGreaterThanOrEqual(WALL_ORIGINAL_GRADE_MIN);
-    const openings = eligibleWallOpenings(card);
-    expect(openings).toContain("countdown");
-    expect(openings).toContain("grade");
-    expect(openings).toContain("standard");
-  });
-});
-
-// ---------------------------------------------------------------------------
 // T03: corpus-level counts — classifyWallSubTypes and rankWall
 // ---------------------------------------------------------------------------
 
@@ -836,10 +779,9 @@ describe("rankWall against the real corpus", () => {
     expect(entries.length).toBe(wallGate(loadCorpus()).length);
   });
 
-  it("every entry carries a non-empty eligible_openings that always includes standard", () => {
+  it("every entry carries a numeric original_grade (plain measured data, not tied to any opening mechanic)", () => {
     for (const entry of entries) {
-      expect(entry.eligible_openings.length).toBeGreaterThan(0);
-      expect(entry.eligible_openings).toContain("standard");
+      expect(typeof entry.original_grade).toBe("number");
     }
   });
 
@@ -849,13 +791,19 @@ describe("rankWall against the real corpus", () => {
     }
   });
 
-  it("reports the ranked-pool sub-type and opening-eligibility counts (measured, informational)", () => {
+  // T17 (social pilot 02a) retired the Wall's opening rotation entirely —
+  // no ranked entry carries an `eligible_openings` field any more.
+  it("no entry carries an eligible_openings field — the opening rotation was retired outright (T17)", () => {
+    for (const entry of entries) {
+      expect(Object.prototype.hasOwnProperty.call(entry, "eligible_openings")).toBe(false);
+    }
+  });
+
+  it("reports the ranked-pool sub-type counts (measured, informational)", () => {
     const thou = entries.filter((e) => e.sub_types.includes("thou_wall")).length;
     const cascade = entries.filter((e) => e.sub_types.includes("cascade")).length;
     const scene = entries.filter((e) => e.sub_types.includes("scene")).length;
     const reserve = entries.filter((e) => e.reserve).length;
-    const countdown = entries.filter((e) => e.eligible_openings.includes("countdown")).length;
-    const grade = entries.filter((e) => e.eligible_openings.includes("grade")).length;
 
     // These are measured, reported counts within the smaller 1,003-entry
     // ranked pool (T02 survivors) — necessarily <= the 1,326-card
@@ -865,8 +813,6 @@ describe("rankWall against the real corpus", () => {
     expect(cascade).toBe(174);
     expect(scene).toBe(96);
     expect(reserve).toBe(608);
-    expect(countdown).toBe(248);
-    expect(grade).toBe(631);
   });
 });
 
@@ -1447,7 +1393,6 @@ describe("wallAuthorWeights", () => {
         semicolon_count: 0,
         quote_count: 0,
         original_grade: 5,
-        eligible_openings: ["standard" as const],
       },
     ];
     const w = wallAuthorWeights(syntheticQuestionPool, syntheticWallPool);

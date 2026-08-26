@@ -7,8 +7,6 @@
 
 import path from 'node:path';
 
-import type { WallOpening } from './remotion/wall-openings.js';
-import { rotateOpening } from './remotion/wall-openings.js';
 import { selectBed, type BedInfo } from './audio/beds.js';
 import { splitPayoffLines } from './audio/timing.js';
 import { dateToWeekDay } from './pilot-config.js';
@@ -42,8 +40,7 @@ export function resolveSlot(schedule: WeekSchedule, day: number, slotNumber: num
 
 // ---------------------------------------------------------------------------
 // Deterministic per-slot seeding — same --date/--slot always picks the same
-// opening and the same bed (see wall-openings.ts's rotateOpening and
-// audio/beds.ts's selectBed, both pure functions of an integer seed).
+// bed (see audio/beds.ts's selectBed, a pure function of an integer seed).
 // ---------------------------------------------------------------------------
 
 /**
@@ -52,26 +49,14 @@ export function resolveSlot(schedule: WeekSchedule, day: number, slotNumber: num
  * `2` for week 1 day 2 slot 1, and so on across the whole pilot. Pure
  * function of its inputs (via `dateToWeekDay`, itself pure and
  * `Date.now()`-free) — no randomness, so the same date/slot always
- * produces the same index, and therefore the same opening/bed choice.
+ * produces the same index, and therefore the same bed choice.
  */
 export function postIndexForSlot(date: string, slotNumber: number): number {
 	const { week, day } = dateToWeekDay(date);
 	return (week - 1) * 14 + (day - 1) * 2 + (slotNumber - 1);
 }
 
-/**
- * Chooses The Wall's opening for a slot: `rotateOpening(seed)`'s candidate,
- * gated by `eligibleOpenings` — falling back to `standard` (always
- * eligible) when the rotation's candidate isn't one this specific card can
- * show. Deterministic: the same `seed` and `eligibleOpenings` always
- * return the same opening.
- */
-export function chooseWallOpening(seed: number, eligibleOpenings: readonly WallOpening[]): WallOpening {
-	const candidate = rotateOpening(seed);
-	return eligibleOpenings.includes(candidate) ? candidate : 'standard';
-}
-
-/** Chooses this slot's music bed — a thin, named wrapper around `selectBed` for symmetry with `chooseWallOpening`. */
+/** Chooses this slot's music bed — a thin, named wrapper around `selectBed`. */
 export function chooseBed(seed: number): BedInfo {
 	return selectBed(seed);
 }
