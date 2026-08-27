@@ -19,7 +19,10 @@ looks like Plain.
   flatten to discrete weights. A daily cron is not latency-sensitive. Leave
   `web/src/routes/api/og/[cardId]/+server.js` on Satori.
 - **Remotion for video** (free for teams up to three). FFmpeg-only is the fallback.
-- **Narration is in**, one fixed voice per Stoic. ElevenLabs primary (~$22/mo), Amazon Polly fallback.
+- ~~**Narration is in**, one fixed voice per Stoic. ElevenLabs primary (~$22/mo), Amazon Polly fallback.~~
+  **REVERSED 2026-08-27 (user)** — narration was built but never activated, and was deleted outright by N01.
+  See "## Narration dropped" below for the reasoning. The channel is music-only: a babble bed under the
+  scroll, true silence at the cut, then a music bed under the payoff.
 - **5-8 music beds, generated once and reused.** One bed across 150 posts is audibly repetitive within a week.
   Generating once keeps an API call off the daily path; generated tracks also carry no Content ID fingerprint,
   unlike licensed royalty-free libraries.
@@ -107,10 +110,11 @@ looks like Plain.
   Wall is silent (its highlight is a timed sweep) and every payoff is one still line at a time. Timings must come
   from native provider data, never estimated from word counts. Gate: reject any render where the last line's end
   timestamp differs from audio duration by more than 120ms. Acceptance: a synthetic drifted timing set is rejected.
-- [!] T14 (STILL LIVE, re-confirmed 2026-08-27): the ONLY genuinely outstanding task in this plan. Unlike T02,
-  the voice system survived D01 — `social/src/audio/voices.ts` is imported live by `cli.ts` and `narration.ts`,
-  and every render to date records `narration: false`, so the channel is still music-only. Blocked on an
-  `ELEVENLABS_API_KEY` and a human listening, not on code. Original task text: Audition and fix one voice per Stoic; commit the three voice IDs with written rationale. They never change
+- [-] T14 (OBSOLETE 2026-08-27, superseded by N01): narration was DROPPED by user decision — see the
+  "## Narration dropped" section below for the four reasons, chiefly that narration-driven per-line timing
+  would reverse 02a V17's constant 3.0s holds. N01 deleted the whole subsystem, so there are no voices left
+  to audition. This was, until that decision, the only genuinely outstanding task in this plan. Unlike T02,
+  Original task text: Audition and fix one voice per Stoic; commit the three voice IDs with written rationale. They never change
   after this. Acceptance: three IDs committed and distinguishable from each other.
   BLOCKED (2026-08-25): auditioning requires an `ELEVENLABS_API_KEY` and a human listening to real synthesis; T12
   forbids live provider calls in tests. Everything around the decision IS built: `social/src/audio/voices.ts` holds

@@ -184,11 +184,13 @@ full passage in context. One-time cost; revives Three Voices and lifts One-Line 
 ## Plans
 1. `plans/Pf39c2-social-pilot-01.md` — Content premises: gate and score the corpus into pools, generate a weekly schedule
    - Status: [x]
-2. `plans/Pf39c2-social-pilot-02.md` — Character system and rendering: three characters, per-format templates, encode
-   - Status: [ ] — reconciled 2026-08-27 against 02a's deprecation work: T02/T19/F12/F04 marked obsolete (the
+2. `plans/complete/Pf39c2-social-pilot-02.md` — Character system and rendering: three characters, per-format templates, encode
+   - Status: [x] (2026-08-27) — reconciled against 02a's deprecation work: T02/T19/F12/F04 marked obsolete (the
      formats and the read-through they describe were deleted by 02a D01/D02) and F15 marked done (built as 02a
-     T08/T09). **One task genuinely remains: T14**, fixing one ElevenLabs voice per Stoic — blocked on an API key
-     and a human listening, not on code. Every render to date is `narration: false`.
+     T08/T09). T14 (voices) is obsolete too: **narration was dropped by user decision on 2026-08-27** and the
+     subsystem deleted by N01, chiefly because narration-driven per-line timing would reverse 02a V17's constant
+     3.0s payoff holds. N02 then deleted the character/portrait system, dead since D01. The channel is
+     music-only by design.
    - Depends on: 01
 2a. `plans/complete/Pf39c2-social-pilot-02a.md` — The Wall refined: legible payoff, chapter-sourced scroll, framing layer
    - Status: [x] (2026-08-27 — PR #41, squash-merged into `social-pilot-02`, not `main`: 02a was stacked on 02,
