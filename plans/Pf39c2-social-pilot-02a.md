@@ -2538,9 +2538,65 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   this span; left untouched. Full suite run: `narration.test.ts` (12), `mix.test.ts` (23), `cli.test.ts` (17) —
   all green.
 
-- [ ] V07: Re-render week 1 and re-measure — V01-V06 move geometry, duration and audio together. Render all 7,
+- [x] V07 (DONE 2026-08-27): Re-render week 1 and re-measure — V01-V06 move geometry, duration and audio together. Render all 7,
   ffprobe the house profile, tabulate durations against the 15s/59s bounds, and RMS-dB the babble -> hard cut ->
   true silence -> slow return shape on at least three different beds (per D04's method: extract PCM and window
   it directly, never `volumedetect`). Read real frames to confirm V05's two-line plate and V06's longer
   silence. Acceptance: 7 Walls render; all durations inside bounds and materially shorter than D04's
   26.5-35.5s; audio shape intact with a 1s floor.
+
+  **Done.** All 7 rendered clean (exit 0, no retries) in **1m41s** wall-clock, against D04's 2m30s for the
+  same 7-post week — the shorter compositions cut render time by a third on top of D02's post-count halving.
+
+  **Durations: all 7 are exactly 17.514s.** Not a coincidence and worth recording — with no narration the
+  schedule is `WALL_SECONDS 2.5 + LANDING_LINE_SECONDS 3.0 + 4 rest lines x DEFAULT_LINE_SECONDS 3.0 = 17.5s`,
+  and V04's finding (every scheduled day sits at the 5-screen cap) makes that identical for all seven. Inside
+  [15s, 59s] with 2.5s of headroom over the floor; **down from D04's 26.5-35.5s** (p50 29.5s), a 41% cut at
+  the median. The 40s Wall ceiling is now 22.5s away and no longer binds at all.
+
+  **ffprobe house profile**, run per-file: all 7 report video `h264, profile=High, level=40, 1080x1920,
+  yuv420p, 30/1 fps` and audio `aac, profile=LC, 48000Hz, 2 channels`. Zero violations.
+
+  **Audio — V06's 1s silence confirmed**, three files on three different beds, PCM-extracted and
+  RMS-windowed directly (never `volumedetect`, per U08/D04):
+
+  | window | 09-01 (bed-01) | 09-03 (bed-03) | 09-06 (bed-06) |
+  |---|---|---|---|
+  | babble 0.0-2.5s | -18.2dB | -20.2dB | -19.5dB |
+  | **silence 2.55-3.45s** | **-70.8dB** | **-74.1dB** | **-71.2dB** |
+  | rise 3.5-4.5s | -25.4dB | -29.8dB | -25.8dB |
+  | rise 4.5-5.5s | -17.2dB | -21.3dB | -18.6dB |
+  | steady 6-7s | -13.4dB | -16.4dB | -16.4dB |
+
+  The silence window is now sampled across a **0.9s span** (D04 could only sample 0.45s) and stays at a true
+  floor throughout on all three beds — V06's 500 -> 1000ms landed, and the slow return still rises
+  monotonically to the bed's steady state.
+
+  **Frames.** `wall-2026-09-03` (Epictetus, the long-chapter-title case) frame 0: the running head reads
+  **"EPICTETUS · DISCOURSES, ABOUT PURITY (CLEANLINESS)" wrapped across two lines with no ellipsis** — V05's
+  headline fix, confirmed on exactly the case R04's clamp used to truncate. Frame 75 (the cut): "In plain
+  English" on the tinted plate above "Reason tries to make human nature love purity." set much larger and
+  centred. Payoff polarity intact, no counter, no numeral.
+
+  **NEW DEFECT FOUND, filed as V08 — the plate is 900px wide on a 1080px frame.** See V08 below.
+
+
+- [ ] V08: Make the framing plate span the FULL 1080px frame width — `source-head-layout.ts`'s
+  `SOURCE_HEAD_BOUNDING_BOX` is `{ left: 0, width: 900 }` on a 1080px frame, leaving a 180px strip of bare
+  frame down its right-hand side. On the wall phase the scrolling archaic text shows through that strip at the
+  plate's own vertical band, so frame 0 of `wall-2026-09-03` renders the plate with orphaned text fragments
+  ("e", "are") stranded beside it — it reads as a box sitting on top of sliced text, not as a masthead. V05
+  made this materially worse without causing it: the plate grew 120px -> 180px, so it now slices three lines
+  of wall text instead of two. Set `width` to `FRAME_WIDTH` (1080) so the plate is a true edge-to-edge band,
+  and keep the text's own `SOURCE_HEAD_SAFE_INSET_PX` left inset and `SOURCE_HEAD_TEXT_MAX_WIDTH_PX` clamp so
+  the TYPE does not move — only the fill extends. Check the inset box-shadow and the 4-side border still make
+  sense on a full-bleed band (a left/right border on a full-bleed element is invisible; a top/bottom-only
+  rule may be the honest treatment). Update `source-head.test.ts` and the pixel-proof crops, which currently
+  assert against the 900px box. Acceptance: frame 0 of a re-rendered `wall-2026-09-03` shows no wall text to
+  the right of the plate; suite green.
+
+- [ ] V09: Re-check the plate's vertical proportions once V08 lands — at 180px tall with a single 38px line,
+  the payoff variant renders as a large, mostly-empty band (visible in `wall-2026-09-03` frame 75). The height
+  was sized for a two-line running head, but the payoff label is always one line. Either give the payoff
+  variant its own shorter plate height or accept the empty space deliberately and record why. Decide from the
+  rendered frame, not from the constants. Acceptance: a stated decision with a frame to back it.
