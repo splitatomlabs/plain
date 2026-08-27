@@ -586,7 +586,7 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   `.svelte-kit/output/server/entries/endpoints/go/_slug_/_server.js` present in the output. `npm run test:e2e
   --prefix web`: 196/196 green (188 pre-existing, unmodified + 8 new), both `desktop-chrome` and `mobile-chrome`
   projects. T12 (metrics collection) is next and has no dependency on this task.
-- [ ] T12: Implement automated collection for Instagram and YouTube against one shared row schema — platform,
+- [!] T12: Implement automated collection for Instagram and YouTube against one shared row schema — platform,
   format, publish time, views, average percent watched, likes, comments, shares, saves, follows. (No opening
   variant column — the opening comparison was CANCELLED outright, social pilot 02a T17.)
   Instagram: per-media insights plus a daily account-level follower series. YouTube: Data API `statistics` for
@@ -594,6 +594,96 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   video, reusing the upload OAuth with the analytics read scope added. Poll for 30 days after publication, since
   metrics keep accruing. Acceptance: a run appends a dated file with one row per live post, and re-running is
   idempotent rather than duplicating rows.
+  DEFERRED — the live half (an actual run against real Instagram/YouTube accounts and OAuth tokens) needs
+  credentials this session does not have, same status as T05/T06/T09/T10. Built and unit-tested the collector
+  itself against mocked APIs; the by-hand live run is left for the user once T05/T06's live halves are closed and
+  the YouTube OAuth token has the analytics read scope added (see below).
+  Done: added `social/src/metrics/schema.ts` (the one shared row schema — `MetricsRow`: platform, postId, format,
+  publishedAt, views, averagePercentWatched, likes, comments, shares, saves, follows, collectedAt — NO `opening`
+  field, per the plan's CANCELLED decision), `instagram.ts`, `youtube.ts`, and `collect.ts` (the run entry point),
+  plus `__tests__/{schema,instagram,youtube,collect}.test.ts` (47 tests). `content/social/metrics/*.json` is where
+  a real run writes (`metrics-<date>.json` plus `instagram-followers.json`) — no fixture files were pre-created
+  there, mirroring `job.ts`'s own `content/social/pending-youtube-flips.json`, which also does not exist until a
+  real run happens.
+  AVAILABLE VS. ZERO: every field that isn't universally available is `number | null`, `null` meaning "not
+  available on this platform," never a fabricated `0` — `schema.ts`'s header spells out each case (`saves`:
+  Instagram-only; `follows`: YouTube-only per-post, since per-post follow attribution does not exist on Instagram
+  per the plan's Decision; `shares`: real on Instagram, `null` on YouTube because pulling it would be scope creep
+  beyond the three Analytics metrics this task names; `averagePercentWatched`: `null` on Instagram when a media's
+  video duration is unknown, e.g. a still image). Tested explicitly in `schema.test.ts` via a round trip through
+  `serializeMetricsRows`/`parseMetricsRows` that a real `0` and a `null` never collapse into each other.
+  SOURCE OF "WHICH POSTS EXIST": `collect.ts`'s header works through this at length, since the task named two
+  candidates (job.ts's pending-flips file and the metadata sidecars) and asked for a justified pick. For
+  YouTube, `content/social/pending-youtube-flips.json` (parsed via `job-plan.ts`'s own `parsePendingFlips`, reused
+  not reimplemented) is exactly right — `job.ts`'s own header says it exists because the daily job is "the only
+  place that learns a real video id." For Instagram, NEITHER candidate fits: `job.ts` never persists an Instagram
+  media id anywhere (only logs it in a `PlatformOutcome.message` string), and extending `job.ts` to do so is
+  outside this task's own Files scope; the metadata sidecar is doubly unusable even if it were in scope — it
+  lives in the ephemeral, gitignored `--out` render directory, and records only `card_id`/`format`/`rendered_at`,
+  never a platform post id for either platform. Given that, `metrics/instagram.ts`'s `listInstagramMedia` treats
+  Instagram's own `GET /{ig-user-id}/media` list as authoritative for which Instagram posts exist and when
+  (each item already carries its own `timestamp`) — the platform is definitionally never wrong about its own
+  publish instant, unlike a local record that could drift.
+  INSTAGRAM <100-FOLLOWER GRACEFUL HANDLING: per `plans/research/social-experiment-notes.md` ("IG follower_count
+  metric gated at 100 followers" vs. "followers_count (ungated)"), `fetchInstagramFollowerSnapshot` attempts the
+  richer, gated `follower_count` Insights metric first and falls back to the ungated `followers_count` field on
+  ANY error from that call — this IS the "handle it gracefully rather than failing the run" behaviour the task
+  calls for, and it still returns a real, usable number on a brand-new account instead of skipping the day
+  entirely. Only re-throws if BOTH calls fail (a genuine outage, e.g. a bad token) — tested directly in
+  `instagram.test.ts`, plus an end-to-end version in `collect.test.ts` proving a total follower-snapshot failure
+  still leaves that run's per-post rows written.
+  YOUTUBE `engagedViews`, NEVER `views`: `youtube.ts`'s `fetchYouTubeVideoInfo` (the Data API call) deliberately
+  never reads `statistics.viewCount` at all, not even to discard it — the only view-count-shaped field in the
+  whole module is `YouTubeEngagementMetrics.engagedViews`, fetched from the Analytics API. Tested directly: a
+  fixture with a deliberately huge, misleading `viewCount` (5,000,000) alongside a small `engagedViews` (300)
+  proves the built `MetricsRow.views` is 300, not 5,000,000. `fetchYouTubeEngagementMetrics` matches
+  `columnHeaders` by name rather than assuming a fixed column order, and returns real zeros (not an error) when a
+  video is too new to have any Analytics data yet. Scope note: `shares` is `null` on every YouTube row, on
+  purpose — Analytics does expose a real `shares` metric, but this task's own Constraint names exactly
+  `engagedViews`/`averageViewPercentage`/`subscribersGained`, and adding a fourth was treated as scope creep
+  rather than a free improvement.
+  OAUTH SCOPE (operator note, in `youtube.ts`'s header): the collector reuses the SAME token
+  `publish/youtube.ts` refreshes for uploads, with `https://www.googleapis.com/auth/yt-analytics.readonly` added
+  alongside the existing `https://www.googleapis.com/auth/youtube.upload` scope on the same OAuth consent — no
+  separate OAuth flow.
+  30-DAY POLLING WINDOW: `schema.ts`'s `isWithinPollingWindow` (inclusive at exactly 30 days, exclusive one
+  millisecond past — matching `tokens.ts`'s own inclusive-boundary convention), tested at the exact boundary in
+  both `schema.test.ts` (pure) and `youtube.test.ts`/`instagram.test.ts` (via each collector). YouTube adds a
+  cheap COARSE pre-filter on the pending-flip's calendar date (widened by one day) before making any network call
+  — `pending-youtube-flips.json` only grows over the pilot's life, so this avoids re-fetching every video ever
+  uploaded on every run — then applies the PRECISE filter using the video's real `snippet.publishedAt` once
+  fetched; tested with a fixture chosen so the coarse filter passes but the precise one excludes, proving the
+  exclusion is keyed on the real timestamp, not the coarse one.
+  IDEMPOTENCY — THE ACCEPTANCE CRITERION: `collect.ts`'s `runMetricsCollection` reads the collection date's
+  existing dated file, upserts each freshly-fetched row by `platform:postId` (`schema.ts`'s `upsertMetricsRow`,
+  which replaces rather than appends a same-key row), and writes the merged result back — never a second row for
+  a post already in the file. `collect.test.ts`'s primary test runs the same collection twice against the same
+  mocked APIs and asserts the row count stays at 2 (not 4), plus a second test with CHANGED mocked metrics on the
+  re-run proving the row's numbers update in place rather than a stale row surviving alongside a fresh one. The
+  Instagram follower-snapshot file follows the identical discipline, keyed by calendar date.
+  PLATFORM ISOLATION: mirrors `job.ts`'s own reasoning — each platform's whole collection sequence is wrapped in
+  its own try/catch inside `runMetricsCollection`, logged via an injected `logger.warn` rather than thrown, so an
+  Instagram outage never prevents YouTube's rows from being written and vice versa; tested both directions plus a
+  both-fail case that still resolves (empty rows, no throw) rather than rejecting.
+  DETERMINISM: `now` (the collection instant) is an explicit parameter throughout every function in
+  `schema.ts`/`instagram.ts`/`youtube.ts`/`collect.ts` — nothing calls `Date.now()`/`new Date()`. `collect.ts`
+  also carries a real CLI entry point (`npx tsx social/src/metrics/collect.ts [--now <ISO>] [--help]`, guarded by
+  the same process-entry-point check as `job.ts`'s own bottom-of-file `main()`), with the ONE wall-clock read
+  (`new Date().toISOString()`, overridable via `--now` for a manual re-run) clearly commented at its single call
+  site. It reads the Instagram/YouTube tokens `job.ts` already refreshes via the same `createFirestoreTokenStore`
+  — token FRESHNESS stays `job.ts`'s job (documented in `collect.ts`'s header); this collector only reads
+  whatever is currently stored. Verified live (no credentials, no network beyond the one expected Firestore
+  auth-detection error): `npx tsx social/src/metrics/collect.ts --now 2026-09-05T00:00:00.000Z` with every env
+  var unset completes with exit code 0, logs `[instagram] skipped...`/`[youtube] skipped...` naming exactly what
+  was missing, and writes an empty dated file — deleted afterward, not committed, since it is smoke-test debris
+  rather than a real run's output.
+  Never logs a token: both `instagram.ts` and `youtube.ts` mirror `publish/instagram.ts`'s/`publish/youtube.ts`'s
+  own discipline exactly (query-parameter redaction for Instagram, header-only for YouTube); `collect.ts` never
+  logs a whole config object, only fixed strings, dates, ids, and `errorMessage(error)`.
+  `npx vitest run src/metrics` (from `social/`): 47/47 green. Full `npx vitest run` (social/): 489/489 green (442
+  pre-existing, unmodified + 47 new). `npx tsc --noEmit -p social/tsconfig.json`: clean. T13 (TikTok collection
+  spike) is next and has no dependency on this task; T14 (the viability readout) is the first real consumer of
+  the `MetricsRow`/`InstagramFollowerSnapshot` shapes this task defines.
 - [ ] T13: Settle TikTok collection with a SPIKE before building it — attempt the Display API `video.list` against
   the pilot account with an unaudited app and record what it actually returns. Automate it if it works; fall back to
   hand entry in the same schema during the weekly session if it does not. Either way, retention stays manual.
