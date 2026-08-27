@@ -42,6 +42,7 @@ import {
   wallAuthorWeights,
   selectWallBalanced,
   classifyWallSubTypes,
+  wallPayoffScreenCount,
   type AuthorMixEntry,
   type WallEntry,
   type RankedWallEntry,
@@ -198,6 +199,22 @@ function wallSubTypesIntersect(a: readonly WallSubType[], b: readonly WallSubTyp
 // ---------------------------------------------------------------------------
 
 /**
+ * The effective landing line for a Wall pool entry — the LLM rubric's
+ * `chosen_landing_line` (T07's scored pick) when a scored pool provided
+ * one, otherwise the mechanical `landing_line`. Extracted (V15) so every
+ * consumer that needs "the line the render will actually show" — both
+ * `contentFromWallEntry` below and the V15 screen-count quota's
+ * `wallScreenCountFor` — reads it from exactly one place. Getting this
+ * wrong (e.g. a screen-count computation that uses the mechanical line
+ * while the render uses the rubric's chosen line) would silently miscount
+ * screens for the 31 real entries where the two differ.
+ */
+function landingLineFor(entry: WallEntry): string {
+  const w = entry as WallEntry & { rubric?: { chosen_landing_line?: string } };
+  return w.rubric?.chosen_landing_line ?? w.landing_line;
+}
+
+/**
  * Build a slot's on-screen fields from an already-gated/scored Wall pool
  * entry.
  *
@@ -207,12 +224,123 @@ function wallSubTypesIntersect(a: readonly WallSubType[], b: readonly WallSubTyp
  * gate-only fallback and T11's Wall rubric calls would buy nothing (see M5
  * in the PR #39 review). Falls back to the mechanical line when no rubric
  * is present (the gate-only path, or a scored pool that for some reason
- * omits it).
+ * omits it). See `landingLineFor`.
  */
 function contentFromWallEntry(entry: WallEntry, card: Card): WallSlotContent {
-  const w = entry as WallEntry & { rubric?: { chosen_landing_line?: string } };
-  const landingLine = w.rubric?.chosen_landing_line ?? w.landing_line;
-  return { format: "wall", original_excerpt: card.original_excerpt, landing_line: landingLine };
+  return { format: "wall", original_excerpt: card.original_excerpt, landing_line: landingLineFor(entry) };
+}
+
+// ---------------------------------------------------------------------------
+// V15: per-week screen-count QUOTA (user, 2026-08-27 — plan's "Screen-count
+// mix" section). Week 1, pre-V15, came out at 5 payoff screens on all 7
+// days. V14 (dropping `impenetrability_score` from the strength test) helps
+// but is not enough on its own: the strong pool is still ~47% five-screen,
+// and `wallAuthorWeights` compounds it by over-drawing Seneca, whose own
+// strong pool is ~91% five-screen. A hard per-week quota — not an adjacency
+// rule, not a re-weighting — is what the user asked for instead.
+// ---------------------------------------------------------------------------
+
+/** At most this many days per week may land at the 5-screen ceiling. */
+export const WALL_MAX_FIVE_SCREEN_DAYS = 2;
+
+/** At least this many days per week must land at `WALL_SHORT_SCREEN_MAX` screens or fewer. */
+export const WALL_MIN_SHORT_SCREEN_DAYS = 2;
+
+/** The screen count at or under which a day counts toward the "short" floor above. */
+export const WALL_SHORT_SCREEN_MAX = 3;
+
+/**
+ * A Wall pool entry's payoff screen count, computed from the SAME
+ * effective landing line the render will use (`landingLineFor`) — using
+ * the mechanical `landing_line` instead would silently miscount the 31 real
+ * entries whose rubric-chosen line differs from it.
+ *
+ * Returns `null` when the entry's card can't be found in `cardsById` —
+ * this only happens for a malformed pool entry (every entry that survives
+ * to a real draw always resolves; `generateWeek`'s own post-selection
+ * lookup throws loudly if it doesn't). A `null` count is treated as
+ * "unknown" by both quota filters below: never excluded as a 5, never
+ * counted as a short — deliberately conservative rather than a guess.
+ */
+function wallScreenCountFor(entry: WallEntry, cardsById: ReadonlyMap<string, Card>): number | null {
+  const card = cardsById.get(entry.card_id);
+  if (!card) return null;
+  return wallPayoffScreenCount(card.plain_english, landingLineFor(entry));
+}
+
+/**
+ * Narrow today's candidate pool to satisfy the V15 screen-count quota,
+ * given how many 5-screen and short (<= `WALL_SHORT_SCREEN_MAX`) days this
+ * week has already used, and how many days (including today) remain.
+ *
+ * Two independent constraints, applied in the same "filter, and if that
+ * empties the candidate set, fall back to the wider pool and log" shape
+ * T19 uses for sub-type spacing (see `wallSubTypesIntersect`'s call site
+ * below) — so a starved pool degrades gracefully instead of throwing or
+ * looping:
+ *
+ *  - CEILING: once the week has already used its 2 allowed 5-screen days,
+ *    exclude every 5-screen entry from today's draw, so the count can
+ *    never exceed the cap. Falls back (with a named warning) only if that
+ *    exclusion would leave zero candidates.
+ *
+ *  - FLOOR (the corner-painting guard): "at least 2 short days a week" is a
+ *    WHOLE-WEEK property, not a per-day one, so it can't be left to chance
+ *    on day 7 — by then the pool may hold nothing short at all. Instead
+ *    this forces today's draw to be short as soon as the days remaining
+ *    (including today) equal the short days still owed: if 0 short days
+ *    have been drawn after 5 long days, day 6 already has
+ *    `stillNeeded(2) >= daysRemainingIncludingToday(2)`, so day 6 AND day 7
+ *    both get forced short — the corner (5 long days chosen, then only 2
+ *    days left and no forcing yet applied) is never reached because the
+ *    forcing trips one day before it would otherwise bind. Falls back
+ *    (with a named warning) if the pool genuinely has no short entry left
+ *    to draw once forced.
+ */
+function applyScreenCountQuota(
+  pool: readonly WallPoolEntry[],
+  cardsById: ReadonlyMap<string, Card>,
+  weekNumber: number,
+  day: number,
+  fiveScreenDaysUsed: number,
+  shortScreenDaysUsed: number,
+): WallPoolEntry[] {
+  let candidates: WallPoolEntry[] = [...pool];
+
+  if (fiveScreenDaysUsed >= WALL_MAX_FIVE_SCREEN_DAYS) {
+    const withoutFive = candidates.filter((e) => wallScreenCountFor(e, cardsById) !== 5);
+    if (withoutFive.length > 0) {
+      candidates = withoutFive;
+    } else {
+      logger.warn(
+        `generateWeek: screen-count quota (at most ${WALL_MAX_FIVE_SCREEN_DAYS} five-screen days) could not be ` +
+          `honored for week ${weekNumber} day ${day} — every remaining candidate is a 5-screen Wall and none ` +
+          `shorter is available; scheduling a 5-screen day anyway.`,
+      );
+    }
+  }
+
+  const daysRemainingIncludingToday = 8 - day; // days day..7 inclusive
+  const shortStillNeeded = Math.max(0, WALL_MIN_SHORT_SCREEN_DAYS - shortScreenDaysUsed);
+  if (shortStillNeeded >= daysRemainingIncludingToday) {
+    const onlyShort = candidates.filter((e) => {
+      const count = wallScreenCountFor(e, cardsById);
+      return count !== null && count <= WALL_SHORT_SCREEN_MAX;
+    });
+    if (onlyShort.length > 0) {
+      candidates = onlyShort;
+    } else {
+      logger.warn(
+        `generateWeek: screen-count quota (at least ${WALL_MIN_SHORT_SCREEN_DAYS} days at <= ` +
+          `${WALL_SHORT_SCREEN_MAX} screens) could not be honored for week ${weekNumber} day ${day} — ` +
+          `${shortStillNeeded} short day${shortStillNeeded === 1 ? "" : "s"} still needed with only ` +
+          `${daysRemainingIncludingToday} day${daysRemainingIncludingToday === 1 ? "" : "s"} left, and no ` +
+          `entry at <= ${WALL_SHORT_SCREEN_MAX} screens remains in the candidate pool; scheduling unconstrained.`,
+      );
+    }
+  }
+
+  return candidates;
 }
 
 /**
@@ -276,6 +404,13 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
   // anything.
   let previousWallSubTypes: WallSubType[] | null = null;
 
+  // V15: per-week screen-count quota state — reasoned about "as you go"
+  // (see `applyScreenCountQuota`'s doc comment for the corner-painting
+  // guard this requires) so the whole-week bounds actually hold rather than
+  // being left to chance on the last day or two.
+  let fiveScreenDaysUsed = 0;
+  let shortScreenDaysUsed = 0;
+
   for (let day = 1; day <= 7; day++) {
     const remaining = wallPool.filter((e) => !allUsed.has(e.card_id));
     if (remaining.length === 0) {
@@ -299,6 +434,14 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
       );
       sourcePool = reserveRemaining;
     }
+
+    // V15: narrow to the screen-count quota BEFORE the sub-type spacing
+    // preference below, so quota correctness (a whole-week property) takes
+    // priority over spacing (a per-day cosmetic preference) — spacing then
+    // only ever narrows further within an already quota-compliant pool, and
+    // its own empty-set fallback naturally lands back on the quota-compliant
+    // pool rather than the wider, unconstrained one.
+    sourcePool = applyScreenCountQuota(sourcePool, cardsById, weekNumber, day, fiveScreenDaysUsed, shortScreenDaysUsed);
 
     // T19 (simplified by D02): prefer entries whose `sub_types` don't
     // overlap the immediately preceding day's; fall back to the full
@@ -337,6 +480,14 @@ export function generateWeek(options: GenerateWeekOptions): WeekSchedule {
     });
     allUsed.add(entry.card_id);
     previousWallSubTypes = entry.sub_types;
+
+    // V15: tally today's actual screen count (not a target) against the
+    // week's quota state, so the next day's `applyScreenCountQuota` call
+    // reasons from what really happened, including the graceful-degradation
+    // paths above where the quota went unmet.
+    const screenCount = wallPayoffScreenCount(card.plain_english, landingLineFor(entry));
+    if (screenCount === 5) fiveScreenDaysUsed += 1;
+    if (screenCount <= WALL_SHORT_SCREEN_MAX) shortScreenDaysUsed += 1;
   }
 
   const authorMixResult = combinedAuthorMix(slots.map((s) => ({ author_slug: s.author_slug })));

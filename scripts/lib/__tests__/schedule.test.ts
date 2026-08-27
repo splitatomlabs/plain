@@ -18,6 +18,9 @@ import {
   loadPriorWeeks,
   isStrongWallEntry,
   WALL_STRONG_LANDING_LINE_MIN,
+  WALL_MAX_FIVE_SCREEN_DAYS,
+  WALL_MIN_SHORT_SCREEN_DAYS,
+  WALL_SHORT_SCREEN_MAX,
   type WeekSchedule,
   type WallPoolEntry,
 } from "../schedule.js";
@@ -877,6 +880,148 @@ describe("T19: Wall sub-type spacing", () => {
       // whatever DOES repeat is always reported, and nothing is reported
       // that didn't actually repeat.
       expect(totalSpacingWarnings).toBe(totalRepeats);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// V15: per-week screen-count QUOTA (user, 2026-08-27 — "Screen-count mix").
+// At most WALL_MAX_FIVE_SCREEN_DAYS (2) days at 5 screens, at least
+// WALL_MIN_SHORT_SCREEN_DAYS (2) days at <= WALL_SHORT_SCREEN_MAX (3)
+// screens, per generated week.
+// ---------------------------------------------------------------------------
+
+describe("V15: per-week screen-count quota", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // Mirrors the effective-landing-line logic `schedule.ts` uses (rubric's
+  // `chosen_landing_line` over the mechanical `landing_line`) — see the
+  // existing "makes every real 1-payoff-screen entry eligible" test above
+  // for the same inline pattern.
+  function effectiveLandingLine(entry: RankedWallEntry): string {
+    return (entry as unknown as { rubric?: { chosen_landing_line?: string } }).rubric?.chosen_landing_line ?? entry.landing_line;
+  }
+
+  function screensFor(entry: RankedWallEntry, cardsById: Map<string, Card>): number {
+    const card = cardsById.get(entry.card_id)!;
+    return wallPayoffScreenCount(card.plain_english, effectiveLandingLine(entry));
+  }
+
+  it("the quota constants are the documented values (max 2 five-screen, min 2 <=3-screen)", () => {
+    expect(WALL_MAX_FIVE_SCREEN_DAYS).toBe(2);
+    expect(WALL_MIN_SHORT_SCREEN_DAYS).toBe(2);
+    expect(WALL_SHORT_SCREEN_MAX).toBe(3);
+  });
+
+  describe("against the real scored pool (content/social/premises/wall.json)", () => {
+    const premisesDir = path.join(process.cwd(), "content", "social", "premises");
+
+    it("a generated week 1 satisfies both bounds", async () => {
+      const { pool, source } = await loadWallPool(premisesDir, gateWallPool);
+      expect(source).toBe("scored");
+      const cardsById = new Map(cards.map((c) => [c.id, c]));
+      const week = generateWeek({
+        weekNumber: 1,
+        seed: 42,
+        cards,
+        wallPool: pool,
+        poolSource: source,
+        priorUsedCardIds: new Set(),
+      });
+
+      expect(week.slots).toHaveLength(7);
+      const screenCounts = week.slots.map((s) => {
+        const entry = pool.find((e) => e.card_id === s.card_id)!;
+        return screensFor(entry, cardsById);
+      });
+      const fiveScreenDays = screenCounts.filter((n) => n === 5).length;
+      const shortScreenDays = screenCounts.filter((n) => n <= WALL_SHORT_SCREEN_MAX).length;
+      expect(fiveScreenDays).toBeLessThanOrEqual(WALL_MAX_FIVE_SCREEN_DAYS);
+      expect(shortScreenDays).toBeGreaterThanOrEqual(WALL_MIN_SHORT_SCREEN_DAYS);
+    });
+
+    it("is deterministic — the same seed produces byte-identical output", async () => {
+      const { pool, source } = await loadWallPool(premisesDir, gateWallPool);
+      const optionsFor = () => ({
+        weekNumber: 1,
+        seed: 42,
+        cards,
+        wallPool: pool,
+        poolSource: source,
+        priorUsedCardIds: new Set<string>(),
+      });
+      const first = generateWeek(optionsFor());
+      const second = generateWeek(optionsFor());
+      expect(second).toEqual(first);
+    });
+  });
+
+  describe("graceful degradation (synthetic pool starved of short cards)", () => {
+    function makeScreenCountCard(id: string, screens: number): Card {
+      const landingLine = `Landing line for ${id}.`;
+      const remainderSentences = Array.from({ length: screens - 1 }, (_, i) => `Extra sentence ${i + 1} for card ${id}.`);
+      return {
+        id,
+        book_slug: "synthetic-screens",
+        chapter_slug: "chapter-01",
+        card_number: 1,
+        total_cards_in_chapter: 1,
+        plain_english: [landingLine, ...remainderSentences].join(" "),
+        original_excerpt: "Original excerpt text used only as a synthetic screen-count fixture.",
+        source_reference: `Synthetic Screens, Card ${id}`,
+        author_slug: "seneca",
+        tags: ["calm-your-mind"],
+        reading_time_seconds: 20,
+      };
+    }
+
+    function makeScreenCountEntry(card: Card): RankedWallEntry {
+      return {
+        card_id: card.id,
+        book_slug: card.book_slug,
+        author_slug: card.author_slug,
+        original_word_count: 100,
+        landing_line: `Landing line for ${card.id}.`,
+        sub_types: [],
+        reserve: true,
+        archaic_marker_count: 0,
+        semicolon_count: 0,
+        quote_count: 0,
+        original_grade: 8,
+      };
+    }
+
+    it("still returns a full week, logs the unmet floor, and never throws or hangs when no <=3-screen card exists in the pool", () => {
+      // 3 five-screen + 5 four-screen entries: 8 total, none at <=3 screens.
+      // Enough four-screen supply that the "at most 2 five-screen" cap is
+      // satisfiable on its own (isolating the floor violation this test
+      // means to exercise).
+      const fiveScreenCards = [1, 2, 3].map((n) => makeScreenCountCard(`five-${n}`, 5));
+      const fourScreenCards = [1, 2, 3, 4, 5].map((n) => makeScreenCountCard(`four-${n}`, 4));
+      const syntheticCards = [...fiveScreenCards, ...fourScreenCards];
+      const syntheticPool = syntheticCards.map(makeScreenCountEntry);
+      const cardsById = new Map(syntheticCards.map((c) => [c.id, c]));
+
+      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
+      const week = generateWeek({
+        weekNumber: 1,
+        seed: 42,
+        cards: syntheticCards,
+        wallPool: syntheticPool,
+        poolSource: "gate-only",
+        priorUsedCardIds: new Set(),
+      });
+
+      expect(week.slots).toHaveLength(7);
+      const screenCounts = week.slots.map((s) => screensFor(syntheticPool.find((e) => e.card_id === s.card_id)!, cardsById));
+      expect(screenCounts.filter((n) => n <= WALL_SHORT_SCREEN_MAX)).toHaveLength(0);
+      expect(screenCounts.filter((n) => n === 5).length).toBeLessThanOrEqual(WALL_MAX_FIVE_SCREEN_DAYS);
+      expect(
+        warnSpy.mock.calls.some((c) => /at least 2 days? at <= ?3 screens/i.test(String(c[0])) || /screen-count quota/i.test(String(c[0]))),
+      ).toBe(true);
+      warnSpy.mockRestore();
     });
   });
 });

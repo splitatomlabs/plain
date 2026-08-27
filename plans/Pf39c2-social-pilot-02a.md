@@ -2886,18 +2886,46 @@ cost, reversible); and add a per-week QUOTA rather than an adjacency rule or a p
   fallback (`if (!entry.rubric) return true`) is untouched and its own test still passes. Full pipeline suite:
   570/570 green (`npx vitest run` from repo root).
 
-- [ ] V15: Add a per-week screen-count QUOTA to the scheduler — `scripts/lib/schedule.ts`, alongside T19's
-  existing sub-type spacing (which is the model to follow for shape and for how to fail gracefully when the
-  pool cannot satisfy the constraint). Each generated week must hold **at most 2 days at 5 screens** and **at
-  least 2 days at <=3 screens**. The scheduler currently never computes a screen count, so it will need
-  `wallPayoffScreenCount` (already exported from `scripts/lib/premises.ts` as of V02) applied to the entry's
-  effective landing line — note `landingLineFor` prefers `rubric.chosen_landing_line` over the mechanical
-  line, so use the SAME line the render will use or the count will be wrong. The quota must degrade
+- [x] V15 (DONE 2026-08-27): Add a per-week screen-count QUOTA to the scheduler — `scripts/lib/schedule.ts`,
+  alongside T19's existing sub-type spacing (which is the model to follow for shape and for how to fail
+  gracefully when the pool cannot satisfy the constraint). Each generated week must hold **at most 2 days at 5
+  screens** and **at least 2 days at <=3 screens**. The scheduler currently never computes a screen count, so
+  it will need `wallPayoffScreenCount` (already exported from `scripts/lib/premises.ts` as of V02) applied to
+  the entry's effective landing line — note `landingLineFor` prefers `rubric.chosen_landing_line` over the
+  mechanical line, so use the SAME line the render will use or the count will be wrong. The quota must degrade
   gracefully, never throw or loop forever: if the remaining pool cannot satisfy it (e.g. late in a long pilot
   when short cards are used up), log a clear warning naming the unmet part and carry on, exactly as the strong
   pool exhaustion path already does. Preserve determinism — same seed, same week. Test first, including a
   test that the quota still holds when the pool is deliberately starved of short cards. Acceptance: a
   regenerated week 1 satisfies both bounds; `--seed 42` remains reproducible; suite green.
+
+  Notes (2026-08-27): TDD — added three failing tests to `schedule.test.ts` first (real-pool bounds check,
+  determinism, and a synthetic pool starved of `<=3`-screen entries), watched all three fail on the missing
+  exports, then implemented. Extracted `landingLineFor(entry)` out of `contentFromWallEntry` (it previously
+  inlined `rubric?.chosen_landing_line ?? landing_line`) so both the renderer's on-screen text and the new
+  screen-count computation read the identical line — this is the same helper name and reasoning the task
+  description named, even though it did not exist as a standalone function before this task. Added
+  `applyScreenCountQuota` (exported constants `WALL_MAX_FIVE_SCREEN_DAYS`=2, `WALL_MIN_SHORT_SCREEN_DAYS`=2,
+  `WALL_SHORT_SCREEN_MAX`=3), called on each day's `sourcePool` BEFORE the T19 sub-type-spacing filter (quota
+  correctness is a whole-week property; spacing is a per-day cosmetic preference, so spacing only narrows
+  within an already-quota-compliant pool and its own fallback lands back on that compliant pool, not the
+  unconstrained one). Two independent filters, each following T19's exact shape (filter, and if that empties
+  the candidate set, fall back to the wider pool and `logger.warn` by name rather than throw): (1) once
+  `fiveScreenDaysUsed >= 2`, exclude every 5-screen entry; (2) once `daysRemainingIncludingToday <=
+  shortStillNeeded`, restrict to `<=3`-screen entries only. Corner-painting guard: the floor filter doesn't
+  wait for the last day — it trips as soon as remaining days exactly equal remaining need (e.g. if 5 long days
+  get drawn first with 0 short days banked, day 6's `stillNeeded(2) >= daysRemainingIncludingToday(2)` is
+  already true, forcing BOTH day 6 and day 7 short), so the scheduler can never reach "2 days left, 2 short
+  still owed, no forcing yet applied." Determinism: both filters run deterministically off already-selected
+  state (integer counters updated after each day's actual draw) with no additional `rng()` calls of their own,
+  so the exact same sequence of `selectWallBalanced` draws happens for a given seed — verified by a same-seed
+  dual-generation test asserting `toEqual`. Measured dry run, real 168-entry scored pool, `--seed 42`, week 1
+  (no prior weeks): `1 meditations-09-025 marcus-aurelius 5screens`, `2 on-anger-02-054 seneca[scene] 5screens`,
+  `3 discourses-60-001 epictetus 4screens`, `4 enchiridion-41-001 epictetus 3screens`, `5
+  shortness-of-life-02-003 seneca[scene] 1screen`, `6 enchiridion-27-001 epictetus 2screens`, `7
+  happy-life-03-004 seneca 4screens` — 2 five-screen days (cap respected), 3 short (`<=3`) days (floor
+  exceeded, not just met). No JSON regenerated (that is V16's job). Full pipeline suite: 574/574 green
+  (`npx vitest run` from repo root).
 
 - [ ] V16: Regenerate week 1 and re-render — report the new day/author/sub_type/screens table and the per-day
   durations, which should now VARY rather than all being 17.514s. Confirm durations stay inside [15s, 59s]
