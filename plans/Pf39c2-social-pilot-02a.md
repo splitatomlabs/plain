@@ -1460,3 +1460,68 @@ words. The work is correct for the slice it was tested against and breaks outsid
   (new import, updated corpus-sweep probe markup, new "vertical ink extent" describe block with 2 tests).
   `npx vitest run src/remotion/__tests__/source-head.test.ts` — 29/29 (up from 27). `npx tsc --noEmit` clean.
   Root `npm test`: 819 pipeline + 95 web unit + 589 social, all green.
+
+## User feedback (2026-08-27)
+
+Phone review of the Wall format. Five items, plus the interactions they force. Decisions taken with the user
+in the same session are recorded inline.
+
+**CONSTRAINT AMENDMENT (U05).** The plan's rule was "**No logo, URL or watermark in frame.** The running head
+names the *book*, never Plain." U05 adds a closing frame reading `thinkplain.ai`. This is the product owner
+amending their own constraint, deliberately: the rule was written against furniture pinned OVER content (the
+saturated niche's visual language, and the reason T17 deleted the numeral badges). A dedicated end card after
+the content ends is a different object. Rule as amended: **no logo, URL or watermark over content; a closing
+frame may name the product.**
+
+- [~] U01: Give the framing plate visual contrast — `social/src/remotion/SourceHead.tsx`,
+  `social/src/render/theme.ts`. Today the plate is `PAPER` (#FAF7F2), identical to the page, so the running
+  head reads as text floating on the same surface as the passage rather than as a distinct overlay. Use the
+  tokens `docs/BRANDING.md` already defines for exactly this: Tag background `#F0EDE8` for the plate fill and
+  Border `#E8E2D9` for a hairline rule along its lower edge. Add both to `theme.ts` (only PAPER/INK/SECONDARY/
+  ACCENTS exist today) and keep them in sync with the branding doc. NEVER an accent colour — the plan forbids
+  it for framing text because it reads as branding. Apply to BOTH variants (running head and payoff label):
+  they share one slot and one treatment, and tinting only one breaks the "book page → not a book page"
+  grammar T12 built. Acceptance: the plate is visibly distinct from the page at phone size; T11's
+  `assertIdenticalOutsideBoxes` / bounding-box proofs still hold; no accent colour used.
+- [ ] U02: Move the read-through counter to CENTERED BELOW the card text — `social/src/remotion/Counter.tsx`,
+  `counter-layout.ts`, and the four compositions that render it. **Interaction to resolve first:**
+  `source-head-layout.ts` derives `SOURCE_HEAD_TOP_PX` from `COUNTER_BOUNDING_BOX.top + height + gap` — that
+  derivation exists specifically so the two framing boxes are disjoint BY CONSTRUCTION (T11). Moving the
+  counter out from under the running head breaks the premise, so the running head needs its own top-left
+  anchor and the non-collision proof needs re-establishing on the new geometry rather than deleted. Note the
+  counter renders in all four compositions (`Wall.tsx`, `Question.tsx`, `Objection.tsx`, `Still.tsx`), so
+  "below the card text" must resolve per format. Acceptance: counter is horizontally centred below the text
+  block in every format that shows it; it cannot collide with or reflow the running head/payoff label;
+  `counter.test.ts`'s pixel-level proofs are retargeted, not weakened.
+- [ ] U03: Raise the payoff label from `SOURCE_HEAD_FONT_SIZE_PX` 32px to **38px** — user asked, and 38px
+  keeps it clearly subordinate to the 81-88px payoff sentence (T10's whole point is that the payoff is the
+  largest thing on screen) while giving the product concept real presence on a quiet frame. Past ~40px it
+  starts competing with the sentence. The RUNNING HEAD stays 32px — it is denser text over a busy scroll.
+  Acceptance: payoff label 38px, running head unchanged, R04's horizontal clamp and R07's descender clearance
+  both still hold at the new size (re-verify, do not assume — the clamp is width-sensitive).
+- [~] U04: Noisy scroll bed, then silence, then a slow return — `social/src/audio/mix.ts`. Replace the
+  soothing bed under the SCROLL with dense, unreadable noise matching the visual; HARD CUT on the cut frame
+  (T15's frame-aligned stop, unchanged); **0.5s of true silence**; then fade the existing soothing bed back in
+  over **~2.5s**, slowly enough to be near-inaudible until the landing line ends. User's decision, chosen over
+  both a 3s hard silence and an immediate fade: no abrupt dead air for sensory-sensitive viewers, drop mostly
+  intact. Noise is **generated procedurally from a fixed seed** (user's choice) — no new asset, renders stay
+  reproducible. Constraints: `bedEnvelope` stays pure and deterministic; F02's `SilentMixError` guard must
+  still raise; R05's edge-sampling regression test asserts floor across `[2.55s, 5.4s)` and WILL need
+  retargeting once the bed fades in from ~3.0s — retarget it to still prove the hard stop, never weaken it.
+  Acceptance: `volumedetect` on a real render shows noise across the scroll, floor across the 0.5s beat, and a
+  gradual rise thereafter; the cut is still frame-aligned.
+- [-] U05 (DEFERRED 2026-08-27, user): Closing frame — `thinkplain.ai` centred on an otherwise empty frame, ~2s, so viewers can find the
+  product. See the constraint amendment above. Static, no motion (house rule). Apply to ALL FOUR compositions,
+  matching T13's "so the channel reads as one product" reasoning — an end card on one format only would read
+  as an accident. Acceptance: every format ends on the card; it is the last thing on screen; durations still
+  respect the bounds (see U06).
+- [-] U06 (DEFERRED 2026-08-27, follows U05): Raise `WALL_MAX_DURATION_SECONDS` 40 → **42** to make room for U05's end card (user's decision).
+  T03 calibrated 40s before an end card existed; the longest read-through Wall is 38.5s, so a ~2s card would
+  breach it and start rejecting Walls. 42s stays well inside the global 59s bound. Acceptance: the
+  read-through slice keeps all 30 Walls with the end card included; re-measure and record p50/p75/max.
+  DEFERRED: this task existed ONLY to make room for U05's end card. With U05 deferred the 40s ceiling is
+  still correct and raising it would be unmotivated churn. Revisit together with U05, never separately.
+- [ ] U07: Re-render week 1 and re-measure — the U01-U06 changes alter geometry, audio and duration together,
+  so the T20 integration pass must be redone. Acceptance: all 14 render; ffprobe confirms the profile;
+  durations inside 15s/59s and Walls inside the UNCHANGED 40s ceiling (U06 deferred); frames at 0.0s / cut /
+  payoff show the intended result; `volumedetect` confirms U04's shape. Then a fresh phone review.
