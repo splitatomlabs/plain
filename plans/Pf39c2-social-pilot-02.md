@@ -460,9 +460,14 @@ covers most of that. Reversible from git history if the channel later wants it.
     before/after. `npm install --prefix social` removed 32 packages with the two deps gone; `package-lock.json`
     has zero remaining references to either. All three suites green (574 pipeline + 95 web + 330 social).
 
-- [ ] N02: Delete the character/portrait system, dead since 02a D01 for the same reason. Remove
-  `social/src/render/characters.ts` (imported by nothing but its own test), its test, and
-  `social/assets/characters/` including the placeholder SVGs and the asset-contract README. Grep first and
-  report anything still referencing them; if `PORTRAITS_ARE_PLACEHOLDER` or the loader is reachable from any
-  live composition, STOP and report rather than deleting. Separate commit from N01 so either can be reverted
-  independently. Acceptance: both suites green; no dangling import; `Wall.tsx` unaffected.
+- [x] N02 (DONE 2026-08-27): Delete the character/portrait system, dead since 02a D01 for the same reason.
+  Removed `social/src/render/characters.ts`, its test (`social/src/render/__tests__/characters.test.ts`), and
+  `social/assets/characters/` (the two placeholder SVGs, `.gitkeep`, and the asset-contract README). Grepped
+  first, per the task: `characters.ts`'s exports (`CHARACTER_NAMES`, `PORTRAITS_ARE_PLACEHOLDER`,
+  `characterPortraitPath`, `characterPortraitDataUri`) and the literal path string `assets/characters` were
+  referenced ONLY by `characters.test.ts` — not by `Root.tsx`, `entry.tsx`, `Wall.tsx`, `SourceHead.tsx`,
+  `cli.ts`, any script, or `package.json`. Nothing live reached this code, so no STOP condition applied.
+  `AuthorSlug` (the one symbol the test file also imported) already lived in `theme.ts`, not `characters.ts` —
+  `characters.ts` only imported it, so nothing needed to move. Verification: `npx tsc --noEmit` from `social/`
+  clean; social suite green before (330) and after (298 = 330 minus the 32 deleted `characters.test.ts`
+  cases); full `npm test` from repo root green (574 pipeline + 95 web + 298 social). `Wall.tsx` untouched.
