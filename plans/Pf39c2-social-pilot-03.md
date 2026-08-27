@@ -546,11 +546,46 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   than waiting for 07:53 America/New_York to roll around, and confirm both platforms report `ok`
   in the execution logs before considering T10 closed. T11 (the attribution redirect) has no
   dependency on this task and can proceed in parallel.
-- [ ] T11: Build the attribution redirect — `web/src/routes/go/[slug]/+server.js`, slugs `/go/ig`, `/go/tt`,
+- [x] T11: Build the attribution redirect — `web/src/routes/go/[slug]/+server.js`, slugs `/go/ig`, `/go/tt`,
   `/go/yt`. Log the click server-side, then 302 (never 308, so destinations stay changeable) to
   `https://thinkplain.ai/?utm_source=<platform>&utm_medium=organic-social&utm_campaign=stoic-pilot&utm_content=<format>`.
   In-app browsers strip referrers, so the UTM is the only reliable signal. Acceptance: an e2e test asserts a 302 with
   the correct Location and a recorded click.
+  Done: added `web/src/routes/go/[slug]/+server.js` — a plain-JS `GET` handler (matching this workspace's house
+  style, no TypeScript) mapping `ig`/`tt`/`yt` to `instagram`/`tiktok`/`youtube` via an explicit allowlist object,
+  never a passthrough. An unknown slug throws `error(404, ...)` rather than redirecting with a missing or
+  fabricated `utm_source` — the header comment justifies this against the alternative (silently corrupting the
+  aggregate click numbers) and notes every real link is hard-coded in `caption.ts`'s `ATTRIBUTION_URLS`, so a 404
+  here only ever means a typo, not a real visitor being turned away. `utm_content` defaults to `wall` (the only
+  `PostFormat` left per `render/post-metadata.ts`) and accepts a `?f=` override validated against a local
+  `KNOWN_FORMATS` allowlist rather than reflected straight into the redirect URL. Always `throw redirect(302, ...)`
+  — never 301/308 — with a comment quoting the plan's reasoning (a permanent redirect gets cached forever, making
+  the destination unchangeable) and a second comment flagging that `redirect()` throws rather than returns, per
+  this task's own callout. `export const prerender = false` is explicit, matching the pattern in
+  `completed/[book]/+layout.js` and `[book]/[chapter]/[card]/+layout.js` — needed because the root `+layout.js`
+  defaults `prerender` to `true`, and this route's side effect (the click log) and its per-request unknown-slug
+  behavior must never be baked in at build time. The click log is a single structured `console.log(JSON.stringify(...))`
+  line with exactly `event`/`platform`/`format`/`at` (an ISO timestamp) — no IP, user agent, referer, or any
+  identifier, checked directly against `docs/ANALYTICS.md`'s "aggregate only, nothing identifying a viewer" rule in
+  an in-line comment; Vercel captures function stdout as searchable logs on its own, so no separate logging
+  service is warranted for a pilot. Added `web/tests/unit/go-redirect.test.js` (9 tests: all three slugs' UTM
+  params including `utm_content=wall`, the `?f=` default and an `?f=` injection attempt asserting the value is
+  never reflected unchecked, the unknown-slug 404, the exact shape of the logged click including timestamp
+  validity, an explicit key-set assertion that nothing beyond `event`/`platform`/`format`/`at` is ever logged, and
+  that an unknown slug logs nothing at all) — this suite asserts the URL-building and click-logging logic directly
+  by importing `GET` and catching the thrown `Redirect`/`HttpError` objects, since `redirect()`/`error()` throw
+  rather than return. Added `web/tests/e2e/attribution-redirect.spec.js` (8 tests across both Playwright projects:
+  a 302 with the exact Location for each of the three slugs, plus the unknown-slug 404) using
+  `request.get(path, { maxRedirects: 0 })` so the 302 itself is observed rather than followed. Per this task's own
+  instruction to say plainly what could not be asserted rather than pretend: the e2e suite does NOT assert the
+  click log, because `playwright.config.js`'s `webServer` (`npm run build && npm run preview`) runs as a detached
+  child process with no wiring back to an individual test's stdout — the acceptance criterion's "a recorded click"
+  is instead covered by the unit suite's direct `console.log` spy, which is the reliable, precise way to assert it
+  in this setup; the spec's own header comment says so. `npx vitest run --prefix web` (repeated as `npx vitest run`
+  from `web/`): 104/104 green (95 pre-existing, unmodified + 9 new). `npm run build --prefix web`: succeeds,
+  `.svelte-kit/output/server/entries/endpoints/go/_slug_/_server.js` present in the output. `npm run test:e2e
+  --prefix web`: 196/196 green (188 pre-existing, unmodified + 8 new), both `desktop-chrome` and `mobile-chrome`
+  projects. T12 (metrics collection) is next and has no dependency on this task.
 - [ ] T12: Implement automated collection for Instagram and YouTube against one shared row schema — platform,
   format, publish time, views, average percent watched, likes, comments, shares, saves, follows. (No opening
   variant column — the opening comparison was CANCELLED outright, social pilot 02a T17.)
