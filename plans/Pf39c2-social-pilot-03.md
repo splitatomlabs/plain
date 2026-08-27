@@ -256,9 +256,57 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   closes T06's live half: once a Google Cloud OAuth app (published to "In production") and channel credentials
   exist, run one real `uploadVideoToYouTube` call against a test asset and confirm it appears in Studio ready to
   flip before T08 (the daily job) depends on this in production.
-- [ ] T07: Implement TikTok manual staging — write the week's MP4s and a captions file to a dated R2 folder and send
+- [x] T07: Implement TikTok manual staging — write the week's MP4s and a captions file to a dated R2 folder and send
   a manifest with direct links, plus that week's YouTube video IDs awaiting a flip, so one session covers both
   platforms. Acceptance: a run produces 14 videos, their captions, and the pending flip list.
+  Done: the task's own wording carries two discrepancies, both documented in `tiktok-manual.ts`'s header and
+  handled as follows. (1) "14 videos" is STALE — it predates `Pf39c2-social-pilot-02a` D02, which collapsed the
+  channel to a single Wall post per day, so a week is 7 videos, not 14; `stageTikTokWeek` derives the day count
+  from `schedule.slots.length` rather than hard-coding either number (a 3-slot fixture schedule in the test proves
+  this — it stages exactly 3, not 7 or 14). (2) No caption generator existed anywhere in this repo — built one.
+  Added `social/src/publish/caption.ts` — `buildCaption({ slot, platform })`, pure, no I/O, no `Date.now()`.
+  Exports `ATTRIBUTION_URLS` (the T11 slugs: `https://thinkplain.ai/go/tt`/`/go/ig`/`/go/yt` for
+  tiktok/instagram/youtube) and `HASHTAGS` (a small fixed set, `#Stoicism #Philosophy #PlainEnglish`, deliberately
+  excluding `#Shorts` since the plan Constraint says YouTube classifies Shorts automatically from aspect ratio and
+  duration). The caption body is the card's own verbatim `landing_line`, a factual "— Author, Book" attribution
+  line (framing text, never attributed to the author, per Constraint 6's ruling), the platform's attribution link
+  under a plain "Read it plain:" lead-in, then the hashtags — no hype copy, no emoji-stacking, matching the index
+  plan's tone constraint ("calm, direct, warm-not-soft, second person, never clickbait"). Author/book display names
+  come from small local lookup tables (`AUTHOR_DISPLAY_NAMES`, mirroring `render/theme.ts`'s three `ACCENTS` keys;
+  `BOOK_DISPLAY_NAMES`, mirroring `scripts/lib/constants.ts`'s `BOOK_CONFIGS` titles) with a humanized-slug
+  fallback for anything not yet in the table, rather than throwing — a caption is cosmetic copy, not a
+  correctness-critical path. Added `social/src/publish/tiktok-manual.ts` — `stageTikTokWeek({ client, config,
+  schedule, outDir, pendingYouTubeFlips })` resolves every slot in an already-loaded `WeekSchedule` to its rendered
+  MP4 via `renderAssetPaths` (`cli-plan.ts`) and `weekDayToDate` (`pilot-config.ts`), checks every day's MP4 exists
+  on disk (via `existsSync`, mirroring `cli.ts`'s own use of it) BEFORE uploading anything — a run either stages
+  the whole week or nothing, and the thrown error names every missing date plus its expected path. Uploads each
+  MP4 to `tiktokStagingKeyFor(weekStartDate, baseName)` and a single `captions.txt` (human-readable, one block per
+  day separated by a rule — chosen over `.json` because the weekly session is a person reading captions off a
+  screen while manually pasting them into TikTok's app, per the plan's "~20 min/week, manual" Decision; the
+  structured version of the same data is still available via the returned manifest's `days[].caption`). Every
+  upload goes through `contentTypeFor` (never a hand-picked type) and only ever touches `config`/`client` through
+  `storage.ts`'s already-audited `uploadFile`/`uploadObject` — nothing in this module reads `accessKeyId`/
+  `secretAccessKey` directly. `pendingYouTubeFlips` (a new exported `PendingYouTubeFlip[]` type: date, card id,
+  YouTube video id) is accepted as a plain input parameter, not read from Firestore or any other store — T08 (the
+  daily job) is the one place that uploads to YouTube and learns a real video id, and is expected to accumulate the
+  week's ids and pass them in once a week; this module just carries them through onto the returned
+  `TikTokWeekManifest`. Added `social/src/publish/__tests__/caption.test.ts` (13 tests: landing line verbatim,
+  author/book present, the correct `/go/<platform>` link per platform and never another platform's, the fixed
+  hashtag set present and `#Shorts` absent, no hype punctuation/emoji, determinism, the humanized-fallback path,
+  and distinct captions for distinct slots) and `social/src/publish/__tests__/tiktok-manual.test.ts` (11 tests,
+  mocked `S3Client` per `storage.test.ts`'s convention plus `node:fs`/`node:fs/promises` mocked for the existence
+  check and the underlying `uploadFile` read: a real 7-slot week schedule stages exactly 7 videos/7 captions/the
+  passed-through pending-flip list; a 3-slot fixture schedule proves the count comes from the schedule, not 7 or
+  14 hard-coded; each day resolves to the exact `renderAssetPaths`/`weekDayToDate` path and its manifest URL
+  matches `publicUrlFor`; a missing day's MP4 fails naming that exact date, and zero uploads happen in that case
+  (proving the whole-week-or-nothing ordering); every uploaded object carries an explicit content-type
+  (`video/mp4` x7, `text/plain` x1); the captions link matches `publicUrlFor`; every key lands under the same
+  `tiktok-staging/<weekStartDate>/` folder; and a console-spy suite over the failure path asserts neither
+  `accessKeyId` nor `secretAccessKey` ever appears in a logged or thrown value). `npx vitest run src/publish` (from
+  `social/`): 114/114 green (90 pre-existing, unmodified + 13 `caption.test.ts` + 11 `tiktok-manual.test.ts`). Full
+  `npx vitest run` (social/): 412/412 green. `tsc --noEmit -p social/tsconfig.json`: clean. T08 (the daily job) is
+  next and is the first real caller of `buildCaption`'s other two platforms and the producer of
+  `PendingYouTubeFlip[]` this module consumes.
 - [ ] T08: Build the daily job — read schedule, render, upload, publish, log, alert. A failure on one platform must
   not stop the other. Acceptance: a dry-run completes and logs per-platform outcomes.
 - [ ] T09: Write the Dockerfile — Node, ffmpeg, Chromium deps, and Literata + DM Sans installed system-wide.
