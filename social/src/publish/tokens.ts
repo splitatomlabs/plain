@@ -113,7 +113,8 @@ function toEpochMs(iso: string): number {
  * refresh is actually attempted.
  */
 export function needsRefresh(token: StoredToken, now: string): boolean {
-	throw new Error('not implemented');
+	const msUntilExpiry = toEpochMs(token.expiresAt) - toEpochMs(now);
+	return msUntilExpiry <= REFRESH_WINDOW_MS;
 }
 
 /**
@@ -153,7 +154,29 @@ export interface EnsureFreshTokenOptions {
  * nothing to refresh or return.
  */
 export async function ensureFreshToken(options: EnsureFreshTokenOptions): Promise<StoredToken> {
-	throw new Error('not implemented');
+	const { store, platform, now, refresh } = options;
+
+	const current = await store.get(platform);
+	if (!current) {
+		throw new Error(`No stored token for platform "${platform}" — nothing to refresh or return.`);
+	}
+
+	if (!needsRefresh(current, now)) {
+		return current;
+	}
+
+	const ageMs = toEpochMs(now) - toEpochMs(current.obtainedAt);
+	if (ageMs < MIN_REFRESH_AGE_MS) {
+		// Near expiry, but too young to refresh yet — a refresh attempt would be rejected.
+		// `expiryAlert` is responsible for surfacing this state to an operator.
+		return current;
+	}
+
+	const refreshed = await refresh(current, now);
+	// Persist BEFORE returning to the caller: a crash here must never hand back
+	// a token that isn't durably stored, and must leave the old token in place.
+	await store.set(platform, refreshed);
+	return refreshed;
 }
 
 /** Raised by `expiryAlert` when a token's expiry has entered the alert window. */
@@ -171,5 +194,43 @@ export interface TokenExpiryAlert {
  * further out than that.
  */
 export function expiryAlert(token: StoredToken, now: string): TokenExpiryAlert | undefined {
-	throw new Error('not implemented');
+	const msUntilExpiry = toEpochMs(token.expiresAt) - toEpochMs(now);
+	if (msUntilExpiry > EXPIRY_ALERT_WINDOW_MS) {
+		return undefined;
+	}
+	return {
+		platform: token.platform,
+		expiresAt: token.expiresAt,
+		daysRemaining: msUntilExpiry / (24 * 60 * 60 * 1000),
+	};
+}
+
+/**
+ * An in-memory `TokenStore` for local dry-runs (e.g. `job.ts --dry-run`,
+ * T08) where there is no Firestore project to talk to. NOT for production —
+ * see `token-store-firestore.ts` for the real, atomic, durable
+ * implementation the Cloud Run Job (T10) uses.
+ *
+ * Shape matches the fake store `__tests__/tokens.test.ts` builds locally for
+ * its own scenarios (a `Map<Platform, StoredToken>` behind plain `get`/
+ * `set`) — this is the same shape exported for reuse outside the test file,
+ * not a second, divergent one.
+ */
+export function createInMemoryTokenStore(initial: Iterable<StoredToken> = []): TokenStore {
+	const records = new Map<Platform, StoredToken>();
+	for (const token of initial) {
+		records.set(token.platform, token);
+	}
+
+	return {
+		async get(platform: Platform): Promise<StoredToken | undefined> {
+			return records.get(platform);
+		},
+		async set(platform: Platform, record: StoredToken): Promise<void> {
+			// A single Map write is already atomic for a single-process dry-run —
+			// there is no concurrent writer to race against outside of a real
+			// deployment, which is exactly why this store is dry-run-only.
+			records.set(platform, record);
+		},
+	};
 }

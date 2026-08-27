@@ -10,6 +10,7 @@
     "@aws-sdk/client-s3": "^3.1119.0",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/literata": "^5.2.8",
+    "@google-cloud/firestore": "^9.0.0",
     "@remotion/bundler": "^4.0.360",
     "@remotion/cli": "^4.0.360",
     "@remotion/renderer": "^4.0.360",

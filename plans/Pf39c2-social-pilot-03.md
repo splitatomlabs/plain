@@ -136,7 +136,33 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   for this task. `npx tsc --noEmit -p social/tsconfig.json`: clean. T04 is next: implement the bodies in
   `tokens.ts` plus a Firestore-backed `TokenStore` per the plan's Files list, and get this suite to 20/20 green
   without changing its assertions.
-- [ ] T04: Implement token management in Firestore with atomic write-back. Acceptance: T03 passes.
+- [x] T04: Implement token management in Firestore with atomic write-back. Acceptance: T03 passes.
+  Done: filled in `social/src/publish/tokens.ts`'s three stubbed bodies. `needsRefresh` is a pure expiry-window
+  check (`expiresAt - now <= REFRESH_WINDOW_MS`, inclusive). `ensureFreshToken` loads the current token (throwing
+  by platform name, never by value, if none exists), returns it unchanged when `needsRefresh` is false OR when the
+  token is near expiry but younger than `MIN_REFRESH_AGE_MS` (the age floor wins over imminent expiry, matching the
+  plan's Instagram refresh-eligibility rule), and otherwise calls `refresh(current, now)` then `await`s
+  `store.set(platform, refreshed)` to completion BEFORE returning the refreshed value — a rejecting `set` propagates
+  unchanged and the refreshed token never reaches the caller, leaving the old record as whatever the store still
+  holds. `expiryAlert` fires inclusively at the 30-day `EXPIRY_ALERT_WINDOW_MS` boundary. No `Date.now()` anywhere;
+  no token value is ever interpolated into a log or thrown error (both already held true before T04 and stayed that
+  way — the only string interpolated into a new error is the platform name in the "no stored token" case). Also
+  added `createInMemoryTokenStore` to `tokens.ts` (a plain `Map`-backed `TokenStore`, same `get`/`set` shape as the
+  test file's local fake) for T08's dry-run job, per this task's brief, rather than inventing a second shape.
+  Added `social/src/publish/token-store-firestore.ts` — `createFirestoreTokenStore` (constructs a `Firestore` client
+  with NO explicit credentials, relying on Application Default Credentials — the same identity the Cloud Run Job,
+  T10, will run under — or accepts an injected client/collection override), one document per `Platform` keyed by
+  its name. `set` uses `client.runTransaction` rather than a plain `.set()`: the header comment documents why —
+  two overlapping runs (a retried trigger racing the previous run, or a manual refresh script alongside the daily
+  job) could both refresh the same near-expiry token and race to persist; because Instagram invalidates the OLD
+  token once a refresh succeeds server-side, an unconditional last-write-wins `set()` would silently orphan
+  whichever of the two refreshed values loses the race — the same failure shape as the crash-between-refresh-and-
+  persist case `tokens.test.ts` covers, just triggered by concurrency instead of a process crash. Added
+  `@google-cloud/firestore` to `social/package.json` and installed it. `token-store-firestore.ts` has no dedicated
+  unit test (thin adapter over a third-party client; the logic under test already lives in `tokens.ts`) but
+  type-checks cleanly. `npx vitest run src/publish` (from `social/`): 53/53 green (12 `env.test.ts` + 20
+  `tokens.test.ts`, unmodified from T03 + 21 `storage.test.ts`). `tsc --noEmit -p social/tsconfig.json`: clean.
+  T05 (Instagram adapter) is next and is the first real consumer of `ensureFreshToken`/`createFirestoreTokenStore`.
 - [ ] T05: Implement the Instagram adapter — container, poll, publish; retry on error 2207052 media-fetch failures.
   Acceptance: a live test post succeeds and is publicly visible.
 - [ ] T06: Implement the YouTube adapter — resumable upload with exponential backoff on 5xx and 308-resume support,
