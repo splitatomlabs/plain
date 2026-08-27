@@ -2709,3 +2709,41 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   Full `social/` suite after all six changes: **389 passed (389), 0 failed, 22 files** (391 - 2 deleted
   tests = 389). Did not touch `SourceHead.tsx`, `source-head-layout.ts`, or any `content/` JSON file, per the
   task's constraints.
+
+### Review fixes (code-reviewer on `4f4e0f3..195f7e9`, 2026-08-27)
+
+- [~] V11: (review M1) Give V05's two-line wrap a test that actually fails if it regresses —
+  `social/src/remotion/__tests__/source-head.test.ts`. Reverting `SourceHead.tsx`'s span to R04's
+  `whiteSpace: 'nowrap'` + one-line ellipsis currently leaves EVERY test green: the corpus sweep only checks
+  `rect.right <= 1080` (unreachable at `maxWidth` 836 + 64px padding) and `rect.bottom <= 244` (a one-line
+  span is ~183px), the 135-char test only checks "draws something, inside the box", and the
+  `NATURAL_TWO_LINE_HEAD` witness (`scrollHeight > clientHeight` at zero padding) is true for one line too.
+  Assert the rendered LINE COUNT: extend `measureRunningHeadSpan`'s `page.evaluate` to return
+  `Math.round((clientHeight - 2 * verticalPaddingPx) / (SOURCE_HEAD_FONT_SIZE_PX *
+  SOURCE_HEAD_LINE_HEIGHT_RATIO))`, then `expect(lines).toBe(2)` for `NATURAL_TWO_LINE_HEAD` and
+  `toBe(1)` for the short `'MARCUS AURELIUS · MEDITATIONS, BOOK 2'` head, plus
+  `heads.some(h => renderedLines(h) === 2)` in the corpus sweep so a REAL corpus head is proven to wrap.
+  Verify by reverting the span to nowrap+ellipsis, watching the new assertions go red, then restoring.
+  Acceptance: the new tests fail on a nowrap regression and pass on current code.
+
+- [ ] V12: (review M2) Restore branch coverage for `surveyWallPool`'s REJECTION path —
+  `social/src/remotion/__tests__/wall-gate.test.ts`. V10 deleted the only test that ever drove
+  `social/src/remotion/wall-pool.ts:219-230` down that path. Both surviving call sites pass the real
+  168-entry pool, which now rejects nothing, so `rejectedIds.push` / `rejections.push` / `axis` /
+  `rejectedForDuration` never execute — and `result.rejections` is written verbatim into
+  `content/social/render-exclusions.json` by `social/scripts/write-exclusions.ts:121`, the artifact
+  `scripts/lib/schedule.ts` trusts. V10's reasoning for the deletion was right (a "non-trivial COUNT of
+  duration exclusions" is a property this plan deliberately removed) but it should have replaced the BRANCH
+  coverage rather than only removing the count assertion. Add a one-entry SYNTHETIC pool built from the real
+  over-long `on-anger-03-027` (the card the neighbouring `gateWallCard` test already uses) and assert the full
+  record shape: `passed` 0, `rejectedForDuration` 1, `rejectedIds`, and `rejections[0].axis` / `.book_slug` /
+  `.reason`. Do NOT reintroduce any assertion about the real pool's rejection count. Acceptance: the new test
+  fails if the rejection branch stops populating any of those fields.
+
+- [ ] V13: (review, non-blocking) Re-measure `MAX_LAP_REPEATS`'s stale doc comment in
+  `social/src/render/chapter-text.ts` — it states "measured directly across the whole real, non-excluded Wall
+  pool (685 entries, R02): worst case needs 6 laps", both figures from the pre-cap pool. The review measured
+  the capped pool's worst case at **19 laps** (`enchiridion-27-001`) against the limit of 100. Re-measure it
+  yourself over the current 168-entry pool, update the comment to the new figures and pool size, and confirm
+  100 still leaves sensible headroom. No behaviour change. Acceptance: the comment states measured numbers
+  that reproduce today.
