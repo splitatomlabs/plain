@@ -2621,11 +2621,27 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   pool/duration-exclusion failures unrelated to this task — reproduced identically on HEAD before this
   change (verified via `git stash`), nothing to do with `SourceHead`/`source-head-layout`.
 
-- [ ] V09: Re-check the plate's vertical proportions once V08 lands — at 180px tall with a single 38px line,
+- [x] V09 (DONE 2026-08-27): Re-check the plate's vertical proportions once V08 lands — at 180px tall with a single 38px line,
   the payoff variant renders as a large, mostly-empty band (visible in `wall-2026-09-03` frame 75). The height
   was sized for a two-line running head, but the payoff label is always one line. Either give the payoff
   variant its own shorter plate height or accept the empty space deliberately and record why. Decide from the
   rendered frame, not from the constants. Acceptance: a stated decision with a frame to back it.
+
+  **Decision: leave the height at 180px, no code change.** Read frame 75 of a post-V08 re-render of
+  `wall-2026-09-03` (the payoff phase) and frame 0 (the wall phase) directly, rather than judging from the
+  constants.
+
+  The awkwardness this task was filed for was **caused by the 900px width, not the 180px height, and V08
+  fixed it.** At 900px on a 1080px frame, a 180px plate carrying one 38px line read as a large, mostly-empty
+  RECTANGLE floating on the page — the emptiness drew attention because the shape had four visible edges and
+  no relationship to the frame. Full-bleed, the same empty space reads as an ordinary masthead band: the eye
+  takes the height as the band's, not as slack around the text. Deliberately keeping it also preserves the
+  property T12 built the framing layer on — both variants render in the EXACT same slot, so the grammar is one
+  continuous element that only changes text (book page -> not a book page). Giving the payoff variant its own
+  shorter plate would break that slot identity and make the cut a layout change as well as a text change,
+  which is precisely what the design does not want; the cut's whole job is carried by the type and the audio.
+
+  Recorded rather than actioned, per this task's own acceptance ("a stated decision with a frame to back it").
 - [x] V10 (DONE 2026-08-27): Fix the 6 social-suite tests that V03/V04's pool regeneration invalidated. Found during V08 and
   initially misreported as "pre-existing, unrelated" — they ARE pre-existing relative to HEAD, because
   V03/V04 committed the content that broke them, but they are a direct consequence of this plan's own work
