@@ -3001,7 +3001,7 @@ instead of into padding.
 
 Week 1 becomes `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5` — mean 12.8s against today's flat 15.7s.
 
-- [~] V17: Remove the minimum-duration floor. `social/src/render/encode.ts` (`TARGET.minDurationSec` and the
+- [x] V17 (DONE 2026-08-27): Remove the minimum-duration floor. `social/src/render/encode.ts` (`TARGET.minDurationSec` and the
   `verifyEncoded`/house-profile duration check that reads it), `social/src/remotion/duration-bounds.ts`
   (`MIN_POST_DURATION_SECONDS`, `MIN_POST_DURATION_FRAMES`, `padToMinimumDuration` and its `padFrames`
   return), and `social/src/remotion/wall-timing.ts`'s `computeWallTiming`, which currently calls
@@ -3015,6 +3015,28 @@ Week 1 becomes `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5` — mean 12.8s against t
   Watch for: `wall-gate.ts` rejects on `MAX_POST_DURATION_FRAMES` and `WALL_MAX_DURATION_FRAMES` — neither is
   the floor, both stay. Acceptance: a 1-screen card computes to 5.5s total with its landing line held exactly
   3.0s; every payoff phase on every card holds exactly `DEFAULT_LINE_FRAMES`; suite green.
+
+  Notes: grepped every reader of `MIN_POST_DURATION_SECONDS`/`MIN_POST_DURATION_FRAMES`/
+  `padToMinimumDuration`/`TARGET.minDurationSec` first — confirmed Wall-only (D01 already deleted The
+  Question/The Objection) and confirmed `write-exclusions.ts` only reads the MAX bound, never the floor.
+  Deleted `padToMinimumDuration`, `MIN_POST_DURATION_SECONDS`, `MIN_POST_DURATION_FRAMES` and `PaddedDuration`
+  outright (`duration-bounds.ts`, `remotion/index.ts`); `duration-bounds.ts` is now floor-free but still
+  import-free/`BOUNDS_FPS`-locked as required, not merged elsewhere. `wall-timing.ts`'s `computeWallTiming`
+  no longer calls `padToMinimumDuration` — `totalFrames` is now exactly `cursor` (== `computeWallRawTotalFrames`),
+  never extended. `encode.ts`: removed `TARGET.minDurationSec` and its `assertMeetsProfile` duration-floor
+  violation, kept the `maxDurationSec` check. `wall-gate.ts`'s own `MAX_POST_DURATION_FRAMES`/
+  `WALL_MAX_DURATION_FRAMES` checks were untouched (they already lived independently of
+  `padToMinimumDuration`'s throw). Re-anchored (not weakened): `duration-bounds.test.ts` (dropped the whole
+  floor/`padToMinimumDuration` describe blocks, kept the MAX-mirrors-TARGET coverage), `wall-timing.test.ts`
+  (replaced the "padded up to floor" tests with tests asserting every payoff phase holds its own constant
+  length, plus a new 1-5 screen pure-function-of-screen-count sweep), `encode.test.ts` (the "fails a 3s
+  encode on the 15s floor" test now asserts the opposite plus a new ceiling-only test), `cli.test.ts` (the
+  real end-to-end render's duration assertion dropped `>= 15`, since the real day-6 card now renders ~8.5s).
+  Left as historical-only doc-comment mentions (no behavior depends on them): `house-rules.test.ts`,
+  `wall-gate.test.ts`, `mix.test.ts`. Computed durations (`WALL_SECONDS` 2.5 + `LANDING_LINE_SECONDS` 3.0 +
+  (screens-1) * `DEFAULT_LINE_SECONDS` 3.0): 1 screen 5.5s, 2 screens 8.5s, 3 screens 11.5s, 4 screens 14.5s,
+  5 screens 17.5s — matches the table above exactly. `npx vitest run` in `social/`: 387/387 green. Content
+  JSON regeneration and re-render are V19's job, not touched here.
 
 - [ ] V18: Amend the parent plan's house rule — `plans/Pf39c2-social-pilot-index.md:203` still states the
   profile as "15-59s". Change it to the new bound and add a one-line note that the floor was removed on

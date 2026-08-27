@@ -387,14 +387,24 @@ describe('mix', () => {
 	/**
 	 * Regression for F02 (`plans/Pf39c2-social-pilot-02.md`): a music-only
 	 * (no narration) Wall render whose card has no plain-passage lines left
-	 * after the landing line ends up with `durationMs` padded to the 15s
-	 * floor and a `silentSpans` window that covers only the documented
+	 * after the landing line used to end up with `durationMs` padded to the
+	 * 15s floor and a `silentSpans` window that covers only the documented
 	 * WALL_FRAMES+LANDING_LINE_FRAMES 5.5s phase, not the padding after it
 	 * (that was the bug — see `cli.ts`'s `wallSilentSpans`). Both real-world
 	 * failures used `bed-03-e-minor7`, so this pins that exact bed.
+	 *
+	 * social pilot 02a V17 (2026-08-27): the 15s floor and the padding that
+	 * produced this exact shape are both gone by user decision — no real
+	 * render pads a landing-line-only card to 15s anymore (it now renders at
+	 * its true 5.5s). `DURATION_MS` below is kept at 15s anyway as an
+	 * arbitrary-but-fixed synthetic duration exercising `mix()` directly
+	 * (silence after the 5.5s window, bed audible after that) — this test
+	 * targets `mix()`'s own behavior, not any pipeline constant, so it is
+	 * still valid coverage even though the scenario it was named for no
+	 * longer occurs in production.
 	 */
-	describe('bed-03-e-minor7, no narration, padded-duration Wall shape (F02 regression)', () => {
-		const DURATION_MS = 15_000; // MIN_POST_DURATION_FRAMES (450 @ 30fps)
+	describe('bed-03-e-minor7, no narration, arbitrary fixed-duration Wall shape (historical F02 regression)', () => {
+		const DURATION_MS = 15_000; // arbitrary synthetic duration, no longer tied to any pipeline constant
 		let result: Awaited<ReturnType<typeof mix>>;
 		let outPath: string;
 

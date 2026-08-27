@@ -1,11 +1,7 @@
 export { RemotionRoot } from './Root.js';
 export {
-	MIN_POST_DURATION_SECONDS,
 	MAX_POST_DURATION_SECONDS,
-	MIN_POST_DURATION_FRAMES,
-	MAX_POST_DURATION_FRAMES,
-	padToMinimumDuration,
-	type PaddedDuration
+	MAX_POST_DURATION_FRAMES
 } from './duration-bounds.js';
 export {
 	SourceHead,

@@ -1,64 +1,31 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	MAX_POST_DURATION_FRAMES,
-	MAX_POST_DURATION_SECONDS,
-	MIN_POST_DURATION_FRAMES,
-	MIN_POST_DURATION_SECONDS,
-	padToMinimumDuration
-} from '../duration-bounds.js';
+import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from '../duration-bounds.js';
 import { FPS } from '../wall-timing.js';
 import { TARGET } from '../../render/encode.js';
 
+// social pilot 02a V17 (2026-08-27, user decision): the floor
+// (`MIN_POST_DURATION_SECONDS`/`MIN_POST_DURATION_FRAMES`) and the
+// `padToMinimumDuration` helper that padded a too-short composition up to
+// it are both deleted — see `duration-bounds.ts`'s module doc comment for
+// why. This file used to also cover: "MIN_POST_DURATION_SECONDS matches
+// TARGET.minDurationSec", "the floor is comfortably below the ceiling", and
+// a whole `padToMinimumDuration` describe block (pads up to the floor,
+// leaves an already-clear composition alone, throws over the ceiling,
+// never returns outside [MIN, MAX]). All of that asserted the FLOOR's
+// existence/behavior, which is the exact property being removed, so it is
+// deleted rather than weakened. The ceiling-throw coverage that used to
+// live inside `padToMinimumDuration`'s tests is not lost: `wall-gate.ts`
+// enforces `MAX_POST_DURATION_FRAMES` independently at survey time (see
+// `wall-gate.test.ts`'s "the duration ceiling" suites), which is where a
+// too-long composition was always meant to be turned into a graceful
+// rejection rather than a render-time throw.
 describe('duration bounds mirror encode.ts TARGET (never imported — see module doc comment)', () => {
-	it('MIN_POST_DURATION_SECONDS matches TARGET.minDurationSec', () => {
-		expect(MIN_POST_DURATION_SECONDS).toBe(TARGET.minDurationSec);
-	});
-
 	it('MAX_POST_DURATION_SECONDS matches TARGET.maxDurationSec', () => {
 		expect(MAX_POST_DURATION_SECONDS).toBe(TARGET.maxDurationSec);
 	});
 
-	it('MIN_POST_DURATION_FRAMES/MAX_POST_DURATION_FRAMES are derived at wall-timing.ts\'s own FPS', () => {
-		expect(MIN_POST_DURATION_FRAMES).toBe(Math.round(MIN_POST_DURATION_SECONDS * FPS));
+	it("MAX_POST_DURATION_FRAMES is derived at wall-timing.ts's own FPS", () => {
 		expect(MAX_POST_DURATION_FRAMES).toBe(Math.round(MAX_POST_DURATION_SECONDS * FPS));
-	});
-
-	it('the floor is comfortably below the ceiling', () => {
-		expect(MIN_POST_DURATION_FRAMES).toBeLessThan(MAX_POST_DURATION_FRAMES);
-	});
-});
-
-describe('padToMinimumDuration', () => {
-	it('pads a too-short composition up to exactly the floor', () => {
-		const result = padToMinimumDuration(100);
-		expect(result.totalFrames).toBe(MIN_POST_DURATION_FRAMES);
-		expect(result.padFrames).toBe(MIN_POST_DURATION_FRAMES - 100);
-		expect(result.padFrames).toBeGreaterThan(0);
-	});
-
-	it('does not pad a composition that already clears the floor', () => {
-		const raw = MIN_POST_DURATION_FRAMES + 200;
-		const result = padToMinimumDuration(raw);
-		expect(result.totalFrames).toBe(raw);
-		expect(result.padFrames).toBe(0);
-	});
-
-	it('does not pad a composition landing exactly on the floor', () => {
-		const result = padToMinimumDuration(MIN_POST_DURATION_FRAMES);
-		expect(result.totalFrames).toBe(MIN_POST_DURATION_FRAMES);
-		expect(result.padFrames).toBe(0);
-	});
-
-	it('throws rather than shipping a composition already over the ceiling', () => {
-		expect(() => padToMinimumDuration(MAX_POST_DURATION_FRAMES + 1)).toThrow(/ceiling/);
-	});
-
-	it('never returns a totalFrames outside [MIN, MAX]', () => {
-		for (const raw of [0, 1, 200, MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES]) {
-			const result = padToMinimumDuration(raw);
-			expect(result.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
-			expect(result.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
-		}
 	});
 });

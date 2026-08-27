@@ -282,15 +282,20 @@ describe('checkPayoffMotionless', () => {
 // `checkAllFormats` itself still would not catch it.
 //
 // The Wall shares the exact same underlying gap for its NON-FINAL rest
-// lines (only the last rest line is protected by `padToMinimumDuration`,
-// and only when the schedule's raw total is still under the 15s MP4 floor
-// at that point) — confirmed with `checkPayoffMotionless` during R06's
-// investigation, but deliberately NOT fixed or asserted against here: R06's
-// scope is Objection (the reviewer's specific finding), and fixing Wall's
-// non-final rest lines is a distinct, larger change (every rest line, not
-// just the first, needs its own floor, mirroring what this task did for
-// Objection's two reply lines) that belongs in its own task rather than
-// folded in here unannounced.
+// lines — confirmed with `checkPayoffMotionless` during R06's investigation,
+// but deliberately NOT fixed or asserted against here: R06's scope is
+// Objection (the reviewer's specific finding), and fixing Wall's non-final
+// rest lines is a distinct, larger change (every rest line, not just the
+// first, needs its own floor, mirroring what this task did for Objection's
+// two reply lines) that belongs in its own task rather than folded in here
+// unannounced.
+//
+// social pilot 02a V17 (2026-08-27): this comment used to note that the
+// LAST rest line was extended by `padToMinimumDuration` when the schedule's
+// raw total landed under the (now-removed) 15s MP4 floor. That function and
+// the floor it served are both gone by user decision — no rest line, first
+// or last, gets any duration protection from padding anymore. Duration is
+// now a pure function of screen count.
 describe('social pilot 02a R06 — narration-driven schedules are checked for the payoff-motionless floor, not just the fixed-duration fallback', () => {
 	// Pf39c2-social-pilot-02a D01: this used to also cover The Objection and
 	// The Question's own R06 regressions; both formats were deleted outright

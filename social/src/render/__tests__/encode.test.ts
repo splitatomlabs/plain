@@ -259,8 +259,14 @@ describe('assertMeetsProfile', () => {
 		expect(() => assertMeetsProfile(compliant)).not.toThrow();
 	});
 
+	// social pilot 02a V17 (2026-08-27): the 15s duration FLOOR was removed by
+	// user decision (see `encode.ts`'s `TARGET` doc comment) — it had no
+	// recorded rationale and forced short cards to pad their final motionless
+	// payoff frame. This test used to assert a 3-second encode FAILED on that
+	// floor; it now asserts the opposite — a short encode is fine — and a new
+	// test below covers the 59s ceiling that remains.
 	it(
-		'fails a 3-second encode on the 15s duration floor',
+		'does not fail a 3-second encode now that the duration floor is gone',
 		async () => {
 			const videoPath = path.join(workDir, 'src-short.mp4');
 			const outPath = path.join(workDir, 'out-short.mp4');
@@ -270,10 +276,29 @@ describe('assertMeetsProfile', () => {
 			await encode({ videoPath, outPath });
 			const p = await probe(outPath);
 
-			// Everything else about this encode conforms; only duration should fail.
-			expect(() => assertMeetsProfile(p)).toThrow(/duration/i);
-			expect(() => assertMeetsProfile(p)).toThrow(/15/);
+			expect(() => assertMeetsProfile(p)).not.toThrow();
 		},
 		LONG_TIMEOUT
 	);
+
+	it('fails a synthetic probe result over the 59s duration ceiling', () => {
+		const overCeiling: ProbeResult = {
+			video: {
+				profile: 'High',
+				level: 40,
+				pixFmt: 'yuv420p',
+				width: TARGET.width,
+				height: TARGET.height,
+				avgFrameRate: 30,
+				rFrameRate: 30,
+				sampleAspectRatio: '1:1'
+			},
+			audio: { codec: 'aac', sampleRate: TARGET.audioRate, channels: TARGET.audioChannels },
+			durationSec: 60,
+			moovBeforeMdat: true
+		};
+
+		expect(() => assertMeetsProfile(overCeiling)).toThrow(/duration/i);
+		expect(() => assertMeetsProfile(overCeiling)).toThrow(/59/);
+	});
 });

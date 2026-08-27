@@ -10,7 +10,6 @@
  */
 
 import { estimateWrappedLineCount, fitFontSize } from '../render/fit.js';
-import { padToMinimumDuration } from './duration-bounds.js';
 
 // ---------------------------------------------------------------------------
 // Frame rate and frame dimensions
@@ -441,15 +440,21 @@ function restLineFrameCounts(plainLines: string[], narrationTimings?: NarrationL
 }
 
 /**
- * The composition's total frame count BEFORE `padToMinimumDuration` is
- * applied — i.e. `computeWallTiming`'s `cursor` at the point it would call
- * `padToMinimumDuration`. Exists so the Wall gate (`wall-gate.ts`) can check
- * a card against `MAX_POST_DURATION_FRAMES` itself, at survey time, without
- * going through `padToMinimumDuration` (which THROWS on an over-long
- * composition — exactly the outcome the gate exists to turn into a graceful
- * rejection instead of a render-time crash). `computeWallTiming` below calls
- * this same function rather than recomputing the sum, so the gate's number
- * and the real render's pre-padding number can never drift apart.
+ * The composition's total frame count — the wall phase plus the landing
+ * line plus every rest line, each held for its own fixed/narration-driven
+ * length. Exists so the Wall gate (`wall-gate.ts`) can check a card against
+ * `MAX_POST_DURATION_FRAMES` itself, at survey time, turning an over-long
+ * composition into a graceful rejection rather than a render-time surprise.
+ * `computeWallTiming` below calls this same function rather than
+ * recomputing the sum, so the gate's number and the real render's number can
+ * never drift apart.
+ *
+ * social pilot 02a V17 (2026-08-27): this used to compute the total BEFORE
+ * `padToMinimumDuration` was applied (hence "raw" in the name) — that
+ * function padded a too-short total up to a 15s floor. The floor and the
+ * padding helper are both gone by user decision (see `duration-bounds.ts`'s
+ * module doc comment), so this number IS the final total now; the name is
+ * kept only because it's already the stable export every caller uses.
  */
 export function computeWallRawTotalFrames(input: WallTimingInput): number {
 	const wallEnd = WALL_FRAMES;
@@ -486,20 +491,18 @@ export function computeWallTiming(input: WallTimingInput): WallTimingSchedule {
 		return { index, text, startFrame, endFrame, motionless: true };
 	});
 
-	// The 15s MP4 floor (T18): a short card (few or no plain-passage lines,
-	// or narration-driven lines that run quick) can land well under it —
-	// e.g. no `plainLines` at all is just `WALL_FRAMES + LANDING_LINE_FRAMES`
-	// (5.5s). Extend the LAST motionless payoff phase's hold — the last rest
-	// line if there is one, else the landing line itself — never add a new
-	// phase and never touch the moving wall phase. See `duration-bounds.ts`.
-	const { totalFrames, padFrames } = padToMinimumDuration(cursor);
-	if (padFrames > 0) {
-		if (restLines.length > 0) {
-			restLines[restLines.length - 1].endFrame += padFrames;
-		} else {
-			landingLine.endFrame += padFrames;
-		}
-	}
+	// social pilot 02a V17 (2026-08-27, user decision): this used to pad the
+	// LAST motionless payoff phase's hold (the last rest line if there was
+	// one, else the landing line itself) up to a 15s MP4 floor via
+	// `padToMinimumDuration` — a house convention with no recorded rationale
+	// (see `duration-bounds.ts`'s module doc comment) that was pushing a
+	// 1-screen card's landing line hold from 3.0s up to 12.5s. That call is
+	// gone: `cursor` (== `computeWallRawTotalFrames`'s result) IS the total
+	// now, unmodified. Duration is a pure function of screen count — a
+	// 1-screen card (no `plainLines`) is exactly `WALL_FRAMES +
+	// LANDING_LINE_FRAMES` (5.5s), and every payoff phase on every card holds
+	// exactly its own fixed/narration-driven length, never extended.
+	const totalFrames = cursor;
 
 	return {
 		totalFrames,

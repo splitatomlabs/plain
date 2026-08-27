@@ -244,7 +244,11 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 	});
 
 	it(
-		'produces a house-profile-conformant MP4 (15s-59s), an IG feed JPEG, and a metadata sidecar with narration: false',
+		// social pilot 02a V17 (2026-08-27, user decision): the 15s floor is
+		// gone — duration is now a pure function of screen count and can land
+		// well under 15s (this real day-6 card renders ~8.5s). Only the 59s
+		// ceiling remains.
+		'produces a house-profile-conformant MP4 (<=59s), an IG feed JPEG, and a metadata sidecar with narration: false',
 		async () => {
 			// Day 6 of the REAL committed week-1 schedule (discourses-53-019) —
 			// a real Wall slot.
@@ -267,7 +271,8 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 
 			const probeResult = await probe(videoPath);
 			expect(() => assertMeetsProfile(probeResult)).not.toThrow();
-			expect(probeResult.durationSec ?? 0).toBeGreaterThanOrEqual(15);
+			// No floor (V17) — only the 59s ceiling is enforced.
+			expect(probeResult.durationSec ?? 0).toBeGreaterThan(0);
 			expect(probeResult.durationSec ?? 0).toBeLessThanOrEqual(59);
 
 			const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));

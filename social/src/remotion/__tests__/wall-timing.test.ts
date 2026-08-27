@@ -35,7 +35,7 @@ import {
 	PAYOFF_LINE_HEIGHT_RATIO,
 	type NarrationLineTiming
 } from '../wall-timing.js';
-import { MIN_POST_DURATION_FRAMES, MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
+import { MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 import { WALL_LANDING_LINE_MAX_WORDS } from '../wall-gate.js';
 import { resolveWallCardExcerpt, loadBookCards, type WallPoolEntry } from '../wall-pool.js';
 import { loadChapterTextBlock } from '../../render/chapter-text.js';
@@ -176,38 +176,59 @@ describe('the hard cut and the landing line hold', () => {
 	});
 });
 
-describe('T18 — the composed total clears the 15s MP4 duration floor', () => {
-	it('a short card (no plainLines) is padded up to MIN_POST_DURATION_FRAMES by extending the landing line hold', () => {
+// social pilot 02a V17 (2026-08-27, user decision): the 15s MP4 floor and
+// the padding that used to extend a short card's final motionless payoff
+// phase up to it are both gone — "Why can't we have constant hold time for
+// each screen and vary the video length?" Duration is now a pure function
+// of screen count: `WALL_SECONDS` (2.5s) + `LANDING_LINE_SECONDS` (3.0s) +
+// one `DEFAULT_LINE_SECONDS` (3.0s) per rest line, never extended. The three
+// tests below used to assert the OPPOSITE of this (that a short card gets
+// padded up to a floor) — that property is deliberately removed, so they are
+// replaced rather than weakened.
+describe('V17 — no duration floor: every payoff phase holds exactly its own constant length, duration is a pure function of screen count', () => {
+	it('a 1-screen card (no plainLines) computes to exactly 5.5s total, landing line held exactly LANDING_LINE_FRAMES', () => {
 		const timing = computeWallTiming({ originalExcerpt: 'one two three', plainLines: [] });
 		expect(timing.restLines.length).toBe(0);
-		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
-		expect(timing.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
 		expect(timing.wall.endFrame - timing.wall.startFrame).toBe(WALL_FRAMES);
-		expect(timing.landingLine.endFrame - timing.landingLine.startFrame).toBeGreaterThan(LANDING_LINE_FRAMES);
+		expect(timing.landingLine.endFrame - timing.landingLine.startFrame).toBe(LANDING_LINE_FRAMES);
 		expect(timing.landingLine.motionless).toBe(true);
 		expect(timing.totalFrames).toBe(timing.landingLine.endFrame);
+		expect(timing.totalFrames).toBe(WALL_FRAMES + LANDING_LINE_FRAMES);
+		expect(timing.totalFrames / FPS).toBeCloseTo(5.5, 5);
 	});
 
-	it('a real >=150-word card with several rest lines already clears the floor without any padding', () => {
+	it('a real >=150-word card with several rest lines totals wall + landing line + every rest line, none extended', () => {
 		const timing = computeWallTiming({
 			originalExcerpt: FIXTURE_CARD.original_excerpt,
 			plainLines: FIXTURE_PLAIN_LINES
 		});
 		expect(timing.restLines.length).toBeGreaterThan(0);
-		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
 		expect(timing.totalFrames).toBeLessThanOrEqual(MAX_POST_DURATION_FRAMES);
 		expect(timing.totalFrames).toBe(timing.restLines[timing.restLines.length - 1].endFrame);
+		// Every fallback-timed rest line holds exactly DEFAULT_LINE_FRAMES —
+		// none is stretched to clear a floor.
+		for (const line of timing.restLines) {
+			expect(line.endFrame - line.startFrame).toBe(DEFAULT_LINE_FRAMES);
+		}
 	});
 
-	it('when padding a card WITH rest lines, only the LAST rest line is extended', () => {
+	it('with multiple rest lines, EVERY line (including the last) holds exactly DEFAULT_LINE_FRAMES — none is extended', () => {
 		const shortLines = ['A short first line.', 'A short second line.'];
 		const timing = computeWallTiming({ originalExcerpt: 'one two three', plainLines: shortLines });
 		expect(timing.restLines.length).toBe(2);
-		expect(timing.totalFrames).toBeGreaterThanOrEqual(MIN_POST_DURATION_FRAMES);
-		// The first rest line keeps its default duration; only the final one grows.
 		expect(timing.restLines[0].endFrame - timing.restLines[0].startFrame).toBe(DEFAULT_LINE_FRAMES);
-		expect(timing.restLines[1].endFrame - timing.restLines[1].startFrame).toBeGreaterThanOrEqual(DEFAULT_LINE_FRAMES);
+		expect(timing.restLines[1].endFrame - timing.restLines[1].startFrame).toBe(DEFAULT_LINE_FRAMES);
 		expect(timing.totalFrames).toBe(timing.restLines[1].endFrame);
+		expect(timing.totalFrames).toBe(WALL_FRAMES + LANDING_LINE_FRAMES + 2 * DEFAULT_LINE_FRAMES);
+	});
+
+	it('duration is a pure function of screen count: WALL_SECONDS + LANDING_LINE_SECONDS + (screens-1) * DEFAULT_LINE_SECONDS for 1-5 screens', () => {
+		for (let screens = 1; screens <= 5; screens++) {
+			const plainLines = Array.from({ length: screens - 1 }, (_, i) => `Rest line ${i}.`);
+			const timing = computeWallTiming({ originalExcerpt: 'one two three', plainLines });
+			const expectedSeconds = WALL_SECONDS + LANDING_LINE_FRAMES / FPS + (screens - 1) * DEFAULT_LINE_SECONDS;
+			expect(timing.totalFrames / FPS).toBeCloseTo(expectedSeconds, 5);
+		}
 	});
 });
 

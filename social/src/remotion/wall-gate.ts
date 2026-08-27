@@ -209,12 +209,14 @@ export type WallGateResult =
  *   2. `content.landingLine` is supplied and runs over `WALL_LANDING_LINE_MAX_WORDS`
  *      (T02) — the render-time backstop against the same whole-passage
  *      payoff, independent of how the line was chosen;
- *   3. the composition's pre-padding duration (wall + landing line + every
- *      rest line from `content.plainLines`) exceeds `MAX_POST_DURATION_FRAMES`
- *      — the same ceiling `padToMinimumDuration` enforces, but caught here,
- *      at pool-survey time, instead of at render time (see `duration-bounds.ts`
+ *   3. the composition's total duration (wall + landing line + every rest
+ *      line from `content.plainLines`, each held for its own fixed/
+ *      narration-driven length — social pilot 02a V17 removed the 15s floor
+ *      and the padding that used to follow this sum, so this IS the final
+ *      total now) exceeds `MAX_POST_DURATION_FRAMES`, caught here at
+ *      pool-survey time instead of at render time (see `duration-bounds.ts`
  *      and F03);
- *   4. that same pre-padding duration exceeds `WALL_MAX_DURATION_FRAMES`
+ *   4. that same total duration exceeds `WALL_MAX_DURATION_FRAMES`
  *      (T03) — a Wall-specific ceiling stricter than #3's shared one, paired
  *      with `wall-timing.ts`'s `DEFAULT_LINE_SECONDS` pacing so a card with
  *      many payoff lines is rejected outright rather than truncated mid-passage.
