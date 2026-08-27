@@ -60,7 +60,11 @@ looks like Plain.
   `.gitkeep`, plus `src/render/__tests__/scaffold.test.ts` placeholder. Added `social/out/` to root `.gitignore`
   (`node_modules/` already covered globally). `npm install --prefix social` and `npm test --prefix social` both
   exit 0 (1 passed test). No renderer/encoder/audio/Remotion implementation code was added — left for T02+.
-- [!] T02: Art-direct and generate the three portraits; commit them plus a README recording tool, prompt, date and
+- [-] T02 (OBSOLETE 2026-08-27, superseded by Pf39c2-social-pilot-02a D01): the three portraits were for The
+  Question, The Objection and The Still, all of which D01 DELETED outright — the channel is one Wall a day and
+  `Wall.tsx` renders no portrait at all. `social/src/render/characters.ts` survives but is now imported by
+  nothing except its own test; it and the placeholder SVGs should be deleted with the rest of the character
+  system if nothing revives it. Original task text, kept for the record: Art-direct and generate the three portraits; commit them plus a README recording tool, prompt, date and
   licence. Acceptance: a reviewer can tell slave/emperor/senator apart at thumbnail size, and they are clearly not
   stock marble-on-black.
   BLOCKED (2026-08-25, user decision): no image-generation tool is available in this session. Two rounds of
@@ -103,7 +107,10 @@ looks like Plain.
   Wall is silent (its highlight is a timed sweep) and every payoff is one still line at a time. Timings must come
   from native provider data, never estimated from word counts. Gate: reject any render where the last line's end
   timestamp differs from audio duration by more than 120ms. Acceptance: a synthetic drifted timing set is rejected.
-- [!] T14: Audition and fix one voice per Stoic; commit the three voice IDs with written rationale. They never change
+- [!] T14 (STILL LIVE, re-confirmed 2026-08-27): the ONLY genuinely outstanding task in this plan. Unlike T02,
+  the voice system survived D01 — `social/src/audio/voices.ts` is imported live by `cli.ts` and `narration.ts`,
+  and every render to date records `narration: false`, so the channel is still music-only. Blocked on an
+  `ELEVENLABS_API_KEY` and a human listening, not on code. Original task text: Audition and fix one voice per Stoic; commit the three voice IDs with written rationale. They never change
   after this. Acceptance: three IDs committed and distinguishable from each other.
   BLOCKED (2026-08-25): auditioning requires an `ELEVENLABS_API_KEY` and a human listening to real synthesis; T12
   forbids live provider calls in tests. Everything around the decision IS built: `social/src/audio/voices.ts` holds
@@ -123,7 +130,10 @@ looks like Plain.
   metadata so plan 03 can compare openings. Acceptance: three openings render from one card.
 - [x] T18: Build the render CLI — `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`, reading the schedule
   and writing to `social/out/`. Acceptance: produces correct assets for a given day.
-- [!] T19: Render a full week and review all 14 posts together, with sound, on a phone. A judgement gate, not a test:
+- [-] T19 (SUPERSEDED 2026-08-27 by Pf39c2-social-pilot-02a): the week is no longer 14 posts across four
+  formats — D02 collapsed it to 7 single-slot Wall days — and the judgement gate this task describes was
+  carried out twice during 02a's user feedback rounds (U07 and the round-2 review), each time on real renders
+  with sound, each time producing concrete fixes. Original task text: Render a full week and review all 14 posts together, with sound, on a phone. A judgement gate, not a test:
   if they do not look like one coherent channel, fix the art direction before going further.
   RENDERS DONE, JUDGEMENT PENDING (2026-08-25). All 14 week-1 posts render to spec into `social/out/` (53MB):
   8 Wall (3 standard, 3 grade, 2 countdown), 4 Question, 0 Objection — the read-through walks Meditations
@@ -183,7 +193,12 @@ looks like Plain.
 - [x] F14: (verification review R6) The `longestOtherMarkMs === 0` escape hatch in the F13 bound was load-bearing
   and untested — deleting the guard left the suite green while breaking every single-word Polly narration. Covered
   both reachable shapes, and proved the tests catch it by removing the guard and watching them fail.
-- [~] F15: CHANGE OF INTENT (user, 2026-08-26), not a defect. T05 as written specifies "already mid-push-in" plus a
+- [x] F15 (DONE 2026-08-27, implemented in Pf39c2-social-pilot-02a as T08/T09): all three decisions landed —
+  (a) `WALL_SCROLL_RATE_PX_PER_SEC` is a fixed rate identical on every card with the cut landing mid-passage
+  (the never-finishes invariant, re-guaranteed for short chapters by 02a R02's lap repetition); (b) the block
+  is sourced from the surrounding CHAPTER at a fixed 44px so it genuinely travels; (c) the karaoke highlight
+  is gone. The countdown numeral this task said must be re-derived was instead DELETED outright by 02a T17.
+  Original task text: CHANGE OF INTENT (user, 2026-08-26), not a defect. T05 as written specifies "already mid-push-in" plus a
   320wpm karaoke highlight, and that is what was built — but the intended mechanic is that the archaic text SCROLLS
   past faster than anyone can read, then the plain version lands. The built version has nothing travel: a 1.02->1.05
   zoom over 2.5s and a highlight reaching ~14 of 150 words, so it reads as a dense page sitting still. Rebuild the
@@ -216,10 +231,14 @@ looks like Plain.
   renders as plain text on warm paper, motionless, over the music bed. The index plan already wants one still
   running deliberately as a pattern interrupt, so this uses an asset it asked for rather than inventing a format.
   The slice stays Meditations book-02+03 — with a universal fallback the original rationale holds.
-- [ ] F12: (re-review, noted not blocking) The read-through's question/objection branches in `scripts/lib/schedule.ts`
+- [-] F12 (OBSOLETE 2026-08-27): the read-through was deleted by Pf39c2-social-pilot-02a D02 and the Question
+  and Objection formats by D01, so the branches this describes no longer exist in `scripts/lib/schedule.ts`.
+  Original task text: (re-review, noted not blocking) The read-through's question/objection branches in `scripts/lib/schedule.ts`
   re-derive content via their own gates and are still ungated by `render-exclusions.json`. The current Meditations
   book-02/03 slice passes both gates with 0 rejections, so there is no live defect — recorded, not fixed.
-- [ ] F04: The Question's and The Objection's timing modules do not accept `narrationTimings` — only The Wall does
+- [-] F04 (OBSOLETE 2026-08-27): 02a T16 did implement this, and then D01 deleted both formats outright —
+  `question-timing.ts` and `objection-timing.ts` no longer exist. Only The Wall remains, and it has accepted
+  `narrationTimings` since T13. Original task text: The Question's and The Objection's timing modules do not accept `narrationTimings` — only The Wall does
   (flagged by T18). Once T14's voices land, real narration for those two formats can drift against their fixed
   holds. Blocked behind T14; do not build until voices exist.
 
