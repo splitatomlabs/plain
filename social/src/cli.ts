@@ -49,11 +49,9 @@ import { loadOutputCard } from './remotion/wall-pool.js';
 import { loadChapterTextBlock, applyChapterEntryOffset } from './render/chapter-text.js';
 import { computeWallTiming, WALL_FRAMES, FPS } from './remotion/wall-timing.js';
 import { formatRunningHead } from './remotion/SourceHead.js';
-import { computeQuestionTiming } from './remotion/question-timing.js';
-import { computeObjectionTiming, OBJECTION_REPLY_LINE_COUNT } from './remotion/objection-timing.js';
 import { bedPath } from './audio/beds.js';
 import { mix, type TimeSpan } from './audio/mix.js';
-import { splitPayoffLines, type NarrationLineTiming } from './audio/timing.js';
+import type { NarrationLineTiming } from './audio/timing.js';
 import { VOICES_ARE_UNSET } from './audio/voices.js';
 import { buildTtsProvider, synthesizeNarration, prependSilence } from './narration.js';
 import { encode, probe, assertMeetsProfile } from './render/encode.js';
@@ -220,48 +218,7 @@ export interface WallPlan {
 	plainLines: string[];
 }
 
-export interface QuestionPlan {
-	format: 'question';
-	question: string;
-	answer: string;
-	originalExcerpt: string;
-	/**
-	 * The archaic wall phase's real scrolling text (social pilot 02a REVIEW
-	 * R03 — threading T09's chapter-sourced block into `Question.tsx`, which
-	 * T09 missed). Same "card's own excerpt plus the surrounding chapter,
-	 * one full lap, already past T18's mid-chapter entry offset" contract as
-	 * `WallPlan.chapterBlock` — see that field's doc comment, and
-	 * `Question.tsx`'s own `QuestionProps.chapterBlock` doc comment, for why.
-	 */
-	chapterBlock: string;
-	/**
-	 * The card's own `source_reference` (social pilot 02a T13 — extending the
-	 * framing layer to `Question.tsx`). Same "real card metadata, never
-	 * hardcoded" pattern `WallPlan.sourceReference` set for T11/T12.
-	 */
-	sourceReference: string;
-}
-
-export interface ObjectionPlan {
-	format: 'objection';
-	objection: string;
-	reply: string;
-	/** The card's own `source_reference` — social pilot 02a T13. See `QuestionPlan.sourceReference`. */
-	sourceReference: string;
-}
-
-/**
- * F19 — the read-through's fallback format. `text` is the card's raw
- * `plain_english`, verbatim, in full — see `remotion/Still.tsx`.
- */
-export interface StillPlan {
-	format: 'still';
-	text: string;
-	/** The card's own `source_reference` — social pilot 02a T13. See `QuestionPlan.sourceReference`. */
-	sourceReference: string;
-}
-
-export type FormatPlan = WallPlan | QuestionPlan | ObjectionPlan | StillPlan;
+export type FormatPlan = WallPlan;
 
 interface RenderPlan {
 	date: string;
@@ -272,7 +229,7 @@ interface RenderPlan {
 	bookSlug: string;
 	authorSlug: string;
 	counter: string | null;
-	compositionId: 'Wall' | 'Question' | 'Objection' | 'Still';
+	compositionId: 'Wall';
 	formatPlan: FormatPlan;
 	postIndex: number;
 	bedId: string;
@@ -308,41 +265,23 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 			compositionId = 'Wall';
 			break;
 		}
-		case 'question': {
-			// social pilot 02a REVIEW R03: mirrors the wall branch above —
-			// `applyChapterEntryOffset`, keyed off this render's own
-			// `postIndex`, exactly as T18 already applies it to the Wall.
-			const chapterBlock = applyChapterEntryOffset(loadChapterTextBlock(slot.book_slug, slot.card_id), postIndex);
-			formatPlan = {
-				format: 'question',
-				question: slot.content.question,
-				answer: slot.content.answer,
-				originalExcerpt: card.original_excerpt,
-				chapterBlock,
-				sourceReference: card.source_reference
-			};
-			compositionId = 'Question';
-			break;
-		}
-		case 'objection': {
-			formatPlan = {
-				format: 'objection',
-				objection: slot.content.objection,
-				reply: slot.content.reply,
-				sourceReference: card.source_reference
-			};
-			compositionId = 'Objection';
-			break;
-		}
-		case 'still': {
-			formatPlan = {
-				format: 'still',
-				text: slot.content.text,
-				sourceReference: card.source_reference
-			};
-			compositionId = 'Still';
-			break;
-		}
+		// Pf39c2-social-pilot-02a D01: Question, Objection and Still were
+		// deleted outright — the channel is one Wall a day, drawn from the
+		// 685-entry Wall pool, nothing else (see that plan's "Deprecation —
+		// one Wall a day" section). `scripts/lib/schedule.ts`'s `SlotContent`
+		// union still nominally allows these formats (collapsing it to
+		// Wall-only, and regenerating the committed schedule so it can never
+		// produce one of these slots again, is D02/D04's job, not this
+		// task's) — a schedule slot that somehow still carries one of them
+		// throws here rather than silently doing nothing.
+		case 'question':
+		case 'objection':
+		case 'still':
+			throw new Error(
+				`Slot day ${day} slot ${args.slotNumber} is format "${slot.content.format}" (card "${slot.card_id}") — ` +
+					`Question, Objection and Still were deleted (Pf39c2-social-pilot-02a D01). Only "wall" slots are ` +
+					`renderable; regenerate the schedule (D04) to remove this slot.`
+			);
 	}
 
 	return {
@@ -368,23 +307,14 @@ function printPlan(plan: RenderPlan): void {
 	console.log(`  counter: ${plan.counter ?? '(none — not a read-through slot)'}`);
 	console.log(`  post index: ${plan.postIndex}`);
 	console.log(`  bed: ${plan.bedId}`);
-	if (plan.formatPlan.format === 'wall') {
-		console.log(`  plain lines after landing line: ${plan.formatPlan.plainLines.length}`);
-		console.log(
-			`  chapter block: ${plan.formatPlan.chapterBlock.split(/\s+/).filter(Boolean).length} words ` +
-				`(card's own excerpt: ${plan.formatPlan.originalExcerpt.split(/\s+/).filter(Boolean).length} words)`
-		);
-		console.log(
-			`  running head: "${formatRunningHead({ author_slug: plan.authorSlug as AuthorSlug, source_reference: plan.formatPlan.sourceReference })}"`
-		);
-	} else {
-		// social pilot 02a T13 — Question/Objection/Still each carry
-		// `sourceReference` too, but none of them shows a running head (see
-		// each composition's own doc comment for why); only the payoff label
-		// ever renders for these three, so there is no running head string to
-		// print here the way the Wall branch above does.
-		console.log(`  source reference: "${plan.formatPlan.sourceReference}" (payoff label only — no running head in this format)`);
-	}
+	console.log(`  plain lines after landing line: ${plan.formatPlan.plainLines.length}`);
+	console.log(
+		`  chapter block: ${plan.formatPlan.chapterBlock.split(/\s+/).filter(Boolean).length} words ` +
+			`(card's own excerpt: ${plan.formatPlan.originalExcerpt.split(/\s+/).filter(Boolean).length} words)`
+	);
+	console.log(
+		`  running head: "${formatRunningHead({ author_slug: plan.authorSlug as AuthorSlug, source_reference: plan.formatPlan.sourceReference })}"`
+	);
 	console.log('  narration: false (T14 not done — music-only)');
 }
 
@@ -394,53 +324,19 @@ function printPlan(plan: RenderPlan): void {
 
 function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTiming[]): Record<string, unknown> {
 	const base = { author: plan.authorSlug, counter: plan.counter };
-	switch (plan.formatPlan.format) {
-		case 'wall':
-			return {
-				...base,
-				originalExcerpt: plan.formatPlan.originalExcerpt,
-				chapterBlock: plan.formatPlan.chapterBlock,
-				sourceReference: plan.formatPlan.sourceReference,
-				landingLine: plan.formatPlan.landingLine,
-				plainLines: plan.formatPlan.plainLines,
-				// social pilot 02a T16 (F04): every format's timing now adapts
-				// to real per-line narration duration when supplied
-				// (`computeWallTiming`/`computeQuestionTiming`/
-				// `computeObjectionTiming`'s own `narrationTimings` input) —
-				// see `narrationPlan`'s doc comment for how each format's
-				// `lines` maps onto this array.
-				...(narrationTimings ? { narrationTimings } : {})
-			};
-		case 'question':
-			return {
-				...base,
-				question: plan.formatPlan.question,
-				answer: plan.formatPlan.answer,
-				originalExcerpt: plan.formatPlan.originalExcerpt,
-				chapterBlock: plan.formatPlan.chapterBlock,
-				sourceReference: plan.formatPlan.sourceReference,
-				...(narrationTimings ? { narrationTimings } : {})
-			};
-		case 'objection':
-			return {
-				...base,
-				objection: plan.formatPlan.objection,
-				reply: plan.formatPlan.reply,
-				sourceReference: plan.formatPlan.sourceReference,
-				...(narrationTimings ? { narrationTimings } : {})
-			};
-		case 'still':
-			// `base` carries `author`, unused by `Still.tsx` (no accent colour
-			// in this format — see that component's own doc comment); kept
-			// here only so `Still`'s props follow the same `{...base, ...}`
-			// shape as every other format's, harmlessly ignored by the
-			// component.
-			return {
-				...base,
-				text: plan.formatPlan.text,
-				sourceReference: plan.formatPlan.sourceReference
-			};
-	}
+	return {
+		...base,
+		originalExcerpt: plan.formatPlan.originalExcerpt,
+		chapterBlock: plan.formatPlan.chapterBlock,
+		sourceReference: plan.formatPlan.sourceReference,
+		landingLine: plan.formatPlan.landingLine,
+		plainLines: plan.formatPlan.plainLines,
+		// social pilot 02a T16 (F04): the Wall's timing adapts to real
+		// per-line narration duration when supplied (`computeWallTiming`'s
+		// own `narrationTimings` input) — see `narrationPlan`'s doc comment
+		// for how `lines` maps onto this array.
+		...(narrationTimings ? { narrationTimings } : {})
+	};
 }
 
 /**
@@ -521,59 +417,28 @@ export function wallSilentSpans(): TimeSpan[] {
  *
  * The Wall narrates only the rest of the plain passage (never the landing
  * line, which is held in silence — see `wallSilentSpans`), starting right
- * after `WALL_FRAMES + LANDING_LINE_FRAMES`. The Question narrates its
- * answer, starting after `QUESTION_HOLD_FRAMES + WALL_FRAMES`. The
- * Objection narrates its two capped reply sentences as one continuous
- * clip, starting after `OBJECTION_HOLD_FRAMES`.
+ * after `WALL_FRAMES + LANDING_LINE_FRAMES`.
  *
- * social pilot 02a T16 (F04): every format's own timing module now accepts
- * a `narrationTimings` input (`computeWallTiming`/`computeQuestionTiming`/
- * `computeObjectionTiming` — see each module's own doc comment), so once
- * T14 lands and `renderCommand` below calls `synthesizeNarration`, the
- * returned per-line timings are threaded into `buildInputProps` for every
- * format, not just the Wall, and the on-screen line boundaries move with
- * the real narration instead of holding a fixed duration regardless of how
- * long the audio actually runs.
+ * social pilot 02a T16 (F04): the Wall's own timing module accepts a
+ * `narrationTimings` input (`computeWallTiming` — see its own doc comment),
+ * so once T14 lands and `renderCommand` below calls `synthesizeNarration`,
+ * the returned per-line timings are threaded into `buildInputProps` and the
+ * on-screen line boundaries move with the real narration instead of holding
+ * a fixed duration regardless of how long the audio actually runs.
+ *
+ * Pf39c2-social-pilot-02a D01: this used to switch on
+ * `formatPlan.format` across Wall/Question/Objection/Still; those three
+ * were deleted outright (see `buildRenderPlan`'s doc comment), so
+ * `FormatPlan` is Wall-only now and there is nothing left to switch on.
  */
 export function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: number } {
-	switch (formatPlan.format) {
-		case 'wall': {
-			const timing = computeWallTiming({ originalExcerpt: formatPlan.originalExcerpt, plainLines: formatPlan.plainLines });
-			return { lines: formatPlan.plainLines, offsetMs: (timing.landingLine.endFrame / FPS) * 1000 };
-		}
-		case 'question': {
-			const timing = computeQuestionTiming({ question: formatPlan.question });
-			return { lines: [formatPlan.answer], offsetMs: (timing.wall.endFrame / FPS) * 1000 };
-		}
-		case 'objection': {
-			const timing = computeObjectionTiming();
-			const lines = splitPayoffLines(formatPlan.reply).slice(0, OBJECTION_REPLY_LINE_COUNT);
-			return { lines, offsetMs: (timing.objection.endFrame / FPS) * 1000 };
-		}
-		case 'still': {
-			// The Still has no silent/moving phase to wait out — the whole
-			// composition is the payoff frame from frame 0 (see
-			// `still-timing.ts`), so narration begins immediately.
-			return { lines: splitPayoffLines(formatPlan.text), offsetMs: 0 };
-		}
-	}
+	const timing = computeWallTiming({ originalExcerpt: formatPlan.originalExcerpt, plainLines: formatPlan.plainLines });
+	return { lines: formatPlan.plainLines, offsetMs: (timing.landingLine.endFrame / FPS) * 1000 };
 }
 
-/** The still text shown on the Instagram feed card — the format's own "hook" line. */
+/** The still text shown on the Instagram feed card — the Wall's own landing line. */
 function feedStillText(formatPlan: FormatPlan): string {
-	switch (formatPlan.format) {
-		case 'wall':
-			return formatPlan.landingLine;
-		case 'question':
-			return formatPlan.question;
-		case 'objection':
-			return formatPlan.objection;
-		case 'still':
-			// The Still's feed still and its video frame are the SAME text —
-			// there is no shorter "hook" line for this format; the whole
-			// point is the full passage, verbatim (see `Still.tsx`).
-			return formatPlan.text;
-	}
+	return formatPlan.landingLine;
 }
 
 // ---------------------------------------------------------------------------
@@ -617,14 +482,7 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 			const provider = buildTtsProvider(process.env);
 			const rawNarrationPath = path.join(workDir, 'narration-raw.mp3');
 			const narration = await synthesizeNarration(lines, plan.authorSlug as AuthorSlug, provider, process.env, rawNarrationPath);
-			// social pilot 02a T16 (F04): The Still has no per-line timing
-			// input at all (its whole composition is one held payoff frame —
-			// see `still-timing.ts`), so it's the one format excluded here;
-			// every other format's own `compute*Timing` now accepts
-			// `narrationTimings` (`buildInputProps` threads this through).
-			if (plan.formatPlan.format !== 'still') {
-				narrationTimings = narration.timings;
-			}
+			narrationTimings = narration.timings;
 			narrationAudioPath = path.join(workDir, 'narration-aligned.mp3');
 			await prependSilence(rawNarrationPath, offsetMs, narrationAudioPath);
 			// `narration.audioDurationMs` is probed off the WRITTEN FILE
@@ -681,8 +539,10 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 
 		console.log(`Mixing audio (bed: ${plan.bedId})...`);
 		const mixedAudioPath = path.join(workDir, 'mixed.m4a');
-		const silentSpans = plan.formatPlan.format === 'wall' ? wallSilentSpans() : [];
-		const noiseSpans = plan.formatPlan.format === 'wall' ? wallNoiseSpans() : [];
+		// Pf39c2-social-pilot-02a D01: every plan is a Wall now (Question/
+		// Objection/Still were deleted outright), so these are unconditional.
+		const silentSpans = wallSilentSpans();
+		const noiseSpans = wallNoiseSpans();
 		await mix({
 			bedPath: bedPath(plan.bedId),
 			narrationPath: narrationAudioPath,

@@ -11,14 +11,19 @@
 import { writeFile } from 'node:fs/promises';
 
 /**
- * Mirrors `scripts/lib/schedule.ts`'s `RenderedFormat` union
- * (`"wall" | "question" | "objection" | "still"`) — kept as a local literal
- * type rather than an import, since `social/` is a self-contained npm
- * project (see T01) and does not depend on the root content-pipeline
- * package. `"still"` (F19) is the read-through's fallback format — see
- * `../remotion/Still.tsx`.
+ * Mirrors `scripts/lib/schedule.ts`'s `RenderedFormat` union — kept as a
+ * local literal type rather than an import, since `social/` is a
+ * self-contained npm project (see T01) and does not depend on the root
+ * content-pipeline package.
+ *
+ * Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+ * outright — the channel is one Wall a day, drawn from the Wall pool,
+ * nothing else — so this narrows to the one format the renderer can still
+ * produce. `scripts/lib/schedule.ts`'s own `RenderedFormat` union still
+ * nominally includes the other three (collapsing it to Wall-only is D02's
+ * job); this type only describes what `social/src/cli.ts` actually writes.
  */
-export type PostFormat = 'wall' | 'question' | 'objection' | 'still';
+export type PostFormat = 'wall';
 
 export interface PostMetadata {
 	card_id: string;

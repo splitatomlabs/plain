@@ -30,12 +30,10 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { surveyWallPool, loadBookCards, resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
+import { surveyWallPool, loadBookCards, type WallPoolEntry } from '../wall-pool.js';
 import { computeWallPlainLines } from '../../cli-plan.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from '../duration-bounds.js';
 import { gateWallCard } from '../wall-gate.js';
-import { gateQuestionCard, QUESTION_MIN_LEGIBLE_FONT_PX, QUESTION_MAX_WORDS } from '../question-gate.js';
-import { gateObjectionCard, OBJECTION_MIN_LEGIBLE_FONT_PX } from '../objection-gate.js';
 import { selectLandingLine } from '../landing-line.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -44,24 +42,6 @@ const outputDir = path.join(repoRoot, 'content', 'output');
 
 interface PoolFile<T> {
 	entries: T[];
-}
-
-interface QuestionPoolEntry {
-	card_id: string;
-	book_slug: string;
-	question: string;
-	answer: string;
-	drift_verdict?: string;
-	standalone_intelligible?: boolean;
-	answer_has_substance?: boolean;
-}
-
-interface ObjectionPoolEntry {
-	card_id: string;
-	book_slug: string;
-	objection: string;
-	reply: string;
-	rubric?: { verdict?: string; classification?: string };
 }
 
 interface ExclusionEntry {
@@ -97,8 +77,6 @@ function loadJson<T>(...parts: string[]): T {
 }
 
 const wallPool = loadJson<PoolFile<WallPoolEntry>>('content', 'social', 'premises', 'wall.json');
-const questionPool = loadJson<PoolFile<QuestionPoolEntry>>('content', 'social', 'premises', 'question.json');
-const objectionPool = loadJson<PoolFile<ObjectionPoolEntry>>('content', 'social', 'premises', 'objection.json');
 const committed = loadJson<ExclusionsFile>('content', 'social', 'render-exclusions.json');
 
 describe('content/social/render-exclusions.json matches a fresh survey — Wall', () => {
@@ -136,114 +114,13 @@ describe('content/social/render-exclusions.json matches a fresh survey — Wall'
 	});
 });
 
-describe('content/social/render-exclusions.json matches a fresh survey — Question (F06)', () => {
-	// F16 (2026-08-26): `survey()` here must mirror `write-exclusions.ts`'s
-	// `surveyQuestion` EXACTLY, including its post-F16 addition — checking
-	// the reused Wall gate against each entry's archaic excerpt, not just
-	// `gateQuestionCard`'s own checks — or this test just re-proves the
-	// STALE pre-F16 logic against itself. See that function's own doc
-	// comment for why the reused check is no longer safe to omit.
-	function survey() {
-		const rejections: ExclusionEntry[] = [];
-		let passed = 0;
-		for (const entry of questionPool.entries) {
-			const result = gateQuestionCard({
-				question: entry.question,
-				answer: entry.answer,
-				drift_verdict: entry.drift_verdict,
-				standalone_intelligible: entry.standalone_intelligible,
-				answer_has_substance: entry.answer_has_substance
-			});
-			if (!result.ok) {
-				rejections.push({ card_id: entry.card_id, book_slug: entry.book_slug, axis: result.axis, reason: result.reason });
-				continue;
-			}
-			const excerpt = resolveWallCardExcerpt({ card_id: entry.card_id, book_slug: entry.book_slug }, outputDir);
-			const wallResult = gateWallCard(excerpt);
-			if (wallResult.ok) {
-				passed++;
-			} else {
-				rejections.push({
-					card_id: entry.card_id,
-					book_slug: entry.book_slug,
-					axis: `wall_${wallResult.failure}`,
-					reason: `Question card's archaic excerpt fails the reused Wall gate: ${wallResult.reason}`
-				});
-			}
-		}
-		return { passed, rejections };
-	}
-
-	it('records the same constants the gate is currently computed against', () => {
-		expect(committed.meta.question_min_legible_font_px).toBe(QUESTION_MIN_LEGIBLE_FONT_PX);
-		expect(committed.meta.question_max_words).toBe(QUESTION_MAX_WORDS);
-	});
-
-	it('meta counts and excluded ids match a fresh survey of the same pool', () => {
-		const { passed, rejections } = survey();
-		expect(committed.meta.question.submitted).toBe(questionPool.entries.length);
-		expect(committed.meta.question.succeeded).toBe(passed);
-		expect(committed.meta.question.dropped).toBe(rejections.length);
-		expect(committed.question.length).toBe(rejections.length);
-
-		const committedIds = new Set(committed.question.map((e) => e.card_id));
-		const surveyedIds = new Set(rejections.map((r) => r.card_id));
-		expect(committedIds).toEqual(surveyedIds);
-
-		const freshAxisById = new Map(rejections.map((r) => [r.card_id, r.axis]));
-		for (const entry of committed.question) {
-			expect(freshAxisById.get(entry.card_id)).toBe(entry.axis);
-		}
-	});
-
-	it('includes the real M1 fixture (discourses-50-008 — 13 words, over the 12-word still-format floor)', () => {
-		const entry = committed.question.find((e) => e.card_id === 'discourses-50-008');
-		expect(entry).toBeDefined();
-		expect(entry?.axis).toBe('word_count');
-	});
-});
-
-describe('content/social/render-exclusions.json matches a fresh survey — Objection (F06)', () => {
-	function survey() {
-		const rejections: ExclusionEntry[] = [];
-		let passed = 0;
-		for (const entry of objectionPool.entries) {
-			const result = gateObjectionCard({
-				objection: entry.objection,
-				reply: entry.reply,
-				verdict: entry.rubric?.verdict,
-				classification: entry.rubric?.classification
-			});
-			if (result.ok) {
-				passed++;
-			} else {
-				rejections.push({ card_id: entry.card_id, book_slug: entry.book_slug, axis: result.axis, reason: result.reason });
-			}
-		}
-		return { passed, rejections };
-	}
-
-	it('records the same constant the gate is currently computed against', () => {
-		expect(committed.meta.objection_min_legible_font_px).toBe(OBJECTION_MIN_LEGIBLE_FONT_PX);
-	});
-
-	it('meta counts and excluded ids match a fresh survey of the same pool', () => {
-		const { passed, rejections } = survey();
-		expect(committed.meta.objection.submitted).toBe(objectionPool.entries.length);
-		expect(committed.meta.objection.succeeded).toBe(passed);
-		expect(committed.meta.objection.dropped).toBe(rejections.length);
-		expect(committed.objection.length).toBe(rejections.length);
-
-		const committedIds = new Set(committed.objection.map((e) => e.card_id));
-		const surveyedIds = new Set(rejections.map((r) => r.card_id));
-		expect(committedIds).toEqual(surveyedIds);
-
-		const freshAxisById = new Map(rejections.map((r) => [r.card_id, r.axis]));
-		for (const entry of committed.objection) {
-			expect(freshAxisById.get(entry.card_id)).toBe(entry.axis);
-		}
-	});
-});
+// Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+// outright — the channel is one Wall a day — so their exclusion-survey
+// proofs (against content/social/premises/question.json and objection.json,
+// both now deleted) are gone too. The committed
+// content/social/render-exclusions.json still carries `question`/`objection`
+// sections until D04 regenerates it; this file no longer asserts against
+// them.
 
 // ---------------------------------------------------------------------------
 // F06 (M2): the read-through slice — this is the assertion that would have

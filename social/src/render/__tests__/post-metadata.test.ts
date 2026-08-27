@@ -45,21 +45,6 @@ describe('writePostMetadata', () => {
 		expect(parsed).toEqual(metadata);
 	});
 
-	it('round-trips a non-Wall record', async () => {
-		const outPath = path.join(dir, 'question-2026-09-01-slot2.json');
-		const metadata: PostMetadata = {
-			card_id: 'discourses-17-002',
-			format: 'question',
-			rendered_at: '2026-09-01T00:00:00.000Z'
-		};
-
-		await writePostMetadata(outPath, metadata);
-
-		const raw = await readFile(outPath, 'utf-8');
-		const parsed = JSON.parse(raw) as PostMetadata;
-		expect(parsed).toEqual(metadata);
-	});
-
 	it('never uses Date.now() — rendered_at is whatever the caller supplied, verbatim', async () => {
 		const outPath = path.join(dir, 'wall-fixed-timestamp.json');
 		const fixedTimestamp = '2020-01-01T00:00:00.000Z';

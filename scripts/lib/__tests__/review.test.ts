@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loadCorpus, rankWall, questionGate, objectionGate } from "../premises.js";
+import { loadCorpus, rankWall } from "../premises.js";
 import { generateWeek, type FormatPools, type WeekSchedule } from "../schedule.js";
 import {
   PLACEHOLDER,
@@ -19,10 +19,15 @@ import {
 // ---------------------------------------------------------------------------
 
 const cards = loadCorpus();
+// Pf39c2-social-pilot-02a D01: Question and Objection were deleted outright
+// (`questionGate`/`objectionGate` no longer exist) — the channel is one
+// Wall a day, drawn from the Wall pool, nothing else. `FormatPools` still
+// carries `question`/`objection` fields (collapsing that shape away is
+// D02's job, not this one's), so these are always empty now.
 const gatePools: FormatPools = {
   wall: rankWall(cards),
-  question: questionGate(cards),
-  objection: objectionGate(cards),
+  question: [],
+  objection: [],
 };
 const poolSource = { wall: "gate-only" as const, question: "gate-only" as const, objection: "gate-only" as const };
 

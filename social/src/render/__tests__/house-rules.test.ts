@@ -15,8 +15,6 @@ import {
 	stripComments
 } from '../house-rules.js';
 import { FPS, computeWallTiming } from '../../remotion/wall-timing.js';
-import { computeQuestionTiming } from '../../remotion/question-timing.js';
-import { computeObjectionTiming } from '../../remotion/objection-timing.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const remotionDir = path.resolve(moduleDir, '..', '..', 'remotion');
@@ -294,58 +292,10 @@ describe('checkPayoffMotionless', () => {
 // Objection's two reply lines) that belongs in its own task rather than
 // folded in here unannounced.
 describe('social pilot 02a R06 — narration-driven schedules are checked for the payoff-motionless floor, not just the fixed-duration fallback', () => {
-	it('checkAllFormats\' FORMATS registry never supplies narrationTimings — confirming why it did not catch T16\'s regression', () => {
-		// Every format's fallback constant already meets the floor by
-		// construction, so calling compute*Timing with no narrationTimings
-		// (what checkAllFormats does) can never exercise the narration-driven
-		// branch this describe is about. This test documents that fact
-		// directly rather than asserting on checkAllFormats' internals.
-		const objectionDefault = computeObjectionTiming();
-		const questionDefault = computeQuestionTiming({ question: 'What is a master anyway?' });
-		expect(objectionDefault.replyLines[0].endFrame - objectionDefault.replyLines[0].startFrame).toBeGreaterThanOrEqual(
-			Math.round(PAYOFF_MIN_MOTIONLESS_SECONDS * FPS)
-		);
-		expect(questionDefault.answer.endFrame - questionDefault.answer.startFrame).toBeGreaterThanOrEqual(
-			Math.round(PAYOFF_MIN_MOTIONLESS_SECONDS * FPS)
-		);
-	});
-
-	it('The Objection: a short (1.5s) first-reply-line narration still passes checkPayoffMotionless (post-R06 fix)', () => {
-		const timing = computeObjectionTiming({ narrationTimings: [{ startSeconds: 0, endSeconds: 1.5 }] });
-		const result = checkPayoffMotionless(timing, 'objection-timing.ts (R06 regression)');
-		expect(result.passed).toBe(true);
-		expect(result.violations).toEqual([]);
-	});
-
-	it('The Objection: a short second reply line ALSO passes, even when the first line alone already clears the 15s pad point (the case padToMinimumDuration does not protect)', () => {
-		const timing = computeObjectionTiming({
-			narrationTimings: [
-				{ startSeconds: 0, endSeconds: 13.0 },
-				{ startSeconds: 0, endSeconds: 0.3 }
-			]
-		});
-		const result = checkPayoffMotionless(timing, 'objection-timing.ts (R06 regression, second line)');
-		expect(result.passed).toBe(true);
-		expect(result.violations).toEqual([]);
-	});
-
-	it('The Question: a very short (0.2s) narrated answer still passes checkPayoffMotionless — structurally protected, not just by luck', () => {
-		// Verifies the reviewer's claim (R06) rather than assuming it: The
-		// Question's answer is its only narrated phase, and the fixed
-		// question hold + wall phase ahead of it (120 frames total) is
-		// always well under the 450-frame/15s pad point on its own, so
-		// padToMinimumDuration ALWAYS fires and extends the answer to clear
-		// both the 15s floor and, incidentally, the 2.5s house-rule floor —
-		// for any narrated answer duration, not just this one example.
-		const timing = computeQuestionTiming({
-			question: 'What is a master anyway?',
-			narrationTimings: [{ startSeconds: 0, endSeconds: 0.2 }]
-		});
-		const result = checkPayoffMotionless(timing, 'question-timing.ts (R06 regression)');
-		expect(result.passed).toBe(true);
-		expect(result.violations).toEqual([]);
-	});
-
+	// Pf39c2-social-pilot-02a D01: this used to also cover The Objection and
+	// The Question's own R06 regressions; both formats were deleted outright
+	// (the channel is one Wall a day), so only the Wall's own known gap
+	// remains here.
 	it('The Wall: a short (0.2s) NON-FINAL narrated rest line fails checkPayoffMotionless today — a known, separately-scoped gap, not fixed by R06', () => {
 		const timing = computeWallTiming({
 			originalExcerpt:
@@ -403,22 +353,25 @@ describe('checkTtsWithinHouseRule', () => {
 // ---------------------------------------------------------------------------
 
 describe('checkAllFormats', () => {
-	it('PASSES rules 1 and 2 across all three real formats today', () => {
+	it('PASSES rules 1 and 2 for the one real format today (the Wall)', () => {
 		const result = checkAllFormats();
 		expect(result.violations).toEqual([]);
 		expect(result.passed).toBe(true);
 	});
 
-	it('covers every composition Root.tsx registers — Wall, Question, Objection, and Still', () => {
+	// Pf39c2-social-pilot-02a D01: Root.tsx used to also register Question,
+	// Objection and Still; all three were deleted outright (the channel is
+	// one Wall a day), so only the Wall composition remains.
+	it('covers every composition Root.tsx registers — Wall', () => {
 		const rootSource = readFileSync(path.join(remotionDir, 'Root.tsx'), 'utf-8');
 		expect(rootSource).toContain('id="Wall"');
-		expect(rootSource).toContain('id="Question"');
-		expect(rootSource).toContain('id="Objection"');
-		expect(rootSource).toContain('id="Still"');
+		expect(rootSource).not.toContain('id="Question"');
+		expect(rootSource).not.toContain('id="Objection"');
+		expect(rootSource).not.toContain('id="Still"');
 
 		// checkAllFormats() completing at all (not throwing) is itself proof
-		// its internal registry covers these three — see the next test for
-		// the "a new composition with no entry" failure mode.
+		// its internal registry covers this one format — see the next test
+		// for the "a new composition with no entry" failure mode.
 		expect(() => checkAllFormats()).not.toThrow();
 	});
 
@@ -429,12 +382,13 @@ describe('checkAllFormats', () => {
 		// Sanity: the discovery this test re-implements independently finds
 		// at least the known composition and timing files — if this list
 		// ever shrinks unexpectedly, checkAllFormats's own file scan would
-		// silently cover less too.
-		expect(files).toEqual(
-			expect.arrayContaining(['Wall.tsx', 'Question.tsx', 'Objection.tsx', 'Still.tsx', 'Root.tsx'])
-		);
-		expect(files).toEqual(
-			expect.arrayContaining(['wall-timing.ts', 'question-timing.ts', 'objection-timing.ts', 'still-timing.ts'])
+		// silently cover less too. Question.tsx/Objection.tsx/Still.tsx and
+		// their timing modules were deleted outright (D01) and must NEVER
+		// reappear here.
+		expect(files).toEqual(expect.arrayContaining(['Wall.tsx', 'Root.tsx']));
+		expect(files).toEqual(expect.arrayContaining(['wall-timing.ts']));
+		expect(files).not.toEqual(
+			expect.arrayContaining(['Question.tsx', 'Objection.tsx', 'Still.tsx'])
 		);
 	});
 

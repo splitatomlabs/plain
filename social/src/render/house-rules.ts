@@ -7,13 +7,15 @@
  *   2. The payoff frame has ZERO motion for >= 2.5s.
  *   3. TTS pitch and rate never below default — no "wise deep voice".
  *
- * This module is the SINGLE place all three are automated. Each format's
- * own tests (`wall-timing.test.ts`, `question-timing.test.ts`,
- * `objection-timing.test.ts`) already carry ad-hoc, per-file versions of
+ * This module is the SINGLE place all three are automated. The Wall's own
+ * tests (`wall-timing.test.ts`) already carry ad-hoc, per-file versions of
  * rules 1 and 2 — those are left in place as a first line of defense, but
  * this module is the centralised, format-agnostic layer: `checkAllFormats`
  * is what a new composition cannot be added without going through (see its
  * doc comment for exactly how that's enforced).
+ *
+ * Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+ * outright — the channel is one Wall a day. `FORMATS` below is Wall-only now.
  *
  * Rule 3 already has a single canonical guard —
  * `assertVoiceSettingsWithinHouseRule` in `../audio/tts.ts` — this module
@@ -27,9 +29,6 @@ import { fileURLToPath } from 'node:url';
 
 import { assertVoiceSettingsWithinHouseRule, type VoiceSettingsInput } from '../audio/tts.js';
 import { FPS, computeWallTiming } from '../remotion/wall-timing.js';
-import { computeQuestionTiming } from '../remotion/question-timing.js';
-import { computeObjectionTiming } from '../remotion/objection-timing.js';
-import { computeStillTiming } from '../remotion/still-timing.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 /** `social/src/remotion` — every composition source file lives here. */
@@ -452,21 +451,6 @@ const FORMATS: FormatEntry[] = [
 					'used only so a representative schedule can be computed for the house-rule check.',
 				plainLines: ['This is the rest of the plain passage.', 'And a second still line, for good measure.']
 			})
-	},
-	{
-		id: 'Question',
-		timingModuleFile: 'question-timing.ts',
-		computeTiming: () => computeQuestionTiming({ question: 'What is a master anyway?' })
-	},
-	{
-		id: 'Objection',
-		timingModuleFile: 'objection-timing.ts',
-		computeTiming: () => computeObjectionTiming()
-	},
-	{
-		id: 'Still',
-		timingModuleFile: 'still-timing.ts',
-		computeTiming: () => computeStillTiming()
 	}
 ];
 

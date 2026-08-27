@@ -80,8 +80,6 @@ import {
   selectWallBalanced,
   selectLandingLine,
   classifyWallSubTypes,
-  questionGate,
-  objectionGate,
   type AuthorMixEntry,
   type WallEntry,
   type RankedWallEntry,
@@ -586,30 +584,20 @@ function tryReadThroughContent(
       if (!landingLine) return null;
       return { format: "wall", original_excerpt: card.original_excerpt, landing_line: landingLine };
     }
-    case "question": {
-      // Route through the full T04 gate (mechanical candidate + layer (a) +
-      // layer (b)), not just the raw mechanical `findQuestionCandidate` —
-      // the mechanical candidate alone can select a question with an
-      // unresolved reference, a mid-thought opener, or an answer that's
-      // itself another question, all of which layer (a)/(b) exist to catch
-      // (see M2 in the PR #39 review). `questionGate` returns only
-      // survivors, so a `null` here means "no valid candidate", letting the
-      // caller's fallback cascade try the next format.
-      const [gated] = questionGate([card]);
-      if (!gated) return null;
-      return { format: "question", question: gated.question, answer: gated.answer };
-    }
-    case "objection": {
-      const [found] = objectionGate([card]);
-      if (!found) return null;
-      // An objection whose reply is empty (the quoted line is the very
-      // last thing said in the card) has no answer to show — the format's
-      // whole point is objection THEN reply, so this isn't a valid
-      // candidate either (see M3 in the PR #39 review).
-      const reply = assembleObjectionReply(card, found);
-      if (!reply) return null;
-      return { format: "objection", objection: found.objection, reply };
-    }
+    case "question":
+      // Pf39c2-social-pilot-02a D01: The Question was deleted outright
+      // (`questionGate` no longer exists) — the channel is one Wall a day,
+      // drawn from the Wall pool, nothing else. No card can ever render as
+      // Question any more; always fall through to the next format in
+      // `resolveReadThrough`'s cascade, exactly as an unsupported candidate
+      // already did. Collapsing this cascade away entirely (and the
+      // `ScheduleFormat`/`RenderedFormat` unions it's built from) is D02's
+      // job, not this one's — see that plan's own "Deprecation" section.
+      return null;
+    case "objection":
+      // Same as "question" above — The Objection was deleted outright
+      // (`objectionGate` no longer exists).
+      return null;
   }
 }
 

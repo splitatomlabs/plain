@@ -1880,7 +1880,7 @@ R06's Objection motionless floor, and U02's counter centring. All recoverable fr
 `Card N of 48` counter (which exists for nothing else), the sequential book-order walk, and T19's "never
 reorder the read-through" constraint — sub-type spacing now applies freely across days.
 
-- [~] D01: Delete the Question, Objection and Still formats OUTRIGHT — compositions (`Question.tsx`,
+- [x] D01: Delete the Question, Objection and Still formats OUTRIGHT — compositions (`Question.tsx`,
   `Objection.tsx`, `Still.tsx`), timings (`question-timing.ts`, `objection-timing.ts`, `still-timing.ts`),
   gates (`question-gate.ts`, `objection-gate.ts`, `still-gate.ts`), their `scripts/lib/premises.ts` ranking
   and gate functions, the `content/social/premises/{question,objection,still}.json` artifacts, and every test
@@ -1888,6 +1888,45 @@ reorder the read-through" constraint — sub-type spacing now applies freely acr
   `social/src/render/post-metadata.ts`. Done as ONE task because all three share the same wiring files.
   Tests for deleted behaviour are DELETED, never skipped (T17's rule). Acceptance: no reference to any of the
   three survives outside doc comments and this plan; `npm test` green; the Wall renders unchanged.
+
+  **Done (2026-08-27).** Deleted outright: the three compositions, their timing/gate modules and every test
+  file for them (`social/src/remotion/{Question,Objection,Still}.tsx`, `{question,objection,still}-{timing,gate}.ts`
+  and their `__tests__`, plus `framing-question-objection-still.test.ts`); `content/social/premises/
+  {question,objection,still}.json`; `scripts/lib/premises.ts`'s Question section (T04, `findQuestionCandidate`
+  through `buildQuestionDriftRequests`) and Objection section (T07a, `startsWithObjectionOpener` through
+  `objectionGate`), plus `mechanicalGates`/`hasQuotedSpeech`/`lengthDelta` (fed only the deleted Still gate and
+  an Objection precursor stat). `QuestionEntry`/`ObjectionEntry` interfaces survive, narrowed to a one-line doc
+  comment explaining why: `wallAuthorWeights` still takes a Question/Objection pool as a correction input,
+  now always `[]`. Unwired from `Root.tsx`/`entry.tsx`/`index.ts`/`cli.ts`/`post-metadata.ts` as specified.
+
+  **Cascaded beyond the plan's own file list** (surveyed myself, per the plan's own instruction that its grep
+  "may be incomplete"): `scripts/lib/premises-batch.ts` and `premises-scoring.ts` (Question/Objection batch
+  orchestration and rubric prompts/parsers — Wall's own path is untouched); `scripts/score-premises.ts` and
+  `scripts/lib/premises-cli.ts` (`--format` narrowed to `wall`/`all`); `scripts/generate-schedule.ts` (its
+  `questionGate`/`objectionGate` calls replaced with `[]`, since nothing else produces those pools any more);
+  `social/scripts/write-exclusions.ts` (trimmed to Wall + read-through, matching D04's future artifact shape,
+  though it does not regenerate the committed file itself — that's D04's job).
+
+  **Left for D02, per the plan's own instruction** ("do the minimum to keep the scheduler compiling ... do
+  not restructure it"): `scripts/lib/schedule.ts`'s `tryReadThroughContent` still has "question"/"objection"
+  branches, now hardcoded to `return null` (a one-line change each) rather than removed; `ScheduleFormat`,
+  `SlotContent`, `FormatPools`, `RenderedFormat` and the whole weighted-draw/read-through machinery are
+  untouched; `content/social/pilot-schedule-w01.json` still has real `question`/`still` slots from before this
+  task (unrenderable via the CLI now — see below) until D04 regenerates it; `content/social/
+  render-exclusions.json` still carries `question`/`objection`/`still` sections until D04 regenerates it.
+  `social/src/cli.ts`'s `buildRenderPlan` throws a named error for any slot whose format is `"question"`/
+  `"objection"`/`"still"` rather than silently doing nothing — this is the one place D01 had to reach past
+  "unwire the four named files" to keep a stale schedule from producing a blank render.
+
+  **Verification:** grep for every named symbol/file across the repo returns zero hits outside doc comments
+  and this plan; `cd social && npx tsc --noEmit` clean; `npm test` from repo root — pipeline 630/630 (21
+  files, was 186 in the CLAUDE.md estimate, now larger due to counting drift, all green), web unit 95/95 (7
+  files), social 409/409 (24 files, down from 599/599 across 31 files pre-deletion — 190 tests removed).
+  Rendered `--date 2026-09-01 --slot 1` (a real Wall slot): frame 0/74 show the dense moving chapter-sourced
+  scroll under the fixed "MARCUS AURELIUS · MEDITATIONS, BOOK 2" running-head plate; frame 75 (the cut) and
+  frame 120 show the payoff — "In plain English" label, the 44px landing line, "Card 1 of 48" counter below —
+  pixel-identical in kind to pre-D01 renders. Social suite runtime: 78.4s before (599 tests) -> 28.0-32.0s
+  after (409 tests) — roughly 2.7x faster, ~47-50s saved per run, which was the user's stated motivation.
 - [ ] D02: Delete the read-through from `scripts/lib/schedule.ts` (85 references) and collapse the day to a
   SINGLE pool-drawn Wall slot (82 slot references today). Remove `tryReadThroughContent`, the sequential
   book-order walk, and the `read_through` section of `content/social/render-exclusions.json` +

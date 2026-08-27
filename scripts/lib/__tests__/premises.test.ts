@@ -6,10 +6,7 @@ import {
   SELF_CONTAINED_OPENING_REJECTS,
   firstSentence,
   sentences,
-  hasQuotedSpeech,
-  lengthDelta,
   byBook,
-  mechanicalGates,
   findLandingLines,
   selectLandingLine,
   wallGate,
@@ -21,27 +18,6 @@ import {
   WALL_THOU_MARKER_MIN,
   WALL_CASCADE_SEMICOLON_MIN,
   WALL_SCENE_QUOTE_MIN,
-  QUESTION_MAX_WORDS,
-  QUESTION_SENTENCE_WINDOW,
-  QUESTION_OPENING_REJECTS,
-  findQuestionCandidate,
-  questionCandidateAnswer,
-  isExclamationShaped,
-  hasAttributionLeak,
-  hasMidThoughtOpener,
-  isFragmentQuestion,
-  passesLayerA,
-  isSocraticChainAnswer,
-  passesLayerB,
-  questionGate,
-  buildQuestionDriftRequests,
-  hasColonAttributionLeadIn,
-  isSecondPersonQuestion,
-  hasThirdPartyReference,
-  hasUnbalancedSingleQuote,
-  hasUnbalancedQuotes,
-  PIVOT_ANSWER_PHRASES,
-  isPivotAnswer,
   authorMix,
   combinedAuthorMix,
   wallAuthorWeights,
@@ -49,13 +25,8 @@ import {
   createSeededRng,
   BALANCED_AUTHOR_SHARE,
   DEFAULT_QUESTION_FRACTION,
-  OBJECTION_OPENERS,
-  OBJECTION_GATE_MAX_WORDS,
-  OBJECTION_GATE_MIN_WORDS,
-  startsWithObjectionOpener,
-  hasObjectionProperNoun,
-  isOpenerOnly,
-  objectionGate,
+  type QuestionEntry,
+  type ObjectionEntry,
 } from "../premises.js";
 import type { Card } from "../types.js";
 import type { AuthorSlug } from "../constants.js";
@@ -76,6 +47,54 @@ function makeCard(overrides: Partial<Card> = {}): Card {
     ...overrides,
   };
 }
+
+/**
+ * Pf39c2-social-pilot-02a D01: Question and Objection were deleted outright
+ * (`questionGate`/`objectionGate` no longer exist) — but `wallAuthorWeights`
+ * below still takes a Question pool (and, with a `readThrough` context, an
+ * Objection pool) as an input to its author-balance correction, and that
+ * correction only ever reads per-author COUNTS off these pools
+ * (`authorMix`), never any entry's text or the pools' order. These synthetic
+ * builders reproduce the exact author-count distributions the real,
+ * now-deleted gates measured against this same corpus at the time these
+ * tests were written — Question 50/21/18 (epictetus/marcus-aurelius/seneca,
+ * 89 total — see the T05 section's own doc comment in ../premises.ts) and
+ * Objection 24/32/3 (epictetus/seneca/marcus-aurelius, 59 total — the
+ * "Objection ~59" figure named in ../premises-batch.ts) — verified by
+ * reproducing every pinned decimal assertion below byte-for-byte before
+ * this rewrite landed.
+ */
+function makeQuestionPool(counts: Record<AuthorSlug, number>): QuestionEntry[] {
+  const entries: QuestionEntry[] = [];
+  let i = 0;
+  for (const [author, n] of Object.entries(counts) as [AuthorSlug, number][]) {
+    for (let k = 0; k < n; k++) {
+      entries.push({ card_id: `synthetic-question-${author}-${i++}`, book_slug: "synthetic", author_slug: author, question: "q", answer: "a" });
+    }
+  }
+  return entries;
+}
+
+function makeObjectionPool(counts: Record<AuthorSlug, number>): ObjectionEntry[] {
+  const entries: ObjectionEntry[] = [];
+  let i = 0;
+  for (const [author, n] of Object.entries(counts) as [AuthorSlug, number][]) {
+    for (let k = 0; k < n; k++) {
+      entries.push({
+        card_id: `synthetic-objection-${author}-${i++}`,
+        book_slug: "synthetic",
+        author_slug: author,
+        objection: "o",
+        reply: "r",
+        reply_start: 0,
+      });
+    }
+  }
+  return entries;
+}
+
+const REAL_QUESTION_POOL_SPLIT: Record<AuthorSlug, number> = { epictetus: 50, "marcus-aurelius": 21, seneca: 18 };
+const REAL_OBJECTION_POOL_SPLIT: Record<AuthorSlug, number> = { epictetus: 24, seneca: 32, "marcus-aurelius": 3 };
 
 // ---------------------------------------------------------------------------
 // wordCount
@@ -216,41 +235,10 @@ describe("firstSentence", () => {
 // hasQuotedSpeech
 // ---------------------------------------------------------------------------
 
-describe("hasQuotedSpeech", () => {
-  it("is false with zero quote characters", () => {
-    expect(hasQuotedSpeech("No quotes here.")).toBe(false);
-  });
-
-  it("is false with a single quote character", () => {
-    expect(hasQuotedSpeech('Only one " here.')).toBe(false);
-  });
-
-  it("is true with two or more quote characters", () => {
-    expect(hasQuotedSpeech('He said, "hello there."')).toBe(true);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// lengthDelta
-// ---------------------------------------------------------------------------
-
-describe("lengthDelta", () => {
-  it("subtracts plain word count from original word count", () => {
-    const card = makeCard({
-      original_excerpt: "one two three four five",
-      plain_english: "one two",
-    });
-    expect(lengthDelta(card)).toBe(3);
-  });
-
-  it("can be negative when the plain version is longer", () => {
-    const card = makeCard({
-      original_excerpt: "one two",
-      plain_english: "one two three four",
-    });
-    expect(lengthDelta(card)).toBe(-2);
-  });
-});
+// Pf39c2-social-pilot-02a D01: `hasQuotedSpeech`/`lengthDelta` were deleted
+// outright along with `mechanicalGates` (see below) — the channel is one
+// Wall a day, drawn from the Wall pool, nothing else, and nothing else
+// called either function once `mechanicalGates` went with it.
 
 // ---------------------------------------------------------------------------
 // byBook
@@ -273,48 +261,9 @@ describe("byBook", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// mechanicalGates — corpus-level counts
-// ---------------------------------------------------------------------------
-
-describe("mechanicalGates against the real corpus", () => {
-  const cards = loadCorpus();
-
-  it("loads the full 1,615-card corpus", () => {
-    expect(cards.length).toBe(1615);
-  });
-
-  const gates = mechanicalGates(cards);
-
-  it("wallLength (original_excerpt >= 80 words) measures 1,326", () => {
-    expect(gates.wallLength.count).toBe(1326);
-  });
-
-  it("still12Word (first sentence <=12 words + self-contained opener) measures 731", () => {
-    // The plan's acceptance line states 674 for this gate; that figure was
-    // not reproducible under any tried definition. The plan's own fallback
-    // estimate for the "clean definition" was 740; this implementation
-    // originally measured 739 — one off from that estimate.
-    //
-    // T02's defect fix made `sentences()` (shared with `firstSentence()`,
-    // which this gate depends on) quote-aware: a terminator inside an
-    // unclosed quote no longer splits the sentence, and a closing `"` right
-    // after a terminator stays attached to the sentence it closes instead
-    // of leaking into the next one. That correction changes `firstSentence`
-    // for any card whose opening sentence contains quoted speech, which
-    // moves this count from 739 to 731. This is an expected, measured
-    // consequence of fixing a shared function, not a new estimate to hit.
-    expect(gates.still12Word.count).toBe(731);
-  });
-
-  it("quotedSpeech (plain_english has >=2 double quotes) measures 308", () => {
-    expect(gates.quotedSpeech.count).toBe(308);
-  });
-
-  it("lengthDelta30 (original minus plain word count >= 30) measures 318", () => {
-    expect(gates.lengthDelta30.count).toBe(318);
-  });
-});
+// Pf39c2-social-pilot-02a D01: `mechanicalGates` (corpus-level population
+// counts for the Still gate and the Objection precursor) was deleted
+// outright along with those formats.
 
 // ---------------------------------------------------------------------------
 // T02: landing-line gate for The Wall
@@ -816,469 +765,13 @@ describe("rankWall against the real corpus", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// T04: The Question — mechanical gate helpers
-// ---------------------------------------------------------------------------
-
-describe("isExclamationShaped", () => {
-  it("rejects a question ending in stacked ?! punctuation", () => {
-    expect(isExclamationShaped("Isn't that wonderful?!")).toBe(true);
-  });
-
-  it("rejects a 'What a'/'What an' opener", () => {
-    expect(isExclamationShaped("What a strange thing to say?")).toBe(true);
-    expect(isExclamationShaped("What an odd way to live?")).toBe(true);
-  });
-
-  it("rejects a 'How <adjective>' rhetorical exclamation", () => {
-    expect(isExclamationShaped("How wonderful is that?")).toBe(true);
-  });
-
-  it("accepts a genuine 'How <auxiliary>' question", () => {
-    expect(isExclamationShaped("How do you know that?")).toBe(false);
-  });
-
-  it("accepts an ordinary question with a single trailing ?", () => {
-    expect(isExclamationShaped("What should you do next?")).toBe(false);
-  });
-});
-
-describe("hasAttributionLeak", () => {
-  it("flags a pronoun subject directly before an attribution verb", () => {
-    expect(hasAttributionLeak("He asks why virtue matters.")).toBe(true);
-    expect(hasAttributionLeak("Someone says this is easy.")).toBe(true);
-  });
-
-  it("flags 'you ask' specifically", () => {
-    expect(hasAttributionLeak("Then you ask what comes next.")).toBe(true);
-  });
-
-  it("does not flag ordinary 'you say'/'you should say' second-person address", () => {
-    // Measured against the real corpus: treating bare "you" the same as
-    // "he"/"someone" produced false positives on the author's own direct
-    // address to the viewer — see discourses-44-003 in the corpus test
-    // below.
-    expect(hasAttributionLeak("What should you say when something painful happens")).toBe(false);
-  });
-
-  it("flags a genuine proper-noun subject before an attribution verb", () => {
-    expect(hasAttributionLeak("But Epictetus said it plainly.")).toBe(true);
-  });
-
-  it("does not flag a sentence-initial wh-word before a speech verb", () => {
-    // "Who says X" is a rhetorical device ("nobody would say X"), not a
-    // report of what a third party said — measured against the real corpus
-    // (happy-life-24-003).
-    expect(hasAttributionLeak("Who says generosity is only for citizens who wear togas?")).toBe(false);
-  });
-
-  it("does not flag an ordinary sentence with no attribution verb", () => {
-    expect(hasAttributionLeak("The quality of your thoughts shapes your life.")).toBe(false);
-  });
-
-  it("flags a first-person speech verb ('I ask') — meditations-04-022", () => {
-    // Real corpus leak: the mechanical gate previously accepted this
-    // question because ATTRIBUTION_PRONOUN_SUBJECTS only covered third-party
-    // subjects (he/she/they/someone/people), never "I".
-    expect(hasAttributionLeak("I ask back: how does the earth keep holding all the buried bodies forever?")).toBe(
-      true,
-    );
-  });
-
-  it("flags a speech-attribution lead-in before a colon even without adjacent I+verb", () => {
-    expect(hasColonAttributionLeadIn("Epictetus asks something else: what should you do?")).toBe(true);
-  });
-
-  it("does not flag a colon with no speech attribution before it", () => {
-    expect(hasColonAttributionLeadIn("For example: what should you do next?")).toBe(false);
-  });
-
-  it("does not flag an ordinary first-person statement with 'I' that isn't a speech verb", () => {
-    expect(hasAttributionLeak("I know that virtue is the only true good.")).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// T04: The Question — mechanical gate, measured corpus counts
-// ---------------------------------------------------------------------------
-
-describe("findQuestionCandidate against the real corpus", () => {
-  const cards = loadCorpus();
-  const candidates = cards.map((c) => findQuestionCandidate(c)).filter((c): c is NonNullable<typeof c> => c !== null);
-
-  it("measures the mechanical gate at exactly 306", () => {
-    // Measured stage-by-stage (all applied to the first QUESTION_SENTENCE_WINDOW
-    // sentences of plain_english, as an existence check over the candidate
-    // set rather than a single fixed candidate carried through each stage):
-    //   question present                        458
-    //   + <=14 words                             380
-    //   + unquoted                               379
-    //   + self-contained opening (T01)           319
-    //   + not exclamation-shaped, no attribution  313
-    //     leak (author's own voice)
-    // The plan's target for this gate was 292. 313 was the first-pass measured
-    // count, before a fix-pass audit surfaced four real leaks the deterministic
-    // checks were missing (a first-person/colon-lead-in attribution gap in
-    // `hasAttributionLeak`, cataphoric "pivot" non-answers, third-party/literary
-    // reference questions, and unbalanced quote characters — see the
-    // `hasAttributionLeak`/`hasThirdPartyReference`/`isPivotAnswer`/
-    // `hasUnbalancedQuotes` tests above and below). `hasAttributionLeak`'s
-    // first-person/colon fix is applied here too (it's part of the mechanical
-    // gate's own "no attribution leak" check), dropping this stage from 313 to
-    // **306**. 306 is what's measured and asserted here — not contorted to hit
-    // any estimate, matching the policy T01/T03 documented for their own
-    // unreproducible targets.
-    expect(candidates.length).toBe(306);
-  });
-
-  it("every candidate question ends with '?', is within the word limit, and is unquoted", () => {
-    for (const { question } of candidates) {
-      expect(question.trim().endsWith("?")).toBe(true);
-      expect(wordCount(question)).toBeLessThanOrEqual(QUESTION_MAX_WORDS);
-      expect(question).not.toContain('"');
-    }
-  });
-
-  it("every candidate index falls within the sentence window", () => {
-    for (const { index } of candidates) {
-      expect(index).toBeLessThan(QUESTION_SENTENCE_WINDOW);
-    }
-  });
-});
-
-describe("questionCandidateAnswer", () => {
-  it("returns the sentence immediately following the question", () => {
-    const card = makeCard({
-      plain_english: "Is this the right path? It is not. Keep walking anyway.",
-    });
-    const candidate = findQuestionCandidate(card);
-    expect(candidate).not.toBeNull();
-    expect(questionCandidateAnswer(card, candidate!.index)).toBe("It is not.");
-  });
-
-  it("returns null when the question is the last sentence", () => {
-    const card = makeCard({ plain_english: "A short line here. Is this the last one?" });
-    const candidate = findQuestionCandidate(card);
-    expect(candidate).not.toBeNull();
-    expect(questionCandidateAnswer(card, candidate!.index)).toBeNull();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// T04, layer (a): dangling references, mid-thought openers, fragments
-// ---------------------------------------------------------------------------
-
-describe("passesLayerA", () => {
-  it("rejects a question with a dangling pronoun (no in-line antecedent)", () => {
-    const question = "Why does he avoid it?";
-    expect(hasUnresolvedReference(question)).toBe(true);
-    expect(passesLayerA(question)).toBe(false);
-  });
-
-  it.each(QUESTION_OPENING_REJECTS)("rejects a question opening with '%s'", (opener) => {
-    const question = `${opener}, what should happen next?`;
-    expect(hasMidThoughtOpener(question)).toBe(true);
-    expect(passesLayerA(question)).toBe(false);
-  });
-
-  it("rejects a fragment (no leading capital letter)", () => {
-    const question = "did you really mean that?";
-    expect(isFragmentQuestion(question)).toBe(true);
-    expect(passesLayerA(question)).toBe(false);
-  });
-
-  it("accepts a self-contained question with no dangling reference, opener, or fragment", () => {
-    const question = "What should you do when things go wrong?";
-    expect(passesLayerA(question)).toBe(true);
-  });
-
-  it("rejects a third-party/literary reference question — on-anger-02-092", () => {
-    const question = "What did Priam do in the Iliad?";
-    expect(hasThirdPartyReference(question)).toBe(true);
-    expect(passesLayerA(question)).toBe(false);
-  });
-
-  it("rejects a third-party/literary reference question — discourses-17-003", () => {
-    const question = "How does Medea put it?";
-    expect(hasThirdPartyReference(question)).toBe(true);
-    expect(passesLayerA(question)).toBe(false);
-  });
-
-  it("rejects a question with an unbalanced quote character", () => {
-    const question = 'Why does love "always change?';
-    expect(hasUnresolvedReference(question)).toBe(false);
-    expect(hasUnbalancedQuotes(question)).toBe(true);
-    expect(passesLayerA(question)).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// T04 fix pass: hasThirdPartyReference / isSecondPersonQuestion
-// ---------------------------------------------------------------------------
-
-describe("isSecondPersonQuestion", () => {
-  it("is true for a question containing 'you'/'your'/'we'/'our'/'us'", () => {
-    expect(isSecondPersonQuestion("What would you say to Epictetus?")).toBe(true);
-    expect(isSecondPersonQuestion("Can we trust Marcus on this?")).toBe(true);
-  });
-
-  it("is false for a question with no second-person word", () => {
-    expect(isSecondPersonQuestion("What did Priam do in the Iliad?")).toBe(false);
-  });
-});
-
-describe("hasThirdPartyReference", () => {
-  it("flags a question asked ABOUT a named third party — discourses-17-003", () => {
-    expect(hasThirdPartyReference("How does Medea put it?")).toBe(true);
-  });
-
-  it("flags a question asked about a literary work — on-anger-02-092", () => {
-    expect(hasThirdPartyReference("What did Priam do in the Iliad?")).toBe(true);
-  });
-
-  it("does not flag a second-person question that merely mentions a name — discourses-43-002", () => {
-    // Real corpus counter-example: the viewer is still addressed directly
-    // ("you"), so a proper noun elsewhere in the question doesn't break the
-    // forced-self-prediction mechanic.
-    expect(hasThirdPartyReference("Why did you want to be elected governor of the Cnossians?")).toBe(false);
-  });
-
-  it("does not flag a question with sentence-initial capitalization only", () => {
-    expect(hasThirdPartyReference("Why does this keep happening?")).toBe(false);
-  });
-
-  it("does not flag a question mentioning God", () => {
-    expect(hasThirdPartyReference("What does God have to do with any of this?")).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// T04, layer (b): Socratic-chain answers and attribution leaks
-// ---------------------------------------------------------------------------
-
-describe("passesLayerB", () => {
-  it("rejects an answer that itself ends in '?' (the Socratic chain continuing)", () => {
-    const answer = "Was your dislike of something?";
-    expect(isSocraticChainAnswer(answer)).toBe(true);
-    expect(passesLayerB(answer)).toBe(false);
-  });
-
-  it("rejects an answer with an attribution leak", () => {
-    const answer = "He says it doesn't matter.";
-    expect(hasAttributionLeak(answer)).toBe(true);
-    expect(passesLayerB(answer)).toBe(false);
-  });
-
-  it("accepts a plain declarative answer", () => {
-    const answer = "It was not, and never will be.";
-    expect(passesLayerB(answer)).toBe(true);
-  });
-
-  it("rejects a cataphoric pivot answer — discourses-21-004", () => {
-    const answer = "Think of it this way.";
-    expect(isPivotAnswer(answer)).toBe(true);
-    expect(passesLayerB(answer)).toBe(false);
-  });
-
-  it("rejects a pivot answer that resolves nothing — meditations-04-022", () => {
-    const answer = "Here's how it works.";
-    expect(isPivotAnswer(answer)).toBe(true);
-    expect(passesLayerB(answer)).toBe(false);
-  });
-
-  it("rejects an answer with an unbalanced quote character — discourses-17-003", () => {
-    const answer = "'I know the evil I'm about to do, but my anger is stronger than my better judgment.";
-    expect(hasUnbalancedQuotes(answer)).toBe(true);
-    expect(passesLayerB(answer)).toBe(false);
-  });
-
-  it("does not reject an answer that merely contains a pivot phrase mid-sentence", () => {
-    const answer = "Consider this carefully before you decide what to do.";
-    expect(isPivotAnswer(answer)).toBe(false);
-    expect(passesLayerB(answer)).toBe(true);
-  });
-
-  it("does not reject an answer with ordinary contractions/possessives — discourses-17-007", () => {
-    // Real corpus counter-example: contraction and possessive apostrophes
-    // never open an unclosed quote span.
-    const answer = "Don't think I'm saying that.";
-    expect(hasUnbalancedQuotes(answer)).toBe(false);
-    expect(passesLayerB(answer)).toBe(true);
-  });
-
-  it("rejects a known non-answer pair drawn from the real corpus (discourses-49-010)", () => {
-    // plain_english: "...Was your desire in any danger? Was your dislike of
-    // something? ..." — the "answer" is another question in the same
-    // Socratic chain, not a resolution.
-    const cards = loadCorpus();
-    const card = cards.find((c) => c.id === "discourses-49-010");
-    expect(card).toBeDefined();
-
-    const candidate = findQuestionCandidate(card!);
-    expect(candidate).not.toBeNull();
-    expect(candidate!.question).toBe("Was your desire in any danger?");
-
-    const answer = questionCandidateAnswer(card!, candidate!.index);
-    expect(answer).toBe("Was your dislike of something?");
-    expect(passesLayerB(answer!)).toBe(false);
-
-    // And confirm the full gate agrees: this card does not survive.
-    const survivorIds = questionGate(cards).map((e) => e.card_id);
-    expect(survivorIds).not.toContain("discourses-49-010");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// T04 fix pass: isPivotAnswer / hasUnbalancedQuotes / hasUnbalancedSingleQuote
-// ---------------------------------------------------------------------------
-
-describe("isPivotAnswer", () => {
-  it.each(PIVOT_ANSWER_PHRASES)("flags '%s' as a whole-sentence answer, with trailing punctuation", (phrase) => {
-    expect(isPivotAnswer(`${phrase}.`)).toBe(true);
-    expect(isPivotAnswer(phrase)).toBe(true);
-  });
-
-  it("is case-insensitive", () => {
-    expect(isPivotAnswer("think of it this way.")).toBe(true);
-  });
-
-  it("does not flag a longer answer that merely contains a pivot phrase mid-sentence", () => {
-    expect(isPivotAnswer("Consider this carefully before you decide what to do.")).toBe(false);
-    expect(isPivotAnswer("Here's the thing about anger: it never helps.")).toBe(false);
-  });
-
-  it("does not flag an ordinary declarative answer", () => {
-    expect(isPivotAnswer("It was not, and never will be.")).toBe(false);
-  });
-});
-
-describe("hasUnbalancedSingleQuote", () => {
-  it("flags an orphan opening quote never closed in the same text", () => {
-    expect(hasUnbalancedSingleQuote("'I know the evil I'm about to do, but my anger is stronger.")).toBe(true);
-  });
-
-  it("does not flag a properly opened and closed quote", () => {
-    expect(hasUnbalancedSingleQuote("'I love this,' he said.")).toBe(false);
-  });
-
-  it("does not flag ordinary contractions", () => {
-    expect(hasUnbalancedSingleQuote("Don't think I'm saying that.")).toBe(false);
-  });
-
-  it("does not flag a possessive apostrophe — 'Epictetus' body'", () => {
-    expect(hasUnbalancedSingleQuote("Epictetus' body was frail, but his will was not.")).toBe(false);
-  });
-});
-
-describe("hasUnbalancedQuotes", () => {
-  it("flags an odd count of double-quote characters", () => {
-    expect(hasUnbalancedQuotes('She said, "this is enough.')).toBe(true);
-  });
-
-  it("flags an orphan opening single quote", () => {
-    expect(hasUnbalancedQuotes("'I know the evil I'm about to do, but my anger is stronger.")).toBe(true);
-  });
-
-  it("does not flag balanced double quotes, contractions, or possessives", () => {
-    expect(hasUnbalancedQuotes('She said, "this is enough."')).toBe(false);
-    expect(hasUnbalancedQuotes("Don't think I'm saying that.")).toBe(false);
-    expect(hasUnbalancedQuotes("Epictetus' body was frail, but his will was not.")).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// T04: questionGate — full deterministic pipeline, measured corpus counts
-// ---------------------------------------------------------------------------
-
-describe("questionGate against the real corpus", () => {
-  const cards = loadCorpus();
-  const entries = questionGate(cards);
-
-  it("measures the surviving pool at each stage: mechanical 306, after layer (a) 150, after layer (b) 89", () => {
-    // Fix pass: `hasAttributionLeak` gained a first-person ("I ask")/
-    // colon-lead-in check (mechanical + layer b), layer (a) gained
-    // `hasThirdPartyReference` and `hasUnbalancedQuotes`, and layer (b) gained
-    // `isPivotAnswer` and `hasUnbalancedQuotes`. Measured drop: mechanical
-    // 313 -> 306, after layer (a) 162 -> 150, after layer (b) 100 -> 89. Not
-    // tuned to hit a target — measured and asserted as-is.
-    const mechanicalCount = cards.filter((c) => findQuestionCandidate(c) !== null).length;
-    const afterACount = cards.filter((c) => {
-      const candidate = findQuestionCandidate(c);
-      return candidate !== null && passesLayerA(candidate.question);
-    }).length;
-
-    expect(mechanicalCount).toBe(306);
-    expect(afterACount).toBe(150);
-    expect(entries.length).toBe(89);
-  });
-
-  it("author mix of the 89 survivors: epictetus 50, marcus-aurelius 21, seneca 18", () => {
-    const authorCounts: Record<string, number> = {};
-    for (const entry of entries) {
-      authorCounts[entry.author_slug] = (authorCounts[entry.author_slug] ?? 0) + 1;
-    }
-    expect(authorCounts).toEqual({ epictetus: 50, "marcus-aurelius": 21, seneca: 18 });
-  });
-
-  it("does not contain the four real leaks fixed by this pass", () => {
-    const ids = entries.map((e) => e.card_id);
-    expect(ids).not.toContain("meditations-04-022"); // "I ask back:" attribution leak
-    expect(ids).not.toContain("discourses-21-004"); // "Think of it this way." pivot answer
-    expect(ids).not.toContain("on-anger-02-092"); // "What did Priam do in the Iliad?"
-    expect(ids).not.toContain("discourses-17-003"); // "How does Medea put it?" + unbalanced quote
-  });
-
-  it("every survivor's question and answer are verbatim substrings of plain_english", () => {
-    const cardsById = new Map(cards.map((c) => [c.id, c]));
-    for (const entry of entries) {
-      const card = cardsById.get(entry.card_id)!;
-      expect(card.plain_english).toContain(entry.question);
-      expect(card.plain_english).toContain(entry.answer);
-    }
-  });
-
-  it("no survivor's answer ends in '?', carries an attribution leak, is a pivot answer, or has unbalanced quotes", () => {
-    for (const entry of entries) {
-      expect(entry.answer.trim().endsWith("?")).toBe(false);
-      expect(hasAttributionLeak(entry.answer)).toBe(false);
-      expect(isPivotAnswer(entry.answer)).toBe(false);
-      expect(hasUnbalancedQuotes(entry.answer)).toBe(false);
-    }
-  });
-
-  it("no survivor's question has an unresolved reference, mid-thought opener, is a fragment, a third-party reference, or has unbalanced quotes", () => {
-    for (const entry of entries) {
-      expect(hasUnresolvedReference(entry.question)).toBe(false);
-      expect(hasMidThoughtOpener(entry.question)).toBe(false);
-      expect(isFragmentQuestion(entry.question)).toBe(false);
-      expect(hasThirdPartyReference(entry.question)).toBe(false);
-      expect(hasUnbalancedQuotes(entry.question)).toBe(false);
-    }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// T04, layer (c) stub: buildQuestionDriftRequests
-// ---------------------------------------------------------------------------
-
-describe("buildQuestionDriftRequests", () => {
-  it("shapes each survivor into a plain request object with no extra fields", () => {
-    const entries = [
-      { card_id: "meditations-05-016", book_slug: "meditations", author_slug: "marcus-aurelius" as const, question: "Is this the right path?", answer: "It is not." },
-    ];
-    const requests = buildQuestionDriftRequests(entries);
-    expect(requests).toEqual([
-      { card_id: "meditations-05-016", question: "Is this the right path?", answer: "It is not." },
-    ]);
-  });
-
-  it("returns one request per survivor, in order", () => {
-    const entries = questionGate(loadCorpus());
-    const requests = buildQuestionDriftRequests(entries);
-    expect(requests.length).toBe(entries.length);
-    expect(requests.map((r) => r.card_id)).toEqual(entries.map((e) => e.card_id));
-  });
-});
+// Pf39c2-social-pilot-02a D01: The Question was deleted outright (the
+// channel is one Wall a day, drawn from the Wall pool, nothing else) —
+// `isExclamationShaped`, `hasAttributionLeak`, `findQuestionCandidate`,
+// `questionCandidateAnswer`, `passesLayerA`, `isSecondPersonQuestion`,
+// `hasThirdPartyReference`, `passesLayerB`, `isPivotAnswer`,
+// `hasUnbalancedSingleQuote`, `hasUnbalancedQuotes`, `questionGate` and
+// `buildQuestionDriftRequests` all went with it.
 
 // ---------------------------------------------------------------------------
 // T05: authorMix / combinedAuthorMix / wallAuthorWeights / selectWallBalanced
@@ -1314,16 +807,12 @@ describe("authorMix", () => {
     expect(mix.seneca.share).toBe(0);
   });
 
-  it("measures the real Question pool's author mix: epictetus 50 (56%), marcus-aurelius 21 (24%), seneca 18 (20%)", () => {
-    const entries = questionGate(loadCorpus());
-    const mix = authorMix(entries);
-    expect(mix.epictetus.count).toBe(50);
-    expect(mix["marcus-aurelius"].count).toBe(21);
-    expect(mix.seneca.count).toBe(18);
-    expect(mix.epictetus.share).toBeCloseTo(50 / 89, 5);
-    expect(mix["marcus-aurelius"].share).toBeCloseTo(21 / 89, 5);
-    expect(mix.seneca.share).toBeCloseTo(18 / 89, 5);
-  });
+  // Pf39c2-social-pilot-02a D01: this used to also measure the real
+  // Question pool's own author mix (`questionGate(loadCorpus())`) — The
+  // Question was deleted outright, so that real measurement is gone with
+  // it. See `wallAuthorWeights`'s own tests below for where that same
+  // 50/21/18 distribution survives, as a synthetic stand-in
+  // (`makeQuestionPool`).
 });
 
 describe("combinedAuthorMix", () => {
@@ -1339,7 +828,7 @@ describe("combinedAuthorMix", () => {
 
   it("is equivalent to authorMix over the flattened pools", () => {
     const cards = loadCorpus();
-    const questionPool = questionGate(cards);
+    const questionPool = makeQuestionPool(REAL_QUESTION_POOL_SPLIT);
     const wallPool = rankWall(cards);
     expect(combinedAuthorMix(questionPool, wallPool)).toEqual(authorMix([...questionPool, ...wallPool]));
   });
@@ -1347,7 +836,7 @@ describe("combinedAuthorMix", () => {
 
 describe("wallAuthorWeights", () => {
   const cards = loadCorpus();
-  const questionPool = questionGate(cards);
+  const questionPool = makeQuestionPool(REAL_QUESTION_POOL_SPLIT);
   const wallPool = rankWall(cards);
   const weights = wallAuthorWeights(questionPool, wallPool);
 
@@ -1429,9 +918,9 @@ describe("wallAuthorWeights", () => {
 
 describe("wallAuthorWeights with a readThrough context (T17)", () => {
   const cards = loadCorpus();
-  const questionPool = questionGate(cards);
+  const questionPool = makeQuestionPool(REAL_QUESTION_POOL_SPLIT);
   const wallPool = rankWall(cards);
-  const objectionPool = objectionGate(cards);
+  const objectionPool = makeObjectionPool(REAL_OBJECTION_POOL_SPLIT);
 
   it("solves marcus-aurelius's own Wall weight to (near) 0 when marcus-aurelius is the fixed read-through author at a 50% floor", () => {
     // 7/14 = 0.5 already exceeds the 1/3 balanced target, so the "combined
@@ -1545,7 +1034,7 @@ describe("createSeededRng", () => {
 describe("selectWallBalanced", () => {
   const cards = loadCorpus();
   const wallPool = rankWall(cards);
-  const questionPool = questionGate(cards);
+  const questionPool = makeQuestionPool(REAL_QUESTION_POOL_SPLIT);
   const weights = wallAuthorWeights(questionPool, wallPool);
 
   it("is deterministic: the same seed and weights return a byte-identical selection", () => {
@@ -1590,8 +1079,15 @@ describe("combined weekly selection proves the point of T05", () => {
   // rebalance The Question itself, only The Wall — while the Wall sample
   // uses wallAuthorWeights's correction. Both draws reuse the same
   // deterministic selectWallBalanced/createSeededRng mechanism.
+  //
+  // Pf39c2-social-pilot-02a D01: `questionPool` is a synthetic stand-in for
+  // the real (now-deleted) `questionGate(cards)` output — see
+  // `makeQuestionPool`'s own doc comment. `selectWallBalanced` never reads
+  // an entry's own text or the pool's order, only each entry's
+  // `author_slug` and the pool's per-author counts, so every pinned
+  // count/share below is unchanged from what the real gate produced.
   const cards = loadCorpus();
-  const questionPool = questionGate(cards);
+  const questionPool = makeQuestionPool(REAL_QUESTION_POOL_SPLIT);
   const wallPool = rankWall(cards);
   const wallWeights = wallAuthorWeights(questionPool, wallPool);
   const questionMix = authorMix(questionPool);
@@ -1621,231 +1117,8 @@ describe("combined weekly selection proves the point of T05", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// T07a: The Objection's mechanical gate
-// ---------------------------------------------------------------------------
 
-describe("startsWithObjectionOpener", () => {
-  it("accepts every opener in OBJECTION_OPENERS", () => {
-    for (const opener of OBJECTION_OPENERS) {
-      expect(startsWithObjectionOpener(`${opener} would anyone believe that?`)).toBe(true);
-    }
-  });
-
-  it("is case-insensitive", () => {
-    expect(startsWithObjectionOpener("but this is unfair.")).toBe(true);
-    expect(startsWithObjectionOpener("BUT THIS IS UNFAIR.")).toBe(true);
-  });
-
-  it("matches at a word boundary, not a prefix", () => {
-    expect(startsWithObjectionOpener("Butter wouldn't melt in his mouth.")).toBe(false);
-  });
-
-  it("rejects a span that doesn't start with an opener", () => {
-    expect(startsWithObjectionOpener("This is not an objection at all.")).toBe(false);
-  });
-});
-
-describe("hasObjectionProperNoun", () => {
-  it("rejects a span containing a proper noun after the opening word", () => {
-    expect(hasObjectionProperNoun("But Socrates said otherwise?")).toBe(true);
-  });
-
-  it("does not reject a span whose only capital is the sentence-initial opener", () => {
-    expect(hasObjectionProperNoun("But why should anyone believe that?")).toBe(false);
-  });
-
-  it("does not reject a mid-span capitalized 'I'", () => {
-    expect(hasObjectionProperNoun("But why should I care about that?")).toBe(false);
-  });
-});
-
-describe("objectionGate", () => {
-  it("accepts a quoted span starting with 'But'", () => {
-    const card = makeCard({ plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.' });
-    const entries = objectionGate([card]);
-    expect(entries.map((e) => e.objection)).toContain("But why should I suffer for this?");
-  });
-
-  it("accepts a quoted span starting with a question word", () => {
-    const card = makeCard({ plain_english: 'She asked, "Why does this always happen to me?" No one answered.' });
-    const entries = objectionGate([card]);
-    expect(entries.map((e) => e.objection)).toContain("Why does this always happen to me?");
-  });
-
-  it("rejects a quoted span longer than 14 words", () => {
-    const longSpan =
-      "But why does this keep happening to me over and over again every single day without any relief at all";
-    expect(wordCount(longSpan)).toBeGreaterThan(OBJECTION_GATE_MAX_WORDS);
-    const card = makeCard({ plain_english: `He said, "${longSpan}?" and left.` });
-    const entries = objectionGate([card]);
-    expect(entries.map((e) => e.objection)).not.toContain(`${longSpan}?`);
-  });
-
-  it("rejects a quoted span containing a proper noun", () => {
-    const card = makeCard({ plain_english: 'He said, "But Socrates said otherwise." No one agreed.' });
-    const entries = objectionGate([card]);
-    expect(entries).toEqual([]);
-  });
-
-  it("does not reject a span with only a sentence-initial capital", () => {
-    const card = makeCard({ plain_english: 'He said, "But why should anyone accept that?" and shrugged.' });
-    const entries = objectionGate([card]);
-    expect(entries.map((e) => e.objection)).toContain("But why should anyone accept that?");
-  });
-
-  it("does not pick up an unquoted objection-shaped sentence", () => {
-    const card = makeCard({ plain_english: "But why should anyone accept that? No one knows." });
-    const entries = objectionGate([card]);
-    expect(entries).toEqual([]);
-  });
-
-  it("captures the reply as the text following the quoted span", () => {
-    const card = makeCard({
-      plain_english: 'He said, "But why should I suffer for this?" Everyone suffers eventually. That is the point.',
-    });
-    const entries = objectionGate([card]);
-    expect(entries).toHaveLength(1);
-    expect(entries[0].reply).toBe("Everyone suffers eventually. That is the point.");
-  });
-
-  it("returns an empty reply when the objection is the last thing said in the card", () => {
-    const card = makeCard({ plain_english: 'He said, "But why should I suffer for this?"' });
-    const entries = objectionGate([card]);
-    expect(entries).toHaveLength(1);
-    expect(entries[0].reply).toBe("");
-  });
-
-  // -------------------------------------------------------------------------
-  // Floor rejections: real survivors from the raw pool (before
-  // OBJECTION_GATE_MIN_WORDS/isOpenerOnly/isExclamationShaped existed) that
-  // are fragments or interjections, not propositions a viewer could argue
-  // with. See OBJECTION_GATE_MIN_WORDS's doc comment for the corpus
-  // inspection behind the floor.
-  // -------------------------------------------------------------------------
-  describe("floor rejections (real raw-pool survivors that are not propositions)", () => {
-    it("rejects a bare opener-plus-comma ('But,', from happy-life-06-001 / on-anger-01-024)", () => {
-      const card = makeCard({
-        plain_english: '"But," our opponent says, "the mind will have its own pleasures too." Fine, let it have them.',
-      });
-      const entries = objectionGate([card]);
-      expect(entries.map((e) => e.objection)).not.toContain("But,");
-    });
-
-    it("rejects a bare interrogative ('Why?', from on-anger-03-040)", () => {
-      const card = makeCard({
-        plain_english: 'When you\'re angry, you shouldn\'t be allowed to do anything. "Why?" you ask. Because it is not allowed.',
-      });
-      const entries = objectionGate([card]);
-      expect(entries.map((e) => e.objection)).not.toContain("Why?");
-    });
-
-    it("rejects a two-word non-statement ('How miserable.', from discourses-40-004)", () => {
-      const card = makeCard({
-        plain_english: 'We see someone in exile and think, "How miserable." We see a poor person and think otherwise.',
-      });
-      const entries = objectionGate([card]);
-      expect(entries.map((e) => e.objection)).not.toContain("How miserable.");
-    });
-
-    it("rejects an exclamation-shaped span ('What a beautiful sight!', from on-anger-02-012)", () => {
-      const card = makeCard({
-        plain_english: 'Hannibal saw a ditch filled with blood and cried out, "What a beautiful sight!" No one else agreed.',
-      });
-      const entries = objectionGate([card]);
-      expect(entries.map((e) => e.objection)).not.toContain("What a beautiful sight!");
-    });
-
-    it("accepts a genuine objection at exactly the minimum length ('But it's not fair,', from discourses-64-004)", () => {
-      const card = makeCard({
-        plain_english: '"But it\'s not fair," you say. "I told you my neighbor\'s secrets. Now you should tell me yours."',
-      });
-      const entries = objectionGate([card]);
-      expect(wordCount("But it's not fair,")).toBe(OBJECTION_GATE_MIN_WORDS);
-      expect(entries.map((e) => e.objection)).toContain("But it's not fair,");
-    });
-  });
-
-  describe("isOpenerOnly", () => {
-    it("is true for an opener followed only by punctuation", () => {
-      expect(isOpenerOnly("But,")).toBe(true);
-      expect(isOpenerOnly("Why?")).toBe(true);
-    });
-
-    it("is false once real content follows the opener", () => {
-      expect(isOpenerOnly("But it's not fair,")).toBe(false);
-    });
-  });
-
-  describe("over the full corpus", () => {
-    const cards = loadCorpus();
-    const entries = objectionGate(cards);
-
-    it("measures 59 raw candidates", () => {
-      // Was 78 before OBJECTION_GATE_MIN_WORDS/isOpenerOnly/isExclamationShaped
-      // existed. The 19 that dropped out were fragments/interjections, not
-      // propositions — see OBJECTION_GATE_MIN_WORDS's doc comment for the
-      // full corpus inspection. Author mix after the floor: epictetus 24,
-      // seneca 32, marcus-aurelius 3. Book mix within seneca: on-anger 15,
-      // happy-life 11, peace-of-mind 4, shortness-of-life 2 — on-anger
-      // remains the second-largest single book in the pool (after
-      // discourses' 19), so the new floor does not gut it specifically,
-      // even though its share of the pool (23/78 -> 15/59) did shrink
-      // somewhat more than other books, since several of its rejected
-      // spans ("But,", "Why?", "How,", "What a beautiful sight!", "What a
-      // kingly deed!") were interjection-heavy dialogue.
-      expect(entries.length).toBe(59);
-    });
-
-    it("every entry's reply_start lands right after its own quoted occurrence, and reply is everything after it (M12)", () => {
-      // Corpus-wide version of the M12 fixture test in schedule.test.ts:
-      // confirms the gate's cursor resolves each entry to ITS OWN occurrence
-      // of the quoted span (not always the first one in the card), across
-      // every real entry the gate produces — not just a synthetic repeat.
-      const cardsById = new Map(cards.map((c) => [c.id, c]));
-      for (const e of entries) {
-        const card = cardsById.get(e.card_id)!;
-        expect(card.plain_english.slice(0, e.reply_start).endsWith(`"${e.objection}"`)).toBe(true);
-        expect(card.plain_english.slice(e.reply_start).trim()).toBe(e.reply);
-      }
-    });
-
-    it("is in the 35-65 raw-pool range (regression guard)", () => {
-      // Narrowed from 40-80 (measured against the pre-floor 78-candidate
-      // pool) to 35-65 now that the floor measures 59 — still wide enough
-      // to absorb corpus edits without the guard being a tautology.
-      expect(entries.length).toBeGreaterThanOrEqual(35);
-      expect(entries.length).toBeLessThanOrEqual(65);
-    });
-
-    it("splits epictetus 24 / seneca 32 / marcus-aurelius 3", () => {
-      const byAuthor: Record<string, number> = { epictetus: 0, "marcus-aurelius": 0, seneca: 0 };
-      for (const entry of entries) byAuthor[entry.author_slug] += 1;
-      expect(byAuthor).toEqual({ epictetus: 24, "marcus-aurelius": 3, seneca: 32 });
-    });
-
-    it("every entry's objection is a verbatim substring of its card's plain_english", () => {
-      const cardsById = new Map(cards.map((c) => [c.id, c]));
-      for (const entry of entries) {
-        const card = cardsById.get(entry.card_id);
-        expect(card).toBeDefined();
-        expect(card!.plain_english.includes(entry.objection)).toBe(true);
-      }
-    });
-
-    it("every entry's objection is between the min/max word bounds and starts with an opener", () => {
-      for (const entry of entries) {
-        expect(wordCount(entry.objection)).toBeGreaterThanOrEqual(OBJECTION_GATE_MIN_WORDS);
-        expect(wordCount(entry.objection)).toBeLessThanOrEqual(OBJECTION_GATE_MAX_WORDS);
-        expect(startsWithObjectionOpener(entry.objection)).toBe(true);
-      }
-    });
-
-    it("no entry's objection is opener-only or exclamation-shaped", () => {
-      for (const entry of entries) {
-        expect(isOpenerOnly(entry.objection)).toBe(false);
-        expect(isExclamationShaped(entry.objection)).toBe(false);
-      }
-    });
-  });
-});
+// Pf39c2-social-pilot-02a D01: The Objection was deleted outright (the
+// channel is one Wall a day, drawn from the Wall pool, nothing else) —
+// `startsWithObjectionOpener`, `hasObjectionProperNoun` and `objectionGate`
+// all went with it.

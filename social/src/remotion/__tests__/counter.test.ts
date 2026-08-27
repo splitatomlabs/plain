@@ -11,10 +11,6 @@ import { bundle } from '@remotion/bundler';
 import { ReadThroughCounter } from '../Counter.js';
 import { ACCENTS } from '../../render/theme.js';
 import { computeWallTiming, computePayoffCounterBox } from '../wall-timing.js';
-import { computeQuestionTiming } from '../question-timing.js';
-import { computeObjectionTiming } from '../objection-timing.js';
-import { assertObjectionRenderable } from '../objection-gate.js';
-import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
 import { renderFrameAsPng, assertIdenticalOutsideBoxes, assertBoxDiffers, type PixelBox } from './pixel-proof.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -33,11 +29,10 @@ afterAll(async () => {
 	await rm(bundleDir, { recursive: true, force: true });
 });
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
-const outputDir = path.join(repoRoot, 'content', 'output');
 
-// --- Fixtures — mirror wall-timing.test.ts / question-timing.test.ts /
-// objection-timing.test.ts exactly, rather than inventing new cards, so a
-// reviewer already familiar with those files recognizes these on sight.
+// --- Fixtures — mirror wall-timing.test.ts exactly, rather than inventing
+// new cards, so a reviewer already familiar with that file recognizes these
+// on sight.
 
 interface Card {
 	id: string;
@@ -68,32 +63,6 @@ const WALL_BASE_PROPS = {
 	landingLine: WALL_LANDING_LINE,
 	plainLines: WALL_PLAIN_LINES,
 	author: WALL_CARD.author_slug
-};
-
-// F16 (2026-08-26): swapped from discourses-18-010, whose 152-word archaic
-// excerpt no longer clears `wall-gate.ts`'s new travel floor at the
-// smaller 76px/500px-s geometry — see `question-timing.test.ts`'s matching
-// fixture comment for the numbers.
-const QUESTION_ENTRY: WallPoolEntry = {
-	card_id: 'discourses-64-006',
-	book_slug: 'discourses'
-};
-
-const QUESTION_BASE_PROPS = {
-	question: 'You want me to trust you with my business?',
-	answer: "You're a man who has corrupted his own will.",
-	originalExcerpt: resolveWallCardExcerpt(QUESTION_ENTRY, outputDir),
-	author: 'epictetus'
-};
-
-const OBJECTION_BASE_PROPS = {
-	objection: "Shouldn't he be punished?",
-	reply:
-		"He will be, even if you don't want him to be. The worst punishment for doing wrong is knowing that you did it. " +
-		"No one suffers more than someone tortured by their own guilt. Besides, we should think about all of humanity " +
-		"before we judge what happens in life. It's unfair to blame individuals for flaws that everyone has. A black " +
-		"person's skin doesn't stand out among his own people. No man in Germany is ashamed of his red hair tied in a knot.",
-	author: 'seneca'
 };
 
 const COUNTER_LABEL = 'Card 5 of 48';
@@ -188,19 +157,22 @@ describe('source guard — reads as a page number, not branding', () => {
 // "retarget `counter.test.ts`'s pixel-level proof" the T11 task called for).
 //
 // social pilot 02a U02 (2026-08-27) RETARGET: before U02 every case cropped
-// the same fixed `COUNTER_BOUNDING_BOX` (a top-left corner). U02 moved
-// Wall/Question/Objection's counter to render CENTRED BELOW that render's
-// own payoff text instead — a box whose position depends on that specific
-// text's fitted height, not a single constant. Each case below now supplies
-// its own `counterBox`, computed via `computePayoffCounterBox` (the exact
-// function `PayoffLine` itself calls — see `wall-timing.ts`), from the
-// SAME text that render's payoff frame actually shows. The proof itself is
-// unweakened: still "every pixel outside the counter's own box is
-// byte-identical with/without it", just checked against the real box for
-// each case instead of one shared guess.
-describe('end-to-end: overlay composes over all three formats without reflow', () => {
+// the same fixed `COUNTER_BOUNDING_BOX` (a top-left corner). U02 moved the
+// counter to render CENTRED BELOW that render's own payoff text instead — a
+// box whose position depends on that specific text's fitted height, not a
+// single constant. Each case below now supplies its own `counterBox`,
+// computed via `computePayoffCounterBox` (the exact function `PayoffLine`
+// itself calls — see `wall-timing.ts`), from the SAME text that render's
+// payoff frame actually shows. The proof itself is unweakened: still "every
+// pixel outside the counter's own box is byte-identical with/without it",
+// just checked against the real box instead of one shared guess.
+//
+// Pf39c2-social-pilot-02a D01: Question and Objection were deleted outright
+// (the channel is one Wall a day) — this used to also exercise their own
+// compositions; only the Wall case remains.
+describe('end-to-end: overlay composes over the Wall without reflow', () => {
 	it(
-		'Wall, Question and Objection each render pixel-identical outside the counter box at every sampled frame, ' +
+		'the Wall renders pixel-identical outside the counter box at every sampled frame, ' +
 			'with the counter visible in-box wherever it is expected to be, centred below that payoff text',
 		async () => {
 			const bundleLocation = await bundle({
@@ -220,14 +192,6 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 			});
 
 			const wallTiming = computeWallTiming(WALL_BASE_PROPS);
-			const questionTiming = computeQuestionTiming({ question: QUESTION_BASE_PROPS.question });
-			const objectionTiming = computeObjectionTiming();
-			// Same gate `Objection.tsx` itself calls — the exact reply-line split
-			// production actually renders, not a re-derived guess of the split.
-			const objectionGate = assertObjectionRenderable({
-				objection: OBJECTION_BASE_PROPS.objection,
-				reply: OBJECTION_BASE_PROPS.reply
-			});
 
 			const cases: Array<{
 				id: string;
@@ -254,48 +218,6 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 							frame: wallTiming.landingLine.startFrame,
 							counterBox: computePayoffCounterBox(WALL_LANDING_LINE),
 							note: 'the landing-line payoff'
-						}
-					]
-				},
-				{
-					id: 'Question',
-					baseProps: QUESTION_BASE_PROPS,
-					// Frame 0 is the question ALONE, with nothing else on screen —
-					// see `Question.tsx`'s doc comment and
-					// `question-timing.test.ts`'s "frame 0 renders ONLY the
-					// question" guard, which this test must not contradict (no
-					// existing test may change). The moving archaic-wall phase that
-					// follows must ALSO never show the counter — same collision
-					// this format shares with The Wall's own moving phase — so it
-					// only resumes on the still answer payoff.
-					frames: [
-						{ frame: 0, counterBox: null, note: 'frame 0 — the question alone' },
-						{
-							frame: questionTiming.wall.startFrame,
-							counterBox: null,
-							note: 'the moving archaic wall'
-						},
-						{
-							frame: questionTiming.answer.startFrame,
-							counterBox: computePayoffCounterBox(QUESTION_BASE_PROPS.answer),
-							note: 'the answer payoff'
-						}
-					]
-				},
-				{
-					id: 'Objection',
-					baseProps: OBJECTION_BASE_PROPS,
-					// Frame 0 is the objection ALONE, with nothing else on screen —
-					// see `Objection.tsx`'s doc comment and
-					// `objection-timing.test.ts`'s "opening branch" guard, which
-					// this test must not contradict either. The overlay starts
-					// once the reply resolves.
-					frames: [
-						{ frame: 0, counterBox: null, note: 'frame 0 — the objection alone' },
-						{
-							frame: objectionTiming.replyLines[1].startFrame,
-							counterBox: computePayoffCounterBox(objectionGate.replyLines[1]),
-							note: 'the second (final) reply-line payoff'
 						}
 					]
 				}

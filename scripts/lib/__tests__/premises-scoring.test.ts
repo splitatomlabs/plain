@@ -1,25 +1,15 @@
 import { describe, it, expect } from "vitest";
 import {
   parseWallRubricResponse,
-  parseQuestionRubricResponse,
-  parseObjectionRubricResponse,
   checkFaithfulness,
   withinWallOriginalLimit,
   withinWallLandingLineLimit,
-  withinQuestionLimit,
-  withinObjectionLimit,
   passesStoppingPower,
   WALL_SCORE_MIN,
   WALL_SCORE_MAX,
-  OBJECTION_MAX_WORDS,
   WALL_ORIGINAL_MIN_WORDS,
-  wordCount,
   buildWallRubricSystem,
   buildWallRubricUser,
-  buildQuestionRubricSystem,
-  buildQuestionRubricUser,
-  buildObjectionRubricSystem,
-  buildObjectionRubricUser,
 } from "../premises-scoring.js";
 import { loadCorpus } from "../premises.js";
 import type { Card } from "../types.js";
@@ -50,6 +40,23 @@ function words(n: number, base = "word"): string {
 }
 
 // ---------------------------------------------------------------------------
+// Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+// outright — the channel is one Wall a day, drawn from the Wall pool,
+// nothing else. This file used to also cover:
+//   - parseQuestionRubricResponse / parseObjectionRubricResponse fenced-JSON
+//     parsing
+//   - "The Question rubric shape" / "The Objection rubric shape"
+//   - The Question/Objection halves of the T20 additive-unknown-fields
+//     coverage
+//   - withinQuestionLimit / withinObjectionLimit / OBJECTION_MAX_WORDS
+//   - buildQuestionRubricSystem/User, buildObjectionRubricSystem/User
+// All of that is gone along with the formats it served. `passesStoppingPower`
+// survives (see its own doc comment in ../premises-scoring.ts) because
+// `wallAuthorWeights`'s author-balance correction still takes a Question pool
+// as an input even though nothing produces one any more.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // 1. Fenced-JSON parsing
 // ---------------------------------------------------------------------------
 
@@ -57,20 +64,6 @@ const validWallJSON = JSON.stringify({
   impenetrability_score: 4,
   landing_line_score: 5,
   chosen_landing_line: "The quality of your thoughts shapes the quality of your life.",
-});
-
-const validQuestionJSON = JSON.stringify({
-  verdict: "answers",
-  standalone_intelligible: true,
-  answer_has_substance: true,
-  modern_premise: true,
-  reason: "The following sentence directly resolves the question.",
-});
-
-const validObjectionJSON = JSON.stringify({
-  verdict: "accept",
-  classification: "viewer_position",
-  reason: "A general reader could plausibly hold this objection themselves.",
 });
 
 describe("parseWallRubricResponse — fenced-JSON parsing", () => {
@@ -93,52 +86,6 @@ describe("parseWallRubricResponse — fenced-JSON parsing", () => {
 
   it("rejects malformed JSON with a clear error", () => {
     expect(() => parseWallRubricResponse("{not valid json at all")).toThrow(/json/i);
-  });
-});
-
-describe("parseQuestionRubricResponse — fenced-JSON parsing", () => {
-  it("accepts bare JSON", () => {
-    const result = parseQuestionRubricResponse(validQuestionJSON);
-    expect(result.verdict).toBe("answers");
-  });
-
-  it("accepts JSON wrapped in ```json fences", () => {
-    const wrapped = "```json\n" + validQuestionJSON + "\n```";
-    const result = parseQuestionRubricResponse(wrapped);
-    expect(result.verdict).toBe("answers");
-  });
-
-  it("accepts JSON with leading and trailing prose", () => {
-    const wrapped = `My verdict:\n${validQuestionJSON}\nHope that helps!`;
-    const result = parseQuestionRubricResponse(wrapped);
-    expect(result.reason).toContain("resolves");
-  });
-
-  it("rejects malformed JSON with a clear error", () => {
-    expect(() => parseQuestionRubricResponse("not json at all")).toThrow(/json/i);
-  });
-});
-
-describe("parseObjectionRubricResponse — fenced-JSON parsing", () => {
-  it("accepts bare JSON", () => {
-    const result = parseObjectionRubricResponse(validObjectionJSON);
-    expect(result.classification).toBe("viewer_position");
-  });
-
-  it("accepts JSON wrapped in ```json fences", () => {
-    const wrapped = "```json\n" + validObjectionJSON + "\n```";
-    const result = parseObjectionRubricResponse(wrapped);
-    expect(result.verdict).toBe("accept");
-  });
-
-  it("accepts JSON with leading and trailing prose", () => {
-    const wrapped = `Here's my classification:\n${validObjectionJSON}\nDone.`;
-    const result = parseObjectionRubricResponse(wrapped);
-    expect(result.classification).toBe("viewer_position");
-  });
-
-  it("rejects malformed JSON with a clear error", () => {
-    expect(() => parseObjectionRubricResponse("{{{broken")).toThrow(/json/i);
   });
 });
 
@@ -215,10 +162,7 @@ describe("checkFaithfulness", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 3. Per-rubric output shapes
-//    Three rubrics, three different shapes. Each parser must accept its own
-//    shape and reject the other two formats' shapes (missing/extra fields,
-//    wrong types, out-of-range scores).
+// 3. The Wall's rubric output shape
 // ---------------------------------------------------------------------------
 
 describe("The Wall rubric shape", () => {
@@ -263,14 +207,6 @@ describe("The Wall rubric shape", () => {
       chosen_landing_line: "A line.",
     });
     expect(() => parseWallRubricResponse(bad)).toThrow(/score/i);
-  });
-
-  it("rejects a Question-shaped payload (verdict/reason, no scores)", () => {
-    expect(() => parseWallRubricResponse(validQuestionJSON)).toThrow(/score|chosen_landing_line/i);
-  });
-
-  it("rejects an Objection-shaped payload (verdict/classification/reason)", () => {
-    expect(() => parseWallRubricResponse(validObjectionJSON)).toThrow(/score|chosen_landing_line/i);
   });
 });
 
@@ -345,118 +281,16 @@ describe("The Wall rubric tolerates additive unknown fields (T20)", () => {
     });
     expect(() => parseWallRubricResponse(bad)).toThrow(/score/i);
   });
-
-  it("a Question-shaped payload is still rejected by the Wall parser even with an extra field added", () => {
-    const bad = JSON.stringify({ verdict: "answers", reason: "resolves it", extra_commentary: "note" });
-    expect(() => parseWallRubricResponse(bad)).toThrow(/score|chosen_landing_line/i);
-  });
-});
-
-describe("The Question and Objection rubrics also tolerate additive unknown fields (T20)", () => {
-  it("Question parser parses successfully with an extra commentary field", () => {
-    const raw = JSON.stringify({
-      verdict: "answers",
-      standalone_intelligible: true,
-      answer_has_substance: true,
-      modern_premise: true,
-      reason: "The following sentence directly resolves the question.",
-      verdict_confidence: "high",
-    });
-    const result = parseQuestionRubricResponse(raw);
-    expect(result).toMatchObject({ verdict: "answers" });
-    expect(result).not.toHaveProperty("verdict_confidence");
-  });
-
-  it("Question parser still rejects an invalid verdict even with an extra field present", () => {
-    const bad = JSON.stringify({ verdict: "maybe", reason: "Unclear.", verdict_confidence: "low" });
-    expect(() => parseQuestionRubricResponse(bad)).toThrow(/verdict/i);
-  });
-
-  it("Objection parser parses successfully with an extra commentary field", () => {
-    const raw = JSON.stringify({
-      verdict: "accept",
-      classification: "viewer_position",
-      reason: "A general reader could plausibly hold this objection themselves.",
-      classification_confidence: "high",
-    });
-    const result = parseObjectionRubricResponse(raw);
-    expect(result).toMatchObject({ verdict: "accept", classification: "viewer_position" });
-    expect(result).not.toHaveProperty("classification_confidence");
-  });
-
-  it("Objection parser still rejects an invalid classification even with an extra field present", () => {
-    const bad = JSON.stringify({
-      verdict: "accept",
-      classification: "narrator_aside",
-      reason: "Not a real classification.",
-      classification_confidence: "low",
-    });
-    expect(() => parseObjectionRubricResponse(bad)).toThrow(/classification/i);
-  });
-});
-
-describe("The Question rubric shape", () => {
-  it("accepts a valid Question payload", () => {
-    const result = parseQuestionRubricResponse(validQuestionJSON);
-    expect(result).toMatchObject({
-      verdict: expect.stringMatching(/^(answers|drifts)$/),
-      reason: expect.any(String),
-    });
-  });
-
-  it("rejects a payload missing reason", () => {
-    const bad = JSON.stringify({
-      verdict: "answers",
-      standalone_intelligible: true,
-      answer_has_substance: true,
-      modern_premise: true,
-    });
-    expect(() => parseQuestionRubricResponse(bad)).toThrow(/reason/i);
-  });
-
-  it("rejects a payload with an invalid verdict value", () => {
-    const bad = JSON.stringify({ verdict: "maybe", reason: "Unclear." });
-    expect(() => parseQuestionRubricResponse(bad)).toThrow(/verdict/i);
-  });
-
-  it("rejects a Wall-shaped payload (scores + chosen_landing_line, no verdict)", () => {
-    expect(() => parseQuestionRubricResponse(validWallJSON)).toThrow(/verdict/i);
-  });
-
-  it("rejects an Objection-shaped payload (has classification, which Question does not use)", () => {
-    // validObjectionJSON's verdict is "accept", not a valid Question verdict
-    // ("answers"/"drifts") — the real parser must reject on that basis.
-    expect(() => parseQuestionRubricResponse(validObjectionJSON)).toThrow(/verdict/i);
-  });
-
-  it("rejects a payload missing a T22 stopping-power field (standalone_intelligible)", () => {
-    const bad = JSON.stringify({
-      verdict: "answers",
-      answer_has_substance: true,
-      modern_premise: true,
-      reason: "n/a",
-    });
-    expect(() => parseQuestionRubricResponse(bad)).toThrow(/standalone_intelligible/i);
-  });
-
-  it("rejects a payload with a wrong-typed T22 stopping-power field", () => {
-    const bad = JSON.stringify({
-      verdict: "answers",
-      standalone_intelligible: "yes", // string, not boolean
-      answer_has_substance: true,
-      modern_premise: true,
-      reason: "n/a",
-    });
-    expect(() => parseQuestionRubricResponse(bad)).toThrow(/standalone_intelligible/i);
-  });
 });
 
 // ---------------------------------------------------------------------------
 // T22: STOPPING-POWER — a dimension independent of drift. The Question's
-// drift check (verdict) alone lets a correctly-answered but unpostable pair
+// drift check (verdict) alone let a correctly-answered but unpostable pair
 // through; these tests pin the two REAL week-1 slots that motivated this
-// task, drawn from the actual corpus/committed pool rather than invented
-// text, plus a real pair that should still pass everything.
+// task, drawn from the actual corpus rather than invented text, plus a real
+// pair that should still pass everything. `passesStoppingPower` survives
+// The Question's own deletion (D01) — see its doc comment in
+// ../premises-scoring.ts.
 // ---------------------------------------------------------------------------
 describe("T22: stopping power — independent of drift", () => {
   const cards = loadCorpus();
@@ -551,54 +385,11 @@ describe("T22: stopping power — independent of drift", () => {
   });
 });
 
-describe("The Objection rubric shape", () => {
-  it("accepts a valid Objection payload", () => {
-    const result = parseObjectionRubricResponse(validObjectionJSON);
-    expect(result).toMatchObject({
-      verdict: expect.stringMatching(/^(accept|reject)$/),
-      classification: expect.stringMatching(/^(viewer_position|dramatized_scene|doctrinal_dispute)$/),
-      reason: expect.any(String),
-    });
-  });
-
-  it("rejects a payload missing classification", () => {
-    const bad = JSON.stringify({ verdict: "accept", reason: "Plausible objection." });
-    expect(() => parseObjectionRubricResponse(bad)).toThrow(/classification/i);
-  });
-
-  it("rejects a payload with an invalid classification enum value", () => {
-    const bad = JSON.stringify({
-      verdict: "accept",
-      classification: "narrator_aside",
-      reason: "Not a real classification.",
-    });
-    expect(() => parseObjectionRubricResponse(bad)).toThrow(/classification/i);
-  });
-
-  it("rejects a payload with an invalid verdict value", () => {
-    const bad = JSON.stringify({
-      verdict: "maybe",
-      classification: "viewer_position",
-      reason: "Unclear.",
-    });
-    expect(() => parseObjectionRubricResponse(bad)).toThrow(/verdict/i);
-  });
-
-  it("rejects a Wall-shaped payload (scores + chosen_landing_line, no verdict/classification)", () => {
-    expect(() => parseObjectionRubricResponse(validWallJSON)).toThrow(/verdict|classification/i);
-  });
-
-  it("rejects a Question-shaped payload (verdict/reason, missing classification)", () => {
-    expect(() => parseObjectionRubricResponse(validQuestionJSON)).toThrow(/classification/i);
-  });
-});
-
 // ---------------------------------------------------------------------------
 // 4. Per-format length limits
 //    On-screen text limits are PER FORMAT, not global. The Wall's original
 //    side has a HIGH ceiling (150+ words is valid); The Wall's landing
-//    line, The Question, and The Objection's quoted line are all
-//    short-form and independently capped. No single global limit exists.
+//    line is short-form and independently capped.
 // ---------------------------------------------------------------------------
 
 describe("The Wall's original-side length limit", () => {
@@ -630,46 +421,12 @@ describe("The Wall's landing-line length limit", () => {
   });
 });
 
-describe("The Question's length limit", () => {
-  it("accepts a 14-word question (QUESTION_MAX_WORDS)", () => {
-    expect(withinQuestionLimit(words(14))).toBe(true);
-  });
-
-  it("rejects a 15-word question", () => {
-    expect(withinQuestionLimit(words(15))).toBe(false);
-  });
-
-  it("rejects a 150-word question — proving The Wall's high ceiling is not applied globally", () => {
-    expect(withinQuestionLimit(words(150))).toBe(false);
-  });
-});
-
-describe("The Objection's length limit", () => {
-  it(`accepts a ${OBJECTION_MAX_WORDS}-word quoted line`, () => {
-    expect(withinObjectionLimit(words(OBJECTION_MAX_WORDS))).toBe(true);
-  });
-
-  it(`rejects a ${OBJECTION_MAX_WORDS + 1}-word quoted line`, () => {
-    expect(withinObjectionLimit(words(OBJECTION_MAX_WORDS + 1))).toBe(false);
-  });
-});
-
-describe("length limits are per-format, not global", () => {
-  it("a 150-word text passes The Wall's original limit but fails The Question's limit", () => {
-    const text150 = words(150);
-    expect(withinWallOriginalLimit(wordCount(text150))).toBe(true);
-    expect(withinQuestionLimit(text150)).toBe(false);
-  });
-});
-
 // ---------------------------------------------------------------------------
-// 5. Prompt builders (T07)
-//    Each system prompt must be a pure function of authorSlug alone — static
-//    and byte-identical across calls for the same author (so the Anthropic
-//    prompt cache actually hits) — and must differ meaningfully across
-//    authors. The Objection's system prompt carries the heaviest weight per
-//    the plan, so it must contain real, discriminating examples of all
-//    three classifications.
+// 5. Prompt builder (T07)
+//    The Wall's system prompt must be a pure function of authorSlug alone —
+//    static and byte-identical across calls for the same author (so the
+//    Anthropic prompt cache actually hits) — and must differ meaningfully
+//    across authors.
 // ---------------------------------------------------------------------------
 
 describe("buildWallRubricSystem", () => {
@@ -701,101 +458,5 @@ describe("buildWallRubricUser", () => {
   it("throws when a card has no qualifying landing line candidates", () => {
     const card = makeCard({ plain_english: "But this, that." });
     expect(() => buildWallRubricUser(card)).toThrow(/landing line/i);
-  });
-});
-
-describe("buildQuestionRubricSystem", () => {
-  it("is static and stable across calls for the same author", () => {
-    expect(buildQuestionRubricSystem("epictetus")).toBe(buildQuestionRubricSystem("epictetus"));
-  });
-
-  it("differs across authors", () => {
-    const prompts = new Set(AUTHOR_SLUGS.map((slug) => buildQuestionRubricSystem(slug)));
-    expect(prompts.size).toBe(AUTHOR_SLUGS.length);
-  });
-
-  it("scopes topic drift to resolution only, not the deterministic layers' concerns", () => {
-    const system = buildQuestionRubricSystem("seneca");
-    expect(system).toMatch(/topic drift/i);
-    expect(system).toMatch(/already (been )?(passed|checked)/i);
-  });
-
-  // T22: the rubric now ALSO scores stopping power, independent of drift —
-  // pin that the prompt names all three sub-dimensions and both required
-  // JSON field names, not just the drift verdict.
-  it("names all three T22 stopping-power dimensions and requires the extended JSON shape", () => {
-    const system = buildQuestionRubricSystem("epictetus");
-    expect(system).toMatch(/standalone/i);
-    expect(system).toMatch(/substance/i);
-    expect(system).toMatch(/modern/i);
-    expect(system).toContain("standalone_intelligible");
-    expect(system).toContain("answer_has_substance");
-    expect(system).toContain("modern_premise");
-  });
-
-  it("uses the real motivating examples so the rubric calibrates against genuine failure cases", () => {
-    const system = buildQuestionRubricSystem("marcus-aurelius");
-    expect(system).toContain("Do you have reason?");
-    expect(system).toContain("Can't serve in the army?");
-    expect(system).toContain("What is a master anyway?");
-  });
-});
-
-describe("buildQuestionRubricUser", () => {
-  it("embeds the question and candidate answer verbatim", () => {
-    const request = {
-      card_id: "discourses-49-010",
-      question: "Was your desire in any danger?",
-      answer: "No, it wasn't.",
-    };
-    const user = buildQuestionRubricUser(request);
-    expect(user).toContain(request.question);
-    expect(user).toContain(request.answer);
-  });
-});
-
-describe("buildObjectionRubricSystem", () => {
-  it("is static and stable across calls for the same author", () => {
-    expect(buildObjectionRubricSystem("seneca")).toBe(buildObjectionRubricSystem("seneca"));
-  });
-
-  it("differs across authors", () => {
-    const prompts = new Set(AUTHOR_SLUGS.map((slug) => buildObjectionRubricSystem(slug)));
-    expect(prompts.size).toBe(AUTHOR_SLUGS.length);
-  });
-
-  it("names all three classifications", () => {
-    for (const slug of AUTHOR_SLUGS) {
-      const system = buildObjectionRubricSystem(slug);
-      expect(system).toContain("viewer_position");
-      expect(system).toContain("dramatized_scene");
-      expect(system).toContain("doctrinal_dispute");
-    }
-  });
-
-  it("Seneca's prompt leads with On Anger and flags On the Happy Life's doctrinal disputes", () => {
-    const system = buildObjectionRubricSystem("seneca");
-    expect(system).toMatch(/On Anger/);
-    expect(system).toMatch(/our opponent/);
-  });
-
-  it("carries a real corpus discriminating example for each author", () => {
-    expect(buildObjectionRubricSystem("epictetus")).toContain(
-      "But why did he bring me into the world under these conditions?",
-    );
-    expect(buildObjectionRubricSystem("marcus-aurelius")).toContain(
-      "But the play isn't finished yet — only three acts are done!",
-    );
-    expect(buildObjectionRubricSystem("seneca")).toContain("But some angry people stay in control");
-  });
-});
-
-describe("buildObjectionRubricUser", () => {
-  it("embeds the quoted line and the full card text for context", () => {
-    const card = makeCard();
-    const quotedLine = "But some angry people stay in control,";
-    const user = buildObjectionRubricUser(quotedLine, card);
-    expect(user).toContain(quotedLine);
-    expect(user).toContain(card.plain_english);
   });
 });

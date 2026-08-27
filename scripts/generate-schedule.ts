@@ -20,7 +20,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { loadCorpus, rankWall, questionGate, objectionGate } from "./lib/premises.js";
+import { loadCorpus, rankWall } from "./lib/premises.js";
 import {
   generateWeek,
   loadFormatPools,
@@ -110,10 +110,12 @@ Reads every prior pilot-schedule-w<NN>.json in --output (w01 .. w<week-1>)
 so a card scheduled in an earlier week is never reused, and resumes the
 read-through counter where the prior weeks left off.
 
-Pool fallback: reads <premises-dir>/{wall,question,objection}.json when
-present (T11's scored pools); falls back to the mechanical gate output
-(rankWall/questionGate/objectionGate) from the raw corpus when absent, so
-this works today, before T11 has run.
+Pool fallback: reads <premises-dir>/wall.json when present (T11's scored
+pool); falls back to the mechanical gate output (rankWall) from the raw
+corpus when absent, so this works today, before T11 has run. Question and
+Objection were deleted outright (Pf39c2-social-pilot-02a D01) — the channel
+is one Wall a day, drawn from the Wall pool, nothing else — so their pools
+are always empty regardless of <premises-dir>'s contents.
 
 Review gate: per the plan's own cadence ("review retention, adjust hooks and
 format mix, then generate the next week"), generating week N (N > 1) refuses
@@ -287,7 +289,13 @@ async function main(): Promise<void> {
 
   const cards = loadCorpus(corpusDir);
 
-  const gatePools = { wall: rankWall(cards), question: questionGate(cards), objection: objectionGate(cards) };
+  // Pf39c2-social-pilot-02a D01: Question and Objection were deleted
+  // outright (the channel is one Wall a day, drawn from the Wall pool,
+  // nothing else) — `questionGate`/`objectionGate` no longer exist, so these
+  // two pools are always empty. `./lib/schedule.ts`'s `FormatPools` shape
+  // (and the weighted-format machinery that consumes it) still exists,
+  // restructuring it away is D02's job, not this one's.
+  const gatePools = { wall: rankWall(cards), question: [], objection: [] };
   const { pools, source, exclusions } = await loadFormatPools(premisesDir, gatePools, exclusionsPath);
 
   const { usedCardIds, readThroughConsumed } = await loadPriorWeeks(outputDir, week);

@@ -5,12 +5,8 @@ import path from "node:path";
 import {
   loadCorpus,
   rankWall,
-  questionGate,
-  objectionGate,
   wallAuthorWeights,
   sentences,
-  passesLayerA,
-  passesLayerB,
   classifyWallSubTypes,
   type RankedWallEntry,
   type WallSubType,
@@ -42,10 +38,16 @@ import type { AuthorSlug } from "../constants.js";
 // ---------------------------------------------------------------------------
 
 const cards: Card[] = loadCorpus();
+// Pf39c2-social-pilot-02a D01: Question and Objection were deleted outright
+// (`questionGate`/`objectionGate` no longer exist) — the channel is one
+// Wall a day, drawn from the Wall pool, nothing else. `FormatPools` still
+// carries `question`/`objection` fields (collapsing that shape away is
+// D02's job, not this one's), so these are always empty now — no schedule
+// this file generates can ever contain a "question" or "objection" slot.
 const gatePools: FormatPools = {
   wall: rankWall(cards),
-  question: questionGate(cards),
-  objection: objectionGate(cards),
+  question: [],
+  objection: [],
 };
 const poolSource = { wall: "gate-only" as const, question: "gate-only" as const, objection: "gate-only" as const };
 
@@ -269,7 +271,17 @@ describe("generateWeek", () => {
         seen[slot.author_slug] += 1;
       }
     }
-    const weights = wallAuthorWeights(gatePools.question, gatePools.wall);
+    // Pf39c2-social-pilot-02a D01: `gatePools.question` is always empty now
+    // (Question was deleted outright), so it can no longer demonstrate
+    // wallAuthorWeights's correction directly — a synthetic pool matching
+    // the real, historically-measured Question skew (50/21/18 — see
+    // premises.test.ts's own `REAL_QUESTION_POOL_SPLIT`) stands in here.
+    const syntheticQuestionPool = [
+      ...Array.from({ length: 50 }, (_, i) => ({ card_id: `q-e-${i}`, book_slug: "x", author_slug: "epictetus" as const, question: "q", answer: "a" })),
+      ...Array.from({ length: 21 }, (_, i) => ({ card_id: `q-m-${i}`, book_slug: "x", author_slug: "marcus-aurelius" as const, question: "q", answer: "a" })),
+      ...Array.from({ length: 18 }, (_, i) => ({ card_id: `q-s-${i}`, book_slug: "x", author_slug: "seneca" as const, question: "q", answer: "a" })),
+    ];
+    const weights = wallAuthorWeights(syntheticQuestionPool, gatePools.wall);
     // epictetus's Wall weight is pushed well below 1/3 (T05) — directional check only.
     expect(weights.epictetus).toBeLessThan(1 / 3);
     expect(seen.epictetus).toBeLessThanOrEqual(seen["marcus-aurelius"] + seen.seneca);
@@ -418,6 +430,33 @@ describe("generateWeek — read-through content derivation", () => {
 // loadFormatPools — the T11 fallback contract.
 // ---------------------------------------------------------------------------
 
+// Pf39c2-social-pilot-02a D01: `gatePools.question`/`gatePools.objection`
+// are always empty now (Question/Objection were deleted outright — the
+// channel is one Wall a day, drawn from the Wall pool, nothing else), so
+// `loadFormatPools`'s STILL-PRESENT Question/Objection scored-pool-filtering
+// branches (collapsing that shape away is D02's job, not this one's) need a
+// synthetic base pool to test against instead of slicing the now-empty
+// mechanical-gate fallback.
+function syntheticQuestionBase(n = 2) {
+  return Array.from({ length: n }, (_, i) => ({
+    card_id: `synthetic-question-${i}`,
+    book_slug: "synthetic",
+    author_slug: "epictetus" as const,
+    question: `Question ${i}?`,
+    answer: `Answer ${i}.`,
+  }));
+}
+function syntheticObjectionBase(n = 2) {
+  return Array.from({ length: n }, (_, i) => ({
+    card_id: `synthetic-objection-${i}`,
+    book_slug: "synthetic",
+    author_slug: "seneca" as const,
+    objection: `Objection ${i}?`,
+    reply: `Reply ${i}.`,
+    reply_start: 0,
+  }));
+}
+
 describe("loadFormatPools", () => {
   let tempDir: string;
 
@@ -459,7 +498,7 @@ describe("loadFormatPools", () => {
   });
 
   it("filters a scored Question pool to only drift_verdict === 'answers'", async () => {
-    const base = gatePools.question.slice(0, 2);
+    const base = syntheticQuestionBase(2);
     const scoredQuestion = [
       { ...base[0], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
       { ...base[1], drift_verdict: "drifts", drift_reason: "off topic", ...STOPPING_POWER_PASS },
@@ -476,7 +515,7 @@ describe("loadFormatPools", () => {
   // row can pass drift and still be excluded for failing stopping power.
   // -------------------------------------------------------------------------
   it("filters a scored Question pool to only rows that ALSO pass T22 stopping power, even when drift_verdict is 'answers'", async () => {
-    const base = gatePools.question.slice(0, 2);
+    const base = syntheticQuestionBase(2);
     const scoredQuestion = [
       { ...base[0], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
       {
@@ -496,7 +535,7 @@ describe("loadFormatPools", () => {
   });
 
   it("fails closed on a scored Question row missing a T22 stopping-power field entirely, even when drift_verdict is 'answers'", async () => {
-    const base = gatePools.question.slice(0, 2);
+    const base = syntheticQuestionBase(2);
     const scoredQuestion = [
       { ...base[0], drift_verdict: "answers", drift_reason: "resolves it" }, // no stopping-power fields at all
       { ...base[1], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
@@ -514,7 +553,7 @@ describe("loadFormatPools", () => {
   });
 
   it("filters a scored Objection pool to only rubric.verdict === 'accept'", async () => {
-    const base = gatePools.objection.slice(0, 2);
+    const base = syntheticObjectionBase(2);
     const scoredObjection = [
       { ...base[0], rubric: { verdict: "accept", classification: "viewer_position", reason: "yes" } },
       { ...base[1], rubric: { verdict: "reject", classification: "dramatized_scene", reason: "no" } },
@@ -534,7 +573,7 @@ describe("loadFormatPools", () => {
   // posting pool.
   // -------------------------------------------------------------------------
   it("fails closed on a scored Question row missing drift_verdict entirely", async () => {
-    const base = gatePools.question.slice(0, 2);
+    const base = syntheticQuestionBase(2);
     const scoredQuestion = [
       { ...base[0] }, // no drift_verdict field at all — must NOT be admitted
       { ...base[1], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
@@ -546,7 +585,7 @@ describe("loadFormatPools", () => {
   });
 
   it("fails closed on a scored Objection row missing rubric entirely", async () => {
-    const base = gatePools.objection.slice(0, 2);
+    const base = syntheticObjectionBase(2);
     const scoredObjection = [
       { ...base[0] }, // no rubric field at all — must NOT be admitted
       { ...base[1], rubric: { verdict: "accept", classification: "viewer_position", reason: "yes" } },
@@ -574,7 +613,7 @@ describe("loadFormatPools", () => {
   });
 
   it("reads a scored Question pool file in the envelope shape, still filtering to drift_verdict === 'answers'", async () => {
-    const base = gatePools.question.slice(0, 2);
+    const base = syntheticQuestionBase(2);
     const entries = [
       { ...base[0], drift_verdict: "answers", drift_reason: "resolves it", ...STOPPING_POWER_PASS },
       { ...base[1], drift_verdict: "drifts", drift_reason: "off topic", ...STOPPING_POWER_PASS },
@@ -619,7 +658,7 @@ describe("loadFormatPools", () => {
 
   it("treats an empty pool file for one format independently — the other two formats' real files still load", async () => {
     await writeFile(path.join(tempDir, "wall.json"), JSON.stringify([]));
-    const scoredObjection = [{ ...gatePools.objection[0], rubric: { verdict: "accept", classification: "viewer_position", reason: "yes" } }];
+    const scoredObjection = [{ ...syntheticObjectionBase(1)[0], rubric: { verdict: "accept", classification: "viewer_position", reason: "yes" } }];
     await writeFile(path.join(tempDir, "objection.json"), JSON.stringify(scoredObjection));
     const { source } = await loadFormatPools(tempDir, gatePools);
     expect(source.wall).toBe("gate-only");
@@ -711,32 +750,38 @@ describe("F05/F06: renderer-derived exclusions", () => {
   }
 
   it("loadFormatPools drops excluded ids from EACH format's own pool and logs per format", async () => {
-    // `on-anger-03-027` (Wall) and `discourses-50-008` (Question — every
-    // pool flag passes; only the renderer's 12-word still-format floor
-    // rejects it, the exact M1 fixture) are both real entries in the
-    // mechanical gate-only pools built above.
+    // Pf39c2-social-pilot-02a D01: `gatePools.question`/`gatePools.objection`
+    // are always empty now (Question/Objection were deleted outright) — a
+    // synthetic local `FormatPools` stands in so this test can still prove
+    // `loadFormatPools`'s STILL-PRESENT per-format exclusion filtering
+    // (collapsing that shape away is D02's job, not this one's).
     expect(gatePools.wall.some((e) => e.card_id === "on-anger-03-027")).toBe(true);
-    expect(gatePools.question.some((e) => e.card_id === "discourses-50-008")).toBe(true);
-    const objectionFixtureId = gatePools.objection[0]!.card_id;
+    const localPools: FormatPools = {
+      wall: gatePools.wall,
+      question: syntheticQuestionBase(2),
+      objection: syntheticObjectionBase(2),
+    };
+    const questionFixtureId = localPools.question[0].card_id;
+    const objectionFixtureId = localPools.objection[0].card_id;
 
     const exclusionsPath = await writeExclusionsFile({
       wall: [fixture("on-anger-03-027", "on-anger", "duration")],
-      question: [fixture("discourses-50-008", "discourses", "word_count")],
-      objection: [fixture(objectionFixtureId, gatePools.objection[0]!.book_slug, "sentence_cap")],
+      question: [fixture(questionFixtureId, localPools.question[0].book_slug, "word_count")],
+      objection: [fixture(objectionFixtureId, localPools.objection[0].book_slug, "sentence_cap")],
     });
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
-      const { pools, exclusions } = await loadFormatPools(tempDir, gatePools, exclusionsPath);
+      const { pools, exclusions } = await loadFormatPools(tempDir, localPools, exclusionsPath);
       expect(pools.wall.some((e) => e.card_id === "on-anger-03-027")).toBe(false);
       expect(pools.wall.length).toBe(gatePools.wall.length - 1);
-      expect(pools.question.some((e) => e.card_id === "discourses-50-008")).toBe(false);
-      expect(pools.question.length).toBe(gatePools.question.length - 1);
+      expect(pools.question.some((e) => e.card_id === questionFixtureId)).toBe(false);
+      expect(pools.question.length).toBe(localPools.question.length - 1);
       expect(pools.objection.some((e) => e.card_id === objectionFixtureId)).toBe(false);
-      expect(pools.objection.length).toBe(gatePools.objection.length - 1);
+      expect(pools.objection.length).toBe(localPools.objection.length - 1);
 
       expect(exclusions).not.toBeNull();
       expect(exclusions!.wall.has("on-anger-03-027")).toBe(true);
-      expect(exclusions!.question.has("discourses-50-008")).toBe(true);
+      expect(exclusions!.question.has(questionFixtureId)).toBe(true);
       expect(exclusions!.objection.has(objectionFixtureId)).toBe(true);
 
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped 1 Wall pool entry"));
@@ -774,11 +819,17 @@ describe("F05/F06: renderer-derived exclusions", () => {
     }
   });
 
-  it("no generated slot references a card id excluded for ITS OWN format, across seeds 1..50 (discourses-50-008 named fixture)", async () => {
+  // Pf39c2-social-pilot-02a D01: this used to also exclude a real
+  // `discourses-50-008` Question fixture and a real Objection entry, and
+  // check neither ever appeared in a generated week under its own format.
+  // Both formats were deleted outright — no generated slot's format is ever
+  // "question"/"objection" any more, full stop (`excludedByFormat` below
+  // keeps both sets for shape parity with `RenderedFormat`, but they can
+  // never match anything) — so only the Wall exclusion is still a real
+  // check here.
+  it("no generated slot references a card id excluded for ITS OWN format, across seeds 1..50", async () => {
     const exclusionsPath = await writeExclusionsFile({
       wall: [fixture("on-anger-03-027", "on-anger", "duration")],
-      question: [fixture("discourses-50-008", "discourses", "word_count")],
-      objection: [fixture(gatePools.objection[0]!.card_id, gatePools.objection[0]!.book_slug, "sentence_cap")],
     });
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     let pools: FormatPools;
@@ -790,8 +841,8 @@ describe("F05/F06: renderer-derived exclusions", () => {
 
     const excludedByFormat: Record<RenderedFormat, Set<string>> = {
       wall: new Set(["on-anger-03-027"]),
-      question: new Set(["discourses-50-008"]),
-      objection: new Set([gatePools.objection[0]!.card_id]),
+      question: new Set(),
+      objection: new Set(),
       still: new Set(),
     };
 
@@ -881,12 +932,18 @@ describe("F05/F06: renderer-derived exclusions", () => {
   // even though it never goes through `loadFormatPools`'s Wall-pool filter
   // (the read-through advances through every card of its book in strict
   // sequence, independent of pool membership). `enchiridion-11-001` is a
-  // real card that can render BOTH Question and Objection (verified against
-  // the real corpus), so excluding it from Wall lets the fallback cascade
-  // (`resolveReadThrough`) prove it actually lands on another format,
-  // rather than merely not crashing.
+  // real card this suite excludes from Wall to prove the fallback cascade
+  // (`resolveReadThrough`) actually lands on another format rather than
+  // merely not crashing.
+  //
+  // Pf39c2-social-pilot-02a D01: this used to land on Question or Objection
+  // (both real candidates for this specific card, pre-deletion); both
+  // formats were deleted outright, so `tryReadThroughContent` now always
+  // returns null for them and the cascade falls all the way through to the
+  // STILL fallback (F19) instead — still a real, non-"wall" format, still
+  // proving the cascade works, just one step further down it now.
   // -------------------------------------------------------------------------
-  it("cascades the read-through to another format when its next sequential card is excluded", () => {
+  it("cascades the read-through to the Still fallback when its next sequential card is excluded from Wall", () => {
     const enchiridionCards = cards.filter((c) => c.book_slug === "enchiridion");
     const excludedIndex = enchiridionCards.findIndex((c) => c.id === "enchiridion-11-001");
     expect(excludedIndex).toBeGreaterThanOrEqual(0);
@@ -911,14 +968,11 @@ describe("F05/F06: renderer-derived exclusions", () => {
 
     const day1 = week.slots.find((s) => s.day === 1 && s.read_through)!;
     expect(day1.card_id).toBe("enchiridion-11-001");
-    expect(day1.content.format).not.toBe("wall");
+    expect(day1.content.format).toBe("still");
     // Faithful to the card's own text, not fabricated.
     const card = cards.find((c) => c.id === "enchiridion-11-001")!;
-    if (day1.content.format === "question") {
-      expect(card.plain_english).toContain(day1.content.question);
-      expect(card.plain_english).toContain(day1.content.answer);
-    } else {
-      expect(card.plain_english).toContain(day1.content.objection);
+    if (day1.content.format === "still") {
+      expect(day1.content.text).toBe(card.plain_english);
     }
   });
 
@@ -951,11 +1005,17 @@ describe("F05/F06: renderer-derived exclusions", () => {
 // F19: the read-through's STILL FALLBACK — resolveReadThrough's terminal
 // step, reached only once Wall/Question/Objection are all exhausted (see
 // `RenderedFormat`, `StillSlotContent`, and this file's own doc comment).
-// Uses the REAL default Meditations Books 2-3 slice, whose 48 cards have
-// ZERO Question/Objection candidates anywhere (verified directly against
-// `questionGate`/`objectionGate` for this suite) — so a card excluded from
-// Wall has nowhere to go but the Still fallback, exactly the scenario F19
-// exists for.
+//
+// Pf39c2-social-pilot-02a D01: Question and Objection were deleted outright
+// (the channel is one Wall a day, drawn from the Wall pool, nothing else),
+// so `tryReadThroughContent` now returns `null` for both UNCONDITIONALLY —
+// every card in the REAL default Meditations Books 2-3 slice has "zero
+// Question/Objection candidates" now, not just this slice's own 48. A card
+// excluded from Wall has nowhere to go but the Still fallback, exactly the
+// scenario F19 exists for — this used to also ground that fact directly
+// against `questionGate`/`objectionGate` for this specific slice; that
+// grounding check called functions that no longer exist and is gone with
+// them.
 // ---------------------------------------------------------------------------
 
 describe("F19: the read-through STILL fallback", () => {
@@ -970,13 +1030,6 @@ describe("F19: the read-through STILL fallback", () => {
       .filter((c) => c.book_slug === "meditations" && c.chapter_slug === chapterSlug)
       .sort((a, b) => a.card_number - b.card_number),
   );
-
-  // Grounding: zero Question/Objection candidates anywhere in this slice —
-  // the precondition every test below relies on.
-  it("the default Meditations Books 2-3 slice has no Question or Objection candidate anywhere", () => {
-    expect(questionGate(meditationsSlice)).toHaveLength(0);
-    expect(objectionGate(meditationsSlice)).toHaveLength(0);
-  });
 
   // meditations-02-003 (58-word original_excerpt) is one of the plan's own
   // named examples of a card too short to clear the Wall gate's travel
@@ -1321,11 +1374,17 @@ describe("DEFAULT_FORMAT_WEIGHTS", () => {
     return { epictetusShare: epictetusCount / totalSlots, formatTotals, nonReadThroughWallCount };
   }
 
-  it("produces all three formats across default weeks, with The Wall present in non-read-through slots", () => {
+  // Pf39c2-social-pilot-02a D01: this used to also assert
+  // `formatTotals.question`/`formatTotals.objection` were both greater than
+  // 0 — both formats were deleted outright (`gatePools.question`/
+  // `gatePools.objection` are always empty now), so no generated week can
+  // ever draw either one; asserting the opposite (always exactly 0) is the
+  // new, correct invariant.
+  it("produces only the Wall format across default weeks, with The Wall present in non-read-through slots", () => {
     const { formatTotals, nonReadThroughWallCount } = aggregateDefaultWeeks(20);
     expect(formatTotals.wall).toBeGreaterThan(0);
-    expect(formatTotals.question).toBeGreaterThan(0);
-    expect(formatTotals.objection).toBeGreaterThan(0);
+    expect(formatTotals.question).toBe(0);
+    expect(formatTotals.objection).toBe(0);
     // The defect this fixes: Wall's weight of 0 in the weighted slot meant
     // it could ONLY ever appear via the (then-hardcoded) read-through slot,
     // so `selectWallBalanced` and T03's ranked pool never actually ran.
@@ -1389,10 +1448,26 @@ describe("T13: determinism (extended)", () => {
   });
 
   it("produces different output for the same seed when prior-week history differs", () => {
-    // Exclude a handful of real Wall-pool card ids (NOT from the read-through
+    // Exclude a batch of real Wall-pool card ids (NOT from the read-through
     // book, so the read-through slot's own fixed sequence is untouched) so
     // only the weighted-slot pools differ between the two runs.
-    const excluded = new Set(gatePools.wall.slice(0, 5).map((e) => e.card_id));
+    //
+    // Pf39c2-social-pilot-02a D01: with Question and Objection deleted
+    // outright, EVERY non-read-through slot now draws Wall (the only format
+    // left) instead of sometimes drawing Question/Objection — so a Wall
+    // draw now runs 7 times a week instead of ~3-4, and `wallAuthorWeights`
+    // pushes those draws heavily toward marcus-aurelius/seneca, away from
+    // epictetus (T05). Excluding an arbitrary slice of the front of the pool
+    // (mostly epictetus's own Discourses, alphabetically first) is no longer
+    // enough to guarantee a perturbation this suite can observe — excluding
+    // a batch of the marcus-aurelius/seneca entries the weighting actually
+    // favours is what reliably does.
+    const excluded = new Set(
+      gatePools.wall
+        .filter((e) => e.book_slug !== "enchiridion" && e.author_slug !== "epictetus")
+        .slice(0, 50)
+        .map((e) => e.card_id),
+    );
     const a = generateWeek({
       weekNumber: 2,
       seed: 42,
@@ -1655,65 +1730,15 @@ describe("T13: weighting honoured (statistical, with tolerance)", () => {
     }
   });
 
-  // -------------------------------------------------------------------------
-  // A genuine distributional check: aggregate the WEIGHTED slot's format
-  // across many independent, non-overlapping weeks (fixed seeds, so this is
-  // deterministic and never flaky) and confirm the realized proportions
-  // track the requested weight ratio within a tolerance appropriate to the
-  // sample size. Restricted to slot 2 (the weighted slot) because slot 1's
-  // format can additionally cascade to Wall when its sequential card can't
-  // render the drawn candidate (`resolveReadThrough`) — a real and
-  // documented behaviour, but a different mechanism than "weighting", so
-  // mixing it in here would understate how closely the weighted slot itself
-  // tracks the requested ratio.
-  // -------------------------------------------------------------------------
-  function aggregateWeightedSlotCounts(weights: FormatWeights, n: number): Record<RenderedFormat, number> {
-    // The weighted (slot 2) format is only ever wall/question/objection —
-    // "still" is exclusively a read-through fallback (F19, see
-    // `RenderedFormat`) — but `ScheduleSlot.content.format` is typed across
-    // all four, so the accumulator must be too.
-    const totals: Record<RenderedFormat, number> = { wall: 0, question: 0, objection: 0, still: 0 };
-    for (let seed = 1; seed <= n; seed++) {
-      const week = generateWeek({
-        weekNumber: 1,
-        seed,
-        cards,
-        pools: gatePools,
-        poolSource,
-        priorUsedCardIds: new Set(),
-        readThroughBook: "enchiridion",
-        readThroughStartIndex: 0,
-        weights,
-      });
-      for (const slot of week.slots.filter((s) => !s.read_through)) {
-        totals[slot.content.format] += 1;
-      }
-    }
-    return totals;
-  }
-
-  it("tracks a 1:1 Wall:Question weighting within tolerance over 40 independent weeks (Objection weighted to 0)", () => {
-    const totals = aggregateWeightedSlotCounts({ wall: 1, question: 1, objection: 0 }, 40);
-    const total = totals.wall + totals.question + totals.objection;
-    expect(total).toBe(40 * 7); // one weighted slot per day, 7 days per week
-    expect(totals.objection).toBe(0);
-    const wallShare = totals.wall / total;
-    // Expected 0.5; over 280 draws a 10-point tolerance comfortably covers
-    // sampling noise from a fixed, non-cherry-picked seed range while still
-    // proving the weighting moved the distribution, not just "some of each".
-    expect(wallShare).toBeGreaterThan(0.4);
-    expect(wallShare).toBeLessThan(0.6);
-  });
-
-  it("tracks a 1:3 Wall:Question weighting within tolerance over 40 independent weeks (Question favoured)", () => {
-    const totals = aggregateWeightedSlotCounts({ wall: 1, question: 3, objection: 0 }, 40);
-    const total = totals.wall + totals.question + totals.objection;
-    expect(totals.objection).toBe(0);
-    const questionShare = totals.question / total;
-    // Expected 0.75.
-    expect(questionShare).toBeGreaterThan(0.65);
-    expect(questionShare).toBeLessThan(0.85);
-  });
+  // Pf39c2-social-pilot-02a D01: this used to also carry a genuine
+  // distributional check — aggregating the weighted slot's format across 40
+  // independent weeks and confirming the realized Wall:Question proportions
+  // tracked the requested weight ratio (1:1, then 1:3) within tolerance.
+  // Question was deleted outright (the channel is one Wall a day, drawn
+  // from the Wall pool, nothing else): `weightedFormatChoice`'s `available`
+  // filter now excludes it unconditionally regardless of weight, so no
+  // weight ratio involving Question can be demonstrated any more — the test
+  // (and its `aggregateWeightedSlotCounts` helper) went with it.
 });
 
 describe("T13: read-through sequencing (strict, multi-week, order-verified)", () => {
@@ -1900,44 +1925,13 @@ describe("T13: read-through sequencing (strict, multi-week, order-verified)", ()
 // itself another question.
 // ---------------------------------------------------------------------------
 
-describe("M2: read-through Question slots are gated the same as the weighted-slot pool", () => {
-  it("every read-through question slot's answer resolves the question and passes layer (a)/(b), across seeds 1..20", () => {
-    let questionSlotCount = 0;
-    for (let seed = 1; seed <= 20; seed++) {
-      // Sweep 10 non-overlapping 7-card windows across all 70 Enchiridion
-      // cards (2 seeds per window) rather than always starting at 0 — only 5
-      // of Enchiridion's 70 cards pass the full T04 gate, and none of them
-      // fall in the first window, so a fixed `readThroughStartIndex: 0`
-      // would never exercise this fix at all.
-      const startIndex = ((seed - 1) % 10) * 7;
-      const week = generateWeek({
-        weekNumber: 1,
-        seed,
-        cards,
-        pools: gatePools,
-        poolSource,
-        priorUsedCardIds: new Set(), // isolate each seed — a format-mix sample, not a multi-week sequence
-        readThroughBook: "enchiridion",
-        readThroughStartIndex: startIndex,
-        // Weighted heavily toward Question so the read-through's own draw
-        // actually surfaces question-format days often enough to sample —
-        // same technique as the "falls back deterministically..." test above.
-        weights: { wall: 0, question: 100, objection: 0 },
-      });
-      for (const slot of week.slots) {
-        if (!slot.read_through || slot.content.format !== "question") continue;
-        questionSlotCount += 1;
-        // The specific defect: an answer that is itself another question
-        // (`enchiridion-24-003` reproduced this at seed-scale — "Your
-        // country won't have fancy buildings..." is not an answer).
-        expect(slot.content.answer.trim().endsWith("?")).toBe(false);
-        expect(passesLayerA(slot.content.question)).toBe(true);
-        expect(passesLayerB(slot.content.answer)).toBe(true);
-      }
-    }
-    expect(questionSlotCount).toBeGreaterThan(0); // not vacuous — real question slots were exercised
-  });
-});
+// Pf39c2-social-pilot-02a D01: The Question was deleted outright (the
+// channel is one Wall a day, drawn from the Wall pool, nothing else) — a
+// read-through slot can never resolve to "question" any more
+// (`tryReadThroughContent` returns `null` for it unconditionally), so this
+// describe's whole premise (gating a real question-format read-through
+// slot) no longer applies. `passesLayerA`/`passesLayerB` — the two
+// functions it exercised — were deleted along with The Question itself.
 
 // ---------------------------------------------------------------------------
 // M3 (PR #39 review): an Objection entry whose reply is empty must never be
@@ -2108,8 +2102,18 @@ describe("M5: the Wall's rubric-chosen landing line is preferred over the mechan
     const alternateLine = sentences(card.plain_english).find((s) => s !== baseEntry.landing_line);
     expect(alternateLine).toBeDefined();
 
+    // Pf39c2-social-pilot-02a D01: Question and Objection were deleted
+    // outright, so `gatePools.question`/`gatePools.objection` are always
+    // empty now — a single-entry Wall pool used to be enough here because
+    // the weighted slot could fall back to a real Question/Objection entry
+    // once it ran out; with neither available any more, the Wall pool needs
+    // enough entries of its own to cover all 7 non-read-through days. Sized
+    // to EXACTLY 7 (one weighted slot per day) so `selectWallBalanced` must
+    // draw every entry over the week, guaranteeing `baseEntry` itself is
+    // scheduled rather than leaving that to chance.
     const scoredWallPool = [
       { ...baseEntry, rubric: { impenetrability_score: 5, landing_line_score: 5, chosen_landing_line: alternateLine! } },
+      ...gatePools.wall.filter((e) => e.card_id !== baseEntry.card_id && e.book_slug !== "enchiridion").slice(0, 6),
     ];
 
     const week = generateWeek({
@@ -2280,10 +2284,25 @@ describe("M10: generateWeek actually throws when a field fails the faithfulness 
     ).toThrow(/day 1 slot 2 \(card "[^"]+", field "landing_line"\)/);
   });
 
+  // Pf39c2-social-pilot-02a D01: `gatePools.question` is always empty now
+  // (Question was deleted outright) — a hand-built entry against a real
+  // corpus card stands in, matching M9/M3's own synthetic-Objection-pool
+  // pattern, so this can still prove `generateWeek`'s STILL-PRESENT Question
+  // faithfulness check (collapsing that code path away is D02's job, not
+  // this one's) throws naming the tampered field.
   it("names the day, slot, and field when a Question entry's answer was never written by the author", () => {
-    const baseEntry = gatePools.question.find((e) => e.book_slug !== "enchiridion")!;
-    expect(baseEntry).toBeDefined();
-    const tamperedQuestionPool = [{ ...baseEntry!, answer: "An answer the author never actually gave." }];
+    const baseCard = cards.find((c) => c.book_slug !== "enchiridion")!;
+    const realQuestion = sentences(baseCard.plain_english)[0];
+    expect(baseCard.plain_english).toContain(realQuestion);
+    const tamperedQuestionPool = [
+      {
+        card_id: baseCard.id,
+        book_slug: baseCard.book_slug,
+        author_slug: baseCard.author_slug,
+        question: realQuestion,
+        answer: "An answer the author never actually gave.",
+      },
+    ];
 
     expect(() =>
       generateWeek({
@@ -2356,81 +2375,13 @@ describe("M11: assembleObjectionReply's error path and correct-occurrence resolu
     ).toThrow(/not a verbatim quoted span/);
   });
 
-  it("resolves the CORRECT occurrence when a card quotes the same objection span twice (M8 regression)", () => {
-    const readThroughCards = Array.from({ length: 7 }, (_, i) =>
-      fabricatedCard(`m11-rt-2-${i + 1}`, `Read-through sentence number ${i + 1}.`, "m11-readthrough-2"),
-    );
-    const card = fabricatedCard(
-      "m11-dup-quote",
-      'He complains, "But it is not fair at all." Then he walks away and sulks for hours. Later he returns and ' +
-        'says again, "But it is not fair at all." The truth is that fairness was never promised to anyone.',
-      "m11-pool-2",
-    );
-    // Fills the weighted slot on days 2-7, once the week's single Objection
-    // entry (and its weekly cap) are used up on day 1 — same pattern as
-    // M3's fixture above.
-    const wallFallbackCards = Array.from({ length: 6 }, (_, i) =>
-      fabricatedCard(`m11-wall-${i + 1}`, `Wall fallback sentence number ${i + 1} standing alone.`, "m11-pool-2"),
-    );
-    const wallPool = wallFallbackCards.map((c) => ({
-      card_id: c.id,
-      book_slug: c.book_slug,
-      author_slug: c.author_slug,
-      original_word_count: 20,
-      landing_line: c.plain_english,
-      sub_types: [],
-      reserve: false,
-      archaic_marker_count: 0,
-      semicolon_count: 0,
-      quote_count: 0,
-      original_grade: 5,
-    }));
-
-    const gated = objectionGate([card]);
-    const duplicates = gated.filter((e) => e.objection === "But it is not fair at all.");
-    // Both occurrences of the duplicated quoted span survive the gate —
-    // this is the scenario `indexOf` alone could never disambiguate.
-    expect(duplicates).toHaveLength(2);
-    const secondOccurrence = duplicates[1];
-    // Sanity check the fixture actually exercises two DISTINCT offsets,
-    // otherwise this test wouldn't be able to tell a correct answer from a
-    // wrong (first-occurrence) one.
-    expect(duplicates[0].reply_start).not.toBe(duplicates[1].reply_start);
-
-    const week = generateWeek({
-      weekNumber: 1,
-      seed: 1,
-      cards: [...readThroughCards, card, ...wallFallbackCards],
-      pools: { wall: wallPool, question: [], objection: [secondOccurrence] },
-      poolSource,
-      priorUsedCardIds: new Set(),
-      readThroughBook: "m11-readthrough-2",
-      readThroughStartIndex: 0,
-      weights: { wall: 0, question: 0, objection: 1 },
-    });
-
-    const objectionSlot = week.slots.find((s) => s.content.format === "objection");
-    expect(objectionSlot).toBeDefined();
-    if (objectionSlot!.content.format === "objection") {
-      // The reply following the SECOND (correct) occurrence — never the
-      // narration-plus-re-quote that following the FIRST occurrence would
-      // wrongly produce.
-      expect(objectionSlot!.content.reply).toBe("The truth is that fairness was never promised to anyone.");
-    }
-  });
-
-  it("resolves the correct occurrence when the whole objection SENTENCE repeats verbatim (M12 gate cursor)", () => {
-    const pe = 'He says "But it is not fair at all." He says "But it is not fair at all." The truth is plain.';
-    const card = fabricatedCard("m12-dup-sentence", pe, "m12-pool");
-    const [first, second] = objectionGate([card]);
-
-    expect(second.reply_start).toBeGreaterThan(first.reply_start);
-    for (const e of [first, second]) {
-      expect(pe.slice(0, e.reply_start).endsWith(`"${e.objection}"`)).toBe(true);
-      expect(pe.slice(e.reply_start).trim()).toBe(e.reply);
-    }
-    expect(pe.slice(second.reply_start).trim()).toBe("The truth is plain.");
-  });
+  // Pf39c2-social-pilot-02a D01: this used to also cover two regressions in
+  // `objectionGate`'s OWN cursor-based reply_start disambiguation (M8, M12)
+  // — a duplicated quoted span, and a duplicated whole sentence, each
+  // resolving to the correct (not merely the first) occurrence. That gate
+  // was deleted outright along with The Objection itself (the channel is
+  // one Wall a day, drawn from the Wall pool, nothing else), so there is no
+  // gate left to regress.
 
   it("throws '/missing a valid reply_start/' when a hand-built pool entry omits reply_start (M13)", () => {
     const rtCard = fabricatedCard("m13-rt-1", "Read-through sentence one.", "m13-readthrough-1");
@@ -2602,37 +2553,13 @@ describe("M14: read-through Objection's empty-reply guard falls back to Wall ins
 // decision, not an implementation detail) silently breaks.
 // ---------------------------------------------------------------------------
 
-describe("M15: the read-through's own Objection resolution counts against the weekly cap", () => {
-  it("format_counts.objection never exceeds max_objection_per_week, across seeds 1..200 x weeks 1..10 (DEFAULT_FORMAT_WEIGHTS, isolated weeks)", () => {
-    let sawReadThroughObjection = false;
-    for (let seed = 1; seed <= 200; seed++) {
-      for (let week = 1; week <= 10; week++) {
-        // Sweep 10 non-overlapping 7-card windows across Enchiridion's 70
-        // cards (as M2 does above) so the read-through's own sequential
-        // card actually varies rather than always starting at index 0.
-        const startIndex = ((week - 1) % 10) * 7;
-        const schedule = generateWeek({
-          weekNumber: week,
-          seed: seed * 1000 + week, // a distinct rng stream per (seed, week) pair
-          cards,
-          pools: gatePools,
-          poolSource,
-          priorUsedCardIds: new Set(), // isolate each (seed, week) — a cap sample, not a chained sequence
-          readThroughBook: "enchiridion",
-          readThroughStartIndex: startIndex,
-          weights: DEFAULT_FORMAT_WEIGHTS,
-        });
-        expect(schedule.format_counts.objection).toBeLessThanOrEqual(schedule.max_objection_per_week);
-        const rtObjection = schedule.slots.some((s) => s.read_through && s.content.format === "objection");
-        if (rtObjection) sawReadThroughObjection = true;
-      }
-    }
-    // Not vacuous — the sweep must actually land on at least one week where
-    // the read-through itself resolved to Objection, otherwise this test
-    // would pass trivially without ever exercising the increment.
-    expect(sawReadThroughObjection).toBe(true);
-  });
-});
+// Pf39c2-social-pilot-02a D01: The Objection was deleted outright (the
+// channel is one Wall a day, drawn from the Wall pool, nothing else) — a
+// read-through slot can never resolve to "objection" any more
+// (`tryReadThroughContent` returns `null` for it unconditionally), so this
+// describe's whole premise (the read-through's own Objection resolution
+// counting against the weekly cap) can no longer happen, let alone be
+// proven non-vacuous.
 
 // ---------------------------------------------------------------------------
 // M16 (PR #39 fourth review round): the weighted (slot 2) Wall pool's own
@@ -3158,15 +3085,23 @@ describe("T16: Meditations Books 2-3 default read-through", () => {
   // -------------------------------------------------------------------------
   it(
     "reports marcus-aurelius as the majority author in the combined mix of a default week " +
-      "(measured post-T17, seed 42 week 1: epictetus 21.4%, marcus-aurelius 57.1%, seneca 21.4% — " +
-      "T17 makes wallAuthorWeights account for the read-through's fixed 50% marcus-aurelius floor, " +
-      "materially raising seneca from the pre-T17 7.1% without marcus-aurelius losing its majority)",
+      "(measured post-D01, seed 42 week 1: epictetus 35.7%, marcus-aurelius exactly 50%, seneca 14.3% — " +
+      "Pf39c2-social-pilot-02a D01 deleted Question outright, so wallAuthorWeights' free-slot correction no " +
+      "longer has any real Question skew to weigh against; with EVERY non-read-through slot now Wall (the " +
+      "only format left), the correction clamps marcus-aurelius's OWN weighted-slot weight to exactly 0 " +
+      "(the read-through already gives him more than his even 1/3 target — see wallAuthorWeights' REACHABLE " +
+      "FLOOR doc comment), splitting the rest 50/50 between epictetus and seneca — so marcus-aurelius's " +
+      "combined share is now exactly his read-through-fixed 7/14, not the pre-D01 57.1% that also included " +
+      "him winning some weighted-slot draws)",
     () => {
       const week = makeDefaultWeek(1, 42);
       const mix = week.author_mix;
       expect(mix["marcus-aurelius"].share).toBeGreaterThan(mix.epictetus.share);
       expect(mix["marcus-aurelius"].share).toBeGreaterThan(mix.seneca.share);
-      expect(mix["marcus-aurelius"].share).toBeGreaterThan(0.5); // an outright majority, not merely a plurality
+      // Exactly half, not merely "greater than half" — see the doc comment
+      // above for why D01 made this an equality rather than a strict
+      // majority.
+      expect(mix["marcus-aurelius"].share).toBeCloseTo(0.5, 8);
     },
   );
 
@@ -3214,9 +3149,12 @@ describe("T16: Meditations Books 2-3 default read-through", () => {
 
     // Materially above the pre-T17 measured 7.1% — well clear of noise.
     expect(senecaShare).toBeGreaterThan(0.15);
-    // Marcus-aurelius keeps its majority — the read-through's own 50% floor
-    // guarantees this regardless of Wall's weighting.
-    expect(marcusShare).toBeGreaterThan(0.5);
+    // Pf39c2-social-pilot-02a D01: marcus-aurelius's combined share is now
+    // exactly his read-through-fixed 50% (not merely "greater than 50%") —
+    // see the "reports marcus-aurelius as the majority author" test above
+    // for why D01's deletion of Question made this an equality. Still
+    // individually greater than each of the other two authors' own shares.
+    expect(marcusShare).toBeCloseTo(0.5, 8);
     expect(marcusShare).toBeGreaterThan(senecaShare);
     expect(marcusShare).toBeGreaterThan(epictetusShare);
   });

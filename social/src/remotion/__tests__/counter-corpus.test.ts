@@ -7,31 +7,23 @@
  * ceiling, still clears the bottom platform-chrome band) — this file proves
  * it EMPIRICALLY, against the real content this workspace actually ships:
  * every landing line and every real read-through rest line in
- * `content/social/premises/wall.json`/`content/output/meditations`, every
- * answer in `content/social/premises/question.json`, and every reply line
- * in `content/social/premises/objection.json`. Pure computation — no
- * rendering, no bundling — so this runs in milliseconds, unlike the
- * pixel-proof suites in `counter.test.ts`/`source-head.test.ts`.
+ * `content/social/premises/wall.json`/`content/output/meditations`. Pure
+ * computation — no rendering, no bundling — so this runs in milliseconds,
+ * unlike the pixel-proof suites in `counter.test.ts`/`source-head.test.ts`.
+ *
+ * Pf39c2-social-pilot-02a D01: this used to also corpus-prove Question
+ * answers and Objection reply lines; both formats were deleted outright, so
+ * only the Wall corpus proof remains.
  */
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-	computePayoffCounterBox,
-	FRAME_HEIGHT,
-	PAYOFF_BOX_WIDTH,
-	PAYOFF_BOX_HEIGHT,
-	PAYOFF_MIN_FONT,
-	PAYOFF_MAX_FONT,
-	PAYOFF_LINE_HEIGHT_RATIO
-} from '../wall-timing.js';
+import { computePayoffCounterBox, FRAME_HEIGHT } from '../wall-timing.js';
 import { COUNTER_BOTTOM_UNSAFE_ZONE_PX, COUNTER_BELOW_TEXT_BOX_WIDTH_PX, COUNTER_GAP_BELOW_TEXT_PX } from '../counter-layout.js';
 import { SOURCE_HEAD_BOUNDING_BOX } from '../source-head-layout.js';
-import { assertObjectionRenderable } from '../objection-gate.js';
 import { computeWallPlainLines } from '../../cli-plan.js';
-import { fitFontSize } from '../../render/fit.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
@@ -119,58 +111,6 @@ describe('U02 corpus proof — Wall rest lines (the real read-through slice, Med
 	});
 });
 
-describe('U02 corpus proof — Question answers (content/social/premises/question.json)', () => {
-	const pool = JSON.parse(
-		readFileSync(path.join(repoRoot, 'content', 'social', 'premises', 'question.json'), 'utf-8')
-	) as { entries: Array<{ card_id: string; answer: string }> };
-
-	it('every real answer in the Question pool keeps the counter clear of both the plate and the bottom chrome band', () => {
-		expectNonEmpty('question.json entries', pool.entries.length);
-		for (const entry of pool.entries) {
-			// Mirrors `PayoffLine`'s own contract: only texts that actually FIT
-			// the payoff box ever reach a real render (a card whose answer
-			// doesn't fit is excluded upstream, same as `wall-timing.test.ts`'s
-			// own corpus check treats `fit.fits` as an assertion). Confirmed,
-			// not assumed: every real answer in this pool does fit.
-			const fit = fitFontSize(entry.answer, {
-				maxWidth: PAYOFF_BOX_WIDTH,
-				maxHeight: PAYOFF_BOX_HEIGHT,
-				minFont: PAYOFF_MIN_FONT,
-				maxFont: PAYOFF_MAX_FONT,
-				lineHeightRatio: PAYOFF_LINE_HEIGHT_RATIO
-			});
-			expect(fit.fits, `question answer (${entry.card_id}) must fit the payoff box to ever reach a real render`).toBe(
-				true
-			);
-			assertCounterBoxIsSafe(entry.answer, `question answer (${entry.card_id})`);
-		}
-	});
-});
-
-describe('U02 corpus proof — Objection reply lines (content/social/premises/objection.json)', () => {
-	const pool = JSON.parse(
-		readFileSync(path.join(repoRoot, 'content', 'social', 'premises', 'objection.json'), 'utf-8')
-	) as { entries: Array<{ card_id: string; objection: string; reply: string }> };
-
-	it('every real reply line in the Objection pool keeps the counter clear of both the plate and the bottom chrome band', () => {
-		expectNonEmpty('objection.json entries', pool.entries.length);
-		let checked = 0;
-		for (const entry of pool.entries) {
-			// Not every raw pool entry clears `assertObjectionRenderable`'s own
-			// gate (two-sentence cap, legibility floor) — skip the ones that
-			// don't, same as a real render never reaches `PayoffLine` for them
-			// either.
-			let gate;
-			try {
-				gate = assertObjectionRenderable({ objection: entry.objection, reply: entry.reply });
-			} catch {
-				continue;
-			}
-			checked++;
-			for (const line of gate.replyLines) {
-				assertCounterBoxIsSafe(line, `objection reply line (${entry.card_id})`);
-			}
-		}
-		expectNonEmpty('objection entries that clear the gate', checked);
-	});
-});
+// Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+// outright — the channel is one Wall a day — so their corpus proofs
+// (question.json answers, objection.json reply lines) are gone too.

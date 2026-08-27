@@ -51,13 +51,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { AuthorSlug } from '../../render/theme.js';
-import type { WallPlan, QuestionPlan, ObjectionPlan, StillPlan } from '../../cli.js';
+import type { WallPlan } from '../../cli.js';
 import { wallSilentSpans, wallNoiseSpans, narrationPlan } from '../../cli.js';
 import { FPS, WALL_FRAMES, computeWallTiming } from '../../remotion/wall-timing.js';
-import { computeQuestionTiming, ANSWER_FRAMES } from '../../remotion/question-timing.js';
-import { computeObjectionTiming, OBJECTION_REPLY_LINE_COUNT, OBJECTION_REPLY_LINE_FRAMES } from '../../remotion/objection-timing.js';
 import { formatRunningHead, PAYOFF_LABEL_TEXT } from '../../remotion/SourceHead.js';
-import { splitPayoffLines, lineTimingsFromMarks, assertNarrationInSync } from '../timing.js';
 import { bedPath } from '../beds.js';
 import { LOUDNESS_TOLERANCE_LU, TARGET_LUFS, mix } from '../mix.js';
 import type { ProviderMark, TtsProvider, TtsResult } from '../tts.js';
@@ -80,10 +77,13 @@ const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const fixturesDir = path.join(moduleDir, 'fixtures');
 
 // ---------------------------------------------------------------------------
-// Shared fixtures — real card-shaped WallPlan/QuestionPlan/ObjectionPlan/
-// StillPlan literals, never live pipeline output (this file's whole point is
-// to be independent of any real render), but shaped exactly like `cli.ts`'s
-// `buildRenderPlan` produces them.
+// Shared fixtures — a real card-shaped WallPlan literal, never live pipeline
+// output (this file's whole point is to be independent of any real render),
+// but shaped exactly like `cli.ts`'s `buildRenderPlan` produces it.
+//
+// Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+// outright — the channel is one Wall a day — so their plan fixtures and the
+// assertions that exercised them are gone too.
 // ---------------------------------------------------------------------------
 
 const WALL_PLAN: WallPlan = {
@@ -93,28 +93,6 @@ const WALL_PLAN: WallPlan = {
 	sourceReference: 'Meditations, Book 7, Section 3',
 	landingLine: 'This is the landing line, held in silence.',
 	plainLines: ['This is the first rest line.', 'This is the second rest line.']
-};
-
-const QUESTION_PLAN: QuestionPlan = {
-	format: 'question',
-	question: 'Is this bare question ever narrated?',
-	answer: 'No — only this plain answer is ever narrated.',
-	originalExcerpt: 'Thys is ye archaick excerpte for the question wall phase.',
-	chapterBlock: 'Thys is ye archaick excerpte for the question wall phase, plus the surrounding chapter.',
-	sourceReference: 'Discourses, Book 3, Section 1'
-};
-
-const OBJECTION_PLAN: ObjectionPlan = {
-	format: 'objection',
-	objection: 'But surely the bare objection quote is narrated?',
-	reply: 'No, it is not. Only the reply is narrated. A third sentence here is dropped by OBJECTION_REPLY_LINE_COUNT.',
-	sourceReference: 'On Anger, Book 1, Section 9'
-};
-
-const STILL_PLAN: StillPlan = {
-	format: 'still',
-	text: 'This still passage is narrated in full. Every sentence of it.',
-	sourceReference: 'Meditations, Book 2, Section 1'
 };
 
 // ---------------------------------------------------------------------------
@@ -290,52 +268,6 @@ describe('framing text (running head, payoff label) never reaches TtsProvider.sy
 		MIX_TIMEOUT_MS
 	);
 
-	it(
-		'Question: only the answer reaches synthesize — never the bare question, the running head, or the payoff label',
-		async () => {
-			const { lines } = narrationPlan(QUESTION_PLAN);
-			expect(lines).toEqual([QUESTION_PLAN.answer]);
-			const text = await capturedSynthesizeText(lines);
-			expect(text).toBe(QUESTION_PLAN.answer);
-			expect(text).not.toContain(QUESTION_PLAN.question);
-			expect(text).not.toContain(PAYOFF_LABEL_TEXT);
-			expect(text).not.toContain(QUESTION_PLAN.sourceReference);
-		},
-		MIX_TIMEOUT_MS
-	);
-
-	it(
-		'Objection: only the capped reply sentences reach synthesize — never the bare objection or the payoff label',
-		async () => {
-			const { lines } = narrationPlan(OBJECTION_PLAN);
-			expect(lines).toEqual(splitPayoffLines(OBJECTION_PLAN.reply).slice(0, OBJECTION_REPLY_LINE_COUNT));
-			const text = await capturedSynthesizeText(lines);
-			expect(text).not.toContain(OBJECTION_PLAN.objection);
-			expect(text).not.toContain(PAYOFF_LABEL_TEXT);
-			expect(text).not.toContain(OBJECTION_PLAN.sourceReference);
-		},
-		MIX_TIMEOUT_MS
-	);
-
-	it(
-		'Still: the full passage reaches synthesize — never the payoff label or the source reference',
-		async () => {
-			const { lines } = narrationPlan(STILL_PLAN);
-			expect(lines).toEqual(splitPayoffLines(STILL_PLAN.text));
-			const text = await capturedSynthesizeText(lines);
-			expect(text).not.toContain(PAYOFF_LABEL_TEXT);
-			expect(text).not.toContain(STILL_PLAN.sourceReference);
-		},
-		MIX_TIMEOUT_MS
-	);
-
-	it('computeObjectionTiming (fixed shape) never accepts framing text as an input — it takes no card data at all', () => {
-		// Documents the structural guarantee: The Objection's timing schedule
-		// is a FIXED shape (see objection-timing.ts), not derived from any
-		// card field, so there is no path by which framing text could leak
-		// into it even indirectly.
-		expect(computeObjectionTiming).toHaveLength(0);
-	});
 });
 
 // ---------------------------------------------------------------------------
@@ -400,147 +332,3 @@ describe('a Wall whose plain_english is a single sentence (no rest lines) still 
 	);
 });
 
-// ---------------------------------------------------------------------------
-// 5. social pilot 02a T16 (F04) — The Question and The Objection now accept
-//    narrationTimings, matching computeWallTiming's own contract. Proves the
-//    FULL real-narration pipeline this task's acceptance criterion asks for:
-//    provider marks -> lineTimingsFromMarks -> assertNarrationInSync (the
-//    drift gate) -> compute{Question,Objection}Timing. No live provider call
-//    (hand-built marks, same `wordMarks`-style pattern
-//    `audio/__tests__/timing.test.ts` already uses) — only the pure timing
-//    math, matching this file's own "no live provider calls anywhere" rule.
-// ---------------------------------------------------------------------------
-
-/**
- * Builds a `ProviderMark[]` for `lines` (joined with a single space, exactly
- * how `synthesizeNarration` sends text to a provider — see `narrationPlan`),
- * evenly distributing each LINE's own words across that line's own entry in
- * `durationsMs` — i.e. line `i` occupies exactly `durationsMs[i]`
- * milliseconds of the mark stream, back to back, matching how a real
- * multi-sentence narration clip is laid out. Never a live provider call —
- * purely synthetic marks for exercising `lineTimingsFromMarks` and
- * `assertNarrationInSync` against real card text.
- */
-function multiLineWordMarks(lines: string[], durationsMs: number[]): { marks: ProviderMark[]; totalDurationMs: number } {
-	const marks: ProviderMark[] = [];
-	let cursor = 0;
-	lines.forEach((line, lineIndex) => {
-		const words = line.split(/\s+/).filter((w) => w.length > 0);
-		const lineDurationMs = durationsMs[lineIndex];
-		const perWordMs = lineDurationMs / words.length;
-		words.forEach((word, wordIndex) => {
-			marks.push({
-				text: word,
-				startMs: Math.round(cursor + wordIndex * perWordMs),
-				endMs: Math.round(cursor + (wordIndex + 1) * perWordMs)
-			});
-		});
-		cursor += lineDurationMs;
-	});
-	return { marks, totalDurationMs: cursor };
-}
-
-describe('social pilot 02a T16 (F04) — Question narrationTimings, end to end', () => {
-	it('a real (fixture-derived) narration timing set passes assertNarrationInSync and moves the on-screen answer boundary away from the fixed default', () => {
-		// 14s, deliberately far from the fixed ANSWER_SECONDS (2.5s) fallback —
-		// and, per question-timing.test.ts's own T16 coverage, comfortably
-		// clear of the 15s-floor pad point too, so the drift is real and not
-		// masked by padding.
-		const { marks, totalDurationMs } = multiLineWordMarks([QUESTION_PLAN.answer], [14_000]);
-		const timings = lineTimingsFromMarks([QUESTION_PLAN.answer], {
-			audioPath: '/fake/question-answer.mp3',
-			provider: 'polly',
-			voiceId: 'test-voice',
-			durationMs: totalDurationMs,
-			marks
-		});
-
-		// The drift gate — untouched by T16 — passes for a genuinely in-sync
-		// timing set derived straight from the (fake) provider's own marks.
-		expect(() => assertNarrationInSync(timings, totalDurationMs)).not.toThrow();
-
-		const fixedSchedule = computeQuestionTiming({ question: QUESTION_PLAN.question });
-		const narratedSchedule = computeQuestionTiming({ question: QUESTION_PLAN.question, narrationTimings: timings });
-
-		expect(narratedSchedule.answer.startFrame).toBe(fixedSchedule.answer.startFrame);
-		expect(narratedSchedule.answer.endFrame).not.toBe(fixedSchedule.answer.endFrame);
-		expect(narratedSchedule.answer.endFrame - narratedSchedule.answer.startFrame).toBe(Math.round(14 * FPS));
-		expect(narratedSchedule.answer.endFrame - narratedSchedule.answer.startFrame).not.toBe(ANSWER_FRAMES);
-	});
-
-	it('assertNarrationInSync STILL GATES — a drifted (desynced) timing set for this exact answer text is still rejected before it could ever reach computeQuestionTiming', () => {
-		const { marks, totalDurationMs } = multiLineWordMarks([QUESTION_PLAN.answer], [14_000]);
-		const timings = lineTimingsFromMarks([QUESTION_PLAN.answer], {
-			audioPath: '/fake/question-answer.mp3',
-			provider: 'polly',
-			voiceId: 'test-voice',
-			durationMs: totalDurationMs,
-			marks
-		});
-
-		// The real written audio file measured 2s longer than the marks claim
-		// (a genuinely desynced case, e.g. a provider bug or a truncated
-		// write) — `synthesizeNarration` would probe this real duration and
-		// hand it to `assertNarrationInSync` exactly like this.
-		const desyncedAudioDurationMs = totalDurationMs + 2000;
-		expect(() => assertNarrationInSync(timings, desyncedAudioDurationMs)).toThrow(/drift/i);
-	});
-});
-
-describe('social pilot 02a T16 (F04) — Objection narrationTimings, end to end', () => {
-	const replyLines = splitPayoffLines(OBJECTION_PLAN.reply).slice(0, OBJECTION_REPLY_LINE_COUNT);
-
-	it('a real (fixture-derived) narration timing set passes assertNarrationInSync and moves both on-screen reply-line boundaries away from the fixed default', () => {
-		// 4s / 10s, deliberately far from the fixed OBJECTION_REPLY_LINE_FRAMES
-		// (2.5s each) fallback, and (per objection-timing.test.ts's own T16
-		// coverage) large enough that the combined raw total clears the
-		// 15s-floor pad point, so neither boundary is masked by padding.
-		const { marks, totalDurationMs } = multiLineWordMarks(replyLines, [4_000, 10_000]);
-		const timings = lineTimingsFromMarks(replyLines, {
-			audioPath: '/fake/objection-reply.mp3',
-			provider: 'polly',
-			voiceId: 'test-voice',
-			durationMs: totalDurationMs,
-			marks
-		});
-
-		expect(() => assertNarrationInSync(timings, totalDurationMs)).not.toThrow();
-
-		const fixedSchedule = computeObjectionTiming();
-		const narratedSchedule = computeObjectionTiming({ narrationTimings: timings });
-
-		expect(narratedSchedule.replyLines[0].startFrame).toBe(fixedSchedule.replyLines[0].startFrame);
-		expect(narratedSchedule.replyLines[0].endFrame).not.toBe(fixedSchedule.replyLines[0].endFrame);
-		expect(narratedSchedule.replyLines[1].startFrame).not.toBe(fixedSchedule.replyLines[1].startFrame);
-		expect(narratedSchedule.replyLines[1].endFrame).not.toBe(fixedSchedule.replyLines[1].endFrame);
-
-		expect(narratedSchedule.replyLines[0].endFrame - narratedSchedule.replyLines[0].startFrame).toBe(
-			Math.round(4 * FPS)
-		);
-		expect(narratedSchedule.replyLines[1].endFrame - narratedSchedule.replyLines[1].startFrame).toBe(
-			Math.round(10 * FPS)
-		);
-		expect(narratedSchedule.replyLines[0].endFrame - narratedSchedule.replyLines[0].startFrame).not.toBe(
-			OBJECTION_REPLY_LINE_FRAMES
-		);
-	});
-
-	it('assertNarrationInSync STILL GATES — an overlapping (corrupted) timing set for this exact reply text is still rejected before it could ever reach computeObjectionTiming', () => {
-		const { marks, totalDurationMs } = multiLineWordMarks(replyLines, [4_000, 10_000]);
-		const timings = lineTimingsFromMarks(replyLines, {
-			audioPath: '/fake/objection-reply.mp3',
-			provider: 'polly',
-			voiceId: 'test-voice',
-			durationMs: totalDurationMs,
-			marks
-		});
-
-		// Corrupt the second line's start so it overlaps the first — the same
-		// class of internal-consistency failure `assertNarrationInSync`
-		// already rejects for The Wall (see `timing.test.ts`), exercised here
-		// against real Objection reply text to prove T16 introduced no
-		// bypass.
-		const corrupted = [timings[0], { ...timings[1], startSeconds: timings[0].startSeconds }];
-		expect(() => assertNarrationInSync(corrupted, totalDurationMs)).toThrow(/overlaps/i);
-	});
-});
