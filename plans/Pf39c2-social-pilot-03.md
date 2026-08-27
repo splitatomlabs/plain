@@ -202,9 +202,60 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   T06 (YouTube adapter) is next. Follow-up for whoever closes T05's live half: once a Meta app/account exists,
   run one real `publishToInstagram` call against a test R2 asset and confirm the post is publicly visible before
   T08 (the daily job) depends on this in production.
-- [ ] T06: Implement the YouTube adapter — resumable upload with exponential backoff on 5xx and 308-resume support,
+- [!] T06: Implement the YouTube adapter — resumable upload with exponential backoff on 5xx and 308-resume support,
   `privacyStatus: private`, plus the required status fields. Acceptance: a live test upload appears in Studio ready
   to flip.
+  DEFERRED — the live half of the acceptance (a real upload appearing in Studio) needs YouTube/Google OAuth
+  credentials this session does not have. Built and unit-tested the adapter itself; the by-hand live upload is left
+  for the user once a Google Cloud OAuth app (published to "In production" — see the header note below) and channel
+  credentials exist.
+  Done: added `social/src/publish/youtube.ts` — `uploadVideoToYouTube(options)` runs the two-step resumable-upload
+  protocol end to end: (1) POST to `DEFAULT_UPLOAD_BASE_URL` (`https://www.googleapis.com/upload/youtube/v3/videos`)
+  with `uploadType=resumable&part=snippet,status&notifySubscribers=false` and the metadata JSON body
+  (`X-Upload-Content-Length`/`X-Upload-Content-Type` headers), reading the session URI from the `Location` response
+  header (never the body); (2) PUTs the bytes to that session URI. `privacyStatus: 'private'` and
+  `selfDeclaredMadeForKids: false` come from a private `REQUIRED_STATUS` constant, never a caller-supplied option —
+  `UploadVideoOptions` exposes NO privacy field at all, so a caller cannot accidentally publish public even via an
+  `as any` cast (proved by a dedicated test). `notifySubscribers=false` is sent as a QUERY PARAMETER on the
+  initiate call, not a body field, per the plan Constraint that it defaults to TRUE. 308 Resume Incomplete is
+  handled by `bytesReceivedFromRangeHeader` (exported, independently unit-tested): parses the inclusive end byte
+  from `Range: bytes=0-262143` and returns 262144 (the off-by-one the task called out explicitly), or 0 when the
+  header is absent. A 308 that reports forward progress resumes immediately with a correct
+  `Content-Range: bytes <start>-<end>/<total>` header and no sleep; a 308 reporting NO progress backs off
+  exponentially (`RETRY_BASE_DELAY_MS` doubling) before retrying the same offset, bounded at `UPLOAD_MAX_ATTEMPTS`
+  (5) total PUT attempts. A 5xx during the PUT also backs off, then queries status per the protocol (PUT
+  `Content-Range: bytes */<total>` with an empty body) to learn how many bytes actually landed before resuming; if
+  that status probe is itself inconclusive (e.g. also 5xx), the probe's failure is swallowed and the same offset is
+  retried on the next bounded attempt rather than treated as fatal. A 4xx at either step fails immediately, no
+  retry, no probe. `video` accepts either an in-memory `Buffer` or `{ filePath }` (read via `node:fs/promises`).
+  Never logs `config.accessToken`: it is sent only as an `Authorization: Bearer` header (never a URL query
+  parameter, unlike Instagram, so there is no URL to redact), and no thrown error interpolates a token, header, or
+  full request — only HTTP status codes and whatever body YouTube itself returned. The header comment carries an
+  "OPERATOR NOTE" quoting the plan Constraint that the OAuth app must be published to "In production" or refresh
+  tokens expire every 7 days and the weekly cron dies — placed there so whoever debugs a dead weekly cron finds it
+  in the file they're already looking at. Also notes `#Shorts` is not required (Shorts classification is automatic
+  from aspect ratio/duration) so this module adds no such tag. `fetchFn`/`sleep` both injectable, defaulting to the
+  real global `fetch` and a real timer. Added `social/src/publish/__tests__/youtube.test.ts` (24 tests, mocked
+  `fetchFn`/`sleep`, no real network call anywhere): happy path asserts the exact initiate-then-PUT sequence,
+  header/body shape, and the file-path video-source case; a dedicated suite proves `notifySubscribers=false`,
+  `privacyStatus: 'private'`, and `selfDeclaredMadeForKids: false` are always sent and cannot be overridden even by
+  smuggling extra fields into the options object; `bytesReceivedFromRangeHeader` is covered directly for the exact
+  262143->262144 boundary, a missing header, a non-zero-start range, and an unparseable header; 308-resume is
+  covered for a mid-file boundary (asserting the exact `Content-Range` of the follow-up PUT), a missing-Range-header
+  case (resumes at 0), a no-progress case (asserts increasing backoff via `sleep` call arguments), and exhausting
+  `UPLOAD_MAX_ATTEMPTS` on persistent no-progress; 5xx is covered for session initiation (retry-then-succeed and
+  exhaustion), for byte upload (retry-via-status-probe-then-succeed, a probe revealing the upload actually finished,
+  and exhaustion when both the PUT and the probe keep failing); 4xx is covered at both steps with an exact
+  zero-retry call count; a console-spy suite asserts the token never appears in a thrown error's message or any
+  `console.*` call across a 4xx, an exhausted-5xx, and an exhausted-no-progress-308 path. `npx vitest run
+  src/publish` (from `social/`): 90/90 green (12 `env.test.ts` + 20 `tokens.test.ts` + 21 `storage.test.ts` + 13
+  `instagram.test.ts`, all unmodified, + 24 new `youtube.test.ts`). `tsc --noEmit -p social/tsconfig.json`: clean
+  (required one accommodation unrelated to this module's logic: casting a `Buffer` PUT body to `BodyInit`, since
+  lib.dom's `BodyInit` type loaded alongside `@types/node`'s `Buffer` type does not structurally recognize it — the
+  same cast any Node+DOM-typed `fetch` body needs). T07 (TikTok manual staging) is next. Follow-up for whoever
+  closes T06's live half: once a Google Cloud OAuth app (published to "In production") and channel credentials
+  exist, run one real `uploadVideoToYouTube` call against a test asset and confirm it appears in Studio ready to
+  flip before T08 (the daily job) depends on this in production.
 - [ ] T07: Implement TikTok manual staging — write the week's MP4s and a captions file to a dated R2 folder and send
   a manifest with direct links, plus that week's YouTube video IDs awaiting a flip, so one session covers both
   platforms. Acceptance: a run produces 14 videos, their captions, and the pending flip list.
