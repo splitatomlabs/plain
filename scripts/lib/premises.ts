@@ -703,10 +703,210 @@ export interface WallEntry {
   landing_line: string;
 }
 
+// ---------------------------------------------------------------------------
+// V02 (social pilot 02a): the payoff-screen cap. `social/` is a
+// self-contained npm project (see T01/`landing-line.ts`'s own doc comment)
+// that does not import from this root `scripts/` package, so its payoff
+// sentence splitter (`social/src/audio/timing.ts`'s `splitPayoffLines`) and
+// this file's own `sentences()` are two independently-maintained
+// implementations. A throwaway corpus-wide comparison run for this task
+// found they DISAGREE on 161 of the 1,161 `wallGate` survivors as of V01 —
+// almost entirely because `splitPayoffLines` treats a standalone "No." (and
+// a handful of other short tokens) as a non-splitting abbreviation, which
+// `sentences()` does not — so `wallGate` cannot reuse `sentences()` for the
+// payoff-screen count without disagreeing with the renderer about which
+// cards qualify. `splitPayoffLines` below is therefore ported verbatim,
+// the same direction `landing-line.ts` ports the OPPOSITE way (root ->
+// social) for the read-through's landing-line derivation.
+//
+// Keep this function byte-identical in BEHAVIOUR to
+// `social/src/audio/timing.ts`'s `splitPayoffLines` (and its private
+// `ABBREVIATIONS`/`endsWithAbbreviation` helpers) whenever that file
+// changes — there is no automated check that keeps the two in sync.
+// ---------------------------------------------------------------------------
+
 /**
- * The Wall's landing-line gate. An entry survives when the card has a clean
- * standalone sentence to cut to in phase 2 (`selectLandingLine` returns
- * non-null) — nothing else.
+ * Word (or word-like token) immediately preceding a `.` that should NOT be
+ * treated as a sentence boundary. Lower-cased, no trailing period. A single
+ * letter (e.g. the "T" in "T. S. Eliot") is also never a boundary — handled
+ * separately below, not via this list.
+ */
+const PAYOFF_ABBREVIATIONS = new Set([
+  "mr",
+  "mrs",
+  "ms",
+  "dr",
+  "prof",
+  "sr",
+  "jr",
+  "st",
+  "vs",
+  "etc",
+  "eg",
+  "ie",
+  "no",
+  "vol",
+  "fig",
+  "al",
+  "cf",
+  "ca",
+  "approx",
+  "gen",
+  "rev",
+  "co",
+  "inc",
+  "ltd",
+]);
+
+function payoffEndsWithAbbreviation(precedingText: string): boolean {
+  const wordMatch = precedingText.match(/([A-Za-z]+)\s*$/);
+  if (!wordMatch) {
+    return false;
+  }
+  const word = wordMatch[1];
+  // A single capital (or lowercase) letter — an initial, e.g. "A." in
+  // "A. Vernon" — is never a sentence boundary.
+  if (word.length === 1) {
+    return true;
+  }
+  return PAYOFF_ABBREVIATIONS.has(word.toLowerCase());
+}
+
+/**
+ * The canonical sentence splitter for payoff lines — ported verbatim from
+ * `social/src/audio/timing.ts`'s `splitPayoffLines`; see this section's
+ * header comment for why a duplicate (not a shared import) is required.
+ * Every returned line is a VERBATIM substring of `text` (no re-wrapping, no
+ * paraphrase, no punctuation added or removed); joining the returned lines
+ * with a single space reproduces `text` modulo whitespace.
+ *
+ * Boundary rule: a run of `.`/`!`/`?` (optionally followed immediately by a
+ * closing quote or bracket) is a sentence boundary only when it is followed
+ * by whitespace or the end of the text. A `.` boundary is additionally
+ * suppressed — conservatively, per "when in doubt, do not split" — when the
+ * word immediately before it is a known abbreviation (`Mr.`, `etc.`, ...) or
+ * a single letter (an initial). `!` and `?` are never suppressed this way;
+ * they don't have an abbreviation problem.
+ */
+export function splitPayoffLines(text: string): string[] {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) {
+    return [];
+  }
+
+  const parts: string[] = [];
+  let cursor = 0;
+  const n = trimmed.length;
+
+  for (let i = 0; i < n; i++) {
+    const ch = trimmed[i];
+    if (ch !== "." && ch !== "!" && ch !== "?") {
+      continue;
+    }
+
+    // Consume a run of terminal punctuation, e.g. "?!" or "...".
+    let j = i;
+    while (j < n && (trimmed[j] === "." || trimmed[j] === "!" || trimmed[j] === "?")) {
+      j++;
+    }
+    // Consume closing quotes/brackets immediately after the punctuation.
+    let k = j;
+    while (k < n && /["'”’)\]]/.test(trimmed[k])) {
+      k++;
+    }
+
+    const atEnd = k >= n;
+    const followedByWhitespace = !atEnd && /\s/.test(trimmed[k]);
+    if (!atEnd && !followedByWhitespace) {
+      // Not a boundary — e.g. a decimal number or an ellipsis glued to the
+      // next word with no space. Leave `i` to advance normally.
+      continue;
+    }
+
+    if (ch === "." && payoffEndsWithAbbreviation(trimmed.slice(cursor, i))) {
+      continue;
+    }
+
+    parts.push(trimmed.slice(cursor, k));
+
+    let end = k;
+    while (end < n && /\s/.test(trimmed[end])) {
+      end++;
+    }
+    cursor = end;
+    i = k - 1; // loop's i++ resumes scanning right after the consumed punctuation/quotes
+  }
+
+  if (cursor < n) {
+    parts.push(trimmed.slice(cursor));
+  }
+
+  return parts;
+}
+
+/**
+ * Payoff-screen count cap for The Wall (V02, social pilot 02a). Phase 2
+ * shows `landing_line` on one still screen, then the REMAINDER of
+ * `plain_english` one sentence per still screen (`splitPayoffLines`).
+ * Phone review found videos running 26-35s across a median of 9 such
+ * screens — reads as a slideshow. 5 is the user's chosen ceiling: at <=4,
+ * Seneca's pool collapses to 2 cards and `selectWallBalanced`'s
+ * author-balancing has nothing to draw on; <=5 keeps all 7 books and a
+ * pool the scheduler can actually balance (measured: marcus-aurelius 117 /
+ * seneca 26 / epictetus 25).
+ *
+ * Because V01 already removed `wallGate`'s word-count floor, this cap is a
+ * pure POOL FILTER, never a truncation: `wallGate` simply excludes cards
+ * whose payoff runs long, it never cuts a surviving card's payoff short.
+ */
+export const WALL_MAX_PAYOFF_SCREENS = 5;
+
+/**
+ * `plain_english` with `landingLine` spliced out — exactly the arithmetic
+ * `social/src/cli-plan.ts`'s `computeWallPlainLines` uses to build the rest
+ * of the payoff passage: `indexOf(landingLine)`, slice before + slice
+ * after, join with a single space, collapse whitespace, trim. Kept in sync
+ * with that function by hand (same cross-boundary caveat as
+ * `splitPayoffLines` above) since `wallGate` needs the same remainder to
+ * count payoff screens before any card reaches a render.
+ *
+ * Throws if `landingLine` is not a verbatim substring of `plainEnglish` —
+ * `selectLandingLine` only ever returns lines lifted directly from the
+ * card's own `plain_english`, so this should never happen for a real
+ * `wallGate` candidate; a caller passing an unrelated landing line gets a
+ * loud failure rather than a silently wrong remainder.
+ */
+export function wallPayoffRemainder(plainEnglish: string, landingLine: string): string {
+  const idx = plainEnglish.indexOf(landingLine);
+  if (idx === -1) {
+    throw new Error(
+      `wallPayoffRemainder: landing line ${JSON.stringify(landingLine)} is not a verbatim substring of plain_english.`,
+    );
+  }
+  const before = plainEnglish.slice(0, idx);
+  const after = plainEnglish.slice(idx + landingLine.length);
+  return `${before} ${after}`.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Total payoff screen count for a card's phase 2: 1 (the landing line
+ * itself) + one per sentence of the spliced-out remainder
+ * (`splitPayoffLines(wallPayoffRemainder(...))`). This is the figure
+ * `wallGate` caps at `WALL_MAX_PAYOFF_SCREENS`.
+ */
+export function wallPayoffScreenCount(plainEnglish: string, landingLine: string): number {
+  const remainder = wallPayoffRemainder(plainEnglish, landingLine);
+  return 1 + splitPayoffLines(remainder).length;
+}
+
+/**
+ * The Wall's landing-line gate. An entry survives when:
+ *  - the card has a clean standalone sentence to cut to in phase 2
+ *    (`selectLandingLine` returns non-null); AND
+ *  - the resulting payoff (`wallPayoffScreenCount`) runs to at most
+ *    `WALL_MAX_PAYOFF_SCREENS` screens (V02) — see that constant's doc
+ *    comment for why 5 and why this is a pure pool filter, never a
+ *    truncation.
  *
  * This used to also require `original_excerpt` to be >=80 words long, on the
  * theory that phase 1's scrolling wall of text needed enough of the card's
@@ -719,7 +919,8 @@ export interface WallEntry {
  * one, because the excerpt itself is no longer what's on screen during
  * phase 1. `original_word_count` is kept on `WallEntry` as plain measured
  * data (some formats/reporting still find it informative) but no longer
- * gates anything here.
+ * gates anything here (V01 removed the last thing it gated; V02's cap is
+ * about payoff screen count, not excerpt length).
  */
 export function wallGate(cards: Card[]): WallEntry[] {
   const entries: WallEntry[] = [];
@@ -727,6 +928,7 @@ export function wallGate(cards: Card[]): WallEntry[] {
     const originalWordCount = wordCount(card.original_excerpt);
     const landingLine = selectLandingLine(card);
     if (!landingLine) continue;
+    if (wallPayoffScreenCount(card.plain_english, landingLine) > WALL_MAX_PAYOFF_SCREENS) continue;
     entries.push({
       card_id: card.id,
       book_slug: card.book_slug,
@@ -884,9 +1086,9 @@ export interface RankedWallEntry extends WallEntry {
  * The sub-type counts here are necessarily SMALLER than
  * `classifyWallSubTypes`'s own corpus-wide counts (301/217/144): those are
  * measured over the full 1,615-card corpus, while `rankWall` only ever sees
- * the cards that also survive the landing-line gate (V01, social pilot
- * 02a: 1,161, after the >=80-word floor that used to also apply here was
- * deleted from `wallGate` — see that function's doc comment). Call
+ * the cards that also survive `wallGate` (V01 dropped the >=80-word floor,
+ * measuring 1,161; V02 then added the <=5-payoff-screen cap on top of that,
+ * measuring 168 — see `wallGate`'s own doc comment for both). Call
  * `classifyWallSubTypes` directly to reproduce the full-corpus figures; use
  * `rankWall`'s own output to measure the ranked-pool figures.
  */
@@ -935,9 +1137,9 @@ export interface QuestionEntry {
 // diatribe transcript that natively matches the question/answer format. That
 // skew CANNOT be fixed inside The Question's own pool without discarding
 // otherwise-good material, and T05 is explicitly scoped not to try. Instead,
-// The Wall — whose ranked pool (1,161 entries as of V01's removal of the
-// >=80-word floor; see `rankWall`) is more than ten times the size of The
-// Question's — absorbs the correction: it is
+// The Wall — whose ranked pool (168 entries as of V02's <=5-payoff-screen
+// cap, social pilot 02a; see `rankWall`/`wallGate`) is still nearly twice
+// the size of The Question's — absorbs the correction: it is
 // weighted AWAY from Epictetus and TOWARD Marcus Aurelius and Seneca so that
 // once a week's Question and Wall posts are combined, the OVERALL author mix
 // lands closer to even than The Question's pool ever could on its own.

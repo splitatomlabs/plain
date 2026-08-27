@@ -10,6 +10,10 @@ import {
   findLandingLines,
   selectLandingLine,
   wallGate,
+  splitPayoffLines,
+  wallPayoffRemainder,
+  wallPayoffScreenCount,
+  WALL_MAX_PAYOFF_SCREENS,
   verbatim,
   hasUnresolvedReference,
   classifyWallSubTypes,
@@ -511,6 +515,104 @@ describe("verbatim", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// V02: splitPayoffLines / wallPayoffRemainder / wallPayoffScreenCount
+// ---------------------------------------------------------------------------
+
+describe("splitPayoffLines", () => {
+  // Ported verbatim from social/src/audio/timing.ts — see premises.ts's own
+  // doc comment on this function for why a duplicate is required rather
+  // than a shared import. These tests pin the same behavior the original
+  // carries, including its quirks.
+
+  it("splits a simple multi-sentence passage one sentence per line", () => {
+    expect(splitPayoffLines("One thing is true. Another thing follows.")).toEqual([
+      "One thing is true.",
+      "Another thing follows.",
+    ]);
+  });
+
+  it("returns an empty array for empty text", () => {
+    expect(splitPayoffLines("")).toEqual([]);
+  });
+
+  it("does not split after a single-letter initial", () => {
+    expect(splitPayoffLines("T. S. Eliot wrote this. It stands alone.")).toEqual([
+      "T. S. Eliot wrote this.",
+      "It stands alone.",
+    ]);
+  });
+
+  it("does not split after a known abbreviation", () => {
+    expect(splitPayoffLines("See Mr. Smith about it. He will know.")).toEqual([
+      "See Mr. Smith about it.",
+      "He will know.",
+    ]);
+  });
+
+  // This is the ported quirk that caused `sentences()` and
+  // `splitPayoffLines` to disagree on 161 of 1,161 real corpus cards: "no"
+  // sits in the abbreviation list (originally meant for things like "no."
+  // as an ordinal abbreviation), so a standalone "No." does not end a
+  // sentence here even though `sentences()` treats it as a complete one.
+  it("does not split after a standalone 'No.' (the abbreviation-list quirk)", () => {
+    expect(splitPayoffLines("Is it there? No. It is not.")).toEqual([
+      "Is it there?",
+      "No. It is not.",
+    ]);
+  });
+
+  it("consumes a closing quote or bracket immediately after terminal punctuation", () => {
+    expect(splitPayoffLines('He said "stop." Then he left.')).toEqual([
+      'He said "stop."',
+      "Then he left.",
+    ]);
+  });
+
+  it("does not split on a decimal point or punctuation glued to the next word", () => {
+    expect(splitPayoffLines("The rate was 3.5 percent that year. It held steady.")).toEqual([
+      "The rate was 3.5 percent that year.",
+      "It held steady.",
+    ]);
+  });
+});
+
+describe("wallPayoffRemainder", () => {
+  it("splices the landing line out and joins what's left with a single space", () => {
+    const plainEnglish = "First sentence here. Virtue alone is enough. Last sentence follows.";
+    const remainder = wallPayoffRemainder(plainEnglish, "Virtue alone is enough.");
+    expect(remainder).toBe("First sentence here. Last sentence follows.");
+  });
+
+  it("collapses whitespace and trims", () => {
+    const plainEnglish = "Virtue alone is enough.   Only this remains.";
+    const remainder = wallPayoffRemainder(plainEnglish, "Virtue alone is enough.");
+    expect(remainder).toBe("Only this remains.");
+  });
+
+  it("returns an empty string when the landing line is the whole text", () => {
+    expect(wallPayoffRemainder("Virtue alone is enough.", "Virtue alone is enough.")).toBe("");
+  });
+
+  it("throws when the landing line is not a verbatim substring", () => {
+    expect(() => wallPayoffRemainder("Something else entirely.", "Virtue alone is enough.")).toThrow();
+  });
+});
+
+describe("wallPayoffScreenCount", () => {
+  it("is 1 (landing line only) when nothing remains", () => {
+    expect(wallPayoffScreenCount("Virtue alone is enough.", "Virtue alone is enough.")).toBe(1);
+  });
+
+  it("is 1 + the number of remainder sentences", () => {
+    const plainEnglish =
+      "Setup sentence one. Setup sentence two. Virtue alone is enough. Closing sentence one. Closing sentence two.";
+    // Remainder: "Setup sentence one. Setup sentence two. Closing sentence
+    // one. Closing sentence two." — 4 sentences, so 1 (landing line) + 4.
+    expect(wallPayoffScreenCount(plainEnglish, "Virtue alone is enough.")).toBe(5);
+  });
+});
+
 describe("wallGate", () => {
   // T08/R02 moved the scrolling wall of text off the card's own
   // original_excerpt and onto the surrounding CHAPTER block
@@ -521,7 +623,7 @@ describe("wallGate", () => {
   // line (phase 2) still depends on the card itself. This card's
   // original_excerpt is 9 words, nowhere near the old 80-word floor, but
   // it must still survive because its plain_english has a qualifying
-  // landing line.
+  // landing line and its payoff is within the V02 screen cap.
   it("survives with a short original_excerpt when it has a qualifying landing line", () => {
     const card = makeCard({
       original_excerpt: "A short passage of only nine words total.",
@@ -539,6 +641,32 @@ describe("wallGate", () => {
       original_excerpt: "A short passage of only nine words total.",
       plain_english: "But this is only a fragment",
     });
+    expect(wallGate([card])).toHaveLength(0);
+  });
+
+  // -------------------------------------------------------------------
+  // V02: the <=5-payoff-screen cap.
+  // -------------------------------------------------------------------
+
+  it("accepts a card whose payoff runs to exactly WALL_MAX_PAYOFF_SCREENS screens", () => {
+    expect(WALL_MAX_PAYOFF_SCREENS).toBe(5);
+    // Landing line (1) + 4 remainder sentences = 5 screens.
+    const card = makeCard({
+      plain_english:
+        "Setup sentence one here. Setup sentence two here. Virtue alone is enough to live a good life. Closing sentence one here. Closing sentence two here.",
+    });
+    expect(wallPayoffScreenCount(card.plain_english, "Virtue alone is enough to live a good life.")).toBe(5);
+    const entries = wallGate([card]);
+    expect(entries).toHaveLength(1);
+  });
+
+  it("rejects a card whose payoff runs to WALL_MAX_PAYOFF_SCREENS + 1 screens", () => {
+    // Landing line (1) + 5 remainder sentences = 6 screens — one over cap.
+    const card = makeCard({
+      plain_english:
+        "Setup sentence one here. Setup sentence two here. Setup sentence three here. Virtue alone is enough to live a good life. Closing sentence one here. Closing sentence two here.",
+    });
+    expect(wallPayoffScreenCount(card.plain_english, "Virtue alone is enough to live a good life.")).toBe(6);
     expect(wallGate([card])).toHaveLength(0);
   });
 });
@@ -590,12 +718,46 @@ describe("wallGate against the real corpus", () => {
     // figure was still gated on an >=80-word original_excerpt floor that
     // died at T08/R02 (see `wallGate`'s doc comment): phase 1 no longer
     // scrolls the card's own excerpt, so a short excerpt outruns the viewer
-    // exactly as well as a long one. V01 deleted that floor; the gate now
-    // measures 1,161 — exactly the corpus-wide count of cards with a
-    // qualifying landing line, since a non-null `selectLandingLine` is the
-    // only remaining condition. If pipeline content or the landing-line
-    // rules change, re-run and update this assertion deliberately.
-    expect(entries.length).toBe(1161);
+    // exactly as well as a long one. V01 deleted that floor; the gate then
+    // measured 1,161 — exactly the corpus-wide count of cards with a
+    // qualifying landing line, since a non-null `selectLandingLine` was the
+    // only remaining condition.
+    //
+    // V02 (social pilot 02a) added the <=5-payoff-screen cap on top of
+    // that: a card's payoff (`wallPayoffScreenCount`) must run to at most
+    // `WALL_MAX_PAYOFF_SCREENS` still screens. Measured over the same
+    // 1,161-entry set: 168 survive at <=5 screens (marcus-aurelius 117 /
+    // seneca 26 / epictetus 25, across all 7 books). If pipeline content or
+    // the landing-line/payoff-screen rules change, re-run and update this
+    // assertion deliberately.
+    expect(entries.length).toBe(168);
+  });
+
+  // -------------------------------------------------------------------
+  // V02: the <=5-payoff-screen cap, corpus-wide.
+  // -------------------------------------------------------------------
+
+  it("no survivor's payoff exceeds WALL_MAX_PAYOFF_SCREENS screens", () => {
+    const cardsById = new Map(loadCorpus().map((c) => [c.id, c]));
+    for (const entry of entries) {
+      const card = cardsById.get(entry.card_id)!;
+      expect(wallPayoffScreenCount(card.plain_english, entry.landing_line)).toBeLessThanOrEqual(
+        WALL_MAX_PAYOFF_SCREENS,
+      );
+    }
+  });
+
+  it("measures the exact author mix and book coverage of the capped pool", () => {
+    const byAuthor: Record<string, number> = {};
+    const books = new Set<string>();
+    for (const entry of entries) {
+      byAuthor[entry.author_slug] = (byAuthor[entry.author_slug] ?? 0) + 1;
+      books.add(entry.book_slug);
+    }
+    expect(byAuthor["marcus-aurelius"]).toBe(117);
+    expect(byAuthor.seneca).toBe(26);
+    expect(byAuthor.epictetus).toBe(25);
+    expect(books.size).toBe(7);
   });
 
   // -------------------------------------------------------------------
@@ -790,14 +952,18 @@ describe("rankWall against the real corpus", () => {
     const scene = entries.filter((e) => e.sub_types.includes("scene")).length;
     const reserve = entries.filter((e) => e.reserve).length;
 
-    // These are measured, reported counts within the smaller 1,161-entry
-    // ranked pool (wallGate survivors, post-V01) — necessarily <= the
-    // full-corpus classifier counts above, since not every card has a
-    // qualifying landing line.
-    expect(thou).toBe(220);
-    expect(cascade).toBe(185);
-    expect(scene).toBe(98);
-    expect(reserve).toBe(711);
+    // These are measured, reported counts within the smaller 168-entry
+    // ranked pool (wallGate survivors, post-V02's <=5-payoff-screen cap) —
+    // necessarily <= the full-corpus classifier counts above, since not
+    // every card has a qualifying, in-cap landing line. V01 measured
+    // 220/185/98/711 over the larger pre-cap 1,161-entry pool; V02's cap
+    // shrank the pool to 168 and, since short payoffs correlate with short
+    // (and so less often archaic-marker/semicolon/quote-heavy) excerpts,
+    // shifted it heavily toward reserve.
+    expect(thou).toBe(45);
+    expect(cascade).toBe(5);
+    expect(scene).toBe(3);
+    expect(reserve).toBe(117);
   });
 });
 
@@ -1101,7 +1267,16 @@ describe("selectWallBalanced", () => {
   });
 
   it("over a large draw, honours the weighting directionally (more seneca/marcus-aurelius, less epictetus than an even split)", () => {
-    const selected = selectWallBalanced(wallPool, weights, 300, createSeededRng(11));
+    // V02 (social pilot 02a) shrank the real wallPool to 168 entries
+    // (25 epictetus / 26 seneca / 117 marcus-aurelius) via the
+    // <=5-payoff-screen cap. A draw of 300 (the pre-V02 figure) now
+    // exceeds the whole pool, so `selectWallBalanced` would return every
+    // entry regardless of weighting — that only reproduces the pool's OWN
+    // natural mix (seneca ~15%, below 1/3), not the weighting this test is
+    // meant to exercise. 50 keeps the draw well under every author's
+    // bucket size at these weights, so the weighting itself — not pool
+    // exhaustion — governs the result.
+    const selected = selectWallBalanced(wallPool, weights, 50, createSeededRng(11));
     const mix = authorMix(selected);
     expect(mix.epictetus.share).toBeLessThan(1 / 3);
     expect(mix["marcus-aurelius"].share).toBeGreaterThan(1 / 3);

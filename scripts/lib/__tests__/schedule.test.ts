@@ -222,8 +222,14 @@ describe("faithfulness", () => {
     // The rubric's chosen line must itself be a real substring of the
     // card's own text — this test proves PREFERENCE, not faithfulness
     // bypass, so it picks a genuinely different, still-faithful sentence.
-    const sentences = card.plain_english.match(/[^.!?]+[.!?]/g) ?? [card.plain_english];
-    const alt = sentences.length > 1 ? sentences[sentences.length - 1].trim() : base.landing_line;
+    // V02 (social pilot 02a) shrank the payoff-screen cap enough that
+    // `gateWallPool[0]`'s card can have very few sentences, so — unlike the
+    // pre-V02 fixture — the LAST sentence isn't guaranteed to differ from
+    // the mechanical landing line (`selectLandingLine` also prefers the
+    // last qualifying sentence). Pick the first sentence that differs
+    // instead of always the last.
+    const sentences = (card.plain_english.match(/[^.!?]+[.!?]/g) ?? [card.plain_english]).map((s) => s.trim());
+    const alt = sentences.find((s) => s !== base.landing_line) ?? base.landing_line;
     const scoredEntry: WallPoolEntry = { ...base, rubric: { impenetrability_score: 5, landing_line_score: 5 } };
     (scoredEntry as unknown as { rubric: { chosen_landing_line: string } }).rubric.chosen_landing_line = alt;
 
@@ -359,18 +365,26 @@ describe("loadWallPool", () => {
     return filePath;
   }
 
+  // V02 (social pilot 02a) shrank `gateWallPool` (168 entries) enough that
+  // the fixed card id these two tests used to hardcode ("on-anger-03-027")
+  // no longer survives the <=5-payoff-screen cap. Derive the excluded id
+  // from the pool itself instead, so these tests stay meaningful (and stay
+  // passing non-vacuously) regardless of which cards the cap happens to
+  // admit.
+  const excludedCard = gateWallPool[0];
+
   it("drops excluded ids from the Wall pool and logs it", async () => {
-    expect(gateWallPool.some((e) => e.card_id === "on-anger-03-027")).toBe(true);
+    expect(gateWallPool.some((e) => e.card_id === excludedCard.card_id)).toBe(true);
     const exclusionsPath = await writeExclusionsFile([
-      { card_id: "on-anger-03-027", book_slug: "on-anger", axis: "duration", reason: "synthetic fixture — see F05" },
+      { card_id: excludedCard.card_id, book_slug: excludedCard.book_slug, axis: "duration", reason: "synthetic fixture — see F05" },
     ]);
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
       const { pool, exclusions } = await loadWallPool(tempDir, gateWallPool, exclusionsPath);
-      expect(pool.some((e) => e.card_id === "on-anger-03-027")).toBe(false);
+      expect(pool.some((e) => e.card_id === excludedCard.card_id)).toBe(false);
       expect(pool.length).toBe(gateWallPool.length - 1);
       expect(exclusions).not.toBeNull();
-      expect(exclusions!.wall.has("on-anger-03-027")).toBe(true);
+      expect(exclusions!.wall.has(excludedCard.card_id)).toBe(true);
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped 1 Wall pool entry"));
     } finally {
       warnSpy.mockRestore();
@@ -379,7 +393,7 @@ describe("loadWallPool", () => {
 
   it("an excluded id never appears in a generated week", async () => {
     const exclusionsPath = await writeExclusionsFile([
-      { card_id: "on-anger-03-027", book_slug: "on-anger", axis: "duration", reason: "synthetic fixture — see F05" },
+      { card_id: excludedCard.card_id, book_slug: excludedCard.book_slug, axis: "duration", reason: "synthetic fixture — see F05" },
     ]);
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     let pool: RankedWallEntry[];
@@ -398,7 +412,7 @@ describe("loadWallPool", () => {
         poolSource: "gate-only",
         priorUsedCardIds: new Set(),
       });
-      expect(week.slots.some((s) => s.card_id === "on-anger-03-027")).toBe(false);
+      expect(week.slots.some((s) => s.card_id === excludedCard.card_id)).toBe(false);
     }
   });
 
