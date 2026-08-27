@@ -74,7 +74,6 @@ import {
 	FPS,
 	WALL_REFERENCE_VIEWPORT_WIDTH,
 	WALL_MIN_LEGIBLE_FONT_PX,
-	type NarrationLineTiming,
 	type WallLayout
 } from './wall-timing.js';
 import { MAX_POST_DURATION_FRAMES, MAX_POST_DURATION_SECONDS } from './duration-bounds.js';
@@ -143,11 +142,13 @@ export const WALL_LANDING_LINE_MAX_WORDS = 30;
  * just checked against a Wall-specific, stricter threshold; the reason
  * string is what distinguishes which ceiling actually rejected a card.
  *
- * Caveat carried forward from the plan: this fallback pacing lever (and
- * this ceiling) governs the MUSIC-ONLY case. Once T14's voices land, real
- * line durations come from `narrationTimings`, not `DEFAULT_LINE_FRAMES` —
- * at that point this ceiling may start rejecting cards it does not reject
- * today, which is expected, not a regression to re-tune around blindly.
+ * `DEFAULT_LINE_FRAMES` pacing (and this ceiling) used to govern only the
+ * MUSIC-ONLY case, with real per-line narration timing overriding it once
+ * T14's voices landed. Narration was deleted outright before that happened
+ * (Pf39c2-social-pilot-02 N01, 2026-08-27 — see
+ * `plans/Pf39c2-social-pilot-02.md`'s "Narration dropped" section) — every
+ * render is music-only now, permanently, so `DEFAULT_LINE_FRAMES` is simply
+ * the pacing, not a fallback for one.
  */
 export const WALL_MAX_DURATION_SECONDS = 40;
 export const WALL_MAX_DURATION_FRAMES = Math.round(WALL_MAX_DURATION_SECONDS * FPS);
@@ -171,8 +172,6 @@ export const WALL_MAX_DURATION_FRAMES = Math.round(WALL_MAX_DURATION_SECONDS * F
 export interface WallGateContentInput {
 	/** The rest of the plain passage, in order, excluding the landing line — see `WallTimingInput.plainLines`. */
 	plainLines?: string[];
-	/** Optional per-line narration timing — see `WallTimingInput.narrationTimings`. */
-	narrationTimings?: NarrationLineTiming[];
 	/**
 	 * The card's raw `plain_english` (T02). When supplied, the gate requires
 	 * `selectLandingLine` (`./landing-line.js`) to find a qualifying sentence
@@ -262,8 +261,7 @@ export function gateWallCard(originalExcerpt: string, content: WallGateContentIn
 	const plainLines = content.plainLines ?? [];
 	const totalFrames = computeWallRawTotalFrames({
 		originalExcerpt,
-		plainLines,
-		narrationTimings: content.narrationTimings
+		plainLines
 	});
 
 	if (totalFrames > MAX_POST_DURATION_FRAMES) {

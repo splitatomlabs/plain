@@ -64,7 +64,6 @@ export {
 	type WallRestLine,
 	type WallTimingInput,
 	type WallTimingSchedule,
-	type NarrationLineTiming,
 	computeWallRawTotalFrames
 } from './wall-timing.js';
 export {

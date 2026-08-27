@@ -7,8 +7,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@aws-sdk/client-polly": "^3.930.0",
-    "@elevenlabs/elevenlabs-js": "^2.20.1",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/literata": "^5.2.8",
     "@remotion/bundler": "^4.0.360",

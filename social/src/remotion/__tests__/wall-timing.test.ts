@@ -32,8 +32,7 @@ import {
 	PAYOFF_MAX_FONT,
 	PAYOFF_BOX_WIDTH,
 	PAYOFF_BOX_HEIGHT,
-	PAYOFF_LINE_HEIGHT_RATIO,
-	type NarrationLineTiming
+	PAYOFF_LINE_HEIGHT_RATIO
 } from '../wall-timing.js';
 import { MAX_POST_DURATION_FRAMES } from '../duration-bounds.js';
 import { WALL_LANDING_LINE_MAX_WORDS } from '../wall-gate.js';
@@ -161,18 +160,18 @@ describe('the hard cut and the landing line hold', () => {
 		}
 	});
 
-	it('respects supplied narration timings instead of the default per-line duration', () => {
-		const narrationTimings: NarrationLineTiming[] = FIXTURE_PLAIN_LINES.map((_, i) => ({
-			startSeconds: i * 2,
-			endSeconds: i * 2 + 1.5
-		}));
-		const withNarration = computeWallTiming({
-			originalExcerpt: FIXTURE_CARD.original_excerpt,
-			plainLines: FIXTURE_PLAIN_LINES,
-			narrationTimings
-		});
-		const expectedFrames = Math.round(1.5 * FPS);
-		expect(withNarration.restLines[0].endFrame - withNarration.restLines[0].startFrame).toBe(expectedFrames);
+	// Pf39c2-social-pilot-02 N01 (2026-08-27): narration is deleted outright
+	// — this used to assert that a supplied `narrationTimings` array
+	// overrode the fixed per-line duration below; there is no such input any
+	// more (`WallTimingInput` has no `narrationTimings` field left), so
+	// `DEFAULT_LINE_FRAMES` is unconditionally every rest line's length.
+	// Pinned directly here rather than just implied by the constant's own
+	// value, so a future regression that reintroduces a per-line override
+	// without updating this test fails loudly.
+	it('every rest line is held for exactly DEFAULT_LINE_FRAMES — the only source of a payoff line duration', () => {
+		for (const line of timing.restLines) {
+			expect(line.endFrame - line.startFrame).toBe(DEFAULT_LINE_FRAMES);
+		}
 	});
 });
 

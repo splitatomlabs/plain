@@ -367,3 +367,102 @@ npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force
 npx tsx social/scripts/write-exclusions.ts --date 2026-08-26
 ```
 Week 1 maps to 2026-09-01 (day 1) through 2026-09-07, slots 1 and 2; slot 1 is the read-through.
+
+## Narration dropped (2026-08-27, user)
+
+User, asked whether narration is still valuable given the Wall's current shape: decided to **drop it and delete
+the subsystem**.
+
+Reasoning, recorded because this reverses a headline decision of this plan ("**Narration is in**, one fixed
+voice per Stoic. ElevenLabs primary (~$22/mo), Amazon Polly fallback"):
+
+1. **It would reverse 02a V17.** That task made post duration a pure function of payoff screen count, with every
+   payoff frame held exactly `DEFAULT_LINE_SECONDS` (3.0s) — the user's own ask ("constant hold time for each
+   screen and vary the video length"). Narration overrides that: `restLineFrameCounts`
+   (`social/src/remotion/wall-timing.ts`) uses `narrationTimings[index]` in preference to
+   `DEFAULT_LINE_FRAMES`, so each line runs as long as its spoken audio and the constant-hold property is lost.
+2. **It fills the silence 02a U04/U08 built and V06 doubled.** The payoff's force is a hard cut into 1s of true
+   silence. A voice entering after the drop occupies the space the drop opens.
+3. **It narrates text that is already large and legible.** The premise is visual — illegible becomes legible.
+   The payoff sets one sentence at 52-88px, motionless, on an empty frame.
+4. **The rationale for three distinct voices died with 02a D01.** One voice per Stoic was designed to pair with
+   three portraits across four formats. The portraits are gone (T02, obsolete), the formats are gone, and the
+   author is now named by `SourceHead`'s running head.
+
+Weighed against: no data either way on whether spoken audio helps reach or watch-time on these platforms
+(a real unknown, not a settled point); and a voice does serve low-vision viewers, though large on-screen type
+covers most of that. Reversible from git history if the channel later wants it.
+
+- [x] N01 (DONE 2026-08-27): Delete the narration subsystem. Removed `social/src/narration.ts`,
+  `social/src/audio/tts.ts`, `social/src/audio/voices.ts`, `social/scripts/audition-voices.ts`,
+  `social/assets/voices/`, their tests (`tts.test.ts`, `voices.test.ts`, both `narration.test.ts` files, and the
+  narration-specific fixtures under `audio/__tests__/fixtures/`), and the `@elevenlabs/elevenlabs-js` +
+  `@aws-sdk/client-polly` dependencies. `narrationTimings` is unwired from `cli.ts`, `wall-timing.ts` (the
+  `WallTimingInput`/`WallGateContentInput` field and the `NarrationLineTiming` type are gone, not just
+  optional), `Wall.tsx`, `Root.tsx` and `wall-gate.ts`, so `DEFAULT_LINE_FRAMES` is unconditionally the only
+  source of a payoff line's duration. `--require-narration` and the `VOICES_ARE_UNSET`/T14 warning path are gone
+  from `cli.ts`.
+  Original task text: Remove `social/src/narration.ts`, `social/src/audio/tts.ts`,
+  `social/src/audio/voices.ts`, `social/scripts/audition-voices.ts`, `social/assets/voices/`, their tests
+  (`tts.test.ts`, `narration.test.ts`, and the narration-specific parts of `timing.test.ts`), and the
+  `@elevenlabs/elevenlabs-js` + `@aws-sdk/client-polly` dependencies. Unwire `narrationTimings` from `cli.ts`,
+  `wall-timing.ts`, `Wall.tsx`, `Root.tsx` and `wall-gate.ts` so `DEFAULT_LINE_FRAMES` is the only source of
+  payoff line duration, and drop the `--require-narration` flag and the `VOICES_ARE_UNSET` warning path.
+  **DO NOT delete `social/src/audio/timing.ts` wholesale** — it holds `splitPayoffLines`, which is live
+  (`cli-plan.ts` imports it, and 02a V02 ported it into `scripts/lib/premises.ts` as the Wall gate's screen
+  counter); keep that and anything else still reachable, delete only the narration-timing machinery. Decide
+  deliberately what happens to the metadata sidecar's `narration: false` field — with narration gone it is
+  either meaningless (remove it, and say what that does to `post-metadata.ts`'s shape and its tests) or worth
+  keeping as an explicit statement for downstream publishers; state the choice. Keep `mix.ts` and `beds.ts`
+  entirely — the music bed and the babble bed stay. Acceptance: both suites green; `npm install --prefix
+  social` succeeds with the two deps gone; a re-render of week 1 produces byte-identical decoded PCM to the
+  current renders (narration was never active, so nothing audible may change — verify by hashing PCM, not the
+  MP4 container, which is not bit-reproducible here).
+  DECISIONS AND FINDINGS (2026-08-27):
+  - **`timing.ts`**: kept `splitPayoffLines` and its private helpers (`ABBREVIATIONS`,
+    `endsWithAbbreviation`) verbatim. Deleted `normalizeForMatch`, `lineTimingsFromMarks`,
+    `NARRATION_DRIFT_TOLERANCE_MS`, `assertNarrationInSync`, `LineFrameRange` and `toFrames` — all
+    narration-timing machinery with no caller left once `narrationTimings` is gone from `wall-timing.ts`
+    (`toFrames` in particular had ZERO callers outside its own test even before this task; it was built for
+    T13 but `wall-timing.ts` always computed frames directly via its own `restLineFrameCounts`, never through
+    `toFrames`).
+  - **The `narration: false` sidecar field**: REMOVED, not kept. It was always `false` — no code path ever set
+    it to `true` even before this task (T14 was blocked). With the whole narration subsystem deleted, no code
+    path could EVER set it to `true` again, so it's a permanently-constant field carrying no information a
+    reader could act on. `post-metadata.ts`'s own `PostMetadata` shape is untouched either way — the field
+    lived in `cli.ts`'s additive `narrationFields` helper (renamed `additionalMetadataFields`), never in
+    `post-metadata.ts` itself, so no shape or test change was needed there. `cli.test.ts`'s e2e test now
+    asserts `metadata.narration` is `undefined`.
+  - **Rule 3 of the house rule ("TTS pitch and rate never below default") — a gap the task didn't name**:
+    `render/house-rules.ts` imported `assertVoiceSettingsWithinHouseRule`/`VoiceSettingsInput` from
+    `audio/tts.ts`, which is deleted. Moved both into `house-rules.ts` itself rather than deleting them — rule
+    3 is still one of the plan's three named, permanent house rules, and this module is where the plan says
+    all three belong. It is genuinely unreachable from any real render today (no TTS call-site exists
+    anywhere in the workspace), kept only as a standing constraint and its existing test coverage, same
+    "reversible from git history" logic N01 applies to narration itself. Flagged here since this wasn't named
+    in the task text and the fix required judgment.
+  - **`mix.ts`'s ducking (`narrationSpans`/`DUCK` level)**: kept whole, per the task. `cli.ts` now always
+    calls `mix()` with `narrationPath: undefined` and `narrationSpans: []`, so the `DUCK` envelope level is
+    unreachable from any real render (only `NOMINAL`/`FLOOR` are reachable via the noise/silence spans) — but
+    `mix.test.ts` still exercises it directly against synthetic `narrationSpans`, and it may still serve a
+    future babble-bed-adjacent use. Reported per the task's instruction, not deleted.
+  - **`audio/__tests__/narration.test.ts`**: this file mixed narration-specific tests (`narrationPlan`, framing
+    text never reaching a TTS provider) with tests of `wallSilentSpans`/`wallNoiseSpans` and the F02
+    non-silent-mix edge case, neither of which is narration machinery (they're the noise/silence spans
+    `cli.ts` hands to `mix()` unconditionally). Deleted the narration-specific describe blocks and moved the
+    surviving two into a new `audio/__tests__/wall-spans.test.ts`, rather than deleting the whole file, so
+    that coverage isn't lost.
+  - **`src/__tests__/narration.test.ts`** (the F07/F09/F13 drift-gate/Polly-repair suite): deleted wholesale —
+    100% about `synthesizeNarration`'s Polly-mark-repair and drift-gate behavior, both gone with
+    `narration.ts`.
+  - Verification: rendered week 1 (2026-09-01..07) before and after the deletion, decoded each MP4's audio to
+    PCM (`ffmpeg -vn -acodec pcm_s16le -ar 48000 -ac 1 -f s16le`) and hashed it — all 7 days byte-identical
+    before/after. `npm install --prefix social` removed 32 packages with the two deps gone; `package-lock.json`
+    has zero remaining references to either. All three suites green (574 pipeline + 95 web + 330 social).
+
+- [ ] N02: Delete the character/portrait system, dead since 02a D01 for the same reason. Remove
+  `social/src/render/characters.ts` (imported by nothing but its own test), its test, and
+  `social/assets/characters/` including the placeholder SVGs and the asset-contract README. Grep first and
+  report anything still referencing them; if `PORTRAITS_ARE_PLACEHOLDER` or the loader is reachable from any
+  live composition, STOP and report rather than deleting. Separate commit from N01 so either can be reverted
+  independently. Acceptance: both suites green; no dangling import; `Wall.tsx` unaffected.

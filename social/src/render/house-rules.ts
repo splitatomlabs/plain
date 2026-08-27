@@ -17,17 +17,29 @@
  * Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
  * outright — the channel is one Wall a day. `FORMATS` below is Wall-only now.
  *
- * Rule 3 already has a single canonical guard —
- * `assertVoiceSettingsWithinHouseRule` in `../audio/tts.ts` — this module
- * never duplicates it, only wraps it in the same `{ passed, violations }`
- * report shape the other two rules use.
+ * Rule 3's guard, `assertVoiceSettingsWithinHouseRule` below, used to live
+ * in `../audio/tts.ts` — "the single canonical guard both TTS providers
+ * already call before synthesizing anything". Pf39c2-social-pilot-02 N01
+ * (2026-08-27) deleted `audio/tts.ts` along with the rest of the narration
+ * subsystem (no voice was ever auditioned — see
+ * `plans/Pf39c2-social-pilot-02.md`'s "Narration dropped" section), which
+ * removed that call-site: there is no TTS provider left anywhere in this
+ * workspace to violate the rule. The guard itself moves here rather than
+ * being deleted with its old call-site, because rule 3 ("TTS pitch and
+ * rate never below default") is still one of the plan's three named,
+ * permanent house rules, and this module is where the plan says all three
+ * belong — kept as a standing constraint (and its existing test coverage)
+ * in case narration returns, cheap insurance rather than dead code, per the
+ * same "reversible from git history" reasoning N01 applied to narration
+ * itself. It is genuinely unreachable from any real render today; nothing
+ * currently constructs a `VoiceSettingsInput` outside this file's own
+ * tests.
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { assertVoiceSettingsWithinHouseRule, type VoiceSettingsInput } from '../audio/tts.js';
 import { FPS, computeWallTiming } from '../remotion/wall-timing.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -394,11 +406,50 @@ export function checkPayoffMotionless(timing: unknown, label = 'timing'): HouseR
 // ---------------------------------------------------------------------------
 
 /**
- * Rule 3. Delegates to `assertVoiceSettingsWithinHouseRule` in
- * `../audio/tts.ts` — the single canonical guard both TTS providers already
- * call before synthesizing anything — and reshapes its throw-or-not-throw
- * contract into the same `{ passed, violations }` report the other two
- * rules return. Never reimplements the pitch/rate comparison itself.
+ * Multipliers relative to the provider default. 1.0 = default. Moved here
+ * from the now-deleted `../audio/tts.ts` (N01) — see this module's own doc
+ * comment for why.
+ */
+export interface VoiceSettingsInput {
+	pitch?: number;
+	rate?: number;
+}
+
+const HOUSE_RULE_3 =
+	'the house rule (plans/Pf39c2-social-pilot-02.md): TTS pitch and rate never below default — no "wise deep voice"';
+
+const DEFAULT_VOICE_SETTING = 1;
+
+/**
+ * Rejects any synthesis request whose pitch or rate is below the provider
+ * default (1.0). Default-or-above only. Moved here from the now-deleted
+ * `../audio/tts.ts` (N01), where both TTS providers called it before
+ * synthesizing anything — see this module's own doc comment for why the
+ * guard itself survives that deletion. Unreachable from any real call
+ * today; exercised directly by this module's own tests instead.
+ */
+export function assertVoiceSettingsWithinHouseRule(settings: VoiceSettingsInput | undefined): void {
+	const pitch = settings?.pitch ?? DEFAULT_VOICE_SETTING;
+	const rate = settings?.rate ?? DEFAULT_VOICE_SETTING;
+
+	if (pitch < DEFAULT_VOICE_SETTING) {
+		throw new Error(
+			`Voice pitch ${pitch} is below the provider default (${DEFAULT_VOICE_SETTING}) — this violates ${HOUSE_RULE_3}.`
+		);
+	}
+	if (rate < DEFAULT_VOICE_SETTING) {
+		throw new Error(
+			`Voice rate ${rate} is below the provider default (${DEFAULT_VOICE_SETTING}) — this violates ${HOUSE_RULE_3}.`
+		);
+	}
+}
+
+/**
+ * Rule 3. Wraps `assertVoiceSettingsWithinHouseRule` above (same file now —
+ * see this module's own doc comment for why that moved here from the
+ * deleted `audio/tts.ts`) in the same `{ passed, violations }` report shape
+ * the other two rules use. Never reimplements the pitch/rate comparison
+ * itself.
  */
 export function checkTtsWithinHouseRule(settings: VoiceSettingsInput | undefined): HouseRuleCheckResult {
 	try {
@@ -410,7 +461,7 @@ export function checkTtsWithinHouseRule(settings: VoiceSettingsInput | undefined
 			violations: [
 				{
 					rule: 3,
-					file: 'audio/tts.ts',
+					file: 'render/house-rules.ts',
 					detail: error instanceof Error ? error.message : String(error)
 				}
 			]
@@ -525,9 +576,10 @@ function discoverRemotionSourceFiles(): string[] {
  *
  * Rule 3 is intentionally NOT run here — it checks a runtime TTS call, not
  * a composition source file or a timing schedule, so it has no format to
- * iterate over. Call `checkTtsWithinHouseRule` directly at the TTS
- * call-site (both providers in `../audio/tts.ts` already do, via
- * `assertVoiceSettingsWithinHouseRule`).
+ * iterate over. There is no live TTS call-site left to call it from at all
+ * (N01 deleted narration outright — see this module's own doc comment);
+ * `checkTtsWithinHouseRule`/`assertVoiceSettingsWithinHouseRule` above
+ * survive as a standing constraint for if one returns.
  */
 export function checkAllFormats(): HouseRuleCheckResult {
 	const rootSource = readFileSync(path.join(REMOTION_SRC_DIR, 'Root.tsx'), 'utf-8');

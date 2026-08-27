@@ -203,35 +203,20 @@ describe('--dry-run', () => {
 	});
 });
 
-describe('--require-narration', () => {
-	// Same reasoning as `--dry-run` above: `outDir` is never created (the
-	// render is refused before anything is written), so track and remove
-	// the mkdtemp parent, not `outDir` itself.
-	let parentDir: string;
-	let outDir: string;
-
-	afterEach(async () => {
-		if (parentDir) await rm(parentDir, { recursive: true, force: true });
-	});
-
-	it('fails loudly instead of rendering a music-only asset', async () => {
-		parentDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-narr-'));
-		outDir = path.join(parentDir, 'out');
-
-		const result = runCli(['render', '--date', '2026-09-01', '--out', outDir, '--require-narration']);
-		expect(result.status).not.toBe(0);
-		expect(result.stderr).toMatch(/T14/);
-		expect(result.stderr).toMatch(/require-narration/i);
-		expect(existsSync(outDir)).toBe(false);
-	});
-});
+// `--require-narration` (and the describe block that used to test it here)
+// is deleted along with the rest of the narration subsystem — Pf39c2-
+// social-pilot-02 N01, 2026-08-27. It used to fail loudly instead of
+// rendering a music-only asset when no voice had been auditioned (T14);
+// there is no narration path left to require at all now. See
+// `plans/Pf39c2-social-pilot-02.md`'s "Narration dropped" section.
 
 describe('--help', () => {
-	it('exits 0 and documents render, --date, and no longer documents --slot', () => {
+	it('exits 0 and documents render, --date, and no longer documents --slot or --require-narration', () => {
 		const result = runCli(['--help']);
 		expect(result.status).toBe(0);
 		expect(result.stdout).toMatch(/--date/);
 		expect(result.stdout).not.toMatch(/--slot/);
+		expect(result.stdout).not.toMatch(/--require-narration/);
 		expect(result.stdout).toMatch(/render/);
 	});
 });
@@ -248,7 +233,7 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 		// gone — duration is now a pure function of screen count and can land
 		// well under 15s (this real day-6 card renders ~8.5s). Only the 59s
 		// ceiling remains.
-		'produces a house-profile-conformant MP4 (<=59s), an IG feed JPEG, and a metadata sidecar with narration: false',
+		'produces a house-profile-conformant MP4 (<=59s), an IG feed JPEG, and a metadata sidecar',
 		async () => {
 			// Day 6 of the REAL committed week-1 schedule (discourses-53-019) —
 			// a real Wall slot.
@@ -278,7 +263,14 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 			const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
 			expect(metadata.card_id).toBe(slot.card_id);
 			expect(metadata.format).toBe('wall');
-			expect(metadata.narration).toBe(false);
+			// Pf39c2-social-pilot-02 N01 (2026-08-27): the sidecar used to
+			// carry `narration: false` here — always `false`, since narration
+			// was never activated. Narration is now deleted outright, so the
+			// field itself is gone (see `cli.ts`'s `additionalMetadataFields`
+			// doc comment for the reasoning): there is no code path left that
+			// could ever set it to anything else, so it carried no
+			// information for a reader to act on.
+			expect(metadata.narration).toBeUndefined();
 			expect(metadata.rendered_at).toBe(`${date}T00:00:00.000Z`);
 			// T17 retired the opening rotation entirely — the sidecar carries
 			// no opening field at all, for any format.

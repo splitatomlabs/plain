@@ -19,13 +19,14 @@
  * from `--date` alone (`cli-plan.ts`'s `postIndexForDay`), so re-running the
  * same `--date` always makes the same choice.
  *
- * NARRATION IS BLOCKED (T14 — `audio/voices.ts`'s `VOICES_ARE_UNSET`):
- * there are no auditioned voice ids yet, so every render here is
- * MUSIC-ONLY. This is not silently swallowed — a prominent warning naming
- * T14 is printed, and the metadata sidecar records `narration: false` so
- * plan 03's publish step can refuse to post a non-narrated asset.
- * `--require-narration` turns that warning into a hard failure instead,
- * for a caller that wants to assert narration is actually available.
+ * NARRATION IS DELETED (Pf39c2-social-pilot-02 N01, 2026-08-27): every
+ * render here is MUSIC-ONLY, permanently — not because a voice hasn't been
+ * auditioned yet (that was T14's blocked state), but because the whole
+ * narration subsystem (`narration.ts`, `audio/tts.ts`, `audio/voices.ts`)
+ * was removed by user decision. See `plans/Pf39c2-social-pilot-02.md`'s
+ * "Narration dropped" section for the reasoning. `DEFAULT_LINE_FRAMES`
+ * (`remotion/wall-timing.ts`) is the only source of a payoff line's
+ * duration now.
  */
 
 import { parseArgs } from 'node:util';
@@ -50,13 +51,10 @@ import {
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
 import { loadChapterTextBlock, applyChapterEntryOffset } from './render/chapter-text.js';
-import { computeWallTiming, WALL_FRAMES, FPS } from './remotion/wall-timing.js';
+import { WALL_FRAMES, FPS } from './remotion/wall-timing.js';
 import { formatRunningHead } from './remotion/SourceHead.js';
 import { bedPath } from './audio/beds.js';
 import { mix, type TimeSpan } from './audio/mix.js';
-import type { NarrationLineTiming } from './audio/timing.js';
-import { VOICES_ARE_UNSET } from './audio/voices.js';
-import { buildTtsProvider, synthesizeNarration, prependSilence } from './narration.js';
 import { encode, probe, assertMeetsProfile } from './render/encode.js';
 import { renderCard, closeRenderer } from './render/card.js';
 import type { AuthorSlug } from './render/theme.js';
@@ -68,19 +66,6 @@ const REPO_ROOT = path.resolve(moduleDir, '..', '..');
 const SCHEDULE_DIR = path.join(REPO_ROOT, 'content', 'social');
 const DEFAULT_OUT_DIR = path.join(REPO_ROOT, 'social', 'out');
 const ENTRY_POINT = path.join(moduleDir, 'remotion', 'entry.tsx');
-
-const T14_NARRATION_WARNING =
-	'\n' +
-	'*'.repeat(70) +
-	'\n' +
-	'*  NARRATION IS BLOCKED (T14, plans/Pf39c2-social-pilot-02.md).\n' +
-	'*  No voice has been auditioned yet (audio/voices.ts VOICE_REGISTRY is\n' +
-	'*  unset) — this render is MUSIC-ONLY, with no spoken narration at all.\n' +
-	'*  Its metadata sidecar records narration: false. Do not publish it as\n' +
-	"*  a finished post until T14 lands and a real narrated render replaces\n" +
-	'*  it.\n' +
-	'*'.repeat(70) +
-	'\n';
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -106,9 +91,6 @@ Options:
                           fixture schedule without touching the committed
                           pipeline state in content/social/.
   --dry-run                Print the resolved render plan; write nothing.
-  --require-narration      Fail instead of warning when no narration is
-                          available (T14 is not done yet, so this always
-                          fails today — see the module doc comment).
   --help                   Show this help.`);
 }
 
@@ -117,7 +99,6 @@ interface RenderArgs {
 	outDir: string;
 	scheduleDir: string;
 	dryRun: boolean;
-	requireNarration: boolean;
 }
 
 function parseRenderArgs(argv: string[]): RenderArgs {
@@ -128,7 +109,6 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 			out: { type: 'string', default: DEFAULT_OUT_DIR },
 			'schedule-dir': { type: 'string', default: SCHEDULE_DIR },
 			'dry-run': { type: 'boolean', default: false },
-			'require-narration': { type: 'boolean', default: false },
 			help: { type: 'boolean', default: false }
 		},
 		allowPositionals: true
@@ -147,8 +127,7 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 		date: values.date,
 		outDir: values.out ?? DEFAULT_OUT_DIR,
 		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
-		dryRun: Boolean(values['dry-run']),
-		requireNarration: Boolean(values['require-narration'])
+		dryRun: Boolean(values['dry-run'])
 	};
 }
 
@@ -173,12 +152,13 @@ async function loadWeekSchedule(week: number, scheduleDir: string): Promise<Week
 // print it and a real render can log exactly what it decided.
 // ---------------------------------------------------------------------------
 
-// Exported (social pilot 02a T14): so `audio/__tests__/narration.test.ts`
-// can construct real-shaped `FormatPlan` fixtures and call the exported
-// `wallSilentSpans`/`narrationPlan` below directly, without going through a
-// live render. Visibility only — no field or behavior here changes for T14;
-// see this file's entry-point guard (bottom of file) for how importing this
-// module is made safe for a test file to do at all.
+// Exported so `audio/__tests__/wall-spans.test.ts` (formerly
+// `narration.test.ts` — narration itself was deleted by N01, but this
+// visibility grant predates and outlives that deletion) can construct
+// real-shaped `FormatPlan` fixtures and call the exported
+// `wallSilentSpans`/`wallNoiseSpans` below directly, without going through
+// a live render. See this file's entry-point guard (bottom of file) for
+// how importing this module is made safe for a test file to do at all.
 export interface WallPlan {
 	format: 'wall';
 	originalExcerpt: string;
@@ -277,27 +257,20 @@ function printPlan(plan: RenderPlan): void {
 	console.log(
 		`  running head: "${formatRunningHead({ author_slug: plan.authorSlug as AuthorSlug, source_reference: plan.formatPlan.sourceReference })}"`
 	);
-	console.log('  narration: false (T14 not done — music-only)');
 }
 
 // ---------------------------------------------------------------------------
 // Composition inputProps + duration
 // ---------------------------------------------------------------------------
 
-function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTiming[]): Record<string, unknown> {
-	const base = { author: plan.authorSlug };
+function buildInputProps(plan: RenderPlan): Record<string, unknown> {
 	return {
-		...base,
+		author: plan.authorSlug,
 		originalExcerpt: plan.formatPlan.originalExcerpt,
 		chapterBlock: plan.formatPlan.chapterBlock,
 		sourceReference: plan.formatPlan.sourceReference,
 		landingLine: plan.formatPlan.landingLine,
-		plainLines: plan.formatPlan.plainLines,
-		// social pilot 02a T16 (F04): the Wall's timing adapts to real
-		// per-line narration duration when supplied (`computeWallTiming`'s
-		// own `narrationTimings` input) — see `narrationPlan`'s doc comment
-		// for how `lines` maps onto this array.
-		...(narrationTimings ? { narrationTimings } : {})
+		plainLines: plan.formatPlan.plainLines
 	};
 }
 
@@ -313,9 +286,10 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
  * `<= LANDING_LINE_SECONDS * 1000` — the silence sits inside that fixed 3s
  * hold (see `wallSilentSpans`), so a value any larger would push true
  * silence past the end of the hold. That relationship is asserted directly
- * against both constants in `audio/__tests__/narration.test.ts`, not just
- * documented here, so a future cut to `LANDING_LINE_SECONDS` fails loudly
- * instead of silently breaking this invariant.
+ * against both constants in `audio/__tests__/wall-spans.test.ts` (formerly
+ * `narration.test.ts`), not just documented here, so a future cut to
+ * `LANDING_LINE_SECONDS` fails loudly instead of silently breaking this
+ * invariant.
  */
 export const WALL_DROP_SILENCE_MS = 1000;
 
@@ -370,44 +344,12 @@ export function wallNoiseSpans(): TimeSpan[] {
  * `plans/Pf39c2-social-pilot-02.md`) — this window is now short enough
  * (`WALL_DROP_SILENCE_MS`, 1000ms as of V06, always well inside the landing
  * line's fixed 3s hold — with 2s to spare, asserted directly in
- * `audio/__tests__/narration.test.ts` — never reaching into any padding)
+ * `audio/__tests__/wall-spans.test.ts` — never reaching into any padding)
  * that this concern no longer applies to it at all.
  */
 export function wallSilentSpans(): TimeSpan[] {
 	const wallEndMs = (WALL_FRAMES / FPS) * 1000;
 	return [{ startMs: wallEndMs, endMs: wallEndMs + WALL_DROP_SILENCE_MS }];
-}
-
-// ---------------------------------------------------------------------------
-// Real narration (T18 item 4) — see narration.ts's module doc comment.
-// Unreachable while VOICES_ARE_UNSET (T14), but wired now so flipping that
-// one flag is the only remaining step.
-// ---------------------------------------------------------------------------
-
-/**
- * The lines this slot's format actually narrates, and how far into the
- * composition (in ms, at `FPS`) that narration begins — i.e. where the
- * silent/moving phases end and the first narrated payoff line starts.
- *
- * The Wall narrates only the rest of the plain passage (never the landing
- * line, which is held in silence — see `wallSilentSpans`), starting right
- * after `WALL_FRAMES + LANDING_LINE_FRAMES`.
- *
- * social pilot 02a T16 (F04): the Wall's own timing module accepts a
- * `narrationTimings` input (`computeWallTiming` — see its own doc comment),
- * so once T14 lands and `renderCommand` below calls `synthesizeNarration`,
- * the returned per-line timings are threaded into `buildInputProps` and the
- * on-screen line boundaries move with the real narration instead of holding
- * a fixed duration regardless of how long the audio actually runs.
- *
- * Pf39c2-social-pilot-02a D01: this used to switch on
- * `formatPlan.format` across Wall/Question/Objection/Still; those three
- * were deleted outright (see `buildRenderPlan`'s doc comment), so
- * `FormatPlan` is Wall-only now and there is nothing left to switch on.
- */
-export function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: number } {
-	const timing = computeWallTiming({ originalExcerpt: formatPlan.originalExcerpt, plainLines: formatPlan.plainLines });
-	return { lines: formatPlan.plainLines, offsetMs: (timing.landingLine.endFrame / FPS) * 1000 };
 }
 
 /** The still text shown on the Instagram feed card — the Wall's own landing line. */
@@ -428,45 +370,12 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 		return;
 	}
 
-	if (VOICES_ARE_UNSET) {
-		if (args.requireNarration) {
-			throw new Error(
-				'--require-narration was set, but T14 (plans/Pf39c2-social-pilot-02.md) is not done — no voice ' +
-					'has been auditioned yet (audio/voices.ts VOICE_REGISTRY is unset). Refusing to render.'
-			);
-		}
-		console.warn(T14_NARRATION_WARNING);
-	}
-
 	await mkdir(args.outDir, { recursive: true });
 	const assetPaths = renderAssetPaths(args.outDir, plan.compositionId.toLowerCase(), plan.date);
 
 	const workDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-'));
 	try {
-		// See narration.ts's module doc comment: unreachable today
-		// (VOICES_ARE_UNSET), but a real narration track — not just
-		// music — is produced the moment T14 populates the voice registry,
-		// with no further change to this file.
-		let narrationTimings: NarrationLineTiming[] | undefined;
-		let narrationAudioPath: string | undefined;
-		let narrationSpans: TimeSpan[] = [];
-		if (!VOICES_ARE_UNSET) {
-			const { lines, offsetMs } = narrationPlan(plan.formatPlan);
-			console.log(`Synthesizing narration (${lines.length} line(s))...`);
-			const provider = buildTtsProvider(process.env);
-			const rawNarrationPath = path.join(workDir, 'narration-raw.mp3');
-			const narration = await synthesizeNarration(lines, plan.authorSlug as AuthorSlug, provider, process.env, rawNarrationPath);
-			narrationTimings = narration.timings;
-			narrationAudioPath = path.join(workDir, 'narration-aligned.mp3');
-			await prependSilence(rawNarrationPath, offsetMs, narrationAudioPath);
-			// `narration.audioDurationMs` is probed off the WRITTEN FILE
-			// (`narration.ts`), not `narration.tts.durationMs` — see that
-			// module's doc comment for why the latter under-reports (and
-			// on Polly, always under-reports by the final word).
-			narrationSpans = [{ startMs: offsetMs, endMs: offsetMs + narration.audioDurationMs }];
-		}
-
-		const inputProps = buildInputProps(plan, narrationTimings);
+		const inputProps = buildInputProps(plan);
 
 		console.log('Bundling Remotion composition...');
 		// `bundle()` defaults to a fresh `os.tmpdir()/remotion-webpack-bundle-*`
@@ -515,13 +424,18 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 		const mixedAudioPath = path.join(workDir, 'mixed.m4a');
 		// Pf39c2-social-pilot-02a D01: every plan is a Wall now (Question/
 		// Objection/Still were deleted outright), so these are unconditional.
+		// Pf39c2-social-pilot-02 N01 (2026-08-27): narration is deleted
+		// outright — there is no `narrationPath` and never any
+		// `narrationSpans` any more, so `mix()`'s ducking envelope is
+		// unreachable in this real call (its own tests still exercise it
+		// directly — see `mix.test.ts`).
 		const silentSpans = wallSilentSpans();
 		const noiseSpans = wallNoiseSpans();
 		await mix({
 			bedPath: bedPath(plan.bedId),
-			narrationPath: narrationAudioPath,
+			narrationPath: undefined,
 			durationMs,
-			narrationSpans,
+			narrationSpans: [],
 			silentSpans,
 			noiseSpans,
 			outPath: mixedAudioPath
@@ -552,7 +466,7 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 			format: plan.compositionId.toLowerCase() as PostFormat,
 			rendered_at: `${plan.date}T00:00:00.000Z`
 		};
-		const fullMetadata = { ...metadata, ...narrationFields(plan, !VOICES_ARE_UNSET) };
+		const fullMetadata = { ...metadata, ...additionalMetadataFields(plan) };
 		const metadataPath = postMetadataPathFor(assetPaths.video);
 		await writePostMetadata(metadataPath, fullMetadata);
 		console.log(`Wrote ${metadataPath}`);
@@ -571,12 +485,25 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 /**
  * Additive fields on the metadata sidecar beyond `PostMetadata`'s own
  * shape (`render/post-metadata.ts` is deliberately the smallest writer —
- * see its module doc comment — so T18-specific fields like `narration`
- * and `bed` live here rather than widening that shared interface).
+ * see its module doc comment — so T18-specific fields like `bed` live here
+ * rather than widening that shared interface).
+ *
+ * Pf39c2-social-pilot-02 N01 (2026-08-27): this used to also carry a
+ * `narration: boolean` field, always `false` — every render to date was
+ * music-only (T14 never got an auditioned voice) — so plan 03's publish
+ * step could refuse to post a non-narrated asset. Narration is now deleted
+ * outright, not merely blocked: there is no code path left in this
+ * workspace that could ever set it to `true`, so the field could only ever
+ * read `false`, forever. A permanently-constant field carries no
+ * information a reader could act on (there's nothing to distinguish it
+ * from), so it's removed rather than kept as dead weight. If the channel
+ * later wants narration back, reintroduce the field at the same time real
+ * narrated renders become possible again — see this module's own doc
+ * comment and `plans/Pf39c2-social-pilot-02.md`'s "Narration dropped"
+ * section, both reversible from git history.
  */
-function narrationFields(plan: RenderPlan, narration: boolean): Record<string, unknown> {
+function additionalMetadataFields(plan: RenderPlan): Record<string, unknown> {
 	return {
-		narration,
 		bed: plan.bedId,
 		book_slug: plan.bookSlug,
 		author_slug: plan.authorSlug,
@@ -610,16 +537,16 @@ async function main(): Promise<void> {
 	await renderCommand(args);
 }
 
-// social pilot 02a T14: only auto-run `main()` when this file is the actual
-// process entry point (`npx tsx cli.ts render ...`, exactly how `cli.test.ts`
-// invokes it via a subprocess). Without this guard, merely IMPORTING this
-// module — which `narration.test.ts` needs to do, to unit-test the pure
-// `wallSilentSpans`/`narrationPlan` functions below against recorded
-// fixtures, without a live voice or a full Remotion render — would itself
-// parse `process.argv` as CLI args and call `process.exit()`, killing the
-// whole test worker. Identical runtime behavior for every real invocation:
-// `import.meta.url` and `pathToFileURL(process.argv[1]).href` both resolve
-// to this same file's URL when tsx runs it as the entry script.
+// Only auto-run `main()` when this file is the actual process entry point
+// (`npx tsx cli.ts render ...`, exactly how `cli.test.ts` invokes it via a
+// subprocess). Without this guard, merely IMPORTING this module — which
+// `audio/__tests__/wall-spans.test.ts` (formerly `narration.test.ts`) needs
+// to do, to unit-test the pure `wallSilentSpans`/`wallNoiseSpans` functions
+// below without a full Remotion render — would itself parse `process.argv`
+// as CLI args and call `process.exit()`, killing the whole test worker.
+// Identical runtime behavior for every real invocation: `import.meta.url`
+// and `pathToFileURL(process.argv[1]).href` both resolve to this same
+// file's URL when tsx runs it as the entry script.
 if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
 	main().catch((error) => {
 		console.error(error instanceof Error ? error.message : error);

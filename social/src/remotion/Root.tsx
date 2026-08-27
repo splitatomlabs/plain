@@ -49,14 +49,12 @@ export const RemotionRoot: React.FC = () => {
 					// `wall-gate.ts`.
 					assertWallCardRenderable(props.originalExcerpt, {
 						plainLines: props.plainLines,
-						narrationTimings: props.narrationTimings,
 						landingLine: props.landingLine
 					});
 					return {
 						durationInFrames: computeWallTiming({
 							originalExcerpt: props.originalExcerpt,
-							plainLines: props.plainLines,
-							narrationTimings: props.narrationTimings
+							plainLines: props.plainLines
 						}).totalFrames
 					};
 				}}

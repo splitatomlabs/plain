@@ -289,8 +289,8 @@ export const LANDING_LINE_FRAMES = Math.round(LANDING_LINE_SECONDS * FPS);
 // ---------------------------------------------------------------------------
 
 /**
- * Fallback duration for a plain line when no narration timing is supplied.
- * Narration (T13) will normally drive this via `narrationTimings`.
+ * The duration every plain (payoff) line is held for — see N01's doc
+ * comment below for why this is unconditional now, not a fallback.
  *
  * social pilot 02a T03 (2026-08-26): dropped from 3.5s to 3.0s. The
  * read-through's 30 Walls can carry up to 11 payoff lines each (per-card
@@ -301,9 +301,14 @@ export const LANDING_LINE_FRAMES = Math.round(LANDING_LINE_SECONDS * FPS);
  * read-through). 3.0s keeps p50 at ~23.5s while leaving 0.5s of margin over
  * the house rule's 2.5s motionless floor per payoff line — the rule "payoff
  * frame motionless >= 2.5s" is a floor this constant must clear, not a
- * target to sit on. This fallback only drives the MUSIC-ONLY case: once
- * T14's voices land, `narrationTimings` (not `DEFAULT_LINE_FRAMES`) sets
- * each line's real duration.
+ * target to sit on.
+ *
+ * Pf39c2-social-pilot-02 N01 (2026-08-27): this used to be a fallback for
+ * the MUSIC-ONLY case, with a real per-line `narrationTimings` array
+ * overriding it once T14's voices landed. Narration was deleted outright
+ * before that ever happened (no voice was ever auditioned) — see
+ * `plans/Pf39c2-social-pilot-02.md`'s "Narration dropped" section — so this
+ * is now the ONLY source of a payoff line's duration, unconditionally.
  */
 export const DEFAULT_LINE_SECONDS = 3.0;
 export const DEFAULT_LINE_FRAMES = Math.round(DEFAULT_LINE_SECONDS * FPS);
@@ -396,20 +401,10 @@ export interface WallPhaseWindow {
 	motionless: boolean;
 }
 
-export interface NarrationLineTiming {
-	startSeconds: number;
-	endSeconds: number;
-}
-
 export interface WallTimingInput {
 	originalExcerpt: string;
 	/** The rest of the plain passage, in order, excluding `landingLine`. */
 	plainLines: string[];
-	/**
-	 * Optional per-line narration timing (native provider data, see T13).
-	 * When absent, each line falls back to `DEFAULT_LINE_FRAMES`.
-	 */
-	narrationTimings?: NarrationLineTiming[];
 }
 
 export interface WallRestLine extends WallPhaseWindow {
@@ -426,17 +421,15 @@ export interface WallTimingSchedule {
 
 /**
  * Frame length of each rest line (phase 3), in order — narration-driven when
- * `narrationTimings[index]` is supplied, else `DEFAULT_LINE_FRAMES`. Split
- * out from `computeWallTiming` so `computeWallRawTotalFrames` (the gate's
+ * `DEFAULT_LINE_FRAMES` (the only source of a payoff line's duration since
+ * N01 deleted narration — see that constant's own doc comment). Split out
+ * from `computeWallTiming` so `computeWallRawTotalFrames` (the gate's
  * pre-padding duration check — see `wall-gate.ts`) sums the exact same
  * per-line frame counts the real schedule uses, rather than a second,
  * potentially-drifting estimate.
  */
-function restLineFrameCounts(plainLines: string[], narrationTimings?: NarrationLineTiming[]): number[] {
-	return plainLines.map((_, index) => {
-		const timing = narrationTimings?.[index];
-		return timing ? Math.max(1, Math.round((timing.endSeconds - timing.startSeconds) * FPS)) : DEFAULT_LINE_FRAMES;
-	});
+function restLineFrameCounts(plainLines: string[]): number[] {
+	return plainLines.map(() => DEFAULT_LINE_FRAMES);
 }
 
 /**
@@ -459,7 +452,7 @@ function restLineFrameCounts(plainLines: string[], narrationTimings?: NarrationL
 export function computeWallRawTotalFrames(input: WallTimingInput): number {
 	const wallEnd = WALL_FRAMES;
 	const landingLineEnd = wallEnd + LANDING_LINE_FRAMES;
-	const restFrames = restLineFrameCounts(input.plainLines, input.narrationTimings);
+	const restFrames = restLineFrameCounts(input.plainLines);
 	return restFrames.reduce((cursor, frames) => cursor + frames, landingLineEnd);
 }
 
@@ -482,7 +475,7 @@ export function computeWallTiming(input: WallTimingInput): WallTimingSchedule {
 		motionless: true
 	};
 
-	const restFrames = restLineFrameCounts(input.plainLines, input.narrationTimings);
+	const restFrames = restLineFrameCounts(input.plainLines);
 	let cursor = landingLine.endFrame;
 	const restLines: WallRestLine[] = input.plainLines.map((text, index) => {
 		const startFrame = cursor;

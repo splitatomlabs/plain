@@ -15,7 +15,6 @@ import {
 	PAYOFF_MAX_FONT,
 	PAYOFF_LINE_HEIGHT_RATIO,
 	PAYOFF_PADDING_X,
-	type NarrationLineTiming,
 	type WallLayout,
 	type WallTimingSchedule
 } from './wall-timing.js';
@@ -67,11 +66,6 @@ export interface WallProps extends Record<string, unknown> {
 	/** The rest of the plain passage, verbatim and in order, excluding `landingLine`. */
 	plainLines: string[];
 	author: AuthorSlug;
-	/**
-	 * Optional per-line narration timing (native provider data — see T13).
-	 * Falls back to a fixed duration per line when absent.
-	 */
-	narrationTimings?: NarrationLineTiming[];
 }
 
 // Exported (additively) so other compositions sharing this visual grammar —
@@ -102,8 +96,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 	const frame = useCurrentFrame();
 	const timing = computeWallTiming({
 		originalExcerpt: props.originalExcerpt,
-		plainLines: props.plainLines,
-		narrationTimings: props.narrationTimings
+		plainLines: props.plainLines
 	});
 	const accent = ACCENTS[props.author];
 	// social pilot 02a T09 — the moving wall phase scrolls through the
@@ -127,7 +120,6 @@ export const Wall: React.FC<WallProps> = (props) => {
 		// `Wall` directly.
 		const layout = assertWallCardRenderable(props.originalExcerpt, {
 			plainLines: props.plainLines,
-			narrationTimings: props.narrationTimings,
 			landingLine: props.landingLine
 		});
 

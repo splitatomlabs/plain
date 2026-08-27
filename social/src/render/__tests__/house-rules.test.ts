@@ -266,58 +266,17 @@ describe('checkPayoffMotionless', () => {
 
 // ---------------------------------------------------------------------------
 // social pilot 02a R06 (2026-08-26) — narration-driven regression coverage.
-//
-// `checkAllFormats`'s FORMATS registry (below) always calls each format's
-// `compute*Timing` with NO `narrationTimings` — the fixed-duration fallback
-// path, which by construction already meets `PAYOFF_MIN_MOTIONLESS_SECONDS`
-// (every fallback constant IS 2.5s or more). That is why `checkAllFormats`
-// never caught T16 (F04)'s regression: `objection-timing.ts`'s first reply
-// line following real narration down to well under 2.5s with only a
-// 1-frame floor. `checkPayoffMotionless` itself is general-purpose and DOES
-// catch a too-short narration-driven hold the moment it's given one (proven
-// below) — the gap was entirely in what `FORMATS`' fixtures exercise, not
-// in the checker. These tests call the real `compute*Timing` functions with
-// deliberately short `narrationTimings` directly, so a future regression in
-// this class (a narration-driven hold with no floor) fails here even though
-// `checkAllFormats` itself still would not catch it.
-//
-// The Wall shares the exact same underlying gap for its NON-FINAL rest
-// lines — confirmed with `checkPayoffMotionless` during R06's investigation,
-// but deliberately NOT fixed or asserted against here: R06's scope is
-// Objection (the reviewer's specific finding), and fixing Wall's non-final
-// rest lines is a distinct, larger change (every rest line, not just the
-// first, needs its own floor, mirroring what this task did for Objection's
-// two reply lines) that belongs in its own task rather than folded in here
-// unannounced.
-//
-// social pilot 02a V17 (2026-08-27): this comment used to note that the
-// LAST rest line was extended by `padToMinimumDuration` when the schedule's
-// raw total landed under the (now-removed) 15s MP4 floor. That function and
-// the floor it served are both gone by user decision — no rest line, first
-// or last, gets any duration protection from padding anymore. Duration is
-// now a pure function of screen count.
-describe('social pilot 02a R06 — narration-driven schedules are checked for the payoff-motionless floor, not just the fixed-duration fallback', () => {
-	// Pf39c2-social-pilot-02a D01: this used to also cover The Objection and
-	// The Question's own R06 regressions; both formats were deleted outright
-	// (the channel is one Wall a day), so only the Wall's own known gap
-	// remains here.
-	it('The Wall: a short (0.2s) NON-FINAL narrated rest line fails checkPayoffMotionless today — a known, separately-scoped gap, not fixed by R06', () => {
-		const timing = computeWallTiming({
-			originalExcerpt:
-				'Placeholder archaic excerpt text for this house-rule regression check only — needs to be ' +
-				'long enough to wrap several lines and clear the never-finishes travel floor comfortably so ' +
-				'the wall phase geometry here is representative of a real card excerpt in this pilot run.',
-			plainLines: ['A very short first narrated line.', 'A normal second narrated line.'],
-			narrationTimings: [
-				{ startSeconds: 0, endSeconds: 0.2 }, // non-final, short — the unprotected case
-				{ startSeconds: 0.2, endSeconds: 3.0 }
-			]
-		});
-		const result = checkPayoffMotionless(timing, 'wall-timing.ts (known gap, not fixed by R06)');
-		expect(result.passed).toBe(false);
-		expect(result.violations.some((v) => v.detail.includes('restLines[0]'))).toBe(true);
-	});
-});
+// DELETED (Pf39c2-social-pilot-02 N01, 2026-08-27): this whole block guarded
+// against a narration-driven rest line running shorter than
+// `PAYOFF_MIN_MOTIONLESS_SECONDS` when real per-line `narrationTimings`
+// were supplied to `computeWallTiming`. `WallTimingInput` has no
+// `narrationTimings` field left at all (narration is deleted outright —
+// see `plans/Pf39c2-social-pilot-02.md`'s "Narration dropped" section), so
+// every rest line is now unconditionally `DEFAULT_LINE_FRAMES` (3.0s),
+// which already clears the 2.5s floor by construction — there is no
+// narration-driven hold left to be too short. Nothing here guards a live
+// code path any more.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Rule 3 — TTS pitch and rate never below default (delegates to tts.ts)
