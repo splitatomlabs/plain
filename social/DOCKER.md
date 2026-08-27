@@ -88,7 +88,9 @@ docker run --rm \
 
 On Cloud Run itself (T10), skip the mounted-file approach entirely — a Cloud Run Job's attached
 service account IS its Application Default Credentials automatically, with no file or env var
-needed for that part.
+needed for that part. See `social/DEPLOY.md` for the full cloud deploy (Artifact Registry, the
+Cloud Run Job config in `social/cloud-run-job.yaml`, the Firebase `onSchedule` trigger, and how to
+verify a scheduled run actually executed end to end).
 
 There is no real OAuth **refresh** implementation yet (`job.ts`'s `notImplementedRefresh` — see
 its header comment): a run that reaches a token needing refresh will fail loudly by design until

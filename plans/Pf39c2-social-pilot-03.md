@@ -442,8 +442,110 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   gVisor sandbox specifically (not under a plain local `docker run`), see the Dockerfile's
   "Non-root user" comment for the documented one-line fix. T10 (deploying the Cloud Run Job and
   Firebase trigger) is next and is the first real consumer of this image.
-- [ ] T10: Deploy the Cloud Run Job and the Firebase trigger, scheduled off the hour. Acceptance: a scheduled run
+- [!] T10: Deploy the Cloud Run Job and the Firebase trigger, scheduled off the hour. Acceptance: a scheduled run
   executes end to end in the cloud.
+  DEFERRED — the live half of the acceptance (a scheduled run actually executing in the cloud)
+  needs real GCP/Firebase project access to provision, plus real Instagram/YouTube OAuth tokens
+  seeded into Firestore, none of which this session has or was permitted to create (no `gcloud`/
+  `firebase`/`vercel`/`wrangler` command was run, no cloud resource was provisioned). Wrote and
+  type-checked/tested every reproducible piece; the by-hand deploy is left for the user via
+  `social/DEPLOY.md`.
+  Done: created the `functions/` Firebase Functions workspace (did not exist before this task) —
+  `functions/package.json` (Node 20 runtime target, ESM, `firebase-functions`/`google-auth-library`
+  only — no `firebase-admin`, since this trigger never touches Firestore/Auth/anything else
+  `firebase-admin` would provide), `functions/tsconfig.json`, `functions/vitest.config.ts`,
+  `functions/src/index.ts` (re-exports `socialTrigger`), and `functions/src/socialTrigger.ts` — a
+  v2 `onSchedule` function whose header comment quotes the plan's Decision verbatim ("Firebase
+  `onSchedule` is a THIN TRIGGER ONLY...") and explains why it does exactly one thing: call the
+  Cloud Run Admin API's `jobs.run` REST method (via `google-auth-library`'s `GoogleAuth`, not the
+  heavier `@google-cloud/run` client — this function makes exactly one outbound call) to start an
+  execution of `plain-social-daily`, with a `containerOverrides.args: ['--date', <date>]` override,
+  then returns — no render/upload/publish logic lives here or ever should. `computeTodayInTimezone`
+  (exported, pure, takes `now: Date` and `timeZone` explicitly) is the ONE wall-clock read in this
+  whole system outside `job.ts`'s own documented one — commented as such, pinned to an explicit
+  `PILOT_TIMEZONE = 'America/New_York'` rather than the Cloud Functions runtime's default UTC, so
+  "today" always means the pilot audience's calendar day regardless of where the function executes.
+  Scheduled at `53 7 * * *` (07:53 America/New_York, i.e. NOT `0 8 * * *`) — commented why: every
+  cron on a shared platform that fires on the hour piles into the same minute, which is exactly
+  when Cloud Scheduler dispatch latency and the Cloud Run Admin API's own rate limits are worst;
+  an off-the-hour minute avoids that thundering herd, per this task's own instruction. `retryCount:
+  0` is deliberate, not a default left alone: starting a Cloud Run Job execution is NOT idempotent
+  from this system's viewpoint (`job.ts`'s publish steps are not idempotent — a second successful
+  `jobs.run` call for the same day would re-render and re-attempt Instagram/YouTube publish,
+  risking a duplicate live post), so an automatic retry on a transient trigger failure is the wrong
+  tradeoff; a failed start needs a human, per `DEPLOY.md`'s verification section. `timeoutSeconds:
+  60`/`memory: '256MiB'` are generous for a function that makes one REST call and returns — nowhere
+  near the 540s cap this whole design exists to respect. The trigger runs under its own named
+  least-privilege identity (`TRIGGER_SERVICE_ACCOUNT`, a `PROJECT_ID` placeholder matching
+  `cloud-run-job.yaml`'s own placeholder convention), never the project's default (broader) compute
+  service account. Never logs the access token `GoogleAuth` mints: it is used only as a request
+  header value; a non-OK response's body (Cloud Run execution/error metadata, not a credential) is
+  surfaced verbatim in the thrown error for debugging.
+  Added `functions/src/__tests__/socialTrigger.test.ts` (5 tests, no mocking of the system clock —
+  every case passes an explicit `now: Date`): a plain UTC-midday sanity case; the two boundary cases
+  that actually justify this file's existence (UTC has rolled past midnight but Eastern time hasn't
+  yet, and vice versa — a naive `toISOString().slice(0, 10)` would get the first one wrong); a DST
+  case (winter/no-DST offset still resolves the correct previous day); and a determinism check. Did
+  NOT add a test for `triggerCloudRunJob` (the REST call itself) — per this task's own instruction,
+  it has no branching logic worth testing, only a single outbound request. `npm install --prefix
+  functions` (a local install, not a cloud command): 293 packages, clean. `npx tsc --noEmit -p
+  functions/tsconfig.json`: clean. `npm test --prefix functions`: 5/5 green.
+  Added `social/cloud-run-job.yaml` — the declarative Cloud Run Job config (`gcloud run jobs
+  replace social/cloud-run-job.yaml`, not a pile of remembered `gcloud run jobs create` flags).
+  Resources are justified in-line rather than maxed out against the plan's 168h/32GiB/8vCPU
+  ceiling: `cpu: "2"` / `memory: 4Gi` (comfortably above what one ~59s 1080x1920 render — one
+  Playwright Chromium instance for the IG feed still, one Remotion Chrome Headless Shell instance
+  for the video, sequential never concurrent per `job.ts`, plus one ffmpeg encode — actually needs,
+  without being wasteful spend on a pilot whose point is cheapness), `timeoutSeconds: 900` (15
+  minutes — comfortably over the realistic worst case, a full 5-minute Instagram container-poll per
+  the plan's own Constraint plus render/upload time, without leaving a stuck run silently billing
+  for hours), `maxRetries: 0` (same non-idempotent-publish reasoning as the trigger's
+  `retryCount: 0` above — a failed execution needs a human, not an automatic re-post risk). No
+  `args:` baked in (falls back to the image's own `CMD ["--help"]` safe default, per
+  `social/Dockerfile`) — `--date` arrives only via the trigger's per-execution
+  `containerOverrides`, so this file stays date-agnostic. Every credential-shaped env var (the five
+  R2 values plus `IG_USER_ID`) is a Secret Manager `secretKeyRef`, never a literal, per the plan's
+  Constraint — and the header comment explains why Instagram/YouTube OAuth TOKENS are conspicuously
+  absent from this list entirely: they live in Firestore (T04), read via the job's own service-
+  account ADC identity, never as an env var of any kind.
+  Added `firebase.json` and `.firebaserc` at the repo root (neither existed before — confirmed by
+  checking first) — `firebase.json` points `functions.source` at `functions/` with a `predeploy`
+  build step; `.firebaserc` has a placeholder project id, clearly named
+  `REPLACE_WITH_FIREBASE_PROJECT_ID`, for the user to fill in with `firebase use --add` or a direct
+  edit. Extended `.gitignore` with `functions/lib/`, `.firebase/`, and `firebase-debug*.log`.
+  Added `social/DEPLOY.md` — the full runbook this task's deliverable C calls for, cross-linked
+  from `social/DOCKER.md`: enabling every required API (including the Cloud Scheduler/Eventarc/
+  Pub/Sub/Cloud Build APIs a 2nd-gen `onSchedule` function needs under the hood, not just the
+  obvious `run.googleapis.com`), creating Firestore if the project doesn't have it yet, creating
+  BOTH service accounts with named least-privilege roles (`plain-social-job` gets
+  `roles/datastore.user` plus a PER-SECRET `roles/secretmanager.secretAccessor` binding, never a
+  project-wide one; `plain-social-trigger` gets a hand-created custom IAM role
+  scoped to exactly `run.jobs.run`/`run.jobs.get` on the one job resource, since no predefined role
+  is scoped that narrowly — the built-in alternatives, `roles/run.developer`/`roles/run.admin`, are
+  both explicitly called out as broader than this trigger needs), creating the six Secret Manager
+  secrets, building/pushing the image to Artifact Registry, creating/updating the job from
+  `cloud-run-job.yaml`, deploying the function, and — the acceptance criterion itself — exactly
+  which logs prove a scheduled run executed end to end: the function's own Cloud Logging output
+  (`Starting Cloud Run Job... for <date>` / `...started for <date>`), the Cloud Run execution list
+  showing `STATUS: Succeeded`, the execution's own captured stdout showing `job.ts`'s structured
+  `[instagram] ok — ...` / `[youtube] ok — ...` lines, and finally the human check that the post is
+  actually live on both platforms. Flagged loudly, both at the top of the doc and again at the
+  bottom's troubleshooting section, the one real (non-deploy-config) blocker this task cannot
+  resolve: no OAuth authorization flow exists anywhere in this codebase yet (T05/T06 scope), so the
+  Firestore token documents `ensureFreshToken` requires must be seeded by hand before a real
+  (non-`--dry-run`) scheduled run can succeed — a scheduled run failing on `[instagram]
+  failed`/`[youtube] failed` naming a missing/expired token is this prerequisite, not a bug in this
+  deploy.
+  Verification actually run this session (no `gcloud`/`firebase`/`docker`/cloud command of any
+  kind): `npm install --prefix functions` (local install only); `npx tsc --noEmit -p
+  functions/tsconfig.json` clean; `npm test --prefix functions` 5/5 green; `npm test --prefix
+  social` 442/442 green, unmodified by this task; `npx tsc --noEmit -p social/tsconfig.json` clean.
+  Follow-up for whoever runs the live deploy: run `social/DEPLOY.md` steps 0-7 in order, seed the
+  Instagram/YouTube Firestore token documents by hand (the doc's own top-of-file callout) before
+  attempting a non-dry-run scheduled execution, then use step 8 to force one run immediately rather
+  than waiting for 07:53 America/New_York to roll around, and confirm both platforms report `ok`
+  in the execution logs before considering T10 closed. T11 (the attribution redirect) has no
+  dependency on this task and can proceed in parallel.
 - [ ] T11: Build the attribution redirect — `web/src/routes/go/[slug]/+server.js`, slugs `/go/ig`, `/go/tt`,
   `/go/yt`. Log the click server-side, then 302 (never 308, so destinations stay changeable) to
   `https://thinkplain.ai/?utm_source=<platform>&utm_medium=organic-social&utm_campaign=stoic-pilot&utm_content=<format>`.
