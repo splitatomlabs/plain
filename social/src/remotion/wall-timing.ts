@@ -9,8 +9,9 @@
  * single source of truth for both timing AND wall-phase geometry.
  */
 
-import { estimateWrappedLineCount } from '../render/fit.js';
+import { estimateWrappedLineCount, fitFontSize } from '../render/fit.js';
 import { padToMinimumDuration } from './duration-bounds.js';
+import { computeCounterBelowTextBox, COUNTER_BOTTOM_UNSAFE_ZONE_PX, type CounterBoundingBox } from './counter-layout.js';
 
 // ---------------------------------------------------------------------------
 // Frame rate and frame dimensions
@@ -276,6 +277,58 @@ export const PAYOFF_BOX_HEIGHT = 800;
 export const PAYOFF_MIN_FONT = 52;
 export const PAYOFF_MAX_FONT = 88;
 export const PAYOFF_LINE_HEIGHT_RATIO = 1.4;
+
+/**
+ * social pilot 02a U02 (2026-08-27): the read-through counter's own box,
+ * derived from the SAME fit `PayoffLine` (`Wall.tsx`) renders its text
+ * with — single source of truth, shared by `PayoffLine` itself (which
+ * renders at exactly this `top`) and `__tests__/counter.test.ts` (which
+ * crops exactly this box out of its no-reflow pixel proof), so the two can
+ * never independently drift.
+ *
+ * Calls `fitFontSize` with the exact same arguments `PayoffLine` uses for
+ * its own `<p>`, then measures that fitted size's own wrapped-line count to
+ * get the text block's real height — mirrors `computeWallLayout`'s own
+ * "layout comes entirely from this module" discipline for the Wall's
+ * archaic-text phase, extended to the payoff phase's counter placement.
+ */
+export function computePayoffCounterBox(text: string): CounterBoundingBox {
+	const fit = fitFontSize(text, {
+		maxWidth: PAYOFF_BOX_WIDTH,
+		maxHeight: PAYOFF_BOX_HEIGHT,
+		minFont: PAYOFF_MIN_FONT,
+		maxFont: PAYOFF_MAX_FONT,
+		lineHeightRatio: PAYOFF_LINE_HEIGHT_RATIO
+	});
+	const blockHeight = estimateWrappedLineCount(text, fit.fontSize, PAYOFF_BOX_WIDTH) * fit.lineHeight;
+	return computeCounterBelowTextBox(blockHeight, FRAME_WIDTH, FRAME_HEIGHT);
+}
+
+/**
+ * SAFETY INVARIANT (U02): the below-text counter must never reach into the
+ * bottom platform-chrome band `COUNTER_BOTTOM_UNSAFE_ZONE_PX` documents.
+ * `PAYOFF_BOX_HEIGHT` (800) is a HARD CEILING on every payoff line's own
+ * `blockHeight` — `fitFontSize`'s own search predicate is exactly
+ * `estimateHeight(...) <= maxHeight`, so no font size it can ever return
+ * produces a taller estimated block than `maxHeight` (`PAYOFF_BOX_HEIGHT`
+ * here). Checking `computeCounterBelowTextBox` at that worst-case height
+ * ONCE, at import time, is therefore a real proof over every payoff line
+ * this module can ever produce (any card, any book, present or future) —
+ * not a spot check against today's corpus. See `counter.test.ts`'s own
+ * corpus-wide check for the empirical confirmation this bound is not just
+ * theoretical (the longest real read-through rest line measured comes in
+ * at ~795px, just under this 800px ceiling).
+ */
+const WORST_CASE_PAYOFF_COUNTER_BOX = computeCounterBelowTextBox(PAYOFF_BOX_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
+if (WORST_CASE_PAYOFF_COUNTER_BOX.top + WORST_CASE_PAYOFF_COUNTER_BOX.height > FRAME_HEIGHT - COUNTER_BOTTOM_UNSAFE_ZONE_PX) {
+	throw new Error(
+		`invariant violated: the below-text counter's worst-case bottom edge ` +
+			`(${WORST_CASE_PAYOFF_COUNTER_BOX.top + WORST_CASE_PAYOFF_COUNTER_BOX.height}px) would reach into the ` +
+			`bottom ${COUNTER_BOTTOM_UNSAFE_ZONE_PX}px platform-chrome band (unsafe below ` +
+			`${FRAME_HEIGHT - COUNTER_BOTTOM_UNSAFE_ZONE_PX}px) — PAYOFF_BOX_HEIGHT, COUNTER_GAP_BELOW_TEXT_PX or ` +
+			'COUNTER_BELOW_TEXT_BOX_HEIGHT_PX must change.'
+	);
+}
 
 // ---------------------------------------------------------------------------
 // Phase 2 — the landing line (silent, motionless)

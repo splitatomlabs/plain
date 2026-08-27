@@ -2,7 +2,6 @@ import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, PAPER, type AuthorSlug } from '../render/theme.js';
-import { ReadThroughCounter } from './Counter.js';
 import { assertObjectionRenderable } from './objection-gate.js';
 import {
 	computeObjectionLayout,
@@ -124,8 +123,7 @@ export const Objection: React.FC<ObjectionProps> = (props) => {
 	if (frame < firstReplyLine.endFrame) {
 		return (
 			<>
-				<PayoffLine text={gate.replyLines[0]} />
-				<ReadThroughCounter label={counter} />
+				<PayoffLine text={gate.replyLines[0]} counter={counter} />
 				{payoffLabel}
 			</>
 		);
@@ -133,8 +131,7 @@ export const Objection: React.FC<ObjectionProps> = (props) => {
 
 	return (
 		<>
-			<PayoffLine text={gate.replyLines[1]} />
-			<ReadThroughCounter label={counter} />
+			<PayoffLine text={gate.replyLines[1]} counter={counter} />
 			{payoffLabel}
 		</>
 	);

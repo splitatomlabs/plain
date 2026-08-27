@@ -313,6 +313,16 @@ describe('payoff label sits in the same position as the running head', () => {
 	);
 });
 
+// social pilot 02a U02 (2026-08-27): this describe block exercises
+// `ReadThroughCounter` with no `top` prop — the ORIGINAL top-left corner
+// placement (`COUNTER_BOUNDING_BOX`). U02 moved Wall/Question/Objection's
+// counter to render CENTRED BELOW their own payoff text instead (see
+// `counter.test.ts`'s own retargeted end-to-end suite for that geometry's
+// proof) — `Still.tsx` is the one format that kept this corner placement
+// (see `counter-layout.ts`'s `COUNTER_BOUNDING_BOX` doc comment for why),
+// so this suite remains a real, still-shipped invariant, just narrower in
+// scope than it used to be: it now proves the corner-counter/framing-plate
+// pairing Still alone renders, not a pairing every format shares.
 describe('neither the running head nor the payoff label collides with or reflows the read-through counter', () => {
 	const COUNTER_LABEL = 'Card 5 of 48';
 

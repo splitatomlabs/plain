@@ -2,7 +2,6 @@ import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
-import { ReadThroughCounter } from './Counter.js';
 import { assertQuestionRenderable } from './question-gate.js';
 import {
 	computeQuestionLayout,
@@ -178,8 +177,7 @@ export const Question: React.FC<QuestionProps> = (props) => {
 	// Nothing marks it as "correct": it is simply where the passage lands.
 	return (
 		<>
-			<PayoffLine text={props.answer} />
-			<ReadThroughCounter label={counter} />
+			<PayoffLine text={props.answer} counter={counter} />
 			{payoffLabel}
 		</>
 	);

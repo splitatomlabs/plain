@@ -9,13 +9,13 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { bundle } from '@remotion/bundler';
 
 import { ReadThroughCounter } from '../Counter.js';
-import { COUNTER_BOUNDING_BOX } from '../counter-layout.js';
 import { ACCENTS } from '../../render/theme.js';
-import { computeWallTiming } from '../wall-timing.js';
+import { computeWallTiming, computePayoffCounterBox } from '../wall-timing.js';
 import { computeQuestionTiming } from '../question-timing.js';
 import { computeObjectionTiming } from '../objection-timing.js';
+import { assertObjectionRenderable } from '../objection-gate.js';
 import { resolveWallCardExcerpt, type WallPoolEntry } from '../wall-pool.js';
-import { renderFrameAsPng, assertIdenticalOutsideBoxes, assertBoxDiffers } from './pixel-proof.js';
+import { renderFrameAsPng, assertIdenticalOutsideBoxes, assertBoxDiffers, type PixelBox } from './pixel-proof.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -186,13 +186,22 @@ describe('source guard — reads as a page number, not branding', () => {
 // `./pixel-proof.js` so `source-head.test.ts` can reuse the exact same
 // no-reflow proof machinery rather than reimplementing a parallel copy (the
 // "retarget `counter.test.ts`'s pixel-level proof" the T11 task called for).
-// Behaviour here is unchanged: still a per-pixel comparison outside the
-// counter's own bounding box.
-
+//
+// social pilot 02a U02 (2026-08-27) RETARGET: before U02 every case cropped
+// the same fixed `COUNTER_BOUNDING_BOX` (a top-left corner). U02 moved
+// Wall/Question/Objection's counter to render CENTRED BELOW that render's
+// own payoff text instead — a box whose position depends on that specific
+// text's fitted height, not a single constant. Each case below now supplies
+// its own `counterBox`, computed via `computePayoffCounterBox` (the exact
+// function `PayoffLine` itself calls — see `wall-timing.ts`), from the
+// SAME text that render's payoff frame actually shows. The proof itself is
+// unweakened: still "every pixel outside the counter's own box is
+// byte-identical with/without it", just checked against the real box for
+// each case instead of one shared guess.
 describe('end-to-end: overlay composes over all three formats without reflow', () => {
 	it(
 		'Wall, Question and Objection each render pixel-identical outside the counter box at every sampled frame, ' +
-			'with the counter visible in-box wherever it is expected to be',
+			'with the counter visible in-box wherever it is expected to be, centred below that payoff text',
 		async () => {
 			const bundleLocation = await bundle({
 				entryPoint: path.join(moduleDir, '..', 'entry.tsx'),
@@ -213,11 +222,17 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 			const wallTiming = computeWallTiming(WALL_BASE_PROPS);
 			const questionTiming = computeQuestionTiming({ question: QUESTION_BASE_PROPS.question });
 			const objectionTiming = computeObjectionTiming();
+			// Same gate `Objection.tsx` itself calls — the exact reply-line split
+			// production actually renders, not a re-derived guess of the split.
+			const objectionGate = assertObjectionRenderable({
+				objection: OBJECTION_BASE_PROPS.objection,
+				reply: OBJECTION_BASE_PROPS.reply
+			});
 
 			const cases: Array<{
 				id: string;
 				baseProps: Record<string, unknown>;
-				frames: Array<{ frame: number; expectCounter: boolean; note: string }>;
+				frames: Array<{ frame: number; counterBox: PixelBox | null; note: string }>;
 			}> = [
 				{
 					id: 'Wall',
@@ -229,13 +244,17 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 					// composition reaches a still payoff frame: the landing line
 					// (held for LANDING_LINE_SECONDS) or a rest line.
 					frames: [
-						{ frame: 0, expectCounter: false, note: 'frame 0 — the moving wall' },
+						{ frame: 0, counterBox: null, note: 'frame 0 — the moving wall' },
 						{
 							frame: wallTiming.wall.endFrame - 1,
-							expectCounter: false,
+							counterBox: null,
 							note: 'the last frame of the moving wall, an instant before the cut'
 						},
-						{ frame: wallTiming.landingLine.startFrame, expectCounter: true, note: 'the landing-line payoff' }
+						{
+							frame: wallTiming.landingLine.startFrame,
+							counterBox: computePayoffCounterBox(WALL_LANDING_LINE),
+							note: 'the landing-line payoff'
+						}
 					]
 				},
 				{
@@ -250,15 +269,15 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 					// this format shares with The Wall's own moving phase — so it
 					// only resumes on the still answer payoff.
 					frames: [
-						{ frame: 0, expectCounter: false, note: 'frame 0 — the question alone' },
+						{ frame: 0, counterBox: null, note: 'frame 0 — the question alone' },
 						{
 							frame: questionTiming.wall.startFrame,
-							expectCounter: false,
+							counterBox: null,
 							note: 'the moving archaic wall'
 						},
 						{
 							frame: questionTiming.answer.startFrame,
-							expectCounter: true,
+							counterBox: computePayoffCounterBox(QUESTION_BASE_PROPS.answer),
 							note: 'the answer payoff'
 						}
 					]
@@ -272,10 +291,10 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 					// this test must not contradict either. The overlay starts
 					// once the reply resolves.
 					frames: [
-						{ frame: 0, expectCounter: false, note: 'frame 0 — the objection alone' },
+						{ frame: 0, counterBox: null, note: 'frame 0 — the objection alone' },
 						{
 							frame: objectionTiming.replyLines[1].startFrame,
-							expectCounter: true,
+							counterBox: computePayoffCounterBox(objectionGate.replyLines[1]),
 							note: 'the second (final) reply-line payoff'
 						}
 					]
@@ -283,7 +302,7 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 			];
 
 			for (const { id, baseProps, frames } of cases) {
-				for (const { frame, expectCounter } of frames) {
+				for (const { frame, counterBox } of frames) {
 					const withoutCounter = await renderFrameAsPng(bundleLocation, id, baseProps, frame);
 					const withCounter = await renderFrameAsPng(
 						bundleLocation,
@@ -295,16 +314,16 @@ describe('end-to-end: overlay composes over all three formats without reflow', (
 					expect(withCounter.png.width).toBe(1080);
 					expect(withCounter.png.height).toBe(1920);
 
-					// The structural no-reflow proof holds regardless of whether
-					// this particular frame is expected to show the counter.
-					assertIdenticalOutsideBoxes(withCounter.png, withoutCounter.png, [COUNTER_BOUNDING_BOX]);
-
-					if (expectCounter) {
-						assertBoxDiffers(withCounter.png, withoutCounter.png, COUNTER_BOUNDING_BOX);
+					if (counterBox) {
+						// The structural no-reflow proof: every pixel OUTSIDE the
+						// counter's own (per-case, text-derived) box is identical
+						// with/without it — the payoff text itself never moves.
+						assertIdenticalOutsideBoxes(withCounter.png, withoutCounter.png, [counterBox]);
+						assertBoxDiffers(withCounter.png, withoutCounter.png, counterBox);
 					} else {
 						// Deliberately no counter on this frame (see above) — the
-						// counter box itself must ALSO be identical, i.e. the two
-						// renders are fully identical, not just identical outside it.
+						// two renders must be FULLY identical, not just identical
+						// outside some box.
 						assertIdenticalOutsideBoxes(withCounter.png, withoutCounter.png, []);
 					}
 				}

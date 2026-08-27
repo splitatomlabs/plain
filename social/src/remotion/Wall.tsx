@@ -8,6 +8,7 @@ import { SourceHead } from './SourceHead.js';
 import { assertWallCardRenderable } from './wall-gate.js';
 import {
 	computeWallTiming,
+	computePayoffCounterBox,
 	wallScrollOffsetAtFrame,
 	WALL_LINE_HEIGHT_RATIO,
 	PAYOFF_BOX_WIDTH,
@@ -159,8 +160,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 	if (frame < timing.landingLine.endFrame) {
 		return (
 			<>
-				<PayoffLine text={props.landingLine} />
-				<ReadThroughCounter label={counter} />
+				<PayoffLine text={props.landingLine} counter={counter} />
 				{payoffLabel}
 			</>
 		);
@@ -169,8 +169,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 	const restLine = timing.restLines.find((line) => frame >= line.startFrame && frame < line.endFrame);
 	return (
 		<>
-			<PayoffLine text={restLine ? restLine.text : ''} />
-			<ReadThroughCounter label={counter} />
+			<PayoffLine text={restLine ? restLine.text : ''} counter={counter} />
 			{payoffLabel}
 		</>
 	);
@@ -260,10 +259,26 @@ export function WallPhase({
  * identically on every frame it's shown, so there is no interpolation range
  * to accidentally animate.
  *
- * Exported (additively) so `Question.tsx` reuses this exact JSX for its own
- * still answer phase rather than forking a second copy.
+ * Exported (additively) so `Question.tsx` and `Objection.tsx` reuse this
+ * exact JSX for their own still payoff phases rather than forking a second
+ * copy.
+ *
+ * social pilot 02a U02 (2026-08-27): also renders the optional read-through
+ * `counter` (`"Card 5 of 48"`, or `null`/omitted outside a read-through
+ * slot) CENTRED BELOW this text block — phone-review feedback asked for the
+ * counter to move out of the top-left corner it used to share across all
+ * four formats. `ReadThroughCounter`'s own `top` is computed here via
+ * `computePayoffCounterBox` (`wall-timing.ts`), from THIS SAME `text`,
+ * rather than passed in already-computed: that keeps the counter's fitted
+ * text and its own placement using one source of truth (the identical
+ * `fitFontSize` arguments this function's own `<p>` fits against), so the
+ * two can never independently drift. Rendered as a separate, absolutely
+ * positioned sibling of the `<p>`'s own flex-centred `AbsoluteFill` — never
+ * inside it, never sharing its flex flow — so the text's own position is
+ * completely unaffected by whether a counter renders at all (see
+ * `Counter.tsx`'s own NO REFLOW discussion).
  */
-export function PayoffLine({ text }: { text: string }): React.ReactElement {
+export function PayoffLine({ text, counter = null }: { text: string; counter?: string | null }): React.ReactElement {
 	const fit = fitFontSize(text, {
 		maxWidth: PAYOFF_BOX_WIDTH,
 		maxHeight: PAYOFF_BOX_HEIGHT,
@@ -271,31 +286,35 @@ export function PayoffLine({ text }: { text: string }): React.ReactElement {
 		maxFont: PAYOFF_MAX_FONT,
 		lineHeightRatio: PAYOFF_LINE_HEIGHT_RATIO
 	});
+	const counterBox = computePayoffCounterBox(text);
 
 	return (
-		<AbsoluteFill
-			style={{
-				background: PAPER,
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'center',
-				padding: `0 ${PAYOFF_PADDING_X}px`
-			}}
-		>
-			<p
+		<>
+			<AbsoluteFill
 				style={{
-					fontFamily: SERIF_STACK,
-					fontWeight: 400,
-					fontSize: fit.fontSize,
-					lineHeight: PAYOFF_LINE_HEIGHT_RATIO,
-					color: INK,
-					textAlign: 'center',
-					margin: 0,
-					padding: 0
+					background: PAPER,
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					padding: `0 ${PAYOFF_PADDING_X}px`
 				}}
 			>
-				{text}
-			</p>
-		</AbsoluteFill>
+				<p
+					style={{
+						fontFamily: SERIF_STACK,
+						fontWeight: 400,
+						fontSize: fit.fontSize,
+						lineHeight: PAYOFF_LINE_HEIGHT_RATIO,
+						color: INK,
+						textAlign: 'center',
+						margin: 0,
+						padding: 0
+					}}
+				>
+					{text}
+				</p>
+			</AbsoluteFill>
+			<ReadThroughCounter label={counter} top={counterBox.top} />
+		</>
 	);
 }

@@ -12,7 +12,8 @@
  * `WALL_FONT_SIZE`).
  */
 
-import { COUNTER_BOUNDING_BOX, COUNTER_SAFE_INSET_PX, type CounterBoundingBox } from './counter-layout.js';
+import { COUNTER_BOUNDING_BOX, COUNTER_SAFE_INSET_PX, computeCounterBelowTextBox, type CounterBoundingBox } from './counter-layout.js';
+import { FRAME_HEIGHT, FRAME_WIDTH } from './wall-timing.js';
 
 /**
  * Same left inset as the read-through counter (`COUNTER_SAFE_INSET_PX`) —
@@ -38,6 +39,28 @@ export const SOURCE_HEAD_GAP_BELOW_COUNTER_PX = 40;
  * this is what makes the two framing elements disjoint BY CONSTRUCTION
  * (moving the counter's own box would move this too, keeping them apart)
  * rather than by two numbers that happen not to collide today.
+ *
+ * social pilot 02a U02 (2026-08-27): this derivation still governs a REAL
+ * on-screen collision, but a narrower one than it used to. Before U02, the
+ * read-through counter rendered in this same top-left corner in all four
+ * compositions, so this derivation kept the running head clear of it
+ * everywhere. U02 moved the counter to CENTRED BELOW THE PAYOFF TEXT for
+ * three of the four formats (Wall/Question/Objection — see
+ * `computeCounterBelowTextBox`, `wall-timing.ts`'s `computePayoffCounterBox`)
+ * — `COUNTER_BOUNDING_BOX` (this corner box) is no longer where their
+ * counter renders at all, so for those three formats this derivation is
+ * moot (there is nothing left in this corner to stay clear of, besides the
+ * running head/payoff plate itself). `Still.tsx` is the one format that
+ * KEPT the corner counter (see `COUNTER_BOUNDING_BOX`'s own doc comment for
+ * why: its full-passage text is too tall to leave a safe below-text
+ * position for every real card) — for Still, this derivation is exactly as
+ * load-bearing as it always was, and remains unchanged.
+ *
+ * The NEW pairing U02 introduces — the payoff-label plate (this same
+ * `SOURCE_HEAD_BOUNDING_BOX` slot) against the NEW below-text counter, both
+ * on screen together during Wall/Question/Objection's still payoff phase —
+ * is proven disjoint separately, below, rather than folded into this
+ * derivation (that pairing has nothing to do with `COUNTER_BOUNDING_BOX`).
  */
 export const SOURCE_HEAD_TOP_PX = COUNTER_BOUNDING_BOX.top + COUNTER_BOUNDING_BOX.height + SOURCE_HEAD_GAP_BELOW_COUNTER_PX;
 
@@ -112,6 +135,33 @@ export const SOURCE_HEAD_BOUNDING_BOX: CounterBoundingBox = {
 	width: 900,
 	height: 120
 };
+
+/**
+ * SAFETY INVARIANT (U02, 2026-08-27): proves the payoff-label plate
+ * (`SOURCE_HEAD_BOUNDING_BOX`, above) and the NEW below-text counter
+ * (`computeCounterBelowTextBox`, `wall-timing.ts`'s `computePayoffCounterBox`)
+ * can never collide during Wall/Question/Objection's still payoff phase
+ * (the one window where both are on screen at once) — proven over every
+ * possible payoff text, not just today's corpus, the same discipline
+ * `SOURCE_HEAD_TOP_PX` above already uses for its own (different) pairing.
+ *
+ * A payoff line's own fitted text `blockHeight` can be arbitrarily SMALL
+ * (down to a mathematical floor of 0) but never negative, and
+ * `computeCounterBelowTextBox`'s own `top` strictly increases with
+ * `blockHeight` — so `computeCounterBelowTextBox(0, ...)` is the below-text
+ * counter's own MINIMUM possible top, the tightest this pairing can ever
+ * get. If even that floor clears this plate's bottom edge, every real
+ * (taller) block height clears it by more, not less.
+ */
+const MIN_POSSIBLE_COUNTER_BELOW_TEXT_TOP_PX = computeCounterBelowTextBox(0, FRAME_WIDTH, FRAME_HEIGHT).top;
+if (MIN_POSSIBLE_COUNTER_BELOW_TEXT_TOP_PX <= SOURCE_HEAD_BOUNDING_BOX.top + SOURCE_HEAD_BOUNDING_BOX.height) {
+	throw new Error(
+		"invariant violated: the below-text counter's own minimum possible top " +
+			`(${MIN_POSSIBLE_COUNTER_BELOW_TEXT_TOP_PX}px, at the theoretical blockHeight floor of 0) does not clear ` +
+			`SOURCE_HEAD_BOUNDING_BOX's own bottom edge (${SOURCE_HEAD_BOUNDING_BOX.top + SOURCE_HEAD_BOUNDING_BOX.height}px) ` +
+			'— COUNTER_GAP_BELOW_TEXT_PX or SOURCE_HEAD_BOUNDING_BOX must change.'
+	);
+}
 
 /**
  * Social pilot 02a R04 (2026-08-26): the maximum on-screen width the running
