@@ -1,8 +1,9 @@
 /**
  * Firestore-backed `PendingFlipsStore` (Pf39c2-social-pilot-03 code review,
- * M4 fix) — the durable home for the week's uploaded-YouTube-video-id list
- * that `job.ts`'s `recordPendingFlip` writes and `metrics/collect.ts`'s
- * YouTube collection reads back.
+ * M4 fix; corrected again in a follow-up review — see "WHY `append`, NOT
+ * `read`/`write`" below) — the durable home for the week's
+ * uploaded-YouTube-video-id list that `job.ts`'s `recordPendingFlip` writes
+ * and `metrics/collect.ts`'s YouTube collection reads back.
  *
  * WHY THIS EXISTS: the list used to be a plain JSON file
  * (`content/social/pending-youtube-flips.json`) written under Cloud Run,
@@ -18,14 +19,37 @@
  * job" shape — see `token-store-firestore.ts`'s header — so this file mirrors
  * that pattern rather than inventing a second cloud dependency.
  *
+ * WHY `append`, NOT `read`/`write` (follow-up code review — this store's
+ * FIRST fix repeated the exact defect M2 was about, in a worse form): the
+ * original version of this file's `write` ran
+ *   `client.runTransaction(async (t) => { t.set(docRef, { flips }); })`
+ * — a transaction whose callback never calls `transaction.get` has an EMPTY
+ * read set, so Firestore's optimistic concurrency detects nothing and this
+ * offers exactly the same (zero) protection as a plain `.set()` would. That
+ * is the identical write-only-transaction mistake `token-store-firestore.ts`
+ * was fixed for in M2. It was WORSE here, because the caller
+ * (`job.ts`'s `recordPendingFlip`) did the read-modify-write ACROSS two
+ * separate store calls: `read()`, append the day's flip in memory, then
+ * `write(merged)` — with the `read()` happening entirely OUTSIDE any
+ * transaction. Two overlapping runs (a retried Cloud Run execution racing
+ * the previous one — the same scenario M4 already worried about) could both
+ * `read()` the same starting list, both append their own day, and whichever
+ * called `write()` second would silently discard the other's
+ * already-committed video id, with no error raised anywhere. The fix is not
+ * "make `write` read before it writes" (option (b) — reading a caller-
+ * supplied FULL list inside a transaction still can't tell which entries in
+ * that list are new versus stale, since the caller computed it from a
+ * possibly-outdated `read()`); it is to stop exposing a `write(fullList)`
+ * call at all. `append(flip)` takes exactly ONE new flip and does the
+ * ENTIRE read-modify-write inside a single `runTransaction` call below:
+ * `transaction.get` first (establishing the read set), merge via
+ * `upsertPendingFlip`, then `transaction.set`. There is no window between a
+ * read and a write for another writer to land in, because there is no
+ * separate "read" step for a caller to split its own call across.
+ *
  * SHAPE: one document (not one per platform, and not one per date) holding
  * the whole list under a `flips` field. The list stays small (at most one
- * new entry per pilot day) and is read-modify-write on every write — a
- * single document keeps that atomic via `runTransaction`, exactly like
- * `token-store-firestore.ts`'s `set`, guarding the same overlapping-run race
- * (a retried Cloud Run execution racing the previous one) even though the
- * consequence of losing that race here is a dropped bookkeeping row, not an
- * orphaned OAuth token.
+ * new entry per pilot day).
  *
  * CREDENTIALS: constructed with NO explicit credentials — `new Firestore()`
  * uses Application Default Credentials (ADC), identical to
@@ -34,17 +58,21 @@
  * IAM grant should be required for this second collection (confirm against
  * the deployed service account's role bindings before relying on that).
  *
- * This file has no dedicated unit test — like `token-store-firestore.ts`, it
- * is a thin adapter over `@google-cloud/firestore`; the read-modify-write
- * logic it sits behind (`upsertPendingFlip`, `parsePendingFlips`,
+ * This file's `append` has a dedicated unit test —
+ * `__tests__/pending-flips-store-firestore.test.ts` — against a fake
+ * `Firestore` client/transaction, mirroring
+ * `__tests__/token-store-firestore.test.ts`'s approach, since the
+ * read-inside-transaction behaviour is specific to this adapter and is
+ * exactly the thing the follow-up review found broken. The merge logic it
+ * sits behind (`upsertPendingFlip`, `parsePendingFlips`,
  * `serializePendingFlips`) is already covered by `job-plan.test.ts` and
  * `job.test.ts` against an in-memory `PendingFlipsStore` fake. It is,
- * however, type-checked as part of `tsc --noEmit`.
+ * in addition, type-checked as part of `tsc --noEmit`.
  */
 
 import { Firestore } from '@google-cloud/firestore';
 
-import type { PendingFlipsStore } from '../job-plan.js';
+import { upsertPendingFlip, type PendingFlipsStore } from '../job-plan.js';
 import type { PendingYouTubeFlip } from './tiktok-manual.js';
 
 /** The Firestore collection the pending-flips list is stored in. */
@@ -60,31 +88,44 @@ export interface FirestorePendingFlipsStoreOptions {
 }
 
 /**
- * Builds a `PendingFlipsStore` backed by Firestore. `write` is a
- * `runTransaction` write-back so two overlapping writers can never both
- * land — see this file's header comment for why that matters.
+ * Builds a `PendingFlipsStore` backed by Firestore. `append` reads the
+ * document inside a `runTransaction` call BEFORE writing it back —
+ * establishing the read set Firestore's optimistic concurrency needs —
+ * merges the new flip via `upsertPendingFlip`, and persists the merged list
+ * in the SAME transaction. See this file's header comment ("WHY `append`,
+ * NOT `read`/`write`") for why a write-only transaction, or a `write` that
+ * takes a caller-assembled full list, would not have been enough.
  */
 export function createFirestorePendingFlipsStore(options: FirestorePendingFlipsStoreOptions = {}): PendingFlipsStore {
 	const client = options.client ?? new Firestore();
 	const collection = options.collection ?? DEFAULT_COLLECTION;
 	const docRef = client.collection(collection).doc(DOC_ID);
 
-	return {
-		async read(): Promise<PendingYouTubeFlip[]> {
-			const snapshot = await docRef.get();
-			if (!snapshot.exists) {
-				return [];
-			}
-			const data = snapshot.data() as { flips?: PendingYouTubeFlip[] } | undefined;
-			return data?.flips ?? [];
-		},
+	async function readCurrent(): Promise<PendingYouTubeFlip[]> {
+		const snapshot = await docRef.get();
+		if (!snapshot.exists) {
+			return [];
+		}
+		const data = snapshot.data() as { flips?: PendingYouTubeFlip[] } | undefined;
+		return data?.flips ?? [];
+	}
 
-		async write(flips: PendingYouTubeFlip[]): Promise<void> {
-			// A transaction, not a plain `.set()` — see this file's header comment
-			// for why an unconditional write can silently drop another writer's
-			// already-committed row under an overlapping run.
+	return {
+		read: readCurrent,
+
+		async append(flip: PendingYouTubeFlip): Promise<void> {
 			await client.runTransaction(async (transaction) => {
-				transaction.set(docRef, { flips });
+				// MUST read inside the transaction, and BEFORE the write below: this
+				// is what puts the document in the transaction's read set, which is
+				// what lets Firestore detect a concurrent writer at all. A
+				// transaction whose callback only calls `.set()` has an empty read
+				// set and offers no protection whatsoever — see this file's header
+				// comment ("WHY `append`, NOT `read`/`write`").
+				const snapshot = await transaction.get(docRef);
+				const data = snapshot.exists ? (snapshot.data() as { flips?: PendingYouTubeFlip[] } | undefined) : undefined;
+				const existing = data?.flips ?? [];
+				const updated = upsertPendingFlip(existing, flip);
+				transaction.set(docRef, { flips: updated });
 			});
 		}
 	};

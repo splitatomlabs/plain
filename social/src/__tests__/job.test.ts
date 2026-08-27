@@ -27,8 +27,10 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { runJob, type JobArgs, type JobDeps, type JobLogger } from '../job.js';
+import { runJob, type JobArgs, type JobDeps, type JobLogger, type PendingFlipsStore } from '../job.js';
+import { upsertPendingFlip } from '../job-plan.js';
 import { createInMemoryTokenStore, type StoredToken } from '../publish/tokens.js';
+import type { PendingYouTubeFlip } from '../publish/tiktok-manual.js';
 import type { WeekSchedule, ScheduleSlot } from '../schedule-types.js';
 
 // ---------------------------------------------------------------------------
@@ -92,6 +94,25 @@ function createRecordingLogger(): RecordingLogger {
 }
 
 /**
+ * An in-memory `PendingFlipsStore` fake — `append` merges via
+ * `upsertPendingFlip` exactly like the real Firestore/local-file
+ * implementations, so the "pending YouTube flips" tests below exercise the
+ * SAME merge behaviour (follow-up code review: `PendingFlipsStore` no
+ * longer exposes a separate `read`/`write`, precisely so a caller like
+ * `job.ts`'s `recordPendingFlip` cannot do a non-atomic read-modify-write —
+ * see `job-plan.ts`'s doc comment on the interface).
+ */
+function makePendingFlipsStore(initial: PendingYouTubeFlip[] = []): PendingFlipsStore {
+	let flips = initial;
+	return {
+		read: vi.fn(async () => flips),
+		append: vi.fn(async (flip: PendingYouTubeFlip) => {
+			flips = upsertPendingFlip(flips, flip);
+		})
+	};
+}
+
+/**
  * Builds a full `JobDeps` with every collaborator mocked to a harmless,
  * successful default. `calls` (shared, ordered) records each side-effecting
  * call by name — the ordering test reads this back.
@@ -122,10 +143,7 @@ function makeDeps(overrides: Partial<JobDeps> = {}, calls: string[] = []): JobDe
 			calls.push('youtube:publish');
 			return { videoId: 'yt-video-1' };
 		}),
-		pendingFlips: {
-			read: vi.fn(async () => []),
-			write: vi.fn(async () => {})
-		},
+		pendingFlips: makePendingFlipsStore(),
 		now: NOW,
 		logger: createRecordingLogger(),
 		...overrides
@@ -269,7 +287,7 @@ describe('dry run', () => {
 		expect(deps.publishInstagram).not.toHaveBeenCalled();
 		expect(deps.publishYouTube).not.toHaveBeenCalled();
 		expect(deps.pendingFlips.read).not.toHaveBeenCalled();
-		expect(deps.pendingFlips.write).not.toHaveBeenCalled();
+		expect(deps.pendingFlips.append).not.toHaveBeenCalled();
 		expect(getSpy).not.toHaveBeenCalled(); // no token operations either.
 
 		expect(result.outcomes).toHaveLength(2);
@@ -389,9 +407,8 @@ describe('pending YouTube flips', () => {
 		const deps = makeDeps();
 		await runJob(ARGS, deps);
 
-		expect(deps.pendingFlips.write).toHaveBeenCalledTimes(1);
-		const written = (deps.pendingFlips.write as ReturnType<typeof vi.fn>).mock.calls[0][0];
-		expect(written).toEqual([{ date: DATE, cardId: SLOT.card_id, videoId: 'yt-video-1' }]);
+		expect(deps.pendingFlips.append).toHaveBeenCalledTimes(1);
+		expect(deps.pendingFlips.append).toHaveBeenCalledWith({ date: DATE, cardId: SLOT.card_id, videoId: 'yt-video-1' });
 	});
 
 	it('does not record a pending flip when the YouTube upload itself fails', async () => {
@@ -402,36 +419,34 @@ describe('pending YouTube flips', () => {
 
 		await runJob(ARGS, deps);
 
-		expect(deps.pendingFlips.write).not.toHaveBeenCalled();
+		expect(deps.pendingFlips.append).not.toHaveBeenCalled();
 	});
 
-	// M4 regression (code review): the flips store used to be a plain JSON
-	// file on Cloud Run's throwaway container filesystem, so every real run
-	// effectively started from an empty read — the durable fix is only
-	// proven if a run whose store ALREADY holds a previous day's entry
-	// preserves it, rather than a write that happens to look right against
-	// an empty starting list.
-	it('writes the MERGED list — a previously-stored day survives alongside today\'s new entry (proves read-modify-write against durable state)', async () => {
+	// M4 regression (code review), and follow-up code review (`append`
+	// replacing `read`/`write` entirely, so this run's ONE store call is
+	// responsible for the merge, not `job.ts`): the flips store used to be a
+	// plain JSON file on Cloud Run's throwaway container filesystem, so
+	// every real run effectively started from an empty read — the durable
+	// fix is only proven if a store that ALREADY holds a previous day's
+	// entry preserves it, rather than a write that happens to look right
+	// against an empty starting list.
+	it('preserves a previously-stored day alongside today\'s new entry (proves read-modify-write against durable state)', async () => {
 		const priorFlip = { date: '2026-08-25', cardId: 'meditations-08-020', videoId: 'yt-video-0' };
-		const deps = makeDeps({
-			pendingFlips: {
-				read: vi.fn(async () => [priorFlip]),
-				write: vi.fn(async () => {})
-			}
-		});
+		const pendingFlips = makePendingFlipsStore([priorFlip]);
+		const deps = makeDeps({ pendingFlips });
 
 		await runJob(ARGS, deps);
 
-		expect(deps.pendingFlips.write).toHaveBeenCalledTimes(1);
-		const written = (deps.pendingFlips.write as ReturnType<typeof vi.fn>).mock.calls[0][0];
-		expect(written).toEqual([priorFlip, { date: DATE, cardId: SLOT.card_id, videoId: 'yt-video-1' }]);
+		expect(deps.pendingFlips.append).toHaveBeenCalledTimes(1);
+		expect(deps.pendingFlips.append).toHaveBeenCalledWith({ date: DATE, cardId: SLOT.card_id, videoId: 'yt-video-1' });
+		await expect(pendingFlips.read()).resolves.toEqual([priorFlip, { date: DATE, cardId: SLOT.card_id, videoId: 'yt-video-1' }]);
 	});
 
 	it('reports YouTube as "partial" (not "ok") and fails the run\'s exit code when recording the flip fails, even though the upload itself succeeded', async () => {
 		const deps = makeDeps();
 		deps.pendingFlips = {
 			read: vi.fn(async () => []),
-			write: vi.fn(async () => {
+			append: vi.fn(async () => {
 				throw new Error('Firestore write failed: deadline exceeded');
 			})
 		};

@@ -141,12 +141,29 @@ export function serializePendingFlips(flips: PendingYouTubeFlip[]): string {
  * `tokens.ts` defining `TokenStore` for `token-store-firestore.ts` to
  * implement, rather than the store's own module owning the type.
  *
- * `write` always receives the FULL list (already merged via
- * `upsertPendingFlip`) — a durable implementation persists that whole list
- * back, read-modify-write, never appending blindly and never treating a
- * previously-empty read as license to drop older entries.
+ * `append` takes exactly ONE new flip and is responsible for the whole
+ * read-modify-write (merge via `upsertPendingFlip`, persist the merged list)
+ * ATOMICALLY, in one step no caller can split. This shape is deliberate
+ * (follow-up code review after M4, Pf39c2-social-pilot-03): an earlier
+ * version of this interface exposed `read()`/`write(flips)` separately, and
+ * `job.ts`'s `recordPendingFlip` called them as two independent steps —
+ * `read()`, append the day's flip in memory, `write(merged)` — with the
+ * read happening entirely OUTSIDE whatever atomicity the durable
+ * implementation's `write` provided. Two overlapping runs (the exact
+ * scenario M4 already worried about — a retried Cloud Run execution racing
+ * the previous one) could each `read()` the same starting list, each append
+ * their own day in memory, and whichever called `write()` second would
+ * silently discard the other's already-committed entry: a lost YouTube
+ * video id, permanently unreachable to the weekly flip session and to
+ * `metrics/collect.ts`. Collapsing read-modify-write into a single
+ * `append(flip)` call makes that caller-side race unrepresentable — there
+ * is no longer a window between "read" and "write" for another writer to
+ * land in, because there is no separate "read" for callers to call. `read()`
+ * remains a separate, read-only method for `metrics/collect.ts`'s
+ * read-everything-back use, which never modifies the list.
  */
 export interface PendingFlipsStore {
 	read(): Promise<PendingYouTubeFlip[]>;
-	write(flips: PendingYouTubeFlip[]): Promise<void>;
+	/** Merges `flip` into the stored list (replacing any existing entry for the same date) and persists the result, atomically. */
+	append(flip: PendingYouTubeFlip): Promise<void>;
 }

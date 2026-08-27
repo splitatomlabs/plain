@@ -880,6 +880,24 @@ where the mocked suite passes but the real integration would fail.
 - [x] F05: Fix `publish/youtube.ts` to send `Authorization: Bearer` on the byte-upload PUT and the
   wildcard status-query PUT, not just on session initiation (M6). Regression test.
 
+## Follow-up code review (2026-08-27): F03's M4 fix repeated M2's defect
+
+- [x] F10: `pending-flips-store-firestore.ts` (added by F03) repeated M2's exact defect: `write` ran a
+  `runTransaction` whose callback never called `transaction.get`, so its read set was empty and it
+  offered zero protection — worse than the M2 case, because `job.ts`'s `recordPendingFlip` did the
+  read-modify-write ACROSS two separate calls (`read()` then `write(merged)`), with the read entirely
+  outside any transaction, so two overlapping runs could each read the same list, each append their
+  own day, and whichever wrote second would silently drop the other's already-committed YouTube video
+  id. Fixed by replacing `PendingFlipsStore`'s `read`/`write` pair with a single atomic `append(flip)`
+  that does the whole read-modify-write (`transaction.get`, merge via `upsertPendingFlip`,
+  `transaction.set`) inside one `runTransaction` call — the unsafe two-call pattern is no longer
+  representable, not just patched for this one caller. `job.ts`'s `recordPendingFlip` and both
+  `PendingFlipsStore` implementations (Firestore and local-file) updated to match; header/inline
+  comments claiming atomicity corrected to describe what the code actually does. Regression test
+  (`publish/__tests__/pending-flips-store-firestore.test.ts`) mirrors `token-store-firestore.test.ts`:
+  asserts `transaction.get` runs before `transaction.set` on the same doc, and that a concurrent
+  writer's already-committed entry survives a second writer's `append`.
+
 ## Follow-up (beyond the review's must-fix set)
 
 - [ ] F06: `job.ts` never persists the Instagram media id, so `metrics/instagram.ts` discovers posts

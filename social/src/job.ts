@@ -57,14 +57,22 @@
  * and `metrics/collect.ts`'s YouTube collection (reading that same path) was
  * permanently empty. `createFirestorePendingFlipsStore`
  * (`publish/pending-flips-store-firestore.ts`, mirroring
- * `token-store-firestore.ts`'s pattern exactly — ADC, a `runTransaction`
- * write-back) is now the default `pendingFlips` store, so both this job and
- * `metrics/collect.ts` read/write the same durable Firestore document. The
- * plain-JSON-file implementation (`createLocalPendingFlipsStore`, still
- * below) is NOT gone — it stays available for local runs and manual testing
- * via `--pending-flips-store local`, selected EXPLICITLY on the command
- * line, never silently defaulted to (so nobody accidentally runs a real
- * production day against a throwaway file again).
+ * `token-store-firestore.ts`'s pattern) is now the default `pendingFlips`
+ * store, so both this job and `metrics/collect.ts` read/append against the
+ * same durable Firestore document. The plain-JSON-file implementation
+ * (`createLocalPendingFlipsStore`, still below) is NOT gone — it stays
+ * available for local runs and manual testing via `--pending-flips-store
+ * local`, selected EXPLICITLY on the command line, never silently defaulted
+ * to (so nobody accidentally runs a real production day against a throwaway
+ * file again).
+ *
+ * RECORDING A FLIP IS ONE ATOMIC CALL, NOT READ-THEN-WRITE (follow-up code
+ * review after M4): `PendingFlipsStore.append(flip)` — see `job-plan.ts`'s
+ * doc comment on that interface for why `read()` and `write()` used to be
+ * separate calls here and why that was the same defect M4's `set` fix in
+ * `token-store-firestore.ts` was about, only worse (the read-modify-write
+ * spanned two calls into this job, not just an under-protected transaction
+ * inside one).
  *
  * A failed flip-record write is never reported as a clean success either: a
  * YouTube upload whose id could not be durably recorded is a `'partial'`
@@ -523,15 +531,18 @@ async function publishYouTubeOutcome(ctx: {
 }
 
 /**
- * Records this run's YouTube upload in the week's pending-flip list
- * (read-modify-write against the durable `deps.pendingFlips` store — see
- * `job-plan.ts`'s `PendingFlipsStore` doc comment). A failure here does NOT
- * throw — the video already landed on YouTube successfully — but it is never
- * silently absorbed either: the caller (`publishYouTubeOutcome`) downgrades
- * an otherwise-`ok` outcome to `'partial'` on a `false` return, which
- * `exitCodeForOutcomes` treats as a failed run (M4 fix — this used to be a
- * warning on an `ok` outcome, which let a lost video id pass as a clean
- * success).
+ * Records this run's YouTube upload in the week's pending-flip list via a
+ * single atomic `deps.pendingFlips.append` call (follow-up code review after
+ * M4, Pf39c2-social-pilot-03 — see `job-plan.ts`'s `PendingFlipsStore` doc
+ * comment for why this is one call, not a `read()` here followed by a
+ * `write()`: splitting it across two calls is exactly the race that let a
+ * concurrent run silently drop another run's already-committed video id).
+ * A failure here does NOT throw — the video already landed on YouTube
+ * successfully — but it is never silently absorbed either: the caller
+ * (`publishYouTubeOutcome`) downgrades an otherwise-`ok` outcome to
+ * `'partial'` on a `false` return, which `exitCodeForOutcomes` treats as a
+ * failed run (M4 fix — this used to be a warning on an `ok` outcome, which
+ * let a lost video id pass as a clean success).
  */
 async function recordPendingFlip(
 	deps: JobDeps,
@@ -540,9 +551,7 @@ async function recordPendingFlip(
 	videoId: string
 ): Promise<boolean> {
 	try {
-		const existing = await deps.pendingFlips.read();
-		const updated = upsertPendingFlip(existing, { date: args.date, cardId: slot.card_id, videoId });
-		await deps.pendingFlips.write(updated);
+		await deps.pendingFlips.append({ date: args.date, cardId: slot.card_id, videoId });
 		return true;
 	} catch (error) {
 		deps.logger.error(`Failed to record the pending YouTube flip for ${args.date}: ${errorMessage(error)}`);
@@ -626,21 +635,30 @@ function notImplementedRefresh(platform: Platform): RefreshFn {
  * every video id (the M4 bug this whole store split fixes). Kept for local
  * runs and manual testing, selected explicitly via `--pending-flips-store
  * local`, never by omission.
+ *
+ * `append` does its own read-modify-write against the file (there is no
+ * cross-process locking here, but a local, single-process, manually-run
+ * store has no concurrent writer to race against — unlike the Firestore
+ * store, which genuinely can run concurrently with itself on Cloud Run and
+ * needs `runTransaction`; see `pending-flips-store-firestore.ts`).
  */
 function createLocalPendingFlipsStore(filePath: string): PendingFlipsStore {
+	async function readAll(): Promise<PendingYouTubeFlip[]> {
+		try {
+			const raw = await readFile(filePath, 'utf-8');
+			return parsePendingFlips(raw);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+			throw error;
+		}
+	}
 	return {
-		async read() {
-			try {
-				const raw = await readFile(filePath, 'utf-8');
-				return parsePendingFlips(raw);
-			} catch (error) {
-				if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-				throw error;
-			}
-		},
-		async write(flips) {
+		read: readAll,
+		async append(flip) {
+			const existing = await readAll();
+			const updated = upsertPendingFlip(existing, flip);
 			await mkdir(path.dirname(filePath), { recursive: true });
-			await writeFile(filePath, serializePendingFlips(flips), 'utf-8');
+			await writeFile(filePath, serializePendingFlips(updated), 'utf-8');
 		}
 	};
 }
@@ -650,7 +668,7 @@ function createLocalPendingFlipsStore(filePath: string): PendingFlipsStore {
  * `createDefaultTokenStore`'s deferred-construction pattern exactly: the real
  * `Firestore` client (`createFirestorePendingFlipsStore`,
  * `publish/pending-flips-store-firestore.ts`) is built on the FIRST real
- * `read`/`write` call, never at `JobDeps` build time, so `--dry-run` (which
+ * `read`/`append` call, never at `JobDeps` build time, so `--dry-run` (which
  * never calls either method) needs no Firestore credentials at all.
  */
 function createDefaultFirestorePendingFlipsStore(): PendingFlipsStore {
@@ -661,7 +679,7 @@ function createDefaultFirestorePendingFlipsStore(): PendingFlipsStore {
 	}
 	return {
 		read: (): Promise<PendingYouTubeFlip[]> => ensure().read(),
-		write: (flips: PendingYouTubeFlip[]): Promise<void> => ensure().write(flips)
+		append: (flip: PendingYouTubeFlip): Promise<void> => ensure().append(flip)
 	};
 }
 
