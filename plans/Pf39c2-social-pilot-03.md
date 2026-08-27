@@ -684,11 +684,62 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   pre-existing, unmodified + 47 new). `npx tsc --noEmit -p social/tsconfig.json`: clean. T13 (TikTok collection
   spike) is next and has no dependency on this task; T14 (the viability readout) is the first real consumer of
   the `MetricsRow`/`InstagramFollowerSnapshot` shapes this task defines.
-- [ ] T13: Settle TikTok collection with a SPIKE before building it — attempt the Display API `video.list` against
+- [!] T13: Settle TikTok collection with a SPIKE before building it — attempt the Display API `video.list` against
   the pilot account with an unaudited app and record what it actually returns. Automate it if it works; fall back to
   hand entry in the same schema during the weekly session if it does not. Either way, retention stays manual.
   Timebox this — the manual fallback is ~14 rows a week inside a session that already happens, so it is not worth an
   open-ended integration. Acceptance: a written finding, and either a working collector or a documented fallback.
+  DEFERRED (partial) — the spike itself needs a real TikTok account and app credentials, which this session does not
+  have; running it is left for the user. Split into the reproducible half (done here in full) and the live spike
+  (by-hand, not run). Also: the "~14 rows a week" figure is STALE, same issue T07 already flagged for its own "14
+  videos" wording — `Pf39c2-social-pilot-02a` D02 collapsed the channel to one Wall post a day, so it is 7 rows a
+  week, not 14; nothing built here hard-codes either number.
+  Done: `social/src/metrics/schema.ts` — added `'tiktok'` to `MetricsPlatform` (additive; `'instagram' | 'youtube'`
+  unchanged) and extended the header's AVAILABLE VS. ZERO section to state TikTok's per-field convention (`follows`
+  and `saves` always `null` — no TikTok read path attributes either per-video; `averagePercentWatched` `null` by
+  default — retention stays manual per this task's own Constraint; `shares` real, since both candidate read paths
+  and the app's own analytics screen report it). Added `social/src/metrics/tiktok-manual.ts` — the documented
+  hand-entry fallback, fully built and usable today regardless of the spike's outcome: `buildTikTokMetricsRow`/
+  `recordTikTokHandEntry` validate then build a `MetricsRow` with `platform: 'tiktok'` and upsert it via `schema.ts`'s
+  own `upsertMetricsRow` (the same helper `collect.ts` uses for Instagram/YouTube), so a TikTok row lands in the
+  identical dated `metrics-<date>.json` file. Input is deliberately narrow — `postId`, `publishedAt`, `views`,
+  `likes`, `comments`, `shares`, an optional `averagePercentWatched` override, `collectedAt` — mirroring exactly the
+  four counts the plan's Constraint says `video.list` would have returned automated, i.e. what a human can actually
+  read off TikTok's per-video analytics screen; `follows`/`saves` are not inputs at all, only ever `null` on the
+  built row, so nothing invites a fabricated number. `validateHandEnteredTikTokMetrics` throws
+  `TikTokHandEntryValidationError` naming the exact bad field on a negative or non-integer count, an out-of-range
+  percentage, or an unparseable `publishedAt`/`collectedAt` — hand entry's expected failure mode is a typo, so this
+  fails loudly rather than silently recording a bad row. A thin CLI (`main()`, reusing `collect.ts`'s exported
+  `DEFAULT_METRICS_DIR` and its own read/write-dated-file conventions) makes the weekly session's low-friction path a
+  single `npx tsx social/src/metrics/tiktok-manual.ts --post-id ... --views ...` call per post; verified by hand
+  end-to-end (a real run against a scratch `--out-dir` produced the exact expected JSON row, and a negative count
+  failed loudly with the exact field named). Added `social/src/metrics/tiktok-spike.ts` — the small, runnable,
+  clearly-labelled SPIKE the user runs once with real credentials: makes exactly one `POST /v2/video/list/` call
+  (Display API, `video.list` scope), prints the raw response with the token redacted (`redactToken`, defense in
+  depth — the token is sent only as a Bearer header, never a URL parameter, so there is nothing to redact from the
+  URL itself), and prints a verdict via the pure, unit-tested `deriveVerdict` (automate only if EVERY returned video
+  carries all four of `view_count`/`like_count`/`comment_count`/`share_count` as real numbers; otherwise names which
+  are missing and points at the fallback). `--help` runs with no token and no network call (verified by hand); the
+  script throws immediately, before any network call, when no token is supplied and `--help` was not passed. Wrote
+  `docs/SOCIAL_PILOT.md` (new file — T15 does not exist yet; this section is written so T15 can fold it into the
+  runbook it writes rather than duplicating it) with a "TikTok metrics collection" section: both candidate read paths
+  and what each returns per the Constraint, that retention/traffic-source stay manual either way, the decision rule
+  verbatim, the exact by-hand steps to run the spike (register a Sandbox app, add the pilot account as a Sandbox
+  target user, complete OAuth for the `video.list` scope, post at least one video, run the script, record the
+  result), and a plainly-stated current status: **the spike has not been run — the finding is undetermined, and the
+  hand-entry fallback is in force by default, not because the Display API is known not to work.** Tests: added
+  `social/src/metrics/__tests__/tiktok-manual.test.ts` (30 tests — valid hand entry builds the exact expected row;
+  `follows`/`saves` always `null`, distinct from a real `0` on the four counts; every validation rejection case
+  named in this task's brief; idempotent upsert alongside pre-existing Instagram/YouTube rows in the same array,
+  including a same-`postId` correction replacing in place and two distinct TikTok posts both persisting) and
+  `social/src/metrics/__tests__/tiktok-spike.test.ts` (10 tests — `deriveVerdict`'s decision rule over synthetic
+  `video.list`-shaped bodies: viable, request-failed, zero-videos, a field missing on one of two videos, a field
+  present but non-numeric, and a malformed/null body; `redactToken`'s scrubbing). `npx vitest run src/metrics` (from
+  `social/`): 87/87 green. Full `npx vitest run` (`social/`): 529/529 green (489 pre-existing, unmodified + 40 new).
+  `npx tsc --noEmit -p social/tsconfig.json`: clean. Did NOT attempt any live TikTok API call, per this task's own
+  instruction. T14 (the viability readout) is next; when it reads TikTok rows it will see the same `MetricsRow`
+  shape as Instagram/YouTube, with `follows`/`saves` `null` on every TikTok row regardless of whether the spike ever
+  gets automated.
 - [ ] T14: Implement the viability readout — per platform, the median, the maximum, the max/median ratio, the
   week-1-vs-week-4 median trend, follow conversion (exact on YouTube, inferred from daily deltas on Instagram and
   TikTok — label which is which), and the top 5 posts with their format. State plainly whether the

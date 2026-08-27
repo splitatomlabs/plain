@@ -27,7 +27,10 @@
  *
  *   - `saves` — Instagram-only. Meta's Reels insights report a `saved`
  *     metric; YouTube's Data/Analytics APIs have no equivalent concept at
- *     all. YouTube rows: `saves: null`, always.
+ *     all. YouTube rows: `saves: null`, always. TikTok rows: also
+ *     `saves: null`, always — not one of the four counts the plan's
+ *     Constraint names for either TikTok read path, and not collected by
+ *     `tiktok-manual.ts`'s hand-entry path either.
  *   - `follows` — PER-POST follow attribution exists ONLY on YouTube
  *     (Analytics API's `subscribersGained` metric, scoped to one video via
  *     `dimensions=video`/`filters=video==<id>`). Per the plan's Decision:
@@ -38,6 +41,12 @@
  *     `follows: null` always — the inferred, directional account-level
  *     series lives in a SEPARATE structure (`InstagramFollowerSnapshot`
  *     below), never smuggled into a per-post row as a fabricated number.
+ *     TikTok rows (`tiktok-manual.ts`, T13) ALSO carry `follows: null`
+ *     always, for the same reason as Instagram — neither TikTok candidate
+ *     read path the plan's Constraint names (Display API `video.list`,
+ *     Business Account API) reports a per-video follow count, only an
+ *     account-level follower series on the Business Account API side, which
+ *     is out of scope for the T13 hand-entry fallback this schema supports.
  *   - `shares` — Instagram's Reels insights genuinely report a `shares`
  *     metric, so Instagram rows carry a real number. YouTube's Data API
  *     `statistics` resource has no shares count, and this task's own
@@ -45,12 +54,23 @@
  *     `subscribersGained` to pull from the Analytics API — even though
  *     Analytics also exposes a `shares` metric, pulling it would be scope
  *     creep beyond what this task specifies. YouTube rows: `shares: null`
- *     — genuinely not collected, not a claimed zero.
+ *     — genuinely not collected, not a claimed zero. TikTok rows carry a
+ *     real number — the plan's Constraint names `video.list` as returning
+ *     "per-video view/like/comment/share counts," and a human can read the
+ *     same four off the app's own per-video analytics screen, so
+ *     `tiktok-manual.ts`'s hand-entry path requires it, same as the other
+ *     three counts.
  *   - `averagePercentWatched` — computed for Instagram from
  *     `ig_reels_avg_watch_time` (insights) against the media's own
  *     `video_duration` (see `instagram.ts`); `null` when the media isn't a
  *     video/Reel or its duration is unknown, rather than a fabricated 0%.
  *     YouTube always reports a real `averageViewPercentage` from Analytics.
+ *     TikTok rows leave this `null` by default — the plan's own Constraint
+ *     is explicit that "retention curves ... are in-app only on TikTok
+ *     regardless — those stay manual," i.e. out of THIS schema's scope, not
+ *     merely hard to type in. `tiktok-manual.ts` accepts it only as an
+ *     optional override for the rare case the app surfaces a plain
+ *     percentage next to a video, never requires it.
  *
  * `format` is hardcoded to the single literal `'wall'` throughout this
  * module — mirrors `render/post-metadata.ts`'s own `PostFormat`, which
@@ -61,7 +81,7 @@
  * scope note), not a workspace member of the root content-pipeline package.
  */
 
-export type MetricsPlatform = 'instagram' | 'youtube';
+export type MetricsPlatform = 'instagram' | 'youtube' | 'tiktok';
 
 /** Mirrors `render/post-metadata.ts`'s `PostFormat` — see this file's header for why it's a local copy, not an import. */
 export type MetricsFormat = 'wall';
