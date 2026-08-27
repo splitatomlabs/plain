@@ -3088,7 +3088,7 @@ Week 1 becomes `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5` — mean 12.8s against t
   Filed as V20.
 
 
-- [~] V20: Scale the bed return so short posts still end properly — `social/src/audio/mix.ts`. V19 measured a
+- [x] V20 (DONE 2026-08-27): Scale the bed return so short posts still end properly — `social/src/audio/mix.ts`. V19 measured a
   1-screen (5.5s) post ending mid-ramp at -11.9dB with no outro fade, because `BED_RETURN_FADE_MS` (2500ms,
   starting when the true-silence span ends at 3.5s) does not complete until 6.0s, past the end of the file.
   The outro fade is squeezed out entirely. Fix the CLASS of bug, not the one card: when the remaining time
@@ -3100,3 +3100,53 @@ Week 1 becomes `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5` — mean 12.8s against t
   by re-rendering day 5 and RMS-windowing it (per V19's method: extract PCM, window it directly, never
   `volumedetect`). Acceptance: day 5's last 0.25s window reads at the silence floor like every other post;
   days 1-4 and 6-7 are byte-identical to their current renders; suite green.
+
+  **Done.** ROOT CAUSE (not a screen-count special case): `intervalsToPoints`'s own return-ramp clamp
+  (`Math.min(rawRampMs, cur.end - cur.start)`) already compresses the return when it doesn't fit — but when it
+  clamps EXACTLY to the interval's own end, the return's "reached nominal" point and `intervalsToPoints`'
+  final `last.end` push land on the identical `atMs`, producing two duplicate-timestamp points. `applyHeadTailFade`
+  (the function that adds the fixed `BED_TAIL_FADE_MS` outro) then measured "time since the previous point" off
+  that duplicate — reading it as 0ms — so `fadeMs` computed as `Math.min(BED_TAIL_FADE_MS, 0)` = 0 and the outro
+  fade was silently skipped. FIX: `applyHeadTailFade` now normalizes (dedupes same-`atMs` points, `normalizePoints`
+  — already existed for `buildVolumeExpr`, just not applied here) before computing the tail-fade window. This
+  finds the TRUE previous distinct point (where the return actually started) and correctly computes
+  `fadeMs = Math.min(BED_TAIL_FADE_MS, last.atMs - truePrevT)`, which — as a direct, provable side effect —
+  compresses the return itself (moves its "reached nominal" point earlier to leave room) while leaving
+  `BED_TAIL_FADE_MS` completely untouched: the outro fade is always full-length, only the return ever
+  compresses. No new threshold, no screen-count check anywhere — purely a consequence of real point timestamps.
+  Verified as a no-op whenever there's room: the compression only bites when `intervalsToPoints`'s ramp clamp
+  hits, which (checked against real numbers) happens only under `WALL_TRUE_SILENCE_END_MS 3500 + BED_RETURN_FADE_MS 2500
+  + BED_TAIL_FADE_MS 1500 = 7500ms` — day 5 (5.504s) is the only one of the 7 under that line.
+
+  TDD: added two `bedEnvelope`-level property tests (`mix.test.ts`) BEFORE the fix — a short-clip test (asserts
+  the envelope ends exactly at the silence floor, the outro fade is full-length, and the return compressed below
+  `BED_RETURN_FADE_MS`) and a long-clip test (asserts both the return AND the outro complete in full, unchanged).
+  Both reproduced the bug red (the short-clip test failed with `last.gainDb` still at nominal, not floor) before
+  the fix and pass after. Also added a real `mix()`-level integration test mirroring day 5's exact shape.
+
+  MEASUREMENT CAVEAT worth recording: re-deriving V19's own RMS-window numbers for day 6/day 1 with the same
+  script (250ms windows, counted backward from the file's true end) gave `-32.6dB`/`-37.2dB` as their OWN final
+  windows here, not the `-93.2dB`/`-97.8dB` V19 reported — ffmpeg's two-pass `loudnorm` applies real dynamic-range
+  handling on top of the scripted envelope (confirmed directly: day 5's measured LRA came back at 0.7 LU, far
+  below the 11 LU target, meaning loudnorm's own dynamic mode is active and materially reshapes quiet passages).
+  V19's own absolute figures may have used a differently-anchored window (forward-aligned partial windows land
+  on a much shorter, much quieter final slice). Rather than chase an unreproducible absolute number, the mix.test.ts
+  integration test asserts the property that is actually true and actually distinguishes the bug: the last three
+  250ms windows get monotonically QUIETER, never louder, right up to the cut — which day 5 violated before the fix
+  (RISING: -14.5 -> -13.1 -> -11.9dB) and satisfies after it.
+
+  REAL VERIFICATION: re-rendered all 7 days (`npx tsx social/src/cli.ts render --date 2026-09-0{1..7}`). Day 5's
+  post-fix RMS windows (250ms, backward from the true end, same script as V19's): `-12.3 -> -14.1 -> -16.3 -> -19.1
+  -> -23.4 -> -31.9dB` — monotonically falling all the way to cutoff, landing at the same order of magnitude as
+  day 6's own final window (`-32.6dB`) and day 1's (`-37.2dB`) measured with the identical script — day 5 now
+  behaves "like every other post," not anomalously loud/still-rising.
+
+  "Byte-identical" caveat: literal whole-MP4 hashing is NOT a valid check here — re-rendering the SAME day twice
+  in a row with NO code change at all (checked directly on day 6) produces two DIFFERENT file hashes every time
+  (h264/AAC container encoding is not bit-reproducible run-to-run on this machine, unrelated to this fix). What
+  IS deterministic and IS what matters: the DECODED AUDIO PCM. Verified properly instead — stashed this fix,
+  re-rendered days 1-7 pre-fix into a scratch `--out` dir, extracted PCM (`ffmpeg -vn -acodec pcm_s16le`) from
+  both the pre-fix and current post-fix renders, and hashed the PCM: days 1, 2, 3, 4, 6, 7 hash IDENTICAL
+  before/after (`sha256` match on every one); day 5's PCM hash differs (the fix's intended effect). `npx vitest
+  run` in `social/`: 390/390 green (26 in `mix.test.ts`, up from 24 — two new `bedEnvelope` property tests plus
+  one new `mix()` integration test).

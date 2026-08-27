@@ -8,6 +8,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bedPath } from '../beds.js';
 import {
 	BED_DUCK_DB,
+	BED_RETURN_FADE_MS,
+	BED_TAIL_FADE_MS,
 	HARD_STOP_RAMP_MS,
 	LOUDNESS_TOLERANCE_LU,
 	SilentMixError,
@@ -449,6 +451,57 @@ describe('mix', () => {
 		);
 	});
 
+	/**
+	 * V20 (`plans/Pf39c2-social-pilot-02a.md`): a 1-screen Wall's real shape —
+	 * `WALL_TRUE_SILENCE_END_MS` (3500ms) is close enough to the clip's own
+	 * `SHORT_DURATION_MS` (5504ms, a real 1-screen Wall's exact duration) that
+	 * the bed's full `BED_RETURN_FADE_MS` (2500ms) return from silence would
+	 * not finish until 6000ms — PAST the end of the clip — squeezing out
+	 * `BED_TAIL_FADE_MS`'s outro fade entirely and leaving the mix still
+	 * rising at cutoff (measured: -11.9dB, louder than any other post's
+	 * steady state). This is the property that actually matters: the mix
+	 * must always land back at the silence floor, never mid-ramp, regardless
+	 * of how short the clip is.
+	 */
+	describe("a short (1-screen) Wall-shaped mix ends at the silence floor, not mid-ramp (V20)", () => {
+		const SHORT_DURATION_MS = 5504; // shorter than WALL_TRUE_SILENCE_END_MS + BED_RETURN_FADE_MS + BED_TAIL_FADE_MS (7500ms)
+		let outPath: string;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'short-wall-mix.m4a');
+			await mix({
+				bedPath: bedPath('bed-05-g-sus4'),
+				narrationPath: undefined,
+				durationMs: SHORT_DURATION_MS,
+				narrationSpans: [],
+				noiseSpans: [{ startMs: 0, endMs: WALL_CUT_MS }],
+				silentSpans: [{ startMs: WALL_CUT_MS, endMs: WALL_TRUE_SILENCE_END_MS }],
+				outPath
+			});
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			// Not an absolute dB threshold: ffmpeg's two-pass `loudnorm` applies
+			// its own dynamic range handling on top of this envelope (verified
+			// directly — even a LONG clip's own final 250ms window lands
+			// around -32dB here, not some much deeper absolute floor), so the
+			// property that actually distinguishes "ends at silence" from
+			// "still ramping at cutoff" is DIRECTION: quieter windows all the
+			// way to the very end, never louder. Before this fix, day 5's real
+			// render measured the opposite — RISING at cutoff (-14.5 -> -13.1
+			// -> -11.9dB, louder than any other post's steady state).
+			'the last three quarter-second windows get monotonically quieter, right up to the end (never rising into the cut)',
+			() => {
+				const w1 = meanVolumeDb(outPath, (SHORT_DURATION_MS - 750) / 1000, (SHORT_DURATION_MS - 500) / 1000);
+				const w2 = meanVolumeDb(outPath, (SHORT_DURATION_MS - 500) / 1000, (SHORT_DURATION_MS - 250) / 1000);
+				const w3 = meanVolumeDb(outPath, (SHORT_DURATION_MS - 250) / 1000, SHORT_DURATION_MS / 1000);
+				expect(w2).toBeLessThan(w1);
+				expect(w3).toBeLessThan(w2);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
 	describe('a deliberately all-silent input throws SilentMixError, not a raw ffmpeg parse failure', () => {
 		const DURATION_MS = 15_000;
 		let outPath: string;
@@ -547,6 +600,68 @@ describe('bedEnvelope', () => {
 		const last = env[env.length - 1];
 		expect(last.atMs).toBe(20000);
 		expect(last.gainDb).toBeLessThan(-20); // ends near-silent, not at nominal level
+	});
+
+	/**
+	 * V20 (`plans/Pf39c2-social-pilot-02a.md`): when a clip is too short for
+	 * the bed's slow `BED_RETURN_FADE_MS` return from silence to finish AND
+	 * still leave room for the fixed `BED_TAIL_FADE_MS` outro fade, the
+	 * envelope must compress the RETURN (never the outro, never the hard
+	 * stop into silence) so both complete and the clip ends at the silence
+	 * floor. Mirrors a real 1-screen Wall: floor from 0 to 3500ms, only
+	 * 2004ms left before the clip ends at 5504ms (`floorEndMs +
+	 * BED_RETURN_FADE_MS` would be 6000ms — past the clip's own end).
+	 */
+	it('short clip: compresses the return from silence so the full outro fade still fits and the clip ends at the silence floor', () => {
+		const floorEndMs = 3500;
+		const shortDurationMs = 5504;
+		const env = bedEnvelope(shortDurationMs, [], [{ startMs: 0, endMs: floorEndMs }], BED_RETURN_FADE_MS);
+
+		// The clip must end at the silence floor, not mid-return.
+		const last = env[env.length - 1];
+		expect(last.atMs).toBe(shortDurationMs);
+		expect(last.gainDb).toBe(-60);
+
+		// The outro fade is preserved IN FULL (only the return compresses):
+		// the point before the final one is at nominal level, exactly
+		// BED_TAIL_FADE_MS before the end.
+		const secondToLast = env[env.length - 2];
+		expect(secondToLast.gainDb).toBe(0);
+		expect(shortDurationMs - secondToLast.atMs).toBe(BED_TAIL_FADE_MS);
+
+		// The return itself had to shrink below its nominal BED_RETURN_FADE_MS
+		// length to make room — but it is still a ramp (not instantaneous).
+		expect(secondToLast.atMs - floorEndMs).toBeLessThan(BED_RETURN_FADE_MS);
+		expect(secondToLast.atMs).toBeGreaterThan(floorEndMs);
+
+		// The final quarter-second window reads at (or falls to) the silence floor.
+		expect(sampleEnvelopeDb(env, shortDurationMs - 250)).toBeLessThan(-45);
+		expect(sampleEnvelopeDb(env, shortDurationMs)).toBe(-60);
+	});
+
+	/**
+	 * V20: whenever there IS room (every post at 2+ screens today — a real
+	 * 2-screen Wall runs 8512ms, well past the 7500ms collision threshold),
+	 * the full BED_RETURN_FADE_MS return and the full BED_TAIL_FADE_MS outro
+	 * fade both play out completely, unchanged from today's behavior.
+	 */
+	it('long clip: the full return from silence and the full outro fade both fit, unchanged', () => {
+		const floorEndMs = 3500;
+		const longDurationMs = 8512; // a real 2-screen Wall's own duration
+		const env = bedEnvelope(longDurationMs, [], [{ startMs: 0, endMs: floorEndMs }], BED_RETURN_FADE_MS);
+
+		// The return completes in full: nominal level is reached exactly
+		// BED_RETURN_FADE_MS after the floor ends, not sooner.
+		const returnCompleteMs = floorEndMs + BED_RETURN_FADE_MS;
+		expect(sampleEnvelopeDb(env, returnCompleteMs)).toBeCloseTo(0, 5);
+
+		// The outro fade is also full-length, at the very end.
+		const last = env[env.length - 1];
+		expect(last.atMs).toBe(longDurationMs);
+		expect(last.gainDb).toBe(-60);
+		const secondToLast = env[env.length - 2];
+		expect(secondToLast.gainDb).toBe(0);
+		expect(longDurationMs - secondToLast.atMs).toBe(BED_TAIL_FADE_MS);
 	});
 });
 

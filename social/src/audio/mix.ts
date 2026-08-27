@@ -444,9 +444,33 @@ function intervalsToPoints(intervals: Interval[], floorReleaseMs: number = DUCK_
 	return points;
 }
 
-/** Applies a gentle fade-in/out at the head/tail, but only where the bed opens/closes at NOMINAL level. */
+/**
+ * Applies a gentle fade-in/out at the head/tail, but only where the bed
+ * opens/closes at NOMINAL level.
+ *
+ * social pilot 02a V20: normalizes (dedupes same-`atMs` points, see
+ * `normalizePoints`) BEFORE computing the tail fade's own window. Without
+ * this, a short clip whose return-from-silence ramp is itself clamped to
+ * land exactly at `durationMs` (`intervalsToPoints`'s own
+ * `Math.min(rawRampMs, cur.end - cur.start)`, see its doc comment) produces
+ * TWO points at that same `atMs` — the ramp's own end, and `last.end`'s
+ * separate push — and `prevT` below would read that duplicate's OWN `atMs`
+ * (identical to `last.atMs`), computing `fadeMs` as zero and silently
+ * dropping the outro fade entirely (measured directly: a 1-screen Wall
+ * render ending mid-return at -11.9dB, no outro at all). Deduping first
+ * makes `prevT` point at the true previous distinct point (where the return
+ * ramp actually started, e.g. the moment silence ends) — `fadeMs` then comes
+ * out correctly as `Math.min(BED_TAIL_FADE_MS, last.atMs - prevT)`, and the
+ * splice below effectively COMPRESSES the return (moves its "reached
+ * nominal" point earlier, to make room) while leaving `BED_TAIL_FADE_MS`
+ * itself untouched — the outro fade is always full-length; only the return
+ * ever compresses. Whenever there IS room (every clip 2+ screens today,
+ * confirmed unaffected — see `mix.test.ts`'s "long clip" test), no
+ * duplicate exists in the first place, so this is a no-op and today's
+ * renders are unchanged.
+ */
 function applyHeadTailFade(points: VolumePoint[], durationMs: number): VolumePoint[] {
-	const out = points.slice();
+	const out = normalizePoints(points);
 
 	const first = out[0];
 	if (first.gainDb === BED_NOMINAL_DB) {
