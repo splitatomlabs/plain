@@ -740,11 +740,38 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   instruction. T14 (the viability readout) is next; when it reads TikTok rows it will see the same `MetricsRow`
   shape as Instagram/YouTube, with `follows`/`saves` `null` on every TikTok row regardless of whether the spike ever
   gets automated.
-- [ ] T14: Implement the viability readout — per platform, the median, the maximum, the max/median ratio, the
+- [x] T14: Implement the viability readout — per platform, the median, the maximum, the max/median ratio, the
   week-1-vs-week-4 median trend, follow conversion (exact on YouTube, inferred from daily deltas on Instagram and
   TikTok — label which is which), and the top 5 posts with their format. State plainly whether the
   pre-registered criterion was met. Acceptance: over synthetic data with an injected outlier, the readout correctly
   reports a breakout — and correctly reports NO for an outlier with no conversion and no trend.
+  Done: `social/src/metrics/readout.ts` — pure computation (`median`, `maxToMedianRatio`, `medianViewsByWeek`,
+  `computeWeekTrend`, `computeFollowConversion`, `computeReadout`, `computeVerdict`) fully separated from formatting
+  (`formatReadout`) and IO (the CLI's `readLatestMetricsRows`/`main`), matching this plan's own `job-plan.ts`/`job.ts`
+  split. Implements the index plan's pre-registered criterion verbatim: criterion A checked first (any platform's
+  breakout post, `views >= breakoutViewThreshold` (default ~10,000), with `follows !== null && follows > 0`), then
+  criterion B (any platform's week-1-to-week-4 median trend `'up'`, via `pilot-config.ts`'s own `dateToWeekDay`
+  anchor — no second week-numbering scheme invented); neither met produces `viable: false` with the plan's own
+  "outlier with no conversion and no trend is explicitly a NO" wording baked into the summary string, so a raw
+  max/median ratio can never flip the verdict alone (covered by its own test: a ~109x ratio with no breakout-
+  threshold post and no trend still reports NOT VIABLE). Follow conversion is labelled per platform, never
+  silently upgraded: YouTube's `follows` is passed through as `'exact'`; Instagram/TikTok are `'inferred'` from a new
+  `DailyFollowerSnapshot[]` (same `{date, followerCount}` shape as `schema.ts`'s `InstagramFollowerSnapshot`, reused
+  rather than growing `schema.ts` a TikTok-specific type for a collector — T13 — that doesn't exist yet) via a
+  day-over-day delta aligned to `publishedAt`, or `'unavailable'` (never a fabricated `0`) when no snapshot series is
+  supplied, which is TikTok's real state today. `follows: null` is threaded through untouched everywhere (its own
+  test: a YouTube breakout post with `follows: null` does not satisfy criterion A). `computeWeekTrend` requires BOTH
+  week 1 and week 4 to have at least one post, else `'insufficient-data'` naming the weeks actually observed, never a
+  two-point trend. A CLI entry point (`main()`, matching `collect.ts`'s own guard/`--now`/`--help` conventions) reads
+  every `metrics-<date>.json` under `content/social/metrics/` (`readLatestMetricsRows`, deduping to the latest
+  `collectedAt` per `platform:postId` across the polling-window's repeated daily snapshots) plus
+  `instagram-followers.json`, and prints `formatReadout`'s report — verified against a real scratch directory,
+  producing the expected `VIABLE (criterion A met)` line end-to-end. Tests:
+  `social/src/metrics/__tests__/readout.test.ts` (21 tests, all passing), covering the task's acceptance criterion
+  exactly (an injected outlier that converts -> criterion A; an outlier with no conversion and no trend -> NOT
+  VIABLE, with the exact wording asserted) plus a criterion-B-only case, even/odd/single-value medians, a zero-median
+  ratio, null-never-a-zero on both YouTube and inferred platforms, insufficient-week-data, and top-5
+  ordering/truncation. `npm test --prefix social` is green at 550/550 (529 prior + these 21); `tsc --noEmit` clean.
 - [ ] T15: Write `docs/SOCIAL_PILOT.md` — the runbook. Must cover account creation hygiene (separate email, created
   manually on a real device, phone verified, distinct handle and bio, no follow/like/comment automation, no
   delete-and-repost); the weekly session covering TikTok scheduling, the YouTube flip and any metrics T13 left
