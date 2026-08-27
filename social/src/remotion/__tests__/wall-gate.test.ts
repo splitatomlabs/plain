@@ -289,6 +289,43 @@ describe('surveyWallPool — the real pool', () => {
 	// for every pool entry.
 });
 
+describe('surveyWallPool — the rejection path (F05)', () => {
+	// Pf39c2-social-pilot-02a V12: the real 168-entry pool never takes this
+	// branch any more (see V10's comment above — a <=5-screen payoff can't
+	// reach the 40s ceiling), so `wall-pool.ts`'s `else` branch (`rejectedIds
+	// .push` / `rejections.push` / `axis` / `rejectedForDuration`) has no
+	// surviving caller that exercises it. `result.rejections` is written
+	// verbatim into `content/social/render-exclusions.json` by
+	// `write-exclusions.ts`, so that branch still has to work — this test
+	// drives it with a synthetic one-entry pool built from the same real
+	// over-long card the "gateWallCard — the duration ceiling (F03)" block
+	// below uses directly (`on-anger-03-027`), so it fails a real gate rather
+	// than a fabricated one. This asserts the SHAPE of a rejection
+	// (`rejectedForDuration`, `rejectedIds`, and `rejections[0]`'s `axis`/
+	// `book_slug`/`reason`), not any property of the real pool's rejection
+	// COUNT — that property is gone by construction (V02/V04) and should stay
+	// gone.
+	it('records a rejected duration card with the full shape write-exclusions.ts commits', () => {
+		const syntheticPool: WallPoolEntry[] = [
+			{
+				card_id: 'on-anger-03-027',
+				book_slug: 'on-anger',
+				landing_line: 'Too much flattery irritates people with bad tempers.'
+			}
+		];
+
+		const result = surveyWallPool(syntheticPool, outputDir);
+
+		expect(result.passed).toBe(0);
+		expect(result.rejectedForDuration).toBe(1);
+		expect(result.rejectedIds).toEqual(['on-anger-03-027']);
+		expect(result.rejections).toHaveLength(1);
+		expect(result.rejections[0].axis).toBe('duration');
+		expect(result.rejections[0].book_slug).toBe('on-anger');
+		expect(result.rejections[0].reason).toContain(String(WALL_MAX_DURATION_FRAMES));
+	});
+});
+
 describe('gateWallCard — the duration ceiling (F03)', () => {
 	// `content/social/pilot-schedule-w01.json` day 6 slot 2 originally drew
 	// this exact card and failed at render time under F03's pre-T03 pacing
