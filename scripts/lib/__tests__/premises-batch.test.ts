@@ -9,41 +9,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 const mockCreateMessageBatch = vi.fn();
 const mockPollBatchUntilDone = vi.fn();
 const mockStreamBatchResults = vi.fn();
-// T23: the real-time retry path — defaults to rejecting (see beforeEach)
-// so every EXISTING "drops a failed item" test still ends up dropped, just
-// via one extra (failing) retry attempt, unless a test explicitly opts a
-// specific call into succeeding.
-const mockCallClaudeJSON = vi.fn();
 
 vi.mock("../claude.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../claude.js")>()),
   createMessageBatch: (...args: unknown[]) => mockCreateMessageBatch(...args),
   pollBatchUntilDone: (...args: unknown[]) => mockPollBatchUntilDone(...args),
   streamBatchResults: (...args: unknown[]) => mockStreamBatchResults(...args),
-  callClaudeJSON: (...args: unknown[]) => mockCallClaudeJSON(...args),
 }));
 
-import { readFile, rm } from "node:fs/promises";
-import path from "node:path";
-import {
-  chunkArray,
-  buildDryRunReport,
-  buildWallRequests,
-  buildQuestionRequests,
-  buildObjectionRequests,
-  scoreWallSurvivors,
-  scoreQuestionSurvivors,
-  scoreObjectionSurvivors,
-  MAX_REQUESTS_PER_BATCH,
-  faithfulnessStats,
-  retryStats,
-} from "../premises-batch.js";
-import { PARSE_FAILURE_DIR } from "../parse-failure-log.js";
-import { loadCorpus, rankWall, questionGate, objectionGate, type QuestionEntry, type RankedWallEntry, type ObjectionEntry } from "../premises.js";
+import { chunkArray, buildDryRunReport, buildWallRequests, scoreWallSurvivors, MAX_REQUESTS_PER_BATCH, faithfulnessStats } from "../premises-batch.js";
+import { loadCorpus, rankWall, type RankedWallEntry } from "../premises.js";
 import { logger } from "../logger.js";
 import { batchStats, tokenUsage } from "../claude.js";
 import type { Card } from "../types.js";
-import type { AuthorSlug } from "../constants.js";
 
 function makeCard(overrides: Partial<Card> = {}): Card {
   return {
@@ -84,45 +62,6 @@ function makeSucceededResult(customId: string, payload: unknown) {
   };
 }
 
-function makeErroredResult(customId: string) {
-  return {
-    custom_id: customId,
-    result: {
-      type: "errored" as const,
-      error: { type: "server_error", message: "Internal error" },
-    },
-  };
-}
-
-/** A "succeeded" batch item carrying RAW (not JSON.stringify'd) text, plus a configurable stop_reason/output_tokens — for exercising the parse-failure capture path (T23). */
-function makeRawSucceededResult(
-  customId: string,
-  text: string,
-  opts: { stopReason?: string | null; outputTokens?: number } = {},
-) {
-  return {
-    custom_id: customId,
-    result: {
-      type: "succeeded" as const,
-      message: {
-        content: [{ type: "text" as const, text }],
-        stop_reason: opts.stopReason ?? "end_turn",
-        usage: {
-          input_tokens: 10,
-          output_tokens: opts.outputTokens ?? 5,
-          cache_read_input_tokens: 0,
-          cache_creation_input_tokens: 0,
-        },
-      },
-    },
-  };
-}
-
-/** Cleans up a parse-failure capture file if it exists, so tests never leave stray artifacts under content/pipeline/social/parse-failures/. */
-async function cleanupCapture(customId: string): Promise<void> {
-  await rm(path.join(PARSE_FAILURE_DIR, `${customId}.json`), { force: true });
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
   batchStats.totalRequests = 0;
@@ -133,13 +72,6 @@ beforeEach(() => {
   tokenUsage.cacheReadTokens = 0;
   tokenUsage.cacheCreationTokens = 0;
   faithfulnessStats.rejected = 0;
-  retryStats.retried = 0;
-  retryStats.recovered = 0;
-  retryStats.droppedAfterRetry = 0;
-  // Default: the real-time retry always fails, so a pre-T23 "drops a
-  // failed item" test still ends up dropped (just via one extra failed
-  // retry attempt) unless a test explicitly overrides this per-call.
-  mockCallClaudeJSON.mockRejectedValue(new Error("retry not configured for this test"));
 });
 
 // ---------------------------------------------------------------------------
@@ -172,7 +104,7 @@ describe("chunkArray", () => {
 // key set, and never touches the SDK.
 // ---------------------------------------------------------------------------
 describe("buildDryRunReport", () => {
-  it("computes per-format counts with no ANTHROPIC_API_KEY set, without calling the SDK", () => {
+  it("computes the Wall's counts with no ANTHROPIC_API_KEY set, without calling the SDK", () => {
     const originalKey = process.env.ANTHROPIC_API_KEY;
     delete process.env.ANTHROPIC_API_KEY;
     try {
@@ -180,21 +112,13 @@ describe("buildDryRunReport", () => {
       const report = buildDryRunReport(cards);
 
       const wall = report.formats.find((f) => f.format === "wall")!;
-      const question = report.formats.find((f) => f.format === "question")!;
-      const objection = report.formats.find((f) => f.format === "objection")!;
 
       expect(wall.requestCount).toBe(rankWall(cards).length);
-      expect(question.requestCount).toBe(questionGate(cards).length);
-      expect(objection.requestCount).toBe(objectionGate(cards).length);
 
       // Only survivors, never the raw corpus.
       expect(wall.requestCount).toBeLessThan(cards.length);
-      expect(question.requestCount).toBeLessThan(cards.length);
-      expect(objection.requestCount).toBeLessThan(cards.length);
 
-      expect(report.totalRequests).toBe(
-        wall.requestCount + question.requestCount + objection.requestCount,
-      );
+      expect(report.totalRequests).toBe(wall.requestCount);
       expect(report.totalEstimatedTokens).toBeGreaterThan(0);
 
       expect(mockCreateMessageBatch).not.toHaveBeenCalled();
@@ -224,319 +148,11 @@ describe("buildDryRunReport", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Request builders — author grouping (for cache locality)
-// ---------------------------------------------------------------------------
-describe("buildQuestionRequests", () => {
-  function makeEntry(overrides: Partial<QuestionEntry> = {}): QuestionEntry {
-    return {
-      card_id: "card-1",
-      book_slug: "meditations",
-      author_slug: "marcus-aurelius",
-      question: "Is this the right path?",
-      answer: "It is not.",
-      ...overrides,
-    };
-  }
-
-  it("groups requests so identical author system prompts are contiguous", () => {
-    const entries: QuestionEntry[] = [
-      makeEntry({ card_id: "s1", author_slug: "seneca" }),
-      makeEntry({ card_id: "e1", author_slug: "epictetus" }),
-      makeEntry({ card_id: "s2", author_slug: "seneca" }),
-      makeEntry({ card_id: "e2", author_slug: "epictetus" }),
-    ];
-
-    const built = buildQuestionRequests(entries);
-    const authorSequence = built.map((b) => b.meta.author_slug);
-    // Once we move off an author we should never return to it.
-    const seen = new Set<AuthorSlug>();
-    let current: AuthorSlug | null = null;
-    for (const author of authorSequence) {
-      if (author !== current) {
-        expect(seen.has(author)).toBe(false);
-        seen.add(author);
-        current = author;
-      }
-    }
-  });
-
-  it("builds one request per entry with a unique custom_id", () => {
-    const entries: QuestionEntry[] = [makeEntry({ card_id: "a" }), makeEntry({ card_id: "b" })];
-    const built = buildQuestionRequests(entries);
-    expect(built).toHaveLength(2);
-    const ids = built.map((b) => b.request.custom_id);
-    expect(new Set(ids).size).toBe(2);
-  });
-
-  it("marks the system prompt as cacheable so per-author caching engages", () => {
-    const entries: QuestionEntry[] = [makeEntry({ card_id: "a" })];
-    const built = buildQuestionRequests(entries);
-    expect(built[0].request.cache_system).toBe(true);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// scoreQuestionSurvivors — submit -> poll -> stream -> merge, over the
-// mocked SDK boundary.
-// ---------------------------------------------------------------------------
-describe("scoreQuestionSurvivors", () => {
-  it("merges a successful batch result into the scored pool", async () => {
-    const card = makeCard({
-      id: "test-card-1",
-      plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-    });
-    const entries = questionGate([card]);
-    expect(entries).toHaveLength(1);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_q1" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q1", processing_status: "ended" });
-
-    const requests = buildQuestionRequests(entries);
-    const customId = requests[0].request.custom_id;
-
-    mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "It resolves the question." })]),
-    );
-
-    const scored = await scoreQuestionSurvivors(entries, [card]);
-
-    expect(scored).toHaveLength(1);
-    expect(scored[0].card_id).toBe("test-card-1");
-    expect(scored[0].drift_verdict).toBe("answers");
-    expect(scored[0].drift_reason).toBe("It resolves the question.");
-    // T22: the three stopping-power dimensions survive the merge too, kept
-    // as their own independent fields alongside (not folded into) drift_verdict.
-    expect(scored[0].standalone_intelligible).toBe(true);
-    expect(scored[0].answer_has_substance).toBe(true);
-    expect(scored[0].modern_premise).toBe(true);
-    expect(faithfulnessStats.rejected).toBe(0);
-  });
-
-  it("drops an errored item with a logged reason", async () => {
-    const cardA = makeCard({
-      id: "test-card-a",
-      plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-    });
-    const cardB = makeCard({
-      id: "test-card-b",
-      plain_english: "Do you fear death? You should not. Death is nothing to you.",
-    });
-    const entries = questionGate([cardA, cardB]);
-    expect(entries.length).toBe(2);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_q2" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q2", processing_status: "ended" });
-
-    const requests = buildQuestionRequests(entries);
-    const [okId, badId] = requests.map((r) => r.request.custom_id);
-
-    mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([
-        makeSucceededResult(okId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "Resolves it." }),
-        makeErroredResult(badId),
-      ]),
-    );
-
-    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
-    try {
-      const scored = await scoreQuestionSurvivors(entries, [cardA, cardB]);
-      expect(scored).toHaveLength(1);
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(badId));
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("dropped"));
-    } finally {
-      warnSpy.mockRestore();
-    }
-  });
-
-  it("drops a malformed-JSON item with a logged reason", async () => {
-    const card = makeCard({
-      id: "test-card-malformed",
-      plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-    });
-    const entries = questionGate([card]);
-    expect(entries).toHaveLength(1);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_q3" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q3", processing_status: "ended" });
-
-    const requests = buildQuestionRequests(entries);
-    const customId = requests[0].request.custom_id;
-
-    // Not valid JSON at all (extractJSON will fail to find a parseable object).
-    mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([
-        {
-          custom_id: customId,
-          result: {
-            type: "succeeded" as const,
-            message: {
-              content: [{ type: "text" as const, text: "not json at all, sorry" }],
-              usage: { input_tokens: 5, output_tokens: 2, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
-            },
-          },
-        },
-      ]),
-    );
-
-    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
-    try {
-      const scored = await scoreQuestionSurvivors(entries, [card]);
-      expect(scored).toHaveLength(0);
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("failed to parse"));
-    } finally {
-      warnSpy.mockRestore();
-      await cleanupCapture(customId);
-    }
-  });
-
-  // -------------------------------------------------------------------------
-  // T23: parse-failure capture + retry-once + recovered-vs-dropped accounting
-  // -------------------------------------------------------------------------
-
-  it("T23: captures the raw response, stop_reason, and output_tokens to disk on a parse failure, then retries once via the real-time API", async () => {
-    const card = makeCard({
-      id: "test-card-capture",
-      plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-    });
-    const entries = questionGate([card]);
-    expect(entries).toHaveLength(1);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_capture" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_capture", processing_status: "ended" });
-
-    const requests = buildQuestionRequests(entries);
-    const customId = requests[0].request.custom_id;
-
-    // Truncated-looking response: not valid JSON, stop_reason is max_tokens,
-    // output_tokens is unusually high — exactly the shape T23 exists to
-    // diagnose (settling truncation vs. a genuinely malformed complete
-    // response).
-    const rawText = '{"verdict": "answers", "standalone_intellig';
-    mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([makeRawSucceededResult(customId, rawText, { stopReason: "max_tokens", outputTokens: 4096 })]),
-    );
-    // The retry also fails (default reject from beforeEach) — this item ends up genuinely dropped.
-
-    try {
-      const scored = await scoreQuestionSurvivors(entries, [card]);
-      expect(scored).toHaveLength(0);
-
-      const capturePath = path.join(PARSE_FAILURE_DIR, `${customId}.json`);
-      const captured = JSON.parse(await readFile(capturePath, "utf-8"));
-      expect(captured.custom_id).toBe(customId);
-      expect(captured.format).toBe("question");
-      expect(captured.stop_reason).toBe("max_tokens");
-      expect(captured.output_tokens).toBe(4096);
-      expect(captured.raw_text).toBe(rawText);
-      expect(typeof captured.error).toBe("string");
-      expect(captured.error.length).toBeGreaterThan(0);
-
-      // Also dropped after retry, since the retry itself failed.
-      expect(retryStats.retried).toBe(1);
-      expect(retryStats.recovered).toBe(0);
-      expect(retryStats.droppedAfterRetry).toBe(1);
-    } finally {
-      await cleanupCapture(customId);
-    }
-  });
-
-  it("T23: recovers a dropped request via one real-time retry, counted separately from a request that stays dropped", async () => {
-    const cardRecovers = makeCard({
-      id: "test-card-recovers",
-      plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-    });
-    const cardStaysDropped = makeCard({
-      id: "test-card-stays-dropped",
-      plain_english: "Do you fear death? You should not. Death is nothing to you.",
-    });
-    const entries = questionGate([cardRecovers, cardStaysDropped]);
-    expect(entries).toHaveLength(2);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_retry" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_retry", processing_status: "ended" });
-
-    const requests = buildQuestionRequests(entries);
-    const [recoversId, staysDroppedId] = requests.map((r) => r.request.custom_id);
-
-    // First item's batch response is malformed (triggers a retry); second
-    // item's batch request errored outright (also triggers a retry).
-    mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([
-        makeRawSucceededResult(recoversId, "not valid json", { stopReason: "end_turn", outputTokens: 12 }),
-        makeErroredResult(staysDroppedId),
-      ]),
-    );
-
-    // Retry order mirrors the order failures were encountered above: the
-    // first retry (for `recoversId`) succeeds with a valid payload; the
-    // second retry (for `staysDroppedId`) fails, falling through to the
-    // default rejection configured in beforeEach.
-    mockCallClaudeJSON.mockResolvedValueOnce({
-      verdict: "answers",
-      standalone_intelligible: true,
-      answer_has_substance: true,
-      modern_premise: true,
-      reason: "Resolves it on retry.",
-    });
-
-    const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
-    const infoSpy = vi.spyOn(logger, "info").mockImplementation(() => {});
-    try {
-      const scored = await scoreQuestionSurvivors(entries, [cardRecovers, cardStaysDropped]);
-
-      expect(scored).toHaveLength(1);
-      expect(scored[0].card_id).toBe("test-card-recovers");
-      expect(scored[0].drift_verdict).toBe("answers");
-
-      expect(retryStats.retried).toBe(2);
-      expect(retryStats.recovered).toBe(1);
-      expect(retryStats.droppedAfterRetry).toBe(1);
-
-      // batchStats.failed reflects only the FINAL, post-retry drop — the
-      // recovered item must not still be counted as a failure.
-      expect(batchStats.succeeded).toBe(1);
-      expect(batchStats.failed).toBe(1);
-
-      expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining(`${recoversId} recovered via retry`));
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining(`${staysDroppedId} retry failed`));
-    } finally {
-      warnSpy.mockRestore();
-      infoSpy.mockRestore();
-      await cleanupCapture(recoversId);
-    }
-  });
-
-  it("submits exactly the gate survivor count against the real corpus, never the full corpus", async () => {
-    const cards = loadCorpus();
-    const entries = questionGate(cards);
-    expect(entries.length).toBeGreaterThan(0);
-    expect(entries.length).toBeLessThan(cards.length);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_full" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_full", processing_status: "ended" });
-    mockStreamBatchResults.mockReturnValue(asyncIterFrom([]));
-
-    await scoreQuestionSurvivors(entries, cards);
-
-    expect(mockCreateMessageBatch).toHaveBeenCalledOnce();
-    const submitted = mockCreateMessageBatch.mock.calls[0][0];
-    expect(submitted.length).toBe(entries.length);
-    expect(submitted.length).not.toBe(cards.length);
-  });
-
-  it("throws when the survivor count exceeds the trip-wire ceiling", async () => {
-    const oversized = Array.from({ length: 151 }, (_, i) => ({
-      card_id: `fake-${i}`,
-      book_slug: "meditations",
-      author_slug: "marcus-aurelius" as const,
-      question: "Is this ok?",
-      answer: "It is.",
-    }));
-    await expect(scoreQuestionSurvivors(oversized, [])).rejects.toThrow(/ceiling/i);
-    expect(mockCreateMessageBatch).not.toHaveBeenCalled();
-  });
-});
+// Pf39c2-social-pilot-02a D01: `buildQuestionRequests` and
+// `scoreQuestionSurvivors` (T23's parse-failure capture / retry-once /
+// recovered-vs-dropped accounting included) were deleted outright along
+// with The Question — the channel is one Wall a day, drawn from the Wall
+// pool, nothing else.
 
 // ---------------------------------------------------------------------------
 // scoreWallSurvivors — also validates chosen_landing_line against the
@@ -619,68 +235,9 @@ describe("scoreWallSurvivors", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// scoreObjectionSurvivors
-// ---------------------------------------------------------------------------
-describe("scoreObjectionSurvivors", () => {
-  it("merges a successful result", async () => {
-    const card = makeCard({
-      id: "test-obj-1",
-      plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.',
-    });
-    const entries = objectionGate([card]);
-    expect(entries).toHaveLength(1);
-
-    const built = buildObjectionRequests(entries, new Map([[card.id, card]]));
-    const customId = built[0].request.custom_id;
-    expect(built[0].request.cache_system).toBe(true);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_o1" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_o1", processing_status: "ended" });
-    mockStreamBatchResults.mockReturnValue(
-      asyncIterFrom([
-        makeSucceededResult(customId, {
-          verdict: "accept",
-          classification: "viewer_position",
-          reason: "A plausible personal grievance.",
-        }),
-      ]),
-    );
-
-    const scored = await scoreObjectionSurvivors(entries, [card]);
-    expect(scored).toHaveLength(1);
-    expect(scored[0].rubric.verdict).toBe("accept");
-    expect(scored[0].rubric.classification).toBe("viewer_position");
-    expect(faithfulnessStats.rejected).toBe(0);
-  });
-
-  it("submits exactly the gate survivor count against the real corpus, never the full corpus", async () => {
-    const cards = loadCorpus();
-    const entries = objectionGate(cards);
-    expect(entries.length).toBeGreaterThan(0);
-    expect(entries.length).toBeLessThan(cards.length);
-
-    mockCreateMessageBatch.mockResolvedValue({ id: "batch_full_obj" });
-    mockPollBatchUntilDone.mockResolvedValue({ id: "batch_full_obj", processing_status: "ended" });
-    mockStreamBatchResults.mockReturnValue(asyncIterFrom([]));
-
-    await scoreObjectionSurvivors(entries, cards);
-
-    expect(mockCreateMessageBatch).toHaveBeenCalledOnce();
-    const submitted = mockCreateMessageBatch.mock.calls[0][0];
-    expect(submitted.length).toBe(entries.length);
-    expect(submitted.length).not.toBe(cards.length);
-  });
-
-  it("throws when the survivor count exceeds the trip-wire ceiling", async () => {
-    const oversized = Array.from({ length: 101 }, (_, i) => ({
-      card_id: `fake-${i}`,
-      author_slug: "seneca" as const,
-    })) as unknown as ObjectionEntry[];
-    await expect(scoreObjectionSurvivors(oversized, [])).rejects.toThrow(/ceiling/i);
-    expect(mockCreateMessageBatch).not.toHaveBeenCalled();
-  });
-});
+// Pf39c2-social-pilot-02a D01: `scoreObjectionSurvivors` was deleted
+// outright along with The Objection — the channel is one Wall a day, drawn
+// from the Wall pool, nothing else.
 
 // ---------------------------------------------------------------------------
 // Batch chunking at the orchestration level — a pool bigger than
@@ -821,204 +378,9 @@ describe("T09 faithfulness enforcement", () => {
     });
   });
 
-  describe("The Question", () => {
-    it("rejects a synthetic hallucinated question/answer (acceptance test)", async () => {
-      const card = makeCard({
-        id: "test-q-halluc",
-        plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-      });
-      // A hand-built entry standing in for a hypothetical gate defect or a
-      // corrupted intermediate — not derived from questionGate — carrying
-      // plausible, well-formed, on-topic text that was never actually
-      // written in the card.
-      const entries: QuestionEntry[] = [
-        {
-          card_id: card.id,
-          book_slug: card.book_slug,
-          author_slug: card.author_slug,
-          question: "Do you know what truly matters in your own life?",
-          answer: "Only your own choices determine whether you live well.",
-        },
-      ];
-
-      mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_halluc" });
-      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_halluc", processing_status: "ended" });
-      const requests = buildQuestionRequests(entries);
-      const customId = requests[0].request.custom_id;
-      mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "It resolves the question." })]),
-      );
-
-      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
-      try {
-        const scored = await scoreQuestionSurvivors(entries, [card]);
-        expect(scored).toHaveLength(0);
-        expect(faithfulnessStats.rejected).toBeGreaterThan(0);
-        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"question"`)));
-      } finally {
-        warnSpy.mockRestore();
-      }
-    });
-
-    it("rejects a near-miss answer with exactly one word substituted", async () => {
-      const card = makeCard({
-        id: "test-q-nearmiss",
-        plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-      });
-      const gated = questionGate([card]);
-      expect(gated).toHaveLength(1);
-
-      const nearMissAnswer = gated[0].answer.replace(/[a-zA-Z]{4,}/, "flibbertigibbet");
-      expect(nearMissAnswer).not.toBe(gated[0].answer);
-      const entries: QuestionEntry[] = [{ ...gated[0], answer: nearMissAnswer }];
-
-      mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_nearmiss" });
-      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_nearmiss", processing_status: "ended" });
-      const requests = buildQuestionRequests(entries);
-      const customId = requests[0].request.custom_id;
-      mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "n/a" })]),
-      );
-
-      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
-      try {
-        const scored = await scoreQuestionSurvivors(entries, [card]);
-        expect(scored).toHaveLength(0);
-        expect(faithfulnessStats.rejected).toBe(1);
-        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"answer"`)));
-      } finally {
-        warnSpy.mockRestore();
-      }
-    });
-
-    it("admits a faithful question/answer pair (positive control)", async () => {
-      const card = makeCard({
-        id: "test-q-control",
-        plain_english: "Do you want a good life? Then act well. Nothing else matters.",
-      });
-      const entries = questionGate([card]);
-      expect(entries).toHaveLength(1);
-
-      mockCreateMessageBatch.mockResolvedValue({ id: "batch_q_control" });
-      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_q_control", processing_status: "ended" });
-      const requests = buildQuestionRequests(entries);
-      const customId = requests[0].request.custom_id;
-      mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([makeSucceededResult(customId, { verdict: "answers", standalone_intelligible: true, answer_has_substance: true, modern_premise: true, reason: "n/a" })]),
-      );
-
-      const scored = await scoreQuestionSurvivors(entries, [card]);
-      expect(scored).toHaveLength(1);
-      expect(faithfulnessStats.rejected).toBe(0);
-    });
-  });
-
-  describe("The Objection", () => {
-    it("rejects a synthetic hallucinated objection/reply (acceptance test)", async () => {
-      const card = makeCard({
-        id: "test-obj-halluc",
-        plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.',
-      });
-      // A hand-built entry, not derived from objectionGate, carrying
-      // plausible, well-formed, on-topic text that was never actually
-      // written in the card.
-      const entries: ObjectionEntry[] = [
-        {
-          card_id: card.id,
-          book_slug: card.book_slug,
-          author_slug: card.author_slug,
-          objection: "But why should nobody ever listen to reason around here?",
-          reply: "Because reason alone rarely changes a stubborn mind.",
-        },
-      ];
-
-      mockCreateMessageBatch.mockResolvedValue({ id: "batch_obj_halluc" });
-      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_obj_halluc", processing_status: "ended" });
-      const built = buildObjectionRequests(entries, new Map([[card.id, card]]));
-      const customId = built[0].request.custom_id;
-      mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([
-          makeSucceededResult(customId, {
-            verdict: "accept",
-            classification: "viewer_position",
-            reason: "n/a",
-          }),
-        ]),
-      );
-
-      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
-      try {
-        const scored = await scoreObjectionSurvivors(entries, [card]);
-        expect(scored).toHaveLength(0);
-        expect(faithfulnessStats.rejected).toBeGreaterThan(0);
-        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"objection"`)));
-      } finally {
-        warnSpy.mockRestore();
-      }
-    });
-
-    it("rejects a near-miss objection with exactly one word substituted", async () => {
-      const card = makeCard({
-        id: "test-obj-nearmiss",
-        plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.',
-      });
-      const gated = objectionGate([card]);
-      expect(gated).toHaveLength(1);
-
-      const nearMissObjection = gated[0].objection.replace(/[a-zA-Z]{5,}/, "flibbertigibbet");
-      expect(nearMissObjection).not.toBe(gated[0].objection);
-      const entries: ObjectionEntry[] = [{ ...gated[0], objection: nearMissObjection }];
-
-      mockCreateMessageBatch.mockResolvedValue({ id: "batch_obj_nearmiss" });
-      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_obj_nearmiss", processing_status: "ended" });
-      const built = buildObjectionRequests(entries, new Map([[card.id, card]]));
-      const customId = built[0].request.custom_id;
-      mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([
-          makeSucceededResult(customId, {
-            verdict: "accept",
-            classification: "viewer_position",
-            reason: "n/a",
-          }),
-        ]),
-      );
-
-      const warnSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
-      try {
-        const scored = await scoreObjectionSurvivors(entries, [card]);
-        expect(scored).toHaveLength(0);
-        expect(faithfulnessStats.rejected).toBe(1);
-        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${card.id}.*"objection"`)));
-      } finally {
-        warnSpy.mockRestore();
-      }
-    });
-
-    it("admits a faithful objection/reply pair (positive control)", async () => {
-      const card = makeCard({
-        id: "test-obj-control",
-        plain_english: 'He grumbled, "But why should I suffer for this?" and walked off.',
-      });
-      const entries = objectionGate([card]);
-      expect(entries).toHaveLength(1);
-
-      mockCreateMessageBatch.mockResolvedValue({ id: "batch_obj_control" });
-      mockPollBatchUntilDone.mockResolvedValue({ id: "batch_obj_control", processing_status: "ended" });
-      const built = buildObjectionRequests(entries, new Map([[card.id, card]]));
-      const customId = built[0].request.custom_id;
-      mockStreamBatchResults.mockReturnValue(
-        asyncIterFrom([
-          makeSucceededResult(customId, {
-            verdict: "accept",
-            classification: "viewer_position",
-            reason: "n/a",
-          }),
-        ]),
-      );
-
-      const scored = await scoreObjectionSurvivors(entries, [card]);
-      expect(scored).toHaveLength(1);
-      expect(faithfulnessStats.rejected).toBe(0);
-    });
-  });
+  // Pf39c2-social-pilot-02a D01: The Question's and The Objection's own
+  // faithfulness-enforcement coverage was deleted outright along with those
+  // formats — the channel is one Wall a day, drawn from the Wall pool,
+  // nothing else. The Wall's own coverage above (hallucination, near-miss,
+  // positive control) is unaffected.
 });

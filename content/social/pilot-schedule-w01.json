@@ -1,0 +1,98 @@
+{
+  "week": 1,
+  "seed": 42,
+  "slots": [
+    {
+      "day": 1,
+      "card_id": "meditations-09-025",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Of an operation and of a purpose there is an ending, or of an action and of a purpose we say commonly, that it is at an end: from opinion also there is an absolute cessation, which is as it were the death of it. In all this there is no hurt.",
+        "landing_line": "Every action has an end."
+      }
+    },
+    {
+      "day": 2,
+      "card_id": "on-anger-02-054",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Once, a boy who was brought up in Plato's house went home to his parents, and, on seeing his father shouting with passion, said, \"I never saw any one at Plato's house act like that.\" I doubt not that he learned to imitate his father sooner than he learned to imitate Plato. Above all, let his food be scanty, his dress not costly, and of the same fashion as that of his comrades: if you begin by putting him on a level with many others, he will not be angry when some one is compared with him.",
+        "landing_line": "A boy was raised in Plato's household."
+      }
+    },
+    {
+      "day": 3,
+      "card_id": "discourses-60-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "When you see another man in the possession of power (magistracy), set against this the fact that you have not the want (desire) of power; when you see another rich, see what you possess in place of riches: for if you possess nothing in place of them, you are miserable; but if you have not the want of riches, know that you possess more than this man possesses and what is worth much more.",
+        "landing_line": "When you see someone rich, think about what you have instead of riches."
+      }
+    },
+    {
+      "day": 4,
+      "card_id": "enchiridion-41-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "It is a mark of want of intellect to spend much time in things relating to the body, as to be immoderate in exercises, in eating and drinking, and in the discharge of other animal functions. These things should be done incidentally and our main strength be applied to our reason.",
+        "landing_line": "Don't overdo exercise, eating, drinking, or other basic physical needs."
+      }
+    },
+    {
+      "day": 5,
+      "card_id": "shortness-of-life-02-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "\"We live a small part only of our lives.\"",
+        "landing_line": "We actually live only a small part of our lives."
+      }
+    },
+    {
+      "day": 6,
+      "card_id": "enchiridion-27-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "As a mark[1] is not set up for the sake of missing the aim, so neither does the nature of evil exist in the world.",
+        "landing_line": "In the same way, evil doesn't exist in the world by nature."
+      }
+    },
+    {
+      "day": 7,
+      "card_id": "happy-life-03-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "You understand without my mentioning it that an unbroken calm and freedom ensue, when we have driven away all those things which either excite us or alarm us: for in the place of sensual pleasures and those slight perishable matters which are connected with the basest crimes, we thus gain an immense, unchangeable, equable joy, together with peace, calmness and greatness of mind, and kindliness: for all savageness is a sign of weakness.",
+        "landing_line": "Cruelty always comes from weakness."
+      }
+    }
+  ],
+  "author_mix": {
+    "epictetus": {
+      "count": 3,
+      "share": 0.42857142857142855
+    },
+    "marcus-aurelius": {
+      "count": 1,
+      "share": 0.14285714285714285
+    },
+    "seneca": {
+      "count": 3,
+      "share": 0.42857142857142855
+    }
+  },
+  "pool_source": "scored"
+}

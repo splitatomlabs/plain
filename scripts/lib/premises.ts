@@ -146,69 +146,18 @@ export function firstSentence(text: string): string {
   return found.length ? found[0] : text.trim();
 }
 
-/** True when `text` contains 2 or more `"` characters (the quoted-speech gate). */
-export function hasQuotedSpeech(text: string): boolean {
-  return (text.match(/"/g) ?? []).length >= 2;
-}
-
-/** original_excerpt word count minus plain_english word count. */
-export function lengthDelta(card: Card): number {
-  return wordCount(card.original_excerpt) - wordCount(card.plain_english);
-}
-
 /** Cards whose `book_slug` is in `slugs`. */
 export function byBook(cards: Card[], slugs: string[]): Card[] {
   const set = new Set(slugs);
   return cards.filter((c) => set.has(c.book_slug));
 }
 
-export interface MechanicalGateResult {
-  ids: string[];
-  count: number;
-}
-
-export interface MechanicalGates {
-  /** The Wall: original_excerpt >= 80 words. Measured: 1,326. */
-  wallLength: MechanicalGateResult;
-  /**
-   * The Still: first sentence of plain_english <= 12 words AND a
-   * self-contained opening (not leading But/So/This/It/And).
-   *
-   * The plan estimated 674 for this gate; that number was not reproducible
-   * under any definition tried. The closest clean definition — the one
-   * implemented here — measures 739, not the plan's alternate estimate of
-   * 740. This implementation's <=11-word cross-check (651) matches the
-   * plan's own stated anchor exactly, which is why 739 (not 740) is
-   * asserted as correct for <=12 in the test suite. Do not contort this
-   * definition to hit either estimate.
-   */
-  still12Word: MechanicalGateResult;
-  /** The Objection precursor: plain_english contains >= 2 `"` characters. Measured: 308. */
-  quotedSpeech: MechanicalGateResult;
-  /** original_excerpt word count exceeds plain_english word count by >= 30. Measured: 318. */
-  lengthDelta30: MechanicalGateResult;
-}
-
-function gateResult(cards: Card[], predicate: (card: Card) => boolean): MechanicalGateResult {
-  const ids = cards.filter(predicate).map((c) => c.id);
-  return { ids, count: ids.length };
-}
-
-/**
- * Run all mechanical gates over `cards` and return the per-gate id sets and
- * counts. Pure and deterministic — no LLM calls.
- */
-export function mechanicalGates(cards: Card[]): MechanicalGates {
-  return {
-    wallLength: gateResult(cards, (c) => wordCount(c.original_excerpt) >= 80),
-    still12Word: gateResult(
-      cards,
-      (c) => wordCount(firstSentence(c.plain_english)) <= 12 && isSelfContainedOpening(c.plain_english),
-    ),
-    quotedSpeech: gateResult(cards, (c) => hasQuotedSpeech(c.plain_english)),
-    lengthDelta30: gateResult(cards, (c) => lengthDelta(c) >= 30),
-  };
-}
+// Pf39c2-social-pilot-02a D01: `mechanicalGates`/`MechanicalGates` (and the
+// `hasQuotedSpeech`/`lengthDelta` helpers it alone used) measured population
+// counts for the Still gate (`still12Word`) and the Objection precursor
+// (`quotedSpeech`/`lengthDelta30`) — both formats were deleted outright (the
+// channel is one Wall a day, drawn from the Wall pool, nothing else), and
+// nothing else called this function, so it went with them.
 
 // ---------------------------------------------------------------------------
 // T02: The Wall's landing-line gate. Phase 1 shows original_excerpt as a
@@ -754,20 +703,232 @@ export interface WallEntry {
   landing_line: string;
 }
 
+// ---------------------------------------------------------------------------
+// V02 (social pilot 02a): the payoff-screen cap. `social/` is a
+// self-contained npm project (see T01/`landing-line.ts`'s own doc comment)
+// that does not import from this root `scripts/` package, so its payoff
+// sentence splitter (`social/src/audio/timing.ts`'s `splitPayoffLines`) and
+// this file's own `sentences()` are two independently-maintained
+// implementations. A throwaway corpus-wide comparison run for this task
+// found they DISAGREE on 161 of the 1,161 `wallGate` survivors as of V01 —
+// almost entirely because `splitPayoffLines` treats a standalone "No." (and
+// a handful of other short tokens) as a non-splitting abbreviation, which
+// `sentences()` does not — so `wallGate` cannot reuse `sentences()` for the
+// payoff-screen count without disagreeing with the renderer about which
+// cards qualify. `splitPayoffLines` below is therefore ported verbatim,
+// the same direction `landing-line.ts` ports the OPPOSITE way (root ->
+// social) for the read-through's landing-line derivation.
+//
+// Keep this function byte-identical in BEHAVIOUR to
+// `social/src/audio/timing.ts`'s `splitPayoffLines` (and its private
+// `ABBREVIATIONS`/`endsWithAbbreviation` helpers) whenever that file
+// changes — there is no automated check that keeps the two in sync.
+// ---------------------------------------------------------------------------
+
 /**
- * The Wall's landing-line gate. An entry survives only when both hold:
- *  - the original excerpt is long enough to outrun the viewer in phase 1
- *    (>=80 words, matching MechanicalGates.wallLength);
+ * Word (or word-like token) immediately preceding a `.` that should NOT be
+ * treated as a sentence boundary. Lower-cased, no trailing period. A single
+ * letter (e.g. the "T" in "T. S. Eliot") is also never a boundary — handled
+ * separately below, not via this list.
+ */
+const PAYOFF_ABBREVIATIONS = new Set([
+  "mr",
+  "mrs",
+  "ms",
+  "dr",
+  "prof",
+  "sr",
+  "jr",
+  "st",
+  "vs",
+  "etc",
+  "eg",
+  "ie",
+  "no",
+  "vol",
+  "fig",
+  "al",
+  "cf",
+  "ca",
+  "approx",
+  "gen",
+  "rev",
+  "co",
+  "inc",
+  "ltd",
+]);
+
+function payoffEndsWithAbbreviation(precedingText: string): boolean {
+  const wordMatch = precedingText.match(/([A-Za-z]+)\s*$/);
+  if (!wordMatch) {
+    return false;
+  }
+  const word = wordMatch[1];
+  // A single capital (or lowercase) letter — an initial, e.g. "A." in
+  // "A. Vernon" — is never a sentence boundary.
+  if (word.length === 1) {
+    return true;
+  }
+  return PAYOFF_ABBREVIATIONS.has(word.toLowerCase());
+}
+
+/**
+ * The canonical sentence splitter for payoff lines — ported verbatim from
+ * `social/src/audio/timing.ts`'s `splitPayoffLines`; see this section's
+ * header comment for why a duplicate (not a shared import) is required.
+ * Every returned line is a VERBATIM substring of `text` (no re-wrapping, no
+ * paraphrase, no punctuation added or removed); joining the returned lines
+ * with a single space reproduces `text` modulo whitespace.
+ *
+ * Boundary rule: a run of `.`/`!`/`?` (optionally followed immediately by a
+ * closing quote or bracket) is a sentence boundary only when it is followed
+ * by whitespace or the end of the text. A `.` boundary is additionally
+ * suppressed — conservatively, per "when in doubt, do not split" — when the
+ * word immediately before it is a known abbreviation (`Mr.`, `etc.`, ...) or
+ * a single letter (an initial). `!` and `?` are never suppressed this way;
+ * they don't have an abbreviation problem.
+ */
+export function splitPayoffLines(text: string): string[] {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) {
+    return [];
+  }
+
+  const parts: string[] = [];
+  let cursor = 0;
+  const n = trimmed.length;
+
+  for (let i = 0; i < n; i++) {
+    const ch = trimmed[i];
+    if (ch !== "." && ch !== "!" && ch !== "?") {
+      continue;
+    }
+
+    // Consume a run of terminal punctuation, e.g. "?!" or "...".
+    let j = i;
+    while (j < n && (trimmed[j] === "." || trimmed[j] === "!" || trimmed[j] === "?")) {
+      j++;
+    }
+    // Consume closing quotes/brackets immediately after the punctuation.
+    let k = j;
+    while (k < n && /["'”’)\]]/.test(trimmed[k])) {
+      k++;
+    }
+
+    const atEnd = k >= n;
+    const followedByWhitespace = !atEnd && /\s/.test(trimmed[k]);
+    if (!atEnd && !followedByWhitespace) {
+      // Not a boundary — e.g. a decimal number or an ellipsis glued to the
+      // next word with no space. Leave `i` to advance normally.
+      continue;
+    }
+
+    if (ch === "." && payoffEndsWithAbbreviation(trimmed.slice(cursor, i))) {
+      continue;
+    }
+
+    parts.push(trimmed.slice(cursor, k));
+
+    let end = k;
+    while (end < n && /\s/.test(trimmed[end])) {
+      end++;
+    }
+    cursor = end;
+    i = k - 1; // loop's i++ resumes scanning right after the consumed punctuation/quotes
+  }
+
+  if (cursor < n) {
+    parts.push(trimmed.slice(cursor));
+  }
+
+  return parts;
+}
+
+/**
+ * Payoff-screen count cap for The Wall (V02, social pilot 02a). Phase 2
+ * shows `landing_line` on one still screen, then the REMAINDER of
+ * `plain_english` one sentence per still screen (`splitPayoffLines`).
+ * Phone review found videos running 26-35s across a median of 9 such
+ * screens — reads as a slideshow. 5 is the user's chosen ceiling: at <=4,
+ * Seneca's pool collapses to 2 cards and `selectWallBalanced`'s
+ * author-balancing has nothing to draw on; <=5 keeps all 7 books and a
+ * pool the scheduler can actually balance (measured: marcus-aurelius 117 /
+ * seneca 26 / epictetus 25).
+ *
+ * Because V01 already removed `wallGate`'s word-count floor, this cap is a
+ * pure POOL FILTER, never a truncation: `wallGate` simply excludes cards
+ * whose payoff runs long, it never cuts a surviving card's payoff short.
+ */
+export const WALL_MAX_PAYOFF_SCREENS = 5;
+
+/**
+ * `plain_english` with `landingLine` spliced out — exactly the arithmetic
+ * `social/src/cli-plan.ts`'s `computeWallPlainLines` uses to build the rest
+ * of the payoff passage: `indexOf(landingLine)`, slice before + slice
+ * after, join with a single space, collapse whitespace, trim. Kept in sync
+ * with that function by hand (same cross-boundary caveat as
+ * `splitPayoffLines` above) since `wallGate` needs the same remainder to
+ * count payoff screens before any card reaches a render.
+ *
+ * Throws if `landingLine` is not a verbatim substring of `plainEnglish` —
+ * `selectLandingLine` only ever returns lines lifted directly from the
+ * card's own `plain_english`, so this should never happen for a real
+ * `wallGate` candidate; a caller passing an unrelated landing line gets a
+ * loud failure rather than a silently wrong remainder.
+ */
+export function wallPayoffRemainder(plainEnglish: string, landingLine: string): string {
+  const idx = plainEnglish.indexOf(landingLine);
+  if (idx === -1) {
+    throw new Error(
+      `wallPayoffRemainder: landing line ${JSON.stringify(landingLine)} is not a verbatim substring of plain_english.`,
+    );
+  }
+  const before = plainEnglish.slice(0, idx);
+  const after = plainEnglish.slice(idx + landingLine.length);
+  return `${before} ${after}`.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Total payoff screen count for a card's phase 2: 1 (the landing line
+ * itself) + one per sentence of the spliced-out remainder
+ * (`splitPayoffLines(wallPayoffRemainder(...))`). This is the figure
+ * `wallGate` caps at `WALL_MAX_PAYOFF_SCREENS`.
+ */
+export function wallPayoffScreenCount(plainEnglish: string, landingLine: string): number {
+  const remainder = wallPayoffRemainder(plainEnglish, landingLine);
+  return 1 + splitPayoffLines(remainder).length;
+}
+
+/**
+ * The Wall's landing-line gate. An entry survives when:
  *  - the card has a clean standalone sentence to cut to in phase 2
- *    (`selectLandingLine` returns non-null).
+ *    (`selectLandingLine` returns non-null); AND
+ *  - the resulting payoff (`wallPayoffScreenCount`) runs to at most
+ *    `WALL_MAX_PAYOFF_SCREENS` screens (V02) — see that constant's doc
+ *    comment for why 5 and why this is a pure pool filter, never a
+ *    truncation.
+ *
+ * This used to also require `original_excerpt` to be >=80 words long, on the
+ * theory that phase 1's scrolling wall of text needed enough of the card's
+ * own excerpt to outrun the viewer before the hard cut. That theory died at
+ * this plan's own T08/R02: phase 1 no longer scrolls the card's
+ * `original_excerpt` at all — it scrolls the surrounding CHAPTER block built
+ * by `buildChapterTextBlock` (`social/src/render/chapter-text.ts`), which
+ * repeats whole chapter laps until the block clears the travel floor on its
+ * own. A 9-word excerpt outruns the viewer exactly as well as a 200-word
+ * one, because the excerpt itself is no longer what's on screen during
+ * phase 1. `original_word_count` is kept on `WallEntry` as plain measured
+ * data (some formats/reporting still find it informative) but no longer
+ * gates anything here (V01 removed the last thing it gated; V02's cap is
+ * about payoff screen count, not excerpt length).
  */
 export function wallGate(cards: Card[]): WallEntry[] {
   const entries: WallEntry[] = [];
   for (const card of cards) {
     const originalWordCount = wordCount(card.original_excerpt);
-    if (originalWordCount < 80) continue;
     const landingLine = selectLandingLine(card);
     if (!landingLine) continue;
+    if (wallPayoffScreenCount(card.plain_english, landingLine) > WALL_MAX_PAYOFF_SCREENS) continue;
     entries.push({
       card_id: card.id,
       book_slug: card.book_slug,
@@ -785,14 +946,19 @@ export function wallGate(cards: Card[]): WallEntry[] {
 // others (thick with "thou"/"hath"-style archaic diction, cascading
 // semicolon clauses, or a scene rendered in dialogue). Three deterministic,
 // non-exclusive sub-types capture that visual quality; a card matching none
-// of them is `reserve`. In the same pass, every ranked entry is flagged for
-// which of the format's OPENING treatments it's eligible for — the two
-// numeric openings ("190 -> 97", a word-count countdown, and "Grade 14", a
-// bare reading-grade readout) are conditional; every entry can always take
-// the plain "standard" opening.
+// of them is `reserve`.
 //
 // All three sub-type checks run against `original_excerpt` (not
 // plain_english) — the wall of text the viewer actually sees in phase 1.
+//
+// T17 (social pilot 02a) retired the two numeric OPENING treatments this
+// pass used to also flag every entry for ("190 -> 97", a word-count
+// countdown, and "Grade 14", a bare reading-grade readout) — see that
+// plan's own paragraph for why: neither replaces the other, both are
+// deleted outright, no third numeral takes their place. `original_grade`
+// (below, via `originalReadingGrade`) survives as plain measured data on
+// every ranked entry; `eligible_openings`/`eligibleWallOpenings`/
+// `WallOpening` do not.
 // ---------------------------------------------------------------------------
 
 /**
@@ -800,8 +966,9 @@ export function wallGate(cards: Card[]): WallEntry[] {
  * English. Matched case-insensitively at a word boundary; every OCCURRENCE
  * counts (a repeated marker counts more than once), not just distinct
  * markers — see `classifyWallSubTypes` for why (measured against the real
- * corpus: counting occurrences gives 222 over the >=80-word gate; counting
- * distinct markers per card gives 185, which does not match the plan).
+ * corpus: counting occurrences gives 301 over the full 1,615-card corpus;
+ * counting distinct markers per card gives 242, which does not match the
+ * plan).
  */
 export const ARCHAIC_MARKERS = [
   "thou",
@@ -832,15 +999,6 @@ export const WALL_SCENE_QUOTE_MIN = 2;
 
 export type WallSubType = "thou_wall" | "cascade" | "scene";
 
-/**
- * The Wall's two conditional openings, plus the always-available baseline.
- * `countdown` is the "190 -> 97" treatment (original word count counting
- * down live to the plain version's word count); `grade` is the "Grade 14"
- * treatment (the original's computed reading grade shown as a bare
- * measurement).
- */
-export type WallOpening = "standard" | "countdown" | "grade";
-
 export interface WallSubTypeClassification {
   sub_types: WallSubType[];
   reserve: boolean;
@@ -853,22 +1011,33 @@ export interface WallSubTypeClassification {
  * Classify a card's `original_excerpt` into its Wall visual-archaism
  * sub-type(s). Pure and standalone (does not require the T02 landing-line
  * gate) so the corpus test can assert its counts directly over the full
- * >=80-word wallLength set (1,326 cards), independent of how many of those
- * survive `wallGate`.
+ * corpus (1,615 cards), independent of how many of those survive
+ * `wallGate`.
  *
  * Sub-types are NOT mutually exclusive — a card thick with archaic diction
  * AND full of semicolon cascades matches both `thou_wall` and `cascade`.
  * `reserve` is true only when none of the three match.
  *
- * Measured over the 1,326-card >=80-word gate: Thou Wall 222, Cascade 204,
- * Scene 137 (the plan's own estimate for Scene was 176; that figure does
+ * Measured over the full 1,615-card corpus: Thou Wall 301, Cascade 217,
+ * Scene 144 (the plan's own estimate for Scene was 176; that figure does
  * not reproduce under any quote-character definition tried — curly quotes
- * gives 203, checking either plain_english or original_excerpt gives 311 —
- * so 137, the measured count for ">=2 straight double-quote characters in
- * original_excerpt", is what's implemented and asserted here. Same
- * treatment T01 gave its own unreproducible 674 estimate: implement the
- * clean stated definition, measure it, document the gap, don't contort the
- * definition to hit an estimate).
+ * or checking plain_english instead of original_excerpt both give
+ * different figures — so 144, the measured count for ">=2 straight
+ * double-quote characters in original_excerpt", is what's implemented and
+ * asserted here. Same treatment T01 gave its own unreproducible 674
+ * estimate: implement the clean stated definition, measure it, document
+ * the gap, don't contort the definition to hit an estimate).
+ *
+ * V01 (social pilot 02a) dropped this doc comment's prior figures (Thou
+ * Wall 222 / Cascade 204 / Scene 137), which were measured over an
+ * artificial `wordCount(original_excerpt) >= 80` filter borrowed from
+ * `wallGate`'s own now-deleted word-count floor (see that function's doc
+ * comment for why the floor died). This function never depended on that
+ * floor — it has always run over any card's `original_excerpt` regardless
+ * of length — so once `wallGate` stopped applying it, measuring this
+ * function's corpus-wide counts against that same dead filter was no
+ * longer measuring anything meaningful; the full corpus is the clean
+ * population.
  */
 export function classifyWallSubTypes(card: Card): WallSubTypeClassification {
   const text = card.original_excerpt;
@@ -890,45 +1059,15 @@ export function classifyWallSubTypes(card: Card): WallSubTypeClassification {
   };
 }
 
-/** Minimum `lengthDelta` for the "190 -> 97" countdown opening to be worth showing (else the countdown barely moves). */
-export const WALL_COUNTDOWN_DELTA_MIN = 30;
-
-/**
- * Minimum original-text reading grade for the "Grade 14" opening to be
- * worth showing as a bare measurement. Grade 12 is the sensible floor: it's
- * the same "too difficult" ceiling `validateReadability` (`scripts/lib/
- * validate.ts`) uses for the PLAIN version, so a Wall original clearing
- * that same bar is unambiguously harder reading than anything the app
- * otherwise ships — worth calling out on screen. Measured over the
- * 1,326-card >=80-word gate: 856 cards clear grade >=12.
- */
-export const WALL_ORIGINAL_GRADE_MIN = 12;
-
 /**
  * The original excerpt's Flesch-Kincaid grade level, via the same
  * `text-readability` call `validateReadability` uses on the plain version
  * (`scripts/lib/validate.ts`) — kept identical so grades are comparable
- * across the pipeline.
+ * across the pipeline. Plain measured data on every ranked entry
+ * (`RankedWallEntry.original_grade`) — not tied to any opening mechanic.
  */
 export function originalReadingGrade(card: Card): number {
   return rs.fleschKincaidGrade(card.original_excerpt);
-}
-
-/**
- * Which openings a card is eligible for. Every card can always take
- * `standard`. `countdown` requires the plain version to be meaningfully
- * shorter than the original (`lengthDelta(card) >= WALL_COUNTDOWN_DELTA_MIN`
- * — the same threshold as `MechanicalGates.lengthDelta30`), or the
- * countdown animation barely moves. `grade` requires the original's
- * reading grade to clear `WALL_ORIGINAL_GRADE_MIN`. An entry failing both
- * conditional checks carries only `["standard"]`; an entry passing both
- * carries all three.
- */
-export function eligibleWallOpenings(card: Card): WallOpening[] {
-  const openings: WallOpening[] = ["standard"];
-  if (lengthDelta(card) >= WALL_COUNTDOWN_DELTA_MIN) openings.push("countdown");
-  if (originalReadingGrade(card) >= WALL_ORIGINAL_GRADE_MIN) openings.push("grade");
-  return openings;
 }
 
 export interface RankedWallEntry extends WallEntry {
@@ -938,20 +1077,20 @@ export interface RankedWallEntry extends WallEntry {
   semicolon_count: number;
   quote_count: number;
   original_grade: number;
-  eligible_openings: WallOpening[];
 }
 
 /**
  * Rank every T02 `wallGate` survivor (a card that already has a landing
- * line) by visual-archaism sub-type and opening eligibility.
+ * line) by visual-archaism sub-type.
  *
  * The sub-type counts here are necessarily SMALLER than
- * `classifyWallSubTypes`'s own corpus-wide counts (222/204/137): those are
- * measured over all 1,326 length-gated cards, while `rankWall` only ever
- * sees the 1,003 cards that also survive the landing-line gate. Call
- * `classifyWallSubTypes` directly (or via `mechanicalGates`-style corpus
- * tests) to reproduce the 1,326-card figures; use `rankWall`'s own output
- * to measure the ranked-pool figures.
+ * `classifyWallSubTypes`'s own corpus-wide counts (301/217/144): those are
+ * measured over the full 1,615-card corpus, while `rankWall` only ever sees
+ * the cards that also survive `wallGate` (V01 dropped the >=80-word floor,
+ * measuring 1,161; V02 then added the <=5-payoff-screen cap on top of that,
+ * measuring 168 — see `wallGate`'s own doc comment for both). Call
+ * `classifyWallSubTypes` directly to reproduce the full-corpus figures; use
+ * `rankWall`'s own output to measure the ranked-pool figures.
  */
 export function rankWall(cards: Card[]): RankedWallEntry[] {
   const entries = wallGate(cards);
@@ -967,578 +1106,27 @@ export function rankWall(cards: Card[]): RankedWallEntry[] {
       ...entry,
       ...classification,
       original_grade: originalReadingGrade(card),
-      eligible_openings: eligibleWallOpenings(card),
     };
   });
 }
 
-// ---------------------------------------------------------------------------
-// T04: The Question. Format: a short second-person question appears alone on
-// screen; the viewer silently predicts an answer; the card's own next
-// sentence appears as the author's answer. So the QUESTION must stand alone
-// with no context, and the following sentence must ACTUALLY ANSWER it.
-//
-// Three layers, cheapest first:
-//  - MECHANICAL GATE: is there a short, unquoted, self-contained,
-//    non-exclamatory question — in the author's own voice, not attributed to
-//    someone else — in the first three sentences of plain_english?
-//  - LAYER (a): does the chosen question stand alone (no dangling pronoun/
-//    demonstrative, no mid-thought opener, not a fragment)?
-//  - LAYER (b): does the candidate answer actually resolve rather than
-//    continue the question (not itself a question, no attribution leak)?
-//  - LAYER (c): topic drift — LLM judgement only, stubbed here (T07/T08).
-// ---------------------------------------------------------------------------
-
-/** Question word-count ceiling — must be readable at a glance with zero context. */
-export const QUESTION_MAX_WORDS = 14;
-
-/** The question must appear within the first N sentences of plain_english. */
-export const QUESTION_SENTENCE_WINDOW = 3;
-
 /**
- * Verbs of speech/attribution used by both the mechanical gate's
- * "author's own voice" check (on the question) and layer (b)'s attribution
- * check (on the answer). Matched against a single token via
- * `ATTRIBUTION_VERB_RE`, immediately preceded by an attribution subject —
- * see `hasAttributionLeak`.
+ * Pf39c2-social-pilot-02a D01: The Question format (its mechanical gate,
+ * layers (a)/(b), and `questionGate` itself) was deleted outright — the
+ * channel is one Wall a day, drawn from the Wall pool, nothing else. This
+ * shape survives ONLY because `wallAuthorWeights` below still takes a
+ * Question pool as an input to its author-balance correction (and
+ * `./schedule.ts` still carries a `FormatPools.question` field, kept
+ * compiling by D01, restructured away by D02) — every entry is always `[]`
+ * now that nothing produces one. See that plan's "Deprecation" section.
  */
-export const ATTRIBUTION_VERBS = [
-  "ask",
-  "asks",
-  "asked",
-  "say",
-  "says",
-  "said",
-  "reply",
-  "replies",
-  "replied",
-  "answer",
-  "answers",
-  "answered",
-  "respond",
-  "responds",
-  "responded",
-  "retort",
-  "retorts",
-  "retorted",
-] as const;
-
-const ATTRIBUTION_VERB_RE = /^(asks?|asked|says?|said|repl(?:y|ies|ied)|answers?|answered|responds?|responded|retorts?|retorted)$/i;
-
-/**
- * Pronoun subjects that always signal a dialogue attribution when they sit
- * directly before an attribution verb ("he asks", "someone says", "they
- * ask"). Deliberately excludes "you": "you say"/"you ask" as a rhetorical
- * second-person prompt ("What should you say when...?") is often the
- * AUTHOR'S OWN direct address to the viewer, not a dialogue leak — measured
- * against the real corpus, treating bare "you" the same as "he"/"someone"
- * produced false positives (e.g. "What should you say when something
- * painful happens?", which is exactly the second-person voice this format
- * wants). "you ask" specifically is still rejected, but narrowly, via
- * `YOU_ASK_RE` below, matching the plan's literal example.
- */
-const ATTRIBUTION_PRONOUN_SUBJECTS = new Set(["he", "she", "they", "someone", "people"]);
-
-/** "you ask" specifically (not "you say"/"you reply") — see the comment on `ATTRIBUTION_PRONOUN_SUBJECTS`. */
-const YOU_ASK_RE = /\byou\s+asks?\b/i;
-
-/**
- * First-person speech verbs — "I ask", "I say", "I reply", "I answer" — that
- * `ATTRIBUTION_PRONOUN_SUBJECTS` originally missed entirely (that set only
- * covered third-party subjects: he/she/they/someone/people). "I ask back:
- * how does the earth keep holding all the buried bodies forever?" is the
- * author staging a rhetorical dialogue with an imagined interlocutor, not
- * speaking directly to the viewer — same leak as "he asks", just first
- * person (`meditations-04-022`). Matched literally on the four verbs the
- * corpus audit surfaced, not the full `ATTRIBUTION_VERBS` conjugation set —
- * deliberately narrow, since "I" is otherwise the normal subject of the
- * author's own direct statements ("I know that...") and a broader match
- * risks false-positiving on those.
- */
-const FIRST_PERSON_ATTRIBUTION_RE = /\bI\s+(ask|say|reply|answer)\b/i;
-
-/**
- * True when `clause` (a lead-in fragment, not necessarily a full sentence —
- * see `hasColonAttributionLeadIn`) itself reads as a speech attribution: it
- * contains an attribution verb AND opens with a plausible speaking subject.
- * Unlike the main `hasAttributionLeak` loop, a capitalized first word here
- * DOES count as subject evidence even though it's sentence/clause-initial
- * — a colon lead-in's whole job is to name who's about to speak ("Epictetus
- * asks:", "I ask back:"), so sentence-initial capitalization is exactly the
- * expected shape, not the rhetorical-wh-question false positive the
- * mid-sentence check guards against ("Who says...?").
- */
-function isSpeechAttributionClause(clause: string): boolean {
-  const words = clause.trim().split(/\s+/).filter(Boolean);
-  if (words.length < 2) return false;
-  const hasVerb = words.some((w) => ATTRIBUTION_VERB_RE.test(stripPunctuation(w).toLowerCase()));
-  if (!hasVerb) return false;
-
-  const firstClean = stripPunctuation(words[0]).toLowerCase();
-  if (firstClean === "i") return true;
-  if (ATTRIBUTION_PRONOUN_SUBJECTS.has(firstClean)) return true;
-  return /^[A-Z]/.test(stripPunctuation(words[0]));
-}
-
-/**
- * True when the text BEFORE the first `:` in `text` is itself a speech
- * attribution — "I ask back: how does..." or "Epictetus asks: what should
- * you do?" — a dialogue lead-in the mechanical gate's word-adjacency scan
- * can miss when other words sit between the subject and the colon.
- */
-export function hasColonAttributionLeadIn(text: string): boolean {
-  const colonIndex = text.indexOf(":");
-  if (colonIndex === -1) return false;
-  return isSpeechAttributionClause(text.slice(0, colonIndex));
-}
-
-/**
- * True when `text` attributes a question/answer to a party other than the
- * author speaking directly to the viewer — "he asks", "someone says",
- * "you ask", "Epictetus said", "I ask back:". Checked, in order:
- *  - "you ask" specifically (`YOU_ASK_RE`);
- *  - a first-person speech verb — "I ask"/"I say"/"I reply"/"I answer"
- *    (`FIRST_PERSON_ATTRIBUTION_RE`) — the author staging a rhetorical
- *    dialogue with an imagined interlocutor is still a dialogue leak, just
- *    first person, and the plain pronoun-subject scan below never covered
- *    "I" (only third-party subjects);
- *  - a speech-attribution lead-in before a colon (`hasColonAttributionLeadIn`)
- *    — "I ask back: ..." / "Epictetus asks: ...";
- *  - a closed-class pronoun subject (`ATTRIBUTION_PRONOUN_SUBJECTS`), any
- *    position in the sentence, sitting IMMEDIATELY before an attribution
- *    verb;
- *  - a genuine capitalized proper-noun subject (`looksLikeProperNoun`,
- *    reusing T02's noun-shape heuristic), excluding sentence-initial
- *    position (index 0) — the same exclusion T02 uses, because ordinary
- *    sentence-initial capitalization ("Who says...?", "What does...?") is
- *    not proper-noun evidence and would otherwise false-positive on
- *    rhetorical wh-questions.
- * Shared by the mechanical gate (checked on the question, "author's own
- * voice") and layer (b) (checked on the answer, "attribution leak").
- */
-export function hasAttributionLeak(text: string): boolean {
-  if (YOU_ASK_RE.test(text)) return true;
-  if (FIRST_PERSON_ATTRIBUTION_RE.test(text)) return true;
-  if (hasColonAttributionLeadIn(text)) return true;
-
-  const words = text.trim().replace(/[—–]/g, " ").split(/\s+/);
-  for (let i = 1; i < words.length; i++) {
-    if (!ATTRIBUTION_VERB_RE.test(stripPunctuation(words[i]).toLowerCase())) continue;
-
-    const subjectClean = stripPunctuation(words[i - 1]).toLowerCase();
-    if (ATTRIBUTION_PRONOUN_SUBJECTS.has(subjectClean)) return true;
-    if (i - 1 !== 0 && looksLikeProperNoun(words[i - 1])) return true;
-  }
-  return false;
-}
-
-/** "How"-openers where the second word is not a question auxiliary — signals a rhetorical exclamation ("How wonderful..."), not a real question. */
-const HOW_AUX_WORDS = new Set([
-  "do",
-  "does",
-  "did",
-  "can",
-  "could",
-  "would",
-  "should",
-  "will",
-  "shall",
-  "is",
-  "are",
-  "was",
-  "were",
-  "have",
-  "has",
-  "had",
-  "many",
-  "much",
-  "long",
-  "often",
-  "far",
-  "old",
-]);
-
-const EXCLAMATION_ENDING_RE = /[!?]{2,}$/;
-const EXCLAMATION_OPENING_WHAT_RE = /^what\s+an?\b/i;
-
-/**
- * True when `question` is rhetorically an exclamation dressed up with a
- * trailing `?`, not a genuine question the viewer can answer:
- *  - ends with stacked terminal punctuation (`?!`/`!?`);
- *  - opens "What a"/"What an" ("What a joy this is?" — always exclamatory);
- *  - opens "How <word>" where `<word>` is not a question auxiliary
- *    (`HOW_AUX_WORDS`) — "How wonderful is that?" is exclamatory, "How do
- *    you know?" is a real question. A deliberately blunt heuristic (no POS
- *    tagging), consistent with the rest of this file's approach.
- */
-export function isExclamationShaped(question: string): boolean {
-  const trimmed = question.trim();
-  if (EXCLAMATION_ENDING_RE.test(trimmed)) return true;
-  if (EXCLAMATION_OPENING_WHAT_RE.test(trimmed)) return true;
-
-  const howMatch = /^how\s+(\S+)/i.exec(trimmed);
-  if (howMatch && !HOW_AUX_WORDS.has(stripPunctuation(howMatch[1]).toLowerCase())) return true;
-
-  return false;
-}
-
-export interface QuestionCandidate {
-  question: string;
-  /** Index of `question` within `sentences(card.plain_english)` — used to locate the candidate answer. */
-  index: number;
-}
-
-/**
- * The mechanical gate for The Question. Finds the FIRST sentence, in
- * document order, among the first `QUESTION_SENTENCE_WINDOW` sentences of
- * `plain_english`, that satisfies ALL of:
- *  - ends with `?`;
- *  - <= `QUESTION_MAX_WORDS` words;
- *  - contains no `"` (unquoted — no on-screen attribution/dialogue frame);
- *  - passes `isSelfContainedOpening` (T01: no leading But/So/This/It/And);
- *  - is not exclamation-shaped (`isExclamationShaped`);
- *  - carries no attribution leak (`hasAttributionLeak` — author's own
- *    voice).
- *
- * These criteria are evaluated as a set (existence, not a fixed candidate
- * carried through each stage): a card can survive an earlier stage via one
- * of up to 3 first-window sentences and a later stage via a different one,
- * matching the measured corpus counts below. The final `question` selected
- * is the first sentence (by document order) to satisfy every criterion at
- * once, chosen deterministically.
- *
- * Measured over the full corpus (`content/output`), applying criteria in
- * order: question present in first 3 sentences — 458; + <=14 words — 380;
- * + unquoted — 379; + self-contained opening — 319; + not
- * exclamation-shaped and no attribution leak — **313** (0 cards were caught
- * by `isExclamationShaped` alone in this corpus; 11 were caught by
- * `hasAttributionLeak`, of which 3 also overlapped stages already excluded
- * by earlier filters, netting -6 from 319). The plan's target for this gate
- * was 292; 313 is what's implemented and measured — not contorted to hit
- * the estimate, per the same policy T01/T03 documented for their own
- * unreproducible targets.
- */
-export function findQuestionCandidate(card: Card): QuestionCandidate | null {
-  const sents = sentences(card.plain_english);
-  const windowed = sents.slice(0, QUESTION_SENTENCE_WINDOW).map((question, index) => ({ question, index }));
-
-  const survivors = windowed
-    .filter(({ question }) => question.trim().endsWith("?"))
-    .filter(({ question }) => wordCount(question) <= QUESTION_MAX_WORDS)
-    .filter(({ question }) => !question.includes('"'))
-    .filter(({ question }) => isSelfContainedOpening(question))
-    .filter(({ question }) => !isExclamationShaped(question))
-    .filter(({ question }) => !hasAttributionLeak(question));
-
-  return survivors.length ? survivors[0] : null;
-}
-
-/**
- * The candidate answer for a question at `candidateIndex` in
- * `sentences(card.plain_english)`: exactly ONE sentence, the one
- * immediately following the question in document order. `null` when the
- * question is the last sentence in the card (no following sentence exists).
- *
- * Deliberately a single sentence, not a span: the format's own beat is "the
- * card's own NEXT sentence appears as the author's answer" — a single held
- * reveal the viewer checks their prediction against. Extending this to a
- * multi-sentence answer span was considered and rejected for T04: it would
- * dilute that one-beat reveal and there's no principled stopping rule (2
- * sentences? 3?) without LLM judgement, which is out of scope here. If a
- * future task needs multi-sentence answers, this is the place to extend it.
- */
-export function questionCandidateAnswer(card: Card, candidateIndex: number): string | null {
-  const sents = sentences(card.plain_english);
-  return sents[candidateIndex + 1] ?? null;
-}
-
-/**
- * Leading words/phrases that make a question read as mid-conversation
- * rather than a self-contained opening — a continuation of an argument
- * ("Because...", "Then...") or a framing device signalling the question is
- * itself a quoted or imagined interjection ("What about...?", "You ask...").
- * Matched case-insensitively at the start of the trimmed question.
- */
-export const QUESTION_OPENING_REJECTS = ["Because", "Then", "What about", "You ask"] as const;
-
-const QUESTION_OPENER_RE = new RegExp(
-  `^(${QUESTION_OPENING_REJECTS.map((phrase) => phrase.replace(/ /g, "\\s+")).join("|")})\\b`,
-  "i",
-);
-
-/** True when `question` opens with one of `QUESTION_OPENING_REJECTS`. */
-export function hasMidThoughtOpener(question: string): boolean {
-  return QUESTION_OPENER_RE.test(question.trim());
-}
-
-/**
- * True when `question` doesn't start with a capital letter. A blunt but
- * effective signal that the "sentence" is actually a stray fragment grabbed
- * mid-thought (e.g. by `sentences()`'s quote-aware splitting keeping a
- * quoted run together and spilling a lowercase tail into the next chunk),
- * not a genuine, independently openable question.
- */
-export function isFragmentQuestion(question: string): boolean {
-  const trimmed = question.trim();
-  if (!trimmed) return true;
-  return !/^[A-Z]/.test(trimmed);
-}
-
-/**
- * Second-person(-ish) words whose presence exempts a question from
- * `hasThirdPartyReference` — the format's mechanic is FORCED
- * SELF-PREDICTION, a question the viewer answers about their OWN life, so a
- * question that's clearly addressed to the viewer (or includes them, "we"/
- * "our"/"us") is fine even if it happens to name someone ("What would you
- * say to Epictetus?").
- */
-const SECOND_PERSON_WORDS = new Set(["you", "your", "yours", "yourself", "we", "our", "us"]);
-
-/** True when `question` contains a second-person(-ish) word anywhere. */
-export function isSecondPersonQuestion(question: string): boolean {
-  const words = question.trim().replace(/[—–]/g, " ").split(/\s+/);
-  return words.some((w) => SECOND_PERSON_WORDS.has(stripPunctuation(w).toLowerCase()));
-}
-
-/**
- * Named subjects excluded from third-party-reference evidence even though
- * they're capitalized, non-sentence-initial nouns: "I" is already excluded
- * structurally (`looksLikeNoun` rejects anything under 3 characters, and
- * `NOT_A_NOUN` lists it lowercase), but "God" is a common Stoic/theological
- * term in this corpus, not a third party the question is ABOUT the way
- * "Priam" or "Medea" are.
- */
-const THIRD_PARTY_NAME_EXCLUDES = new Set(["god"]);
-
-/**
- * True when `question` is asked ABOUT a named third party or literary work
- * ("What did Priam do in the Iliad?", "How does Medea put it?") rather than
- * posed TO the viewer about their own life — a failure of the format's core
- * mechanic (forced self-prediction), not just a well-formedness defect.
- * Second-person questions that merely MENTION a name ("What would you say
- * to Epictetus?") are not rejected — `isSecondPersonQuestion` exempts them
- * first. Otherwise, any capitalized, non-sentence-initial proper noun
- * (reusing T02's `looksLikeProperNoun`, excluding "God") is third-party
- * evidence.
- */
-export function hasThirdPartyReference(question: string): boolean {
-  if (isSecondPersonQuestion(question)) return false;
-
-  const words = question.trim().replace(/[—–]/g, " ").split(/\s+/);
-  for (let i = 0; i < words.length; i++) {
-    if (i === 0) continue; // sentence-initial capitalization isn't proper-noun evidence
-    if (!looksLikeProperNoun(words[i])) continue;
-    if (THIRD_PARTY_NAME_EXCLUDES.has(stripPunctuation(words[i]).toLowerCase())) continue;
-    return true;
-  }
-  return false;
-}
-
-/**
- * A `'` preceded by start-of-string/whitespace and immediately followed by
- * a non-whitespace character — the shape of an opening quote mark
- * ("'I know..."), not a contraction (always letter-'-letter, e.g. "I'm")
- * or a possessive/closing apostrophe (always non-whitespace-'-non-letter,
- * e.g. "Epictetus' body").
- */
-const SINGLE_QUOTE_OPEN_RE = /(?<=^|\s)'(?=\S)/g;
-
-/**
- * A `'` preceded by a non-whitespace character and followed by
- * whitespace/punctuation/end-of-string — the shape of a closing quote mark
- * OR a possessive apostrophe ("Epictetus' body"). Deliberately can't tell
- * those two apart (no way to, without a matching open elsewhere) — used
- * only to count how many "closes" are available to pair against opens, so
- * treating a possessive as a close is the conservative direction (it can
- * only make an unbalanced count look balanced, never the reverse).
- * Excludes contractions: the lookahead requires a NON-letter next
- * character, so "I'm"/"don't" (letter immediately after `'`) never match.
- */
-const SINGLE_QUOTE_CLOSE_RE = /(?<=\S)'(?=[\s,.!?;:")\]]|$)/g;
-
-/**
- * True when `text` has more opening-shaped `'` marks than closing-shaped
- * ones — an orphan opening quote that's never closed within the text
- * ("'I know the evil I'm about to do..." — the trailing closing `'` was
- * split into the NEXT sentence by `sentences()`, which is quote-aware only
- * for `"`, not `'`; see `discourses-17-003`). Deliberately count-based, not
- * a strict pairing walk — mirrors T02's `hasBalancedQuotes` treatment of
- * `"`, which is also just an even/odd count.
- */
-export function hasUnbalancedSingleQuote(text: string): boolean {
-  const opens = (text.match(SINGLE_QUOTE_OPEN_RE) ?? []).length;
-  const closes = (text.match(SINGLE_QUOTE_CLOSE_RE) ?? []).length;
-  return opens > closes;
-}
-
-/**
- * True when `text` is not quote-well-formed: an odd count of `"` characters
- * (same even/odd check T02's `hasBalancedQuotes` applies to landing lines),
- * or an orphan opening `'` (`hasUnbalancedSingleQuote`). Applied to BOTH the
- * question and the candidate answer — a broken mid-quote fragment can't
- * stand alone on screen in either slot.
- */
-export function hasUnbalancedQuotes(text: string): boolean {
-  if ((text.match(/"/g) ?? []).length % 2 !== 0) return true;
-  return hasUnbalancedSingleQuote(text);
-}
-
-/**
- * Layer (a) — deterministic. Rejects a question whose antecedent isn't
- * inside the question itself (reusing T02's whole-span
- * `hasUnresolvedReference`, applied to the question span exactly as
- * instructed — the same "no preceding context" problem the Wall's landing
- * line has), plus mid-thought openers, bare fragments, third-party/literary
- * references, and unbalanced quote characters.
- */
-export function passesLayerA(question: string): boolean {
-  if (hasUnresolvedReference(question)) return false;
-  if (hasMidThoughtOpener(question)) return false;
-  if (isFragmentQuestion(question)) return false;
-  if (hasThirdPartyReference(question)) return false;
-  if (hasUnbalancedQuotes(question)) return false;
-  return true;
-}
-
-/**
- * True when `answer` itself ends in `?` — the Socratic chain continuing
- * (another question) rather than resolving into a stated answer.
- */
-export function isSocraticChainAnswer(answer: string): boolean {
-  return answer.trim().endsWith("?");
-}
-
-/**
- * Cataphoric "pivot" phrases — an answer that PROMISES an explanation
- * instead of GIVING one ("Think of it this way.", "Here's how it works.").
- * These pass the mechanical/layer-(a) checks cleanly (they're declarative,
- * not a question), but they resolve nothing: the viewer checks their
- * silent prediction against an empty frame, not a real answer
- * (`meditations-04-022`, `discourses-21-004`).
- */
-export const PIVOT_ANSWER_PHRASES = [
-  "Think of it this way",
-  "Here's how it works",
-  "Here's the thing",
-  "Let me explain",
-  "Consider this",
-  "It works like this",
-  "Look at it this way",
-  "Here's what I mean",
-] as const;
-
-const PIVOT_ANSWER_RE = new RegExp(
-  `^(${PIVOT_ANSWER_PHRASES.map((phrase) => phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})[.!?]*$`,
-  "i",
-);
-
-/**
- * True when `answer`, once trimmed, IS (not merely contains) one of
- * `PIVOT_ANSWER_PHRASES`, allowing trailing punctuation — matched against
- * the WHOLE answer sentence so a longer answer that merely contains one of
- * these phrases mid-sentence ("Consider this carefully before you decide.")
- * is not rejected.
- */
-export function isPivotAnswer(answer: string): boolean {
-  return PIVOT_ANSWER_RE.test(answer.trim());
-}
-
-/**
- * Layer (b) — deterministic. Rejects a candidate answer that continues the
- * Socratic chain instead of resolving it (`isSocraticChainAnswer`), leaks
- * attribution to another speaker (`hasAttributionLeak`, shared with the
- * mechanical gate's author's-own-voice check), is a cataphoric pivot phrase
- * that promises an explanation instead of giving one (`isPivotAnswer`), or
- * is not quote-well-formed (`hasUnbalancedQuotes`).
- */
-export function passesLayerB(answer: string): boolean {
-  if (isSocraticChainAnswer(answer)) return false;
-  if (hasAttributionLeak(answer)) return false;
-  if (isPivotAnswer(answer)) return false;
-  if (hasUnbalancedQuotes(answer)) return false;
-  return true;
-}
-
 export interface QuestionEntry {
   card_id: string;
   book_slug: string;
   author_slug: Card["author_slug"];
   question: string;
   answer: string;
-  /**
-   * Not populated by `questionGate` (which returns survivors only) — present
-   * so a future full-audit variant, or T07/T08's own rejection logging, can
-   * reuse this same shape for rejected candidates too.
-   */
   rejected_by?: string;
-}
-
-/**
- * The Question's full deterministic gate: mechanical gate + layer (a) +
- * layer (b). Returns only survivors — cards with a self-contained question
- * in the author's own voice, and a next sentence that actually answers it
- * rather than dangling a reference, opening mid-thought, or continuing the
- * question.
- *
- * Measured over the full corpus: mechanical gate 313 -> after layer (a) 162
- * -> after layer (b) **100**. This 100-card pool (pre layer (c)) is what
- * `buildQuestionDriftRequests` below hands to the LLM topic-drift check.
- */
-export function questionGate(cards: Card[]): QuestionEntry[] {
-  const entries: QuestionEntry[] = [];
-
-  for (const card of cards) {
-    const candidate = findQuestionCandidate(card);
-    if (!candidate) continue;
-    if (!passesLayerA(candidate.question)) continue;
-
-    const answer = questionCandidateAnswer(card, candidate.index);
-    if (!answer) continue;
-    if (!passesLayerB(answer)) continue;
-
-    entries.push({
-      card_id: card.id,
-      book_slug: card.book_slug,
-      author_slug: card.author_slug,
-      question: candidate.question,
-      answer,
-    });
-  }
-
-  return entries;
-}
-
-// ---------------------------------------------------------------------------
-// T04 layer (c) — STUB ONLY. Topic drift (5 of 14 observed answer-side
-// failures): the next sentence is chronologically next but not logically an
-// answer to the question. That distinction needs LLM judgement — no regex
-// separates "answers the question" from "merely follows it" — so this task
-// (T04) defines ONLY the request-shaped data structure T07 (rubric/prompt)
-// and T08 (batch submit/poll/stream/merge, reusing the Batch helpers in
-// scripts/lib/claude.ts: createMessageBatch, pollBatchUntilDone,
-// streamBatchResults, safeCustomId — same pattern as the translate phase)
-// will build on. NO API calls and NO network code belong here.
-// ---------------------------------------------------------------------------
-
-export interface QuestionDriftRequest {
-  /** Built by T08 via `safeCustomId(card_id)`, matching the translate phase's pattern. */
-  card_id: string;
-  question: string;
-  answer: string;
-}
-
-/**
- * Shape layer (a)+(b) survivors into the plain request objects layer (c)
- * will submit as an Anthropic Batch. Pure data transformation — no SDK
- * calls, no prompt/system text (that's T07's rubric). T08 turns these into
- * real batch requests and merges the results back onto `QuestionEntry`.
- */
-export function buildQuestionDriftRequests(entries: QuestionEntry[]): QuestionDriftRequest[] {
-  return entries.map((entry) => ({
-    card_id: entry.card_id,
-    question: entry.question,
-    answer: entry.answer,
-  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -1549,8 +1137,9 @@ export function buildQuestionDriftRequests(entries: QuestionEntry[]): QuestionDr
 // diatribe transcript that natively matches the question/answer format. That
 // skew CANNOT be fixed inside The Question's own pool without discarding
 // otherwise-good material, and T05 is explicitly scoped not to try. Instead,
-// The Wall — whose ranked pool (1,003 entries; see `rankWall`) is more than
-// ten times the size of The Question's — absorbs the correction: it is
+// The Wall — whose ranked pool (168 entries as of V02's <=5-payoff-screen
+// cap, social pilot 02a; see `rankWall`/`wallGate`) is still nearly twice
+// the size of The Question's — absorbs the correction: it is
 // weighted AWAY from Epictetus and TOWARD Marcus Aurelius and Seneca so that
 // once a week's Question and Wall posts are combined, the OVERALL author mix
 // lands closer to even than The Question's pool ever could on its own.
@@ -1873,158 +1462,13 @@ export function selectWallBalanced<T extends { author_slug: AuthorSlug }>(
   return selected;
 }
 
-// ---------------------------------------------------------------------------
-// T07a: The Objection's mechanical gate. Format: ONE short quoted line
-// appears alone on screen — a claim the VIEWER instinctively wants to argue
-// with, staged as an objection the author anticipates — followed by the
-// author's own answer. This is a DIFFERENT structure inside the card than
-// the original-vs-plain contrast every other format runs on: it runs on a
-// second, internal structure — a quoted objection and its reply, both
-// entirely within `plain_english`.
-//
-// T01 already built the loose precursor for this format (`quotedSpeech`,
-// MechanicalGates.quotedSpeech — "plain_english contains >= 2 double
-// quotes", measured 308). This section builds the ACTUAL mechanical gate the
-// plan's format table specifies: a quoted span that starts with "But" or a
-// question word, is at most 14 words, and contains no proper noun. Judging
-// whether a surviving span reads as a position the VIEWER might hold (vs. a
-// line from a dramatised scene, or a doctrinal dispute) needs an LLM — see
-// `buildObjectionRubricSystem`/`buildObjectionRubricUser` in
-// ./premises-scoring.ts (T07) — so this gate's only job is narrowing the
-// full corpus down to a raw candidate pool cheaply, with no API calls.
-// ---------------------------------------------------------------------------
-
 /**
- * Words a quoted span must START with to read as an objection rather than a
- * plain statement: "But" (the classic anticipated-objection opener) plus a
- * set of question-word openers, including the interrogative-negative
- * contractions the plan calls out by example ("isn't"/"aren't"/"don't"/
- * "can't"/"shouldn't") and a few natural extensions of that same shape
- * ("wouldn't"/"won't"/"doesn't"/"didn't"/"couldn't"/"wasn't"/"weren't") —
- * all rhetorical-question openers of the same "isn't it true that..." kind
- * the plan's own list illustrates, not an exhaustive dictionary of every
- * possible question word. Matched case-insensitively at the START of the
- * (trimmed) span only — "starting with," not "containing."
+ * Pf39c2-social-pilot-02a D01: The Objection format (its mechanical gate,
+ * `objectionGate` itself, and every OBJECTION_* opener/word-count helper)
+ * was deleted outright — the channel is one Wall a day, drawn from the Wall
+ * pool, nothing else. This shape survives for the same reason `QuestionEntry`
+ * does — see that interface's own doc comment.
  */
-export const OBJECTION_OPENERS = [
-  "But",
-  "What",
-  "Why",
-  "How",
-  "Who",
-  "When",
-  "Where",
-  "Which",
-  "Whose",
-  "Whom",
-  "Isn't",
-  "Aren't",
-  "Don't",
-  "Can't",
-  "Shouldn't",
-  "Wouldn't",
-  "Won't",
-  "Doesn't",
-  "Didn't",
-  "Couldn't",
-  "Wasn't",
-  "Weren't",
-] as const;
-
-const OBJECTION_OPENER_RE = new RegExp(`^(${OBJECTION_OPENERS.join("|")})\\b`, "i");
-
-/** Word-count ceiling for a candidate objection span, per the plan's format table. */
-export const OBJECTION_GATE_MAX_WORDS = 14;
-
-/**
- * Word-count floor for a candidate objection span. Below this, a quoted
- * span is a fragment or a bare interjection, not "a position the viewer
- * might hold" — the format's own requirement, from the plan, for what an
- * objection has to be. An objection is a proposition; a proposition needs a
- * subject and something said about it, which a 1-3 word span essentially
- * never has room for.
- *
- * Chosen by inspecting every raw-pool span at 1-6 words against the real
- * corpus (`content/output`) before picking a number, per the same
- * measure-first policy the rest of this file follows:
- *  - 1 word: `"But,"` (x4 across happy-life/on-anger/peace-of-mind),
- *    `"Why?"`, `"What?"`, `"How,"` — every one of these is a bare
- *    conjunction or interrogative with no proposition attached. Nothing to
- *    argue with.
- *  - 2 words: `"Don't eat,"`, `"How miserable."`, `"But wait,"`,
- *    `"What then?"` — still fragments; none states a position.
- *  - 3 words: `"Don't you care?"` (discourses-12-003) — the one 3-word
- *    span in the pool, and it's borderline-real ("don't you care [about
- *    this]?" gestures at a position), but it's an ELLIPTICAL rhetorical
- *    jab, not a stated claim, and at 3 words it's indistinguishable in
- *    shape from the 1-2 word fragments above without also reading the rest
- *    of the sentence — exactly the judgement call this mechanical gate is
- *    not supposed to make.
- *  - 4 words: the first point where genuine, self-contained positions show
- *    up reliably — `"But it's not fair,"` (discourses-64-004), `"But
- *    you'll be godless."` (discourses-16-004), `"What about my
- *    property?"` (discourses-01-004), `"Who are you threatening?"`
- *    (discourses-18-002), `"Shouldn't he be punished?"` (on-anger-03-079),
- *    `"Why are you upset?"` (peace-of-mind-14-004) — each one is a
- *    complete claim or challenge a viewer could actually hold and argue
- *    with. 4 words is also where the plan's own worked example,
- *    `"But it's not fair,"`, lands, which is the clearest signal this is
- *    the right floor rather than an arbitrary round number.
- *
- * 4 is therefore the floor: it rejects every 1-3 word fragment measured in
- * the corpus while admitting every 4-word span that reads as a real
- * position (the exclamation-shaped ones among those, e.g. `"What a
- * beautiful sight!"`, are still caught separately by
- * `isExclamationShaped` — see `objectionGate`).
- */
-export const OBJECTION_GATE_MIN_WORDS = 4;
-
-/** True when `text` (a candidate quoted span, already stripped of its surrounding `"` marks) starts with an `OBJECTION_OPENERS` word. */
-export function startsWithObjectionOpener(text: string): boolean {
-  return OBJECTION_OPENER_RE.test(text.trim());
-}
-
-/**
- * True when `text` is empty, or entirely punctuation/whitespace, once its
- * leading `OBJECTION_OPENERS` word is stripped off — i.e. the opener is
- * ALL the span has. `"But,"` is the real-corpus case this catches: it
- * starts with a valid opener and (before this rule existed) nothing else
- * disqualified it, but "But" plus a bare comma is not a position, it's a
- * dangling conjunction. In this corpus every such span is also short
- * enough to be caught by `OBJECTION_GATE_MIN_WORDS` already (a bare
- * opener-plus-punctuation is at most 1-2 words), but this check is kept
- * independent of word count so it also catches a hypothetical span like
- * `"But, --- ,"` that could pad its way past a pure word-count floor
- * without ever stating a claim.
- */
-export function isOpenerOnly(text: string): boolean {
-  const trimmed = text.trim();
-  const match = OBJECTION_OPENER_RE.exec(trimmed);
-  const rest = match ? trimmed.slice(match[0].length) : trimmed;
-  return rest.replace(/[^a-zA-Z0-9]/g, "").length === 0;
-}
-
-/**
- * True when `text` contains a capitalized word, anywhere EXCEPT the leading
- * (sentence-initial) position, that reads as a proper noun — reusing T02's
- * `looksLikeProperNoun` exactly as instructed ("reuse where it helps; do
- * not rewrite"). `looksLikeProperNoun` already excludes bare "I" (its
- * length check requires >= 2 characters after stripping punctuation), so
- * this single reused predicate covers both parts of the spec's proper-noun
- * rule at once: "a capitalized word that is not sentence-initial and is not
- * 'I'." A proper noun makes the line about a SPECIFIC person in a scene
- * rather than a position any viewer could hold as their own — exactly the
- * dramatised-scene failure mode The Objection's LLM rubric (T07) exists to
- * catch qualitatively for everything this mechanical check can't.
- */
-export function hasObjectionProperNoun(text: string): boolean {
-  const words = text.trim().replace(/[—–]/g, " ").split(/\s+/);
-  return words.some((word, index) => index > 0 && looksLikeProperNoun(word));
-}
-
-/** Every `"..."` quoted span within `sentence`, in order, as `[fullMatchEndIndex, content]` pairs. */
-const QUOTE_SPAN_RE = /"([^"]+)"/g;
-
 export interface ObjectionEntry {
   card_id: string;
   book_slug: string;
@@ -2065,126 +1509,3 @@ export interface ObjectionEntry {
   reply_start: number;
 }
 
-/**
- * The Objection's mechanical gate — no LLM calls.
- *
- * For each card, walks `sentences(card.plain_english)` (T02's quote-aware
- * splitter, reused rather than rewritten) and extracts every `"..."`
- * quoted span within each sentence. A span survives when its full content
- * (trimmed of the surrounding quote marks):
- *  - starts with an `OBJECTION_OPENERS` word (`startsWithObjectionOpener`);
- *  - is between `OBJECTION_GATE_MIN_WORDS` (4) and `OBJECTION_GATE_MAX_WORDS`
- *    (14) words, inclusive;
- *  - is not just its opener plus punctuation (`isOpenerOnly`) — a floor
- *    check independent of word count, see that function's doc comment;
- *  - contains no proper noun beyond the sentence-initial word
- *    (`hasObjectionProperNoun`);
- *  - is not exclamation-shaped (`isExclamationShaped`, reused from T04) —
- *    an exclamation ("What a beautiful sight!") is not a claim anyone
- *    argues with, it's an interjection.
- *
- * The word-floor, opener-only, and exclamation-shape checks together exist
- * because the format's requirement is that the objection be "a position
- * the viewer might hold" — a proposition. A bare conjunction (`"But,"`), a
- * bare interrogative (`"Why?"`), a two-word non-statement (`"How
- * miserable."`), or an exclamation (`"What a beautiful sight!"`) are none
- * of them propositions; nothing can be argued with any of them, so none of
- * them belong even in the LLM rubric's candidate pool. See
- * `OBJECTION_GATE_MIN_WORDS` for the corpus inspection behind the chosen
- * floor.
- *
- * Deliberately checks the SPAN'S FULL CONTENT against these three rules,
- * not each of the span's own internal sentences separately (a multi-
- * sentence quote like `"It's not fair. But I said nothing."` is judged as
- * one candidate and rejected here, since the whole span does not itself
- * start with an opener) — measured against the real corpus, judging by
- * internal sentence instead very nearly doubles the raw pool (148 vs. 78)
- * by counting throwaway mid-quote continuation sentences that only
- * incidentally start with a question word, not genuine anticipated
- * objections. Iterating sentence-by-sentence via `sentences()` rather than
- * regexing `card.plain_english` directly makes no difference to which
- * spans are found in this corpus — a well-formed quote pair can never
- * straddle a sentence boundary `sentences()` would introduce, by the same
- * invariant `sentences()` itself relies on for its own quote-tracking — but
- * it gets T02's defensive handling of malformed/unbalanced quote
- * characters for free, and it's what makes `reply` (below) simple to
- * assemble without re-deriving character offsets into the raw text.
- *
- * `reply` is the text following the quoted span: whatever remains of the
- * SAME sentence after the span's closing quote mark, followed by every
- * sentence after it in the card, joined with a single space. This is a
- * deliberate simplification, in the same spirit as T04's single-sentence
- * "candidate answer" — the format's own beat is "the quoted objection, then
- * the author's answer," and taking everything that follows (rather than
- * guessing how many sentences the "real" answer needs) is the simplest
- * definition that never truncates a genuine reply. T07's rubric
- * (`buildObjectionRubricUser`) doesn't consume this field directly — it
- * passes the whole card's `plain_english` as judging context instead — so
- * `reply` exists here for T08/rendering to use once a candidate is
- * accepted, not for the rubric call itself.
- *
- * Measured over the full corpus (`content/output`): **78** raw candidates —
- * epictetus 32, seneca 43, marcus-aurelius 3. This differs from the ad hoc
- * 61 (23/35/3) an earlier scan reported while drafting T07's prompt: that
- * scan was exploratory, not a formalized implementation of the plan's exact
- * definition, and the plan's own stated estimate (~50, splitting 24/24/2)
- * doesn't reproduce under this or any other definition tried either. 78 is
- * what this implementation of the stated spec measures — not contorted to
- * hit 50 or 61 — and it lands in the same neighbourhood as both prior
- * estimates (author mix dominated by epictetus/seneca, marcus-aurelius a
- * small minority), which is the check that matters: this pool still feeds
- * T07's LLM rubric, which is expected to cut it down to the plan's target
- * ~15-25 survivors.
- */
-export function objectionGate(cards: Card[]): ObjectionEntry[] {
-  const entries: ObjectionEntry[] = [];
-
-  for (const card of cards) {
-    const sents = sentences(card.plain_english);
-    // Running cursor into `card.plain_english` (the RAW, untrimmed string —
-    // `reply_start` must be an offset into this exact string, not into
-    // `sentences()`'s internally-trimmed working copy). `sentences()` only
-    // ever trims whitespace at each chunk's boundary and never reorders or
-    // rewrites characters, so each `sentence` appears verbatim, in order, in
-    // `card.plain_english`; searching for it starting from `cursor` (rather
-    // than from 0 every time) finds THIS sentence's own true position even
-    // when the exact same sentence text recurs later in the card, because
-    // the true next occurrence can only be separated from `cursor` by
-    // whitespace (never by another copy of the same text) — see M8 in the
-    // PR #39 second review round.
-    let cursor = 0;
-
-    for (let i = 0; i < sents.length; i++) {
-      const sentence = sents[i];
-      const sentenceStart = card.plain_english.indexOf(sentence, cursor);
-      cursor = sentenceStart + sentence.length;
-
-      for (const match of sentence.matchAll(QUOTE_SPAN_RE)) {
-        const content = match[1].trim();
-        if (!startsWithObjectionOpener(content)) continue;
-        const wc = wordCount(content);
-        if (wc > OBJECTION_GATE_MAX_WORDS) continue;
-        if (wc < OBJECTION_GATE_MIN_WORDS) continue;
-        if (isOpenerOnly(content)) continue;
-        if (hasObjectionProperNoun(content)) continue;
-        if (isExclamationShaped(content)) continue;
-
-        const matchEnd = (match.index ?? 0) + match[0].length;
-        const restOfSentence = sentence.slice(matchEnd).trim();
-        const restOfCard = sents.slice(i + 1).join(" ").trim();
-        const reply = restOfSentence ? `${restOfSentence} ${restOfCard}`.trim() : restOfCard;
-
-        entries.push({
-          card_id: card.id,
-          book_slug: card.book_slug,
-          author_slug: card.author_slug,
-          objection: content,
-          reply,
-          reply_start: sentenceStart + matchEnd,
-        });
-      }
-    }
-  }
-
-  return entries;
-}

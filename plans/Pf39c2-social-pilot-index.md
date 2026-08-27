@@ -50,7 +50,7 @@ Three checkable rules:
 
 | # | Format | Cadence | Mechanic | Supply |
 |---|---|---|---|---|
-| 1 | **The Wall** | daily, video | induced incomprehension, then relief — a wall of archaic text that outruns you, then one still plain sentence in silence | 1,326 raw / **~600 strong**; 3 openings x 3 sub-types |
+| 1 | **The Wall** | daily, video | induced incomprehension, then relief — a wall of archaic text that outruns you, then one still plain sentence in silence | 1,326 raw / **~600 strong**; 3 sub-types (the opening rotation was retired outright — T17) |
 | 2 | **The Question** | daily, video | forced self-prediction — a second-person question compels an answer, then you check yours against his | **~120-130 validated** (292 gated x 42-44% measured survival) |
 | 3 | **The Objection** | weekly, video | the claim you want to argue with, pre-loaded | **15-25** |
 
@@ -70,13 +70,23 @@ Happy Life, whose objections are Epicurean doctrinal disputes. Do NOT widen into
 are lines spoken by characters in a scene, not positions a viewer holds. That distinction needs an LLM judgement at
 generation time; no regex catches it. Author spread of the raw 50: Epictetus 24, Seneca 24, Marcus 2.
 
-**Opening rotation for The Wall** (same pool, different first 2s — a daily format with an identical frame 0.0 gets
-filtered by the feed): (1) standard; (2) **190 -> 97** — the original's word count as a large numeral, counting
-down live as the racing highlight consumes the archaic text and landing on the plain version's word count, so the
-first frame carries a number instead of a wall; (3) **Grade 14** — the original's computed reading grade as a bare
-measurement, never a claim about difficulty, and only the original's number (the plain side is always 4-6).
-Both numeric openings need a card whose plain version is materially shorter — an eligibility flag on the Wall pool,
-not a pool of their own.
+**The opening rotation for The Wall was RETIRED (social pilot 02a T17), not replaced.** It originally answered a
+real pressure — "a daily format with an identical frame 0.0 gets filtered by the feed" — with a three-way rotation
+across the same pool: standard, plus two numeric openings (**190 -> 97**, the original's word count counting down
+to the plain version's; **Grade 14**, the original's reading grade as a bare measurement). Both numerals were cut
+outright, and no third numeral replaces them. `grade` first: a reading-grade number is not compelling to a
+consumer, and it was broken twice over — "Grade" rendered unreadably over the archaic text, and the numeral itself
+was unrepresentative (191 of 896 pool cards clear grade 20, max 65.7 — Flesch-Kincaid explodes on run-on sentences).
+Then `countdown`, for a worse reason than its looks: **"190 -> 97" sells compression, and Plain does not sell
+compression** — rule 4 below, never contradict the product. It is also unrepresentative of the corpus: the plain
+version is a median 0.86 of the original (a 14% trim) and 44 cards get LONGER in plain English; the >=30-word gate
+that fed `countdown` cherry-picks the 212 cards where compression happens to be dramatic (median 0.73), so each
+numeral was true of its own card while the aggregate impression was a claim the corpus does not support. Both were
+also the same 320px accent numeral pinned over the text with no backing plate — furniture, which is what the
+saturated niche looks like. Three textual axes replace the pressure the rotation existed to answer, without an
+overlay: (1) mid-chapter entry (T18) — the wall's own scroll starts mid-passage, not always frame 0.0 of the same
+card; (2) the running head (T11/T12, already landed) — a small, fixed, factual "Author · Book" label, occupying the
+exact region the old opening badge used to claim; (3) sub-type spacing (T19) in the scheduler.
 
 **Lower priority:** Search Answer (discovery-optimised, weak stopper, best on Shorts) · Uncomfortable Diagnosis
 (down-ranked; motion pushes it toward the "ancient philosopher predicted your phone" genre) · The Filter
@@ -93,8 +103,9 @@ varies is TEXTURE, and half the pool is weaker than the raw 1,326 suggests.
 | **The Scene** | 176 | >=2 quotation marks. An argument walked in on halfway. |
 | plain-looking | ~670 | No strong markers. **Reserve** — if the wall reads as ordinary prose the viewer just does not bother. |
 
-Variation comes from the opening (3), the sub-type (3) and the payoff length — **not** from varying the visual
-grammar. The chaos-to-calm asymmetry is the signature and the one thing no scraper account can copy.
+Variation comes from the sub-type (3), the mid-chapter entry point (T18) and the payoff length — **not** from
+varying the visual grammar, and not from an opening rotation (retired outright — T17). The chaos-to-calm asymmetry
+is the signature and the one thing no scraper account can copy.
 
 ## The supply inversion
 For the archaic half, comprehension was never the goal — **incomprehension is**. That reverses the old 12-word
@@ -173,12 +184,21 @@ full passage in context. One-time cost; revives Three Voices and lifts One-Line 
 ## Plans
 1. `plans/Pf39c2-social-pilot-01.md` — Content premises: gate and score the corpus into pools, generate a weekly schedule
    - Status: [x]
-2. `plans/Pf39c2-social-pilot-02.md` — Character system and rendering: three characters, per-format templates, encode
-   - Status: [ ]
+2. `plans/complete/Pf39c2-social-pilot-02.md` — Character system and rendering: three characters, per-format templates, encode
+   - Status: [x] (2026-08-27) — reconciled against 02a's deprecation work: T02/T19/F12/F04 marked obsolete (the
+     formats and the read-through they describe were deleted by 02a D01/D02) and F15 marked done (built as 02a
+     T08/T09). T14 (voices) is obsolete too: **narration was dropped by user decision on 2026-08-27** and the
+     subsystem deleted by N01, chiefly because narration-driven per-line timing would reverse 02a V17's constant
+     3.0s payoff holds. N02 then deleted the character/portrait system, dead since D01. The channel is
+     music-only by design.
    - Depends on: 01
+2a. `plans/complete/Pf39c2-social-pilot-02a.md` — The Wall refined: legible payoff, chapter-sourced scroll, framing layer
+   - Status: [x] (2026-08-27 — PR #41, squash-merged into `social-pilot-02`, not `main`: 02a was stacked on 02,
+     which is still open as PR #40. The work reaches `main` when 02 does.)
+   - Depends on: 02
 3. `plans/Pf39c2-social-pilot-03.md` — Publish and measure: R2, Instagram + YouTube adapters, TikTok staging, readout
    - Status: [ ]
-   - Depends on: 02
+   - Depends on: 02a
 
 ## Cross-cutting constraints
 - **No logo, URL or watermark inside any video frame** — TikTok's watermark rule warns this "may also lead to
@@ -186,8 +206,14 @@ full passage in context. One-time cost; revives Three Voices and lifts One-Line 
 - **`docs/BRANDING.md` motion rules do NOT apply to social** (confirmed 2026-08-23): "text never moves",
   ease-out-only and no-bounce govern the app. Kinetic typography, word-by-word reveals, punch-ins and cuts are
   available. What still holds is tonal: calm, direct, warm-not-soft, second person, never clickbait.
-- **One MP4 profile:** H.264 High L4.0, yuv420p, 1080x1920, 30fps, AAC-LC 48kHz, `+faststart`, 15-59s. Never 60fps
-  at L4.0 — 1080x1920@30 already uses 8,160 of 8,192 max macroblocks.
+- **One MP4 profile:** H.264 High L4.0, yuv420p, 1080x1920, 30fps, AAC-LC 48kHz, `+faststart`, **up to 59s**.
+  Never 60fps at L4.0 — 1080x1920@30 already uses 8,160 of 8,192 max macroblocks.
+  - The **15s minimum was removed on 2026-08-27** by user decision (`Pf39c2-social-pilot-02a` V17/V18). It had
+    no recorded rationale anywhere in this repo, and no platform requires one (Reels and TikTok accept ~3s;
+    Stories' 15s is a per-card MAXIMUM). It was forcing short cards to pad up to it, and the padding landed
+    entirely on the final motionless payoff frame — a 1-screen Wall held its landing line for 12.5s against
+    the 3.0s the format is tuned around. Post duration is now a pure function of payoff screen count
+    (5.5 / 8.5 / 11.5 / 14.5 / 17.5s for 1-5 screens). The 59s ceiling is unchanged and still enforced.
 - **Always include an audio track**, even on stills.
 - Instagram: JPEG only for feed, <=8MB; media must be at a public HTTPS URL. Tokens expire in 60 days and must be
   refreshed — the most likely silent failure.

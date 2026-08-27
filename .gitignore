@@ -57,3 +57,6 @@ __pycache__
 node_modules/
 
 .vercel
+
+# Social pilot render output
+social/out/

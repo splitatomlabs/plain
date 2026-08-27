@@ -12,42 +12,24 @@ import {
   type CallClaudeOptions,
 } from "./claude.js";
 import { recordParseFailure } from "./parse-failure-log.js";
-import {
-  rankWall,
-  questionGate,
-  objectionGate,
-  buildQuestionDriftRequests,
-  findLandingLines,
-  type RankedWallEntry,
-  type QuestionEntry,
-  type ObjectionEntry,
-} from "./premises.js";
-import {
-  buildWallRubricSystem,
-  buildWallRubricUser,
-  buildQuestionRubricSystem,
-  buildQuestionRubricUser,
-  buildObjectionRubricSystem,
-  buildObjectionRubricUser,
-  parseWallRubricResponse,
-  parseQuestionRubricResponse,
-  parseObjectionRubricResponse,
-  checkFaithfulness,
-  type WallRubricResult,
-  type QuestionRubricResult,
-  type ObjectionRubricResult,
-  type QuestionRubricVerdict,
-} from "./premises-scoring.js";
+import { rankWall, findLandingLines, type RankedWallEntry } from "./premises.js";
+import { buildWallRubricSystem, buildWallRubricUser, parseWallRubricResponse, checkFaithfulness, type WallRubricResult } from "./premises-scoring.js";
 import { logger } from "./logger.js";
 
 // ---------------------------------------------------------------------------
-// T08: Batch orchestration for the three premise-scoring rubrics
-// (Wall/Question/Objection). This module OWNS chunk -> submit -> poll ->
-// stream -> merge; it calls T07's prompt builders and parsers rather than
-// re-implementing prompting or parsing. Gates (`rankWall`/`questionGate`/
-// `objectionGate` in ./premises.ts) and rubric parsing/prompting
+// T08: Batch orchestration for the premise-scoring rubric. This module OWNS
+// chunk -> submit -> poll -> stream -> merge; it calls T07's prompt builders
+// and parsers rather than re-implementing prompting or parsing. The gate
+// (`rankWall` in ./premises.ts) and rubric parsing/prompting
 // (./premises-scoring.ts) stay in their own files, per the plan's own file
 // layout instruction.
+//
+// Pf39c2-social-pilot-02a D01: this module used to also orchestrate The
+// Question and The Objection's own rubrics (`questionGate`/`objectionGate`,
+// `buildQuestionRequests`/`buildObjectionRequests`,
+// `scoreQuestionSurvivors`/`scoreObjectionSurvivors`). Both formats were
+// deleted outright — the channel is one Wall a day, drawn from the Wall
+// pool, nothing else — so only the Wall path remains.
 //
 // Log destination: content/pipeline/social/premises.log, via the shared
 // `logger` singleton (see ./logger.ts — `init` now accepts an optional
@@ -107,8 +89,6 @@ export function chunkArray<T>(items: T[], size: number): T[][] {
 // LLM call on every card in the app.
 // ---------------------------------------------------------------------------
 const WALL_SURVIVOR_CEILING = 1_100;
-const QUESTION_SURVIVOR_CEILING = 150;
-const OBJECTION_SURVIVOR_CEILING = 100;
 
 function assertWithinSurvivorCeiling(count: number, ceiling: number, format: string): void {
   if (count > ceiling) {
@@ -189,41 +169,6 @@ export function buildWallRequests(
         system: buildWallRubricSystem(entry.author_slug),
         cache_system: true,
         messages: [{ role: "user", content: buildWallRubricUser(card) }],
-      },
-      meta: entry,
-    };
-  });
-}
-
-export function buildQuestionRequests(entries: QuestionEntry[]): BuiltRequest<QuestionEntry>[] {
-  const ordered = sortByAuthor(entries);
-  const driftRequests = buildQuestionDriftRequests(ordered);
-  return ordered.map((entry, index) => ({
-    request: {
-      custom_id: safeCustomId("question", entry.card_id, index),
-      system: buildQuestionRubricSystem(entry.author_slug),
-      cache_system: true,
-      messages: [{ role: "user", content: buildQuestionRubricUser(driftRequests[index]) }],
-    },
-    meta: entry,
-  }));
-}
-
-export function buildObjectionRequests(
-  entries: ObjectionEntry[],
-  cardsById: Map<string, Card>,
-): BuiltRequest<ObjectionEntry>[] {
-  return sortByAuthor(entries).map((entry, index) => {
-    const card = cardsById.get(entry.card_id);
-    if (!card) {
-      throw new Error(`buildObjectionRequests: no source card found for ${entry.card_id}`);
-    }
-    return {
-      request: {
-        custom_id: safeCustomId("objection", entry.card_id, index),
-        system: buildObjectionRubricSystem(entry.author_slug),
-        cache_system: true,
-        messages: [{ role: "user", content: buildObjectionRubricUser(entry.objection, card) }],
       },
       meta: entry,
     };
@@ -437,18 +382,6 @@ async function submitAndCollect<TMeta, TParsed>(
 // ---------------------------------------------------------------------------
 
 export type ScoredWallEntry = RankedWallEntry & { rubric: WallRubricResult };
-export type ScoredQuestionEntry = QuestionEntry & {
-  drift_verdict: QuestionRubricVerdict;
-  drift_reason: string;
-  // T22: the stopping-power dimension, independent of drift_verdict above —
-  // see ./premises-scoring.ts's `QuestionRubricResult`/`passesStoppingPower`
-  // doc comments for why these three stay their own fields rather than
-  // folding into drift_verdict or into one another.
-  standalone_intelligible: boolean;
-  answer_has_substance: boolean;
-  modern_premise: boolean;
-};
-export type ScoredObjectionEntry = ObjectionEntry & { rubric: ObjectionRubricResult };
 
 /**
  * Score The Wall's gate survivors (`rankWall` output). Two independent
@@ -491,67 +424,6 @@ export async function scoreWallSurvivors(
   return scored;
 }
 
-/**
- * Score The Question's gate survivors (`questionGate` output) for topic
- * drift (T04 layer (c)). `cards` is required (not just `entries`) so every
- * survivor's on-screen `question` and `answer` — both mechanically extracted
- * from `plain_english` by `questionGate`, not authored by the LLM rubric,
- * but audited here anyway per T09's own instruction to check every on-screen
- * field before admission — can be faithfulness-checked against their source
- * card before being admitted to the scored pool.
- */
-export async function scoreQuestionSurvivors(
-  entries: QuestionEntry[],
-  cards: Card[],
-): Promise<ScoredQuestionEntry[]> {
-  assertWithinSurvivorCeiling(entries.length, QUESTION_SURVIVOR_CEILING, "Question");
-  const cardsById = new Map(cards.map((c) => [c.id, c]));
-  const built = buildQuestionRequests(entries);
-  const results = await submitAndCollect(built, "question", parseQuestionRubricResponse);
-
-  const scored: ScoredQuestionEntry[] = [];
-  for (const { meta, parsed } of results) {
-    const card = cardsById.get(meta.card_id);
-    if (!card) continue; // no source card supplied for this survivor — can't verify faithfulness, so don't admit it
-
-    if (!assertFaithful("question", meta.card_id, "question", meta.question, card)) continue;
-    if (!assertFaithful("question", meta.card_id, "answer", meta.answer, card)) continue;
-
-    scored.push({
-      ...meta,
-      drift_verdict: parsed.verdict,
-      drift_reason: parsed.reason,
-      standalone_intelligible: parsed.standalone_intelligible,
-      answer_has_substance: parsed.answer_has_substance,
-      modern_premise: parsed.modern_premise,
-    });
-  }
-  return scored;
-}
-
-/** Score The Objection's gate survivors (`objectionGate` output). */
-export async function scoreObjectionSurvivors(
-  entries: ObjectionEntry[],
-  cards: Card[],
-): Promise<ScoredObjectionEntry[]> {
-  assertWithinSurvivorCeiling(entries.length, OBJECTION_SURVIVOR_CEILING, "Objection");
-  const cardsById = new Map(cards.map((c) => [c.id, c]));
-  const built = buildObjectionRequests(entries, cardsById);
-  const results = await submitAndCollect(built, "objection", parseObjectionRubricResponse);
-
-  const scored: ScoredObjectionEntry[] = [];
-  for (const { meta, parsed } of results) {
-    const card = cardsById.get(meta.card_id);
-    if (!card) continue; // unreachable — buildObjectionRequests already required this card to exist
-
-    if (!assertFaithful("objection", meta.card_id, "objection", meta.objection, card)) continue;
-    if (!assertFaithful("objection", meta.card_id, "reply", meta.reply, card)) continue;
-
-    scored.push({ ...meta, rubric: parsed });
-  }
-  return scored;
-}
-
 // ---------------------------------------------------------------------------
 // Dry run. Builds every request for every format exactly as the real
 // orchestration would, but stops before `submitAndCollect` — so it never
@@ -564,7 +436,7 @@ export async function scoreObjectionSurvivors(
 // ---------------------------------------------------------------------------
 
 export interface DryRunFormatReport {
-  format: "wall" | "question" | "objection";
+  format: "wall";
   survivorCount: number;
   requestCount: number;
   estimatedTokens: number;
@@ -592,12 +464,7 @@ export function buildDryRunReport(cards: Card[]): DryRunReport {
   const cardsById = new Map(cards.map((c) => [c.id, c]));
 
   const wallEntries = rankWall(cards);
-  const questionEntries = questionGate(cards);
-  const objectionEntries = objectionGate(cards);
-
   const wallBuilt = buildWallRequests(wallEntries, cardsById);
-  const questionBuilt = buildQuestionRequests(questionEntries);
-  const objectionBuilt = buildObjectionRequests(objectionEntries, cardsById);
 
   const formats: DryRunFormatReport[] = [
     {
@@ -605,18 +472,6 @@ export function buildDryRunReport(cards: Card[]): DryRunReport {
       survivorCount: wallEntries.length,
       requestCount: wallBuilt.length,
       estimatedTokens: estimateTokensForRequests(wallBuilt),
-    },
-    {
-      format: "question",
-      survivorCount: questionEntries.length,
-      requestCount: questionBuilt.length,
-      estimatedTokens: estimateTokensForRequests(questionBuilt),
-    },
-    {
-      format: "objection",
-      survivorCount: objectionEntries.length,
-      requestCount: objectionBuilt.length,
-      estimatedTokens: estimateTokensForRequests(objectionBuilt),
     },
   ];
 

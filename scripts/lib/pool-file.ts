@@ -4,12 +4,12 @@
  *
  * THE BUG THIS FIXES: the T11 smoke run hit retired model IDs, all 30
  * requests errored, and `score-premises.ts` nonetheless wrote `[]` to every
- * pool file. `loadFormatPools` (./schedule.ts) falls back to the mechanical
+ * pool file. `loadWallPool` (./schedule.ts) falls back to the mechanical
  * gates only when a pool file is ABSENT — a present-but-empty file was
  * treated as a real, empty pool, and the next `generate-schedule` run died
  * with "pools exhausted". This module is the single place that decides
  * whether a scoring run's results are safe to write, so both
- * `score-premises.ts` (the writer) and `schedule.ts`'s `loadFormatPools`
+ * `score-premises.ts` (the writer) and `schedule.ts`'s `loadWallPool`
  * (the reader) share one definition of what "the pool file is usable" means.
  *
  * Two on-disk shapes are supported, forever:
@@ -23,7 +23,7 @@
  *    the file on disk.
  *
  * `parsePoolFile` is the single reader both `schedule.ts`'s
- * `loadFormatPools` and `writePoolFile`'s own `--limit` overwrite guard use,
+ * `loadWallPool` and `writePoolFile`'s own `--limit` overwrite guard use,
  * so the two shapes are recognized identically everywhere a pool file is
  * read. `writePoolFile` is the single writer `score-premises.ts` calls for
  * every format (including the gate-only Still pool) — it owns the fs I/O,
