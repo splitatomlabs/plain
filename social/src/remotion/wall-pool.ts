@@ -36,9 +36,28 @@ export interface WallPoolEntry {
 export interface OutputCard {
 	id: string;
 	book_slug: string;
+	/**
+	 * Added social pilot 02a T05, for `chapter-text.ts`'s chapter-sourced wall
+	 * block — every card in `content/output/` already carries these two
+	 * fields (confirmed across the whole corpus), they just weren't typed
+	 * explicitly before because nothing needed them typed (callers reached
+	 * them, if at all, through the index signature as `unknown` — e.g.
+	 * `exclusions.test.ts`'s `String(c.chapter_slug)`). Adding them here is
+	 * additive and backward-compatible: every existing access pattern still
+	 * type-checks.
+	 */
+	chapter_slug: string;
+	card_number: number;
 	original_excerpt: string;
 	plain_english: string;
 	author_slug: string;
+	/**
+	 * Added social pilot 02a T12, for `SourceHead.tsx`'s running head — e.g.
+	 * `"Meditations, Book 2, Section 1"`. Required by the corpus schema
+	 * (`scripts/lib/validate.ts`) on every card, same reasoning as
+	 * `chapter_slug`/`card_number` above.
+	 */
+	source_reference: string;
 	[key: string]: unknown;
 }
 
@@ -123,17 +142,25 @@ export function loadBookCards(bookSlug: string, outputDir: string = DEFAULT_OUTP
 export interface WallPoolRejection {
 	card_id: string;
 	book_slug: string;
-	/** Which `gateWallCard` axis rejected this card. */
-	axis: 'travel' | 'duration';
+	/**
+	 * Which `gateWallCard` axis rejected this card. `'landingLine'` (T02) is
+	 * unreachable via THIS survey today — it never passes `plainEnglish`/
+	 * `landingLine` to `gateWallCard` (a scored pool entry's landing line is
+	 * already vetted upstream, T07) — included only so this type stays in
+	 * sync with `WallGateResult['failure']`.
+	 *
+	 * social pilot 02a T08 (2026-08-26): `'travel'` removed — `gateWallCard`
+	 * no longer rejects on block height at all (see `wall-gate.ts`'s own doc
+	 * comment for why that axis is gone, not merely relaxed).
+	 */
+	axis: 'duration' | 'landingLine';
 	/** Verbatim `WallGateResult.reason` from `gateWallCard`. */
 	reason: string;
 }
 
 export interface WallPoolSurveyResult {
 	passed: number;
-	/** Cards the travel floor rejected (F16) — see `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`. */
-	rejectedForTravel: number;
-	/** Cards the `MAX_POST_DURATION_FRAMES` ceiling rejected — see F03. */
+	/** Cards the `MAX_POST_DURATION_FRAMES`/`WALL_MAX_DURATION_FRAMES` ceilings rejected — see F03/T03. */
 	rejectedForDuration: number;
 	rejectedIds: string[];
 	/** Every rejection, WITH its axis and reason (F05) — same cards as `rejectedIds`, in the same order. */
@@ -166,16 +193,17 @@ function resolveEntryLandingLine(entry: WallPoolEntry): string {
  * should never reach `Wall.tsx` in the first place, though
  * `assertWallCardRenderable` remains the backstop if one slips through.
  *
- * `rejectedForTravel` and `rejectedForDuration` are reported separately
- * (F03) rather than as one combined `rejected` count, so a pipeline log can
- * tell "too small to read" apart from "too long to ship" at a glance.
+ * social pilot 02a T08 (2026-08-26): `rejectedForTravel` (F03) is gone along
+ * with the axis it counted — `gateWallCard` no longer rejects on block
+ * height, so `rejectedForDuration` is the only rejection count this survey
+ * can ever produce today (`'landingLine'` stays unreachable via this survey,
+ * as before — see `WallPoolRejection.axis`'s own doc comment).
  */
 export function surveyWallPool(
 	entries: WallPoolEntry[],
 	outputDir: string = DEFAULT_OUTPUT_DIR
 ): WallPoolSurveyResult {
 	let passed = 0;
-	let rejectedForTravel = 0;
 	let rejectedForDuration = 0;
 	const rejectedIds: string[] = [];
 	const rejections: WallPoolRejection[] = [];
@@ -197,11 +225,9 @@ export function surveyWallPool(
 			});
 			if (result.failure === 'duration') {
 				rejectedForDuration++;
-			} else {
-				rejectedForTravel++;
 			}
 		}
 	}
 
-	return { passed, rejectedForTravel, rejectedForDuration, rejectedIds, rejections };
+	return { passed, rejectedForDuration, rejectedIds, rejections };
 }

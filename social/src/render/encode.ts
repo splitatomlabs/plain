@@ -62,14 +62,23 @@ export const ENCODE_ARGS: readonly string[] = [
 	'-1'
 ];
 
-/** Named output targets the encode profile is built to hit. */
+/**
+ * Named output targets the encode profile is built to hit.
+ *
+ * social pilot 02a V17 (2026-08-27, user decision): `minDurationSec` (15s)
+ * removed. It was a house convention with no recorded rationale anywhere in
+ * the repo — not an external platform requirement (Reels/TikTok accept ~3s;
+ * Stories' 15s is a per-card MAXIMUM, not a minimum) — and it forced short
+ * cards to pad their final motionless payoff frame up to 12.5s past the
+ * format's own 3.0s hold. Duration is now a pure function of screen count;
+ * only `maxDurationSec` (59s, staying under a minute) remains.
+ */
 export const TARGET = {
 	width: 1080,
 	height: 1920,
 	fps: 30,
 	audioRate: 48000,
 	audioChannels: 2,
-	minDurationSec: 15,
 	maxDurationSec: 59
 } as const;
 
@@ -389,14 +398,11 @@ export function assertMeetsProfile(result: ProbeResult): void {
 		violations.push('moov box must precede mdat (missing/ineffective +faststart)');
 	}
 
-	if (
-		result.durationSec === null ||
-		result.durationSec < TARGET.minDurationSec ||
-		result.durationSec > TARGET.maxDurationSec
-	) {
-		violations.push(
-			`duration must be between ${TARGET.minDurationSec}s and ${TARGET.maxDurationSec}s, got ${result.durationSec ?? 'null'}s`
-		);
+	// social pilot 02a V17 (2026-08-27): the 15s floor was dropped by user
+	// decision (see `TARGET`'s doc comment) — only the 59s ceiling is checked
+	// here now.
+	if (result.durationSec === null || result.durationSec > TARGET.maxDurationSec) {
+		violations.push(`duration must be at most ${TARGET.maxDurationSec}s, got ${result.durationSec ?? 'null'}s`);
 	}
 
 	if (violations.length > 0) {

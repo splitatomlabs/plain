@@ -17,7 +17,7 @@ import {
 // entries." This is the reproduction the plan itself names — the T11 smoke
 // run hit retired model IDs, all requests errored, and score-premises.ts
 // nonetheless wrote `[]` to wall/question/objection.json, which
-// `loadFormatPools` then treated as a real (empty) pool instead of falling
+// `loadWallPool` (formerly `loadFormatPools`) then treated as a real (empty) pool instead of falling
 // back to the mechanical gates, dying with "pools exhausted".
 //
 // No API call anywhere in this file — every "run" here is a fake

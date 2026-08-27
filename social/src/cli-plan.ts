@@ -3,12 +3,17 @@
  * that can be computed WITHOUT touching the filesystem, a browser, or
  * ffmpeg, split out here so it's directly unit-testable (and so `cli.ts`
  * itself stays orchestration-only).
+ *
+ * Pf39c2-social-pilot-02a D02: the read-through and the two-slot day are
+ * both gone — every day is a single Wall slot, so `--slot` and every
+ * slot-numbered helper here (`resolveSlot`, `postIndexForSlot`,
+ * `renderAssetPaths`) collapsed to their day-only equivalents
+ * (`resolveDay`, `postIndexForDay`, and `renderAssetPaths` dropping its
+ * `slotNumber` parameter entirely).
  */
 
 import path from 'node:path';
 
-import type { WallOpening } from './remotion/wall-openings.js';
-import { rotateOpening } from './remotion/wall-openings.js';
 import { selectBed, type BedInfo } from './audio/beds.js';
 import { splitPayoffLines } from './audio/timing.js';
 import { dateToWeekDay } from './pilot-config.js';
@@ -24,54 +29,39 @@ export function scheduleFileName(week: number): string {
 }
 
 /**
- * Finds `day`/`slotNumber`'s entry in an already-loaded `schedule`. Throws
- * a clear error (naming the week, day, and slot looked for) rather than
- * returning `undefined` — every caller of this needs a real slot to
- * render.
+ * Finds `day`'s single Wall slot in an already-loaded `schedule`. Throws a
+ * clear error (naming the week and day looked for) rather than returning
+ * `undefined` — every caller of this needs a real slot to render.
  */
-export function resolveSlot(schedule: WeekSchedule, day: number, slotNumber: number): ScheduleSlot {
-	const found = schedule.slots.find((s) => s.day === day && s.slot === slotNumber);
+export function resolveDay(schedule: WeekSchedule, day: number): ScheduleSlot {
+	const found = schedule.slots.find((s) => s.day === day);
 	if (!found) {
 		throw new Error(
-			`Week ${schedule.week} has no slot for day ${day}, slot ${slotNumber} — the schedule file may be ` +
-				'corrupt, or this day/slot was never generated.'
+			`Week ${schedule.week} has no slot for day ${day} — the schedule file may be corrupt, or this day was ` +
+				'never generated.'
 		);
 	}
 	return found;
 }
 
 // ---------------------------------------------------------------------------
-// Deterministic per-slot seeding — same --date/--slot always picks the same
-// opening and the same bed (see wall-openings.ts's rotateOpening and
-// audio/beds.ts's selectBed, both pure functions of an integer seed).
+// Deterministic per-day seeding — same --date always picks the same bed (see
+// audio/beds.ts's selectBed, a pure function of an integer seed).
 // ---------------------------------------------------------------------------
 
 /**
- * A stable, strictly-increasing integer index for a given `(date,
- * slotNumber)` — `0` for week 1 day 1 slot 1, `1` for week 1 day 1 slot 2,
- * `2` for week 1 day 2 slot 1, and so on across the whole pilot. Pure
- * function of its inputs (via `dateToWeekDay`, itself pure and
- * `Date.now()`-free) — no randomness, so the same date/slot always
- * produces the same index, and therefore the same opening/bed choice.
+ * A stable, strictly-increasing integer index for a given `date` — `0` for
+ * week 1 day 1, `1` for week 1 day 2, ..., `7` for week 2 day 1, and so on
+ * across the whole pilot. Pure function of its input (via `dateToWeekDay`,
+ * itself pure and `Date.now()`-free) — no randomness, so the same date
+ * always produces the same index, and therefore the same bed choice.
  */
-export function postIndexForSlot(date: string, slotNumber: number): number {
+export function postIndexForDay(date: string): number {
 	const { week, day } = dateToWeekDay(date);
-	return (week - 1) * 14 + (day - 1) * 2 + (slotNumber - 1);
+	return (week - 1) * 7 + (day - 1);
 }
 
-/**
- * Chooses The Wall's opening for a slot: `rotateOpening(seed)`'s candidate,
- * gated by `eligibleOpenings` — falling back to `standard` (always
- * eligible) when the rotation's candidate isn't one this specific card can
- * show. Deterministic: the same `seed` and `eligibleOpenings` always
- * return the same opening.
- */
-export function chooseWallOpening(seed: number, eligibleOpenings: readonly WallOpening[]): WallOpening {
-	const candidate = rotateOpening(seed);
-	return eligibleOpenings.includes(candidate) ? candidate : 'standard';
-}
-
-/** Chooses this slot's music bed — a thin, named wrapper around `selectBed` for symmetry with `chooseWallOpening`. */
+/** Chooses this slot's music bed — a thin, named wrapper around `selectBed`. */
 export function chooseBed(seed: number): BedInfo {
 	return selectBed(seed);
 }
@@ -116,13 +106,15 @@ export interface RenderAssetPaths {
 
 /**
  * The conventional output filenames for a render — mirrors
- * `post-metadata.ts`'s own doc-comment example
- * (`wall-2026-09-01-slot1.mp4` -> `wall-2026-09-01-slot1.json`). The
- * metadata sidecar path is derived from `video` by `postMetadataPathFor`
- * (`render/post-metadata.ts`), not repeated here.
+ * `post-metadata.ts`'s own doc-comment example (`wall-2026-09-01.mp4` ->
+ * `wall-2026-09-01.json`). The metadata sidecar path is derived from `video`
+ * by `postMetadataPathFor` (`render/post-metadata.ts`), not repeated here.
+ *
+ * Pf39c2-social-pilot-02a D02: dropped the `-slotN` suffix — one post per
+ * day now, so the date alone is unambiguous.
  */
-export function renderAssetPaths(outDir: string, format: string, date: string, slotNumber: number): RenderAssetPaths {
-	const stem = `${format}-${date}-slot${slotNumber}`;
+export function renderAssetPaths(outDir: string, format: string, date: string): RenderAssetPaths {
+	const stem = `${format}-${date}`;
 	return {
 		video: path.join(outDir, `${stem}.mp4`),
 		feedStill: path.join(outDir, `${stem}-feed.jpg`)

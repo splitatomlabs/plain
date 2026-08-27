@@ -1,9 +1,15 @@
 /**
- * Score the corpus into per-format social premise pools (T10).
+ * Score the corpus into the Wall's social premise pool (T10).
  *
  * Gates the 1,615-card corpus (via ./lib/premises.ts), submits only gate
- * survivors to the three LLM rubrics (via ./lib/premises-batch.ts), enforces
- * faithfulness (T09), and writes one pool JSON per format to --output.
+ * survivors to the Wall's LLM rubric (via ./lib/premises-batch.ts), enforces
+ * faithfulness (T09), and writes the pool JSON to --output.
+ *
+ * Pf39c2-social-pilot-02a D01: this used to also score The Question and The
+ * Objection, and report The Still's gate-only pool — all three formats were
+ * deleted outright (the channel is one Wall a day, drawn from the Wall pool,
+ * nothing else), so `--format` only ever means "wall" or "all" (which is the
+ * same thing) now.
  *
  * Usage:
  *   ANTHROPIC_API_KEY=... npx tsx scripts/score-premises.ts --format all
@@ -13,26 +19,8 @@
 import { parseArgs } from "node:util";
 import type { AuthorSlug } from "./lib/constants.js";
 import type { Card } from "./lib/types.js";
-import {
-  loadCorpus,
-  rankWall,
-  questionGate,
-  objectionGate,
-  mechanicalGates,
-  authorMix,
-  combinedAuthorMix,
-} from "./lib/premises.js";
-import {
-  buildWallRequests,
-  buildQuestionRequests,
-  buildObjectionRequests,
-  scoreWallSurvivors,
-  scoreQuestionSurvivors,
-  scoreObjectionSurvivors,
-  faithfulnessStats,
-  retryStats,
-  type BuiltRequest,
-} from "./lib/premises-batch.js";
+import { loadCorpus, rankWall, authorMix, combinedAuthorMix } from "./lib/premises.js";
+import { buildWallRequests, scoreWallSurvivors, faithfulnessStats, retryStats, type BuiltRequest } from "./lib/premises-batch.js";
 import { tokenUsage, batchStats } from "./lib/claude.js";
 import { logger } from "./lib/logger.js";
 import { VALID_FORMATS, isValidFormat, formatsToRun, parseLimit, type Format } from "./lib/premises-cli.js";
@@ -71,11 +59,6 @@ Options:
 
 Environment:
   ANTHROPIC_API_KEY   Required unless --dry-run is set
-
-Note on --format still: The Still has no LLM rubric — it is the 12-word
-still-image pattern interrupt, and T01's still12Word mechanical gate is all
-there is. --format still (and --format all) reports that gate's pool as
-gate-only; no request is ever built or submitted for it.
 
 A run that produces zero scored entries for a format (e.g. every request
 errored) refuses to write that format's pool file and exits non-zero — any
@@ -133,14 +116,6 @@ interface MixEntry {
   card_id: string;
   book_slug: string;
   author_slug: AuthorSlug;
-}
-
-function stillEntries(cards: Card[], cardsById: Map<string, Card>): MixEntry[] {
-  const ids = mechanicalGates(cards).still12Word.ids;
-  return ids
-    .map((id) => cardsById.get(id))
-    .filter((c): c is Card => !!c)
-    .map((c) => ({ card_id: c.id, book_slug: c.book_slug, author_slug: c.author_slug }));
 }
 
 function avg(nums: number[]): number {
@@ -204,71 +179,9 @@ async function processWall(cards: Card[], cardsById: Map<string, Card>): Promise
   return scored;
 }
 
-async function processQuestion(cards: Card[], cardsById: Map<string, Card>): Promise<MixEntry[]> {
-  const gated = questionGate(cards);
-  const limited = gated.slice(0, limit ?? gated.length);
-  console.log(`\nThe Question: ${gated.length} gate survivors, processing ${limited.length}`);
-
-  if (dryRun) {
-    const built = buildQuestionRequests(limited);
-    console.log(`  Requests: ${built.length}, estimated tokens: ${estimateTokensForRequests(built)}`);
-    return limited;
-  }
-
-  const scored = await scoreQuestionSurvivors(limited, cards);
-  const answers = scored.filter((s) => s.drift_verdict === "answers").length;
-  const drifts = scored.filter((s) => s.drift_verdict === "drifts").length;
-  console.log(`  Scored: ${scored.length}/${limited.length}`);
-  console.log(`  Score distribution — answers ${answers}, drifts ${drifts}`);
-  printAuthorMix("Author mix", scored);
-  await writePool("question", scored, { submitted: limited.length, succeeded: scored.length });
-  return scored;
-}
-
-async function processObjection(cards: Card[], cardsById: Map<string, Card>): Promise<MixEntry[]> {
-  const gated = objectionGate(cards);
-  const limited = gated.slice(0, limit ?? gated.length);
-  console.log(`\nThe Objection: ${gated.length} gate survivors, processing ${limited.length}`);
-
-  if (dryRun) {
-    const built = buildObjectionRequests(limited, cardsById);
-    console.log(`  Requests: ${built.length}, estimated tokens: ${estimateTokensForRequests(built)}`);
-    return limited;
-  }
-
-  const scored = await scoreObjectionSurvivors(limited, cards);
-  const accepted = scored.filter((s) => s.rubric.verdict === "accept").length;
-  const rejected = scored.filter((s) => s.rubric.verdict === "reject").length;
-  console.log(`  Scored: ${scored.length}/${limited.length}`);
-  console.log(`  Score distribution — accept ${accepted}, reject ${rejected}`);
-  printAuthorMix("Author mix", scored);
-  await writePool("objection", scored, { submitted: limited.length, succeeded: scored.length });
-  return scored;
-}
-
-/**
- * The Still has no LLM rubric — it is the 12-word still-image pattern
- * interrupt, and T01's `still12Word` mechanical gate is all there is. This
- * always reports and (on a real run) writes the gate's own pool; it never
- * builds or submits a request, dry-run or not.
- */
-async function processStill(cards: Card[], cardsById: Map<string, Card>): Promise<MixEntry[]> {
-  const gated = stillEntries(cards, cardsById);
-  const limited = gated.slice(0, limit ?? gated.length);
-  console.log(
-    `\nThe Still: ${gated.length} gate survivors, processing ${limited.length} — ` +
-      `gate-only, no LLM rubric exists for this format (T01's still12Word mechanical gate is all there is).`,
-  );
-
-  if (!dryRun) {
-    printAuthorMix("Author mix", limited);
-    // Gate-only: nothing can "fail" between the gate and the pool, so
-    // submitted === succeeded always here (still subject to the
-    // zero-survivors / --limit-overwrite guards in writePoolFile).
-    await writePool("still", limited, { submitted: limited.length, succeeded: limited.length });
-  }
-  return limited;
-}
+// Pf39c2-social-pilot-02a D01: `processQuestion`/`processObjection`/
+// `processStill` were deleted outright along with their formats — the
+// channel is one Wall a day, drawn from the Wall pool, nothing else.
 
 // ---------------------------------------------------------------------------
 // Main
@@ -292,15 +205,6 @@ async function main(): Promise<void> {
     switch (f) {
       case "wall":
         combined.push(...(await processWall(cards, cardsById)));
-        break;
-      case "question":
-        combined.push(...(await processQuestion(cards, cardsById)));
-        break;
-      case "objection":
-        combined.push(...(await processObjection(cards, cardsById)));
-        break;
-      case "still":
-        combined.push(...(await processStill(cards, cardsById)));
         break;
     }
   }

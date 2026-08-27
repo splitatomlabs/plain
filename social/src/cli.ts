@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 /**
- * The render CLI (T18): `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`.
+ * The render CLI (T18): `social/src/cli.ts render --date <YYYY-MM-DD>`.
  *
- * Maps `--date`/`--slot` onto a committed weekly schedule
- * (`content/social/pilot-schedule-w<NN>.json`, see `pilot-config.ts`),
- * resolves the card and every field that schedule doesn't itself carry
- * from `content/output/`, renders that slot's composition with Remotion,
- * encodes it to the house MP4 profile (`render/encode.ts`), renders the
- * Instagram feed still, and writes a metadata sidecar (`render/
- * post-metadata.ts`).
+ * Maps `--date` onto a committed weekly schedule (`content/social/
+ * pilot-schedule-w<NN>.json`, see `pilot-config.ts`), resolves the card and
+ * every field that schedule doesn't itself carry from `content/output/`,
+ * renders that day's composition with Remotion, encodes it to the house MP4
+ * profile (`render/encode.ts`), renders the Instagram feed still, and writes
+ * a metadata sidecar (`render/post-metadata.ts`).
+ *
+ * Pf39c2-social-pilot-02a D02: `--slot` is gone — the read-through and the
+ * two-slot day are both gone, so each day has exactly one Wall slot and
+ * `--date` alone identifies it (see `cli-plan.ts`'s `resolveDay`).
  *
  * Deterministic by policy, same as every other tool in this pipeline
  * (`scripts/generate-schedule.ts`, `scripts/review-week.ts`): the date
- * always comes from `--date`, never `Date.now()`; the Wall's opening and
- * the music bed are both seeded from `--date`/`--slot` alone
- * (`cli-plan.ts`'s `postIndexForSlot`), so re-running the same
- * `--date`/`--slot` always makes the same choices.
+ * always comes from `--date`, never `Date.now()`; the music bed is seeded
+ * from `--date` alone (`cli-plan.ts`'s `postIndexForDay`), so re-running the
+ * same `--date` always makes the same choice.
  *
  * NARRATION IS BLOCKED (T14 — `audio/voices.ts`'s `VOICES_ARE_UNSET`):
  * there are no auditioned voice ids yet, so every render here is
@@ -31,7 +33,7 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
@@ -39,22 +41,20 @@ import { renderMedia, selectComposition } from '@remotion/renderer';
 import { dateToWeekDay } from './pilot-config.js';
 import {
 	scheduleFileName,
-	resolveSlot,
-	postIndexForSlot,
-	chooseWallOpening,
+	resolveDay,
+	postIndexForDay,
 	chooseBed,
 	computeWallPlainLines,
 	renderAssetPaths
 } from './cli-plan.js';
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
-import { computeEligibleOpenings, type WallOpening } from './remotion/wall-openings.js';
-import { computeWallTiming, WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
-import { computeQuestionTiming } from './remotion/question-timing.js';
-import { computeObjectionTiming, OBJECTION_REPLY_LINE_COUNT } from './remotion/objection-timing.js';
+import { loadChapterTextBlock, applyChapterEntryOffset } from './render/chapter-text.js';
+import { computeWallTiming, WALL_FRAMES, FPS } from './remotion/wall-timing.js';
+import { formatRunningHead } from './remotion/SourceHead.js';
 import { bedPath } from './audio/beds.js';
 import { mix, type TimeSpan } from './audio/mix.js';
-import { splitPayoffLines, type NarrationLineTiming } from './audio/timing.js';
+import type { NarrationLineTiming } from './audio/timing.js';
 import { VOICES_ARE_UNSET } from './audio/voices.js';
 import { buildTtsProvider, synthesizeNarration, prependSilence } from './narration.js';
 import { encode, probe, assertMeetsProfile } from './render/encode.js';
@@ -87,18 +87,17 @@ const T14_NARRATION_WARNING =
 // ---------------------------------------------------------------------------
 
 function printHelp(): void {
-	console.log(`Usage: npx tsx social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2> [options]
+	console.log(`Usage: npx tsx social/src/cli.ts render --date <YYYY-MM-DD> [options]
 
-Renders one scheduled slot's video + Instagram feed still + metadata
-sidecar, from a committed weekly schedule (content/social/
-pilot-schedule-w<NN>.json — see scripts/generate-schedule.ts).
+Renders one day's video + Instagram feed still + metadata sidecar, from a
+committed weekly schedule (content/social/pilot-schedule-w<NN>.json — see
+scripts/generate-schedule.ts). Every day is a single Wall post
+(Pf39c2-social-pilot-02a D02) — --date alone identifies it.
 
 Options:
-  --date <YYYY-MM-DD>    The slot's calendar date (required). Mapped onto a
+  --date <YYYY-MM-DD>    The post's calendar date (required). Mapped onto a
                           schedule week/day via pilot-config.ts's
                           PILOT_WEEK_1_START anchor.
-  --slot <1|2>            Which of the day's two slots to render (required).
-                          Slot 1 is always the read-through slot.
   --out <dir>              Output directory (default: social/out/).
   --schedule-dir <dir>     Directory to read pilot-schedule-w<NN>.json from
                           (default: content/social/). Testing/override
@@ -115,7 +114,6 @@ Options:
 
 interface RenderArgs {
 	date: string;
-	slotNumber: number;
 	outDir: string;
 	scheduleDir: string;
 	dryRun: boolean;
@@ -127,7 +125,6 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 		args: argv,
 		options: {
 			date: { type: 'string' },
-			slot: { type: 'string' },
 			out: { type: 'string', default: DEFAULT_OUT_DIR },
 			'schedule-dir': { type: 'string', default: SCHEDULE_DIR },
 			'dry-run': { type: 'boolean', default: false },
@@ -145,17 +142,9 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 	if (!values.date) {
 		throw new Error('Specify --date <YYYY-MM-DD>');
 	}
-	if (!values.slot) {
-		throw new Error('Specify --slot <1|2>');
-	}
-	const slotNumber = Number(values.slot);
-	if (slotNumber !== 1 && slotNumber !== 2) {
-		throw new Error(`Invalid --slot "${values.slot}" — must be 1 or 2.`);
-	}
 
 	return {
 		date: values.date,
-		slotNumber,
 		outDir: values.out ?? DEFAULT_OUT_DIR,
 		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
 		dryRun: Boolean(values['dry-run']),
@@ -184,49 +173,53 @@ async function loadWeekSchedule(week: number, scheduleDir: string): Promise<Week
 // print it and a real render can log exactly what it decided.
 // ---------------------------------------------------------------------------
 
-interface WallPlan {
+// Exported (social pilot 02a T14): so `audio/__tests__/narration.test.ts`
+// can construct real-shaped `FormatPlan` fixtures and call the exported
+// `wallSilentSpans`/`narrationPlan` below directly, without going through a
+// live render. Visibility only — no field or behavior here changes for T14;
+// see this file's entry-point guard (bottom of file) for how importing this
+// module is made safe for a test file to do at all.
+export interface WallPlan {
 	format: 'wall';
 	originalExcerpt: string;
+	/**
+	 * The moving wall phase's real scrolling text (social pilot 02a T09) —
+	 * this card's own excerpt plus the surrounding chapter, in document
+	 * order, one full lap starting at this card. See `Wall.tsx`'s
+	 * `WallProps.chapterBlock` doc comment and `render/chapter-text.ts`'s
+	 * `loadChapterTextBlock`.
+	 *
+	 * social pilot 02a T18: mid-chapter entry has already been applied by
+	 * the time this field is set — `render/chapter-text.ts`'s
+	 * `applyChapterEntryOffset`, keyed off this render's own `postIndex`, has
+	 * shifted the block's start point to a different word of the card's own
+	 * excerpt (never past it) so consecutive posts of the same card don't
+	 * open on the same beat. See that function's own doc comment for the
+	 * design decision.
+	 */
+	chapterBlock: string;
+	/**
+	 * The card's own `source_reference` (social pilot 02a T11/T12's framing
+	 * layer) — threaded into `Wall.tsx`'s `sourceReference` prop, which
+	 * derives the running head via `SourceHead.tsx`'s `formatRunningHead`
+	 * alongside `author`. Same "real card metadata, never hardcoded" pattern
+	 * `chapterBlock` set for T09.
+	 */
+	sourceReference: string;
 	landingLine: string;
 	plainLines: string[];
-	opening: WallOpening;
-	eligibleOpenings: WallOpening[];
 }
 
-interface QuestionPlan {
-	format: 'question';
-	question: string;
-	answer: string;
-	originalExcerpt: string;
-}
-
-interface ObjectionPlan {
-	format: 'objection';
-	objection: string;
-	reply: string;
-}
-
-/**
- * F19 — the read-through's fallback format. `text` is the card's raw
- * `plain_english`, verbatim, in full — see `remotion/Still.tsx`.
- */
-interface StillPlan {
-	format: 'still';
-	text: string;
-}
-
-type FormatPlan = WallPlan | QuestionPlan | ObjectionPlan | StillPlan;
+export type FormatPlan = WallPlan;
 
 interface RenderPlan {
 	date: string;
 	week: number;
 	day: number;
-	slotNumber: number;
 	cardId: string;
 	bookSlug: string;
 	authorSlug: string;
-	counter: string | null;
-	compositionId: 'Wall' | 'Question' | 'Objection' | 'Still';
+	compositionId: 'Wall';
 	formatPlan: FormatPlan;
 	postIndex: number;
 	bedId: string;
@@ -235,69 +228,34 @@ interface RenderPlan {
 async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 	const { week, day } = dateToWeekDay(args.date);
 	const schedule = await loadWeekSchedule(week, args.scheduleDir);
-	const slot = resolveSlot(schedule, day, args.slotNumber);
+	const slot = resolveDay(schedule, day);
 	const card = loadOutputCard(slot.book_slug, slot.card_id);
 
-	const postIndex = postIndexForSlot(args.date, args.slotNumber);
+	const postIndex = postIndexForDay(args.date);
 	const bed = chooseBed(postIndex);
 
-	let formatPlan: FormatPlan;
-	let compositionId: RenderPlan['compositionId'];
-
-	switch (slot.content.format) {
-		case 'wall': {
-			const plainLines = computeWallPlainLines(card.plain_english, slot.content.landing_line);
-			const eligibleOpenings = computeEligibleOpenings(slot.content.original_excerpt, card.plain_english);
-			const opening = chooseWallOpening(postIndex, eligibleOpenings);
-			formatPlan = {
-				format: 'wall',
-				originalExcerpt: slot.content.original_excerpt,
-				landingLine: slot.content.landing_line,
-				plainLines,
-				opening,
-				eligibleOpenings
-			};
-			compositionId = 'Wall';
-			break;
-		}
-		case 'question': {
-			formatPlan = {
-				format: 'question',
-				question: slot.content.question,
-				answer: slot.content.answer,
-				originalExcerpt: card.original_excerpt
-			};
-			compositionId = 'Question';
-			break;
-		}
-		case 'objection': {
-			formatPlan = {
-				format: 'objection',
-				objection: slot.content.objection,
-				reply: slot.content.reply
-			};
-			compositionId = 'Objection';
-			break;
-		}
-		case 'still': {
-			formatPlan = {
-				format: 'still',
-				text: slot.content.text
-			};
-			compositionId = 'Still';
-			break;
-		}
-	}
+	const plainLines = computeWallPlainLines(card.plain_english, slot.content.landing_line);
+	// social pilot 02a T18: mid-chapter entry, deterministic from this
+	// render's own postIndex — see `applyChapterEntryOffset`'s doc comment
+	// (`render/chapter-text.ts`) for the design.
+	const chapterBlock = applyChapterEntryOffset(loadChapterTextBlock(slot.book_slug, slot.card_id), postIndex);
+	const formatPlan: FormatPlan = {
+		format: 'wall',
+		originalExcerpt: slot.content.original_excerpt,
+		chapterBlock,
+		sourceReference: card.source_reference,
+		landingLine: slot.content.landing_line,
+		plainLines
+	};
+	const compositionId: RenderPlan['compositionId'] = 'Wall';
 
 	return {
 		date: args.date,
 		week,
 		day,
-		slotNumber: args.slotNumber,
 		cardId: slot.card_id,
 		bookSlug: slot.book_slug,
 		authorSlug: slot.author_slug,
-		counter: slot.read_through_counter,
 		compositionId,
 		formatPlan,
 		postIndex,
@@ -306,16 +264,19 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 }
 
 function printPlan(plan: RenderPlan): void {
-	console.log(`Render plan for ${plan.date} slot ${plan.slotNumber} (week ${plan.week} day ${plan.day}):`);
+	console.log(`Render plan for ${plan.date} (week ${plan.week} day ${plan.day}):`);
 	console.log(`  composition: ${plan.compositionId}`);
 	console.log(`  card: ${plan.cardId} (${plan.bookSlug}, ${plan.authorSlug})`);
-	console.log(`  counter: ${plan.counter ?? '(none — not a read-through slot)'}`);
 	console.log(`  post index: ${plan.postIndex}`);
 	console.log(`  bed: ${plan.bedId}`);
-	if (plan.formatPlan.format === 'wall') {
-		console.log(`  opening: ${plan.formatPlan.opening} (eligible: ${plan.formatPlan.eligibleOpenings.join(', ')})`);
-		console.log(`  plain lines after landing line: ${plan.formatPlan.plainLines.length}`);
-	}
+	console.log(`  plain lines after landing line: ${plan.formatPlan.plainLines.length}`);
+	console.log(
+		`  chapter block: ${plan.formatPlan.chapterBlock.split(/\s+/).filter(Boolean).length} words ` +
+			`(card's own excerpt: ${plan.formatPlan.originalExcerpt.split(/\s+/).filter(Boolean).length} words)`
+	);
+	console.log(
+		`  running head: "${formatRunningHead({ author_slug: plan.authorSlug as AuthorSlug, source_reference: plan.formatPlan.sourceReference })}"`
+	);
 	console.log('  narration: false (T14 not done — music-only)');
 }
 
@@ -324,67 +285,97 @@ function printPlan(plan: RenderPlan): void {
 // ---------------------------------------------------------------------------
 
 function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTiming[]): Record<string, unknown> {
-	const base = { author: plan.authorSlug, counter: plan.counter };
-	switch (plan.formatPlan.format) {
-		case 'wall':
-			return {
-				...base,
-				originalExcerpt: plan.formatPlan.originalExcerpt,
-				landingLine: plan.formatPlan.landingLine,
-				plainLines: plan.formatPlan.plainLines,
-				opening: plan.formatPlan.opening,
-				eligibleOpenings: plan.formatPlan.eligibleOpenings,
-				// Only The Wall's timing adapts to real per-line narration
-				// duration (`computeWallTiming`'s `narrationTimings` input) —
-				// The Question/The Objection have a fixed shape (see
-				// `narrationOffsetMs`'s doc comment) and take no such prop.
-				...(narrationTimings ? { narrationTimings } : {})
-			};
-		case 'question':
-			return {
-				...base,
-				question: plan.formatPlan.question,
-				answer: plan.formatPlan.answer,
-				originalExcerpt: plan.formatPlan.originalExcerpt
-			};
-		case 'objection':
-			return {
-				...base,
-				objection: plan.formatPlan.objection,
-				reply: plan.formatPlan.reply
-			};
-		case 'still':
-			// `base` carries `author`, unused by `Still.tsx` (no accent colour
-			// in this format — see that component's own doc comment); kept
-			// here only so `Still`'s props follow the same `{...base, ...}`
-			// shape as every other format's, harmlessly ignored by the
-			// component.
-			return {
-				...base,
-				text: plan.formatPlan.text
-			};
-	}
+	const base = { author: plan.authorSlug };
+	return {
+		...base,
+		originalExcerpt: plan.formatPlan.originalExcerpt,
+		chapterBlock: plan.formatPlan.chapterBlock,
+		sourceReference: plan.formatPlan.sourceReference,
+		landingLine: plan.formatPlan.landingLine,
+		plainLines: plan.formatPlan.plainLines,
+		// social pilot 02a T16 (F04): the Wall's timing adapts to real
+		// per-line narration duration when supplied (`computeWallTiming`'s
+		// own `narrationTimings` input) — see `narrationPlan`'s doc comment
+		// for how `lines` maps onto this array.
+		...(narrationTimings ? { narrationTimings } : {})
+	};
 }
 
 /**
- * The Wall's silent phases (the moving wall + the mandated 3s landing-line
- * hold), in ms — see the module doc comment.
+ * social pilot 02a U04 ("noisy scroll bed, then silence, then a slow
+ * return"): the true-silence phase is now just this — a fraction of a
+ * second, not the whole 3s landing-line hold. See `wallSilentSpans`'s own
+ * doc comment for why, and `audio/mix.ts`'s module doc comment for the
+ * shape this and `wallNoiseSpans` together produce.
  *
- * Deliberately uses the FIXED `WALL_FRAMES + LANDING_LINE_FRAMES` boundary
- * rather than `computeWallTiming(...).landingLine.endFrame`: when a card has
- * no plain-passage lines left after the landing line, `computeWallTiming`
- * extends `landingLine.endFrame` to absorb the 15s duration-floor pad (see
- * `duration-bounds.ts`'s `padToMinimumDuration`) so the PICTURE keeps
- * holding the landing line for the full post. That padding is not part of
- * the documented "silent, motionless" 5.5s window — it exists purely to
- * clear the MP4 duration floor. Silencing the bed for that padding too
- * meant the whole clip (bed included) went silent for any 0-plain-line Wall
- * card, which ffmpeg's loudnorm then measures as digital silence
- * (`measured_I: -inf`) on its first pass (see F02,
- * `plans/Pf39c2-social-pilot-02.md`).
+ * V06 raised this from 500 to 1000ms (the user's own request: "increase the
+ * silence gap post noise to 1s up from 0.5s"). This value must stay
+ * `<= LANDING_LINE_SECONDS * 1000` — the silence sits inside that fixed 3s
+ * hold (see `wallSilentSpans`), so a value any larger would push true
+ * silence past the end of the hold. That relationship is asserted directly
+ * against both constants in `audio/__tests__/narration.test.ts`, not just
+ * documented here, so a future cut to `LANDING_LINE_SECONDS` fails loudly
+ * instead of silently breaking this invariant.
  */
-function wallSilentSpans(): TimeSpan[] {
-	return [{ startMs: 0, endMs: ((WALL_FRAMES + LANDING_LINE_FRAMES) / FPS) * 1000 }];
+export const WALL_DROP_SILENCE_MS = 1000;
+
+/**
+ * The Wall's dense, unreadable NOISE phase — the entire moving-wall SCROLL,
+ * `[0, WALL_FRAMES)` — where `audio/mix.ts`'s procedurally-generated noise
+ * track plays INSTEAD of the music bed (the bed is held at its floor for
+ * this whole span; see `MixInput.noiseSpans`'s own doc comment). Starts at 0,
+ * not at some earlier "wind-up": the noise appears the instant the scroll
+ * starts, exactly as abruptly as the visual density itself does.
+ *
+ * social pilot 02a U04 (replacing T15's "the bed plays at nominal level under
+ * the scroll" — see `wallSilentSpans`'s doc comment for that history): the
+ * user's own request was to replace the SOOTHING bed under the scroll with
+ * noise matching the visual's density, not to keep the bed audible there.
+ */
+export function wallNoiseSpans(): TimeSpan[] {
+	const wallEndMs = (WALL_FRAMES / FPS) * 1000;
+	return [{ startMs: 0, endMs: wallEndMs }];
+}
+
+/**
+ * The Wall's one true-silence phase — social pilot 02a U04 narrowed this
+ * from the whole 3s landing-line hold down to exactly `WALL_DROP_SILENCE_MS`
+ * (1000ms as of V06, originally 500ms), right after the cut. See the module
+ * doc comment.
+ *
+ * HISTORY: social pilot 02a T15 ("THE CUT MUST BE AUDIBLE") first shrank this
+ * from `0 -> WALL_FRAMES + LANDING_LINE_FRAMES` (silencing the bed under the
+ * moving-wall scroll too) down to the landing line alone, with the bed
+ * audible at nominal level under the scroll and hard-stopping on the cut
+ * frame. U04 (this task) went further, per the user's own request ("a very
+ * noisy background sound for the scrolling text, then cut to silence for 0.5
+ * seconds then fade in the current background sound"): the scroll no longer
+ * carries the bed at all — see `wallNoiseSpans` — so the bed's own floor
+ * window now spans the noise phase too (`audio/mix.ts`'s `mix()` unions
+ * `silentSpans` with `noiseSpans` for the bed specifically), but the OUTPUT
+ * itself (bed AND the noise track AND narration) is only genuinely silent
+ * for this narrower `WALL_DROP_SILENCE_MS` window — the noise track fills
+ * the rest of the old landing-line-hold's front end, and the bed's own slow
+ * `BED_RETURN_FADE_MS` fade-in fills the back end (`bedEnvelope`'s doc
+ * comment), landing back at nominal exactly when the landing line ends.
+ *
+ * Still starts at `WALL_FRAMES` (the cut frame, see `wall-timing.ts`'s
+ * `computeWallTiming` — `landingLine.startFrame` is always `wall.endFrame`,
+ * i.e. `WALL_FRAMES`) — the hard cut from noise into true silence is the
+ * exact same frame T15 hard-cut the bed on, unchanged.
+ *
+ * Deliberately does NOT extend to `WALL_FRAMES + LANDING_LINE_FRAMES` the way
+ * it used to: that fixed boundary existed so a 0-plain-line Wall card's
+ * duration-floor padding never went silent (see F02,
+ * `plans/Pf39c2-social-pilot-02.md`) — this window is now short enough
+ * (`WALL_DROP_SILENCE_MS`, 1000ms as of V06, always well inside the landing
+ * line's fixed 3s hold — with 2s to spare, asserted directly in
+ * `audio/__tests__/narration.test.ts` — never reaching into any padding)
+ * that this concern no longer applies to it at all.
+ */
+export function wallSilentSpans(): TimeSpan[] {
+	const wallEndMs = (WALL_FRAMES / FPS) * 1000;
+	return [{ startMs: wallEndMs, endMs: wallEndMs + WALL_DROP_SILENCE_MS }];
 }
 
 // ---------------------------------------------------------------------------
@@ -400,57 +391,28 @@ function wallSilentSpans(): TimeSpan[] {
  *
  * The Wall narrates only the rest of the plain passage (never the landing
  * line, which is held in silence — see `wallSilentSpans`), starting right
- * after `WALL_FRAMES + LANDING_LINE_FRAMES`. The Question narrates its
- * answer, starting after `QUESTION_HOLD_FRAMES + WALL_FRAMES`. The
- * Objection narrates its two capped reply sentences as one continuous
- * clip, starting after `OBJECTION_HOLD_FRAMES` — NOTE: unlike The Wall,
- * neither The Question's nor The Objection's own timing module accepts a
- * `narrationTimings` input (their schedules are fixed shapes — see
- * `question-timing.ts`/`objection-timing.ts`), so if the real narration
- * ever runs long or short of their fixed per-line holds, the audio and the
- * on-screen line can drift out of step. That's a real, acknowledged gap in
- * those two formats' timing modules, not something this CLI can paper
- * over — flagged here rather than silently pretending it's solved.
+ * after `WALL_FRAMES + LANDING_LINE_FRAMES`.
+ *
+ * social pilot 02a T16 (F04): the Wall's own timing module accepts a
+ * `narrationTimings` input (`computeWallTiming` — see its own doc comment),
+ * so once T14 lands and `renderCommand` below calls `synthesizeNarration`,
+ * the returned per-line timings are threaded into `buildInputProps` and the
+ * on-screen line boundaries move with the real narration instead of holding
+ * a fixed duration regardless of how long the audio actually runs.
+ *
+ * Pf39c2-social-pilot-02a D01: this used to switch on
+ * `formatPlan.format` across Wall/Question/Objection/Still; those three
+ * were deleted outright (see `buildRenderPlan`'s doc comment), so
+ * `FormatPlan` is Wall-only now and there is nothing left to switch on.
  */
-function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: number } {
-	switch (formatPlan.format) {
-		case 'wall': {
-			const timing = computeWallTiming({ originalExcerpt: formatPlan.originalExcerpt, plainLines: formatPlan.plainLines });
-			return { lines: formatPlan.plainLines, offsetMs: (timing.landingLine.endFrame / FPS) * 1000 };
-		}
-		case 'question': {
-			const timing = computeQuestionTiming({ question: formatPlan.question });
-			return { lines: [formatPlan.answer], offsetMs: (timing.wall.endFrame / FPS) * 1000 };
-		}
-		case 'objection': {
-			const timing = computeObjectionTiming();
-			const lines = splitPayoffLines(formatPlan.reply).slice(0, OBJECTION_REPLY_LINE_COUNT);
-			return { lines, offsetMs: (timing.objection.endFrame / FPS) * 1000 };
-		}
-		case 'still': {
-			// The Still has no silent/moving phase to wait out — the whole
-			// composition is the payoff frame from frame 0 (see
-			// `still-timing.ts`), so narration begins immediately.
-			return { lines: splitPayoffLines(formatPlan.text), offsetMs: 0 };
-		}
-	}
+export function narrationPlan(formatPlan: FormatPlan): { lines: string[]; offsetMs: number } {
+	const timing = computeWallTiming({ originalExcerpt: formatPlan.originalExcerpt, plainLines: formatPlan.plainLines });
+	return { lines: formatPlan.plainLines, offsetMs: (timing.landingLine.endFrame / FPS) * 1000 };
 }
 
-/** The still text shown on the Instagram feed card — the format's own "hook" line. */
+/** The still text shown on the Instagram feed card — the Wall's own landing line. */
 function feedStillText(formatPlan: FormatPlan): string {
-	switch (formatPlan.format) {
-		case 'wall':
-			return formatPlan.landingLine;
-		case 'question':
-			return formatPlan.question;
-		case 'objection':
-			return formatPlan.objection;
-		case 'still':
-			// The Still's feed still and its video frame are the SAME text —
-			// there is no shorter "hook" line for this format; the whole
-			// point is the full passage, verbatim (see `Still.tsx`).
-			return formatPlan.text;
-	}
+	return formatPlan.landingLine;
 }
 
 // ---------------------------------------------------------------------------
@@ -477,7 +439,7 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 	}
 
 	await mkdir(args.outDir, { recursive: true });
-	const assetPaths = renderAssetPaths(args.outDir, plan.compositionId.toLowerCase(), plan.date, plan.slotNumber);
+	const assetPaths = renderAssetPaths(args.outDir, plan.compositionId.toLowerCase(), plan.date);
 
 	const workDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-'));
 	try {
@@ -494,9 +456,7 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 			const provider = buildTtsProvider(process.env);
 			const rawNarrationPath = path.join(workDir, 'narration-raw.mp3');
 			const narration = await synthesizeNarration(lines, plan.authorSlug as AuthorSlug, provider, process.env, rawNarrationPath);
-			if (plan.formatPlan.format === 'wall') {
-				narrationTimings = narration.timings;
-			}
+			narrationTimings = narration.timings;
 			narrationAudioPath = path.join(workDir, 'narration-aligned.mp3');
 			await prependSilence(rawNarrationPath, offsetMs, narrationAudioPath);
 			// `narration.audioDurationMs` is probed off the WRITTEN FILE
@@ -553,13 +513,17 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 
 		console.log(`Mixing audio (bed: ${plan.bedId})...`);
 		const mixedAudioPath = path.join(workDir, 'mixed.m4a');
-		const silentSpans = plan.formatPlan.format === 'wall' ? wallSilentSpans() : [];
+		// Pf39c2-social-pilot-02a D01: every plan is a Wall now (Question/
+		// Objection/Still were deleted outright), so these are unconditional.
+		const silentSpans = wallSilentSpans();
+		const noiseSpans = wallNoiseSpans();
 		await mix({
 			bedPath: bedPath(plan.bedId),
 			narrationPath: narrationAudioPath,
 			durationMs,
 			narrationSpans,
 			silentSpans,
+			noiseSpans,
 			outPath: mixedAudioPath
 		});
 
@@ -586,7 +550,6 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 		const metadata: PostMetadata = {
 			card_id: plan.cardId,
 			format: plan.compositionId.toLowerCase() as PostFormat,
-			opening: plan.formatPlan.format === 'wall' ? plan.formatPlan.opening : null,
 			rendered_at: `${plan.date}T00:00:00.000Z`
 		};
 		const fullMetadata = { ...metadata, ...narrationFields(plan, !VOICES_ARE_UNSET) };
@@ -618,7 +581,6 @@ function narrationFields(plan: RenderPlan, narration: boolean): Record<string, u
 		book_slug: plan.bookSlug,
 		author_slug: plan.authorSlug,
 		day: plan.day,
-		slot: plan.slotNumber,
 		week: plan.week
 	};
 }
@@ -648,7 +610,19 @@ async function main(): Promise<void> {
 	await renderCommand(args);
 }
 
-main().catch((error) => {
-	console.error(error instanceof Error ? error.message : error);
-	process.exit(1);
-});
+// social pilot 02a T14: only auto-run `main()` when this file is the actual
+// process entry point (`npx tsx cli.ts render ...`, exactly how `cli.test.ts`
+// invokes it via a subprocess). Without this guard, merely IMPORTING this
+// module — which `narration.test.ts` needs to do, to unit-test the pure
+// `wallSilentSpans`/`narrationPlan` functions below against recorded
+// fixtures, without a live voice or a full Remotion render — would itself
+// parse `process.argv` as CLI args and call `process.exit()`, killing the
+// whole test worker. Identical runtime behavior for every real invocation:
+// `import.meta.url` and `pathToFileURL(process.argv[1]).href` both resolve
+// to this same file's URL when tsx runs it as the entry script.
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+	main().catch((error) => {
+		console.error(error instanceof Error ? error.message : error);
+		process.exit(1);
+	});
+}

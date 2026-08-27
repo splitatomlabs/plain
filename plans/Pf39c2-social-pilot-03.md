@@ -19,8 +19,13 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   Job**, which allows a 168-hour timeout, 32 GiB and 8 vCPU.
 - **YouTube uploads land private and are flipped by hand** in Studio during the weekly session. Submit the
   compliance audit in parallel; if it lands, the flip disappears and nothing else changes.
-- **Tag every post with its format** and, for The Wall, its opening variant (standard / 190->97 / grade) — openings
-  are the only variable moving within a constant format.
+- **Tag every post with its format.** ~~and, for The Wall, its opening variant (standard / 190->97 / grade) —
+  openings are the only variable moving within a constant format~~ — **CANCELLED, not deferred** (social pilot 02a
+  T17): the opening comparison this decision existed to run is gone because the thing it would have compared is
+  gone. Both numeric openings were retired outright and nothing replaces them — see the index plan's
+  "opening rotation for The Wall" paragraph for why (a reading-grade number nobody finds compelling, and "190 -> 97"
+  selling compression, which the product's own rule 4 forbids). `post-metadata.ts`'s `opening` field, which existed
+  specifically so this plan could compare openings, was deleted along with it.
 - **Metrics collection is automated on all three platforms; only TikTok retention stays manual.** TikTok's posting
   API being unusable says nothing about its READ path — they are different APIs with different scopes. Instagram and
   YouTube insights ride on the OAuth already needed for publishing, so they are near-free to add.
@@ -92,7 +97,8 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   In-app browsers strip referrers, so the UTM is the only reliable signal. Acceptance: an e2e test asserts a 302 with
   the correct Location and a recorded click.
 - [ ] T12: Implement automated collection for Instagram and YouTube against one shared row schema — platform,
-  format, opening variant, publish time, views, average percent watched, likes, comments, shares, saves, follows.
+  format, publish time, views, average percent watched, likes, comments, shares, saves, follows. (No opening
+  variant column — the opening comparison was CANCELLED outright, social pilot 02a T17.)
   Instagram: per-media insights plus a daily account-level follower series. YouTube: Data API `statistics` for
   counts, Analytics API `reports.query` for `engagedViews`, `averageViewPercentage` and `subscribersGained` per
   video, reusing the upload OAuth with the analytics read scope added. Poll for 30 days after publication, since

@@ -1,7 +1,7 @@
 /**
  * Social pilot 02 F17: registers the two real faces every composition names
- * (`Wall.tsx`'s `SERIF_STACK`, `Counter.tsx`'s `COUNTER_FONT_STACK`) inside
- * the Remotion bundle itself.
+ * (`Wall.tsx`'s `SERIF_STACK`, `SourceHead.tsx`'s `SOURCE_HEAD_FONT_STACK`)
+ * inside the Remotion bundle itself.
  *
  * Before this module existed, NOTHING registered an `@font-face` anywhere
  * in the browser-side webpack build Remotion actually renders from — the
@@ -51,8 +51,7 @@ import './fonts.generated.css';
 const FONT_LOAD_SPECS = [
 	// Literata Variable — Wall.tsx's SERIF_STACK, weight 400 (Wall/PayoffLine/Question body text).
 	`400 76px 'Literata Variable'`,
-	// DM Sans Variable — Counter.tsx's COUNTER_FONT_STACK, weight 700 (WallOpeningBadge) and 500 (the counter itself).
-	`700 76px 'DM Sans Variable'`,
+	// DM Sans Variable — SourceHead.tsx's SOURCE_HEAD_FONT_STACK, weight 500 (the running head / payoff label).
 	`500 28px 'DM Sans Variable'`
 ];
 

@@ -50,20 +50,21 @@ function withoutApiKey(): NodeJS.ProcessEnv {
 // ---------------------------------------------------------------------------
 // formatsToRun / VALID_FORMATS — pure, no subprocess needed.
 // ---------------------------------------------------------------------------
+// Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+// outright — the channel is one Wall a day, drawn from the Wall pool,
+// nothing else — so "wall" (and the "all" alias for it) are the only
+// --format values left.
 describe("VALID_FORMATS / formatsToRun", () => {
-  it("lists the five valid --format values", () => {
-    expect(VALID_FORMATS).toEqual(["wall", "question", "objection", "still", "all"]);
+  it("lists the two valid --format values", () => {
+    expect(VALID_FORMATS).toEqual(["wall", "all"]);
   });
 
-  it("expands 'all' to all four scored formats", () => {
-    expect(formatsToRun("all")).toEqual(["wall", "question", "objection", "still"]);
+  it("expands 'all' to the one scored format", () => {
+    expect(formatsToRun("all")).toEqual(["wall"]);
   });
 
   it("returns a single-element array for a specific format", () => {
     expect(formatsToRun("wall")).toEqual(["wall"]);
-    expect(formatsToRun("question")).toEqual(["question"]);
-    expect(formatsToRun("objection")).toEqual(["objection"]);
-    expect(formatsToRun("still")).toEqual(["still"]);
   });
 });
 
@@ -99,7 +100,7 @@ describe("parseLimit", () => {
 // Argument parsing
 // ---------------------------------------------------------------------------
 describe("argument parsing", () => {
-  it.each(["wall", "question", "objection", "still", "all"])(
+  it.each(["wall", "all"])(
     "accepts --format %s",
     (format) => {
       const result = run(["--dry-run", "--limit", "2", "--format", format], withoutApiKey());
@@ -160,22 +161,15 @@ describe("--dry-run --limit 5", () => {
     expect(result.status).toBe(0);
   });
 
-  it("caps each scored format's processed count at 5", () => {
+  it("caps the Wall's processed count at 5", () => {
     const result = run(["--dry-run", "--limit", "5"], withoutApiKey());
     expect(result.stdout).toMatch(/The Wall: \d+ gate survivors, processing 5/);
-    expect(result.stdout).toMatch(/The Question: \d+ gate survivors, processing 5/);
-    expect(result.stdout).toMatch(/The Objection: \d+ gate survivors, processing 5/);
-    expect(result.stdout).toMatch(/The Still: \d+ gate survivors, processing 5/);
   });
 
-  it("reports exactly 5 requests per scored format", () => {
+  it("reports exactly 5 requests for the Wall", () => {
     const result = run(["--dry-run", "--limit", "5"], withoutApiKey());
     const wallLine = result.stdout.match(/The Wall:.*\n\s*Requests: (\d+)/);
-    const questionLine = result.stdout.match(/The Question:.*\n\s*Requests: (\d+)/);
-    const objectionLine = result.stdout.match(/The Objection:.*\n\s*Requests: (\d+)/);
     expect(wallLine?.[1]).toBe("5");
-    expect(questionLine?.[1]).toBe("5");
-    expect(objectionLine?.[1]).toBe("5");
   });
 
   it("never constructs an SDK client or spends any tokens (no Cost Report emitted)", () => {
@@ -190,24 +184,7 @@ describe("--dry-run --limit 5", () => {
   });
 }, 30_000);
 
-// ---------------------------------------------------------------------------
-// --format still — gate-only, no LLM rubric.
-// ---------------------------------------------------------------------------
-describe("--format still", () => {
-  it("reports the gate-only pool and explicitly states it has no LLM scoring", () => {
-    const result = run(["--dry-run", "--format", "still", "--limit", "5"], withoutApiKey());
-    expect(result.status).toBe(0);
-    expect(result.stdout).toMatch(/The Still:/);
-    expect(result.stdout).toMatch(/gate-only/i);
-    expect(result.stdout).toMatch(/no LLM rubric/i);
-    // Never builds/submits a request for Still.
-    expect(result.stdout).not.toMatch(/The Still:[\s\S]*Requests:/);
-  });
-
-  it("does not appear alongside Wall/Question/Objection request counts when run alone", () => {
-    const result = run(["--dry-run", "--format", "still", "--limit", "5"], withoutApiKey());
-    expect(result.stdout).not.toMatch(/The Wall:/);
-    expect(result.stdout).not.toMatch(/The Question:/);
-    expect(result.stdout).not.toMatch(/The Objection:/);
-  });
-}, 15_000);
+// Pf39c2-social-pilot-02a D01: The Still (gate-only, no LLM rubric) was
+// deleted outright along with Question and Objection — the channel is one
+// Wall a day, drawn from the Wall pool, nothing else — so there is no
+// "--format still" case left to cover.

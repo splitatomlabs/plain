@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { loadCorpus, rankWall, questionGate, objectionGate } from "../premises.js";
-import { generateWeek, type FormatPools, type WeekSchedule } from "../schedule.js";
+import { loadCorpus, rankWall } from "../premises.js";
+import { generateWeek, type WeekSchedule } from "../schedule.js";
 import {
   PLACEHOLDER,
   buildReviewNoteTemplate,
@@ -14,27 +14,20 @@ import {
 
 // ---------------------------------------------------------------------------
 // Fixtures — a real generated week (same pattern schedule.test.ts uses),
-// since the review template's per-post list, author mix and read-through
-// position are all derived directly from a WeekSchedule.
+// since the review template's per-post list and author mix are both derived
+// directly from a WeekSchedule.
 // ---------------------------------------------------------------------------
 
 const cards = loadCorpus();
-const gatePools: FormatPools = {
-  wall: rankWall(cards),
-  question: questionGate(cards),
-  objection: objectionGate(cards),
-};
-const poolSource = { wall: "gate-only" as const, question: "gate-only" as const, objection: "gate-only" as const };
+const wallPool = rankWall(cards);
 
 const week1: WeekSchedule = generateWeek({
   weekNumber: 1,
   seed: 42,
   cards,
-  pools: gatePools,
-  poolSource,
+  wallPool,
+  poolSource: "gate-only",
   priorUsedCardIds: new Set(),
-  readThroughBook: "enchiridion",
-  readThroughStartIndex: 0,
 });
 
 const SCHEDULE_PATH = "content/social/pilot-schedule-w01.json";
@@ -46,7 +39,7 @@ function blankTemplate(): string {
 /** A realistic, fully filled-in note — replaces every PLACEHOLDER with a real value. */
 function filledNote(): string {
   return blankTemplate()
-    .replace(/- Day (\d+) Slot (\d+) — (.+): <TODO> views/g, "- Day $1 Slot $2 — $3: 1200 views")
+    .replace(/- Day (\d+) — (.+): <TODO> views/g, "- Day $1 — $2: 1200 views")
     .replace("- Median views (this week): <TODO>", "- Median views (this week): 1200")
     .replace("- Maximum views (this week): <TODO>", "- Maximum views (this week): 4300")
     .replace("- Follows gained (this week): <TODO>", "- Follows gained (this week): 14")
@@ -54,11 +47,8 @@ function filledNote(): string {
     .replace("- Criterion A evidence: <TODO>", "- Criterion A evidence: no post cleared 10,000 views this week")
     .replace("- Criterion B met (yes/no/not-yet-assessable): <TODO>", "- Criterion B met (yes/no/not-yet-assessable): not-yet-assessable")
     .replace("- Criterion B evidence: <TODO>", "- Criterion B evidence: only one week of data so far")
-    .replace("- Next week wall weight: <TODO>", "- Next week wall weight: 5")
-    .replace("- Next week question weight: <TODO>", "- Next week question weight: 8")
-    .replace("- Next week objection weight: <TODO>", "- Next week objection weight: 1")
     .replace("- Next week hook changes: <TODO>", "- Next week hook changes: open on the numeral, not the archaic text")
-    .replace("- Reason: <TODO>", "- Reason: Question posts held attention longer than Wall in the per-post breakdown");
+    .replace("- Reason: <TODO>", "- Reason: median views held steady week over week");
 }
 
 describe("reviewNoteFileName", () => {
@@ -120,16 +110,12 @@ describe("buildReviewNoteTemplate", () => {
     expect(template).toMatch(/Criterion B met \(yes\/no\/not-yet-assessable\):/);
     expect(template).toMatch(/Criterion B evidence:/);
 
-    // Chosen weights + reason for next week.
-    expect(template).toMatch(/Next week wall weight:/);
-    expect(template).toMatch(/Next week question weight:/);
-    expect(template).toMatch(/Next week objection weight:/);
+    // Decision fields for next week.
     expect(template).toMatch(/Next week hook changes:/);
     expect(template).toMatch(/Reason:/);
 
-    // Combined author mix (T05's own acceptance wording) and read-through position.
+    // Combined author mix (T05's own acceptance wording).
     expect(template).toMatch(/Combined author mix:/);
-    expect(template).toMatch(/Read-through position:/);
   });
 
   it("mentions the pre-registered success criterion so review can't drift into post-hoc rationalisation", () => {
@@ -138,13 +124,21 @@ describe("buildReviewNoteTemplate", () => {
     expect(template).toMatch(/10x-median/i);
   });
 
-  it("embeds the week's actual combined author mix and read-through counter, not a placeholder", () => {
+  it("embeds the week's actual combined author mix, not a placeholder", () => {
     const template = blankTemplate();
     for (const [author, m] of Object.entries(week1.author_mix)) {
       expect(template).toContain(`${author} ${m.count} (${(m.share * 100).toFixed(1)}%)`);
     }
-    const lastReadThrough = week1.slots.filter((s) => s.read_through).at(-1)!;
-    expect(template).toContain(lastReadThrough.read_through_counter!);
+  });
+
+  // Pf39c2-social-pilot-02a D02: every slot is Wall now (the read-through
+  // and its counter are both gone), so the per-post row is just
+  // "Day N — wall, <card_id>".
+  it("labels every per-post row with the day and format, no read-through counter", () => {
+    const template = blankTemplate();
+    for (const slot of week1.slots) {
+      expect(template).toContain(`- Day ${slot.day} — wall, ${slot.card_id}: ${PLACEHOLDER} views`);
+    }
   });
 
   it("is unfilled by construction — every metric/decision field is the placeholder", () => {
@@ -169,7 +163,7 @@ describe("isReviewNoteStructurallyValid / isReviewNoteFilled / isReviewComplete"
   });
 
   it("treats a note with even one remaining placeholder as NOT complete", () => {
-    const almostFilled = filledNote().replace("- Reason: Question posts held attention longer than Wall in the per-post breakdown", `- Reason: ${PLACEHOLDER}`);
+    const almostFilled = filledNote().replace("- Reason: median views held steady week over week", `- Reason: ${PLACEHOLDER}`);
     expect(isReviewComplete(almostFilled)).toBe(false);
   });
 
@@ -189,27 +183,14 @@ describe("parseReviewNote", () => {
     expect(parsed.criterionAMet).toBe("no");
     expect(parsed.criterionBMet).toBe("not-yet-assessable");
     expect(parsed.hookChanges).toBe("open on the numeral, not the archaic text");
-    expect(parsed.reason).toBe("Question posts held attention longer than Wall in the per-post breakdown");
+    expect(parsed.reason).toBe("median views held steady week over week");
   });
 
-  // -------------------------------------------------------------------------
-  // Acceptance: parsing a filled note recovers the chosen weights.
-  // -------------------------------------------------------------------------
-  it("recovers the chosen next-week format weights as a FormatWeights object", () => {
-    const parsed = parseReviewNote(filledNote());
-    expect(parsed.nextWeekWeights).toEqual({ wall: 5, question: 8, objection: 1 });
-  });
-
-  it("returns null weights (never a partial object) from a blank template", () => {
+  it("returns null fields from a blank template", () => {
     const parsed = parseReviewNote(blankTemplate());
-    expect(parsed.nextWeekWeights).toBeNull();
     expect(parsed.median).toBeNull();
     expect(parsed.criterionAMet).toBeNull();
-  });
-
-  it("returns null weights when only some of the three weight fields are filled in", () => {
-    const partial = blankTemplate().replace("- Next week wall weight: <TODO>", "- Next week wall weight: 5");
-    const parsed = parseReviewNote(partial);
-    expect(parsed.nextWeekWeights).toBeNull();
+    expect(parsed.hookChanges).toBeNull();
+    expect(parsed.reason).toBeNull();
   });
 });

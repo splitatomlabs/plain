@@ -10,7 +10,10 @@
 // import side effect.
 // ---------------------------------------------------------------------------
 
-export const VALID_FORMATS = ["wall", "question", "objection", "still", "all"] as const;
+// Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
+// outright — the channel is one Wall a day, drawn from the Wall pool,
+// nothing else — so "wall" is the only scored/reported format left.
+export const VALID_FORMATS = ["wall", "all"] as const;
 export type Format = (typeof VALID_FORMATS)[number];
 export type ScoredFormat = Exclude<Format, "all">;
 
@@ -20,7 +23,7 @@ export function isValidFormat(value: string): value is Format {
 
 /** Expands "all" to every scored/reported format; a specific format passes through as a single-element array. */
 export function formatsToRun(f: Format): ScoredFormat[] {
-  return f === "all" ? ["wall", "question", "objection", "still"] : [f];
+  return f === "all" ? ["wall"] : [f];
 }
 
 /**

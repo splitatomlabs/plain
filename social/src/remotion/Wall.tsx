@@ -3,22 +3,12 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
 import { fitFontSize } from '../render/fit.js';
-import { ReadThroughCounter, COUNTER_FONT_STACK } from './Counter.js';
+import { SourceHead } from './SourceHead.js';
 import { assertWallCardRenderable } from './wall-gate.js';
-import {
-	computeOpeningData,
-	assertOpeningRenderable,
-	countdownValueAtFrame,
-	formatCountdownLabel,
-	GRADE_LABEL_PREFIX,
-	WALL_OPENINGS,
-	type WallOpening
-} from './wall-openings.js';
 import {
 	computeWallTiming,
 	wallScrollOffsetAtFrame,
 	WALL_LINE_HEIGHT_RATIO,
-	FRAME_HEIGHT,
 	PAYOFF_BOX_WIDTH,
 	PAYOFF_BOX_HEIGHT,
 	PAYOFF_MIN_FONT,
@@ -34,8 +24,44 @@ import {
 // Remotion's `<Composition>` (which parameterizes over `Props extends
 // Record<string, unknown>`), not part of the domain model.
 export interface WallProps extends Record<string, unknown> {
-	/** Verbatim archaic text — must never be paraphrased or fabricated. */
+	/**
+	 * Verbatim archaic text — must never be paraphrased or fabricated. This
+	 * card's OWN excerpt (used by the gate, and as the fallback wall-phase
+	 * text below when `chapterBlock` is omitted) — not necessarily what
+	 * phase 1 renders; see `chapterBlock`.
+	 */
 	originalExcerpt: string;
+	/**
+	 * The moving wall phase's actual scrolling text (social pilot 02a
+	 * T05-T09) — verbatim text from this card's own excerpt PLUS the
+	 * surrounding chapter's other cards, in document order, one full lap
+	 * starting at this card (`social/src/render/chapter-text.ts`'s
+	 * `buildChapterTextBlock`/`loadChapterTextBlock`). Because the block
+	 * always starts with this card's own `original_excerpt`, frame 0 (offset
+	 * 0, before any scroll) still shows this card's own first words at the
+	 * top of the frame — the chapter-sourcing only extends what continues
+	 * BELOW that as the scroll travels, it never changes what frame 0 opens
+	 * on. Optional and falls back to `originalExcerpt` alone (the pre-T09
+	 * behavior) so every caller that hasn't been updated to supply a
+	 * chapter-sourced block yet (Remotion Studio's `defaultProps`, this
+	 * file's own gate call, any test that only cares about a single card)
+	 * keeps rendering exactly as before — `cli.ts` is the one real caller
+	 * that supplies this from `loadChapterTextBlock`.
+	 */
+	chapterBlock?: string;
+	/**
+	 * The card's own `source_reference` field (e.g. `"Meditations, Book 2,
+	 * Section 1"`), verbatim from `content/output/` — social pilot 02a
+	 * T11/T12's framing layer. Combined with `author` (the card's own
+	 * `author_slug`) to derive the running head via `SourceHead.tsx`'s
+	 * `formatRunningHead` (never hardcoded). Optional and additive, same
+	 * pattern as `chapterBlock`: when omitted, no running head or
+	 * payoff label renders at all, so every caller that hasn't been updated
+	 * yet (Remotion Studio's `defaultProps`, existing tests) keeps rendering
+	 * exactly as before — `cli.ts` is the one real caller that supplies this,
+	 * from the same `loadOutputCard` call that already resolves `author`.
+	 */
+	sourceReference?: string;
 	/** Verbatim plain sentence held in phase 2. */
 	landingLine: string;
 	/** The rest of the plain passage, verbatim and in order, excluding `landingLine`. */
@@ -46,39 +72,6 @@ export interface WallProps extends Record<string, unknown> {
 	 * Falls back to a fixed duration per line when absent.
 	 */
 	narrationTimings?: NarrationLineTiming[];
-	/**
-	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
-	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
-	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
-	 * this renders as (T09). NEVER shown during the moving wall phase (the
-	 * counter must not collide with the archaic wall it would otherwise sit
-	 * on top of) — only once the composition reaches a still payoff frame
-	 * (the landing line or a rest line).
-	 */
-	counter?: string | null;
-	/**
-	 * Which of the Wall's three OPENING treatments (T17) this render uses —
-	 * `standard` (the packed wall exactly as it renders today), `countdown`
-	 * ("190 -> 97", the original's word count counting down live in step
-	 * with the scroll to the plain word count — see F15), or `grade`
-	 * ("Grade 14", the original's computed reading grade as a bare
-	 * measurement — original only). See `wall-openings.ts`. Defaults to
-	 * `standard` so every existing caller and test is unaffected — this
-	 * prop is purely additive.
-	 */
-	opening?: WallOpening;
-	/**
-	 * Which openings THIS card is eligible for — normally the precomputed
-	 * `eligible_openings` field on the card's `content/social/premises/
-	 * wall.json` pool entry (see `scripts/lib/premises.ts`'s
-	 * `eligibleWallOpenings`). Defaults to permitting all three when
-	 * omitted, so a direct render (Remotion Studio, or a caller that has
-	 * already screened the card upstream) isn't blocked — `wall-openings.ts`'s
-	 * `gateOpening`/`assertOpeningRenderable` is the REJECTION path this
-	 * feeds when a real pool entry's list is narrower than `['standard',
-	 * 'countdown', 'grade']`.
-	 */
-	eligibleOpenings?: WallOpening[];
 }
 
 // Exported (additively) so other compositions sharing this visual grammar —
@@ -113,68 +106,35 @@ export const Wall: React.FC<WallProps> = (props) => {
 		narrationTimings: props.narrationTimings
 	});
 	const accent = ACCENTS[props.author];
-	// Optional overlay (T09) — a sibling layer on every STILL payoff phase
-	// below, never a participant in any phase's own layout and never shown
-	// during the moving wall phase (it must not collide with the archaic
-	// wall). See `Counter.tsx`.
-	const counter = props.counter ?? null;
+	// social pilot 02a T09 — the moving wall phase scrolls through the
+	// chapter-sourced block (see `WallProps.chapterBlock`'s doc comment),
+	// not just this card's own excerpt. Falls back to `originalExcerpt`
+	// alone when `chapterBlock` is omitted.
+	const wallText = props.chapterBlock ?? props.originalExcerpt;
+	// social pilot 02a T11/T12 — the framing layer. `null` (not rendered at
+	// all) when the caller hasn't supplied `sourceReference`.
+	const runningHead = props.sourceReference ? (
+		<SourceHead variant={{ kind: 'running-head', card: { author_slug: props.author, source_reference: props.sourceReference } }} />
+	) : null;
+	const payoffLabel = props.sourceReference ? <SourceHead variant={{ kind: 'payoff' }} /> : null;
 
 	if (frame < timing.wall.endFrame) {
-		// Rejects rather than renders an over-long card (either too small to
-		// read, or whose composition busts the duration ceiling — F03) — see
-		// `wall-gate.ts` (T06). `Root.tsx`'s `calculateMetadata` already runs
-		// this same gate before a render starts; this call is the backstop
-		// for any path that renders `Wall` directly.
+		// Rejects rather than renders an over-long card (too small to read,
+		// busts the duration ceiling — F03 — or whose `landingLine` runs over
+		// the whole-passage backstop — T02) — see `wall-gate.ts` (T06/T02).
+		// `Root.tsx`'s `calculateMetadata` already runs this same gate before a
+		// render starts; this call is the backstop for any path that renders
+		// `Wall` directly.
 		const layout = assertWallCardRenderable(props.originalExcerpt, {
 			plainLines: props.plainLines,
-			narrationTimings: props.narrationTimings
+			narrationTimings: props.narrationTimings,
+			landingLine: props.landingLine
 		});
-
-		// T17 — the opening rotation. `standard` (the default) renders
-		// nothing extra here at all: the wall is unchanged. The two numeric
-		// openings compute their numeral from the real card (never
-		// hardcoded — CONSTRAINT 6's "factually true") and gate themselves
-		// against this card's `eligibleOpenings` before rendering anything —
-		// see `wall-openings.ts`'s `assertOpeningRenderable`.
-		const opening = props.opening ?? 'standard';
-		let openingBadge: React.ReactElement | null = null;
-		if (opening !== 'standard') {
-			// The full plain passage, reconstructed the same way the schedule
-			// (T18) will have it — `landingLine` is part of `plain_english`,
-			// not a separate sentence, so word count must include it to match
-			// `scripts/lib/premises.ts`'s `lengthDelta` (`wordCount(card.
-			// plain_english)`).
-			const plainText = [props.landingLine, ...props.plainLines].join(' ');
-			const openingData = computeOpeningData(props.originalExcerpt, plainText);
-			assertOpeningRenderable(
-				{ eligible_openings: props.eligibleOpenings ?? WALL_OPENINGS },
-				opening,
-				openingData
-			);
-			if (opening === 'countdown') {
-				// The cut is the LAST frame the wall phase renders
-				// (`timing.wall.endFrame` itself is already the payoff phase —
-				// see the `frame < timing.landingLine.endFrame` branch below),
-				// so `countdownValueAtFrame` lands exactly on
-				// `plainWordCount` there, not one frame late. Driven by scroll
-				// progress (F15) — see `wall-openings.ts`'s doc comment.
-				const value = countdownValueAtFrame(frame, timing.wall.endFrame - 1, openingData);
-				openingBadge = <WallOpeningBadge value={formatCountdownLabel(value)} accent={accent} />;
-			} else {
-				// `grade`: ORIGINAL ONLY, bare measurement — never the plain
-				// side's grade, never an adjective. `GRADE_LABEL_PREFIX` is a
-				// hardcoded constant ("Grade"), never composed from card data
-				// — see `FORBIDDEN_GRADE_VOCABULARY` in `wall-openings.ts`.
-				openingBadge = (
-					<WallOpeningBadge value={String(openingData.originalGrade)} accent={accent} sublabel={GRADE_LABEL_PREFIX} />
-				);
-			}
-		}
 
 		return (
 			<>
-				<WallPhase frame={frame} text={props.originalExcerpt} accent={accent} timing={timing} layout={layout} />
-				{openingBadge}
+				<WallPhase frame={frame} text={wallText} accent={accent} timing={timing} layout={layout} />
+				{runningHead}
 			</>
 		);
 	}
@@ -183,7 +143,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 		return (
 			<>
 				<PayoffLine text={props.landingLine} />
-				<ReadThroughCounter label={counter} />
+				{payoffLabel}
 			</>
 		);
 	}
@@ -192,7 +152,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 	return (
 		<>
 			<PayoffLine text={restLine ? restLine.text : ''} />
-			<ReadThroughCounter label={counter} />
+			{payoffLabel}
 		</>
 	);
 };
@@ -277,107 +237,19 @@ export function WallPhase({
 }
 
 /**
- * The numeral is the SUBJECT of the `countdown` and `grade` openings, not a
- * badge pinned over the text — the index plan's own words are "the first
- * frame carries A NUMBER INSTEAD OF A WALL". This renders it that way:
- * dominant (`WALL_OPENING_VALUE_FONT_SIZE`, 280-360px), set directly over
- * the wall with NO backing plate, no rounded rectangle and no blur — it is
- * fine, and expected, for it to sit on top of illegible archaic text; what
- * it must never do is erase a soft-edged rectangle out of that text the way
- * an opaque card would.
- *
- * FRAMING TEXT under CONSTRAINT 6, not quoted content — set apart from
- * `WallPhase`'s quoted block by every signal that rule asks for, all at
- * once rather than relying on any single one:
- *
- *   - a different typeface — `COUNTER_FONT_STACK` (DM Sans, the UI face
- *     `Counter.tsx` already uses for the read-through label), never
- *     `SERIF_STACK`, which is reserved for the author's own words;
- *   - a different colour — the author's own `accent`, never the wall's
- *     `INK`, and (per `docs/BRANDING.md`) accents are only ever used this
- *     large specifically because they fail WCAG AA at body-text sizes;
- *   - roughly 6x the wall's own type size — unmistakably a different kind
- *     of thing on screen, not a bigger word in the same sentence;
- *   - no name, no "he/she wrote", no possessive — bare digits (and, for
- *     `grade`, the bare word "Grade") and nothing else, so it is never
- *     attributed to the author.
- *
- * Both openings anchor to the SAME region (the upper third, horizontally
- * centred) so the two numeric openings read as one family rather than two
- * different treatments.
- *
- * `value` and `sublabel` must already be the exact, computed, factual
- * strings to show (`"190"`, `"14"` + `"Grade"`) — this component does no
- * formatting or rounding of its own; see `wall-openings.ts`'s
- * `computeOpeningData`, `countdownValueAtFrame`, `formatCountdownLabel` and
- * `GRADE_LABEL_PREFIX` for where those come from.
- */
-export const WALL_OPENING_VALUE_FONT_SIZE = 320;
-export const WALL_OPENING_SUBLABEL_FONT_SIZE = 72;
-/** Anchors the badge's content vertically within the frame's upper third. */
-export const WALL_OPENING_REGION_HEIGHT = FRAME_HEIGHT / 3;
-
-export function WallOpeningBadge({
-	value,
-	accent,
-	sublabel
-}: {
-	value: string;
-	accent: string;
-	sublabel?: string;
-}): React.ReactElement {
-	return (
-		<AbsoluteFill style={{ pointerEvents: 'none' }}>
-			<div
-				style={{
-					position: 'absolute',
-					top: 0,
-					left: 0,
-					right: 0,
-					height: WALL_OPENING_REGION_HEIGHT,
-					display: 'flex',
-					flexDirection: 'column',
-					alignItems: 'center',
-					justifyContent: 'center'
-				}}
-			>
-				{sublabel ? (
-					<span
-						style={{
-							fontFamily: COUNTER_FONT_STACK,
-							fontWeight: 700,
-							fontSize: WALL_OPENING_SUBLABEL_FONT_SIZE,
-							lineHeight: 1,
-							color: accent,
-							marginBottom: 8
-						}}
-					>
-						{sublabel}
-					</span>
-				) : null}
-				<span
-					style={{
-						fontFamily: COUNTER_FONT_STACK,
-						fontWeight: 700,
-						fontSize: WALL_OPENING_VALUE_FONT_SIZE,
-						lineHeight: 1,
-						color: accent
-					}}
-				>
-					{value}
-				</span>
-			</div>
-		</AbsoluteFill>
-	);
-}
-
-/**
  * Phases 2 and 3 — one still line, centred, on paper, zero motion. Renders
  * identically on every frame it's shown, so there is no interpolation range
  * to accidentally animate.
  *
- * Exported (additively) so `Question.tsx` reuses this exact JSX for its own
- * still answer phase rather than forking a second copy.
+ * Exported (additively) so `Question.tsx` and `Objection.tsx` reuse this
+ * exact JSX for their own still payoff phases rather than forking a second
+ * copy.
+ *
+ * Pf39c2-social-pilot-02a D03 (2026-08-27): this used to also render an
+ * optional read-through `counter` (`"Card 5 of 48"`) centred below this text
+ * block — deleted along with the read-through it labeled (D02 hardcoded
+ * `RenderPlan.counter` to `null`; D03 deletes the counter component and
+ * geometry outright, since nothing supplies a label any more).
  */
 export function PayoffLine({ text }: { text: string }): React.ReactElement {
 	const fit = fitFontSize(text, {

@@ -9,8 +9,7 @@
  * single source of truth for both timing AND wall-phase geometry.
  */
 
-import { estimateWrappedLineCount } from '../render/fit.js';
-import { padToMinimumDuration } from './duration-bounds.js';
+import { estimateWrappedLineCount, fitFontSize } from '../render/fit.js';
 
 // ---------------------------------------------------------------------------
 // Frame rate and frame dimensions
@@ -24,11 +23,15 @@ export const FRAME_WIDTH = 1080;
 export const FRAME_HEIGHT = 1920;
 
 // ---------------------------------------------------------------------------
-// The legibility floor — MOVED here from `wall-gate.ts` in F18, because
-// `fitWallFontSize`'s search (below) needs it as an actual bound, not just a
-// value to check a fixed size against. Still re-exported from `wall-gate.ts`
-// (unchanged import path for existing callers — `question-gate.ts`,
-// `objection-gate.ts`, and every test that imports it from there).
+// The legibility floor — MOVED here from `wall-gate.ts` in F18, when the Wall
+// briefly ran its own per-card font-size search against it. social pilot 02a
+// T08 deleted that search (the Wall's font size is fixed again, `WALL_FONT_SIZE`
+// below, well above this floor) but left the constant defined here rather than
+// moving it back — `question-gate.ts` and `objection-gate.ts` still run real
+// per-card `fitFontSize` searches against it, so it stays load-bearing for
+// them regardless of what the Wall does with its own size. Still re-exported
+// from `wall-gate.ts` (unchanged import path for existing callers — those two
+// gates, and every test that imports it from there).
 // ---------------------------------------------------------------------------
 
 /**
@@ -123,177 +126,100 @@ export const WALL_LINE_HEIGHT_RATIO = 1.25;
  * loads, see `register-fonts.ts` — so this is a true measurement of the
  * shipped face, not the Georgia fallback the pre-F17 build silently
  * rendered in), the naive estimate OVER-counts real wrapped lines at this
- * composition's box width (920px).
+ * composition's box width (920px). Measured with real Playwright
+ * `boundingClientRect` against real Literata across F16/F18's font-size
+ * range (50-120px): `estimate/real` ratio 1.037-1.147, no directional drift
+ * with font size — the error is noise across that range, not a trend a
+ * single constant needs to track.
  *
- * F18 (2026-08-26) re-measured this across the FULL font-size range
- * `fitWallFontSize` now searches (`WALL_FONT_FLOOR_PX`..`WALL_FONT_CAP_PX`,
- * roughly 39-92px), not just F16's single fixed 76px — a per-card fit
- * changes which sizes actually get used, so the calibration has to hold
- * across the whole range, not just at one point. Measured with real
- * Playwright `boundingClientRect` against real Literata:
- *   - `meditations-07-031` (150 words) and `discourses-59-004` (201 words)
- *     swept at every 5-10px step from 50px to 120px: measured
- *     `estimate/real` ratio ranges 1.037-1.147, no directional drift with
- *     font size (the error is noise across the range, not a trend a single
- *     constant needs to track) — the same range F16's own calibration
- *     found, so no re-tune from that alone.
- *   - Sweeping EVERY entry in the real Wall pool (896 cards) at its OWN
- *     `fitWallFontSize`-computed size (the size that actually ships)
- *     against a real render: F16's 1.14 still produces ZERO false
- *     positives (a card whose ESTIMATE clears the target/floor but whose
- *     REAL rendered block does not) across the full pool at F18's
- *     per-card-fit geometry too, with a real, if narrow, 15px margin over
- *     the travel floor on the single tightest passing card
- *     (`on-anger-02-087`). A stricter overshoot (1.20) was tried and
- *     rejected: it still produced zero false positives with a much larger
- *     230px worst-case margin, but did so by systematically
- *     UNDER-estimating real height for shorter cards near the cap — real
- *     measurement of `meditations-02-001` (117 words, the read-through's
- *     own first card) found the ESTIMATE at `WALL_FONT_CAP_PX` 345px SHORT
- *     of its REAL rendered height (3220px estimated vs. 3565px real),
- *     wrongly rejecting a card that genuinely renders fine — a real,
- *     measured FALSE NEGATIVE cost that fell hardest on exactly the
- *     shortest, most CAP-adjacent cards the read-through's own book slice
- *     is full of. Layout height from the SAME embedded font bytes in the
- *     SAME Chromium build is deterministic (word-wrap is a pure function of
- *     font metrics baked into the font file, not of GPU/OS antialiasing),
- *     so cross-environment drift on the 15px margin is not the same risk
- *     class as per-card estimate error — kept at F16's number.
- * `computeWallLayout`/`fitWallFontSize` divide the raw line-count estimate
- * by this factor so `blockHeight`/`screens` approximate what actually
- * renders.
+ * `computeWallLayout` divides the raw line-count estimate by this factor so
+ * `blockHeight`/`screens` approximate what actually renders at
+ * `WALL_FONT_SIZE`.
  */
 export const WALL_LINE_ESTIMATE_OVERSHOOT = 1.14;
 
 /**
- * F18 (2026-08-26): the wall's archaic-text font size is no longer a single
- * FIXED constant (F16's `WALL_FONT_SIZE`, 76px) — F16's fixed size cost 76%
- * of the real Wall pool (219/896 renderable), because "never finishes
- * before the cut" needs a block over `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`
- * (`wall-gate.ts`, ~3170px at F16's rate/duration), and a fixed 76px font
- * only reaches that above ~130 words — every shorter card became
- * unrenderable outright, and the read-through (which needs 7+ CONSECUTIVE
- * renderable cards from a book's start) couldn't find a run of 7 anywhere
- * in the real corpus.
+ * social pilot 02a T08 (2026-08-26): the wall's archaic-text font size is
+ * FIXED again — one size for every card, no per-card search. F18's per-card
+ * fit (aimed at a travel TARGET block height, since deleted along with
+ * `WALL_TARGET_BLOCK_HEIGHT_PX`/`WALL_FONT_FLOOR_PX`/`WALL_FONT_CAP_PX`) cost
+ * the format its own identity: block height scales with the SQUARE of font
+ * size, so the only way for a ≤201-word single card to buy enough travel was
+ * to blow the type up to 65-91px — "the wall reads as a large-print book,
+ * not a wall" (measured from real frames, see the plan). 44px, chosen from
+ * the plan's own measurement: ~39 chars/line, ~7.1 words/line at this
+ * composition's box width — a real page of a real book, not large print.
  *
- * The fix keeps the fixed SCROLL RATE and the never-finishes invariant
- * (`WALL_SCROLL_RATE_PX_PER_SEC`, `WALL_SECONDS`, unchanged) but stops
- * fixing the FONT SIZE and fits it PER CARD instead, aimed at a TRAVEL
- * TARGET (`WALL_TARGET_BLOCK_HEIGHT_PX`) rather than at filling exactly one
- * screen (T05/T06's original, already-abandoned objective) or at a single
- * shared size (F15/F16's, just abandoned here): short passages get LARGER
- * type (to reach the target height), long passages get SMALLER type (to
- * avoid wildly overshooting it) — supply returns because a short card is no
- * longer rejected just for being short, only for being SO short that even
- * `WALL_FONT_CAP_PX` can't reach the target without reading as large-print.
+ * The fix that makes a small, fixed size viable again is NOT a bigger font —
+ * it's a bigger BLOCK. `chapter-text.ts` (T05/T06) sources the wall's
+ * scrolling text from the surrounding CHAPTER, not the single card, so the
+ * block a card scrolls through is typically thousands of words long
+ * (2,196-3,305 for Meditations Books 2-3) rather than 100-200. At 44px/4.5
+ * lines-per-second (`WALL_SCROLL_LINES_PER_SEC`), "never finishes before the
+ * cut" needs only ≈412 words (see `WALL_SCROLL_RATE_PX_PER_SEC`'s doc
+ * comment for the arithmetic) — a Meditations-length chapter block clears
+ * that by an order of magnitude.
  *
- * This reuses `fit.ts`'s binary-search MACHINERY (the same kind of search
- * `fitFontSize` already runs for Question/Objection/PayoffLine), just aimed
- * at a different predicate — see `fitWallFontSize` below, which is where
- * the actual search lives (`computeWallLayout` is a thin wrapper over it).
+ * social pilot 02a REVIEW R02 (2026-08-26): that "order of magnitude" was
+ * true for Meditations but NOT for the rest of the corpus — Enchiridion's 51
+ * chapters median just 94 words (min 24), nowhere near 412, and T08's
+ * original claim that "the constraint stops binding entirely" turned out to
+ * be a Meditations-only measurement quietly generalized to every book. The
+ * never-finishes invariant is now held by `chapter-text.ts`'s
+ * `buildChapterTextBlock` directly (R02: it repeats a too-short chapter's
+ * one lap whole, as many times as needed to clear this module's own travel
+ * floor, verbatim, never fabricating or padding) rather than by "the chapter
+ * block is always big enough" being true unconditionally — see that
+ * function's own doc comment for the reasoning and the measured repeat
+ * counts across the real pool (worst case 6 laps, median 1).
  */
+export const WALL_FONT_SIZE = 44;
 
 /**
- * The block height `fitWallFontSize` aims for. Chosen above `wall-gate.ts`'s
- * `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` (the real floor a scroll must clear to
- * survive `WALL_SECONDS` at `WALL_SCROLL_RATE_PX_PER_SEC` without finishing
- * before the cut — 3170px at F18's numbers) so `WALL_LINE_ESTIMATE_OVERSHOOT`'s
- * calibration error (measured, never exactly zero) cannot push an accepted
- * card's REAL rendered block under the real floor: 3400 - 3170 = 230px of
- * nominal margin.
+ * The wall's scroll rate, expressed as LINES PER SECOND rather than a bare
+ * px/s figure — perceptually meaningful (how many lines of type pass in a
+ * second) and decoupled from whatever font size is chosen, unlike F16/F18's
+ * `WALL_SCROLL_RATE_PX_PER_SEC` = 500 (a number that only meant anything
+ * relative to F16's now-gone 76px fixed size).
  *
- * Real per-card margin varies (per-card word-length distribution is what the
- * naive char-width estimate is actually noisy against, not font size) — real
- * measurement of the entire pool put the WORST real margin at 15px
- * (`on-anger-02-087`), not the full 230px nominal figure, but still real and
- * positive: zero false positives across the whole 896-card pool (see
- * `WALL_LINE_ESTIMATE_OVERSHOOT`'s doc comment for why a STRICTER overshoot
- * that raised that margin was tried and rejected — it traded real supply for
- * a bigger safety number without fixing a real defect). Not derived from
- * `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX` by a formula (there is no principled
- * ratio here, just "safely clear of it") — the nominal margin itself is the
- * design decision, recorded here rather than computed; the REAL margin is
- * measured, reported, and re-verified on every re-tune.
+ * 4.5 lines/s (social pilot 02a T08, user decision, 2026-08-26): at
+ * `WALL_FONT_SIZE` (44px) that derives to ≈250px/s (`WALL_SCROLL_RATE_PX_PER_SEC`
+ * below) ≈32 words/s ≈1,900wpm ≈7.5x normal reading pace (~250wpm) —
+ * comfortably, unambiguously outrunning the reader without strobing. 500px/s
+ * at 44px would be 500 / (44 * WALL_LINE_HEIGHT_RATIO) ≈ 9.1 lines/s, which
+ * strobes (a line-height-tall jump nearly every other frame at 30fps reads
+ * as flicker, not scroll).
  */
-export const WALL_TARGET_BLOCK_HEIGHT_PX = 3400;
-
-/**
- * The smallest font size `fitWallFontSize` will ever choose. Reuses the
- * SAME 14px-CSS-on-a-390px-reference-phone legibility floor `wall-gate.ts`
- * exports as `WALL_MIN_LEGIBLE_FONT_PX` (pre-F15/F16 this was the Wall's own
- * fit-search floor too, before F15's fixed-size wall made it briefly
- * dead-for-the-Wall weight carried only by Question/Objection — F18 makes it
- * load-bearing for the Wall again): below this, type reads as a grey smear
- * rather than words, which is not the kind of illegibility this format
- * wants (speed and density, not squinting). Per the plan's own framing, this
- * "should rarely bind" — a real ~200-word card's fitted size sits well above
- * it (see `fitWallFontSize`'s doc comment for the measured range).
- */
-export const WALL_FONT_FLOOR_PX = WALL_MIN_LEGIBLE_FONT_PX;
-
-/**
- * The largest font size `fitWallFontSize` will ever choose — above this, a
- * card is REJECTED as too short to set without reading as large-print,
- * rather than stretched further (F15's whole complaint about its fixed 86px
- * was exactly this: a wall that reads as large-print loses the "wall"
- * identity the format is named for). 92px, chosen from real measurement
- * (Playwright `boundingClientRect`, real Literata, `WALL_BOX_WIDTH`) across
- * the whole real Wall pool (896 entries), at `WALL_LINE_ESTIMATE_OVERSHOOT`'s
- * final calibrated value:
- *   - only the shortest end of the pool ever reaches this cap at all — the
- *     fitted font size across every card that DOES pass ranges 65-91px, so
- *     92 is never actually the TYPICAL size, only the ceiling a handful of
- *     the shortest passing cards approach; the pool as a whole reads
- *     noticeably denser than F15's uniform, fixed 86px wall did.
- *   - the crossover — the shortest real word count whose block still clears
- *     `WALL_TARGET_BLOCK_HEIGHT_PX` within this cap — measures at 96 words
- *     (`discourses-47-002`, the shortest PASSING pool entry); the longest
- *     REJECTED entry is 117 words (`meditations-02-001` — word count alone
- *     doesn't fully predict wrapped height, longer average word length
- *     wraps to fewer lines per word). 175 of 896 pool entries (19.5%) are
- *     rejected on this axis — a real, reported cost, not the whole pool:
- *     "rejecting a narrow band of very short cards is expected and fine."
- */
-export const WALL_FONT_CAP_PX = 92;
+export const WALL_SCROLL_LINES_PER_SEC = 4.5;
 
 /**
  * The wall's scroll rate, in px/s, in the composition's 1080x1920 frame
  * space — LINEAR, identical on every card, and the single source of the
  * wall's motion now that the karaoke highlight is gone (F15).
  *
- * F16 (2026-08-26, user decision): dropped from F15's 720px/s to 500px/s —
- * denser type (see `WALL_FONT_SIZE`) at the same speed the reader could no
- * longer track at all; 500px/s keeps the wall clearly outrunning normal
- * reading pace (see the sanity check below) while giving `WALL_FONT_SIZE`'s
- * smaller blocks a fairer chance to still clear the travel floor.
+ * social pilot 02a T08 (2026-08-26): DERIVED from `WALL_SCROLL_LINES_PER_SEC`
+ * and `WALL_FONT_SIZE`'s own line height, not a bare px/s constant (F16/F18's
+ * 500px/s only meant anything relative to a font size that no longer
+ * exists): `WALL_SCROLL_LINES_PER_SEC * WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO`
+ * = `4.5 * 44 * 1.25` = `247.5px/s`.
  *
- * The travel floor itself — the minimum `blockHeight` a card's fitted
- * archaic text must clear so the scroll never finishes before the
- * `WALL_SECONDS` (2.5s) hard cut — is DERIVED from this rate, not the other
- * way around (F15's version derived a "safe rate ceiling" from an ASSUMED
- * worst-case block of 2 screens; F16 inverts this because the real pool's
- * blocks vary far more than a single "worst case" screen count usefully
- * describes — see `wall-gate.ts`'s `WALL_MIN_TRAVEL_BLOCK_HEIGHT_PX`, which
- * is the actual floor every card is gated against):
- * `FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS` =
- * `1920 + 500 * 2.5` = `3170px`. Any card whose fitted `blockHeight` clears
- * that figure is, by construction, guaranteed not to finish scrolling
- * before the cut — see `wall-timing.test.ts`'s "the scroll does not finish
- * before the cut" guard, which asserts this against `computeWallLayout`'s
- * real numbers directly.
- *
- * Sanity check against reading pace, not just against the invariant: at
- * `WALL_FONT_SIZE`'s line height (95px) and the `meditations-07-031`
- * fixture's own real words-per-line (150 words / 34 lines ≈ 4.41), 500px/s
- * is ≈5.26 lines/s ≈ ≈23.2 words/s ≈ ≈1393wpm — roughly 5.6x normal reading
- * pace (~250wpm), well past the original T05 karaoke sweep's 320wpm.
- * Against `discourses-59-004` (201 words / 43 lines ≈ 4.67 words/line):
- * ≈24.6 words/s ≈ ≈1478wpm. Comfortably, unambiguously outrunning the
- * reader at 500px/s on real cards, not just on paper.
+ * The never-finishes invariant — the minimum `blockHeight` a source block
+ * must clear so the scroll never finishes before the `WALL_SECONDS` (2.5s)
+ * hard cut — is `FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_SECONDS`
+ * = `1920 + 247.5 * 2.5` ≈ `2538.75px`, which in words (at `WALL_FONT_SIZE`'s
+ * own ~7.1 words/line and line height) needs ≈412 words. A single card
+ * (100-200 words) cannot clear that alone — the chapter-sourced block
+ * (`chapter-text.ts`, T05/T06) is what supplies the length now, not a bigger
+ * font (see `WALL_FONT_SIZE`'s own doc comment). This is why the invariant is
+ * no longer enforced as a `wall-gate.ts` rejection: it holds by construction —
+ * `chapter-text.ts`'s `buildChapterTextBlock` (R02) repeats a too-short
+ * chapter's own lap, whole and verbatim, until it clears exactly this floor,
+ * so no card is ever rejected on this axis regardless of how short its own
+ * chapter is.
  */
-export const WALL_SCROLL_RATE_PX_PER_SEC = 500;
+export const WALL_SCROLL_RATE_PX_PER_SEC = WALL_SCROLL_LINES_PER_SEC * WALL_FONT_SIZE * WALL_LINE_HEIGHT_RATIO;
 
-/** `WALL_SCROLL_RATE_PX_PER_SEC` per frame at `FPS` — `500 / 30` ≈ 16.667px/frame (not a clean integer at F16's rate, unlike F15's 720/30 = 24). The frame-0-to-frame-1 velocity check in `wall-timing.test.ts` still asserts EXACT equality against this constant itself (not a rounded literal), so the non-integer value doesn't weaken that check. */
+/** `WALL_SCROLL_RATE_PX_PER_SEC` per frame at `FPS` — `247.5 / 30` = 8.25px/frame. The frame-0-to-frame-1 velocity check in `wall-timing.test.ts` still asserts EXACT equality against this constant itself (not a rounded literal), so a non-integer value at other rate/FPS combinations wouldn't weaken that check. */
 export const WALL_SCROLL_PX_PER_FRAME = WALL_SCROLL_RATE_PX_PER_SEC / FPS;
 
 /**
@@ -318,7 +244,35 @@ export function wallScrollOffsetAtFrame(frame: number): number {
 export const PAYOFF_PADDING_X = 96;
 export const PAYOFF_BOX_WIDTH = FRAME_WIDTH - PAYOFF_PADDING_X * 2;
 export const PAYOFF_BOX_HEIGHT = 800;
-export const PAYOFF_MIN_FONT = 40;
+
+/**
+ * social pilot 02a T10 (2026-08-26): raised from 40 to 52 — the polarity
+ * fix. Before T08, the wall was fit per-card at 65-91px while this floor
+ * let the payoff fall to 40px: "the hard text is set LARGER and airier than
+ * the easy text... nothing says refined" (the plan's own diagnosis). T08
+ * fixed the Wall at `WALL_FONT_SIZE` (44px) but left this floor unchanged,
+ * so the payoff could still, in principle, render SMALLER than the wall it
+ * follows — the format's whole promise ("a wall of archaic text refined
+ * into one plain sentence") runs backwards if the refined sentence is ever
+ * the smaller type.
+ *
+ * 52 is a genuine step up from `WALL_FONT_SIZE` (+8px, ~18% larger), not a
+ * 1px technicality, and is asserted as a structural relationship (not a
+ * coincidence) in `__tests__/wall-timing.test.ts`'s "payoff type must read
+ * larger than wall type" suite — that suite also fails the build if either
+ * constant ever drifts the wrong way again.
+ *
+ * In practice this floor never binds for a real, mechanically-selected
+ * landing line: every one of the 896 real entries in
+ * `content/social/premises/wall.json` (each ≤18 words, the mechanical
+ * `LANDING_LINE_MAX_WORDS` bound in `landing-line.ts`) fits at 81px or
+ * larger regardless of the floor's value. It only matters as a backstop
+ * for `WALL_LANDING_LINE_MAX_WORDS` (30, `wall-gate.ts`) — a much looser
+ * render-time ceiling than the 18-word mechanical selection bound — where
+ * it was measured to still fit `PAYOFF_BOX_HEIGHT` without overflow even
+ * for a worst-case 30-word line of unusually long (10-char average) words.
+ */
+export const PAYOFF_MIN_FONT = 52;
 export const PAYOFF_MAX_FONT = 88;
 export const PAYOFF_LINE_HEIGHT_RATIO = 1.4;
 
@@ -337,8 +291,21 @@ export const LANDING_LINE_FRAMES = Math.round(LANDING_LINE_SECONDS * FPS);
 /**
  * Fallback duration for a plain line when no narration timing is supplied.
  * Narration (T13) will normally drive this via `narrationTimings`.
+ *
+ * social pilot 02a T03 (2026-08-26): dropped from 3.5s to 3.0s. The
+ * read-through's 30 Walls can carry up to 11 payoff lines each (per-card
+ * word count, not a fixed cap — see `wall-gate.ts`'s
+ * `WALL_MAX_DURATION_SECONDS` doc comment for why a line CAP was rejected in
+ * favour of this pacing change), and at 3.5s/line eleven hard cuts of
+ * centred text read as a slideshow (p50 26.5s, p75 30s, max 44s across the
+ * read-through). 3.0s keeps p50 at ~23.5s while leaving 0.5s of margin over
+ * the house rule's 2.5s motionless floor per payoff line — the rule "payoff
+ * frame motionless >= 2.5s" is a floor this constant must clear, not a
+ * target to sit on. This fallback only drives the MUSIC-ONLY case: once
+ * T14's voices land, `narrationTimings` (not `DEFAULT_LINE_FRAMES`) sets
+ * each line's real duration.
  */
-export const DEFAULT_LINE_SECONDS = 3.5;
+export const DEFAULT_LINE_SECONDS = 3.0;
 export const DEFAULT_LINE_FRAMES = Math.round(DEFAULT_LINE_SECONDS * FPS);
 
 // ---------------------------------------------------------------------------
@@ -361,25 +328,25 @@ export interface WallLayout {
 	estimatedLines: number;
 	/** Total wrapped-text height, in px — deliberately allowed to (and, for most real cards, does) exceed `FRAME_HEIGHT`. That excess is what the scroll travels through. */
 	blockHeight: number;
-	/** `blockHeight / FRAME_HEIGHT` — descriptive/reporting only; the load-bearing check lives in `fits` below. */
+	/** `blockHeight / FRAME_HEIGHT` — descriptive/reporting only. */
 	screens: number;
 	/** Horizontal-only inset — see `WALL_INSET_PX`. */
 	insetPx: number;
-	/**
-	 * True when a font size within `[WALL_FONT_FLOOR_PX, WALL_FONT_CAP_PX]`
-	 * reaches `WALL_TARGET_BLOCK_HEIGHT_PX` — i.e. the card CAN be set as a
-	 * scroll that survives the wall phase without reading as large-print.
-	 * False means `fontSize` is `WALL_FONT_CAP_PX` (the largest allowed) and
-	 * even that isn't enough — `wall-gate.ts`'s `gateWallCard` rejects on
-	 * this, but `computeWallLayout`/`fitWallFontSize` still return the
-	 * best-effort at-cap geometry (not `null`) so a rejection message can
-	 * report a real, reportable font size and block height rather than
-	 * nothing at all.
-	 */
-	fits: boolean;
 }
 
-/** `computeWallLayout`'s inner measurement at one candidate font size — how `estimateWrappedLineCount`'s raw estimate, corrected by `WALL_LINE_ESTIMATE_OVERSHOOT`, sets `originalExcerpt` at `fontSize` within `WALL_BOX_WIDTH`. */
+/**
+ * Measures `originalExcerpt` at the fixed `WALL_FONT_SIZE` — how
+ * `estimateWrappedLineCount`'s raw estimate, corrected by
+ * `WALL_LINE_ESTIMATE_OVERSHOOT`, wraps within `WALL_BOX_WIDTH`.
+ *
+ * social pilot 02a T08 (2026-08-26): no longer a per-candidate-size helper
+ * (F18's `fitWallFontSize` called this at several candidate sizes during a
+ * binary search) — `computeWallLayout` below calls it exactly once, always
+ * at `WALL_FONT_SIZE`, since the font size is fixed. Kept as its own
+ * function anyway: it's the one place `estimateWrappedLineCount` and
+ * `WALL_LINE_ESTIMATE_OVERSHOOT` combine, and `computeWallLayout` reads more
+ * plainly with the arithmetic named.
+ */
 function measureWallBlockAtFontSize(
 	originalExcerpt: string,
 	fontSize: number
@@ -391,96 +358,29 @@ function measureWallBlockAtFontSize(
 	return { lineHeight, estimatedLines, blockHeight };
 }
 
-function toWallLayout(
-	fontSize: number,
-	measured: { lineHeight: number; estimatedLines: number; blockHeight: number },
-	fits: boolean
-): WallLayout {
+/**
+ * Resolves the wall phase's block geometry for `originalExcerpt` at the
+ * single, FIXED `WALL_FONT_SIZE` — every card renders at the same size, no
+ * per-card search (social pilot 02a T08 deleted F18's `fitWallFontSize`
+ * binary search along with the travel-target/floor/cap constants it aimed
+ * at — see `WALL_FONT_SIZE`'s own doc comment for why a bigger, chapter-
+ * sourced BLOCK replaces a bigger FONT as the fix for "never finishes before
+ * the cut"). `Wall.tsx` (and everything else that reads wall geometry) calls
+ * this, not a per-size helper directly — kept as the stable name across
+ * F15/F16/F18/T08's different implementations (one screen / fixed size /
+ * per-card fit / fixed size again) so call sites never needed to change.
+ * `Wall.tsx` must render with exactly these numbers, not recompute its own.
+ */
+export function computeWallLayout(originalExcerpt: string): WallLayout {
+	const measured = measureWallBlockAtFontSize(originalExcerpt, WALL_FONT_SIZE);
 	return {
-		fontSize,
+		fontSize: WALL_FONT_SIZE,
 		lineHeight: measured.lineHeight,
 		estimatedLines: measured.estimatedLines,
 		blockHeight: measured.blockHeight,
 		screens: measured.blockHeight / FRAME_HEIGHT,
-		insetPx: WALL_INSET_PX,
-		fits
+		insetPx: WALL_INSET_PX
 	};
-}
-
-/**
- * F18 (2026-08-26): resolves the wall phase's font size and block geometry
- * for `originalExcerpt` by BINARY-SEARCHING `[WALL_FONT_FLOOR_PX,
- * WALL_FONT_CAP_PX]` for the SMALLEST font size whose estimated block height
- * reaches `WALL_TARGET_BLOCK_HEIGHT_PX` — short passages land on a LARGER
- * font (more vertical space needed per word to reach the target), long
- * passages land on a SMALLER one (the same target reached with less type),
- * replacing F16's single fixed `WALL_FONT_SIZE`. This reuses `fit.ts`'s
- * binary-search MACHINERY (`fitFontSize`'s approach), aimed at a different
- * predicate — "does this size's block clear the TARGET height" is
- * monotonically non-decreasing in font size for the same reason
- * `fitFontSize`'s "does this size fit under a max height" is (bigger text
- * both wraps into more lines and has a taller line height), so binary search
- * is valid here too.
- *
- * Three shapes of result:
- *   1. Even `WALL_FONT_FLOOR_PX` already clears the target (a long
- *      excerpt) — use the floor itself (the smallest, densest allowed size)
- *      rather than searching smaller still, which would violate the floor.
- *   2. Even `WALL_FONT_CAP_PX` does NOT clear the target (a short excerpt)
- *      — `fits: false`; `wall-gate.ts` rejects this rather than stretching
- *      further into large-print territory (see `WALL_FONT_CAP_PX`'s doc
- *      comment). The at-cap geometry is still returned (not thrown here —
- *      only the caller, `wall-gate.ts`, decides what a non-fitting card
- *      means for rendering) so a rejection message can report real numbers.
- *   3. The normal case — a real crossover exists inside the range; binary
- *      search finds the smallest font size at or past it.
- *
- * The raw `fit.ts` word-wrap estimate is divided by
- * `WALL_LINE_ESTIMATE_OVERSHOOT` at every candidate size (see that
- * constant's doc comment) so `estimatedLines`/`blockHeight`/`screens`
- * approximate what the composition actually renders at whatever size is
- * chosen, not the naive estimate's overcount — this is what makes the
- * scroll-does-not-finish invariant (`wall-timing.test.ts`) true against the
- * REAL render, not just against an inflated number on paper.
- */
-export function fitWallFontSize(originalExcerpt: string): WallLayout {
-	const atFloor = measureWallBlockAtFontSize(originalExcerpt, WALL_FONT_FLOOR_PX);
-	if (atFloor.blockHeight >= WALL_TARGET_BLOCK_HEIGHT_PX) {
-		return toWallLayout(WALL_FONT_FLOOR_PX, atFloor, true);
-	}
-
-	const atCap = measureWallBlockAtFontSize(originalExcerpt, WALL_FONT_CAP_PX);
-	if (atCap.blockHeight < WALL_TARGET_BLOCK_HEIGHT_PX) {
-		return toWallLayout(WALL_FONT_CAP_PX, atCap, false);
-	}
-
-	// Standard "find the leftmost font size whose block clears the target"
-	// binary search — `atFloor` (too small) and `atCap` (big enough) already
-	// bracket a real crossover, so `lo`/`hi` converge to it.
-	let lo = WALL_FONT_FLOOR_PX;
-	let hi = WALL_FONT_CAP_PX;
-	while (lo < hi) {
-		const mid = Math.floor((lo + hi) / 2);
-		const measured = measureWallBlockAtFontSize(originalExcerpt, mid);
-		if (measured.blockHeight >= WALL_TARGET_BLOCK_HEIGHT_PX) {
-			hi = mid;
-		} else {
-			lo = mid + 1;
-		}
-	}
-
-	return toWallLayout(lo, measureWallBlockAtFontSize(originalExcerpt, lo), true);
-}
-
-/**
- * `Wall.tsx` (and everything that reads wall geometry) calls this, not
- * `fitWallFontSize` directly — kept as the stable name across F15/F16/F18's
- * three different implementations (one screen / fixed size / per-card fit)
- * so call sites never needed to change. `Wall.tsx` must render with exactly
- * these numbers, not recompute its own.
- */
-export function computeWallLayout(originalExcerpt: string): WallLayout {
-	return fitWallFontSize(originalExcerpt);
 }
 
 // ---------------------------------------------------------------------------
@@ -540,15 +440,21 @@ function restLineFrameCounts(plainLines: string[], narrationTimings?: NarrationL
 }
 
 /**
- * The composition's total frame count BEFORE `padToMinimumDuration` is
- * applied — i.e. `computeWallTiming`'s `cursor` at the point it would call
- * `padToMinimumDuration`. Exists so the Wall gate (`wall-gate.ts`) can check
- * a card against `MAX_POST_DURATION_FRAMES` itself, at survey time, without
- * going through `padToMinimumDuration` (which THROWS on an over-long
- * composition — exactly the outcome the gate exists to turn into a graceful
- * rejection instead of a render-time crash). `computeWallTiming` below calls
- * this same function rather than recomputing the sum, so the gate's number
- * and the real render's pre-padding number can never drift apart.
+ * The composition's total frame count — the wall phase plus the landing
+ * line plus every rest line, each held for its own fixed/narration-driven
+ * length. Exists so the Wall gate (`wall-gate.ts`) can check a card against
+ * `MAX_POST_DURATION_FRAMES` itself, at survey time, turning an over-long
+ * composition into a graceful rejection rather than a render-time surprise.
+ * `computeWallTiming` below calls this same function rather than
+ * recomputing the sum, so the gate's number and the real render's number can
+ * never drift apart.
+ *
+ * social pilot 02a V17 (2026-08-27): this used to compute the total BEFORE
+ * `padToMinimumDuration` was applied (hence "raw" in the name) — that
+ * function padded a too-short total up to a 15s floor. The floor and the
+ * padding helper are both gone by user decision (see `duration-bounds.ts`'s
+ * module doc comment), so this number IS the final total now; the name is
+ * kept only because it's already the stable export every caller uses.
  */
 export function computeWallRawTotalFrames(input: WallTimingInput): number {
 	const wallEnd = WALL_FRAMES;
@@ -585,20 +491,18 @@ export function computeWallTiming(input: WallTimingInput): WallTimingSchedule {
 		return { index, text, startFrame, endFrame, motionless: true };
 	});
 
-	// The 15s MP4 floor (T18): a short card (few or no plain-passage lines,
-	// or narration-driven lines that run quick) can land well under it —
-	// e.g. no `plainLines` at all is just `WALL_FRAMES + LANDING_LINE_FRAMES`
-	// (5.5s). Extend the LAST motionless payoff phase's hold — the last rest
-	// line if there is one, else the landing line itself — never add a new
-	// phase and never touch the moving wall phase. See `duration-bounds.ts`.
-	const { totalFrames, padFrames } = padToMinimumDuration(cursor);
-	if (padFrames > 0) {
-		if (restLines.length > 0) {
-			restLines[restLines.length - 1].endFrame += padFrames;
-		} else {
-			landingLine.endFrame += padFrames;
-		}
-	}
+	// social pilot 02a V17 (2026-08-27, user decision): this used to pad the
+	// LAST motionless payoff phase's hold (the last rest line if there was
+	// one, else the landing line itself) up to a 15s MP4 floor via
+	// `padToMinimumDuration` — a house convention with no recorded rationale
+	// (see `duration-bounds.ts`'s module doc comment) that was pushing a
+	// 1-screen card's landing line hold from 3.0s up to 12.5s. That call is
+	// gone: `cursor` (== `computeWallRawTotalFrames`'s result) IS the total
+	// now, unmodified. Duration is a pure function of screen count — a
+	// 1-screen card (no `plainLines`) is exactly `WALL_FRAMES +
+	// LANDING_LINE_FRAMES` (5.5s), and every payoff phase on every card holds
+	// exactly its own fixed/narration-driven length, never extended.
+	const totalFrames = cursor;
 
 	return {
 		totalFrames,

@@ -8,6 +8,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bedPath } from '../beds.js';
 import {
 	BED_DUCK_DB,
+	BED_RETURN_FADE_MS,
+	BED_TAIL_FADE_MS,
+	HARD_STOP_RAMP_MS,
 	LOUDNESS_TOLERANCE_LU,
 	SilentMixError,
 	TARGET_LUFS,
@@ -19,6 +22,13 @@ import {
 	type LoudnessMeasurement,
 	type VolumePoint
 } from '../mix.js';
+
+/** Mirrors The Wall's real audio shape (social pilot 02a U04, silence length
+ * raised 500 -> 1000ms by V06): dense noise under the SCROLL, a hard cut into
+ * 1s of true silence, then the bed's own slow fade back in. See `cli.ts`'s
+ * `wallNoiseSpans`/`wallSilentSpans`/`WALL_DROP_SILENCE_MS`. */
+const WALL_CUT_MS = 2500;
+const WALL_TRUE_SILENCE_END_MS = 3500;
 
 const MIX_TIMEOUT_MS = 30_000;
 
@@ -267,16 +277,136 @@ describe('mix', () => {
 	});
 
 	/**
+	 * R05 (`plans/Pf39c2-social-pilot-02a.md`): guards T15's hard stop against
+	 * the latent `volume=eval=frame` defect its own doc comment on
+	 * `VOLUME_ENVELOPE_FRAME_SAMPLES` describes — without the
+	 * `asetnsamples=n=128` filter inserted before `volume=eval=frame` in
+	 * `renderBedTrack`, ffmpeg only re-evaluates the volume expression once
+	 * per upstream FLAC frame (~90-100ms against `bed-05-g-sus4.flac`), so a
+	 * transition landing mid-frame is held at the stale PREVIOUS gain for the
+	 * rest of that frame — a hard cut into a mid-track `silentSpans` doesn't
+	 * actually land until ~100ms late. Sampling close to the edge is
+	 * deliberate — the existing "silence is honoured" test above samples a
+	 * full second inside its span and would pass whether or not
+	 * `asetnsamples` is present.
+	 *
+	 * RETARGETED, NOT REMOVED, by U04: this no longer mirrors The Wall's own
+	 * real shape — U04 replaced "the bed plays under the scroll" with "dense
+	 * NOISE plays under the scroll, the bed stays silent throughout" (see
+	 * `cli.ts`'s `wallNoiseSpans`/`wallSilentSpans`), so the bed itself no
+	 * longer has any mid-track entry into silence in a real Wall render. This
+	 * test is kept anyway, unchanged in shape (bed audible, then a mid-track
+	 * `silentSpans` hard-stop), as a GENERIC regression guard on
+	 * `renderBedTrack`'s own `asetnsamples` — still a real, supported, tested
+	 * `mix()` capability (`bedEnvelope`'s hard-stop-into-FLOOR path), and
+	 * VERIFIED load-bearing directly: temporarily removing `asetnsamples`
+	 * from `renderBedTrack` turns this test red (measured
+	 * `meanVolumeDb(out, 2.55, 5.4)` at -31.8dB, not the required <-60dB);
+	 * restoring it returns -73.1dB. Without a tight-window test SOMEWHERE
+	 * on the bed's own hard-stop path, nothing in this file would catch that
+	 * regression — the noise-track test below, which now owns The Wall's
+	 * real cut, provably does NOT catch it (see that test's own doc comment).
+	 */
+	describe('the cut is audible: the bed hard-stops within ~100ms of a mid-track silentSpans (T15/R05, generic regression guard)', () => {
+		const DURATION_SEC = 8;
+		let outPath: string;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'hard-stop-mix.m4a');
+			await mix({
+				bedPath: bedPath('bed-05-g-sus4'),
+				narrationPath: undefined,
+				durationMs: DURATION_SEC * 1000,
+				narrationSpans: [],
+				silentSpans: [{ startMs: WALL_CUT_MS, endMs: 5500 }],
+				outPath
+			});
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			'the bed is clearly audible just before the cut, and near-silent within 50ms after it',
+			() => {
+				expect(meanVolumeDb(outPath, 0.5, 2.4)).toBeGreaterThan(-30);
+				expect(meanVolumeDb(outPath, 2.55, 5.4)).toBeLessThan(-60);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
+	/**
+	 * U04 (`plans/Pf39c2-social-pilot-02a.md`): The Wall's REAL cut is now on
+	 * the NOISE track, not the bed (see the test above's doc comment) — this
+	 * verifies the actual output shape: noise clearly audible under the
+	 * "scroll," a hard cut, then true silence through the narrow
+	 * `[WALL_CUT_MS, WALL_TRUE_SILENCE_END_MS)` window (1s, raised from 0.5s
+	 * by V06), before the bed's own slow `BED_RETURN_FADE_MS` fade-in would
+	 * raise the floor again.
+	 *
+	 * HONESTLY DOES NOT PROVE `asetnsamples` IS LOAD-BEARING HERE, and says so
+	 * rather than pretending otherwise: `anoisesrc` is an in-filtergraph
+	 * SOURCE filter (not a file decode), and its own default frame size
+	 * (`nb_samples`, 1024 samples = ~21ms at 48kHz) is already well under the
+	 * ~90-100ms FLAC-block problem `asetnsamples` exists to fix — verified
+	 * directly: temporarily removing `asetnsamples` from `renderNoiseTrack`
+	 * left this exact test GREEN (no measurable change to either assertion).
+	 * `asetnsamples` is kept on the noise chain anyway, for consistency with
+	 * every other envelope-driven track in this file and as a defensive
+	 * margin against any future change to how the noise signal is produced
+	 * (e.g. `nb_samples` changing, or the noise ever being pre-rendered to a
+	 * file and decoded back in) — just not because this test would catch its
+	 * removal today. The test above this one is what actually keeps
+	 * `asetnsamples` honest.
+	 */
+	describe("the cut is audible: the noise track hard-stops at the Wall's real cut point (U04)", () => {
+		const DURATION_SEC = 8;
+		let outPath: string;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'hard-stop-mix-noise.m4a');
+			await mix({
+				bedPath: bedPath('bed-05-g-sus4'),
+				narrationPath: undefined,
+				durationMs: DURATION_SEC * 1000,
+				narrationSpans: [],
+				// Mirrors the real Wall shape: noise under the scroll, a hard
+				// cut into 1s of true silence at WALL_CUT_MS.
+				noiseSpans: [{ startMs: 0, endMs: WALL_CUT_MS }],
+				silentSpans: [{ startMs: WALL_CUT_MS, endMs: WALL_TRUE_SILENCE_END_MS }],
+				outPath
+			});
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			'the noise is clearly audible just before the cut, and near-silent within 50ms after it',
+			() => {
+				expect(meanVolumeDb(outPath, 0.5, 2.4)).toBeGreaterThan(-30);
+				expect(meanVolumeDb(outPath, 2.55, 2.95)).toBeLessThan(-60);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
+	/**
 	 * Regression for F02 (`plans/Pf39c2-social-pilot-02.md`): a music-only
 	 * (no narration) Wall render whose card has no plain-passage lines left
-	 * after the landing line ends up with `durationMs` padded to the 15s
-	 * floor and a `silentSpans` window that covers only the documented
+	 * after the landing line used to end up with `durationMs` padded to the
+	 * 15s floor and a `silentSpans` window that covers only the documented
 	 * WALL_FRAMES+LANDING_LINE_FRAMES 5.5s phase, not the padding after it
 	 * (that was the bug — see `cli.ts`'s `wallSilentSpans`). Both real-world
 	 * failures used `bed-03-e-minor7`, so this pins that exact bed.
+	 *
+	 * social pilot 02a V17 (2026-08-27): the 15s floor and the padding that
+	 * produced this exact shape are both gone by user decision — no real
+	 * render pads a landing-line-only card to 15s anymore (it now renders at
+	 * its true 5.5s). `DURATION_MS` below is kept at 15s anyway as an
+	 * arbitrary-but-fixed synthetic duration exercising `mix()` directly
+	 * (silence after the 5.5s window, bed audible after that) — this test
+	 * targets `mix()`'s own behavior, not any pipeline constant, so it is
+	 * still valid coverage even though the scenario it was named for no
+	 * longer occurs in production.
 	 */
-	describe('bed-03-e-minor7, no narration, padded-duration Wall shape (F02 regression)', () => {
-		const DURATION_MS = 15_000; // MIN_POST_DURATION_FRAMES (450 @ 30fps)
+	describe('bed-03-e-minor7, no narration, arbitrary fixed-duration Wall shape (historical F02 regression)', () => {
+		const DURATION_MS = 15_000; // arbitrary synthetic duration, no longer tied to any pipeline constant
 		let result: Awaited<ReturnType<typeof mix>>;
 		let outPath: string;
 
@@ -316,6 +446,57 @@ describe('mix', () => {
 			() => {
 				const afterSilenceDb = meanVolumeDb(outPath, 7, 14);
 				expect(afterSilenceDb).toBeGreaterThan(-45);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
+	/**
+	 * V20 (`plans/Pf39c2-social-pilot-02a.md`): a 1-screen Wall's real shape —
+	 * `WALL_TRUE_SILENCE_END_MS` (3500ms) is close enough to the clip's own
+	 * `SHORT_DURATION_MS` (5504ms, a real 1-screen Wall's exact duration) that
+	 * the bed's full `BED_RETURN_FADE_MS` (2500ms) return from silence would
+	 * not finish until 6000ms — PAST the end of the clip — squeezing out
+	 * `BED_TAIL_FADE_MS`'s outro fade entirely and leaving the mix still
+	 * rising at cutoff (measured: -11.9dB, louder than any other post's
+	 * steady state). This is the property that actually matters: the mix
+	 * must always land back at the silence floor, never mid-ramp, regardless
+	 * of how short the clip is.
+	 */
+	describe("a short (1-screen) Wall-shaped mix ends at the silence floor, not mid-ramp (V20)", () => {
+		const SHORT_DURATION_MS = 5504; // shorter than WALL_TRUE_SILENCE_END_MS + BED_RETURN_FADE_MS + BED_TAIL_FADE_MS (7500ms)
+		let outPath: string;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'short-wall-mix.m4a');
+			await mix({
+				bedPath: bedPath('bed-05-g-sus4'),
+				narrationPath: undefined,
+				durationMs: SHORT_DURATION_MS,
+				narrationSpans: [],
+				noiseSpans: [{ startMs: 0, endMs: WALL_CUT_MS }],
+				silentSpans: [{ startMs: WALL_CUT_MS, endMs: WALL_TRUE_SILENCE_END_MS }],
+				outPath
+			});
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			// Not an absolute dB threshold: ffmpeg's two-pass `loudnorm` applies
+			// its own dynamic range handling on top of this envelope (verified
+			// directly — even a LONG clip's own final 250ms window lands
+			// around -32dB here, not some much deeper absolute floor), so the
+			// property that actually distinguishes "ends at silence" from
+			// "still ramping at cutoff" is DIRECTION: quieter windows all the
+			// way to the very end, never louder. Before this fix, day 5's real
+			// render measured the opposite — RISING at cutoff (-14.5 -> -13.1
+			// -> -11.9dB, louder than any other post's steady state).
+			'the last three quarter-second windows get monotonically quieter, right up to the end (never rising into the cut)',
+			() => {
+				const w1 = meanVolumeDb(outPath, (SHORT_DURATION_MS - 750) / 1000, (SHORT_DURATION_MS - 500) / 1000);
+				const w2 = meanVolumeDb(outPath, (SHORT_DURATION_MS - 500) / 1000, (SHORT_DURATION_MS - 250) / 1000);
+				const w3 = meanVolumeDb(outPath, (SHORT_DURATION_MS - 250) / 1000, SHORT_DURATION_MS / 1000);
+				expect(w2).toBeLessThan(w1);
+				expect(w3).toBeLessThan(w2);
 			},
 			MIX_TIMEOUT_MS
 		);
@@ -391,6 +572,25 @@ describe('bedEnvelope', () => {
 		expect(outsideSpan - duringSpan).toBeCloseTo(-BED_DUCK_DB, 5);
 	});
 
+	it('entering a silentSpan is a hard stop: {atMs:2500,gainDb:0} is immediately followed by {atMs:2505,gainDb:-60} (T15/R05)', () => {
+		// Names the real constant values rather than trusting the hardcoded
+		// numbers below: HARD_STOP_RAMP_MS is 5ms (a scripted duck-length ramp
+		// like DUCK_ATTACK_MS would be wrong here), and the floor gain matches
+		// mix.ts's private SILENCE_FLOOR_DB (-60, not exported — hardcoded here
+		// deliberately, mirroring the "silence is honoured" tests above, which
+		// already assert against -45/-60 dB thresholds without an export).
+		expect(HARD_STOP_RAMP_MS).toBe(5);
+
+		const env = bedEnvelope(8000, [], [{ startMs: 2500, endMs: 5500 }]);
+		const cutIndex = env.findIndex((p) => p.atMs === 2500 && p.gainDb === 0);
+
+		expect(cutIndex).toBeGreaterThanOrEqual(0);
+		expect(env[cutIndex]).toEqual({ atMs: 2500, gainDb: 0 });
+		// Immediately the next point in the envelope — not a scripted ramp
+		// spread over DUCK_ATTACK_MS/DUCK_RELEASE_MS.
+		expect(env[cutIndex + 1]).toEqual({ atMs: 2500 + HARD_STOP_RAMP_MS, gainDb: -60 });
+	});
+
 	it('has a gentle fade-in at the head and fade-out at the tail (never starts/stops abruptly)', () => {
 		const env = bedEnvelope(20000, []);
 		expect(env[0].atMs).toBe(0);
@@ -400,6 +600,68 @@ describe('bedEnvelope', () => {
 		const last = env[env.length - 1];
 		expect(last.atMs).toBe(20000);
 		expect(last.gainDb).toBeLessThan(-20); // ends near-silent, not at nominal level
+	});
+
+	/**
+	 * V20 (`plans/Pf39c2-social-pilot-02a.md`): when a clip is too short for
+	 * the bed's slow `BED_RETURN_FADE_MS` return from silence to finish AND
+	 * still leave room for the fixed `BED_TAIL_FADE_MS` outro fade, the
+	 * envelope must compress the RETURN (never the outro, never the hard
+	 * stop into silence) so both complete and the clip ends at the silence
+	 * floor. Mirrors a real 1-screen Wall: floor from 0 to 3500ms, only
+	 * 2004ms left before the clip ends at 5504ms (`floorEndMs +
+	 * BED_RETURN_FADE_MS` would be 6000ms — past the clip's own end).
+	 */
+	it('short clip: compresses the return from silence so the full outro fade still fits and the clip ends at the silence floor', () => {
+		const floorEndMs = 3500;
+		const shortDurationMs = 5504;
+		const env = bedEnvelope(shortDurationMs, [], [{ startMs: 0, endMs: floorEndMs }], BED_RETURN_FADE_MS);
+
+		// The clip must end at the silence floor, not mid-return.
+		const last = env[env.length - 1];
+		expect(last.atMs).toBe(shortDurationMs);
+		expect(last.gainDb).toBe(-60);
+
+		// The outro fade is preserved IN FULL (only the return compresses):
+		// the point before the final one is at nominal level, exactly
+		// BED_TAIL_FADE_MS before the end.
+		const secondToLast = env[env.length - 2];
+		expect(secondToLast.gainDb).toBe(0);
+		expect(shortDurationMs - secondToLast.atMs).toBe(BED_TAIL_FADE_MS);
+
+		// The return itself had to shrink below its nominal BED_RETURN_FADE_MS
+		// length to make room — but it is still a ramp (not instantaneous).
+		expect(secondToLast.atMs - floorEndMs).toBeLessThan(BED_RETURN_FADE_MS);
+		expect(secondToLast.atMs).toBeGreaterThan(floorEndMs);
+
+		// The final quarter-second window reads at (or falls to) the silence floor.
+		expect(sampleEnvelopeDb(env, shortDurationMs - 250)).toBeLessThan(-45);
+		expect(sampleEnvelopeDb(env, shortDurationMs)).toBe(-60);
+	});
+
+	/**
+	 * V20: whenever there IS room (every post at 2+ screens today — a real
+	 * 2-screen Wall runs 8512ms, well past the 7500ms collision threshold),
+	 * the full BED_RETURN_FADE_MS return and the full BED_TAIL_FADE_MS outro
+	 * fade both play out completely, unchanged from today's behavior.
+	 */
+	it('long clip: the full return from silence and the full outro fade both fit, unchanged', () => {
+		const floorEndMs = 3500;
+		const longDurationMs = 8512; // a real 2-screen Wall's own duration
+		const env = bedEnvelope(longDurationMs, [], [{ startMs: 0, endMs: floorEndMs }], BED_RETURN_FADE_MS);
+
+		// The return completes in full: nominal level is reached exactly
+		// BED_RETURN_FADE_MS after the floor ends, not sooner.
+		const returnCompleteMs = floorEndMs + BED_RETURN_FADE_MS;
+		expect(sampleEnvelopeDb(env, returnCompleteMs)).toBeCloseTo(0, 5);
+
+		// The outro fade is also full-length, at the very end.
+		const last = env[env.length - 1];
+		expect(last.atMs).toBe(longDurationMs);
+		expect(last.gainDb).toBe(-60);
+		const secondToLast = env[env.length - 2];
+		expect(secondToLast.gainDb).toBe(0);
+		expect(longDurationMs - secondToLast.atMs).toBe(BED_TAIL_FADE_MS);
 	});
 });
 
