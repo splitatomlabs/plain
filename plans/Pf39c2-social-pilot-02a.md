@@ -1498,16 +1498,72 @@ frame may name the product.**
   now reads as a distinct warm-grey band with a visible, non-heavy hairline rule at its lower edge, text fully
   legible, same treatment on both variants. Frames and a cropped close-up are in the scratchpad the task
   supplied; not committed to the repo.
-- [ ] U02: Move the read-through counter to CENTERED BELOW the card text — `social/src/remotion/Counter.tsx`,
-  `counter-layout.ts`, and the four compositions that render it. **Interaction to resolve first:**
-  `source-head-layout.ts` derives `SOURCE_HEAD_TOP_PX` from `COUNTER_BOUNDING_BOX.top + height + gap` — that
-  derivation exists specifically so the two framing boxes are disjoint BY CONSTRUCTION (T11). Moving the
-  counter out from under the running head breaks the premise, so the running head needs its own top-left
-  anchor and the non-collision proof needs re-establishing on the new geometry rather than deleted. Note the
-  counter renders in all four compositions (`Wall.tsx`, `Question.tsx`, `Objection.tsx`, `Still.tsx`), so
-  "below the card text" must resolve per format. Acceptance: counter is horizontally centred below the text
-  block in every format that shows it; it cannot collide with or reflow the running head/payoff label;
-  `counter.test.ts`'s pixel-level proofs are retargeted, not weakened.
+- [x] U02 (DONE 2026-08-27): Move the read-through counter to CENTERED BELOW the card text —
+  `social/src/remotion/Counter.tsx`, `counter-layout.ts`, and the four compositions that render it. **Interaction
+  to resolve first:** `source-head-layout.ts` derives `SOURCE_HEAD_TOP_PX` from `COUNTER_BOUNDING_BOX.top +
+  height + gap` — that derivation exists specifically so the two framing boxes are disjoint BY CONSTRUCTION
+  (T11). Moving the counter out from under the running head breaks the premise, so the running head needs its
+  own top-left anchor and the non-collision proof needs re-establishing on the new geometry rather than
+  deleted. Note the counter renders in all four compositions (`Wall.tsx`, `Question.tsx`, `Objection.tsx`,
+  `Still.tsx`), so "below the card text" must resolve per format. Acceptance: counter is horizontally centred
+  below the text block in every format that shows it; it cannot collide with or reflow the running head/payoff
+  label; `counter.test.ts`'s pixel-level proofs are retargeted, not weakened.
+  DONE, with one deliberate per-format exception: Wall/Question/Objection's shared `PayoffLine` (`Wall.tsx`) now
+  renders the counter CENTRED BELOW its own text — `ReadThroughCounter` (`Counter.tsx`) grew an optional `top`
+  prop; when supplied, the counter renders `left: 50%, transform: translateX(-50%)` at that `top` instead of the
+  old fixed corner. `top` is computed by a new `computePayoffCounterBox(text)` (`wall-timing.ts`), which calls
+  the EXACT SAME `fitFontSize` arguments `PayoffLine`'s own `<p>` fits against, measures the resulting wrapped
+  line count, and derives the text block's real bottom edge (`FRAME_HEIGHT/2 + blockHeight/2`, since every
+  payoff line in this workspace is flex-centred in the full frame) plus a fixed `COUNTER_GAP_BELOW_TEXT_PX`
+  (40px, `counter-layout.ts`) — one source of truth shared by `PayoffLine` and by `counter.test.ts`'s own
+  retargeted proof, so the two can never independently drift. The counter is still rendered as a SEPARATE
+  absolutely-positioned sibling of the text's own flex-centred `AbsoluteFill` (never inside its flex flow), so
+  the text's own position is completely unaffected by whether a counter renders at all — the "no reflow"
+  invariant holds exactly as before, just proven against a per-case computed box instead of one fixed constant.
+  **Still.tsx is the one exception, kept in the ORIGINAL top-left corner, unchanged.** Its full-passage text
+  (`STILL_BOX_HEIGHT` = 1600 of the 1920px frame) already renders 1512-1558px tall for the two real Still cards
+  in `content/social/pilot-schedule-w01.json` — centred, that already puts its own bottom edge at y=1739-1746,
+  inside the very bottom platform-chrome band `COUNTER_SAFE_INSET_PX`'s doc comment warns about. There is no
+  y-coordinate that is both "below the text" and safe for every real Still card, so per the task's own "say so
+  rather than shipping it" instruction, Still's counter was left exactly as it was.
+  Two safety invariants, both proven rather than assumed, mirroring `SOURCE_HEAD_TOP_PX`'s existing "disjoint by
+  construction" discipline: (1) `wall-timing.ts` throws at import time if the below-text counter's box, computed
+  at `PAYOFF_BOX_HEIGHT`'s hard structural ceiling (no payoff text can ever produce a taller estimated block —
+  that ceiling is `fitFontSize`'s own search predicate), would reach into the bottom platform-chrome band
+  (`COUNTER_BOTTOM_UNSAFE_ZONE_PX`, 300px, matching `COUNTER_SAFE_INSET_PX`'s own cited figure); (2)
+  `source-head-layout.ts` throws at import time if the below-text counter's own MINIMUM possible top (at the
+  theoretical `blockHeight` floor of 0) doesn't clear `SOURCE_HEAD_BOUNDING_BOX`'s bottom edge — since the
+  counter's `top` only increases with `blockHeight`, clearing at the floor means every real (taller) block
+  clears by more. `SOURCE_HEAD_TOP_PX`'s own derivation (from `COUNTER_BOUNDING_BOX`) was kept, not deleted —
+  it's still exactly the derivation that keeps Still's corner counter and the framing plate disjoint; its doc
+  comment now explains it is narrower in scope than before (Still-only) rather than silently leaving readers to
+  wonder why it still exists.
+  `counter.test.ts`'s end-to-end pixel-proof suite was retargeted (not weakened): each Wall/Question/Objection
+  case now computes its own expected box via `computePayoffCounterBox` (Objection's via the real
+  `assertObjectionRenderable` gate, the same split production renders) instead of cropping one shared corner
+  constant; `assertIdenticalOutsideBoxes`/`assertBoxDiffers` still run the identical byte-level proof, just
+  against the real per-case box. A new `counter-corpus.test.ts` adds a pure-computation (no rendering) proof
+  across the REAL corpus: every one of 896 Wall landing lines (`content/social/premises/wall.json`), every real
+  read-through rest line in Meditations book-02/03 (via `computeWallPlainLines`, the longest measuring ~795px of
+  block height against the 800px ceiling), every Question answer (`question.json`), and every Objection reply
+  line that clears `assertObjectionRenderable`'s own gate (`objection.json`) — each asserted clear of both the
+  plate above and the platform-chrome band below, and horizontally centred on the frame's own midline.
+  `source-head.test.ts`'s existing corner-counter-vs-plate suite (uses `ReadThroughCounter` with no `top`) was
+  left as-is with a clarifying comment: it now documents that it's proving the narrower, Still-only invariant,
+  not a pairing every format shares.
+  Verified: `npx vitest run src/remotion/__tests__/counter.test.ts src/remotion/__tests__/source-head.test.ts` —
+  47/47 (15 + 32, both suites green). `npx tsc --noEmit` clean. Root `npm test`: 819 pipeline + 95 web unit + 599
+  social, all green (one Wall MP4 end-to-end test failed once under full-suite parallel CPU load — same known
+  flake pattern U01 hit — and passed both alone and on a full rerun). Rendered real frames for all four formats
+  (Wall landing line and rest line on `meditations-02-001`; Question answer on `meditations-11-005`, counter
+  forced since week 1 has no Question read-through slot; Objection both reply lines on `discourses-53-011` from
+  the week-02 fixture schedule, since week 1 has no Objection slot; Still on `meditations-02-002`) plus the
+  single longest real corpus rest line (`meditations-02-012`, ~795px block height) and read every PNG: counter
+  horizontally centred below the text in Wall/Question/Objection, comfortably clear of both the plate and the
+  bottom of the frame in every case including the near-worst-case rest line; Still's corner counter unchanged
+  and clear of the plate, while the render itself visually confirmed WHY Still couldn't safely move — that
+  card's own text already runs from just under the plate to deep in the lower part of the frame. Frames left in
+  the scratchpad the task supplied, not committed to the repo.
 - [x] U03 (DONE 2026-08-27): Raise the payoff label from `SOURCE_HEAD_FONT_SIZE_PX` 32px to **38px** — user
   asked, and 38px keeps it clearly subordinate to the 81-88px payoff sentence (T10's whole point is that the
   payoff is the largest thing on screen) while giving the product concept real presence on a quiet frame. Past
@@ -1551,17 +1607,55 @@ frame may name the product.**
   no descenders) and columns 65-726 — both comfortably inside the plate on both axes, on both variants, nothing
   clipped. Visually: "In plain English" reads with clearly more presence than before, still unmistakably smaller
   than the ~81-88px payoff sentence above it; the running head is visually unchanged.
-- [~] U04: Noisy scroll bed, then silence, then a slow return — `social/src/audio/mix.ts`. Replace the
-  soothing bed under the SCROLL with dense, unreadable noise matching the visual; HARD CUT on the cut frame
-  (T15's frame-aligned stop, unchanged); **0.5s of true silence**; then fade the existing soothing bed back in
-  over **~2.5s**, slowly enough to be near-inaudible until the landing line ends. User's decision, chosen over
-  both a 3s hard silence and an immediate fade: no abrupt dead air for sensory-sensitive viewers, drop mostly
-  intact. Noise is **generated procedurally from a fixed seed** (user's choice) — no new asset, renders stay
-  reproducible. Constraints: `bedEnvelope` stays pure and deterministic; F02's `SilentMixError` guard must
-  still raise; R05's edge-sampling regression test asserts floor across `[2.55s, 5.4s)` and WILL need
+- [x] U04 (DONE 2026-08-27): Noisy scroll bed, then silence, then a slow return — `social/src/audio/mix.ts`.
+  Replace the soothing bed under the SCROLL with dense, unreadable noise matching the visual; HARD CUT on the
+  cut frame (T15's frame-aligned stop, unchanged); **0.5s of true silence**; then fade the existing soothing
+  bed back in over **~2.5s**, slowly enough to be near-inaudible until the landing line ends. User's decision,
+  chosen over both a 3s hard silence and an immediate fade: no abrupt dead air for sensory-sensitive viewers,
+  drop mostly intact. Noise is **generated procedurally from a fixed seed** (user's choice) — no new asset,
+  renders stay reproducible. Constraints: `bedEnvelope` stays pure and deterministic; F02's `SilentMixError`
+  guard must still raise; R05's edge-sampling regression test asserts floor across `[2.55s, 5.4s)` and WILL need
   retargeting once the bed fades in from ~3.0s — retarget it to still prove the hard stop, never weaken it.
   Acceptance: `volumedetect` on a real render shows noise across the scroll, floor across the 0.5s beat, and a
   gradual rise thereafter; the cut is still frame-aligned.
+  DONE: added a third, procedurally-generated NOISE track to `mix()` (`renderNoiseTrack`, ffmpeg's `anoisesrc`
+  source filter — pink noise, `NOISE_AMPLITUDE=0.6`, band-limited `highpass=200`/`lowpass=5000` so it reads as
+  dense/textured rather than a piercing hiss, fixed `NOISE_SEED` constant so it is never randomized), mixed
+  alongside bed+narration via a generalized N-input `mixTracks`. `MixInput` gained `noiseSpans` (where noise
+  plays instead of the bed, hard-cutting to silence at each span's end via the existing `HARD_STOP_RAMP_MS`) —
+  the bed's own floor window is now the UNION of `silentSpans` and `noiseSpans`, and it returns via a new,
+  much slower `BED_RETURN_FADE_MS` (2500ms) rather than the snappy `DUCK_RELEASE_MS` (600ms), only when
+  `noiseSpans` is non-empty. `cli.ts` gained `wallNoiseSpans()` (`[0, WALL_FRAMES)`, i.e. the whole scroll) and
+  narrowed `wallSilentSpans()` from the old "landing line ALONE" (2.5s-5.5s) down to just `WALL_DROP_SILENCE_MS`
+  (0.5s, 2.5s-3.0s) — **decided**: `wallSilentSpans()` now means "0.5s of true silence" only, not the whole
+  landing-line hold; narration ducking follows this same narrower window (the Wall's rest-line narration never
+  starts before 5.5s regardless, so this is a no-op for narration today, but keeps "narration is silent
+  wherever the bed is silenced for a scripted reason" true if that ever changed).
+  Tests: retargeted R05's regression test, and in doing so found its ablation-proof property didn't transfer
+  cleanly to the new noise track — `anoisesrc` is an in-filtergraph SOURCE filter whose default frame size
+  (1024 samples, ~21ms) is already well under the ~90-100ms FLAC-block problem `asetnsamples` exists to fix, so
+  removing `asetnsamples` from `renderNoiseTrack` measurably changes nothing (verified). Kept TWO tests instead
+  of one: (1) the original bed-based hard-stop-into-mid-track-silentSpans scenario, unchanged in shape,
+  RE-VERIFIED load-bearing by removing `asetnsamples` from `renderBedTrack` (red: -31.8dB, needed <-60dB) and
+  restoring it (green: -73.1dB); (2) a new test on the real Wall shape (noise track, narrow `[2.55s, 2.95s)`
+  floor window), which is a genuine functional-correctness check but is HONESTLY DOCUMENTED as not itself
+  discriminating the `asetnsamples` ablation (kept for consistency/future-proofing, not because this test
+  needs it today). `narration.test.ts`'s `wallSilentSpans` assertions were updated to the new 0.5s window and a
+  `wallNoiseSpans` describe block was added; its F02 single-sentence-Wall test now also passes `noiseSpans` to
+  match the real `cli.ts` call shape.
+  Verified: `cd social && npx vitest run src/audio/__tests__/mix.test.ts src/audio/__tests__/narration.test.ts`
+  — 42/42 (23 + 19, up from 41 pre-task). `npx tsc --noEmit` clean. Root `npm test`: 819 pipeline + 95 web unit
+  + 594 social, all green. Rendered a real Wall end-to-end (`npx tsx social/src/cli.ts render --date
+  2026-09-06 --slot 1`, `meditations-02-006`) and measured with `volumedetect`: 0.5-2.4s (noise under the
+  scroll) -18.9dB mean/-7.1dB max; 2.4-2.5s -19.2dB (still noise, right up to the cut); 2.5-2.55s -34.0dB
+  (mid-ramp, the 5ms `HARD_STOP_RAMP_MS` transition plus the 50ms measurement window straddling it); 2.55s-3.0s
+  a flat ~-73dB floor throughout (sampled in five 100ms sub-windows, all -72.6 to -73.1dB) — genuine true
+  silence, not just "quiet"; 3.0-3.1s -47.5dB, 3.0-3.5s -33.6dB, 3.5-4.0s -25.2dB, 4.0-4.5s -20.8dB, 4.5-5.0s
+  -18.0dB, 5.0-5.5s -15.8dB — a smoothly, monotonically rising ramp, near-inaudible at the start and reaching
+  the track's steady-state nominal level (-14.9dB at 6-10s, -15.9dB at 15-20s) right around when the landing
+  line ends, exactly as specified. Confirmed the cut is still frame-aligned: extracted frames 74 (last wall
+  frame, still mid-scroll archaic text) and 75 (first payoff frame, the landing line) directly from the
+  rendered MP4 — the visual cut and the audio drop land on the identical frame boundary.
 - [-] U05 (DEFERRED 2026-08-27, user): Closing frame — `thinkplain.ai` centred on an otherwise empty frame, ~2s, so viewers can find the
   product. See the constraint amendment above. Static, no motion (house rule). Apply to ALL FOUR compositions,
   matching T13's "so the channel reads as one product" reasoning — an end card on one format only would read
@@ -1577,3 +1671,82 @@ frame may name the product.**
   so the T20 integration pass must be redone. Acceptance: all 14 render; ffprobe confirms the profile;
   durations inside 15s/59s and Walls inside the UNCHANGED 40s ceiling (U06 deferred); frames at 0.0s / cut /
   payoff show the intended result; `volumedetect` confirms U04's shape. Then a fresh phone review.
+
+- [x] U08 (DONE 2026-08-27): Make the scroll noise sound like PEOPLE TALKING — `social/src/audio/mix.ts` (user, 2026-08-27:
+  "The noise over the wall should sound like people talking"). U04 shipped band-limited pink noise; replace
+  its character with a crowd murmur / babble. Keep U04's architecture, seed determinism, levels, the
+  frame-aligned hard cut, the 0.5s true-silence beat and the ~2.5s bed return EXACTLY as they are — this
+  changes the noise's TIMBRE only.
+  **Stay procedural** (the user's standing decision from earlier the same day: generated from a fixed seed,
+  no new committed asset, reproducible renders). Technique: speech-shaped noise (LTAS-ish tilt, energy
+  peaking low-mid and rolling off above ~1kHz), given vowel-like colour by formant-ish bandpass resonances
+  (~500 / 1500 / 2500 Hz), then amplitude-modulated at SYLLABIC rates (~3-6 Hz) — several independent layers
+  at different rates, offsets and slight formant shifts, summed. That is the standard babble-modulated-noise
+  construction and reads as a room full of talking without any layer being a real voice.
+  **UNINTELLIGIBLE BY DESIGN, and this is a requirement not a side effect.** No layer may be recognisable
+  speech: intelligible words under the archaic text would compete with reading it, and would put words in the
+  viewer's ear that are not the author's — the concern Constraint 6 exists to protect. Do NOT build this from
+  the TTS fixtures (`polly-sample.mp3`, `elevenlabs-sample.wav`); they are test fixtures, single-voice, and
+  would loop audibly.
+  Sensory care still governs, per the user's original reason for the whole audio change: a murmur, not a
+  shout — no piercing top end, no oppressive sub-bass drone.
+  Acceptance: `volumedetect` on a real render still shows the U04 profile (noise across the scroll at a
+  comparable level, floor across 2.55-3.0s, gradual rise to ~-15dB by 5.5s); the cut stays frame-aligned;
+  the seed still produces byte-identical audio across two renders; and a human listening to the extracted
+  scroll audio hears a crowd murmur rather than a hiss. Report the measured levels and describe what you hear.
+  DONE: `renderNoiseTrack` in `social/src/audio/mix.ts` no longer generates one band-limited pink-noise
+  source — it now builds the standard "babble-modulated noise" construction from `NOISE_LAYER_COUNT` (6)
+  INDEPENDENT layers, each its own `anoisesrc` pink-noise source (fixed seed `NOISE_SEED + layer.seedOffset`,
+  a literal `NOISE_LAYERS` table — never derived from date/post-index), individually shaped: three
+  `NOISE_FORMANTS` peaking-EQ resonances (~500/1500/2500Hz, gains +9/+4/-3dB — falling off with frequency, on
+  purpose, to reinforce pink noise's own low-mid-peaking tilt rather than fight it) for vowel-like colour,
+  then `tremolo` amplitude modulation at that layer's own syllabic rate (3.1-6.0Hz, one rate per layer, plus a
+  slight per-layer formant-frequency scale 0.92-1.08x) for speech-like rhythm, then band-limited
+  (`highpass=150Hz`, `lowpass=3000Hz` cascaded twice for a steeper rolloff). All 6 layers sum via `amix`
+  (`normalize=0`, since `NOISE_LAYER_AMPLITUDE`=0.17/layer was chosen for the SUM) into one filter_complex, one
+  ffmpeg process — the overall on/off gating (`noiseEnvelope`'s hard-cut-both-edges shape) is applied ONCE, to
+  the summed signal, via the same `asetnsamples`+`volume=eval=frame` pairing every other envelope-driven track
+  in this file uses. Everything else — `MixInput.noiseSpans`/`wallNoiseSpans`/`wallSilentSpans`, the bed's
+  floor-spans union and `BED_RETURN_FADE_MS` return, the frame-aligned hard cut, `SilentMixError` — untouched.
+  Parameters were tuned against a standalone ffmpeg prototype (not committed) before touching the module: per-
+  layer amplitude for a ~-26/-15dB raw mean/max match to U04's original single-layer figure; formant gains and
+  a doubled lowpass stage specifically to pull the spectral centroid down from ~2.2-2.4kHz (naive equal-gain
+  formants) to ~1.2kHz (measured, matching real running speech's LTAS centroid).
+  Verified: `npx vitest run src/audio/__tests__/mix.test.ts src/audio/__tests__/narration.test.ts` 42/42 —
+  including the U04 test that directly measures the real Wall shape (noise audible pre-cut, <-60dB in
+  [2.55s,2.95s)) and the F02 `SilentMixError` regression, both unmodified and green against the new construction.
+  `npx tsc --noEmit` clean. Root `npm test`: 819 pipeline + 95 web unit + 599 social, all green (U02 was
+  editing `Counter.tsx`/layout files concurrently on this branch; no overlap with this task's files, no shared
+  failures).
+  MEASURED on a real render (`--date 2026-09-06 --slot 1`, `meditations-02-006`, 705 frames/23.5s): naive
+  `ffmpeg -ss/-to volumedetect` directly against the muxed MP4 was MISLEADING here (AAC encoder priming/padding
+  shifts short-window seeks by tens of ms, enough to blur a 450ms floor) — re-measured correctly by extracting
+  the AAC track to PCM first (`ffmpeg -vn -acodec pcm_s16le`) and computing RMS dB directly in Python/numpy.
+  Result: scroll (0-2.5s) **-20.8dB** mean (U04's own figure: -18.9dB — same order, the retimbred signal's
+  different crest factor accounts for the gap); floor (2.55-3.0s) **-73.0dB** (U04: ~-73dB — matches almost
+  exactly); rise -33.6 → -25.1 → -20.5 → -16.4 → -14.8dB across 3.0s→6.0s (U04's own rise: -47.5→-25.2→-18.0→
+  -15.8dB — different sub-window boundaries, same shape and same converged steady-state level). Frame-level
+  check confirms the cut is still frame-aligned: frame 74 (2.4667-2.5000s) full level (-20.6dB), frame 75
+  (2.5000-2.5333s) mid-ramp (-31.6dB, `HARD_STOP_RAMP_MS`=5ms landing inside this frame), frame 76 already at
+  floor (-72.7dB) — the cut lands exactly on frame 75/t=2.500s, unchanged from U04.
+  DETERMINISM: rendered the same post twice; the extracted audio PCM is byte-identical (matching MD5) across
+  both runs. (The two full MP4s differ by a few bytes in the H.264 `btrt` box — x264's own encoder-internal
+  bitrate statistic, a video-track artifact unrelated to and pre-existing this change, not the audio.)
+  THE HONEST LIMIT OF THIS VERIFICATION: an LLM agent has no ears — "listening" here means objective acoustic
+  analysis (spectral centroid, band-energy distribution, envelope-modulation spectrum via FFT), not subjective
+  perception, and that distinction matters for a claim about how something SOUNDS. Extracted the real render's
+  scroll-phase audio to `u08-scroll-audio.wav` (in this task's scratchpad, not committed) and measured: spectral
+  centroid **1225Hz** (in the range real running speech's long-term-average spectrum centroids fall in, not the
+  ~2.2-4kHz a hiss or an under-tilted formant boost would produce); band energy **74.7% concentrated in
+  200-1000Hz** (the low-mid "voice" band), only **2.5% in 2-4kHz** and **~0% above 4kHz** (no piercing top
+  end — the sensory-care constraint holds), only **4.7% below 200Hz** (no sub-bass drone); envelope-modulation
+  spectrum shows multiple close-magnitude peaks spread **2.8-6.0Hz** (the targeted syllabic-rate range) rather
+  than one dominant frequency, consistent with several independently-modulated layers fusing rather than one
+  layer rhythmically popping out. Every one of these objective measures is consistent with the babble-modulated-
+  noise construction reading as an unintelligible crowd murmur rather than a hiss, by the same diagnostics
+  hearing research uses to characterize exactly that distinction — but this is inference from measurement, not
+  a first-person listening report, and a human pass (the user, or someone auditioning T14's voices) is the only
+  way to close that gap with certainty. If a human listen concludes it still reads as textured hiss rather than
+  babble, the likely next lever is MORE layers (8-10, the upper end of the hearing-research range) or slightly
+  deeper `NOISE_TREMOLO_DEPTH`, not a different noise colour or a real multi-talker asset — the spectral/
+  modulation profile measured here already sits where the construction is designed to land.
