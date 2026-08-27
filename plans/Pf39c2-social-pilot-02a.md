@@ -1163,7 +1163,7 @@ for f in social/out/*.mp4; do ffprobe -v error -show_streams "$f"; done   # ffpr
 ```
 
 ## Follow-up
-- [ ] F20: If the 18 Stills read as filler after T19's phone review, recover Walls by improving landing-line
+- [-] F20 (OBSOLETE 2026-08-27 — the Still format was deleted in D01, so there are no Stills to recover Walls from; landing-line SELECTION remains a live idea for widening the Wall pool itself, which is the part worth keeping): If the 18 Stills read as filler after T19's phone review, recover Walls by improving landing-line
   SELECTION (an LLM pick like the pool's `rubric.chosen_landing_line`, extended to the whole read-through slice)
   rather than by loosening the mechanical word cap — measured above as buying 3 cards at the cost of payoff
   quality. Only 21 of the 48 slice cards are in the scored pool today.
