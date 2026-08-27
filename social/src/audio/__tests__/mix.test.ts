@@ -21,11 +21,12 @@ import {
 	type VolumePoint
 } from '../mix.js';
 
-/** Mirrors The Wall's real audio shape (social pilot 02a U04): dense noise
- * under the SCROLL, a hard cut into 0.5s of true silence, then the bed's own
- * slow fade back in. See `cli.ts`'s `wallNoiseSpans`/`wallSilentSpans`. */
+/** Mirrors The Wall's real audio shape (social pilot 02a U04, silence length
+ * raised 500 -> 1000ms by V06): dense noise under the SCROLL, a hard cut into
+ * 1s of true silence, then the bed's own slow fade back in. See `cli.ts`'s
+ * `wallNoiseSpans`/`wallSilentSpans`/`WALL_DROP_SILENCE_MS`. */
 const WALL_CUT_MS = 2500;
-const WALL_TRUE_SILENCE_END_MS = 3000;
+const WALL_TRUE_SILENCE_END_MS = 3500;
 
 const MIX_TIMEOUT_MS = 30_000;
 
@@ -335,9 +336,9 @@ describe('mix', () => {
 	 * the NOISE track, not the bed (see the test above's doc comment) — this
 	 * verifies the actual output shape: noise clearly audible under the
 	 * "scroll," a hard cut, then true silence through the narrow
-	 * `[WALL_CUT_MS, WALL_TRUE_SILENCE_END_MS)` window (0.5s), before the
-	 * bed's own slow `BED_RETURN_FADE_MS` fade-in would raise the floor
-	 * again.
+	 * `[WALL_CUT_MS, WALL_TRUE_SILENCE_END_MS)` window (1s, raised from 0.5s
+	 * by V06), before the bed's own slow `BED_RETURN_FADE_MS` fade-in would
+	 * raise the floor again.
 	 *
 	 * HONESTLY DOES NOT PROVE `asetnsamples` IS LOAD-BEARING HERE, and says so
 	 * rather than pretending otherwise: `anoisesrc` is an in-filtergraph
@@ -366,7 +367,7 @@ describe('mix', () => {
 				durationMs: DURATION_SEC * 1000,
 				narrationSpans: [],
 				// Mirrors the real Wall shape: noise under the scroll, a hard
-				// cut into 0.5s of true silence at WALL_CUT_MS.
+				// cut into 1s of true silence at WALL_CUT_MS.
 				noiseSpans: [{ startMs: 0, endMs: WALL_CUT_MS }],
 				silentSpans: [{ startMs: WALL_CUT_MS, endMs: WALL_TRUE_SILENCE_END_MS }],
 				outPath

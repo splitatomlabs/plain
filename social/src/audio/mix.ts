@@ -86,8 +86,9 @@ export const BED_TAIL_FADE_MS = 1500;
  * social pilot 02a U04 ("noisy scroll bed, then silence, then a slow
  * return"): the ramp the bed uses to climb back to NOMINAL after being held
  * at its floor across a `noiseSpans` window (The Wall's SCROLL phase) plus
- * whatever `silentSpans` immediately follows it (The Wall's 0.5s true
- * silence). Deliberately much slower than `DUCK_RELEASE_MS` (600ms): that
+ * whatever `silentSpans` immediately follows it (The Wall's true silence,
+ * `cli.ts`'s `WALL_DROP_SILENCE_MS` — 1s as of V06). Deliberately much
+ * slower than `DUCK_RELEASE_MS` (600ms): that
  * constant times the bed's return from an ordinary spoken line ending, but
  * this return follows a genuinely jarring noise-then-silence "drop" — the
  * user's own instruction was to fade the soothing bed back in "slowly
@@ -304,8 +305,9 @@ export interface MixInput {
 	narrationSpans: TimeSpan[];
 	/**
 	 * Spans that must be silent in the OUTPUT — bed included. Real case
-	 * (social pilot 02a U04): The Wall's 0.5s of TRUE silence, right after
-	 * the cut frame — see `cli.ts`'s `wallSilentSpans`. Narrower than it used
+	 * (social pilot 02a U04): The Wall's TRUE silence, right after
+	 * the cut frame (`cli.ts`'s `WALL_DROP_SILENCE_MS` — 1s as of V06) — see
+	 * `cli.ts`'s `wallSilentSpans`. Narrower than it used
 	 * to be (it once covered the whole 3s landing-line hold); the rest of
 	 * that hold is now `noiseSpans`' hard cut followed by the bed's own slow
 	 * return, not silence.

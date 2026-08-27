@@ -303,12 +303,21 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 
 /**
  * social pilot 02a U04 ("noisy scroll bed, then silence, then a slow
- * return"): the true-silence phase is now just this — half a second, not the
- * whole 3s landing-line hold. See `wallSilentSpans`'s own doc comment for
- * why, and `audio/mix.ts`'s module doc comment for the shape this and
- * `wallNoiseSpans` together produce.
+ * return"): the true-silence phase is now just this — a fraction of a
+ * second, not the whole 3s landing-line hold. See `wallSilentSpans`'s own
+ * doc comment for why, and `audio/mix.ts`'s module doc comment for the
+ * shape this and `wallNoiseSpans` together produce.
+ *
+ * V06 raised this from 500 to 1000ms (the user's own request: "increase the
+ * silence gap post noise to 1s up from 0.5s"). This value must stay
+ * `<= LANDING_LINE_SECONDS * 1000` — the silence sits inside that fixed 3s
+ * hold (see `wallSilentSpans`), so a value any larger would push true
+ * silence past the end of the hold. That relationship is asserted directly
+ * against both constants in `audio/__tests__/narration.test.ts`, not just
+ * documented here, so a future cut to `LANDING_LINE_SECONDS` fails loudly
+ * instead of silently breaking this invariant.
  */
-const WALL_DROP_SILENCE_MS = 500;
+export const WALL_DROP_SILENCE_MS = 1000;
 
 /**
  * The Wall's dense, unreadable NOISE phase — the entire moving-wall SCROLL,
@@ -331,7 +340,8 @@ export function wallNoiseSpans(): TimeSpan[] {
 /**
  * The Wall's one true-silence phase — social pilot 02a U04 narrowed this
  * from the whole 3s landing-line hold down to exactly `WALL_DROP_SILENCE_MS`
- * (0.5s), right after the cut. See the module doc comment.
+ * (1000ms as of V06, originally 500ms), right after the cut. See the module
+ * doc comment.
  *
  * HISTORY: social pilot 02a T15 ("THE CUT MUST BE AUDIBLE") first shrank this
  * from `0 -> WALL_FRAMES + LANDING_LINE_FRAMES` (silencing the bed under the
@@ -358,8 +368,10 @@ export function wallNoiseSpans(): TimeSpan[] {
  * it used to: that fixed boundary existed so a 0-plain-line Wall card's
  * duration-floor padding never went silent (see F02,
  * `plans/Pf39c2-social-pilot-02.md`) — this window is now short enough
- * (0.5s, always well inside the landing line's fixed 3s hold, never reaching
- * into any padding) that this concern no longer applies to it at all.
+ * (`WALL_DROP_SILENCE_MS`, 1000ms as of V06, always well inside the landing
+ * line's fixed 3s hold — with 2s to spare, asserted directly in
+ * `audio/__tests__/narration.test.ts` — never reaching into any padding)
+ * that this concern no longer applies to it at all.
  */
 export function wallSilentSpans(): TimeSpan[] {
 	const wallEndMs = (WALL_FRAMES / FPS) * 1000;

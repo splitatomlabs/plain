@@ -52,8 +52,8 @@ import { fileURLToPath } from 'node:url';
 
 import type { AuthorSlug } from '../../render/theme.js';
 import type { WallPlan } from '../../cli.js';
-import { wallSilentSpans, wallNoiseSpans, narrationPlan } from '../../cli.js';
-import { FPS, WALL_FRAMES, computeWallTiming } from '../../remotion/wall-timing.js';
+import { wallSilentSpans, wallNoiseSpans, narrationPlan, WALL_DROP_SILENCE_MS } from '../../cli.js';
+import { FPS, WALL_FRAMES, LANDING_LINE_SECONDS, computeWallTiming } from '../../remotion/wall-timing.js';
 import { formatRunningHead, PAYOFF_LABEL_TEXT } from '../../remotion/SourceHead.js';
 import { bedPath } from '../beds.js';
 import { LOUDNESS_TOLERANCE_LU, TARGET_LUFS, mix } from '../mix.js';
@@ -173,8 +173,9 @@ function meanVolumeDb(filePath: string, startSec: number, endSec: number): numbe
 }
 
 // ---------------------------------------------------------------------------
-// 1. wallSilentSpans/wallNoiseSpans — U04's "noise, then 0.5s of true
-//    silence, then the bed's own slow return" shape
+// 1. wallSilentSpans/wallNoiseSpans — U04's "noise, then WALL_DROP_SILENCE_MS
+//    of true silence, then the bed's own slow return" shape (silence length
+//    raised 500 -> 1000ms by V06)
 // ---------------------------------------------------------------------------
 
 describe('wallSilentSpans / wallNoiseSpans', () => {
@@ -182,20 +183,32 @@ describe('wallSilentSpans / wallNoiseSpans', () => {
 
 	/**
 	 * U04 (`plans/Pf39c2-social-pilot-02a.md`) narrowed this from T15's "the
-	 * landing line ALONE" (2.5s -> 5.5s) down to just the 0.5s of TRUE
-	 * silence right after the cut — the rest of the old landing-line-hold
-	 * window is no longer silent: `wallNoiseSpans` carries the scroll instead
-	 * of the bed, and the bed's own slow `BED_RETURN_FADE_MS` fade-in
-	 * (`audio/mix.ts`'s `bedEnvelope`) fills the back end, landing at nominal
-	 * exactly when the landing line ends.
+	 * landing line ALONE" (2.5s -> 5.5s) down to just `WALL_DROP_SILENCE_MS`
+	 * of TRUE silence right after the cut — the rest of the old
+	 * landing-line-hold window is no longer silent: `wallNoiseSpans` carries
+	 * the scroll instead of the bed, and the bed's own slow
+	 * `BED_RETURN_FADE_MS` fade-in (`audio/mix.ts`'s `bedEnvelope`) fills the
+	 * back end, landing at nominal exactly when the landing line ends.
 	 */
-	it('wallSilentSpans: covers only 0.5s of TRUE silence, starting where the wall scroll ends', () => {
-		expect(wallSilentSpans()).toEqual([{ startMs: wallEndMs, endMs: wallEndMs + 500 }]);
+	it('wallSilentSpans: covers only WALL_DROP_SILENCE_MS of TRUE silence, starting where the wall scroll ends', () => {
+		expect(wallSilentSpans()).toEqual([{ startMs: wallEndMs, endMs: wallEndMs + WALL_DROP_SILENCE_MS }]);
 	});
 
 	it('sanity: the silent span never starts after it ends, whatever its current bounds are', () => {
 		const [span] = wallSilentSpans();
 		expect(span.endMs).toBeGreaterThan(span.startMs);
+	});
+
+	/**
+	 * V06: `WALL_DROP_SILENCE_MS` sits inside the fixed 3s
+	 * `LANDING_LINE_SECONDS` hold (the noise phase fills the front of that
+	 * hold, the bed's return fade fills the back — see the doc comment
+	 * above). Assert that relationship directly, against the real constants,
+	 * so a future cut to `LANDING_LINE_SECONDS` can't silently push the
+	 * silent span past the end of the hold instead of failing loudly here.
+	 */
+	it('WALL_DROP_SILENCE_MS fits inside the LANDING_LINE_SECONDS hold, with room to spare', () => {
+		expect(WALL_DROP_SILENCE_MS).toBeLessThanOrEqual(LANDING_LINE_SECONDS * 1000);
 	});
 
 	/**
