@@ -8,9 +8,9 @@
  *   2. Rest lines (`narrationPlan`'s `lines` for a `'wall'` plan) are the
  *      ONLY narrated set — never the landing line, never the original
  *      excerpt, never the chapter scroll block.
- *   3. Framing text (the running head, the payoff label, the read-through
- *      counter — `SourceHead.tsx`/`Counter.tsx`) never reaches
- *      `TtsProvider.synthesize`, for any of the four compositions.
+ *   3. Framing text (the running head, the payoff label — `SourceHead.tsx`)
+ *      never reaches `TtsProvider.synthesize`, for any of the four
+ *      compositions.
  *   4. A Wall whose `plain_english` is a single sentence — no rest lines,
  *      hence NOTHING narrated at all — still produces a valid, non-silent
  *      mix (the F02 edge case: ffmpeg's `loudnorm` measuring a mix as

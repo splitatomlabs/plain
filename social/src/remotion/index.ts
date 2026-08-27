@@ -7,13 +7,6 @@ export {
 	padToMinimumDuration,
 	type PaddedDuration
 } from './duration-bounds.js';
-export { ReadThroughCounter, COUNTER_FONT_STACK, type ReadThroughCounterProps } from './Counter.js';
-export {
-	COUNTER_SAFE_INSET_PX,
-	COUNTER_FONT_SIZE_PX,
-	COUNTER_BOUNDING_BOX,
-	type CounterBoundingBox
-} from './counter-layout.js';
 export {
 	SourceHead,
 	formatRunningHead,
@@ -25,11 +18,11 @@ export {
 } from './SourceHead.js';
 export {
 	SOURCE_HEAD_SAFE_INSET_PX,
-	SOURCE_HEAD_GAP_BELOW_COUNTER_PX,
 	SOURCE_HEAD_TOP_PX,
 	SOURCE_HEAD_FONT_SIZE_PX,
 	SOURCE_HEAD_PAYOFF_FONT_SIZE_PX,
-	SOURCE_HEAD_BOUNDING_BOX
+	SOURCE_HEAD_BOUNDING_BOX,
+	type SourceHeadBoundingBox
 } from './source-head-layout.js';
 export {
 	Wall,

@@ -2,7 +2,6 @@ import React from 'react';
 import { AbsoluteFill } from 'remotion';
 
 import { BORDER, SECONDARY, TAG_BACKGROUND, type AuthorSlug } from '../render/theme.js';
-import { COUNTER_FONT_STACK } from './Counter.js';
 import {
 	SOURCE_HEAD_BOUNDING_BOX,
 	SOURCE_HEAD_FONT_SIZE_PX,
@@ -24,33 +23,35 @@ import {
  * transformation; neither is ever attributed to the author, and neither is
  * ever narrated (`Framing text is NEVER narrated` — the voice only ever
  * speaks the author's plain rewrite). Set apart from `Wall.tsx`'s quoted
- * content the same way `Counter.tsx`'s page number already is: DM Sans
- * (`COUNTER_FONT_STACK`, re-exported below as `SOURCE_HEAD_FONT_STACK`),
- * never `SERIF_STACK`; `SECONDARY` ink, never `INK` and never an author
- * `ACCENTS` colour (an accent here would read as branding, not a page
- * header — no progress bar, no watermark, no logo, no URL, same rationale
- * `Counter.tsx` documents at length).
+ * content: DM Sans (`SOURCE_HEAD_FONT_STACK`), never `SERIF_STACK`;
+ * `SECONDARY` ink, never `INK` and never an author `ACCENTS` colour (an
+ * accent here would read as branding, not a page header — no progress bar,
+ * no watermark, no logo, no URL).
  *
  * ZERO MOTION: this component takes no `frame` prop and calls no Remotion
  * timing primitive — it renders byte-identical JSX for the entire duration
- * either variant is mounted, matching `Counter.tsx`'s own discipline and the
- * house rule ("the running head is fixed and the payoff label is static —
- * neither introduces motion").
+ * either variant is mounted, matching the house rule ("the running head is
+ * fixed and the payoff label is static — neither introduces motion").
  *
  * U03 (2026-08-27): the two variants no longer share one font size. The
  * payoff label reads at `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (38px); the running
  * head stays at `SOURCE_HEAD_FONT_SIZE_PX` (32px). See
  * `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX`'s own doc comment (`source-head-layout.ts`)
  * for why they diverge and why 38, specifically.
+ *
+ * D03 (2026-08-27): before this task, this stack was a re-exported alias of
+ * `Counter.tsx`'s `COUNTER_FONT_STACK` (the read-through counter, deleted
+ * along with the read-through it labeled — see D02/D03). This module is now
+ * the one place the DM Sans stack literal lives for the whole `remotion/`
+ * workspace.
  */
 
 /**
- * Re-exported alias of `Counter.tsx`'s `COUNTER_FONT_STACK` — the exact same
- * DM Sans stack, not a second literal that could drift from it. Both framing
- * elements (the page-number counter and this running head/payoff label) are
- * UI chrome, not the author's own quoted words, and must read as one family.
+ * DM Sans — the UI face per `docs/BRANDING.md` — never `Wall.tsx`'s
+ * `SERIF_STACK`: this is chrome (a running head / payoff label), not
+ * display type.
  */
-export const SOURCE_HEAD_FONT_STACK = COUNTER_FONT_STACK;
+export const SOURCE_HEAD_FONT_STACK = "'DM Sans Variable', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif";
 
 /**
  * The payoff variant's fixed text — always exactly this, in every render,
@@ -112,8 +113,7 @@ export function formatRunningHead(card: RunningHeadCardMetadata): string {
  * both variants (`SOURCE_HEAD_BOUNDING_BOX`), so the visual grammar is one
  * continuous element that simply changes text: book page -> not a book page.
  * Rendered as a sibling `AbsoluteFill`, never a child of either payload
- * layout, so it structurally cannot reflow anything else on screen — same
- * NO REFLOW discipline `Counter.tsx` documents at length.
+ * layout, so it structurally cannot reflow anything else on screen.
  */
 export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 	const text = variant.kind === 'running-head' ? formatRunningHead(variant.card) : PAYOFF_LABEL_TEXT;
@@ -223,8 +223,7 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 				 * English") on every payoff-phase frame. See
 				 * `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`'s own doc comment for
 				 * why 8/8 rather than a taller `lineHeight`, and why it cannot
-				 * overflow `SOURCE_HEAD_BOUNDING_BOX` or collide with
-				 * `COUNTER_BOUNDING_BOX`.
+				 * overflow `SOURCE_HEAD_BOUNDING_BOX`.
 				 *
 				 * U03 (2026-08-27): `fontSize` is now variant-dependent — the
 				 * payoff label reads at `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX`

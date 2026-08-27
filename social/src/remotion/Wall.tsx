@@ -3,12 +3,10 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 
 import { ACCENTS, INK, PAPER, type AuthorSlug } from '../render/theme.js';
 import { fitFontSize } from '../render/fit.js';
-import { ReadThroughCounter } from './Counter.js';
 import { SourceHead } from './SourceHead.js';
 import { assertWallCardRenderable } from './wall-gate.js';
 import {
 	computeWallTiming,
-	computePayoffCounterBox,
 	wallScrollOffsetAtFrame,
 	WALL_LINE_HEIGHT_RATIO,
 	PAYOFF_BOX_WIDTH,
@@ -57,7 +55,7 @@ export interface WallProps extends Record<string, unknown> {
 	 * T11/T12's framing layer. Combined with `author` (the card's own
 	 * `author_slug`) to derive the running head via `SourceHead.tsx`'s
 	 * `formatRunningHead` (never hardcoded). Optional and additive, same
-	 * pattern as `chapterBlock`/`counter`: when omitted, no running head or
+	 * pattern as `chapterBlock`: when omitted, no running head or
 	 * payoff label renders at all, so every caller that hasn't been updated
 	 * yet (Remotion Studio's `defaultProps`, existing tests) keeps rendering
 	 * exactly as before — `cli.ts` is the one real caller that supplies this,
@@ -74,16 +72,6 @@ export interface WallProps extends Record<string, unknown> {
 	 * Falls back to a fixed duration per line when absent.
 	 */
 	narrationTimings?: NarrationLineTiming[];
-	/**
-	 * `"Card 5 of 48"` (`ScheduleSlot.read_through_counter` — see
-	 * `scripts/lib/schedule.ts`), or `null`/omitted when this render isn't
-	 * a read-through slot. Additive — see `Counter.tsx` for the overlay
-	 * this renders as (T09). NEVER shown during the moving wall phase (the
-	 * counter must not collide with the archaic wall it would otherwise sit
-	 * on top of) — only once the composition reaches a still payoff frame
-	 * (the landing line or a rest line).
-	 */
-	counter?: string | null;
 }
 
 // Exported (additively) so other compositions sharing this visual grammar —
@@ -118,19 +106,13 @@ export const Wall: React.FC<WallProps> = (props) => {
 		narrationTimings: props.narrationTimings
 	});
 	const accent = ACCENTS[props.author];
-	// Optional overlay (T09) — a sibling layer on every STILL payoff phase
-	// below, never a participant in any phase's own layout and never shown
-	// during the moving wall phase (it must not collide with the archaic
-	// wall). See `Counter.tsx`.
-	const counter = props.counter ?? null;
 	// social pilot 02a T09 — the moving wall phase scrolls through the
 	// chapter-sourced block (see `WallProps.chapterBlock`'s doc comment),
 	// not just this card's own excerpt. Falls back to `originalExcerpt`
 	// alone when `chapterBlock` is omitted.
 	const wallText = props.chapterBlock ?? props.originalExcerpt;
 	// social pilot 02a T11/T12 — the framing layer. `null` (not rendered at
-	// all) when the caller hasn't supplied `sourceReference`, matching
-	// `counter`'s own optional contract above.
+	// all) when the caller hasn't supplied `sourceReference`.
 	const runningHead = props.sourceReference ? (
 		<SourceHead variant={{ kind: 'running-head', card: { author_slug: props.author, source_reference: props.sourceReference } }} />
 	) : null;
@@ -160,7 +142,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 	if (frame < timing.landingLine.endFrame) {
 		return (
 			<>
-				<PayoffLine text={props.landingLine} counter={counter} />
+				<PayoffLine text={props.landingLine} />
 				{payoffLabel}
 			</>
 		);
@@ -169,7 +151,7 @@ export const Wall: React.FC<WallProps> = (props) => {
 	const restLine = timing.restLines.find((line) => frame >= line.startFrame && frame < line.endFrame);
 	return (
 		<>
-			<PayoffLine text={restLine ? restLine.text : ''} counter={counter} />
+			<PayoffLine text={restLine ? restLine.text : ''} />
 			{payoffLabel}
 		</>
 	);
@@ -263,22 +245,13 @@ export function WallPhase({
  * exact JSX for their own still payoff phases rather than forking a second
  * copy.
  *
- * social pilot 02a U02 (2026-08-27): also renders the optional read-through
- * `counter` (`"Card 5 of 48"`, or `null`/omitted outside a read-through
- * slot) CENTRED BELOW this text block — phone-review feedback asked for the
- * counter to move out of the top-left corner it used to share across all
- * four formats. `ReadThroughCounter`'s own `top` is computed here via
- * `computePayoffCounterBox` (`wall-timing.ts`), from THIS SAME `text`,
- * rather than passed in already-computed: that keeps the counter's fitted
- * text and its own placement using one source of truth (the identical
- * `fitFontSize` arguments this function's own `<p>` fits against), so the
- * two can never independently drift. Rendered as a separate, absolutely
- * positioned sibling of the `<p>`'s own flex-centred `AbsoluteFill` — never
- * inside it, never sharing its flex flow — so the text's own position is
- * completely unaffected by whether a counter renders at all (see
- * `Counter.tsx`'s own NO REFLOW discussion).
+ * Pf39c2-social-pilot-02a D03 (2026-08-27): this used to also render an
+ * optional read-through `counter` (`"Card 5 of 48"`) centred below this text
+ * block — deleted along with the read-through it labeled (D02 hardcoded
+ * `RenderPlan.counter` to `null`; D03 deletes the counter component and
+ * geometry outright, since nothing supplies a label any more).
  */
-export function PayoffLine({ text, counter = null }: { text: string; counter?: string | null }): React.ReactElement {
+export function PayoffLine({ text }: { text: string }): React.ReactElement {
 	const fit = fitFontSize(text, {
 		maxWidth: PAYOFF_BOX_WIDTH,
 		maxHeight: PAYOFF_BOX_HEIGHT,
@@ -286,35 +259,31 @@ export function PayoffLine({ text, counter = null }: { text: string; counter?: s
 		maxFont: PAYOFF_MAX_FONT,
 		lineHeightRatio: PAYOFF_LINE_HEIGHT_RATIO
 	});
-	const counterBox = computePayoffCounterBox(text);
 
 	return (
-		<>
-			<AbsoluteFill
+		<AbsoluteFill
+			style={{
+				background: PAPER,
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'center',
+				padding: `0 ${PAYOFF_PADDING_X}px`
+			}}
+		>
+			<p
 				style={{
-					background: PAPER,
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center',
-					padding: `0 ${PAYOFF_PADDING_X}px`
+					fontFamily: SERIF_STACK,
+					fontWeight: 400,
+					fontSize: fit.fontSize,
+					lineHeight: PAYOFF_LINE_HEIGHT_RATIO,
+					color: INK,
+					textAlign: 'center',
+					margin: 0,
+					padding: 0
 				}}
 			>
-				<p
-					style={{
-						fontFamily: SERIF_STACK,
-						fontWeight: 400,
-						fontSize: fit.fontSize,
-						lineHeight: PAYOFF_LINE_HEIGHT_RATIO,
-						color: INK,
-						textAlign: 'center',
-						margin: 0,
-						padding: 0
-					}}
-				>
-					{text}
-				</p>
-			</AbsoluteFill>
-			<ReadThroughCounter label={counter} top={counterBox.top} />
-		</>
+				{text}
+			</p>
+		</AbsoluteFill>
 	);
 }

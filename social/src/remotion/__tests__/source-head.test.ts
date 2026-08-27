@@ -3,7 +3,7 @@
  * of T12's real `SourceHead.tsx`. See that file's own doc comment (and
  * `source-head-layout.ts`) for the numbers this suite asserts against.
  *
- * Four claims, matching the T11 task description verbatim:
+ * Claims, matching the T11 task description:
  *
  *   1. The running head is FIXED — pixel-identical at every wall frame
  *      while the block scrolls beneath it. Proven by rendering actual
@@ -13,13 +13,17 @@
  *   2. The payoff label sits in the SAME POSITION as the running head —
  *      same slot, different text. Proven the same way: two renders that
  *      differ only in `variant`, diffed.
- *   3. Neither collides with nor reflows the read-through counter — reuses
- *      `./pixel-proof.ts`, the machinery factored out of `counter.test.ts`
- *      for exactly this ("retarget `counter.test.ts`'s pixel-level proof").
+ *   3. Neither reflows anything else on screen — reuses `./pixel-proof.ts`,
+ *      the shared no-reflow proof machinery.
  *   4. Both variants render in DM Sans + `SECONDARY`, never `SERIF_STACK`
- *      and never an `ACCENTS` colour — a source-guard block mirroring
- *      `counter.test.ts`'s own, asserted against the real exported
- *      constants, not hand-copied literals.
+ *      and never an `ACCENTS` colour — a source-guard block asserted
+ *      against the real exported constants, not hand-copied literals.
+ *
+ * Pf39c2-social-pilot-02a D03 (2026-08-27): this suite used to also prove
+ * the framing layer never collided with the read-through counter
+ * (`Counter.tsx`/`counter-layout.ts`, deleted this task along with the
+ * read-through it labeled — see D02/D03). That describe block is gone; the
+ * "neither reflows" claim above now stands on its own.
  *
  * Acceptance (T11): every render-level assertion below fails against
  * `SourceHead.tsx`'s current throwing stub. T12 replaces that stub; this
@@ -50,8 +54,6 @@ import {
 	SOURCE_HEAD_TEXT_MAX_WIDTH_PX,
 	SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX
 } from '../source-head-layout.js';
-import { COUNTER_BOUNDING_BOX } from '../counter-layout.js';
-import { COUNTER_FONT_STACK } from '../Counter.js';
 import { SERIF_STACK } from '../Wall.js';
 import { PAYOFF_MIN_FONT } from '../wall-timing.js';
 import { ACCENTS, type AuthorSlug } from '../../render/theme.js';
@@ -144,9 +146,9 @@ describe('formatRunningHead — derived from card metadata, never hardcoded', ()
 });
 
 // ---------------------------------------------------------------------------
-// Source-level: reads as a page header, not display type or branding — same
-// pattern as `counter.test.ts`'s own source-guard block, asserted against
-// the real exported constants rather than hand-copied literals.
+// Source-level: reads as a page header, not display type or branding —
+// asserted against the real exported constants rather than hand-copied
+// literals.
 // ---------------------------------------------------------------------------
 
 function stripComments(source: string): string {
@@ -180,10 +182,6 @@ describe('source guard — DM Sans + secondary ink, never SERIF_STACK, never an 
 		expect(renderableSource).toMatch(/fontfamily:\s*source_head_font_stack/);
 	});
 
-	it('SOURCE_HEAD_FONT_STACK is byte-identical to COUNTER_FONT_STACK — one DM Sans family, not two literals that could drift', () => {
-		expect(SOURCE_HEAD_FONT_STACK).toBe(COUNTER_FONT_STACK);
-	});
-
 	it('SOURCE_HEAD_FONT_STACK never equals SERIF_STACK', () => {
 		expect(SOURCE_HEAD_FONT_STACK).not.toBe(SERIF_STACK);
 	});
@@ -193,7 +191,7 @@ describe('source guard — DM Sans + secondary ink, never SERIF_STACK, never an 
 		expect(renderableSource).not.toMatch(/\burl\(/);
 	});
 
-	it('calls no Remotion timing primitive — ZERO MOTION, structurally, same discipline as Counter.tsx', () => {
+	it('calls no Remotion timing primitive — ZERO MOTION, structurally', () => {
 		expect(renderableSource).not.toMatch(/usecurrentframe/);
 		expect(renderableSource).not.toMatch(/interpolate\s*\(/);
 		expect(renderableSource).not.toMatch(/\bspring\s*\(/);
@@ -211,9 +209,9 @@ describe('source guard — DM Sans + secondary ink, never SERIF_STACK, never an 
 });
 
 // ---------------------------------------------------------------------------
-// End-to-end: fixed position, same slot for both variants, and no collision
-// with the read-through counter — proven by rendering real frames, per the
-// T11 task's explicit instruction ("not by inspecting props").
+// End-to-end: fixed position, same slot for both variants — proven by
+// rendering real frames, per the T11 task's explicit instruction ("not by
+// inspecting props").
 // ---------------------------------------------------------------------------
 
 let bundleDir: string;
@@ -259,7 +257,6 @@ const PAYOFF_VARIANT: SourceHeadVariant = { kind: 'payoff' };
 function harnessProps(overrides: Partial<SourceHeadHarnessProps>): SourceHeadHarnessProps {
 	return {
 		wallText: HARNESS_WALL_TEXT,
-		counter: null,
 		sourceHead: null,
 		...overrides
 	};
@@ -313,21 +310,19 @@ describe('payoff label sits in the same position as the running head', () => {
 	);
 });
 
-// social pilot 02a U02 (2026-08-27): this describe block exercises
-// `ReadThroughCounter` with no `top` prop — the ORIGINAL top-left corner
-// placement (`COUNTER_BOUNDING_BOX`). U02 moved Wall/Question/Objection's
-// counter to render CENTRED BELOW their own payoff text instead (see
-// `counter.test.ts`'s own retargeted end-to-end suite for that geometry's
-// proof) — `Still.tsx` is the one format that kept this corner placement
-// (see `counter-layout.ts`'s `COUNTER_BOUNDING_BOX` doc comment for why),
-// so this suite remains a real, still-shipped invariant, just narrower in
-// scope than it used to be: it now proves the corner-counter/framing-plate
-// pairing Still alone renders, not a pairing every format shares.
-describe('neither the running head nor the payoff label collides with or reflows the read-through counter', () => {
-	const COUNTER_LABEL = 'Card 5 of 48';
-
+// Pf39c2-social-pilot-02a D03 (2026-08-27): this describe block used to also
+// prove the framing layer never collided with the read-through counter
+// (`ReadThroughCounter`/`COUNTER_BOUNDING_BOX`) — U02's below-payoff-text
+// placement, and before that the shared top-left corner both overlays used
+// to occupy. D02 hardcoded the counter's only supplier
+// (`RenderPlan.counter`) to `null`; D03 deletes `Counter.tsx`/
+// `counter-layout.ts` outright, so there is no second overlay left to prove
+// non-collision against. The one claim that survives — the source head
+// alone doesn't reflow anything else on screen — is still worth proving
+// directly, so it remains below, renamed.
+describe('the running head does not reflow anything else on screen', () => {
 	it(
-		'source head alone draws only inside its own box, and does not reflow anything the counter would occupy',
+		'source head alone draws only inside its own box, and does not reflow the scrolling wall behind it',
 		async () => {
 			const withoutEither = await renderFrameAsPng(bundleLocation, 'SourceHeadHarness', harnessProps({}), 0);
 			const withHeadOnly = await renderFrameAsPng(
@@ -342,59 +337,6 @@ describe('neither the running head nor the payoff label collides with or reflows
 		},
 		120_000
 	);
-
-	it(
-		'counter and source head together: each draws only inside its own box, neither reflows the other, both still visible',
-		async () => {
-			const neither = await renderFrameAsPng(bundleLocation, 'SourceHeadHarness', harnessProps({}), 0);
-			const counterOnly = await renderFrameAsPng(
-				bundleLocation,
-				'SourceHeadHarness',
-				harnessProps({ counter: COUNTER_LABEL }),
-				0
-			);
-			const both = await renderFrameAsPng(
-				bundleLocation,
-				'SourceHeadHarness',
-				harnessProps({ counter: COUNTER_LABEL, sourceHead: RUNNING_HEAD_VARIANT }),
-				0
-			);
-
-			// Adding the source head to a counter-only render changes nothing
-			// outside the source head's own box — in particular, nothing INSIDE
-			// the counter's box (COUNTER_BOUNDING_BOX sits entirely outside
-			// SOURCE_HEAD_BOUNDING_BOX, so this one check already covers both).
-			assertIdenticalOutsideBoxes(counterOnly.png, both.png, [SOURCE_HEAD_BOUNDING_BOX]);
-			// And, checked directly rather than only implied: the counter box's
-			// own pixels are byte-identical whether or not the source head is
-			// also present. (Fixed 2026-08-26, T12: the original line here was
-			// `assertIdenticalOutsideBoxes(counterOnly.png, both.png,
-			// [COUNTER_BOUNDING_BOX])`, which asserts the opposite of what this
-			// comment says and of what T12's own acceptance requires — it
-			// demands every pixel OUTSIDE the counter's box be identical between
-			// `counterOnly` and `both`, but `both` legitimately differs from
-			// `counterOnly` inside SOURCE_HEAD_BOUNDING_BOX (that's the whole
-			// point of adding the source head) and SOURCE_HEAD_BOUNDING_BOX sits
-			// entirely outside COUNTER_BOUNDING_BOX — so that assertion could
-			// never pass for any real SourceHead implementation, and directly
-			// contradicts `assertBoxDiffers(neither.png, both.png,
-			// SOURCE_HEAD_BOUNDING_BOX)` four lines below in this same test.
-			// `assertBoxIdentical`, scoped to just the counter's own box, is what
-			// the comment actually describes.)
-			assertBoxIdentical(counterOnly.png, both.png, COUNTER_BOUNDING_BOX);
-
-			// Both overlays are genuinely present and visible in the combined render.
-			assertBoxDiffers(neither.png, both.png, COUNTER_BOUNDING_BOX);
-			assertBoxDiffers(neither.png, both.png, SOURCE_HEAD_BOUNDING_BOX);
-		},
-		120_000
-	);
-
-	it('the two boxes are non-overlapping by construction (geometry alone, no render needed)', () => {
-		const headTop = SOURCE_HEAD_BOUNDING_BOX.top;
-		const counterBottom = COUNTER_BOUNDING_BOX.top + COUNTER_BOUNDING_BOX.height;
-		expect(headTop).toBeGreaterThanOrEqual(counterBottom);
-	});
 });
 
 // ---------------------------------------------------------------------------

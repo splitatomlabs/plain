@@ -251,9 +251,9 @@ export const PAYOFF_MIN_MOTIONLESS_SECONDS = 2.5;
  * per-frame value actually drives this window's visuals (e.g. a scale or
  * opacity function sampled across its frames) — absent means the window's
  * renderer takes no frame-dependent prop at all, which is true of every
- * real payoff phase today (`PayoffLine`/`ReadThroughCounter` in `Wall.tsx`
- * take no `frame` argument whatsoever), so "absent" is treated as "no
- * motion", not "unknown".
+ * real payoff phase today (`PayoffLine` in `Wall.tsx` takes no `frame`
+ * argument whatsoever), so "absent" is treated as "no motion", not
+ * "unknown".
  */
 export interface PhaseWindowLike {
 	startFrame: number;

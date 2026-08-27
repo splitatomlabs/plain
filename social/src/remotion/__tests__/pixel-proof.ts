@@ -59,9 +59,8 @@ export function isInsideAnyBox(x: number, y: number, boxes: readonly PixelBox[])
  * The structural no-reflow proof: every pixel OUTSIDE every box in `boxes`
  * must be byte-identical between `a` and `b`. Pass every overlay's own
  * bounding box that legitimately differs between the two renders being
- * compared (e.g. `[COUNTER_BOUNDING_BOX]` when only the counter's presence
- * varies, or `[COUNTER_BOUNDING_BOX, SOURCE_HEAD_BOUNDING_BOX]` when both
- * overlays are in play) — anything belonging to the format's own content
+ * compared (e.g. `[SOURCE_HEAD_BOUNDING_BOX]` when only the running head's
+ * presence varies) — anything belonging to the format's own content
  * sits entirely outside all of them, so if either overlay reflowed
  * anything, some such pixel would move or change and this fails.
  */

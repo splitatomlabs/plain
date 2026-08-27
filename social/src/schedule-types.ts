@@ -15,10 +15,10 @@
  * outright; D02 deleted the read-through and collapsed each day to a
  * SINGLE Wall slot — `ScheduleFormat` narrows to `'wall'`, `SlotContent`
  * narrows to `WallSlotContent`, and `ScheduleSlot` loses `slot`,
- * `read_through` and `read_through_counter` (the read-through counter's
- * removal from the renderer itself — `Counter.tsx`/`counter-layout.ts` — is
- * D03's job, not this one's; a schedule produced by the new generator never
- * carries one).
+ * `read_through` and `read_through_counter`. D03 deleted the read-through
+ * counter's renderer machinery too (`Counter.tsx`/`counter-layout.ts`, and
+ * the `counter` prop `Wall.tsx`/`cli.ts` used to thread through) — a
+ * schedule produced by the new generator never carried one anyway.
  */
 
 export type ScheduleFormat = 'wall';

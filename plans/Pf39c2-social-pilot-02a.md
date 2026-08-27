@@ -2051,14 +2051,40 @@ reorder the read-through" constraint — sub-type spacing now applies freely acr
   rewrite. `content/social/pilot-schedule-w01.json`, `content/social/render-exclusions.json`, and
   `content/social/premises/wall.json` are BYTE-UNCHANGED by this task (confirmed via `git status`) — all three
   regenerations are D04's job.
-- [ ] D03: Delete the read-through counter — `Counter.tsx`, `counter-layout.ts`, `__tests__/counter.test.ts`,
-  `__tests__/counter-corpus.test.ts`, `computePayoffCounterBox` and `COUNTER_GAP_BELOW_TEXT_PX` in
-  `wall-timing.ts`, and the `counter` prop from `Wall.tsx`/`cli.ts`. It exists only to say "Card N of 48",
-  which is meaningless without a sequential read-through. NOTE `source-head-layout.ts` still derives
-  `SOURCE_HEAD_TOP_PX` from `COUNTER_BOUNDING_BOX` — replace that with its own anchor and re-establish the
-  framing plate's position on the new geometry; keep `__tests__/pixel-proof.ts`, which `source-head.test.ts`
-  also uses. Acceptance: no counter renders in any frame; the running head/payoff label sit correctly without
-  it; `npm test` green.
+- [x] D03 (DONE 2026-08-27): Delete the read-through counter — `Counter.tsx`, `counter-layout.ts`,
+  `__tests__/counter.test.ts`, `__tests__/counter-corpus.test.ts`, `computePayoffCounterBox` and
+  `COUNTER_GAP_BELOW_TEXT_PX` in `wall-timing.ts` (including the U02 import-time invariant that pinned the
+  below-text counter box against the bottom chrome band — checked and confirmed it encoded nothing about the
+  Wall's own geometry, only the counter's, so it went with the rest), and the `counter` prop from
+  `Wall.tsx`/`cli.ts`/`PayoffLine`. `source-head-layout.ts`'s `SOURCE_HEAD_TOP_PX` no longer derives from
+  `COUNTER_BOUNDING_BOX` — it and `SOURCE_HEAD_SAFE_INSET_PX` are now their own constants (both 64px, an
+  ordinary top-left masthead inset, not a value borrowed from another overlay's geometry), carrying forward
+  `counter-layout.ts`'s "why top-left" reasoning (the one corner none of TikTok/Reels/Shorts' chrome reliably
+  overlaps) in its own doc comment. `SourceHead.tsx` gained its own `SOURCE_HEAD_FONT_STACK` literal (no longer
+  aliased from `Counter.tsx`). `__tests__/pixel-proof.ts` kept, unchanged in substance (one doc-comment example
+  updated to drop a dead `COUNTER_BOUNDING_BOX` reference) — `source-head.test.ts` still uses
+  `renderFrameAsPng`/`assertIdenticalOutsideBoxes`/`assertBoxDiffers`/`assertBoxIdentical`. `source-head.test.ts`
+  itself lost its counter-collision describe block (the "neither collides with the counter" claim no longer
+  has a second overlay to prove non-collision against) but kept the still-valid "running head doesn't reflow
+  the scrolling wall" case, renamed; its harness fixtures (`source-head-harness.tsx`, `source-head-entry.tsx`)
+  dropped their own `counter` prop. **Verification:** grep for `ReadThroughCounter`/`COUNTER_BOUNDING_BOX`/
+  `COUNTER_SAFE_INSET_PX`/`COUNTER_FONT_STACK`/`computeCounterBelowTextBox`/`computePayoffCounterBox`/
+  `COUNTER_GAP_BELOW_TEXT_PX`/`COUNTER_BOTTOM_UNSAFE_ZONE_PX`/`COUNTER_BELOW_TEXT_BOX_*`/
+  `SOURCE_HEAD_GAP_BELOW_COUNTER_PX` across `social/src/` returns hits only inside doc comments explaining the
+  historical derivation — zero live code references survive. `cd social && npx tsc --noEmit` clean. `npm test`
+  from repo root: pipeline 551/551 (21 files, ~16s), web unit 95/95 (7 files, <1s), social 387/387 (22 files,
+  down from D02's 408 — the two deleted counter test files removed 21 tests net of the one new reflow-only
+  test added; ~26s wall time, ~94s cumulative test time — the single flaky 120s timeout seen on one run of
+  `wall-gate.test.ts` was resource contention from the whole-suite run, confirmed by re-running that file alone
+  in 1.3s and the whole suite again clean). Rendered a real Wall (`npx tsx social/src/cli.ts render --date
+  2026-09-01`, meditations-02 chapter, 615 frames/20.5s) and read frame 0, a mid-scroll frame (frame 36), and
+  the first payoff frame (frame 80) as PNGs: no counter anywhere in any frame; the running head plate
+  ("MARCUS AURELIUS · MEDITATIONS, BOOK 2") sits fixed in the top-left corner at `SOURCE_HEAD_TOP_PX` = 64px
+  (measured via the real exported constant) — up from the pre-D03 264px (`64 + COUNTER_BOUNDING_BOX.height
+  (160) + SOURCE_HEAD_GAP_BELOW_COUNTER_PX (40)`) it used to sit at, clearing a counter that never actually
+  rendered there since D02; the payoff label ("In plain English") renders in the exact same plate/slot at 38px
+  once the composition cuts to the still payoff, with the 81-88px payoff sentence centred below it and nothing
+  overlapping or floating oddly now that the counter's old space is vacated.
 - [ ] D04: Regenerate and re-measure — `content/social/premises/wall.json`, `render-exclusions.json` and a
   fresh week 1 (now 7 posts, one per day). Render all 7, ffprobe the profile, confirm durations inside
   15s/59s and the 40s Wall ceiling, and confirm the U01/U03/U04/U08 work (tinted plate, 38px label, babble →

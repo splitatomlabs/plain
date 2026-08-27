@@ -1,7 +1,7 @@
 /**
  * Pure geometry for the framing layer's running head / payoff label — see
  * `SourceHead.tsx`. Kept separate from the component, same pattern as
- * `counter-layout.ts` vs `Counter.tsx`: the numbers are testable without
+ * `wall-timing.ts` vs `Wall.tsx`: the numbers are testable without
  * rendering a frame, and `SourceHead.tsx` renders exactly what this module
  * resolves, never a recomputed value of its own.
  *
@@ -10,66 +10,69 @@
  * rather than placeholders (same "correct value, simply not yet wired into
  * on-screen behaviour" pattern T07 used for `wall-timing.ts`'s
  * `WALL_FONT_SIZE`).
- */
-
-import { COUNTER_BOUNDING_BOX, COUNTER_SAFE_INSET_PX, computeCounterBelowTextBox, type CounterBoundingBox } from './counter-layout.js';
-import { FRAME_HEIGHT, FRAME_WIDTH } from './wall-timing.js';
-
-/**
- * Same left inset as the read-through counter (`COUNTER_SAFE_INSET_PX`) —
- * both are top-left framing text. See `counter-layout.ts`'s doc comment for
- * why top-left, specifically, is the one corner none of TikTok/Reels/
- * Shorts' standard platform chrome (engagement rail, caption band, search
- * icon) reliably overlaps.
- */
-export const SOURCE_HEAD_SAFE_INSET_PX = COUNTER_SAFE_INSET_PX;
-
-/**
- * The running head/payoff label stacks directly BELOW the read-through
- * counter's own bounding box, rather than occupying a second corner —
- * trading the one platform-chrome-safe corner for an unsafe one (top-right,
- * bottom-*, per `counter-layout.ts`) would reintroduce exactly the risk
- * `COUNTER_SAFE_INSET_PX` exists to avoid. Stacking two short lines of
- * small type in one corner is ordinary masthead layout, not a squeeze.
- */
-export const SOURCE_HEAD_GAP_BELOW_COUNTER_PX = 40;
-
-/**
- * Derived from `COUNTER_BOUNDING_BOX`, not a second hand-picked number —
- * this is what makes the two framing elements disjoint BY CONSTRUCTION
- * (moving the counter's own box would move this too, keeping them apart)
- * rather than by two numbers that happen not to collide today.
  *
- * social pilot 02a U02 (2026-08-27): this derivation still governs a REAL
- * on-screen collision, but a narrower one than it used to. Before U02, the
- * read-through counter rendered in this same top-left corner in all four
- * compositions, so this derivation kept the running head clear of it
- * everywhere. U02 moved the counter to CENTRED BELOW THE PAYOFF TEXT for
- * three of the four formats (Wall/Question/Objection — see
- * `computeCounterBelowTextBox`, `wall-timing.ts`'s `computePayoffCounterBox`)
- * — `COUNTER_BOUNDING_BOX` (this corner box) is no longer where their
- * counter renders at all, so for those three formats this derivation is
- * moot (there is nothing left in this corner to stay clear of, besides the
- * running head/payoff plate itself). `Still.tsx` is the one format that
- * KEPT the corner counter (see `COUNTER_BOUNDING_BOX`'s own doc comment for
- * why: its full-passage text is too tall to leave a safe below-text
- * position for every real card) — for Still, this derivation is exactly as
- * load-bearing as it always was, and remains unchanged.
- *
- * The NEW pairing U02 introduces — the payoff-label plate (this same
- * `SOURCE_HEAD_BOUNDING_BOX` slot) against the NEW below-text counter, both
- * on screen together during Wall/Question/Objection's still payoff phase —
- * is proven disjoint separately, below, rather than folded into this
- * derivation (that pairing has nothing to do with `COUNTER_BOUNDING_BOX`).
+ * Pf39c2-social-pilot-02a D03 (2026-08-27): this module used to derive its
+ * top-left placement from the read-through counter's own bounding box
+ * (`counter-layout.ts`'s `COUNTER_BOUNDING_BOX`/`COUNTER_SAFE_INSET_PX`),
+ * stacking the running head/payoff plate directly BELOW the counter so the
+ * two never collided. D02 deleted the read-through (the counter's only
+ * supplier — `RenderPlan.counter` is hardcoded `null` now); D03 deletes the
+ * counter machinery itself (`Counter.tsx`, `counter-layout.ts`). With
+ * nothing left to stack below, this module now defines its own top-left
+ * anchor directly, rather than deriving one from a module that no longer
+ * exists.
  */
-export const SOURCE_HEAD_TOP_PX = COUNTER_BOUNDING_BOX.top + COUNTER_BOUNDING_BOX.height + SOURCE_HEAD_GAP_BELOW_COUNTER_PX;
+
+/**
+ * Inset, in frame px (the 1080x1920 reference frame every composition in
+ * this workspace renders to — see `wall-timing.ts`'s `FRAME_WIDTH` /
+ * `FRAME_HEIGHT`), from BOTH the top and left edges of the frame.
+ *
+ * SAFE-AREA CORNER: top-left.
+ *
+ * Platform chrome (TikTok/Reels/Shorts) reliably covers two regions of a
+ * 1080x1920 frame in the default feed view: a right-hand engagement rail
+ * (like/comment/share/bookmark/sound, roughly the right ~140px) and a
+ * bottom caption/username/music band (roughly the bottom ~300px). Top-left
+ * is the one corner none of the three platforms' standard chrome overlaps
+ * — unlike top-right, which TikTok's own search icon sometimes occupies.
+ * Hence top-left, not any of the other three corners.
+ *
+ * D03 (2026-08-27): this reasoning used to live on `counter-layout.ts`'s
+ * `COUNTER_SAFE_INSET_PX`, the read-through counter's own inset — carried
+ * across here verbatim now that the counter (and that module) are gone, so
+ * this module is the one place the "why top-left" justification survives.
+ * 64px is unchanged from that constant's own value: the running head has
+ * always used this same inset (`SOURCE_HEAD_SAFE_INSET_PX` was previously
+ * an alias of `COUNTER_SAFE_INSET_PX`; it is now its own constant with the
+ * same number, not a derived one).
+ */
+export const SOURCE_HEAD_SAFE_INSET_PX = 64;
+
+/**
+ * The running head/payoff plate's own top edge, in frame px.
+ *
+ * D03 (2026-08-27): before this task, the plate stacked directly BELOW the
+ * read-through counter's bounding box (`SOURCE_HEAD_TOP_PX =
+ * COUNTER_BOUNDING_BOX.top + COUNTER_BOUNDING_BOX.height +
+ * SOURCE_HEAD_GAP_BELOW_COUNTER_PX`), landing at 64 + 160 + 40 = 264px —
+ * pushed well down the frame to clear a counter that, since D02 deleted the
+ * read-through, never actually rendered there any more (`RenderPlan.counter`
+ * has been hardcoded `null` since D02; D03 deletes the counter component
+ * itself). That derivation is gone along with the counter it was staying
+ * clear of.
+ *
+ * The plate now anchors directly in the SAFE-AREA CORNER on its own terms:
+ * `SOURCE_HEAD_SAFE_INSET_PX` from the top, the same inset already used from
+ * the left — an ordinary top-left masthead position, not a value borrowed
+ * from (or offset against) any other overlay's geometry, because there is no
+ * other overlay left in this corner to stay clear of.
+ */
+export const SOURCE_HEAD_TOP_PX = SOURCE_HEAD_SAFE_INSET_PX;
 
 /**
  * Deliberately small — framing text, not display type, per Constraint 6.
- * A little larger than the counter's bare page-number (`COUNTER_FONT_SIZE_PX`,
- * 28px) because the running head carries more characters (an author name
- * plus a book/chapter reference) at a similar reading distance; still well
- * under any size this workspace treats as "display" text.
+ * Well under any size this workspace treats as "display" text.
  */
 export const SOURCE_HEAD_FONT_SIZE_PX = 32;
 
@@ -111,57 +114,35 @@ export const SOURCE_HEAD_FONT_SIZE_PX = 32;
  * the same margin of safety the 32px case has, not a coincidence — both
  * font sizes happen to need less than 8px of clearance.) The label content
  * box (38 + 2*8 = 54px) also stays comfortably inside `SOURCE_HEAD_BOUNDING_BOX`'s
- * fixed 120px plate height, so neither this box nor its non-overlap with
- * `COUNTER_BOUNDING_BOX` (see `SOURCE_HEAD_TOP_PX`'s doc comment) needs to
+ * fixed 120px plate height, so neither this box nor its position needs to
  * change.
  */
 export const SOURCE_HEAD_PAYOFF_FONT_SIZE_PX = 38;
 
+export interface SourceHeadBoundingBox {
+	top: number;
+	left: number;
+	width: number;
+	height: number;
+}
+
 /**
  * A generous bounding box the running head/payoff label's rendered text can
  * never exceed — used by `__tests__/source-head.test.ts` (and the pixel-proof
- * helpers it shares with `__tests__/counter.test.ts`) to crop this region out
- * of an otherwise byte-identical no-reflow comparison. `left: 0` and a wide
+ * helpers it uses, `./pixel-proof.ts`) to crop this region out of an
+ * otherwise byte-identical no-reflow comparison. `left: 0` and a wide
  * `width` (900px) so even the longest real running head (an author's full
  * display name plus a book title and chapter reference, e.g. "MARCUS
  * AURELIUS · MEDITATIONS, BOOK 12") sits comfortably inside it at
- * `SOURCE_HEAD_FONT_SIZE_PX`. `top` is `SOURCE_HEAD_TOP_PX`, strictly below
- * `COUNTER_BOUNDING_BOX`'s own bottom edge, so this box and the counter's are
- * non-overlapping by construction — see `SOURCE_HEAD_TOP_PX`'s doc comment.
+ * `SOURCE_HEAD_FONT_SIZE_PX`. `top` is `SOURCE_HEAD_TOP_PX` — see that
+ * constant's own doc comment for this task's geometry change.
  */
-export const SOURCE_HEAD_BOUNDING_BOX: CounterBoundingBox = {
+export const SOURCE_HEAD_BOUNDING_BOX: SourceHeadBoundingBox = {
 	top: SOURCE_HEAD_TOP_PX,
 	left: 0,
 	width: 900,
 	height: 120
 };
-
-/**
- * SAFETY INVARIANT (U02, 2026-08-27): proves the payoff-label plate
- * (`SOURCE_HEAD_BOUNDING_BOX`, above) and the NEW below-text counter
- * (`computeCounterBelowTextBox`, `wall-timing.ts`'s `computePayoffCounterBox`)
- * can never collide during Wall/Question/Objection's still payoff phase
- * (the one window where both are on screen at once) — proven over every
- * possible payoff text, not just today's corpus, the same discipline
- * `SOURCE_HEAD_TOP_PX` above already uses for its own (different) pairing.
- *
- * A payoff line's own fitted text `blockHeight` can be arbitrarily SMALL
- * (down to a mathematical floor of 0) but never negative, and
- * `computeCounterBelowTextBox`'s own `top` strictly increases with
- * `blockHeight` — so `computeCounterBelowTextBox(0, ...)` is the below-text
- * counter's own MINIMUM possible top, the tightest this pairing can ever
- * get. If even that floor clears this plate's bottom edge, every real
- * (taller) block height clears it by more, not less.
- */
-const MIN_POSSIBLE_COUNTER_BELOW_TEXT_TOP_PX = computeCounterBelowTextBox(0, FRAME_WIDTH, FRAME_HEIGHT).top;
-if (MIN_POSSIBLE_COUNTER_BELOW_TEXT_TOP_PX <= SOURCE_HEAD_BOUNDING_BOX.top + SOURCE_HEAD_BOUNDING_BOX.height) {
-	throw new Error(
-		"invariant violated: the below-text counter's own minimum possible top " +
-			`(${MIN_POSSIBLE_COUNTER_BELOW_TEXT_TOP_PX}px, at the theoretical blockHeight floor of 0) does not clear ` +
-			`SOURCE_HEAD_BOUNDING_BOX's own bottom edge (${SOURCE_HEAD_BOUNDING_BOX.top + SOURCE_HEAD_BOUNDING_BOX.height}px) ` +
-			'— COUNTER_GAP_BELOW_TEXT_PX or SOURCE_HEAD_BOUNDING_BOX must change.'
-	);
-}
 
 /**
  * Social pilot 02a R04 (2026-08-26): the maximum on-screen width the running
@@ -216,9 +197,7 @@ export const SOURCE_HEAD_TEXT_MAX_WIDTH_PX = SOURCE_HEAD_BOUNDING_BOX.width - SO
  * metrics — it just gives the clip box enough room not to cut into them.
  * `SOURCE_HEAD_BOUNDING_BOX.height` (120px) has ample room left over for
  * this on top of `SOURCE_HEAD_FONT_SIZE_PX`, so it cannot push the span
- * outside that box or collide with `COUNTER_BOUNDING_BOX` (see
- * `SOURCE_HEAD_TOP_PX`'s own doc comment for why those two boxes are
- * disjoint by construction).
+ * outside that box.
  *
  * Social pilot 02a U03 (2026-08-27): this padding is SHARED across both
  * variants' spans and was NOT grown when the payoff label moved to its own,

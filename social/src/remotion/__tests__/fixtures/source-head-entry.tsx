@@ -25,7 +25,6 @@ const DURATION_IN_FRAMES = 300;
 
 const defaultProps: SourceHeadHarnessProps = {
 	wallText: 'Placeholder archaic text standing in for a real chapter block.',
-	counter: null,
 	sourceHead: null
 };
 

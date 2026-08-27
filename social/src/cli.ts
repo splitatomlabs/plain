@@ -219,17 +219,6 @@ interface RenderPlan {
 	cardId: string;
 	bookSlug: string;
 	authorSlug: string;
-	/**
-	 * Pf39c2-social-pilot-02a D02: always `null` now — the read-through (the
-	 * counter's only supplier, `ScheduleSlot.read_through_counter`) is gone,
-	 * so there is no label left to compute. Left for D03, per that task's own
-	 * scope: `Counter.tsx`/`counter-layout.ts` and the `counter` prop this
-	 * still threads through to `Wall.tsx` are NOT deleted here — only the
-	 * supply of a real label is. `Wall.tsx` already renders nothing for a
-	 * `null` counter (every non-read-through Wall slot always passed `null`
-	 * here before this task too).
-	 */
-	counter: string | null;
 	compositionId: 'Wall';
 	formatPlan: FormatPlan;
 	postIndex: number;
@@ -267,7 +256,6 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 		cardId: slot.card_id,
 		bookSlug: slot.book_slug,
 		authorSlug: slot.author_slug,
-		counter: null,
 		compositionId,
 		formatPlan,
 		postIndex,
@@ -297,7 +285,7 @@ function printPlan(plan: RenderPlan): void {
 // ---------------------------------------------------------------------------
 
 function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTiming[]): Record<string, unknown> {
-	const base = { author: plan.authorSlug, counter: plan.counter };
+	const base = { author: plan.authorSlug };
 	return {
 		...base,
 		originalExcerpt: plan.formatPlan.originalExcerpt,

@@ -9,7 +9,7 @@
  * social pilot 02 F17, ONLY — consumer: it hands the resulting CSS straight
  * to `buildCardHtml`'s `<style>` tag. F17 found that `social/src/remotion/`
  * (the Remotion video compositions) named the exact same font stacks
- * (`Wall.tsx`'s `SERIF_STACK`, `Counter.tsx`'s `COUNTER_FONT_STACK`) but
+ * (`Wall.tsx`'s `SERIF_STACK`, `SourceHead.tsx`'s `SOURCE_HEAD_FONT_STACK`) but
  * never registered either face anywhere in the Remotion bundle, so every
  * MP4 silently fell back to Georgia (or, on a Linux render container with
  * no Georgia either, to a generic serif) while the JPEG feed image (via
