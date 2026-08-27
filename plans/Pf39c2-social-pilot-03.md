@@ -772,12 +772,57 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   VIABLE, with the exact wording asserted) plus a criterion-B-only case, even/odd/single-value medians, a zero-median
   ratio, null-never-a-zero on both YouTube and inferred platforms, insufficient-week-data, and top-5
   ordering/truncation. `npm test --prefix social` is green at 550/550 (529 prior + these 21); `tsc --noEmit` clean.
-- [ ] T15: Write `docs/SOCIAL_PILOT.md` — the runbook. Must cover account creation hygiene (separate email, created
+- [x] T15: Write `docs/SOCIAL_PILOT.md` — the runbook. Must cover account creation hygiene (separate email, created
   manually on a real device, phone verified, distinct handle and bio, no follow/like/comment automation, no
   delete-and-repost); the weekly session covering TikTok scheduling, the YouTube flip and any metrics T13 left
   manual; the pre-registered
   criterion; and what to do if the Meta account is disabled. Acceptance: someone else could run the pilot from this
   document alone.
+  Done: rewrote `docs/SOCIAL_PILOT.md` around T13's existing TikTok-metrics section (kept verbatim, folded into a
+  "weekly session" checklist rather than duplicated) into the full runbook: (1) the pre-registered criterion quoted
+  verbatim from the index plan, with the "outlier with no conversion and no trend is explicitly a NO" warning and a
+  pointer at `social/src/metrics/readout.ts` as the thing that actually computes the verdict, not a spreadsheet;
+  (2) account creation hygiene — every item the task names (separate email, manual creation on a real device, phone
+  verification, distinct handle/bio, zero follow/like/comment automation, no delete-and-repost), each with the
+  specific enforcement mechanism it defends against, sourced from `plans/research/social-experiment-notes.md`'s
+  "Account-restriction risk" section (TikTok's automation clause, Meta's Account Integrity mutual-enforcement
+  policy); (3) one-time setup in dependency order — R2 (`social/r2/README.md`), the Meta app/Instagram token
+  (Standard Access only, no App Review), the YouTube OAuth app (flagged loudly that it MUST be published to "In
+  production" or refresh tokens die weekly), and explicitly flagged that NO OAuth authorization flow exists
+  anywhere in this codebase — tokens must be hand-written into the `social-pilot-tokens` Firestore collection in
+  the exact `StoredToken` shape (`{value, expiresAt}`) `token-store-firestore.ts` reads, before the Docker build
+  (`social/DOCKER.md`) and the Cloud Run Job/Firebase trigger deploy (`social/DEPLOY.md`); (4) the daily loop —
+  what the `onSchedule` trigger does, what a healthy Cloud Run execution's log lines look like
+  (`[instagram] ok — ...` / `[youtube] ok — ...`), and how to check it via `gcloud run jobs executions list/logs`;
+  (5) the weekly session as a checklist — schedule generation (`scripts/review-week.ts` + `generate-schedule.ts`),
+  staging TikTok (documented the real gap found while verifying commands: `stageTikTokWeek` in
+  `social/src/publish/tiktok-manual.ts` has NO CLI wrapper anywhere in this repo, only unit tests call it — gave a
+  runnable one-off `tsx` script as the concrete workaround rather than pretending a command exists), the YouTube
+  visibility flip from `content/social/pending-youtube-flips.json`, and TikTok metrics hand entry
+  (`npx tsx social/src/metrics/tiktok-manual.ts --post-id ... --views ...`, flags verified against the file's own
+  `printHelp`) plus retention being in-app-only regardless of automation; (6) what to do if the Meta account is
+  disabled — do not create a replacement from the same device/IP/email (Meta's mutual-enforcement policy would
+  likely catch it too), the actual in-app appeal path, that R2 assets survive independently because uploads happen
+  before any post per the plan's own Decision, and a concrete decision tree for continuing on the remaining two
+  platforms vs. stopping, tied back to the criterion only needing one platform to clear; (7) metrics and the
+  readout — `collect.ts`'s `--now` flag, the 30-day polling window, and the exact `readout.ts` invocation and flags
+  (`--metrics-dir`, `--now`, `--breakout-threshold`), all checked against `printHelp()` in each file, not assumed;
+  (8) a "Current status" section naming every task this plan left `[!]` DEFERRED (T01 R2, T05 Instagram live post,
+  T06 YouTube live upload, T09 Docker build, T10 cloud deploy, T13 TikTok spike) and exactly what closing each one
+  requires, plus a dedicated callout that `functions/src/socialTrigger.ts`'s `PILOT_TIMEZONE`/`SCHEDULE_CRON`
+  (`America/New_York`, `53 7 * * *`) is an off-the-hour-cron placeholder, not a deliberately chosen audience
+  timezone/time, and a closing line that zero posts have ever been published by this system — so the document
+  cannot be mistaken for evidence the pilot is live.
+  Verification: every command/flag cited was checked against the real source rather than assumed — `job.ts`,
+  `cli.ts`, `metrics/collect.ts`, `metrics/readout.ts`, `metrics/tiktok-manual.ts`, `metrics/tiktok-spike.ts`,
+  `scripts/generate-schedule.ts`, `scripts/review-week.ts`, `publish/tiktok-manual.ts`,
+  `publish/token-store-firestore.ts`, `publish/tokens.ts`, `publish/env.ts`, `pilot-config.ts`, and
+  `functions/src/socialTrigger.ts` were all read directly; confirmed `stageTikTokWeek` has no CLI entry point by
+  grepping for its call sites (only `job-plan.ts`/`job.ts` reference the `PendingYouTubeFlip` type it shares, never
+  the function itself, and no script anywhere calls it). `npm test --prefix social`: 550/550 green, unchanged — no
+  `.ts`/`.tsx` file was touched by this task, only `docs/SOCIAL_PILOT.md`. T16 (the ~4-week findings) is next and
+  depends on real data existing in `content/social/metrics/`, which in turn depends on this document's "Current
+  status" section's six DEFERRED live steps actually being closed first.
 - [ ] T16: At ~4 weeks, write the findings into the same doc: did anything break out, which format, and the
   recommendation — build on what worked, or stop. Acceptance: a stated yes-or-no with the numbers behind it.
 
