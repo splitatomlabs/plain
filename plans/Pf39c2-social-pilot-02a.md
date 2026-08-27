@@ -2819,3 +2819,75 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   (dated comments say 2026-08-27) — grepped it for the same stale figures and found none; no test file
   change needed. Comments-only change; `npx vitest run src/render/__tests__/chapter-text.test.ts` from
   `social/` passes 28/28 unchanged.
+
+## Screen-count mix (2026-08-27, user)
+
+User, on seeing week 1 come out at 5 screens every day: *"I don't think the impenetrability filter makes sense
+any more since the wall is always a wall. I would rather have more of a mix of less screens from shorter
+cards."*
+
+**The argument is correct and the data confirms it.** `impenetrability_score` scores the density of the card's
+own `original_excerpt`. Since T08/R02 the wall does not show that: it shows the CHAPTER block
+(`chapter-text.ts`), at a FIXED 44px, repeated until it clears the travel floor. The wall is equally a wall
+for every card. What the score still does is act as a **length proxy** — it rises monotonically with payoff
+screen count while `landing_line_score`, which measures something the viewer actually experiences, stays flat:
+
+| screens | n | avg impenetrability | avg landing line |
+|---|---|---|---|
+| 1 | 3 | 1.67 | 5.00 |
+| 2 | 18 | 2.94 | 4.28 |
+| 3 | 31 | 3.68 | 4.29 |
+| 4 | 46 | 3.87 | 4.30 |
+| 5 | 70 | 3.99 | 4.26 |
+
+So gating on it selects for length, which is precisely backwards from what the format now wants.
+
+**But that is only half the cause of the all-5s week, and the other half was missed in V04's write-up.**
+Under the current gate a strong draw is 5 screens 46.9% of the time, so seven-for-seven is a 0.5% event — not
+explicable by the impenetrability filter alone. The compounding cause is `wallAuthorWeights`: week 1 drew 3
+Seneca + 3 Epictetus + 1 Marcus, and the per-author strong pools have wildly different length diversity.
+
+| author | strong pool (imp>=4 && ll>=4) | % at 5 screens | with ll>=4 only | % at 5 |
+|---|---|---|---|---|
+| marcus-aurelius | 77 `{2:6,3:16,4:26,5:29}` | **38%** | 97 `{1:2,2:13,3:22,4:31,5:29}` | **30%** |
+| seneca | 14 `{4:1,5:13}` | **93%** | 23 `{1:1,4:1,5:21}` | 91% |
+| epictetus | 7 `{4:3,5:4}` | 57% | 22 `{2:2,3:4,4:7,5:9}` | **41%** |
+
+The author weighting under-draws Marcus — whose pool is the diverse one — and over-draws Seneca, whose strong
+pool is 93% five-screen. Dropping the impenetrability gate helps Epictetus a lot (pool 7 -> 22, 57% -> 41%)
+and Marcus somewhat, but barely moves Seneca: Seneca's plain rewrites are simply long. Hence both fixes below,
+not just the first.
+
+Decisions (user, 2026-08-27): stop GATING on impenetrability but keep the scores as data (no re-score, no
+cost, reversible); and add a per-week QUOTA rather than an adjacency rule or a probabilistic weighting.
+
+- [~] V14: Remove `impenetrability_score` from the strong test — `scripts/lib/schedule.ts`,
+  `isStrongWallEntry` (~line 108). Strength becomes `landing_line_score >= WALL_STRONG_LANDING_LINE_MIN`
+  alone. Delete `WALL_STRONG_IMPENETRABILITY_MIN` if nothing else reads it (grep first — `premises.ts`,
+  `premises-scoring.ts`, `score-premises.ts` and the tests all mention the rubric). Do NOT touch
+  `WALL_RUBRIC_TASK` or re-score: the field stays in `wall.json` as measured data and stays parsed, it simply
+  stops deciding selection. Rewrite the doc comment on `isStrongWallEntry` and the `WALL_STRONG_*` block to
+  record WHY: the score describes the card's own excerpt, the wall no longer shows the card's own excerpt
+  (cite `social/src/render/chapter-text.ts`), and measured against the real pool the score is now a length
+  proxy — quote the table above. Note that the no-rubric fallback (`if (!entry.rubric) return true`) must keep
+  behaving as it does. Test first. Acceptance: strong pool 98 -> 142; the 3 one-screen cards become eligible;
+  suite green.
+
+- [ ] V15: Add a per-week screen-count QUOTA to the scheduler — `scripts/lib/schedule.ts`, alongside T19's
+  existing sub-type spacing (which is the model to follow for shape and for how to fail gracefully when the
+  pool cannot satisfy the constraint). Each generated week must hold **at most 2 days at 5 screens** and **at
+  least 2 days at <=3 screens**. The scheduler currently never computes a screen count, so it will need
+  `wallPayoffScreenCount` (already exported from `scripts/lib/premises.ts` as of V02) applied to the entry's
+  effective landing line — note `landingLineFor` prefers `rubric.chosen_landing_line` over the mechanical
+  line, so use the SAME line the render will use or the count will be wrong. The quota must degrade
+  gracefully, never throw or loop forever: if the remaining pool cannot satisfy it (e.g. late in a long pilot
+  when short cards are used up), log a clear warning naming the unmet part and carry on, exactly as the strong
+  pool exhaustion path already does. Preserve determinism — same seed, same week. Test first, including a
+  test that the quota still holds when the pool is deliberately starved of short cards. Acceptance: a
+  regenerated week 1 satisfies both bounds; `--seed 42` remains reproducible; suite green.
+
+- [ ] V16: Regenerate week 1 and re-render — report the new day/author/sub_type/screens table and the per-day
+  durations, which should now VARY rather than all being 17.514s. Confirm durations stay inside [15s, 59s]
+  (short cards will pad up to the 15s floor — check `padToMinimumDuration` extends the last payoff hold as
+  designed rather than producing a long dead frame). Acceptance: 7 Walls render; screen counts vary per the
+  quota; all durations inside bounds.
