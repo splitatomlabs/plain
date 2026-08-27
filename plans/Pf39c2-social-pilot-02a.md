@@ -2419,10 +2419,46 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   strong-entry preference compare two different scoring regimes. One uniform regime across all 168 is
   correct; the superseded values stay recoverable in git.
 
-- [ ] V04: Regenerate `content/social/render-exclusions.json` (`npx tsx social/scripts/write-exclusions.ts`)
+- [x] V04 (DONE 2026-08-27): Regenerate `content/social/render-exclusions.json` (`npx tsx social/scripts/write-exclusions.ts`)
   and week 1 (`npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force`). Report the
   pass/reject split and the new 7-day card/author/sub_type table. Acceptance: 7 single-slot Wall days; zero
   back-to-back sub-type repeats; every scheduled card at <=5 screens.
+
+  **Done.** `write-exclusions.ts`: **168 passed, 0 rejected for duration** (was 685/211 of 896). The screen cap
+  subsumes the duration gate entirely — a <=5-screen Wall cannot approach the 40s ceiling — so
+  `render-exclusions.json` is now empty of Wall exclusions. `generate-schedule.ts --week 1 --seed 42
+  --first-week --force`: 7 single-slot Wall days, author mix epictetus 3 / seneca 3 / marcus-aurelius 1.
+
+  | day | card | author | sub_types | screens |
+  |---|---|---|---|---|
+  | 1 | meditations-09-025 | marcus-aurelius | (reserve) | 5 |
+  | 2 | peace-of-mind-15-005 | seneca | (reserve) | 5 |
+  | 3 | discourses-62-002 | epictetus | (reserve) | 5 |
+  | 4 | discourses-15-001 | epictetus | (reserve) | 5 |
+  | 5 | shortness-of-life-18-003 | seneca | (reserve) | 5 |
+  | 6 | discourses-48-004 | epictetus | (reserve) | 5 |
+  | 7 | on-anger-02-075 | seneca | (reserve) | 5 |
+
+  Acceptance met: 7 days, zero back-to-back sub-type repeats, every card <=5 screens.
+
+  **FINDING — the scheduler is biased to the cap ceiling, and it is not chance.** All 7 days landed on exactly
+  5 screens. Measured across the 168-entry pool, the rubric's impenetrability score rises monotonically with
+  screen count, and so does the "strong" rate `loadWallPool` prefers when selecting:
+
+  | screens | n | avg impenetrability | avg landing line | strong (both >=4) |
+  |---|---|---|---|---|
+  | 1 | 3 | 1.67 | 5.00 | 0 (0%) |
+  | 2 | 18 | 2.94 | 4.28 | 6 (33%) |
+  | 3 | 31 | 3.68 | 4.29 | 16 (52%) |
+  | 4 | 45 | 3.87 | 4.31 | 29 (64%) |
+  | 5 | 71 | 3.99 | 4.25 | 47 (66%) |
+
+  A longer plain rewrite comes from a longer, denser original, which scores as more impenetrable — so
+  preferring strong entries systematically prefers cards AT the cap. The cap works (median 9 screens -> 5) but
+  the week sits at the ceiling of what it allows rather than spread across 1-5. Every day is also `(reserve)`
+  — no `thou_wall`/`cascade`/`scene` texture at all, though 51 of 168 pool entries carry one; at 70% reserve
+  in the pool that is roughly an 8% draw, plausible but compounding the sameness. Raised with the user before
+  V07; a screen-count spread rule in the scheduler would be new scope, not part of this plan.
 
 - [x] V05 (DONE 2026-08-27): Make the framing plate visually distinct and let the running head WRAP —
   `SourceHead.tsx` + `source-head-layout.ts`. Three changes: (a) add a **drop shadow and/or hairline outline** so

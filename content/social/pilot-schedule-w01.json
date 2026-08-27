@@ -4,79 +4,79 @@
   "slots": [
     {
       "day": 1,
-      "card_id": "meditations-05-029",
+      "card_id": "meditations-09-025",
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
         "format": "wall",
-        "original_excerpt": "Again, that which everything is made for, he is also made unto that, and cannot but naturally incline unto it. That which anything doth naturally incline unto, therein is his end. Wherein the end of everything doth consist, therein also doth his good and benefit consist. Society therefore is the proper good of a rational creature. For that we are made for society, it hath long since been demonstrated. Or can any man make any question of this, that whatsoever is naturally worse and inferior, is ordinarily subordinated to that which is better? and that those things that are best, are made one for another? And those things that have souls, are better than those that have none? and of those that have, those best that have rational souls?",
-        "landing_line": "Things with souls are better than things without souls."
+        "original_excerpt": "Of an operation and of a purpose there is an ending, or of an action and of a purpose we say commonly, that it is at an end: from opinion also there is an absolute cessation, which is as it were the death of it. In all this there is no hurt.",
+        "landing_line": "Every action has an end."
       }
     },
     {
       "day": 2,
-      "card_id": "peace-of-mind-17-005",
+      "card_id": "peace-of-mind-15-005",
       "book_slug": "peace-of-mind",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "We must not force crops from rich fields, for an unbroken course of heavy crops will soon exhaust their fertility, and so also the liveliness of our minds will be destroyed by unceasing labour, but they will recover their strength after a short period of rest and relief: for continuous toil produces a sort of numbness and sluggishness. Men would not be so eager for this, if play and amusement did not possess natural attractions for them, although constant indulgence in them takes away all gravity and all strength from the mind: for sleep, also, is necessary for our refreshment, yet if you prolong it for days and nights together it will become death. There is a great difference between slackening your hold of a thing and letting it go.",
-        "landing_line": "You can't force crops from rich soil forever."
+        "original_excerpt": "In one's own misfortunes, also, one ought so to conduct oneself as to bestow upon them just as much sorrow as reason, not as much as custom requires: for many shed tears in order to show them, and whenever no one is looking at them their eyes are dry, but they think it disgraceful not to weep when every one does so. So deeply has this evil of being guided by the opinion of others taken root in us, that even grief, the simplest of all emotions, begins to be counterfeited.",
+        "landing_line": "Many people cry just for show."
       }
     },
     {
       "day": 3,
-      "card_id": "discourses-51-003",
+      "card_id": "discourses-62-002",
       "book_slug": "discourses",
       "author_slug": "epictetus",
       "content": {
         "format": "wall",
-        "original_excerpt": "Well then, even if we have renounced the contest in this matter (for good fortune and happiness), no man hinders us from renewing the combat again, and we are not compelled to wait for another four years that the games at Olympia may come again; but as soon as you have recovered and restored yourself, and employ the same zeal, you may renew the combat again; and if again you renounce it, you may again renew it; and if you once gain the victory, you are like him who has never renounced the combat. Only do not through a habit of doing the same thing (renouncing the combat), begin to do it with pleasure, and then like a bad athlete go about after being conquered in all the circuit of the games like quails who have run away.",
-        "landing_line": "No one stops you from starting the fight again."
+        "original_excerpt": "So we suppose that there is something superior in man, and that we first receive it from the gods. For since the gods by their nature are pure and free from corruption, so far as men approach them by reason, so far do they cling to purity and to a love (habit) of purity. But since it is impossible that man's nature ([Greek: ousia]) can be altogether pure, being mixed (composed) of such materials, reason is applied, as far as it is possible, and reason endeavors to make human nature love purity.",
+        "landing_line": "Reason tries to make human nature love purity."
       }
     },
     {
       "day": 4,
-      "card_id": "discourses-58-003",
+      "card_id": "discourses-15-001",
       "book_slug": "discourses",
       "author_slug": "epictetus",
       "content": {
         "format": "wall",
-        "original_excerpt": "It will be necessary for you to hire slaves and to possess a few silver vessels, and to exhibit them in public, if it is possible, though they are often the same, and to attempt to conceal the fact that they are the same, and to have splendid garments, and all other things for display, and to show that you are a man honored by the great, and to try to sup at their houses, or to be supposed to sup there, and as to your person to employ some mean arts, that you may appear to be more handsome and nobler than you are. These things you must contrive, if you choose to go by the second path in order not to be pitied.",
-        "landing_line": "Use cheap tricks to make yourself look better and more impressive than you really are."
+        "original_excerpt": "If these things are true, and if we are not silly, and are not acting hypocritically when we say that the good of man is in the will, and the evil too, and that everything else does not concern us, why are we still disturbed, why are we still afraid? The things about which we have been busied are in no man's power; and the things which are in the power of others, we care not for. What kind of trouble have we still?",
+        "landing_line": "The things we've been worried about are beyond anyone's control."
       }
     },
     {
       "day": 5,
-      "card_id": "happy-life-03-003",
-      "book_slug": "happy-life",
+      "card_id": "shortness-of-life-18-003",
+      "book_slug": "shortness-of-life",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "Meanwhile I follow nature, which is a point upon which every one of the Stoic philosophers are agreed: true wisdom consists in not departing from nature and in moulding our conduct according to her laws and model. A happy life, therefore, is one which is in accordance with its own nature, and cannot be brought about unless in the first place the mind be sound and remain so without interruption, and next, be bold and vigorous, enduring all things with most admirable courage, suited to the times in which it lives, careful of the body and its appurtenances, yet not troublesomely careful. It must also set due value upon all the things which adorn our lives, without over-estimating any one of them, and must be able to enjoy the bounty of Fortune without becoming her slave.",
-        "landing_line": "You also need to be bold and strong, enduring everything with great courage."
+        "original_excerpt": "Think, moreover, how full of risk is the great task which you have undertaken: you have to deal with the human stomach: a hungry people will not endure reason, will not be appeased by justice, and will not hearken to any prayers. Only just a few days ago, when G. Caesar perished, grieving for nothing so much (if those in the other world can feel grief) as that the Roman people did not die with him, there was said to be only enough corn for seven or eight days' consumption: while he was making bridges with ships and playing with the resources of the empire, want of provisions, the worst evil that can befall even a besieged city, was at hand:",
+        "landing_line": "You have to feed people — and hungry people don't listen to reason."
       }
     },
     {
       "day": 6,
-      "card_id": "discourses-53-019",
+      "card_id": "discourses-48-004",
       "book_slug": "discourses",
       "author_slug": "epictetus",
       "content": {
         "format": "wall",
-        "original_excerpt": "And that you may know that this is true, as you have labored for those things, so transfer your labor to these: be vigilant for the purpose of acquiring an opinion which will make you free; pay court to a philosopher instead of to a rich old man; be seen about a philosopher's doors; you will not disgrace yourself by being seen; you will not go away empty nor without profit, if you go to the philosopher as you ought, and if not (if you do not succeed), try at least; the trial (attempt) is not disgraceful.",
-        "landing_line": "There's no shame in trying."
+        "original_excerpt": "hupolaepseis]) are fixed in you, and you shall have acquired a certain power for your security, I advise you to be careful in your association with common persons; if you are not, every day like wax in the sun there will be melted away whatever you inscribe on your minds in the school. Withdraw then yourselves far from the sun so long as you have these waxen sentiments. For this reason also philosophers advise men to leave their native country, because ancient habits distract them and do not allow a beginning to be made of a different habit; nor can we tolerate those who meet us and say: See such a one is now a philosopher, who was once so and so.",
+        "landing_line": "If you don't, every day your lessons will melt away like wax in the sun."
       }
     },
     {
       "day": 7,
-      "card_id": "happy-life-20-005",
-      "book_slug": "happy-life",
+      "card_id": "on-anger-02-075",
+      "book_slug": "on-anger",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "He who sets up these as the rules of his life will soar aloft and strive to make his way to the gods: of a truth, even though he fails, yet he\n\n\"Fails in a high emprise.\"[4]\n\nBut you, who hate both virtue and those who practise it, do nothing at which we need be surprised, for sickly lights cannot bear the sun, nocturnal creatures avoid the brightness of day, and at its first dawning become bewildered and all betake themselves to their dens together: creatures that fear the light hide themselves in crevices. So croak away, and exercise your miserable tongues in reproaching good men: open wide your jaws, bite hard: you will break many teeth before you make any impression.",
-        "landing_line": "You'll break many teeth before you leave a mark."
+        "original_excerpt": "The greatest remedy for anger is delay: beg anger to grant you this at the first, not in order that it may pardon the offence, but that it may form a right judgment about it: if it delays, it will come to an end. Do not attempt to quell it all at once, for its first impulses are fierce; by plucking away its parts we shall remove the whole.",
+        "landing_line": "The best cure for anger is to wait."
       }
     }
   ],
