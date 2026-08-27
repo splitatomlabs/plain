@@ -70,8 +70,24 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
 - `docs/ANALYTICS.md` rules apply: aggregate only, nothing identifying a viewer.
 
 ## Tasks
-- [ ] T01: Provision R2, bind `media.thinkplain.ai`, add a 30-day lifecycle rule. Acceptance: a test object is
+- [!] T01: Provision R2, bind `media.thinkplain.ai`, add a 30-day lifecycle rule. Acceptance: a test object is
   fetchable over HTTPS with the correct content-type and supports range requests.
+  DEFERRED — live acceptance (a real object fetched over HTTPS) needs Cloudflare account access, which
+  this session does not have. Run `social/r2/README.md` section 4 by hand to close it.
+  Done: split into the reproducible/checked-in half (done here) and the by-hand live provisioning (left for the
+  user — no `wrangler`/cloud command was run). Added `social/r2/lifecycle.json` (S3 `PutBucketLifecycleConfiguration`
+  shape, 30-day expiry on all objects) and `social/r2/README.md` — the runbook covering bucket creation, binding
+  the `media.thinkplain.ai` custom domain (noting `r2.dev` is rate-limited/dev-only per this plan's Decision, so
+  the custom domain is required), applying the lifecycle rule (both `aws s3api` and `wrangler r2 bucket lifecycle`
+  paths), and copy-pasteable `curl` verification for all three acceptance parts (HTTPS 200, `content-type` header,
+  `curl -r 0-99` returning 206 with `content-range`). No `cors.json`: every consumer (Meta container fetch,
+  YouTube resumable upload) is server-side, so browser-only CORS enforcement is irrelevant — documented in the
+  README rather than added speculatively. Also added `social/src/publish/env.ts` (`loadR2Config`/`R2Config`,
+  validates `R2_ACCOUNT_ID`/`R2_BUCKET_NAME`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_PUBLIC_BASE_URL`,
+  throws naming the missing variable, never interpolates a value into an error) and
+  `social/src/publish/__tests__/env.test.ts` (12 tests: all-present, each variable missing/blank, and a
+  no-secret-leak assertion). `npx vitest run src/publish` from `social/`: 12/12 green. `npx tsc --noEmit`
+  clean. T02 (`storage.ts`) is next and will construct the actual R2 client from this config.
 - [ ] T02: Implement R2 upload with explicit contentType and deterministic keys. Acceptance: a unit test with a
   mocked client asserts contentType is always set.
 - [ ] T03: Write token tests — refresh near expiry; persist before use; a crash between the two does not orphan the
