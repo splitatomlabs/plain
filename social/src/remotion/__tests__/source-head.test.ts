@@ -49,6 +49,8 @@ import {
 import {
 	SOURCE_HEAD_BOUNDING_BOX,
 	SOURCE_HEAD_FONT_SIZE_PX,
+	SOURCE_HEAD_LINE_HEIGHT_RATIO,
+	SOURCE_HEAD_MAX_LINES,
 	SOURCE_HEAD_PAYOFF_FONT_SIZE_PX,
 	SOURCE_HEAD_SAFE_INSET_PX,
 	SOURCE_HEAD_TEXT_MAX_WIDTH_PX,
@@ -345,9 +347,8 @@ describe('the running head does not reflow anything else on screen', () => {
 // `source_reference` values T11/T12 were written against. Epictetus's
 // Discourses use full descriptive chapter titles (up to 135 chars) that, at
 // SOURCE_HEAD_FONT_SIZE_PX, would wrap to 3-4 lines and spill outside the
-// fixed 120px plate — directly over the scrolling wall — before
-// `SourceHead.tsx`'s single-line clamp existed. Two proofs, at two different
-// levels:
+// fixed plate — directly over the scrolling wall — before `SourceHead.tsx`'s
+// clamp existed. Two proofs, at two different levels:
 //
 //   1. A real Remotion pixel-render, through the SAME harness/pixel-proof
 //      machinery every other end-to-end test above uses, against the single
@@ -368,6 +369,20 @@ describe('the running head does not reflow anything else on screen', () => {
 //      `SOURCE_HEAD_SAFE_INSET_PX`, `SOURCE_HEAD_FONT_STACK`) and font CSS
 //      (`getFontCss`, the same base64-embedded DM Sans `card.ts` and the
 //      Remotion bundle both already render from) the real component uses.
+//
+// Pf39c2-social-pilot-02a V05 (2026-08-27): the sweep below now also mirrors
+// the real component's 2-line wrap (`display: '-webkit-box'` +
+// `WebkitLineClamp: SOURCE_HEAD_MAX_LINES`), not R04's original single-line
+// `whiteSpace: nowrap` shape. With genuine wrapping, a browser can never lay
+// a line out wider than its own `max-width` — horizontal overflow is
+// impossible by construction, not merely clamped — so the sweep's live
+// assertion moves from "the rendered right edge never passes the plate's
+// right edge" (R04, meaningful only because `nowrap` could otherwise render
+// arbitrarily wide) to "the clamped span's own rendered box — both axes —
+// never exceeds the plate", which is the axis genuinely at risk now that
+// text can span two lines: a browser bug, a CSS typo, or a future edit that
+// silently dropped `WebkitLineClamp` would show up here as a taller-than-
+// expected box, exactly the regression this task fixes.
 // ---------------------------------------------------------------------------
 
 describe('the running head clamp stays inside the bounding box for the longest real card', () => {
@@ -443,7 +458,7 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 	});
 
 	it(
-		'every distinct running head string in the corpus renders with its clamped span ending at or before the plate\'s right edge',
+		'every distinct running head string in the corpus renders its clamped span fully inside the plate, on both axes',
 		async () => {
 			const heads = collectCorpusRunningHeads();
 			// Sanity on the sweep itself — if this ever collapses to a handful of
@@ -461,29 +476,32 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 			const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 			try {
 				// Mirrors SourceHead.tsx's own plate + span structure and inline
-				// styles exactly (see that file), so this is a faithful measurement
-				// of the real component's geometry, not an approximation of it.
+				// styles exactly (see that file, including its V05 2-line
+				// `WebkitLineClamp` shape), so this is a faithful measurement of the
+				// real component's geometry, not an approximation of it.
 				await page.setContent(`
 					<style>${fontCss}</style>
 					<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
-						<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;padding-bottom:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;"></span>
+						<span id="probe" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:${SOURCE_HEAD_MAX_LINES};min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;padding-bottom:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:${SOURCE_HEAD_LINE_HEIGHT_RATIO};letter-spacing:0.02em;margin:0;"></span>
 					</div>
 				`);
 
-				const rightEdges = await page.evaluate((allHeads: string[]) => {
+				const rects = await page.evaluate((allHeads: string[]) => {
 					const probe = document.getElementById('probe') as HTMLSpanElement;
 					return allHeads.map((text) => {
 						probe.textContent = text;
-						return probe.getBoundingClientRect().right;
+						const rect = probe.getBoundingClientRect();
+						return { right: rect.right, bottom: rect.bottom };
 					});
 				}, heads);
 
 				const plateRightEdge = SOURCE_HEAD_BOUNDING_BOX.left + SOURCE_HEAD_BOUNDING_BOX.width;
-				const offenders: Array<{ head: string; right: number }> = [];
+				const plateBottomEdge = SOURCE_HEAD_BOUNDING_BOX.top + SOURCE_HEAD_BOUNDING_BOX.height;
+				const offenders: Array<{ head: string; right: number; bottom: number }> = [];
 				heads.forEach((head, i) => {
-					const right = rightEdges[i];
-					if (right === undefined || right > plateRightEdge) {
-						offenders.push({ head, right: right ?? NaN });
+					const rect = rects[i];
+					if (!rect || rect.right > plateRightEdge || rect.bottom > plateBottomEdge) {
+						offenders.push({ head, right: rect?.right ?? NaN, bottom: rect?.bottom ?? NaN });
 					}
 				});
 
@@ -544,17 +562,21 @@ describe('the payoff label\'s vertical ink extent stays inside the clamped span 
 		const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 		try {
 			// Same plate + span structure and inline styles as SourceHead.tsx
-			// (see that file and the corpus sweep above), with the vertical
-			// padding parameterised so this helper can render both the
-			// pre-R07 span (0px — the shape the bug shipped with) and the
+			// (see that file and the corpus sweep above, including its V05
+			// `WebkitLineClamp` shape and `SOURCE_HEAD_LINE_HEIGHT_RATIO`), with
+			// the vertical padding parameterised so this helper can render both
+			// the pre-R07 span (0px — the shape the bug shipped with) and the
 			// real, current component's span (`SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`).
 			// Font size is `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (U03) — this is
 			// the payoff span, which no longer shares a size with the running
-			// head.
+			// head. `PAYOFF_LABEL_TEXT` never wraps to a second line regardless
+			// of `WebkitLineClamp`'s 2-line ceiling (it measures well under the
+			// horizontal budget — see the U03 describe block below), so this
+			// remains a genuine single-line measurement.
 			await page.setContent(`
 				<style>${fontCss}</style>
 				<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
-					<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${verticalPaddingPx}px;padding-bottom:${verticalPaddingPx}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_PAYOFF_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
+					<span id="probe" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:${SOURCE_HEAD_MAX_LINES};min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${verticalPaddingPx}px;padding-bottom:${verticalPaddingPx}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_PAYOFF_FONT_SIZE_PX}px;line-height:${SOURCE_HEAD_LINE_HEIGHT_RATIO};letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
 				</div>
 			`);
 
@@ -587,6 +609,76 @@ describe('the payoff label\'s vertical ink extent stays inside the clamped span 
 });
 
 // ---------------------------------------------------------------------------
+// Pf39c2-social-pilot-02a V05 (2026-08-27): the describe block above proves
+// the payoff span's vertical clip is still guarded now that
+// `SOURCE_HEAD_LINE_HEIGHT_RATIO` replaced the flat `lineHeight: 1` R07/U03
+// measured against — but the payoff label never wraps, so it only exercises
+// ONE line. The running head is the variant that can genuinely reach 2 lines
+// now, and R07's original diagnosis (clip at the box's own OUTER top/bottom
+// edge) generalizes to "the outer edge of the wrapped block", not just "one
+// line's descenders" — this describe block is the same witness/fix
+// discipline, applied to a real, naturally two-line-wrapping corpus string at
+// the running head's own font size.
+// ---------------------------------------------------------------------------
+
+describe('the running head\'s 2-line wrapped block stays inside the clamped span (real Chromium + real DM Sans)', () => {
+	let browser: Browser;
+
+	// A real corpus string (the same Discourses chapter title used elsewhere
+	// in this file, truncated to the clause that happens to wrap to EXACTLY 2
+	// lines at SOURCE_HEAD_FONT_SIZE_PX/SOURCE_HEAD_TEXT_MAX_WIDTH_PX — verified
+	// by direct measurement, not assumed) — genuinely two lines of real
+	// content, not `WebkitLineClamp` truncating a longer string down to 2.
+	const NATURAL_TWO_LINE_HEAD = 'EPICTETUS · DISCOURSES, THAT WHEN WE CANNOT FULFIL THAT WHICH THE';
+
+	beforeAll(async () => {
+		browser = await chromium.launch({ headless: true });
+	}, 60_000);
+
+	afterAll(async () => {
+		await browser.close();
+	});
+
+	async function measureRunningHeadSpan(verticalPaddingPx: number): Promise<{ scrollHeight: number; clientHeight: number }> {
+		const fontCss = await getFontCss();
+		const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+		try {
+			await page.setContent(`
+				<style>${fontCss}</style>
+				<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
+					<span id="probe" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:${SOURCE_HEAD_MAX_LINES};min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${verticalPaddingPx}px;padding-bottom:${verticalPaddingPx}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:${SOURCE_HEAD_LINE_HEIGHT_RATIO};letter-spacing:0.02em;margin:0;">${NATURAL_TWO_LINE_HEAD}</span>
+				</div>
+			`);
+
+			return await page.evaluate(() => {
+				const probe = document.getElementById('probe') as HTMLSpanElement;
+				return { scrollHeight: probe.scrollHeight, clientHeight: probe.clientHeight };
+			});
+		} finally {
+			await page.close();
+		}
+	}
+
+	it(
+		'witness: a genuinely two-line real running head, with zero vertical padding, has scrollHeight strictly greater than clientHeight — the outer-edge clip R07 diagnosed for one line, reproduced for two',
+		async () => {
+			const { scrollHeight, clientHeight } = await measureRunningHeadSpan(0);
+			expect(scrollHeight).toBeGreaterThan(clientHeight);
+		},
+		60_000
+	);
+
+	it(
+		'fix: the real component\'s own padding (SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX) never lets scrollHeight exceed clientHeight for that same two-line running head at SOURCE_HEAD_FONT_SIZE_PX / SOURCE_HEAD_LINE_HEIGHT_RATIO',
+		async () => {
+			const { scrollHeight, clientHeight } = await measureRunningHeadSpan(SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX);
+			expect(scrollHeight).toBeLessThanOrEqual(clientHeight);
+		},
+		60_000
+	);
+});
+
+// ---------------------------------------------------------------------------
 // U03 (2026-08-27): raises the payoff label from SOURCE_HEAD_FONT_SIZE_PX
 // (32px, previously shared with the running head) to its own
 // SOURCE_HEAD_PAYOFF_FONT_SIZE_PX (38px) — user feedback asked whether "In
@@ -606,9 +698,9 @@ describe('the payoff label\'s vertical ink extent stays inside the clamped span 
 // ---------------------------------------------------------------------------
 
 describe('U03 — the payoff label reads larger than the running head, but stays subordinate to the payoff sentence', () => {
-	it('SOURCE_HEAD_PAYOFF_FONT_SIZE_PX is strictly larger than SOURCE_HEAD_FONT_SIZE_PX — the running head is unchanged, only the payoff label grew', () => {
+	it('SOURCE_HEAD_PAYOFF_FONT_SIZE_PX is strictly larger than SOURCE_HEAD_FONT_SIZE_PX — V05 raised the running head too (32px -> 36px), but the payoff label stays larger still', () => {
 		expect(SOURCE_HEAD_PAYOFF_FONT_SIZE_PX).toBeGreaterThan(SOURCE_HEAD_FONT_SIZE_PX);
-		expect(SOURCE_HEAD_FONT_SIZE_PX).toBe(32);
+		expect(SOURCE_HEAD_FONT_SIZE_PX).toBe(36);
 		expect(SOURCE_HEAD_PAYOFF_FONT_SIZE_PX).toBe(38);
 	});
 
@@ -627,7 +719,7 @@ describe('U03 — the payoff label reads larger than the running head, but stays
 					await page.setContent(`
 						<style>${fontCss}</style>
 						<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
-							<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;padding-bottom:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_PAYOFF_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
+							<span id="probe" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:${SOURCE_HEAD_MAX_LINES};min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;padding-bottom:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_PAYOFF_FONT_SIZE_PX}px;line-height:${SOURCE_HEAD_LINE_HEIGHT_RATIO};letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
 						</div>
 					`);
 

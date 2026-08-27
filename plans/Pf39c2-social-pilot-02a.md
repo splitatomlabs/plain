@@ -2337,7 +2337,7 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
 
   Full `scripts/lib/__tests__/` suite (21 files, 551 tests) green after the change.
 
-- [ ] V02: Add a **<=5 payoff-screen cap** to `wallGate`, where screens = 1 (the landing line) +
+- [x] V02: Add a **<=5 payoff-screen cap** to `wallGate`, where screens = 1 (the landing line) +
   `splitPayoffLines(remainder).length` and `remainder` is `plain_english` with the landing line spliced out —
   i.e. exactly `social/src/cli-plan.ts`'s `computeWallPlainLines` arithmetic. `scripts/lib/premises.ts` has
   its own `sentences()` and `social/src/audio/timing.ts` has `splitPayoffLines`; FIRST verify the two agree
@@ -2345,6 +2345,56 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   `landing-line.ts` was duplicated (with the same "keep byte-identical in behaviour" comment). Test first.
   Acceptance: `rankWall(cards)` yields **168** entries with the mix in the table above (marcus-aurelius 117 /
   seneca 26 / epictetus 25, 7 books); no card in the output exceeds 5 screens.
+
+  Done. **Splitter disagreement check ran first, as required: `sentences()` and `splitPayoffLines` disagree on
+  161 of the 1,161 `wallGate` survivors** (a throwaway `tsx` script over the real corpus, run from a scratch
+  directory, never committed). Root cause: `splitPayoffLines`'s abbreviation list includes `"no"` (meant for
+  an ordinal like "no. 3"), so it never splits after a standalone "No." — `sentences()` has no such rule and
+  always splits there. Per the task's instruction, ported `splitPayoffLines` (plus its private
+  `ABBREVIATIONS`/`endsWithAbbreviation` helpers, renamed `PAYOFF_ABBREVIATIONS`/`payoffEndsWithAbbreviation`
+  to avoid colliding with this file's own names) into `scripts/lib/premises.ts` verbatim, with the same "keep
+  byte-identical in behaviour... no automated check" comment `landing-line.ts` carries for its own
+  cross-boundary duplicate (opposite direction: that one ports root -> social for the read-through, this one
+  ports social -> root for the gate). Added `wallPayoffRemainder` (the splice arithmetic — `indexOf`, slice
+  before/after, join with one space, collapse whitespace, trim — copied from `social/src/cli-plan.ts`'s
+  `computeWallPlainLines`, read directly rather than from memory) and `wallPayoffScreenCount` (1 +
+  `splitPayoffLines(wallPayoffRemainder(...)).length`), and a new `WALL_MAX_PAYOFF_SCREENS = 5` constant.
+  `wallGate` now also rejects any card whose `wallPayoffScreenCount` exceeds that cap.
+
+  TDD: added `splitPayoffLines`/`wallPayoffRemainder`/`wallPayoffScreenCount` unit tests (including a
+  regression test for the "No." abbreviation quirk) and two `wallGate` cap tests (exactly-5 accepted,
+  6 rejected) to `scripts/lib/__tests__/premises.test.ts` before touching `premises.ts`; confirmed they failed
+  first, then passed.
+
+  Verified acceptance by running `wallGate`/`rankWall` over the real corpus (not trusting the plan's own
+  numbers) — they match exactly: **168** entries, marcus-aurelius **117** / seneca **26** / epictetus **25**,
+  **7** books (discourses 9, enchiridion 16, happy-life 6, meditations 117, on-anger 13, peace-of-mind 3,
+  shortness-of-life 4). Added a corpus-wide test asserting no survivor's `wallPayoffScreenCount` exceeds 5,
+  and one pinning this exact author/book mix.
+
+  Re-measured every number V01 or this task moved (old -> new):
+  - `wallGate(loadCorpus())` / `rankWall(loadCorpus())`: 1,161 -> **168**.
+  - `rankWall`'s ranked-pool sub-type counts (V01 had measured Thou 220 / Cascade 185 / Scene 98 / reserve 711
+    over the 1,161-entry pool): Thou Wall **45**, Cascade **5**, Scene **3**, reserve **117** over the new
+    168-entry pool. (`classifyWallSubTypes`'s own full-corpus counts — 301/217/144/1,010 over all 1,615 cards
+    — are untouched; that function never runs through `wallGate`.)
+  - `wallAuthorWeights`'s solved weights (epictetus 0.10486891385767785 / marcus-aurelius 0.43071161048689144
+    / seneca 0.4644194756554308) are **unchanged** — the algebra only depends on the Question pool's mix and
+    on whether an author's Wall count is >0, and all three authors still have >0 entries in the 168-entry
+    pool, so these values don't move.
+  - One `selectWallBalanced` test drew 300 cards from the real Wall pool to prove directional weighting; with
+    the pool now at 168, a draw of 300 just returns the whole pool (its own natural, unweighted mix, where
+    seneca's share is ~15%, failing the ">1/3" assertion). Reduced the draw to 50 — comfortably under every
+    author's bucket size at these weights across many seeds — so the test again exercises the weighting
+    itself, not pool exhaustion.
+  - Two `schedule.test.ts` tests hardcoded a specific card id (`on-anger-03-027`) that no longer survives the
+    cap (its payoff runs past 5 screens); replaced the hardcoded id with one derived from `gateWallPool[0]` at
+    runtime in both tests so they stay meaningful regardless of which cards the cap admits.
+  - Full `scripts/lib/__tests__/` suite (21 files, 568 tests) green after the change.
+
+  Left untouched, out of scope per the task: `content/social/premises/wall.json` and
+  `content/social/render-exclusions.json` (V03/V04's job — this task only changed the mechanical gate, not the
+  scored pool or exclusions file on disk).
 
 - [ ] V03: Re-score the pool — `npx tsx scripts/score-premises.ts` with `ANTHROPIC_API_KEY` to batch-score
   the **121** V02 survivors that have no rubric yet (47 of the 168 are already scored in the current
@@ -2357,10 +2407,10 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   pass/reject split and the new 7-day card/author/sub_type table. Acceptance: 7 single-slot Wall days; zero
   back-to-back sub-type repeats; every scheduled card at <=5 screens.
 
-- [ ] V05: Make the framing plate visually distinct and let the running head WRAP — `SourceHead.tsx` +
-  `source-head-layout.ts`. Three changes: (a) add a **drop shadow and/or hairline outline** so the plate reads
-  as laid OVER the page rather than part of it (U01's `TAG_BACKGROUND` tint plus a single `borderBottom` was
-  not enough on a phone); (b) **raise `SOURCE_HEAD_FONT_SIZE_PX`** from 32px; (c) replace R04's
+- [x] V05 (DONE 2026-08-27): Make the framing plate visually distinct and let the running head WRAP —
+  `SourceHead.tsx` + `source-head-layout.ts`. Three changes: (a) add a **drop shadow and/or hairline outline** so
+  the plate reads as laid OVER the page rather than part of it (U01's `TAG_BACKGROUND` tint plus a single
+  `borderBottom` was not enough on a phone); (b) **raise `SOURCE_HEAD_FONT_SIZE_PX`** from 32px; (c) replace R04's
   single-line `whiteSpace: nowrap` + `textOverflow: ellipsis` clamp with a **2-line wrap** (`WebkitLineClamp`
   or equivalent), ellipsising only past line 2 — Epictetus's ~135-char chapter titles currently truncate. This
   requires growing `SOURCE_HEAD_BOUNDING_BOX`'s fixed 120px height to fit two lines at the new size plus
@@ -2370,12 +2420,70 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   Acceptance: a long Discourses running head renders on two lines inside the plate with no clip; plate is
   visibly distinct from `PAPER` at phone scale.
 
-- [ ] V06: Raise `WALL_DROP_SILENCE_MS` from **500 to 1000** in `social/src/cli.ts` (~line 311) and update its
+  DONE. **Font size: 36px** (`SOURCE_HEAD_FONT_SIZE_PX`, up from 32), chosen as the top of the plausible 34-36px
+  window because it must stay strictly below the payoff label's 38px (U03's polarity rule); measured that a real
+  short head ("MARCUS AURELIUS · MEDITATIONS, BOOK 2") still fits on one line (~812px of the 836px budget) and a
+  real long Discourses head wraps cleanly to two. **Box height: 180px** (`SOURCE_HEAD_BOUNDING_BOX.height`, up
+  from 120), derived from a real two-line content measurement — `2 * 36 * 1.15 + 2 * 8 = 98.8px` (confirmed at
+  99px against the real embedded DM Sans font, real Chromium) — plus the same proportional margin the original
+  120px/48px plate used (~36-40px per side). Introduced `SOURCE_HEAD_LINE_HEIGHT_RATIO = 1.15` (new constant;
+  R04/R07's flat `lineHeight: 1` was too tight for two stacked lines) and `SOURCE_HEAD_MAX_LINES = 2`. Re-measured
+  R07's vertical-clearance fix at the new shape rather than assuming it still holds: a real, naturally
+  two-line-wrapping corpus string has `scrollHeight` (85px) > `clientHeight` (83px) at zero padding (the clip,
+  reproduced from one line to two) and `scrollHeight === clientHeight` (99px === 99px) at
+  `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX` (8px, unchanged — clears with MORE margin at 1.15 than R07's original
+  ~2.5px/edge at `lineHeight: 1`, not less); same witness/fix technique confirmed the payoff label (38px) still
+  clears at the new ratio (60px === 60px). Replaced R04's `whiteSpace: nowrap` + `textOverflow: ellipsis`
+  single-line clamp with `display: '-webkit-box'` + `WebkitBoxOrient: 'vertical'` + `WebkitLineClamp:
+  SOURCE_HEAD_MAX_LINES` — genuine wrapping up to 2 lines, ellipsising only past the second; the payoff label
+  (274px wide vs. an 836px budget) never reaches 2 lines regardless, so both variants safely share one span style.
+
+  **Shadow/outline treatment:** full 4-side hairline `border` (`BORDER` token, replacing U01's `borderBottom`-only)
+  plus an **INSET** `boxShadow` (`inset 0 -6px 10px -8px`, colour derived from `INK` at 0.35 alpha via a local
+  `hexToRgba` helper — no new hex literal added to `theme.ts`). Inset, not a normal outward drop shadow, is a hard
+  constraint, not a style choice: `pixel-proof.ts`'s tests crop exactly `SOURCE_HEAD_BOUNDING_BOX` and assert
+  byte-identical pixels inside it across frames/renders, while the Wall's own scrolling text runs immediately
+  outside that box — an outward shadow would paint translucent pixels over that scrolling text, which changes
+  frame to frame, breaking the no-reflow/determinism contract the first time two renders sampled a different
+  scroll offset. An inset shadow paints only inside the plate's own already-opaque fill, so it stays fully opaque
+  and frame-identical. Visually verified with a static HTML mockup at real scale/tokens/text before committing to
+  the values (screenshotted via Playwright, not guessed).
+
+  Updated `__tests__/source-head.test.ts`: font-size assertions (32 -> 36), all inline HTML probes mirroring the
+  new `-webkit-line-clamp`/`lineHeight` shape, the corpus sweep (now checks both axes — `right`/`bottom` against
+  the plate, since genuine wrapping makes horizontal overflow structurally impossible but vertical is the newly
+  live risk — rather than R04's `nowrap`-only right-edge check), and a new witness/fix pair proving the running
+  head's own two-line outer-edge clip is guarded (mirroring the existing payoff witness/fix pair). All 31 tests
+  in the file pass, including the pixel-proof box-crop tests (`assertBoxIdentical`/`assertIdenticalOutsideBoxes`)
+  unchanged in mechanism — confirms every pixel inside the grown `SOURCE_HEAD_BOUNDING_BOX` stays fully opaque and
+  frame-deterministic despite the new border+inset-shadow styling. Full `social/` suite (22 files, 386 tests)
+  green after the change (one unrelated, pre-existing Remotion/Chromium teardown `ProtocolError` printed during
+  cleanup — not a test failure, no tests affected).
+
+- [x] V06 (DONE 2026-08-27): Raise `WALL_DROP_SILENCE_MS` from **500 to 1000** in `social/src/cli.ts` (~line 311) and update its
   doc comment. The silence sits inside the 3s `LANDING_LINE_SECONDS` hold, so 1s still fits with 2s to spare —
   assert that relationship in a test rather than leaving it implicit, so a future `LANDING_LINE_SECONDS` cut
   cannot silently push the silence past the hold. Update `social/src/audio/__tests__/mix.test.ts` and any
   `wallSilentSpans` assertion in `social/src/__tests__/cli.test.ts`. Acceptance: suite green; `wallSilentSpans`
   returns a 1,000ms span starting at the cut.
+
+  DONE: `WALL_DROP_SILENCE_MS` raised 500 -> 1000 in `social/src/cli.ts` and exported (it was private) so tests
+  can import it instead of hard-coding the value. The actual `wallSilentSpans` assertion this task's own text
+  pointed at turned out to live in `social/src/audio/__tests__/narration.test.ts` (imported from `cli.ts`, not
+  `social/src/__tests__/cli.test.ts` — that file has no `wallSilentSpans` reference at all, checked directly);
+  updated it there, plus added a new test asserting
+  `WALL_DROP_SILENCE_MS <= LANDING_LINE_SECONDS * 1000` against both real imported constants (TDD: watched both
+  fail red against the un-exported 500ms constant before making the source change, per the task's own
+  instruction). `social/src/audio/__tests__/mix.test.ts`'s local `WALL_TRUE_SILENCE_END_MS` mirror constant
+  raised 3000 -> 3500 (`WALL_CUT_MS` 2500 + 1000) alongside its doc comments. Also updated the two live doc-comment
+  references to "0.5s" in `social/src/audio/mix.ts` (`BED_RETURN_FADE_MS`, `MixInput.silentSpans`) to point at
+  `WALL_DROP_SILENCE_MS` instead of a hard-coded figure. Left this plan file's own D04 measurement tables
+  (the "2.55-3.0s true silence floor" rows, e.g. lines ~1726/1806/1838/2164/2171) untouched — those are
+  historical records of already-completed renders measured under the old 500ms value, not live specs.
+  `social/src/remotion/wall-timing.ts`'s "0.5s of margin" comment (line ~302, house-rule motionless-hold
+  margin) and `social/src/audio/__tests__/timing.test.ts`'s "500ms" narration-overrun figures are unrelated to
+  this span; left untouched. Full suite run: `narration.test.ts` (12), `mix.test.ts` (23), `cli.test.ts` (17) —
+  all green.
 
 - [ ] V07: Re-render week 1 and re-measure — V01-V06 move geometry, duration and audio together. Render all 7,
   ffprobe the house profile, tabulate durations against the 15s/59s bounds, and RMS-dB the babble -> hard cut ->
