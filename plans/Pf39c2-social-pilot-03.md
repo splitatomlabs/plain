@@ -163,8 +163,45 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   type-checks cleanly. `npx vitest run src/publish` (from `social/`): 53/53 green (12 `env.test.ts` + 20
   `tokens.test.ts`, unmodified from T03 + 21 `storage.test.ts`). `tsc --noEmit -p social/tsconfig.json`: clean.
   T05 (Instagram adapter) is next and is the first real consumer of `ensureFreshToken`/`createFirestoreTokenStore`.
-- [ ] T05: Implement the Instagram adapter — container, poll, publish; retry on error 2207052 media-fetch failures.
+- [!] T05: Implement the Instagram adapter — container, poll, publish; retry on error 2207052 media-fetch failures.
   Acceptance: a live test post succeeds and is publicly visible.
+  DEFERRED — the live half of the acceptance (a real post, publicly visible) needs an Instagram account and Meta
+  app credentials this session does not have. Built and unit-tested the adapter itself; the by-hand live post is
+  left for the user once T01's live R2 provisioning and a Meta app/account exist.
+  Done: added `social/src/publish/instagram.ts` — `publishToInstagram(config, mediaUrl, caption, mediaKind,
+  fetchFn?, sleep?)` runs container -> poll `status_code` -> publish against the Graph API
+  (`DEFAULT_GRAPH_API_BASE_URL = 'https://graph.facebook.com/v21.0'`, overridable per-call for tests). `mediaKind:
+  'reel'` sends `video_url` + `media_type: 'REELS'`; `'image'` sends `image_url` with no `media_type` (Graph API
+  default). Polling (`pollContainerUntilFinished`) checks `status_code` once a minute (`POLL_INTERVAL_MS`) up to
+  `POLL_MAX_ATTEMPTS = 5` ("max 5 minutes" per the plan Constraint), returning on `FINISHED`, throwing immediately
+  (surfacing Meta's `status_msg`) on `ERROR`/`EXPIRED`, and throwing a distinct timeout error rather than looping
+  forever if it never reaches a terminal state within the bound. `sleep` is an injected `SleepFn` (default
+  `realSleep`, a real timer) so tests run the whole 5-poll loop with zero real waiting. Error `2207052` (transient
+  media-fetch failure) is retried at CONTAINER CREATION ONLY, with doubling backoff, bounded at
+  `CONTAINER_CREATE_MAX_ATTEMPTS = 4` total attempts — polling and publish are never retried on this code, since a
+  failed fetch means no container exists yet to poll or publish. Error code `4` (rate limit) is deliberately NOT
+  retried at all — wrapped in a distinctly-worded `InstagramApiError` that names it a rate limit and says it is
+  giving up for this run, quoting the plan's "4800 x Number of Impressions" Constraint in the message, so a caller
+  backs off instead of retry-storming a brand-new account. Every other Graph-API error code fails immediately, no
+  retry. Never logs `config.accessToken`: every Graph API call goes through `access_token` as a query parameter
+  (Meta's own convention for both GET and POST), and any function that might mention "the URL it called" in an
+  error goes through `redactUrl` first, which replaces `access_token`'s value before the URL can reach a log line
+  or thrown error. Noted in the header that a finished-but-unpublished container expires after 24h and a caller
+  persisting a bare container id across restarts must not resume publishing against one older than that — it
+  should call `publishToInstagram` fresh instead. `fetchFn` defaults to `globalThis.fetch`, fully injectable.
+  Added `social/src/publish/__tests__/instagram.test.ts` (13 tests, mocked `fetchFn`/`sleep`, no real network call
+  anywhere): happy path asserts the exact 4-call container/poll/poll/publish sequence and endpoint/param shape for
+  both `'reel'` and `'image'`; polling is covered for `FINISHED`, `ERROR`, `EXPIRED`, and the 5-attempt bound
+  (asserting the exact call count so a 6th poll or a stray publish call would fail the test); `2207052` is covered
+  both for a later-attempt success and for exhausting `CONTAINER_CREATE_MAX_ATTEMPTS`; rate-limit code `4` is
+  covered for a single-call, zero-sleep, zero-retry failure and for the message's wording; a dedicated
+  console-spy suite asserts the access token never appears in a thrown error's message or any `console.*` call
+  across a generic error, a non-JSON/non-OK HTTP failure, the rate-limit path, and the polling-timeout path.
+  `npx vitest run src/publish` (from `social/`): 66/66 green (12 `env.test.ts` + 20 `tokens.test.ts` + 21
+  `storage.test.ts`, all unmodified, + 13 new `instagram.test.ts`). `tsc --noEmit -p social/tsconfig.json`: clean.
+  T06 (YouTube adapter) is next. Follow-up for whoever closes T05's live half: once a Meta app/account exists,
+  run one real `publishToInstagram` call against a test R2 asset and confirm the post is publicly visible before
+  T08 (the daily job) depends on this in production.
 - [ ] T06: Implement the YouTube adapter — resumable upload with exponential backoff on 5xx and 308-resume support,
   `privacyStatus: private`, plus the required status fields. Acceptance: a live test upload appears in Studio ready
   to flip.
