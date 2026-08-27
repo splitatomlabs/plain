@@ -2861,7 +2861,7 @@ not just the first.
 Decisions (user, 2026-08-27): stop GATING on impenetrability but keep the scores as data (no re-score, no
 cost, reversible); and add a per-week QUOTA rather than an adjacency rule or a probabilistic weighting.
 
-- [~] V14: Remove `impenetrability_score` from the strong test — `scripts/lib/schedule.ts`,
+- [x] V14 (DONE 2026-08-27): Remove `impenetrability_score` from the strong test — `scripts/lib/schedule.ts`,
   `isStrongWallEntry` (~line 108). Strength becomes `landing_line_score >= WALL_STRONG_LANDING_LINE_MIN`
   alone. Delete `WALL_STRONG_IMPENETRABILITY_MIN` if nothing else reads it (grep first — `premises.ts`,
   `premises-scoring.ts`, `score-premises.ts` and the tests all mention the rubric). Do NOT touch
@@ -2872,6 +2872,19 @@ cost, reversible); and add a per-week QUOTA rather than an adjacency rule or a p
   proxy — quote the table above. Note that the no-rubric fallback (`if (!entry.rubric) return true`) must keep
   behaving as it does. Test first. Acceptance: strong pool 98 -> 142; the 3 one-screen cards become eligible;
   suite green.
+
+  Notes (2026-08-27): grepped the whole repo for `WALL_STRONG_IMPENETRABILITY_MIN` — only
+  `scripts/lib/schedule.ts` (its own definition/uses) and `scripts/lib/__tests__/schedule.test.ts` (its own
+  assertion) referenced it; `premises.ts`, `premises-scoring.ts` and `score-premises.ts` mention the rubric
+  fields generally but never this constant. Deleted the constant. TDD: added/adjusted tests in
+  `schedule.test.ts` first (single-axis `isStrongWallEntry` behavior, a real-pool strong-count assertion, and a
+  real-pool 1-screen-eligibility assertion), watched all three fail against the pre-change source (98 not 142,
+  and the single-axis case returning `false`), then made the source change. Measured against the real
+  168-entry `content/social/premises/wall.json`: strong pool 98 -> 142 (confirmed by direct measurement, not
+  assumed), and all 3 real 1-payoff-screen entries (`meditations-07-048`, `shortness-of-life-02-003`,
+  `meditations-06-059`) go from ineligible (impenetrability 1-3, landing_line 5) to eligible. The no-rubric
+  fallback (`if (!entry.rubric) return true`) is untouched and its own test still passes. Full pipeline suite:
+  570/570 green (`npx vitest run` from repo root).
 
 - [ ] V15: Add a per-week screen-count QUOTA to the scheduler — `scripts/lib/schedule.ts`, alongside T19's
   existing sub-type spacing (which is the model to follow for shape and for how to fail gracefully when the

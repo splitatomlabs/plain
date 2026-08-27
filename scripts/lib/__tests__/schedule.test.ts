@@ -7,6 +7,7 @@ import {
   rankWall,
   wallAuthorWeights,
   classifyWallSubTypes,
+  wallPayoffScreenCount,
   type RankedWallEntry,
   type WallSubType,
 } from "../premises.js";
@@ -16,7 +17,6 @@ import {
   loadWallPool,
   loadPriorWeeks,
   isStrongWallEntry,
-  WALL_STRONG_IMPENETRABILITY_MIN,
   WALL_STRONG_LANDING_LINE_MIN,
   type WeekSchedule,
   type WallPoolEntry,
@@ -601,17 +601,24 @@ describe("determinism (extended)", () => {
 // ---------------------------------------------------------------------------
 
 describe("T21: Wall selection respects rubric scores", () => {
-  it("threshold constants are the documented values (both 4 on the 1-5 scale)", () => {
-    expect(WALL_STRONG_IMPENETRABILITY_MIN).toBe(4);
+  it("the threshold constant is the documented value (4 on the 1-5 scale)", () => {
     expect(WALL_STRONG_LANDING_LINE_MIN).toBe(4);
   });
 
-  it("isStrongWallEntry requires BOTH axes to clear the threshold", () => {
+  // V14 (Pf39c2-social-pilot-02a): `impenetrability_score` no longer gates
+  // strength — only `landing_line_score` does. See `isStrongWallEntry`'s
+  // doc comment in schedule.ts for why (the wall no longer renders the
+  // card's own excerpt, so the score is now just a length proxy).
+  // `impenetrability_score` is asserted here to be IRRELEVANT: a low score
+  // on that axis no longer demotes an entry, and it's still accepted on
+  // the `WallPoolEntry` shape purely because it's present in real rubric
+  // data (`wall.json`), not because it's read.
+  it("isStrongWallEntry depends on landing_line_score alone; impenetrability_score is ignored", () => {
     const base = gateWallPool[0];
     expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 4, landing_line_score: 4 } })).toBe(true);
-    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 3, landing_line_score: 5 } })).toBe(false);
+    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 1, landing_line_score: 4 } })).toBe(true);
     expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 5, landing_line_score: 3 } })).toBe(false);
-    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 3, landing_line_score: 3 } })).toBe(false);
+    expect(isStrongWallEntry({ ...base, rubric: { impenetrability_score: 1, landing_line_score: 3 } })).toBe(false);
   });
 
   it("treats every gate-only entry (no rubric at all) as strong, not sub-strong", () => {
@@ -621,6 +628,43 @@ describe("T21: Wall selection respects rubric scores", () => {
   it("a gate-only pool (no rubric fields) still schedules a full week normally", () => {
     const week = makeWeek(1, 42);
     expect(week.slots).toHaveLength(7);
+  });
+
+  describe("against the real scored pool (content/social/premises/wall.json)", () => {
+    const premisesDir = path.join(process.cwd(), "content", "social", "premises");
+
+    // V14: measured directly against the real 168-entry scored pool. Before
+    // this task, strength required BOTH `impenetrability_score >= 4` AND
+    // `landing_line_score >= 4` (98 of 168 entries qualified). After
+    // dropping the impenetrability axis, strength is `landing_line_score
+    // >= 4` alone (142 of 168 qualify) — see the plan's
+    // "Screen-count mix" section for the full table this is drawn from.
+    it("the strong pool grows from 98 to 142 once impenetrability_score stops gating", async () => {
+      const { pool, source } = await loadWallPool(premisesDir, gateWallPool);
+      expect(source).toBe("scored");
+      const strong = pool.filter(isStrongWallEntry);
+      expect(strong).toHaveLength(142);
+    });
+
+    // V14: the 3 single-payoff-screen entries in the real pool all score
+    // low on impenetrability (their own excerpt reads as short/simple) but
+    // >= 4 on landing_line_score — exactly the case the old two-axis gate
+    // wrongly demoted to reserve, and exactly the case dropping that axis
+    // is meant to fix.
+    it("makes every real 1-payoff-screen entry eligible as strong", async () => {
+      const { pool } = await loadWallPool(premisesDir, gateWallPool);
+      const cardsById = new Map(cards.map((c) => [c.id, c]));
+      const oneScreenEntries = pool.filter((e) => {
+        const card = cardsById.get(e.card_id);
+        if (!card) return false;
+        const landingLine = (e as unknown as { rubric?: { chosen_landing_line?: string } }).rubric?.chosen_landing_line ?? e.landing_line;
+        return wallPayoffScreenCount(card.plain_english, landingLine) === 1;
+      });
+      expect(oneScreenEntries.length).toBe(3);
+      for (const entry of oneScreenEntries) {
+        expect(isStrongWallEntry(entry)).toBe(true);
+      }
+    });
   });
 
   describe("reserve fallback (small synthetic pool forced to exhaustion)", () => {

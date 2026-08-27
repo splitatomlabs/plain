@@ -13,8 +13,9 @@
  * pool (falling back to the mechanical `wallGate` output when no scored pool
  * file exists yet — see `loadWallPool`), balanced by author
  * (`wallAuthorWeights`/`selectWallBalanced`, T05) and preferring "strong"
- * entries — both rubric axes clearing `WALL_STRONG_IMPENETRABILITY_MIN`/
- * `WALL_STRONG_LANDING_LINE_MIN` — over reserve (T21).
+ * entries — `landing_line_score` clearing `WALL_STRONG_LANDING_LINE_MIN`
+ * (V14 dropped `impenetrability_score` from this test — see that
+ * constant's doc comment in this file for why) — over reserve (T21).
  *
  * T19's sub-type spacing survives, simplified: with no read-through "never
  * reorder the sequence" constraint left to respect, every day's draw can
@@ -62,23 +63,46 @@ import { loadExclusions, type LoadedExclusions } from "./exclusions.js";
  * and `landing_line_score` (both 1-5, see `WALL_SCORE_MIN`/`MAX` in
  * ./premises-scoring.js) per entry, but `generateWeek` never looked at
  * them; `selectWallBalanced` drew uniformly (weighted only by author) from
- * every gate survivor, including the ~24% the rubric itself already marked
- * weak. An entry counts as "strong" only when it clears BOTH axes — a
- * cleanly-cut landing line pulled from an original that doesn't actually
- * look impenetrable is still a weak Wall post, and vice versa.
+ * every gate survivor, including the weak remainder the rubric itself
+ * already flagged.
  *
- * Measured over the real 896-entry scored pool
- * (`content/social/premises/wall.json`, T07/T08/T11's output):
- * `impenetrability_score` distribution `{2:1, 3:80, 4:579, 5:236}`,
- * `landing_line_score` distribution `{1:4, 2:53, 3:92, 4:363, 5:384}`.
- * `>= 4` on both axes covers 679 of 896 entries (~76%); the remaining 217
- * (~24%) are reserve — exactly the plan's own framing of the weak
- * remainder as RESERVE, not discarded.
+ * V14 (Pf39c2-social-pilot-02a) removed `impenetrability_score` from this
+ * test — strength is now `landing_line_score >= WALL_STRONG_LANDING_LINE_MIN`
+ * ALONE. `impenetrability_score` rates how visually dense a card's OWN
+ * `original_excerpt` reads. That mattered when the wall phase rendered
+ * that excerpt at a font size scaled to fill the frame. Since T08/R02 it
+ * does not: the wall renders the surrounding CHAPTER block instead
+ * (`social/src/render/chapter-text.ts`'s `buildChapterTextBlock`), at a
+ * FIXED font size, looping whole chapter laps until it clears the travel
+ * floor. Every card's wall is equally a wall now, regardless of how dense
+ * that card's own excerpt is — so gating on the excerpt's density no
+ * longer measures anything the viewer experiences.
+ *
+ * Measured over the real 168-entry scored pool
+ * (`content/social/premises/wall.json`), what `impenetrability_score`
+ * actually still correlates with is payoff LENGTH, not quality — it rises
+ * with screen count while `landing_line_score` (what the viewer actually
+ * reads) stays flat:
+ *
+ * | screens | n  | avg impenetrability | avg landing_line |
+ * |---------|----|----------------------|-------------------|
+ * | 1       | 3  | 1.67                 | 5.00              |
+ * | 2       | 18 | 2.94                 | 4.28              |
+ * | 3       | 31 | 3.68                 | 4.29              |
+ * | 4       | 46 | 3.87                 | 4.30              |
+ * | 5       | 70 | 3.99                 | 4.26              |
+ *
+ * Gating on impenetrability therefore selected for LONGER videos — the
+ * opposite of what the format wants. Dropping it grows the strong pool
+ * from 98 to 142 of 168 entries (including all 3 real 1-screen entries,
+ * which previously scored too low on impenetrability alone to qualify)
+ * without touching `WALL_RUBRIC_TASK` or re-scoring anything:
+ * `impenetrability_score` stays in `wall.json` as measured data and stays
+ * parsed (`WallPoolEntry` below), it simply no longer decides selection.
  *
  * Exported (not inlined into `isStrongWallEntry`) so the threshold is
  * independently tunable and directly assertable in tests.
  */
-export const WALL_STRONG_IMPENETRABILITY_MIN = 4;
 export const WALL_STRONG_LANDING_LINE_MIN = 4;
 
 /**
@@ -92,24 +116,23 @@ export type WallPoolEntry = RankedWallEntry & { rubric?: Pick<WallRubricResult, 
 
 /**
  * True when a Wall pool entry is "strong" enough to draw from before
- * touching reserve (see `WALL_STRONG_IMPENETRABILITY_MIN`/
- * `WALL_STRONG_LANDING_LINE_MIN`'s doc comment for the threshold and its
- * measured coverage).
+ * touching reserve (see `WALL_STRONG_LANDING_LINE_MIN`'s doc comment for
+ * the threshold, and V14's note above it for why `impenetrability_score`
+ * is no longer part of this test even though the field is still present
+ * on `WallPoolEntry` and still parsed from `wall.json`).
  *
  * An entry with NO `rubric` at all — the gate-only fallback pool
  * (`rankWall`'s raw output, used whenever `content/social/premises/
  * wall.json` is absent or empty — see `loadWallPool`) — is treated as
  * eligible/strong BY DEFAULT, not as sub-strong: there is no rubric score
  * to fail, and the mechanical-gate path must keep scheduling normally with
- * zero LLM calls, exactly as it did before this task. Only a PRESENT
- * rubric that scores below either threshold demotes an entry to reserve.
+ * zero LLM calls, exactly as it did before this task (and before V14).
+ * Only a PRESENT rubric whose `landing_line_score` scores below the
+ * threshold demotes an entry to reserve.
  */
 export function isStrongWallEntry(entry: WallPoolEntry): boolean {
   if (!entry.rubric) return true;
-  return (
-    entry.rubric.impenetrability_score >= WALL_STRONG_IMPENETRABILITY_MIN &&
-    entry.rubric.landing_line_score >= WALL_STRONG_LANDING_LINE_MIN
-  );
+  return entry.rubric.landing_line_score >= WALL_STRONG_LANDING_LINE_MIN;
 }
 
 export interface WallSlotContent {
