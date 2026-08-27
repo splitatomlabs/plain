@@ -667,3 +667,120 @@ timezone or time — decide on a real value before or shortly after go-live.
 Do not read the presence of thorough tests, Dockerfiles, and deploy runbooks as evidence that this
 pilot is live. As of this writing, **zero posts have ever been published to any platform by this
 system.**
+
+## 8. Findings (week 4) — TEMPLATE, NOT YET FILLED IN
+
+**As of 2026-08-27, this section is empty on purpose.** The pilot has not run. Zero posts have been
+published on any platform (see "Current status" immediately above) — there is no week 1, no week 4,
+no metrics file under `content/social/metrics/`, and therefore no finding. Nothing below this line is
+a result. It is the exact procedure and the exact blanks whoever closes `Pf39c2-social-pilot-03` T16
+must fill in once four real weeks of posts and metrics exist — written now, ahead of time, so that
+person is filling in a pre-built skeleton with real numbers, not inventing the report's shape under
+pressure to produce a verdict. If you are reading this and the date above is more than a few weeks
+old relative to when go-live actually happened, treat that staleness itself as a signal that the
+six DEFERRED live steps in "Current status" have not been closed yet either.
+
+### 8.1 Procedure — run this at ~week 4, not before
+
+1. Confirm four full pilot weeks of posts have actually accrued metrics (each post needs to have
+   aged fully through, or far enough into, its 30-day polling window — see section 7 — so its view
+   count is not still climbing when you snapshot it).
+2. Run the readout from `social/`:
+   ```bash
+   npx tsx social/src/metrics/readout.ts --now <ISO 8601 evaluation instant>
+   # optionally pin --metrics-dir <path> if not using the default content/social/metrics/,
+   # or --breakout-threshold <n> to override the default 10,000-view criterion-A threshold
+   ```
+   (Flags confirmed against `readout.ts`'s own `printHelp()`: `--metrics-dir`, `--now`,
+   `--breakout-threshold`, `--help`. Do not guess at flags not listed there.)
+3. Copy the printed report's numbers into section 8.2 below verbatim — do not round, do not
+   summarize away a platform with no data, and do not silently drop TikTok's `UNAVAILABLE`
+   follow-conversion label if that is what the run actually printed.
+4. Fill in section 8.3 by applying the decision rule in section 8.4 to the numbers in 8.2 — not to a
+   vibe, not to "but the video really seemed to land." If the numbers do not clear the bar, the
+   answer is stop, per section 8.4's own verbatim warning.
+
+### 8.2 The numbers — fill in per platform, copied straight from the readout's output
+
+For each platform (`instagram`, `youtube`, `tiktok`) that has at least one post:
+
+| Metric | Instagram | YouTube | TikTok |
+|---|---|---|---|
+| Post count | `<n>` — TO BE FILLED AT WEEK 4 | `<n>` — TO BE FILLED AT WEEK 4 | `<n>` — TO BE FILLED AT WEEK 4 |
+| Median views | `<median>` — TO BE FILLED AT WEEK 4 | `<median>` — TO BE FILLED AT WEEK 4 | `<median>` — TO BE FILLED AT WEEK 4 |
+| Maximum views | `<max>` — TO BE FILLED AT WEEK 4 | `<max>` — TO BE FILLED AT WEEK 4 | `<max>` — TO BE FILLED AT WEEK 4 |
+| Max/median ratio | `<ratio>x` — TO BE FILLED AT WEEK 4 | `<ratio>x` — TO BE FILLED AT WEEK 4 | `<ratio>x` — TO BE FILLED AT WEEK 4 |
+| Week 1 median -> week 4 median | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 |
+| Trend direction | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 |
+| Follow conversion method | inferred (per plan Decision) — TO BE CONFIRMED AT WEEK 4 | **exact** (per plan Decision — `subscribersGained`) — TO BE CONFIRMED AT WEEK 4 | inferred, or unavailable if no TikTok follower-snapshot series was ever collected — TO BE CONFIRMED AT WEEK 4 |
+| Follow conversion value(s) | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 |
+
+Do not relabel a platform's follow-conversion method by hand. The table's default labels above are
+what the plan's Decision predicts each platform will report (YouTube exact, Instagram/TikTok
+inferred-or-unavailable) — but copy whatever `readout.ts` actually printed, not the prediction, in
+case the on-the-ground implementation ended up different (e.g. TikTok's follower-snapshot collector
+was never built, in which case its row is `unavailable`, not `inferred`).
+
+**Top 5 posts overall** (across all platforms, richest-first — pull the `topPosts` list per platform
+from the printed report and merge/re-sort by views):
+
+| Rank | Post ID | Platform | Format | Views |
+|---|---|---|---|---|
+| 1 | `<postId>` | `<platform>` | `<format — The Wall / The Question / The Objection>` | `<views>` — TO BE FILLED AT WEEK 4 |
+| 2 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
+| 3 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
+| 4 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
+| 5 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
+
+Paste `readout.ts`'s printed verdict summary line here verbatim, unedited:
+
+> `<paste the exact "VIABLE (criterion A met) — ..." / "VIABLE (criterion B met) — ..." /
+> "NOT VIABLE — ..." line the tool printed>` — TO BE FILLED AT WEEK 4
+
+### 8.3 The recommendation — fill in only after 8.2, and only using 8.4's rule
+
+**Verdict: `<YES, social is viable / NO, stop>` — TO BE FILLED AT WEEK 4.**
+
+**Which criterion, if any, was met:** `<A / B / neither>` — TO BE FILLED AT WEEK 4.
+
+**If YES:** name the specific post/platform/format combination that met the criterion, and state
+what "rebuild around whatever premise did it" concretely means here — TO BE FILLED AT WEEK 4.
+
+**If NO:** state that plainly, with no hedge (no "promising but," no "worth one more month") — the
+pre-registered rule in 8.4 does not have a maybe. TO BE FILLED AT WEEK 4.
+
+**On format:** the format question this task's own wording asks ("which format broke out") is
+**degenerate for this pilot** — `Pf39c2-social-pilot-02a` D01/D02 collapsed the channel to a single
+format, The Wall, one post a day, before any post went out. There is exactly one format this pilot
+can answer "The Wall" for; there is no cross-format comparison to report, and pretending otherwise
+would fabricate a comparison this pilot's own scope decisions killed before go-live. The only
+within-format axis that COULD differ is The Wall's three sub-types — **The Thou Wall, The Cascade,
+The Scene** (see `plans/Pf39c2-social-pilot-index.md`'s "The Wall — sub-types" table) — if the
+weekly schedules tagged posts by sub-type and the data supports it, report which sub-type(s) the top
+posts in 8.2 actually were here; otherwise say plainly that sub-type was not tracked and this
+question also cannot be answered. TO BE FILLED AT WEEK 4.
+
+### 8.4 The decision rule — copied verbatim, do not renegotiate it here
+
+From `plans/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered — do not renegotiate
+after posting)":
+
+> A single 10x-median outlier is NOT sufficient; across ~168 posts one is expected from variance
+> alone.
+>
+> Viable requires at least one of:
+> - **A. Breakout with conversion** — a post clearing ~10,000 views on any platform AND converting
+>   visibly to follows.
+> - **B. Accumulating standing** — the account's median views trend upward from week 1 to week 4.
+>
+> Either met -> social is viable; rebuild around whatever premise did it.
+> Neither met -> stop. **An outlier with no conversion and no trend is explicitly a NO.**
+>
+> Track maximum AND median AND follow-conversion. The maximum alone is not the signal.
+
+This is quoted here for the same reason section 1 quotes it: the whole point of pre-registering a
+criterion is that nobody gets to argue it into a "win" after seeing an exciting number. If a single
+post posted an outsized number and neither converted to follows nor came with an upward median
+trend, section 8.3's verdict is NO, full stop — that exact shape (an impressive outlier, nothing
+else) is the one case the criterion was written specifically to rule insufficient. Do not edit this
+quoted rule, and do not write a verdict in 8.3 that contradicts it.

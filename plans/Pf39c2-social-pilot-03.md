@@ -823,8 +823,30 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   `.ts`/`.tsx` file was touched by this task, only `docs/SOCIAL_PILOT.md`. T16 (the ~4-week findings) is next and
   depends on real data existing in `content/social/metrics/`, which in turn depends on this document's "Current
   status" section's six DEFERRED live steps actually being closed first.
-- [ ] T16: At ~4 weeks, write the findings into the same doc: did anything break out, which format, and the
+- [!] T16: At ~4 weeks, write the findings into the same doc: did anything break out, which format, and the
   recommendation — build on what worked, or stop. Acceptance: a stated yes-or-no with the numbers behind it.
+  DEFERRED — cannot be completed. The pilot has published zero posts (see `docs/SOCIAL_PILOT.md`'s "Current
+  status" section — all six live steps T01/T05/T06/T09/T10/T13 are still DEFERRED). There is no week 1, no week 4,
+  no `content/social/metrics/*.json`, and therefore no finding to write. A yes-or-no verdict here would have to be
+  fabricated — the single most consequential output of this whole project — so none was written.
+  Done (the only thing this task's own acceptance criterion permits ahead of real data): added
+  `docs/SOCIAL_PILOT.md` section 8, "Findings (week 4) — TEMPLATE, NOT YET FILLED IN," dated 2026-08-27 at the top
+  so a reader can tell how stale the emptiness is. It gives (8.1) the exact `readout.ts` invocation and flags,
+  checked against the file's own `printHelp()` rather than guessed (`--metrics-dir`, `--now`,
+  `--breakout-threshold`, `--help`); (8.2) a fill-in-the-blanks table per platform (median, maximum, max/median
+  ratio, week-1-vs-week-4 trend, follow conversion labeled exact/YouTube vs inferred-or-unavailable/Instagram+
+  TikTok) plus a top-5-posts table with format, every cell an obvious placeholder (`<median>`,
+  "TO BE FILLED AT WEEK 4") that cannot be mistaken for a real result; (8.3) the recommendation skeleton, headed
+  blank, with an explicit note that the format-comparison half of this task's own wording is now degenerate —
+  `Pf39c2-social-pilot-02a` D01/D02 collapsed the channel to one format (The Wall, one post/day) before any post
+  went out, so "which format broke out" has exactly one possible answer, and points the future author at The
+  Wall's three sub-types (Thou Wall / Cascade / Scene, per the index plan's table) as the only within-format axis
+  that could actually differ; (8.4) the decision rule quoted verbatim from `plans/Pf39c2-social-pilot-index.md`
+  (criterion A breakout+conversion, criterion B trend, neither -> stop, outlier-with-no-conversion-is-a-NO) with an
+  explicit instruction not to renegotiate it. Only `docs/SOCIAL_PILOT.md` was touched — no code, no test, no
+  invented number anywhere in the new section. `npm test --prefix social`: 550/550 green, unchanged (doc-only
+  edit). This task stays open until real data exists; whoever closes the six DEFERRED live steps above and reaches
+  real week-4 metrics is the one who fills in section 8 and flips this task to `[x]`.
 
 ## Verify
 ```
