@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
 
-import { PAPER, SECONDARY, type AuthorSlug } from '../render/theme.js';
+import { BORDER, SECONDARY, TAG_BACKGROUND, type AuthorSlug } from '../render/theme.js';
 import { COUNTER_FONT_STACK } from './Counter.js';
 import {
 	SOURCE_HEAD_BOUNDING_BOX,
@@ -119,11 +119,26 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 			 * the text. The running head sits directly on top of the Wall's own
 			 * actively SCROLLING text (the only moving content in the whole
 			 * channel), so every pixel inside this box must be deterministic
-			 * (the same PAPER colour every frame) rather than letting the
+			 * (the same fill colour every frame) rather than letting the
 			 * archaic text behind show through at the box's margins — a
 			 * masthead band, not a floating label. `pixel-proof.ts`'s tests
 			 * crop exactly this box, so it must be fully opaque and fully fill
 			 * it, not just the text's own tighter bounds.
+			 *
+			 * social pilot 02a U01 (2026-08-27): filled with `TAG_BACKGROUND`
+			 * (`#F0EDE8`), not `PAPER` (`#FAF7F2`) — phone-review feedback was
+			 * that an identical-to-the-page plate reads as text floating on the
+			 * same surface as the passage below rather than as a distinct
+			 * overlay. `TAG_BACKGROUND`/`BORDER` are the exact two
+			 * `docs/BRANDING.md` tokens defined for this "subtle background +
+			 * hairline divider" role — never an `ACCENTS` colour, which would
+			 * read as branding rather than a page header (same rationale this
+			 * file's own doc comment already gives for `SECONDARY` over `INK`).
+			 * A single `borderBottom` hairline in `BORDER` reinforces the "strip
+			 * laid over the page" read without adding any per-frame variation —
+			 * still one static style object, zero motion. Both variants share
+			 * this one `<div>`, so the treatment cannot diverge between the
+			 * running head and the payoff label even by accident.
 			 */}
 			<div
 				style={{
@@ -132,7 +147,9 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 					left: SOURCE_HEAD_BOUNDING_BOX.left,
 					width: SOURCE_HEAD_BOUNDING_BOX.width,
 					height: SOURCE_HEAD_BOUNDING_BOX.height,
-					backgroundColor: PAPER,
+					backgroundColor: TAG_BACKGROUND,
+					borderBottom: `1px solid ${BORDER}`,
+					boxSizing: 'border-box',
 					display: 'flex',
 					alignItems: 'center'
 				}}

@@ -1473,7 +1473,7 @@ saturated niche's visual language, and the reason T17 deleted the numeral badges
 the content ends is a different object. Rule as amended: **no logo, URL or watermark over content; a closing
 frame may name the product.**
 
-- [~] U01: Give the framing plate visual contrast — `social/src/remotion/SourceHead.tsx`,
+- [x] U01 (DONE 2026-08-27): Give the framing plate visual contrast — `social/src/remotion/SourceHead.tsx`,
   `social/src/render/theme.ts`. Today the plate is `PAPER` (#FAF7F2), identical to the page, so the running
   head reads as text floating on the same surface as the passage rather than as a distinct overlay. Use the
   tokens `docs/BRANDING.md` already defines for exactly this: Tag background `#F0EDE8` for the plate fill and
@@ -1483,6 +1483,21 @@ frame may name the product.**
   they share one slot and one treatment, and tinting only one breaks the "book page → not a book page"
   grammar T12 built. Acceptance: the plate is visibly distinct from the page at phone size; T11's
   `assertIdenticalOutsideBoxes` / bounding-box proofs still hold; no accent colour used.
+  DONE: added `BORDER` (#E8E2D9) and `TAG_BACKGROUND` (#F0EDE8) to `theme.ts`, each doc-commented against the
+  branding doc's Border/Tag background rows. `SourceHead.tsx`'s single shared plate `<div>` (both variants
+  render through it, so there is no way for the two to diverge) now fills with `TAG_BACKGROUND` instead of
+  `PAPER` and adds `borderBottom: 1px solid BORDER` with `boxSizing: 'border-box'` (so the hairline doesn't
+  push the box past its own fixed height). No `ACCENTS` reference added — `source-head.test.ts`'s source-guard
+  block (which greps the file for every accent hex and for `ACCENTS`) still passes.
+  Verified: `npx vitest run src/remotion/__tests__/source-head.test.ts` 29/29. `npx tsc --noEmit` clean. Root
+  `npm test`: 819 pipeline + 95 web unit + 588/589 social — the one social failure
+  (`question-timing.test.ts`'s end-to-end smoke test) was a 120s timeout under concurrent CPU load (this
+  task's own Wall render plus U04's parallel work); rerun alone it passes 46/46 in 1.8s, and it is not a file
+  this task touched. Rendered a real Wall (`--date 2026-09-06 --slot 1`) and read frames at both mid-scroll
+  (running head over moving archaic text) and payoff (label over the still plain-English sentence): the plate
+  now reads as a distinct warm-grey band with a visible, non-heavy hairline rule at its lower edge, text fully
+  legible, same treatment on both variants. Frames and a cropped close-up are in the scratchpad the task
+  supplied; not committed to the repo.
 - [ ] U02: Move the read-through counter to CENTERED BELOW the card text — `social/src/remotion/Counter.tsx`,
   `counter-layout.ts`, and the four compositions that render it. **Interaction to resolve first:**
   `source-head-layout.ts` derives `SOURCE_HEAD_TOP_PX` from `COUNTER_BOUNDING_BOX.top + height + gap` — that

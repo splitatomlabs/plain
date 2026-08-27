@@ -8,6 +8,11 @@ export const PAPER = '#FAF7F2';
 export const INK = '#2C2520';
 export const SECONDARY = '#736B62';
 
+/** Card borders, dividers, separators — Light Mode "Border" row of the palette table. */
+export const BORDER = '#E8E2D9';
+/** Tag pill fills, subtle backgrounds — Light Mode "Tag background" row of the palette table. */
+export const TAG_BACKGROUND = '#F0EDE8';
+
 export const ACCENTS = {
 	epictetus: '#B5704F',
 	'marcus-aurelius': '#5B6E8A',
