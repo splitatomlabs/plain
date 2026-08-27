@@ -1860,3 +1860,52 @@ frame may name the product.**
   babble, the likely next lever is MORE layers (8-10, the upper end of the hearing-research range) or slightly
   deeper `NOISE_TREMOLO_DEPTH`, not a different noise colour or a real multi-talker asset — the spectral/
   modulation profile measured here already sits where the construction is designed to land.
+
+## Deprecation — one Wall a day (2026-08-27)
+
+User decision, after reviewing the week-1 renders: "The wall format is getting close now, the question and
+still format is not working, let's deprecate it to save processing time moving forward." Followed by two
+scoping decisions in the same session: **also deprecate the read-through**, **delete the code outright**
+(T17's precedent, not a scheduler-weight change), **one post per day, pool-drawn**, and **deprecate Objection
+too** — it was the only non-Wall format left and drew zero slots in week 1.
+
+**The channel becomes: one Wall per day, drawn from the 685-entry Wall pool.** Nothing else.
+
+Recorded for the archaeology, without regret — this deliberately removes working code that landed earlier the
+same day, and that is the correct trade when a format is not working: T13's framing layer on Question/
+Objection/Still, T16/F04's narration timings for Question and Objection, R03's chapter block for Question,
+R06's Objection motionless floor, and U02's counter centring. All recoverable from git history.
+
+**Consequences accepted:** the "read a book card by card" framing goes with the read-through, and with it the
+`Card N of 48` counter (which exists for nothing else), the sequential book-order walk, and T19's "never
+reorder the read-through" constraint — sub-type spacing now applies freely across days.
+
+- [~] D01: Delete the Question, Objection and Still formats OUTRIGHT — compositions (`Question.tsx`,
+  `Objection.tsx`, `Still.tsx`), timings (`question-timing.ts`, `objection-timing.ts`, `still-timing.ts`),
+  gates (`question-gate.ts`, `objection-gate.ts`, `still-gate.ts`), their `scripts/lib/premises.ts` ranking
+  and gate functions, the `content/social/premises/{question,objection,still}.json` artifacts, and every test
+  covering them. Unwire from `Root.tsx`, `entry.tsx`, `social/src/cli.ts`, `social/src/remotion/index.ts` and
+  `social/src/render/post-metadata.ts`. Done as ONE task because all three share the same wiring files.
+  Tests for deleted behaviour are DELETED, never skipped (T17's rule). Acceptance: no reference to any of the
+  three survives outside doc comments and this plan; `npm test` green; the Wall renders unchanged.
+- [ ] D02: Delete the read-through from `scripts/lib/schedule.ts` (85 references) and collapse the day to a
+  SINGLE pool-drawn Wall slot (82 slot references today). Remove `tryReadThroughContent`, the sequential
+  book-order walk, and the `read_through` section of `content/social/render-exclusions.json` +
+  `social/scripts/write-exclusions.ts`. T19's sub-type spacing survives but loses its "never reorder slot 1"
+  constraint — it can now space freely, so simplify it accordingly rather than leaving dead conditionals.
+  Acceptance: a generated week is 7 single-slot days, every one a Wall; no back-to-back sub-type repeat;
+  `npm test` green.
+- [ ] D03: Delete the read-through counter — `Counter.tsx`, `counter-layout.ts`, `__tests__/counter.test.ts`,
+  `__tests__/counter-corpus.test.ts`, `computePayoffCounterBox` and `COUNTER_GAP_BELOW_TEXT_PX` in
+  `wall-timing.ts`, and the `counter` prop from `Wall.tsx`/`cli.ts`. It exists only to say "Card N of 48",
+  which is meaningless without a sequential read-through. NOTE `source-head-layout.ts` still derives
+  `SOURCE_HEAD_TOP_PX` from `COUNTER_BOUNDING_BOX` — replace that with its own anchor and re-establish the
+  framing plate's position on the new geometry; keep `__tests__/pixel-proof.ts`, which `source-head.test.ts`
+  also uses. Acceptance: no counter renders in any frame; the running head/payoff label sit correctly without
+  it; `npm test` green.
+- [ ] D04: Regenerate and re-measure — `content/social/premises/wall.json`, `render-exclusions.json` and a
+  fresh week 1 (now 7 posts, one per day). Render all 7, ffprobe the profile, confirm durations inside
+  15s/59s and the 40s Wall ceiling, and confirm the U01/U03/U04/U08 work (tinted plate, 38px label, babble →
+  cut → silence → slow return) all survive. Report the render-time and test-time saving versus the 14-post
+  two-slot week, since saving processing time is the stated point. Acceptance: 7 Walls render; profile
+  confirmed; suite green and measurably faster.
