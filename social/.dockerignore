@@ -1,0 +1,22 @@
+# Pf39c2-social-pilot-03 T09.
+#
+# IMPORTANT — Docker resolves `.dockerignore` relative to the BUILD CONTEXT
+# ROOT, not relative to the Dockerfile's own directory. `social/Dockerfile`
+# needs `content/output/` and `content/social/` (siblings of `social/`, at
+# the repo root) to be reachable by `COPY`, which means the build context
+# for this image MUST be the repo root, not `social/` — see
+# `social/DOCKER.md` for the exact command. That means the file Docker
+# actually reads for this build is the repo-root `.dockerignore`
+# (`/Users/avernon/Developer/plain/.dockerignore`), NOT this one.
+#
+# This file exists anyway (matching this task's own file list, and for
+# discoverability by anyone looking in `social/` for it) and its patterns
+# are kept identical to the repo-root file's `social/`-scoped rules by hand
+# — if you change one, change the other. It also makes this file correct on
+# its own terms should a future build ever legitimately use `social/` as its
+# context (e.g. via Docker's `--build-context` multi-context feature to wire
+# `content/` in separately).
+
+node_modules/
+out/
+.DS_Store

@@ -371,8 +371,77 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   `npx vitest run` (social/): 442/442 green (412 pre-existing, unmodified + 13 `job.test.ts` + 17 `job-plan.test.ts`).
   `tsc --noEmit -p social/tsconfig.json`: clean. T09 (the Dockerfile) is next — the first task this render pipeline
   needs a container for at all.
-- [ ] T09: Write the Dockerfile — Node, ffmpeg, Chromium deps, and Literata + DM Sans installed system-wide.
+- [!] T09: Write the Dockerfile — Node, ffmpeg, Chromium deps, and Literata + DM Sans installed system-wide.
   Acceptance: the image renders a video via `docker run`.
+  DEFERRED — the live half of the acceptance (a real `docker run` rendering a video) needs Docker,
+  which this session did not have available; live builds/deploys were also out of scope per the
+  session's own instructions. Wrote and verified `social/Dockerfile` by reading every module it
+  depends on (`render/fonts.ts`, `render/card.ts`, `remotion/register-fonts.ts`, `render/encode.ts`,
+  `job.ts`, `cli.ts`, `remotion/wall-pool.ts`, `audio/beds.ts`), not by a live build. The by-hand
+  `docker build`/`docker run` is left for the user — exact commands in `social/DOCKER.md`.
+  Done: `node:24-bookworm-slim` (Debian, matching the dev machine's Node 24 and CLAUDE.md's
+  guidance to prefer glibc over Alpine for Remotion/Chromium/`ffmpeg-static`). Build context is the
+  REPO ROOT, not `social/` — `content/output/` and `content/social/` sit outside `social/` and
+  Docker `COPY` cannot reach outside its context — documented in both the Dockerfile header and
+  `social/DOCKER.md`. KEY FINDING acted on: per `render/fonts.ts`'s own header comment, this
+  workspace does NOT depend on system fonts — Literata/DM Sans are base64-inlined from
+  `@fontsource-variable/*` npm packages for both the Playwright still renderer and the Remotion
+  bundle, so the real dependency is an un-pruned `social/node_modules` (`npm ci`, full install, no
+  `--omit=dev` — `tsx`, the entrypoint interpreter, is itself a devDependency, so an omit-dev
+  install would break the entrypoint; documented loudly in-line to stop a future edit from adding
+  `NODE_ENV=production`). The system-wide font install is still done (per this task's own ask) but
+  explicitly as belt-and-braces: `fc-cache`-registers the SAME two `.woff2` files `npm ci` already
+  fetched (no Debian package exists for either family, so this is a `cp` + `fc-cache`, not `apt`).
+  BROWSERS: two separate ones, handled separately. Playwright's own Chromium
+  (`render/card.ts`'s feed-still renderer) via `npx playwright install --with-deps chromium`
+  (`--with-deps` installs the exact Debian shared-library set for whatever Chromium build Playwright
+  is pinned to, rather than a hand-maintained apt list that would drift), into a fixed
+  `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` (user-independent, since build runs as root but the
+  final image runs as non-root). Remotion's SEPARATE "Chrome Headless Shell" via
+  `remotion browser ensure` at BUILD time (not left to download on first render, per this task's
+  explicit instruction) — this one resolves its cache directory from `process.cwd()` at call time
+  (a real `getDownloadsCacheDir()` walk-up to the nearest `package.json`), not from any file's disk
+  location, so the Dockerfile copies the repo ROOT `package.json` into `/app` (existence only,
+  content irrelevant) and runs both the build-time `ensure` and the runtime entrypoint from WORKDIR
+  `/app` — same cwd, same resolved path, both times. Documented as the one genuine footgun in this
+  file's header comment (get the cwd wrong and every cold start re-downloads a browser).
+  FFMPEG: deliberately NOT installed via apt — `render/encode.ts` already resolves `ffmpeg-static`/
+  `ffprobe-static`'s platform-matched STATIC binaries via `createRequire`, which `npm ci` fetches
+  correctly as long as the image is built for the right platform/arch (`social/DOCKER.md` pins
+  `--platform linux/amd64`, matching Cloud Run); a system ffmpeg would be unreached dead weight,
+  justified in-line rather than installed "to be safe" per this task's own instruction not to.
+  NON-ROOT USER: `appuser`, chosen over root — not just "least privilege by preference" but load-
+  bearing here: Chromium refuses to initialize its own sandbox as EUID 0, and
+  `render/card.ts`'s `chromium.launch()` call passes no args to disable it, so root would hard-crash
+  the feed-still render without an out-of-scope code change. Remotion's own browser launch is
+  unaffected either way — `open-browser.js` unconditionally passes `--no-sandbox` itself already
+  (confirmed by reading it), root or not. Flagged a known follow-up rather than guessing: Cloud
+  Run's gVisor sandbox is documented to not fully support the namespace syscalls Chromium's sandbox
+  needs even for non-root — if T10 hits this live, the fix is a one-line `args: ['--no-sandbox']`
+  addition to `card.ts`'s launch call, deliberately not made pre-emptively here since it's unverified
+  whether Cloud Run actually hits it. `--date` stays a pure runtime argument
+  (`ENTRYPOINT ["npx","tsx","social/src/job.ts"]`, `CMD ["--help"]` as a safe no-args default) —
+  never baked in, so T10's Cloud Run Job can vary it per scheduled invocation.
+  Added `social/.dockerignore` (this task's named deliverable) plus a REPO-ROOT `.dockerignore`
+  with a header explaining why: Docker resolves `.dockerignore` relative to the build CONTEXT root
+  (the repo root, per the directory-layout constraint above), not the Dockerfile's own directory, so
+  the root file is the one actually consulted for `docker build -f social/Dockerfile .`; both are
+  kept in sync by hand and both exclude `node_modules/`, `social/out/`, and
+  `content/social/job-logs/` (a stray real log file from an earlier dry-run in this session
+  confirmed this exclusion is not hypothetical) while deliberately NOT excluding
+  `content/social/*.json` (the schedules/exclusions `cli.ts`/`job.ts` read at runtime) or
+  `content/output/`. Added `social/DOCKER.md` — exact `docker build`/`docker run` commands for the
+  dry-run check, a real render, and a real publish (env vars for R2, a mounted ADC file or
+  `GOOGLE_APPLICATION_CREDENTIALS` for Firestore token storage, `--date`), plus a troubleshooting
+  section cross-referencing the Dockerfile's own comments.
+  Verification actually run this session (no docker): `npm test --prefix social` — 442/442 green,
+  unmodified by this task. `tsc --noEmit -p social/tsconfig.json` — clean. Neither Dockerfile nor
+  `.dockerignore` nor `DOCKER.md` touch any `.ts`/`.tsx` file. Follow-up for whoever closes this
+  task's live half: run `social/DOCKER.md`'s build + `--dry-run` command first (needs no
+  credentials) before attempting a real publish; if Playwright's Chromium fails under Cloud Run's
+  gVisor sandbox specifically (not under a plain local `docker run`), see the Dockerfile's
+  "Non-root user" comment for the documented one-line fix. T10 (deploying the Cloud Run Job and
+  Firebase trigger) is next and is the first real consumer of this image.
 - [ ] T10: Deploy the Cloud Run Job and the Firebase trigger, scheduled off the hour. Acceptance: a scheduled run
   executes end to end in the cloud.
 - [ ] T11: Build the attribution redirect — `web/src/routes/go/[slug]/+server.js`, slugs `/go/ig`, `/go/tt`,
