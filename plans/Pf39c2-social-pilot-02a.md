@@ -2626,3 +2626,70 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   was sized for a two-line running head, but the payoff label is always one line. Either give the payoff
   variant its own shorter plate height or accept the empty space deliberately and record why. Decide from the
   rendered frame, not from the constants. Acceptance: a stated decision with a frame to back it.
+- [x] V10 (DONE 2026-08-27): Fix the 6 social-suite tests that V03/V04's pool regeneration invalidated. Found during V08 and
+  initially misreported as "pre-existing, unrelated" — they ARE pre-existing relative to HEAD, because
+  V03/V04 committed the content that broke them, but they are a direct consequence of this plan's own work
+  and must be fixed here. Root cause of the miss: V04's verification ran only the pipeline suite (568 green)
+  and not the social suite, which is the one that asserts against `wall.json`/`render-exclusions.json`/
+  `pilot-schedule-w01.json`. The 6:
+  - `src/remotion/__tests__/wall-gate.test.ts` — "surveyWallPool reports a real, non-trivial count of duration
+    ceiling exclusions (F03)". V04 measured 168 passed / **0** rejected: at <=5 screens no Wall can approach
+    the 40s ceiling, so the duration axis no longer excludes anything. The test asserts a non-trivial count.
+  - `src/remotion/__tests__/exclusions.test.ts` — "includes the real over-long card this fix targets
+    (on-anger-03-027)". That card is no longer excluded (and may no longer be in the pool at all).
+  - `src/render/__tests__/chapter-text.test.ts` — "the pool has non-excluded entries across more than one book".
+  - `src/__tests__/cli.test.ts` x3 — "day 1 resolves to the expected card", "computeWallPlainLines splits out
+    every sentence", "--dry-run prints the plan": all pinned to the pre-V04 week-1 schedule and its cards.
+  For EACH: decide whether the assertion is still meaningful under the capped pool and re-anchor it to
+  current reality, or whether the property it guarded is genuinely gone and the test should be deleted with a
+  comment saying why. Do not weaken an assertion to make it pass, and do not delete one that still guards a
+  live property. The duration-exclusion tests specifically need a judgement call: the F03 duration axis is now
+  dead weight for the Wall, so a test demanding a "non-trivial count" may be asserting a property this plan
+  deliberately removed. Acceptance: full `social/` suite green; every change either re-anchored to a measured
+  current value or deleted with a stated reason.
+
+  **Done.** `cd social && npx vitest run` measured 6 failed / 385 passed (391) before, matching the task's
+  own description exactly. Resolution for each, in the order listed above:
+
+  1. `wall-gate.test.ts` — **deleted** ("reports a real, non-trivial count of duration ceiling exclusions
+     (F03)"). Re-ran `surveyWallPool` over the real 168-entry pool: `rejectedForDuration` is measured **0**,
+     confirming the task's own prediction. The duration axis isn't gone from the code — it still correctly
+     rejects a card passed directly by id in the neighbouring "gateWallCard — the duration ceiling (F03)"
+     block (`on-anger-03-027`, loaded straight from `content/output`, independent of pool membership) — but
+     the property THIS test guarded (surveying the real Wall pool finds a non-trivial number of duration
+     rejects) is gone by construction of the <=5-screen cap, and can't come back short of loosening the cap.
+     Did not re-point it at "the survey runs and returns a verdict for every entry" as the task suggested
+     considering, because that's already the very next assertion up in the same describe block ("runs the
+     gate over every entry and reports counts that sum to the pool size") — re-adding it would just duplicate
+     coverage. Left a comment at the deletion site with this reasoning and a pointer to both surviving tests.
+  2. `exclusions.test.ts` — **deleted** ("includes the real over-long card this fix targets
+     (on-anger-03-027)"). Checked the card against the committed pool file directly: `on-anger-03-027` is not
+     among `content/social/premises/wall.json`'s 168 entries at all (its payoff runs past 5 screens, so the
+     screen cap excludes it upstream of the duration gate, same as V02's schedule.test.ts fix already found).
+     It can't appear in a *duration* exclusion for a pool it was never admitted to, and the duration axis
+     rejects nothing at <=5 screens regardless (see #1). The three sibling tests in the same describe block
+     ("meta counts match a fresh survey", "the exact set of excluded ids matches a fresh survey", "every
+     committed exclusion carries the same axis") already guard that the (now-empty) committed exclusions file
+     stays truthful to a fresh survey — the property this file exists to protect — and all three still pass
+     unmodified against the empty list. Comment left at the deletion site.
+  3. `chapter-text.test.ts` — **re-anchored** ("the pool has non-excluded entries across more than one
+     book"). Measured directly: with `render-exclusions.json`'s `wall` list now empty (V04), all 168 pool
+     entries are non-excluded, spanning 7 books including Enchiridion — the property (multi-book span) still
+     holds, only the raw count moved (was 685 of 896, comfortably over the old `600` threshold). Changed the
+     threshold to `150` (comfortably below the measured 168, same margin-below-real-count posture as the old
+     assertion), kept the `books.size > 1` and `books.has('enchiridion')` checks unchanged since both are
+     still true, and rewrote the stale `685`/`896`/`211` numbers out of the preceding comment block.
+  4. `cli.test.ts` — **re-anchored**, 3 tests, all against the real committed `pilot-schedule-w01.json`
+     (read directly, not trusted from the plan): "day 1 resolves to the expected card" now expects
+     `meditations-09-025` (was `meditations-05-029`); "computeWallPlainLines splits out every sentence" now
+     derives its card from `resolveDay(WEEK_1_SCHEDULE, 6)` (`discourses-48-004`) instead of hardcoding a
+     second, now-stale id (`discourses-53-019`) that no longer matches day 6's real slot — the same
+     hardcoded-id-drifts-from-the-schedule failure mode V02 already fixed once in `schedule.test.ts`; "--dry-run
+     prints the plan" now matches `resolveDay(WEEK_1_SCHEDULE, 1).card_id` instead of a hardcoded string.
+     Deriving from the schedule at test run time (rather than hardcoding a fresh number) makes these three
+     resistant to the NEXT schedule regeneration too. Updated the stale top-of-file comment describing the
+     schedule's day 1/day 6 cards to match.
+
+  Full `social/` suite after all six changes: **389 passed (389), 0 failed, 22 files** (391 - 2 deleted
+  tests = 389). Did not touch `SourceHead.tsx`, `source-head-layout.ts`, or any `content/` JSON file, per the
+  task's constraints.

@@ -84,11 +84,20 @@ describe('content/social/render-exclusions.json matches a fresh survey — Wall'
 		}
 	});
 
-	it('includes the real over-long card this fix targets (on-anger-03-027)', () => {
-		const entry = committed.wall.find((e) => e.card_id === 'on-anger-03-027');
-		expect(entry).toBeDefined();
-		expect(entry?.axis).toBe('duration');
-	});
+	// Pf39c2-social-pilot-02a V10: deleted "includes the real over-long card
+	// this fix targets (on-anger-03-027)", which asserted the committed
+	// exclusions file still carried a `duration`-axis entry for that card.
+	// V02 added a <=5-payoff-screen cap to `wallGate`; `on-anger-03-027`'s
+	// payoff runs past 5 screens, so it no longer survives the gate at all
+	// and isn't in `content/social/premises/wall.json`'s 168 entries any
+	// more (confirmed by loading the committed pool file directly) — it
+	// can't appear in a *duration* exclusion for a pool it was never
+	// admitted to. V04 also measured that the duration axis rejects nothing
+	// at <=5 screens (a 5-screen payoff tops out around 17.5s against the
+	// 40s ceiling), so `committed.wall` is now empty; the "meta counts
+	// match" and "exact set of excluded ids matches" tests above already
+	// guard that the (now-empty) committed list stays truthful to a fresh
+	// survey, which is the property this file exists to protect.
 });
 
 // Pf39c2-social-pilot-02a D01/D02/D04: Question, Objection and the

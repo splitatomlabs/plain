@@ -22,11 +22,18 @@ const scheduleDir = path.join(repoRoot, 'content', 'social');
 //
 // Pf39c2-social-pilot-02a D04: regenerated to the true single-Wall-per-day
 // shape (no more `slot`/`read_through`/`read_through_counter` fields, no
-// `still`/`question` formats — both formats are deleted). Day 1 is now
-// `meditations-05-029` (marcus-aurelius) and day 6 is now
-// `discourses-53-019` (epictetus) — different cards than the pre-D02
-// read-through's book-order walk produced, since the whole channel is now a
-// single pool draw per day.
+// `still`/`question` formats — both formats are deleted).
+//
+// V10: V02 (the <=5-payoff-screen cap) and V04 (regenerating this file
+// against the capped pool) moved every card in this schedule again — day 1
+// is now `meditations-09-025` (marcus-aurelius) and day 6 is now
+// `discourses-48-004` (epictetus). Tests below that need a specific day's
+// card derive it from `WEEK_1_SCHEDULE`/`resolveDay` at run time rather than
+// hardcoding a card id a second time, so a future schedule regeneration
+// can't silently desync a hardcoded id from the id `resolveDay` actually
+// returns (that desync — a test's own hardcoded card not matching the
+// schedule's real slot for that day — is exactly what broke the
+// `computeWallPlainLines` test this comment used to describe).
 const WEEK_1_SCHEDULE = JSON.parse(
 	readFileSync(path.join(scheduleDir, scheduleFileName(1)), 'utf-8')
 ) as WeekSchedule;
@@ -108,7 +115,7 @@ describe('resolveDay — against the real committed week-1 schedule', () => {
 		const { week, day } = dateToWeekDay('2026-09-01');
 		expect(week).toBe(1);
 		const slot = resolveDay(WEEK_1_SCHEDULE, day);
-		expect(slot.card_id).toBe('meditations-05-029');
+		expect(slot.card_id).toBe('meditations-09-025');
 		expect(slot.book_slug).toBe('meditations');
 		expect(slot.content.format).toBe('wall');
 	});
@@ -144,10 +151,12 @@ describe('computeWallPlainLines', () => {
 	it('splits out every sentence of plain_english except the landing line, in order', () => {
 		// Day 6 — a real Wall slot in the committed week-1 schedule whose
 		// landing line is a real (non-whole-passage) substring, so there's a
-		// non-empty remainder to split.
-		const card = loadOutputCard('discourses', 'discourses-53-019');
+		// non-empty remainder to split. Card/book derived from the slot
+		// itself (not hardcoded a second time) so a future schedule
+		// regeneration can't desync this test's card from day 6's real one.
 		const slot = resolveDay(WEEK_1_SCHEDULE, 6);
 		if (slot.content.format !== 'wall') throw new Error('expected a wall slot');
+		const card = loadOutputCard(slot.book_slug, slot.card_id);
 		const landingLine = slot.content.landing_line;
 
 		const plainLines = computeWallPlainLines(card.plain_english, landingLine);
@@ -184,7 +193,10 @@ describe('--dry-run', () => {
 
 		const result = runCli(['render', '--date', '2026-09-01', '--out', outDir, '--dry-run']);
 		expect(result.status).toBe(0);
-		expect(result.stdout).toMatch(/meditations-05-029/);
+		// 2026-09-01 is day 1; derived from the real committed schedule (not
+		// hardcoded a second time) so this stays in sync with day 1's card.
+		const day1 = resolveDay(WEEK_1_SCHEDULE, 1);
+		expect(result.stdout).toMatch(new RegExp(day1.card_id));
 		expect(result.stdout).toMatch(/composition: Wall/);
 		expect(result.stdout.toLowerCase()).toMatch(/dry run/);
 		expect(existsSync(outDir)).toBe(false);

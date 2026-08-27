@@ -268,12 +268,25 @@ describe('surveyWallPool — the real pool', () => {
 		}
 	});
 
-	it('reports a real, non-trivial count of duration ceiling exclusions (F03)', () => {
-		const result = surveyWallPool(POOL.entries, outputDir);
-		// The real over-long card below proves this is >0, not just structurally present.
-		expect(result.rejectedForDuration).toBeGreaterThan(0);
-		expect(result.rejectedForDuration).toBeLessThan(POOL.entries.length);
-	});
+	// Pf39c2-social-pilot-02a V10: deleted "reports a real, non-trivial count
+	// of duration ceiling exclusions (F03)", which asserted
+	// `result.rejectedForDuration` was both >0 and <POOL.entries.length.
+	// V02 added a <=5-payoff-screen cap to `wallGate`; V04 measured that at
+	// <=5 screens no Wall card can approach the 40s WALL_MAX_DURATION_SECONDS
+	// ceiling (a 5-screen payoff tops out around 17.5s), so
+	// `surveyWallPool(POOL.entries, ...)` now reports `rejectedForDuration:
+	// 0` for all 168 pool entries — re-confirmed here by running the real
+	// survey, not assumed. The duration axis isn't gone from the code (it's
+	// still reachable and still correctly rejects a card passed directly by
+	// id, independent of pool membership — see "gateWallCard — the duration
+	// ceiling (F03)" below, which loads `on-anger-03-027` straight from
+	// `content/output` rather than through the pool), but the property this
+	// deleted test guarded — that surveying the REAL WALL POOL finds a
+	// non-trivial number of duration rejects — no longer holds, and can't,
+	// by construction of the screen cap. The remaining "runs the gate over
+	// every entry and reports counts that sum to the pool size" test above
+	// already guards that `surveyWallPool` still runs and returns a verdict
+	// for every pool entry.
 });
 
 describe('gateWallCard — the duration ceiling (F03)', () => {

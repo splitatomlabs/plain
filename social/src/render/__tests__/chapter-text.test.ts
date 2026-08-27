@@ -472,16 +472,23 @@ describe('buildChapterTextBlock / loadChapterTextBlock — the real read-through
 
 // ---------------------------------------------------------------------------
 // R02's own acceptance test — sweeps EVERY non-excluded entry of the real
-// `content/social/premises/wall.json` pool (685 of 896 entries; the other
-// 211 are already excluded upstream for `duration`, an unrelated axis — see
-// `content/social/render-exclusions.json`'s `wall` section), not just the
-// 48-card Meditations read-through slice above. That slice alone couldn't
-// have caught this defect: every Meditations chapter is thousands of words
-// long, so T05-T09's tests against it never exercised a chapter anywhere
-// near the travel floor. This sweep spans every book in the real Wall pool
-// — including Enchiridion, whose 51 chapters median just 94 words — so a
-// regression that only shows up on a short chapter can't hide behind a
-// Meditations-only fixture again.
+// `content/social/premises/wall.json` pool, not just the 48-card Meditations
+// read-through slice above. That slice alone couldn't have caught this
+// defect: every Meditations chapter is thousands of words long, so T05-T09's
+// tests against it never exercised a chapter anywhere near the travel floor.
+// This sweep spans every book in the real Wall pool — including Enchiridion,
+// whose 51 chapters median just 94 words — so a regression that only shows
+// up on a short chapter can't hide behind a Meditations-only fixture again.
+//
+// Pf39c2-social-pilot-02a V02 added a <=5-payoff-screen cap to `wallGate`,
+// shrinking the pool from 896 scored entries (685 non-excluded, 211
+// excluded for `duration`) to 168 — and V04's re-measurement found the
+// screen cap subsumes the duration ceiling entirely (no <=5-screen Wall can
+// approach it), so `render-exclusions.json`'s `wall` list is now empty and
+// every one of the 168 pool entries is non-excluded. The multi-book-span
+// property this test guards still holds (168 entries across 7 books,
+// Enchiridion included) — only the raw counts moved; re-measured below
+// rather than reusing the pre-V02 figures.
 // ---------------------------------------------------------------------------
 
 describe('buildChapterTextBlock — R02 acceptance: every non-excluded wall.json entry clears the travel floor', () => {
@@ -508,7 +515,12 @@ describe('buildChapterTextBlock — R02 acceptance: every non-excluded wall.json
 	}
 
 	it('grounds this suite\'s own numbers: the pool has non-excluded entries across more than one book (not just Meditations)', () => {
-		expect(nonExcludedEntries.length).toBeGreaterThan(600);
+		// Measured 2026-08-27 against the post-V02/V04 pool: all 168 wall.json
+		// entries are non-excluded (see the describe block's own comment for
+		// why). 150 is comfortably below that real count while still being
+		// far above "trivial" — the same margin-below-the-real-number posture
+		// the old `600` threshold held against the pre-V02 685.
+		expect(nonExcludedEntries.length).toBeGreaterThan(150);
 		const books = new Set(nonExcludedEntries.map((e) => e.book_slug));
 		expect(books.size).toBeGreaterThan(1);
 		expect(books.has('enchiridion')).toBe(true);
