@@ -109,8 +109,33 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   neither. `npx vitest run src/publish`: 33/33 green (12 pre-existing `env.test.ts` + 21 new). `tsc --noEmit`
   clean. T03/T04 (token management) are next and are the first callers likely to need a real (non-mocked) R2
   round-trip once T01's live provisioning happens.
-- [ ] T03: Write token tests — refresh near expiry; persist before use; a crash between the two does not orphan the
+- [x] T03: Write token tests — refresh near expiry; persist before use; a crash between the two does not orphan the
   account; expiry inside 30 days raises an alert. Acceptance: tests fail against an empty implementation.
+  Done: added `social/src/publish/tokens.ts` — real exported signatures (`Platform`, `StoredToken`, `TokenStore`
+  with `get`/`set` where `set` is documented as an atomic write-back for T04's Firestore implementation to honor,
+  `needsRefresh(token, now)`, `RefreshFn`, `ensureFreshToken({ store, platform, now, refresh })`,
+  `expiryAlert(token, now)`, plus exported threshold constants `REFRESH_WINDOW_MS` (7 days),
+  `MIN_REFRESH_AGE_MS` (24h, the Instagram refresh-eligibility floor from the plan Constraint), and
+  `EXPIRY_ALERT_WINDOW_MS` (30 days, per the plan Constraint)) — every body throws `Error('not implemented')` so
+  T04 fills them in. No `Date.now()` anywhere; every function takes `now: string` (ISO 8601) explicitly, matching
+  `pilot-config.ts`'s determinism policy. Added `social/src/publish/__tests__/tokens.test.ts` (20 tests, in-memory
+  fake `TokenStore` with injectable `onSet`/`setDelayMs`/`setRejection` hooks, no network/no live API): refresh
+  fires inside `REFRESH_WINDOW_MS` of expiry and not outside it (with boundary cases); the >=24h age floor wins
+  over imminent expiry (a token near expiry but younger than 24h is asserted NOT refreshed, and the conflicting
+  case is asserted explicitly) while a token exactly at the 24h floor IS refreshed; the critical persist-before-use
+  case is proven by recording an event sequence (`refresh resolved` -> `store.set called` -> `caller received
+  result`) through an artificially delayed fake `store.set`, so the test fails a real fire-and-forget
+  implementation, not just a missing call; the crash case rejects `store.set` after a successful `refresh` and
+  asserts both that the specific write-failure error propagates unchanged to the caller (not a token) and that
+  `store.get` still returns the OLD token afterward, i.e. the account is not orphaned; `expiryAlert` is covered at,
+  just inside, and just outside the 30-day boundary and for an already-expired token; a dedicated `console.*`-spy
+  suite asserts no token value is ever passed to `console.log/warn/error/info/debug` or embedded in a thrown
+  error's message, across both the successful-refresh and crash paths. `npx vitest run
+  src/publish/__tests__/tokens.test.ts`: 20/20 FAIL (every failure is either the explicit "not implemented" throw
+  or an assertion mismatch caused by it — no TypeScript/module-resolution errors), which is the correct RED state
+  for this task. `npx tsc --noEmit -p social/tsconfig.json`: clean. T04 is next: implement the bodies in
+  `tokens.ts` plus a Firestore-backed `TokenStore` per the plan's Files list, and get this suite to 20/20 green
+  without changing its assertions.
 - [ ] T04: Implement token management in Firestore with atomic write-back. Acceptance: T03 passes.
 - [ ] T05: Implement the Instagram adapter — container, poll, publish; retry on error 2207052 media-fetch failures.
   Acceptance: a live test post succeeds and is publicly visible.
