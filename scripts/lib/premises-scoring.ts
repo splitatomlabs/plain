@@ -88,7 +88,7 @@ export interface WallRubricResult {
  *      viewer TODAY is actually in?
  *
  * `passesStoppingPower` combines the three into a single pass/fail for
- * pool-filtering purposes (see ./schedule.ts's `loadFormatPools`), but the
+ * pool-filtering purposes (see ./schedule.ts's `loadWallPool`), but the
  * three raw booleans are kept on the parsed/scored result too, so a pair
  * that fails ONLY stopping power stays distinguishable from one that fails
  * ONLY drift — both signals are independently readable off the same row,

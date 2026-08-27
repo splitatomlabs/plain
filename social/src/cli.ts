@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 /**
- * The render CLI (T18): `social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2>`.
+ * The render CLI (T18): `social/src/cli.ts render --date <YYYY-MM-DD>`.
  *
- * Maps `--date`/`--slot` onto a committed weekly schedule
- * (`content/social/pilot-schedule-w<NN>.json`, see `pilot-config.ts`),
- * resolves the card and every field that schedule doesn't itself carry
- * from `content/output/`, renders that slot's composition with Remotion,
- * encodes it to the house MP4 profile (`render/encode.ts`), renders the
- * Instagram feed still, and writes a metadata sidecar (`render/
- * post-metadata.ts`).
+ * Maps `--date` onto a committed weekly schedule (`content/social/
+ * pilot-schedule-w<NN>.json`, see `pilot-config.ts`), resolves the card and
+ * every field that schedule doesn't itself carry from `content/output/`,
+ * renders that day's composition with Remotion, encodes it to the house MP4
+ * profile (`render/encode.ts`), renders the Instagram feed still, and writes
+ * a metadata sidecar (`render/post-metadata.ts`).
+ *
+ * Pf39c2-social-pilot-02a D02: `--slot` is gone — the read-through and the
+ * two-slot day are both gone, so each day has exactly one Wall slot and
+ * `--date` alone identifies it (see `cli-plan.ts`'s `resolveDay`).
  *
  * Deterministic by policy, same as every other tool in this pipeline
  * (`scripts/generate-schedule.ts`, `scripts/review-week.ts`): the date
  * always comes from `--date`, never `Date.now()`; the music bed is seeded
- * from `--date`/`--slot` alone (`cli-plan.ts`'s `postIndexForSlot`), so
- * re-running the same `--date`/`--slot` always makes the same choice.
+ * from `--date` alone (`cli-plan.ts`'s `postIndexForDay`), so re-running the
+ * same `--date` always makes the same choice.
  *
  * NARRATION IS BLOCKED (T14 — `audio/voices.ts`'s `VOICES_ARE_UNSET`):
  * there are no auditioned voice ids yet, so every render here is
@@ -38,8 +41,8 @@ import { renderMedia, selectComposition } from '@remotion/renderer';
 import { dateToWeekDay } from './pilot-config.js';
 import {
 	scheduleFileName,
-	resolveSlot,
-	postIndexForSlot,
+	resolveDay,
+	postIndexForDay,
 	chooseBed,
 	computeWallPlainLines,
 	renderAssetPaths
@@ -84,18 +87,17 @@ const T14_NARRATION_WARNING =
 // ---------------------------------------------------------------------------
 
 function printHelp(): void {
-	console.log(`Usage: npx tsx social/src/cli.ts render --date <YYYY-MM-DD> --slot <1|2> [options]
+	console.log(`Usage: npx tsx social/src/cli.ts render --date <YYYY-MM-DD> [options]
 
-Renders one scheduled slot's video + Instagram feed still + metadata
-sidecar, from a committed weekly schedule (content/social/
-pilot-schedule-w<NN>.json — see scripts/generate-schedule.ts).
+Renders one day's video + Instagram feed still + metadata sidecar, from a
+committed weekly schedule (content/social/pilot-schedule-w<NN>.json — see
+scripts/generate-schedule.ts). Every day is a single Wall post
+(Pf39c2-social-pilot-02a D02) — --date alone identifies it.
 
 Options:
-  --date <YYYY-MM-DD>    The slot's calendar date (required). Mapped onto a
+  --date <YYYY-MM-DD>    The post's calendar date (required). Mapped onto a
                           schedule week/day via pilot-config.ts's
                           PILOT_WEEK_1_START anchor.
-  --slot <1|2>            Which of the day's two slots to render (required).
-                          Slot 1 is always the read-through slot.
   --out <dir>              Output directory (default: social/out/).
   --schedule-dir <dir>     Directory to read pilot-schedule-w<NN>.json from
                           (default: content/social/). Testing/override
@@ -112,7 +114,6 @@ Options:
 
 interface RenderArgs {
 	date: string;
-	slotNumber: number;
 	outDir: string;
 	scheduleDir: string;
 	dryRun: boolean;
@@ -124,7 +125,6 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 		args: argv,
 		options: {
 			date: { type: 'string' },
-			slot: { type: 'string' },
 			out: { type: 'string', default: DEFAULT_OUT_DIR },
 			'schedule-dir': { type: 'string', default: SCHEDULE_DIR },
 			'dry-run': { type: 'boolean', default: false },
@@ -142,17 +142,9 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 	if (!values.date) {
 		throw new Error('Specify --date <YYYY-MM-DD>');
 	}
-	if (!values.slot) {
-		throw new Error('Specify --slot <1|2>');
-	}
-	const slotNumber = Number(values.slot);
-	if (slotNumber !== 1 && slotNumber !== 2) {
-		throw new Error(`Invalid --slot "${values.slot}" — must be 1 or 2.`);
-	}
 
 	return {
 		date: values.date,
-		slotNumber,
 		outDir: values.out ?? DEFAULT_OUT_DIR,
 		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
 		dryRun: Boolean(values['dry-run']),
@@ -224,10 +216,19 @@ interface RenderPlan {
 	date: string;
 	week: number;
 	day: number;
-	slotNumber: number;
 	cardId: string;
 	bookSlug: string;
 	authorSlug: string;
+	/**
+	 * Pf39c2-social-pilot-02a D02: always `null` now — the read-through (the
+	 * counter's only supplier, `ScheduleSlot.read_through_counter`) is gone,
+	 * so there is no label left to compute. Left for D03, per that task's own
+	 * scope: `Counter.tsx`/`counter-layout.ts` and the `counter` prop this
+	 * still threads through to `Wall.tsx` are NOT deleted here — only the
+	 * supply of a real label is. `Wall.tsx` already renders nothing for a
+	 * `null` counter (every non-read-through Wall slot always passed `null`
+	 * here before this task too).
+	 */
 	counter: string | null;
 	compositionId: 'Wall';
 	formatPlan: FormatPlan;
@@ -238,61 +239,35 @@ interface RenderPlan {
 async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 	const { week, day } = dateToWeekDay(args.date);
 	const schedule = await loadWeekSchedule(week, args.scheduleDir);
-	const slot = resolveSlot(schedule, day, args.slotNumber);
+	const slot = resolveDay(schedule, day);
 	const card = loadOutputCard(slot.book_slug, slot.card_id);
 
-	const postIndex = postIndexForSlot(args.date, args.slotNumber);
+	const postIndex = postIndexForDay(args.date);
 	const bed = chooseBed(postIndex);
 
-	let formatPlan: FormatPlan;
-	let compositionId: RenderPlan['compositionId'];
-
-	switch (slot.content.format) {
-		case 'wall': {
-			const plainLines = computeWallPlainLines(card.plain_english, slot.content.landing_line);
-			// social pilot 02a T18: mid-chapter entry, deterministic from this
-			// render's own postIndex — see `applyChapterEntryOffset`'s doc
-			// comment (`render/chapter-text.ts`) for the design.
-			const chapterBlock = applyChapterEntryOffset(loadChapterTextBlock(slot.book_slug, slot.card_id), postIndex);
-			formatPlan = {
-				format: 'wall',
-				originalExcerpt: slot.content.original_excerpt,
-				chapterBlock,
-				sourceReference: card.source_reference,
-				landingLine: slot.content.landing_line,
-				plainLines
-			};
-			compositionId = 'Wall';
-			break;
-		}
-		// Pf39c2-social-pilot-02a D01: Question, Objection and Still were
-		// deleted outright — the channel is one Wall a day, drawn from the
-		// 685-entry Wall pool, nothing else (see that plan's "Deprecation —
-		// one Wall a day" section). `scripts/lib/schedule.ts`'s `SlotContent`
-		// union still nominally allows these formats (collapsing it to
-		// Wall-only, and regenerating the committed schedule so it can never
-		// produce one of these slots again, is D02/D04's job, not this
-		// task's) — a schedule slot that somehow still carries one of them
-		// throws here rather than silently doing nothing.
-		case 'question':
-		case 'objection':
-		case 'still':
-			throw new Error(
-				`Slot day ${day} slot ${args.slotNumber} is format "${slot.content.format}" (card "${slot.card_id}") — ` +
-					`Question, Objection and Still were deleted (Pf39c2-social-pilot-02a D01). Only "wall" slots are ` +
-					`renderable; regenerate the schedule (D04) to remove this slot.`
-			);
-	}
+	const plainLines = computeWallPlainLines(card.plain_english, slot.content.landing_line);
+	// social pilot 02a T18: mid-chapter entry, deterministic from this
+	// render's own postIndex — see `applyChapterEntryOffset`'s doc comment
+	// (`render/chapter-text.ts`) for the design.
+	const chapterBlock = applyChapterEntryOffset(loadChapterTextBlock(slot.book_slug, slot.card_id), postIndex);
+	const formatPlan: FormatPlan = {
+		format: 'wall',
+		originalExcerpt: slot.content.original_excerpt,
+		chapterBlock,
+		sourceReference: card.source_reference,
+		landingLine: slot.content.landing_line,
+		plainLines
+	};
+	const compositionId: RenderPlan['compositionId'] = 'Wall';
 
 	return {
 		date: args.date,
 		week,
 		day,
-		slotNumber: args.slotNumber,
 		cardId: slot.card_id,
 		bookSlug: slot.book_slug,
 		authorSlug: slot.author_slug,
-		counter: slot.read_through_counter,
+		counter: null,
 		compositionId,
 		formatPlan,
 		postIndex,
@@ -301,10 +276,9 @@ async function buildRenderPlan(args: RenderArgs): Promise<RenderPlan> {
 }
 
 function printPlan(plan: RenderPlan): void {
-	console.log(`Render plan for ${plan.date} slot ${plan.slotNumber} (week ${plan.week} day ${plan.day}):`);
+	console.log(`Render plan for ${plan.date} (week ${plan.week} day ${plan.day}):`);
 	console.log(`  composition: ${plan.compositionId}`);
 	console.log(`  card: ${plan.cardId} (${plan.bookSlug}, ${plan.authorSlug})`);
-	console.log(`  counter: ${plan.counter ?? '(none — not a read-through slot)'}`);
 	console.log(`  post index: ${plan.postIndex}`);
 	console.log(`  bed: ${plan.bedId}`);
 	console.log(`  plain lines after landing line: ${plan.formatPlan.plainLines.length}`);
@@ -465,7 +439,7 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 	}
 
 	await mkdir(args.outDir, { recursive: true });
-	const assetPaths = renderAssetPaths(args.outDir, plan.compositionId.toLowerCase(), plan.date, plan.slotNumber);
+	const assetPaths = renderAssetPaths(args.outDir, plan.compositionId.toLowerCase(), plan.date);
 
 	const workDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-'));
 	try {
@@ -607,7 +581,6 @@ function narrationFields(plan: RenderPlan, narration: boolean): Record<string, u
 		book_slug: plan.bookSlug,
 		author_slug: plan.authorSlug,
 		day: plan.day,
-		slot: plan.slotNumber,
 		week: plan.week
 	};
 }

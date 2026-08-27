@@ -234,18 +234,19 @@ export function loadChapterTextBlock(bookSlug: string, cardId: string, outputDir
 /**
  * The deterministic word offset (into the target card's own excerpt — see
  * the module-level "mid-chapter entry" comment above) for a given
- * `postIndex` (`cli-plan.ts`'s `postIndexForSlot` — the same deterministic,
- * date/slot-derived integer already used to seed the music bed, NEVER
+ * `postIndex` (`cli-plan.ts`'s `postIndexForDay` — the same deterministic,
+ * date-derived integer already used to seed the music bed, NEVER
  * `Date.now()` or `Math.random()`). Pure arithmetic, no I/O, so it's cheap to
  * exhaustively test.
  *
- * `postIndex` increments by exactly 1 per scheduled slot (`postIndexForSlot`
- * = `(week-1)*14 + (day-1)*2 + (slotNumber-1)`), so consecutive posts get
- * consecutive offsets modulo `excerptWordCount` — a different word almost
- * every time, cycling back only once `excerptWordCount` posts have gone by.
+ * `postIndex` increments by exactly 1 per scheduled day (Pf39c2-social-pilot-
+ * 02a D02 collapsed each day to a single Wall slot — `postIndexForDay` =
+ * `(week-1)*7 + (day-1)`), so consecutive posts get consecutive offsets
+ * modulo `excerptWordCount` — a different word almost every time, cycling
+ * back only once `excerptWordCount` posts have gone by.
  * `((postIndex % excerptWordCount) + excerptWordCount) % excerptWordCount`
  * rather than a bare `%` so a hypothetical negative `postIndex` (not
- * produced by `postIndexForSlot` today, but this function makes no
+ * produced by `postIndexForDay` today, but this function makes no
  * assumption about its caller) still lands in range rather than returning a
  * negative array index to `applyChapterEntryOffset` below.
  *

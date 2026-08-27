@@ -1927,13 +1927,130 @@ reorder the read-through" constraint — sub-type spacing now applies freely acr
   frame 120 show the payoff — "In plain English" label, the 44px landing line, "Card 1 of 48" counter below —
   pixel-identical in kind to pre-D01 renders. Social suite runtime: 78.4s before (599 tests) -> 28.0-32.0s
   after (409 tests) — roughly 2.7x faster, ~47-50s saved per run, which was the user's stated motivation.
-- [ ] D02: Delete the read-through from `scripts/lib/schedule.ts` (85 references) and collapse the day to a
-  SINGLE pool-drawn Wall slot (82 slot references today). Remove `tryReadThroughContent`, the sequential
-  book-order walk, and the `read_through` section of `content/social/render-exclusions.json` +
+- [x] D02 (DONE 2026-08-27): Delete the read-through from `scripts/lib/schedule.ts` (85 references) and collapse
+  the day to a SINGLE pool-drawn Wall slot (82 slot references today). Remove `tryReadThroughContent`, the
+  sequential book-order walk, and the `read_through` section of `content/social/render-exclusions.json` +
   `social/scripts/write-exclusions.ts`. T19's sub-type spacing survives but loses its "never reorder slot 1"
   constraint — it can now space freely, so simplify it accordingly rather than leaving dead conditionals.
   Acceptance: a generated week is 7 single-slot days, every one a Wall; no back-to-back sub-type repeat;
   `npm test` green.
+
+  **Done.** `scripts/lib/schedule.ts` rewritten from scratch (1388 -> ~470 lines): `tryReadThroughContent`,
+  `resolveReadThrough`, `readThroughContentOrThrow`, `buildReadThroughSequence`, `weightedFormatChoice`,
+  `READ_THROUGH_FALLBACK_ORDER`, `DEFAULT_FORMAT_WEIGHTS`, `ScheduleFormat`, `RenderedFormat`, `FormatPools`,
+  `SlotContent`'s Question/Objection/Still variants, `DEFAULT_READ_THROUGH_BOOK`/`_CHAPTERS`, and every
+  `GenerateWeekOptions` field that existed only to parameterize the read-through are all GONE, not stubbed.
+  `WeekSchedule` narrows to `{ week, seed, slots, author_mix, pool_source }`; `ScheduleSlot` narrows to
+  `{ day, card_id, book_slug, author_slug, content: WallSlotContent }` — no `slot` number, no `read_through`/
+  `read_through_counter` (D03 deletes the counter's own rendering machinery; this task only removes the
+  scheduler's SUPPLY of a label, since there is no more sequence to count through). `generateWeek` is now a
+  single 7-iteration loop, one Wall draw per day, straight from the (author-balanced, T21 strong-then-reserve)
+  Wall pool. `loadFormatPools` -> renamed `loadWallPool` (Wall-only signature, `{ pool, source, exclusions }`);
+  `loadPriorWeeks` drops `readThroughConsumed`. `WALL_STRONG_*`/`isStrongWallEntry`/`WallPoolEntry` (T21) and
+  the `wallSubTypesIntersect` helper (T19) both survive unchanged in spirit.
+  T19's sub-type spacing SIMPLIFIED, not left with dead conditionals: one piece of state
+  (`previousWallSubTypes: WallSubType[] | null`, tracking the immediately preceding DAY, since day and slot are
+  now the same thing), consulted once per day — no more "read-through slot 1 is fixed and read-only, slot 2 is
+  where spacing can actually apply" split. Author balancing (`wallAuthorWeights`) is called as
+  `wallAuthorWeights([], wallPool, 0)` — an empty Question pool and a 0 Question fraction, which makes that
+  function's own existing "no readThrough" branch reduce ALGEBRAICALLY to targeting `BALANCED_AUTHOR_SHARE`
+  (an even 1/3 per author) directly; this is a two-argument call-site change, not a rewrite of `premises.ts`'s
+  T05/T17 mechanism, which stays untouched and independently tested by `premises.test.ts`.
+  **Left for D03** (unchanged, per that task's own scope): `Counter.tsx`, `counter-layout.ts`,
+  `computePayoffCounterBox`, `COUNTER_GAP_BELOW_TEXT_PX`, and the `counter` prop on `Wall.tsx`/`cli.ts`'s
+  `RenderPlan`. What THIS task did remove is the counter's only LABEL SUPPLY: `cli.ts`'s `RenderPlan.counter`
+  is now hardcoded `null` (doc-commented explaining why and pointing at D03), since `ScheduleSlot` no longer
+  carries `read_through_counter` at all — `Wall.tsx` already renders nothing for a `null` counter (every
+  non-read-through Wall slot always passed `null` before this task too), so this is a behavior no-op today.
+  **`social/src/cli.ts`'s `--slot` flag: DROPPED, not defaulted to 1.** With one Wall slot per day, a slot
+  number is pure noise — dropping it (`render --date <YYYY-MM-DD>`, no `--slot`) is more honest than keeping a
+  vestigial always-`1` flag. Cascaded: `cli-plan.ts`'s `resolveSlot(schedule, day, slotNumber)` ->
+  `resolveDay(schedule, day)`; `postIndexForSlot(date, slotNumber)` -> `postIndexForDay(date)` (`(week-1)*7 +
+  (day-1)`, replacing `(week-1)*14 + (day-1)*2 + (slotNumber-1)`); `renderAssetPaths` drops its `slotNumber`
+  parameter and the `-slotN` filename suffix (`wall-2026-09-01.mp4`, not `wall-2026-09-01-slot1.mp4`); the
+  metadata sidecar's `narrationFields` drops its `slot` field. `social/src/schedule-types.ts` (the mirrored,
+  hand-kept local type — `social/` never imports the root pipeline package) updated to match:
+  `ScheduleFormat = 'wall'`, `SlotContent = WallSlotContent`, `ScheduleSlot` loses `slot`/`read_through`/
+  `read_through_counter`.
+  **`content/social/pilot-schedule-w01.json`'s SCHEMA changed** (this task's job, per the plan's own
+  instruction) but the FILE ITSELF was deliberately left un-regenerated (D04's job) — it still has its pre-D02
+  14-slot shape on disk (`slot`/`read_through`/`read_through_counter` fields, and `still`/`question` formats
+  on some days, both dead formats since D01). `social/src/__tests__/cli.test.ts` was adapted to read this stale
+  file only for days (1 and 6) that already resolve to a real Wall slot under the CURRENT data — `resolveDay`'s
+  day-only lookup picks the array's first match for that day, which for those two days is already `slot 1`,
+  format `wall` — so the suite is green against BOTH the stale file today and the D04-regenerated, truly
+  single-slot file later, with no test changes needed when D04 lands.
+  **`social/scripts/write-exclusions.ts`**: the read-through survey (`buildReadThroughSlice`,
+  `resolveReadThroughSlice`, `surveyReadThrough`, the `--read-through-book`/`--read-through-chapters` flags)
+  deleted outright; the script now surveys the Wall pool only and writes `{ meta: { generated_at,
+  max_post_duration_frames, max_post_duration_seconds, wall }, wall }` — no `read_through` key at all. Verified
+  by running it against a scratch `--out` path: emits `{"meta":{...,"wall":{...}},"wall":[...]}`, 685
+  passed/211 rejected against the real 896-entry pool — same counts as before, since the Wall survey itself is
+  unchanged, only the read-through section is gone. **The committed `content/social/render-exclusions.json`
+  itself was NOT regenerated** (D04's job) — it still carries its pre-D02 `question`/`objection`/`read_through`/
+  `still` sections; `scripts/lib/exclusions.ts`'s reader (`loadExclusions`/`LoadedExclusions`) narrows to
+  `{ wall: Set<string> }` only and simply ignores whatever extra sections a stale file still has, so reading the
+  old committed artifact continues to work unchanged.
+  **`scripts/generate-schedule.ts`** rewritten: no more `--book`/`--read-through-chapters`/`--read-through-format`/
+  `--wall-weight`/`--question-weight`/`--objection-weight`/`--max-objection-per-week` flags (nothing left to
+  parameterize); calls `loadWallPool` instead of `loadFormatPools`; the review gate's weight-carrying step is
+  gone (see `review.ts` below) — it is now purely "did you review retention before generating the next week".
+  **`scripts/lib/review.ts`** simplified alongside: the review note's "Next week wall/question/objection
+  weight" fields and `FormatWeights`/`ParsedReviewNote.nextWeekWeights` are gone (there is only one format left
+  to weight — nothing), as is "Read-through position" (no read-through to report a position in); the per-post
+  row drops "Slot N" (`- Day N — wall, <card_id>: <TODO> views`). `scripts/lib/__tests__/review.test.ts` and
+  `scripts/lib/__tests__/generate-schedule-cli.test.ts` updated to match — one whole test
+  (`"carries the review note's chosen weights forward as week 2's defaults"`) DELETED outright (T17's rule:
+  tests for deleted behavior are deleted, never adapted to something weaker), since there is no weight left to
+  carry forward.
+  **`scripts/lib/__tests__/schedule.test.ts`** rewritten from scratch (3633 -> ~820 lines, 123 -> 41 tests):
+  every test exercising read-through sequencing, book/chapter slicing, the STILL fallback, format weighting, or
+  Question/Objection pool loading was DELETED (the behavior it tested no longer exists) — not skipped, not
+  adapted to assert something weaker. KEPT and adapted: seeded determinism (single- and multi-week,
+  disk-persisted 4-week chains), no-duplicate-card / no-cross-week-reuse, `loadWallPool`'s scored-vs-gate-only
+  fallback and F05 exclusion gating (Wall-only now), `loadPriorWeeks`, T21's strong-before-reserve draw order,
+  and T19's sub-type spacing — both a hand-built deterministic fixture (2 thou_wall + 6 cascade entries across 7
+  days, deliberately imbalanced so at least one repeat is mathematically forced, proving the report mechanism
+  fires) and a real-corpus multi-week sweep. MEASURED, and recorded honestly rather than papered over: the
+  real-corpus sweep (8 weeks x 7 days = 56 draws against the real 685-entry scored pool) found ZERO actual
+  back-to-back sub-type repeats and ZERO spacing warnings — at one Wall slot per day (down from two) and with
+  the majority of the real pool carrying no sub-type at all (reserve entries never collide with anything), the
+  scheduler in practice almost never needs to fall back to an unspaced pick. The test's assertion was adjusted
+  to check the CORRESPONDENCE (warnings emitted == actual repeats, whatever that count is) rather than assert a
+  nonzero count that the new, lower-cadence reality doesn't reliably produce; the synthetic fixture test is
+  what proves the report mechanism itself still works under genuine scarcity.
+  **Left as a disclosed, out-of-scope decision, not silently skipped:** `scripts/lib/premises.ts`'s
+  `wallAuthorWeights`/`ReadThroughShareContext` (T17) still accept an optional `readThrough` context parameter
+  that nothing calls anymore (`schedule.ts` always passes `undefined` for it now, via the 3-argument call
+  described above) — D01's own note predicted this would be "restructured away by D02," but my actual task
+  brief scoped D02 to `schedule.ts` + `write-exclusions.ts` + `generate-schedule.ts` + `cli.ts`, not a rewrite
+  of `premises.ts`'s general-purpose, independently-tested (`premises.test.ts`) author-balancing utility for a
+  parameter its one remaining caller happens not to use. Flagged here rather than touched, since removing it
+  would mean deleting or rewriting `premises.test.ts`'s own T17 test block, which is out of this task's stated
+  file list.
+  **Verification:** grep for `read_through`/`readThrough`/`ReadThrough` across `scripts/` and `social/src/`
+  returns hits only in doc comments (mostly D03's own `ReadThroughCounter` component, explicitly out of scope
+  here, and historical references to the deleted `tryReadThroughContent`) — zero real code references survive.
+  `npm test` from repo root: pipeline 551/551 (21 files, down from D01's own reported 630/630 — this task's
+  test-file rewrites removed the bulk of that: `schedule.test.ts` 123 -> 41 tests, one weight-carrying test
+  deleted from `generate-schedule-cli.test.ts`, `review.test.ts`'s weight/read-through assertions dropped),
+  web unit 95/95 (7 files), social 408/408 (24 files, down 1 from 409 — `cli.test.ts`'s slot-2-specific tests
+  collapsed into their day-only equivalents). `cd social && npx tsc
+  --noEmit` clean. Generated a real week via the exact verify-block command, redirected to a scratch
+  `--output`/existing `--exclusions content/social/render-exclusions.json` (deliberately NOT the default
+  `content/social/pilot-schedule-w01.json` path, since regenerating that file is D04's job, not this one's):
+  `npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force --output <scratch> --exclusions
+  content/social/render-exclusions.json --premises-dir content/social/premises` — **7 single-slot days, every
+  one Wall**: day 1 `meditations-05-029` (marcus-aurelius, thou_wall), day 2 `peace-of-mind-17-005` (seneca,
+  reserve), day 3 `discourses-51-003` (epictetus, cascade), day 4 `discourses-58-003` (epictetus, reserve), day
+  5 `happy-life-03-003` (seneca, reserve), day 6 `discourses-53-019` (epictetus, cascade), day 7
+  `happy-life-20-005` (seneca, scene) — author mix epictetus 3/marcus-aurelius 1/seneca 3, no back-to-back
+  sub-type repeat anywhere in the sequence (verified against `content/social/premises/wall.json`'s own
+  `sub_types` field for each card). Ran the identical command a second time into a second scratch directory:
+  byte-identical output (`diff` reports no difference), confirming determinism from `--seed` survives the
+  rewrite. `content/social/pilot-schedule-w01.json`, `content/social/render-exclusions.json`, and
+  `content/social/premises/wall.json` are BYTE-UNCHANGED by this task (confirmed via `git status`) — all three
+  regenerations are D04's job.
 - [ ] D03: Delete the read-through counter — `Counter.tsx`, `counter-layout.ts`, `__tests__/counter.test.ts`,
   `__tests__/counter-corpus.test.ts`, `computePayoffCounterBox` and `COUNTER_GAP_BELOW_TEXT_PX` in
   `wall-timing.ts`, and the `counter` prop from `Wall.tsx`/`cli.ts`. It exists only to say "Card N of 48",

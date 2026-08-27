@@ -11,17 +11,14 @@
 import { writeFile } from 'node:fs/promises';
 
 /**
- * Mirrors `scripts/lib/schedule.ts`'s `RenderedFormat` union — kept as a
- * local literal type rather than an import, since `social/` is a
+ * Kept as a local literal type rather than an import, since `social/` is a
  * self-contained npm project (see T01) and does not depend on the root
  * content-pipeline package.
  *
- * Pf39c2-social-pilot-02a D01: Question, Objection and Still were deleted
- * outright — the channel is one Wall a day, drawn from the Wall pool,
- * nothing else — so this narrows to the one format the renderer can still
- * produce. `scripts/lib/schedule.ts`'s own `RenderedFormat` union still
- * nominally includes the other three (collapsing it to Wall-only is D02's
- * job); this type only describes what `social/src/cli.ts` actually writes.
+ * Pf39c2-social-pilot-02a D01 deleted Question, Objection and Still
+ * outright, and D02 deleted the read-through — the channel is one Wall a
+ * day, drawn from the Wall pool, nothing else, and `scripts/lib/schedule.ts`
+ * has no other format left either.
  */
 export type PostFormat = 'wall';
 
@@ -41,9 +38,8 @@ export interface PostMetadata {
 
 /**
  * The conventional metadata sidecar path for a rendered asset:
- * `.../wall-2026-09-01-slot1.mp4` -> `.../wall-2026-09-01-slot1.json`.
- * Swaps only the extension, so the sidecar always sits BESIDE the asset it
- * describes.
+ * `.../wall-2026-09-01.mp4` -> `.../wall-2026-09-01.json`. Swaps only the
+ * extension, so the sidecar always sits BESIDE the asset it describes.
  */
 export function postMetadataPathFor(assetPath: string): string {
 	return assetPath.replace(/\.[^./\\]+$/, '.json');

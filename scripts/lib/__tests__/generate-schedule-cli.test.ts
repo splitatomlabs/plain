@@ -130,26 +130,15 @@ describe("review gate", () => {
     expect(week2.status).toBe(0);
   });
 
-  it("carries the review note's chosen weights forward as week 2's defaults", async () => {
-    const week1 = generate(["--week", "1", "--seed", "1", "--output", outputDir, "--first-week"]);
-    expect(week1.status).toBe(0);
-
-    const template = reviewWeek(["--week", "1", "--date", "2026-08-25", "--schedule-dir", outputDir]);
-    expect(template.status).toBe(0);
-
-    const reviewPath = path.join(outputDir, reviewNoteFileName(1));
-    let content = await readFile(reviewPath, "utf-8");
-    content = content
-      .replace(/<TODO>/g, "0") // fill every remaining field with a harmless default first...
-      .replace("- Next week wall weight: 0", "- Next week wall weight: 2")
-      .replace("- Next week question weight: 0", "- Next week question weight: 9")
-      .replace("- Next week objection weight: 0", "- Next week objection weight: 3");
-    await (await import("node:fs/promises")).writeFile(reviewPath, content, "utf-8");
-
-    const week2 = generate(["--week", "2", "--seed", "1", "--output", outputDir, "--dry-run"]);
-    expect(week2.status).toBe(0);
-    expect(week2.stdout).toMatch(/wall=2, question=9, objection=3/);
-  });
+  // Pf39c2-social-pilot-02a D02: the review note used to also carry the
+  // reviewer's chosen next-week wall/question/objection weights, which
+  // `generate-schedule.ts` carried forward as that run's defaults — there is
+  // only one format left (Wall), so there is nothing left to weight, and
+  // both the note's "Next week ... weight" fields and this weight-carrying
+  // behavior are gone (see `scripts/lib/review.ts`'s own doc comment). The
+  // test that proved that carry-forward (`"carries the review note's chosen
+  // weights forward as week 2's defaults"`) is deleted, not adapted — there
+  // is no weight left to carry.
 
   // ---------------------------------------------------------------------
   // Deliberate override escape hatch.
@@ -167,19 +156,16 @@ describe("review gate", () => {
   // JSON's byte-identity — the T12/T13 determinism property must survive.
   // ---------------------------------------------------------------------
   it("produces a byte-identical schedule JSON whether or not a review note gates the run", async () => {
-    // Both runs pin the SAME explicit weights, so the review note's own
-    // (arbitrary, fillReviewNote-assigned) weight fields can't be the thing
-    // that makes the two schedules differ — the only variable under test is
-    // whether the gate is satisfied by a real filled note (A) or bypassed
-    // with --skip-review-check (B).
-    const pinnedWeights = ["--wall-weight", "7", "--question-weight", "6", "--objection-weight", "1"];
+    // Pf39c2-social-pilot-02a D02: no more weight flags to pin — the only
+    // variable under test is whether the gate is satisfied by a real filled
+    // note (A) or bypassed with --skip-review-check (B).
 
     // Run A: week 1 -> real review note -> week 2 generated normally through the gate.
     const dirA = await mkdtemp(path.join(tmpdir(), "generate-schedule-byte-a-"));
     generate(["--week", "1", "--seed", "1", "--output", dirA, "--first-week"]);
     reviewWeek(["--week", "1", "--date", "2026-08-25", "--schedule-dir", dirA]);
     await fillReviewNote(path.join(dirA, reviewNoteFileName(1)));
-    const week2A = generate(["--week", "2", "--seed", "1", "--output", dirA, ...pinnedWeights]);
+    const week2A = generate(["--week", "2", "--seed", "1", "--output", dirA]);
     expect(week2A.status).toBe(0);
 
     // Run B: identical week 1 and week 2, generated with --skip-review-check
@@ -187,7 +173,7 @@ describe("review gate", () => {
     // is the ONLY difference between the two runs.
     const dirB = await mkdtemp(path.join(tmpdir(), "generate-schedule-byte-b-"));
     generate(["--week", "1", "--seed", "1", "--output", dirB, "--first-week"]);
-    const week2B = generate(["--week", "2", "--seed", "1", "--output", dirB, "--skip-review-check", ...pinnedWeights]);
+    const week2B = generate(["--week", "2", "--seed", "1", "--output", dirB, "--skip-review-check"]);
     expect(week2B.status).toBe(0);
 
     const scheduleA = await readFile(path.join(dirA, "pilot-schedule-w02.json"), "utf-8");

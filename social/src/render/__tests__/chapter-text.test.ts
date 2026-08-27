@@ -275,7 +275,7 @@ describe('chapterEntryOffsetWords — deterministic, in range, never mid-word', 
 		expect(chapterEntryOffsetWords(3, 1)).toBe(0);
 	});
 
-	it('handles a hypothetical negative postIndex without going out of range (defensive — postIndexForSlot never actually produces one)', () => {
+	it('handles a hypothetical negative postIndex without going out of range (defensive — postIndexForDay never actually produces one)', () => {
 		const offset = chapterEntryOffsetWords(-5, 12);
 		expect(offset).toBeGreaterThanOrEqual(0);
 		expect(offset).toBeLessThan(12);

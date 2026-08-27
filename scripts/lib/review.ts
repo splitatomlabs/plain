@@ -2,13 +2,21 @@
  * T14: The weekly review step.
  *
  * The plan's whole cadence decision is "Schedule one week at a time. Review
- * retention, adjust hooks and format mix, then generate the next week." This
- * module is what makes that a real gate rather than a habit: it builds the
- * dated review-note TEMPLATE for a week (`buildReviewNoteTemplate`), and
- * parses an existing note back (`parseReviewNote`) so `scripts/generate-schedule.ts`
- * can (a) refuse to generate week N+1 until week N's note exists and is
- * actually filled in, and (b) carry the reviewer's chosen format weights
- * forward as next week's defaults.
+ * retention, adjust hooks, then generate the next week." This module is what
+ * makes that a real gate rather than a habit: it builds the dated
+ * review-note TEMPLATE for a week (`buildReviewNoteTemplate`), and parses an
+ * existing note back (`parseReviewNote`) so `scripts/generate-schedule.ts`
+ * can refuse to generate week N+1 until week N's note exists and is
+ * actually filled in.
+ *
+ * Pf39c2-social-pilot-02a D02: the note used to also carry the reviewer's
+ * chosen NEXT WEEK wall/question/objection weights, carried forward as the
+ * next run's defaults — there is only one format left (Wall), so there is
+ * nothing left to weight. The "Next week ... weight" fields and
+ * `FormatWeights`/`nextWeekWeights` are gone; the gate is now purely "did you
+ * review retention before generating the next week." The note's
+ * "Read-through position" field is also gone — the read-through itself is
+ * gone (D02).
  *
  * The note is a plain Markdown file, `content/social/pilot-review-wNN.md`,
  * written BESIDE `pilot-schedule-wNN.json` (same directory) — not merged
@@ -36,7 +44,7 @@
 
 import type { AuthorSlug } from "./constants.js";
 import type { AuthorMixEntry } from "./premises.js";
-import type { FormatWeights, WeekSchedule } from "./schedule.js";
+import type { WeekSchedule } from "./schedule.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -84,7 +92,7 @@ export interface ReviewTemplateOptions {
   week: number;
   /** `YYYY-MM-DD`, supplied by the caller — see the module doc comment. */
   date: string;
-  /** The week's own generated schedule — supplies the per-post list, combined author mix, and read-through position. */
+  /** The week's own generated schedule — supplies the per-post list and combined author mix. */
   schedule: WeekSchedule;
   /** For the note's own "Schedule file" reference line, e.g. "content/social/pilot-schedule-w01.json". */
   scheduleFilePath: string;
@@ -94,13 +102,6 @@ function formatAuthorMix(mix: Record<AuthorSlug, AuthorMixEntry>): string {
   return Object.entries(mix)
     .map(([author, m]) => `${author} ${m.count} (${(m.share * 100).toFixed(1)}%)`)
     .join(", ");
-}
-
-function readThroughPosition(schedule: WeekSchedule): string {
-  const readThroughSlots = schedule.slots.filter((s) => s.read_through);
-  if (readThroughSlots.length === 0) return "n/a (no read-through slot in this week)";
-  const last = readThroughSlots[readThroughSlots.length - 1];
-  return `${last.read_through_counter} (${schedule.read_through_book})`;
 }
 
 /**
@@ -117,12 +118,7 @@ export function buildReviewNoteTemplate(options: ReviewTemplateOptions): string 
   const { week, date, schedule, scheduleFilePath } = options;
   const p = PLACEHOLDER;
 
-  const postLines = schedule.slots
-    .map((slot) => {
-      const label = slot.read_through ? `read-through, ${slot.content.format}` : slot.content.format;
-      return `- Day ${slot.day} Slot ${slot.slot} — ${label}, ${slot.card_id}: ${p} views`;
-    })
-    .join("\n");
+  const postLines = schedule.slots.map((slot) => `- Day ${slot.day} — ${slot.content.format}, ${slot.card_id}: ${p} views`).join("\n");
 
   return `# Week ${week} Review — ${date}
 
@@ -132,7 +128,6 @@ expected from variance alone. Track maximum AND median AND follow-conversion —
 
 ## Schedule
 - Schedule file: ${scheduleFilePath}
-- Read-through position: ${readThroughPosition(schedule)}
 - Combined author mix: ${formatAuthorMix(schedule.author_mix)}
 
 ## Per-post views
@@ -156,9 +151,6 @@ ${postLines}
 
 ## Decision for next week
 <!-- Must be a deliberate choice made FROM the metrics above, not a hunch. -->
-- Next week wall weight: ${p}
-- Next week question weight: ${p}
-- Next week objection weight: ${p}
 - Next week hook changes: ${p}
 - Reason: ${p}
 `;
@@ -170,7 +162,6 @@ ${postLines}
 
 export interface ParsedReviewNote {
   scheduleFile: string | null;
-  readThroughPosition: string | null;
   combinedAuthorMix: string | null;
   median: number | null;
   maximum: number | null;
@@ -179,8 +170,6 @@ export interface ParsedReviewNote {
   criterionAEvidence: string | null;
   criterionBMet: string | null;
   criterionBEvidence: string | null;
-  /** `null` when any of the three weight fields is missing/unparseable — never a partial object. */
-  nextWeekWeights: FormatWeights | null;
   hookChanges: string | null;
   reason: string | null;
 }
@@ -215,14 +204,8 @@ function parseNumberField(content: string, label: string): number | null {
  * instead of inferring it from which fields parsed.
  */
 export function parseReviewNote(content: string): ParsedReviewNote {
-  const wall = parseNumberField(content, "Next week wall weight");
-  const question = parseNumberField(content, "Next week question weight");
-  const objection = parseNumberField(content, "Next week objection weight");
-  const nextWeekWeights = wall !== null && question !== null && objection !== null ? { wall, question, objection } : null;
-
   return {
     scheduleFile: matchLine(content, "Schedule file"),
-    readThroughPosition: matchLine(content, "Read-through position"),
     combinedAuthorMix: matchLine(content, "Combined author mix"),
     median: parseNumberField(content, "Median views \\(this week\\)"),
     maximum: parseNumberField(content, "Maximum views \\(this week\\)"),
@@ -231,7 +214,6 @@ export function parseReviewNote(content: string): ParsedReviewNote {
     criterionAEvidence: matchLine(content, "Criterion A evidence"),
     criterionBMet: matchLine(content, "Criterion B met \\(yes\\/no\\/not-yet-assessable\\)"),
     criterionBEvidence: matchLine(content, "Criterion B evidence"),
-    nextWeekWeights,
     hookChanges: matchLine(content, "Next week hook changes"),
     reason: matchLine(content, "Reason"),
   };
@@ -244,7 +226,6 @@ export function parseReviewNote(content: string): ParsedReviewNote {
 /** Every field label a real note must carry, regardless of whether it's filled in yet. */
 const REQUIRED_FIELD_LABELS = [
   "Schedule file",
-  "Read-through position",
   "Combined author mix",
   "Median views \\(this week\\)",
   "Maximum views \\(this week\\)",
@@ -253,9 +234,6 @@ const REQUIRED_FIELD_LABELS = [
   "Criterion A evidence",
   "Criterion B met \\(yes\\/no\\/not-yet-assessable\\)",
   "Criterion B evidence",
-  "Next week wall weight",
-  "Next week question weight",
-  "Next week objection weight",
   "Next week hook changes",
   "Reason",
 ];
@@ -269,7 +247,7 @@ const REQUIRED_FIELD_LABELS = [
  */
 export function isReviewNoteStructurallyValid(content: string): boolean {
   const hasEveryField = REQUIRED_FIELD_LABELS.every((label) => new RegExp(`^- ${label}: `, "m").test(content));
-  const hasPerPostRow = /^- Day \d+ Slot \d+ — .+: .+ views$/m.test(content);
+  const hasPerPostRow = /^- Day \d+ — .+: .+ views$/m.test(content);
   return hasEveryField && hasPerPostRow;
 }
 
