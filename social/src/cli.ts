@@ -47,7 +47,7 @@ import {
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
 import { loadChapterTextBlock, applyChapterEntryOffset } from './render/chapter-text.js';
-import { computeWallTiming, WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
+import { computeWallTiming, WALL_FRAMES, FPS } from './remotion/wall-timing.js';
 import { formatRunningHead } from './remotion/SourceHead.js';
 import { computeQuestionTiming } from './remotion/question-timing.js';
 import { computeObjectionTiming, OBJECTION_REPLY_LINE_COUNT } from './remotion/objection-timing.js';
@@ -444,38 +444,68 @@ function buildInputProps(plan: RenderPlan, narrationTimings?: NarrationLineTimin
 }
 
 /**
- * The Wall's one true-silence phase — the mandated 3s landing-line hold —
- * in ms. See the module doc comment.
+ * social pilot 02a U04 ("noisy scroll bed, then silence, then a slow
+ * return"): the true-silence phase is now just this — half a second, not the
+ * whole 3s landing-line hold. See `wallSilentSpans`'s own doc comment for
+ * why, and `audio/mix.ts`'s module doc comment for the shape this and
+ * `wallNoiseSpans` together produce.
+ */
+const WALL_DROP_SILENCE_MS = 500;
+
+/**
+ * The Wall's dense, unreadable NOISE phase — the entire moving-wall SCROLL,
+ * `[0, WALL_FRAMES)` — where `audio/mix.ts`'s procedurally-generated noise
+ * track plays INSTEAD of the music bed (the bed is held at its floor for
+ * this whole span; see `MixInput.noiseSpans`'s own doc comment). Starts at 0,
+ * not at some earlier "wind-up": the noise appears the instant the scroll
+ * starts, exactly as abruptly as the visual density itself does.
  *
- * social pilot 02a T15 ("THE CUT MUST BE AUDIBLE"): this used to span
- * `0 -> WALL_FRAMES + LANDING_LINE_FRAMES`, silencing the bed under the
- * moving-wall scroll too ("silence means silence, the bed included"). That
- * made the first 5.5s of every Wall dead air and the hard cut a silent
- * event. Per the plan's decision, the bed now plays at nominal level under
- * the scroll, hard-stops on the cut frame (`mix.ts`'s `bedEnvelope`/
- * `intervalsToPoints` — a transition INTO a silent span is never a scripted
- * duck), sits at the floor for the landing line ALONE, and returns under the
- * rest lines. This span therefore starts at `WALL_FRAMES` (the cut frame,
- * see `wall-timing.ts`'s `computeWallTiming` — `landingLine.startFrame` is
- * always `wall.endFrame`, i.e. `WALL_FRAMES`), not at 0.
+ * social pilot 02a U04 (replacing T15's "the bed plays at nominal level under
+ * the scroll" — see `wallSilentSpans`'s doc comment for that history): the
+ * user's own request was to replace the SOOTHING bed under the scroll with
+ * noise matching the visual's density, not to keep the bed audible there.
+ */
+export function wallNoiseSpans(): TimeSpan[] {
+	const wallEndMs = (WALL_FRAMES / FPS) * 1000;
+	return [{ startMs: 0, endMs: wallEndMs }];
+}
+
+/**
+ * The Wall's one true-silence phase — social pilot 02a U04 narrowed this
+ * from the whole 3s landing-line hold down to exactly `WALL_DROP_SILENCE_MS`
+ * (0.5s), right after the cut. See the module doc comment.
  *
- * Still deliberately uses the FIXED `WALL_FRAMES + LANDING_LINE_FRAMES` end
- * boundary rather than `computeWallTiming(...).landingLine.endFrame`: when a
- * card has no plain-passage lines left after the landing line,
- * `computeWallTiming` extends `landingLine.endFrame` to absorb the 15s
- * duration-floor pad (see `duration-bounds.ts`'s `padToMinimumDuration`) so
- * the PICTURE keeps holding the landing line for the full post. That padding
- * is not part of the documented "silent, motionless" 3s window — it exists
- * purely to clear the MP4 duration floor. Silencing the bed for that padding
- * too meant the whole clip (bed included) went silent for any 0-plain-line
- * Wall card, which ffmpeg's loudnorm then measures as digital silence
- * (`measured_I: -inf`) on its first pass (see F02,
- * `plans/Pf39c2-social-pilot-02.md`).
+ * HISTORY: social pilot 02a T15 ("THE CUT MUST BE AUDIBLE") first shrank this
+ * from `0 -> WALL_FRAMES + LANDING_LINE_FRAMES` (silencing the bed under the
+ * moving-wall scroll too) down to the landing line alone, with the bed
+ * audible at nominal level under the scroll and hard-stopping on the cut
+ * frame. U04 (this task) went further, per the user's own request ("a very
+ * noisy background sound for the scrolling text, then cut to silence for 0.5
+ * seconds then fade in the current background sound"): the scroll no longer
+ * carries the bed at all — see `wallNoiseSpans` — so the bed's own floor
+ * window now spans the noise phase too (`audio/mix.ts`'s `mix()` unions
+ * `silentSpans` with `noiseSpans` for the bed specifically), but the OUTPUT
+ * itself (bed AND the noise track AND narration) is only genuinely silent
+ * for this narrower `WALL_DROP_SILENCE_MS` window — the noise track fills
+ * the rest of the old landing-line-hold's front end, and the bed's own slow
+ * `BED_RETURN_FADE_MS` fade-in fills the back end (`bedEnvelope`'s doc
+ * comment), landing back at nominal exactly when the landing line ends.
+ *
+ * Still starts at `WALL_FRAMES` (the cut frame, see `wall-timing.ts`'s
+ * `computeWallTiming` — `landingLine.startFrame` is always `wall.endFrame`,
+ * i.e. `WALL_FRAMES`) — the hard cut from noise into true silence is the
+ * exact same frame T15 hard-cut the bed on, unchanged.
+ *
+ * Deliberately does NOT extend to `WALL_FRAMES + LANDING_LINE_FRAMES` the way
+ * it used to: that fixed boundary existed so a 0-plain-line Wall card's
+ * duration-floor padding never went silent (see F02,
+ * `plans/Pf39c2-social-pilot-02.md`) — this window is now short enough
+ * (0.5s, always well inside the landing line's fixed 3s hold, never reaching
+ * into any padding) that this concern no longer applies to it at all.
  */
 export function wallSilentSpans(): TimeSpan[] {
 	const wallEndMs = (WALL_FRAMES / FPS) * 1000;
-	const landingLineEndMs = ((WALL_FRAMES + LANDING_LINE_FRAMES) / FPS) * 1000;
-	return [{ startMs: wallEndMs, endMs: landingLineEndMs }];
+	return [{ startMs: wallEndMs, endMs: wallEndMs + WALL_DROP_SILENCE_MS }];
 }
 
 // ---------------------------------------------------------------------------
@@ -652,12 +682,14 @@ async function renderCommand(args: RenderArgs): Promise<void> {
 		console.log(`Mixing audio (bed: ${plan.bedId})...`);
 		const mixedAudioPath = path.join(workDir, 'mixed.m4a');
 		const silentSpans = plan.formatPlan.format === 'wall' ? wallSilentSpans() : [];
+		const noiseSpans = plan.formatPlan.format === 'wall' ? wallNoiseSpans() : [];
 		await mix({
 			bedPath: bedPath(plan.bedId),
 			narrationPath: narrationAudioPath,
 			durationMs,
 			narrationSpans,
 			silentSpans,
+			noiseSpans,
 			outPath: mixedAudioPath
 		});
 

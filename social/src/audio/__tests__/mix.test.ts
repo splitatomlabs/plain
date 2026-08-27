@@ -21,6 +21,12 @@ import {
 	type VolumePoint
 } from '../mix.js';
 
+/** Mirrors The Wall's real audio shape (social pilot 02a U04): dense noise
+ * under the SCROLL, a hard cut into 0.5s of true silence, then the bed's own
+ * slow fade back in. See `cli.ts`'s `wallNoiseSpans`/`wallSilentSpans`. */
+const WALL_CUT_MS = 2500;
+const WALL_TRUE_SILENCE_END_MS = 3000;
+
 const MIX_TIMEOUT_MS = 30_000;
 
 interface Probe {
@@ -275,24 +281,30 @@ describe('mix', () => {
 	 * `renderBedTrack`, ffmpeg only re-evaluates the volume expression once
 	 * per upstream FLAC frame (~90-100ms against `bed-05-g-sus4.flac`), so a
 	 * transition landing mid-frame is held at the stale PREVIOUS gain for the
-	 * rest of that frame — the bed's hard stop at the 2.5s cut doesn't
-	 * actually land until ~2.6s, a full 100ms late. This mirrors the Wall's
-	 * real shape (`cli.ts`'s `wallSilentSpans`): bed audible under the scroll,
-	 * a silentSpan starting exactly at the cut frame. Sampling close to the
-	 * edge is deliberate — the existing "silence is honoured" test above
-	 * samples a full second inside its span and would pass whether or not
+	 * rest of that frame — a hard cut into a mid-track `silentSpans` doesn't
+	 * actually land until ~100ms late. Sampling close to the edge is
+	 * deliberate — the existing "silence is honoured" test above samples a
+	 * full second inside its span and would pass whether or not
 	 * `asetnsamples` is present.
 	 *
-	 * The "after cut" window starts at 2.55s, not 2.6s: measured empirically
-	 * (through this exact `mix()` pipeline — amix + two-pass loudnorm + AAC
-	 * encode, not the raw bed track alone), removing `asetnsamples` delays the
-	 * cut into audibility through the [2.55s, 2.6s) window (measured ~-14dB)
-	 * but the stale frame has already resolved to silence by 2.6s (measured
-	 * ~-73dB either way) in this pipeline — so a window starting at 2.6s does
-	 * NOT discriminate the regression here, even though the defect is real
-	 * and clearly visible one video frame earlier.
+	 * RETARGETED, NOT REMOVED, by U04: this no longer mirrors The Wall's own
+	 * real shape — U04 replaced "the bed plays under the scroll" with "dense
+	 * NOISE plays under the scroll, the bed stays silent throughout" (see
+	 * `cli.ts`'s `wallNoiseSpans`/`wallSilentSpans`), so the bed itself no
+	 * longer has any mid-track entry into silence in a real Wall render. This
+	 * test is kept anyway, unchanged in shape (bed audible, then a mid-track
+	 * `silentSpans` hard-stop), as a GENERIC regression guard on
+	 * `renderBedTrack`'s own `asetnsamples` — still a real, supported, tested
+	 * `mix()` capability (`bedEnvelope`'s hard-stop-into-FLOOR path), and
+	 * VERIFIED load-bearing directly: temporarily removing `asetnsamples`
+	 * from `renderBedTrack` turns this test red (measured
+	 * `meanVolumeDb(out, 2.55, 5.4)` at -31.8dB, not the required <-60dB);
+	 * restoring it returns -73.1dB. Without a tight-window test SOMEWHERE
+	 * on the bed's own hard-stop path, nothing in this file would catch that
+	 * regression — the noise-track test below, which now owns The Wall's
+	 * real cut, provably does NOT catch it (see that test's own doc comment).
 	 */
-	describe('the cut is audible: the bed hard-stops within ~100ms of the cut frame (T15/R05)', () => {
+	describe('the cut is audible: the bed hard-stops within ~100ms of a mid-track silentSpans (T15/R05, generic regression guard)', () => {
 		const DURATION_SEC = 8;
 		let outPath: string;
 
@@ -303,9 +315,7 @@ describe('mix', () => {
 				narrationPath: undefined,
 				durationMs: DURATION_SEC * 1000,
 				narrationSpans: [],
-				// Mirrors wallSilentSpans: the cut lands at 2.5s, silence holds
-				// through the landing line to 5.5s.
-				silentSpans: [{ startMs: 2500, endMs: 5500 }],
+				silentSpans: [{ startMs: WALL_CUT_MS, endMs: 5500 }],
 				outPath
 			});
 		}, MIX_TIMEOUT_MS);
@@ -315,6 +325,59 @@ describe('mix', () => {
 			() => {
 				expect(meanVolumeDb(outPath, 0.5, 2.4)).toBeGreaterThan(-30);
 				expect(meanVolumeDb(outPath, 2.55, 5.4)).toBeLessThan(-60);
+			},
+			MIX_TIMEOUT_MS
+		);
+	});
+
+	/**
+	 * U04 (`plans/Pf39c2-social-pilot-02a.md`): The Wall's REAL cut is now on
+	 * the NOISE track, not the bed (see the test above's doc comment) — this
+	 * verifies the actual output shape: noise clearly audible under the
+	 * "scroll," a hard cut, then true silence through the narrow
+	 * `[WALL_CUT_MS, WALL_TRUE_SILENCE_END_MS)` window (0.5s), before the
+	 * bed's own slow `BED_RETURN_FADE_MS` fade-in would raise the floor
+	 * again.
+	 *
+	 * HONESTLY DOES NOT PROVE `asetnsamples` IS LOAD-BEARING HERE, and says so
+	 * rather than pretending otherwise: `anoisesrc` is an in-filtergraph
+	 * SOURCE filter (not a file decode), and its own default frame size
+	 * (`nb_samples`, 1024 samples = ~21ms at 48kHz) is already well under the
+	 * ~90-100ms FLAC-block problem `asetnsamples` exists to fix — verified
+	 * directly: temporarily removing `asetnsamples` from `renderNoiseTrack`
+	 * left this exact test GREEN (no measurable change to either assertion).
+	 * `asetnsamples` is kept on the noise chain anyway, for consistency with
+	 * every other envelope-driven track in this file and as a defensive
+	 * margin against any future change to how the noise signal is produced
+	 * (e.g. `nb_samples` changing, or the noise ever being pre-rendered to a
+	 * file and decoded back in) — just not because this test would catch its
+	 * removal today. The test above this one is what actually keeps
+	 * `asetnsamples` honest.
+	 */
+	describe("the cut is audible: the noise track hard-stops at the Wall's real cut point (U04)", () => {
+		const DURATION_SEC = 8;
+		let outPath: string;
+
+		beforeAll(async () => {
+			outPath = path.join(workDir, 'hard-stop-mix-noise.m4a');
+			await mix({
+				bedPath: bedPath('bed-05-g-sus4'),
+				narrationPath: undefined,
+				durationMs: DURATION_SEC * 1000,
+				narrationSpans: [],
+				// Mirrors the real Wall shape: noise under the scroll, a hard
+				// cut into 0.5s of true silence at WALL_CUT_MS.
+				noiseSpans: [{ startMs: 0, endMs: WALL_CUT_MS }],
+				silentSpans: [{ startMs: WALL_CUT_MS, endMs: WALL_TRUE_SILENCE_END_MS }],
+				outPath
+			});
+		}, MIX_TIMEOUT_MS);
+
+		it(
+			'the noise is clearly audible just before the cut, and near-silent within 50ms after it',
+			() => {
+				expect(meanVolumeDb(outPath, 0.5, 2.4)).toBeGreaterThan(-30);
+				expect(meanVolumeDb(outPath, 2.55, 2.95)).toBeLessThan(-60);
 			},
 			MIX_TIMEOUT_MS
 		);

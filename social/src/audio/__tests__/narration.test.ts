@@ -52,8 +52,8 @@ import { fileURLToPath } from 'node:url';
 
 import type { AuthorSlug } from '../../render/theme.js';
 import type { WallPlan, QuestionPlan, ObjectionPlan, StillPlan } from '../../cli.js';
-import { wallSilentSpans, narrationPlan } from '../../cli.js';
-import { FPS, WALL_FRAMES, LANDING_LINE_FRAMES, computeWallTiming } from '../../remotion/wall-timing.js';
+import { wallSilentSpans, wallNoiseSpans, narrationPlan } from '../../cli.js';
+import { FPS, WALL_FRAMES, computeWallTiming } from '../../remotion/wall-timing.js';
 import { computeQuestionTiming, ANSWER_FRAMES } from '../../remotion/question-timing.js';
 import { computeObjectionTiming, OBJECTION_REPLY_LINE_COUNT, OBJECTION_REPLY_LINE_FRAMES } from '../../remotion/objection-timing.js';
 import { formatRunningHead, PAYOFF_LABEL_TEXT } from '../../remotion/SourceHead.js';
@@ -195,30 +195,39 @@ function meanVolumeDb(filePath: string, startSec: number, endSec: number): numbe
 }
 
 // ---------------------------------------------------------------------------
-// 1. wallSilentSpans — the landing line alone (RED until T15)
+// 1. wallSilentSpans/wallNoiseSpans — U04's "noise, then 0.5s of true
+//    silence, then the bed's own slow return" shape
 // ---------------------------------------------------------------------------
 
-describe('wallSilentSpans', () => {
+describe('wallSilentSpans / wallNoiseSpans', () => {
 	const wallEndMs = (WALL_FRAMES / FPS) * 1000;
-	const landingLineEndMs = ((WALL_FRAMES + LANDING_LINE_FRAMES) / FPS) * 1000;
 
 	/**
-	 * T15 (not this task) is what makes this pass. Today `wallSilentSpans()`
-	 * still spans the FULL `0 -> WALL_FRAMES + LANDING_LINE_FRAMES` window —
-	 * the moving-wall scroll included — per the plan's own defect writeup
-	 * ("wallSilentSpans() spans 0 -> WALL_FRAMES + LANDING_LINE_FRAMES").
-	 * The target shape asserted here starts the silent span where the wall
-	 * scroll ENDS (`wallEndMs`), covering only the 3s landing-line hold —
-	 * "the beat of silence IS the drop," never the scroll, which is
-	 * supposed to carry the bed at nominal level once T15 lands.
+	 * U04 (`plans/Pf39c2-social-pilot-02a.md`) narrowed this from T15's "the
+	 * landing line ALONE" (2.5s -> 5.5s) down to just the 0.5s of TRUE
+	 * silence right after the cut — the rest of the old landing-line-hold
+	 * window is no longer silent: `wallNoiseSpans` carries the scroll instead
+	 * of the bed, and the bed's own slow `BED_RETURN_FADE_MS` fade-in
+	 * (`audio/mix.ts`'s `bedEnvelope`) fills the back end, landing at nominal
+	 * exactly when the landing line ends.
 	 */
-	it('T15: covers the landing line ALONE — starts where the wall scroll ends, not at 0', () => {
-		expect(wallSilentSpans()).toEqual([{ startMs: wallEndMs, endMs: landingLineEndMs }]);
+	it('wallSilentSpans: covers only 0.5s of TRUE silence, starting where the wall scroll ends', () => {
+		expect(wallSilentSpans()).toEqual([{ startMs: wallEndMs, endMs: wallEndMs + 500 }]);
 	});
 
 	it('sanity: the silent span never starts after it ends, whatever its current bounds are', () => {
 		const [span] = wallSilentSpans();
 		expect(span.endMs).toBeGreaterThan(span.startMs);
+	});
+
+	/**
+	 * U04: the moving-wall SCROLL phase (`[0, wallEndMs)`) is where the dense,
+	 * procedural noise track plays instead of the bed — see `audio/mix.ts`'s
+	 * `MixInput.noiseSpans`.
+	 */
+	it('wallNoiseSpans: covers the whole scroll phase, from 0 to where wallSilentSpans begins', () => {
+		expect(wallNoiseSpans()).toEqual([{ startMs: 0, endMs: wallEndMs }]);
+		expect(wallNoiseSpans()[0].endMs).toBe(wallSilentSpans()[0].startMs);
 	});
 });
 
@@ -366,6 +375,9 @@ describe('a Wall whose plain_english is a single sentence (no rest lines) still 
 				durationMs,
 				narrationSpans: [],
 				silentSpans: wallSilentSpans(),
+				// U04: matches cli.ts's real call for a Wall exactly — noise
+				// under the scroll, true silence after the cut.
+				noiseSpans: wallNoiseSpans(),
 				outPath
 			});
 
