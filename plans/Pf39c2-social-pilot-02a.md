@@ -1667,10 +1667,120 @@ frame may name the product.**
   read-through slice keeps all 30 Walls with the end card included; re-measure and record p50/p75/max.
   DEFERRED: this task existed ONLY to make room for U05's end card. With U05 deferred the 40s ceiling is
   still correct and raising it would be unmotivated churn. Revisit together with U05, never separately.
-- [ ] U07: Re-render week 1 and re-measure — the U01-U06 changes alter geometry, audio and duration together,
+- [x] U07 (DONE 2026-08-27): Re-render week 1 and re-measure — the U01-U06 changes alter geometry, audio and duration together,
   so the T20 integration pass must be redone. Acceptance: all 14 render; ffprobe confirms the profile;
   durations inside 15s/59s and Walls inside the UNCHANGED 40s ceiling (U06 deferred); frames at 0.0s / cut /
   payoff show the intended result; `volumedetect` confirms U04's shape. Then a fresh phone review.
+  DONE: ran the plan's verify block exactly. `npm test`: 819 pipeline + 95 web unit + 599 social, all green.
+  `npx tsx social/scripts/write-exclusions.ts --date 2026-08-26` (byte-identical to the already-committed
+  artifact — no diff): Wall 685/896 pass, Question 48/88, Objection 27/59, read-through (meditations bk2/3)
+  **30 Wall / 18 Still** — the plan's own headline figure. `npx tsx scripts/generate-schedule.ts --week 1
+  --seed 42 --first-week --force` (also byte-identical to the committed schedule): **format counts — wall 8,
+  question 4, objection 0, still 2** (0 Objection this week is a pool-weighting outcome, not a bug — U02's
+  Objection counter-move is unexercised by week 1's actual schedule, though it was already verified directly
+  against `discourses-53-011` in U02's own task). Author mix: marcus-aurelius 57.1%, seneca 28.6%, epictetus
+  14.3%.
+  Rendered all 14 posts (`for d in 01..07; for s in 1 2: cli.ts render --date 2026-09-$d --slot $s`) — **all 14
+  succeeded**, no failures, nothing to diagnose.
+
+  **Format mix and durations (all 14):**
+  | day/slot | format | card | duration | bed |
+  |---|---|---|---|---|
+  | 1/1 | wall | meditations-02-001 | 20.501s | bed-01-c-major9 |
+  | 1/2 | wall | peace-of-mind-17-005 | 35.520s | bed-02-d-minor9 |
+  | 2/1 | still | meditations-02-002 | 15.018s | bed-03-e-minor7 |
+  | 2/2 | question | meditations-11-005 | 15.018s | bed-04-f-major7 |
+  | 3/1 | wall | meditations-02-003 | 20.501s | bed-05-g-sus4 |
+  | 3/2 | question | discourses-18-001 | 15.018s | bed-06-a-minor |
+  | 4/1 | wall | meditations-02-004 | 15.018s | bed-01-c-major9 |
+  | 4/2 | question | on-anger-03-108 | 15.018s | bed-02-d-minor9 |
+  | 5/1 | still | meditations-02-005 | 15.018s | bed-03-e-minor7 |
+  | 5/2 | wall | on-anger-02-100 | 38.506s | bed-04-f-major7 |
+  | 6/1 | wall | meditations-02-006 | 23.509s | bed-05-g-sus4 |
+  | 6/2 | wall | on-anger-01-027 | 23.509s | bed-06-a-minor |
+  | 7/1 | wall | meditations-02-007 | 15.018s | bed-01-c-major9 |
+  | 7/2 | question | discourses-64-006 | 15.018s | bed-02-d-minor9 |
+
+  All 14 durations fall inside **[15.018s, 38.506s]** — comfortably inside the 15s/59s global floor/ceiling.
+  All 8 Walls fall inside **[15.018s, 38.506s]**, comfortably under the UNCHANGED 40s ceiling (U06 stayed
+  deferred, as directed — no ceiling change made or needed).
+
+  **ffprobe profile (`ffprobe -v error -show_streams`, run per-file as T20 did):** all 14 files identically
+  report `codec_name=h264 profile=High level=40 pix_fmt=yuv420p width=1080 height=1920 r_frame_rate=30/1` on
+  the video stream and `codec_name=aac profile=LC sample_rate=48000 channels=2` on the audio stream — the full
+  house profile (H.264 High/L4.0, yuv420p, 1080x1920, 30fps; AAC-LC 48kHz stereo) confirmed on every post, not
+  just one.
+
+  **Audio — U04+U08's babble/silence/return shape, spot-checked on THREE different Walls with three different
+  beds** (not just the one card previously measured), by extracting each MP4's audio to PCM (`ffmpeg -vn
+  -acodec pcm_s16le`) and computing RMS-dB in fixed windows directly — U08 already found naive `volumedetect`
+  against the muxed MP4 misleading (AAC priming shifts short seeks), so this task used the same corrected
+  method rather than repeat that mistake:
+
+  | window | wall-2026-09-01-slot1 (bed-01) | wall-2026-09-05-slot2 (bed-04) | wall-2026-09-06-slot1 (bed-05) |
+  |---|---|---|---|
+  | scroll (babble, 0-2.4s) | -18.1 to -18.6 dB | -19.2 to -19.7 dB | -20.5 to -21.0 dB |
+  | cut ramp (2.5-2.55s) | -31.0 dB | -32.1 dB | -33.3 dB |
+  | true silence floor (2.55-3.0s) | **-70.7 dB** | **-74.1 dB** | **-73.0 dB** |
+  | bed return begins (3.0-3.5s) | -31.2 dB | -35.2 dB | -33.6 dB |
+  | bed rising (3.5-4.0s) | -23.1 dB | -26.2 dB | -25.1 dB |
+  | bed near steady (5.0-5.5s) | -14.0 dB | -15.5 dB | -15.7 dB |
+  | bed steady-state (6-7s) | -13.6 dB | -14.3 dB | -14.7 dB |
+
+  All three: babble across the whole scroll at a comparable, non-silent level (the small ~1-2dB per-post
+  spread is expected — the final loudnorm pass normalizes the WHOLE mix, and different beds/durations pull
+  overall gain slightly differently; the raw noise construction itself is seed-fixed and untouched by this
+  task); a genuine floor (all three ≤ -70.7dB, i.e. true silence, not just "quiet") across 2.55-3.0s; then a
+  smooth, monotonic rise to the bed's own steady-state level (~-14 to -15dB) by ~5.5-6s — exactly U04/U08's
+  documented shape, confirmed across a full week's worth of renders and three different musical beds, not
+  just the single card measured in U04/U08's own tasks.
+
+  **Frame observations** (all read directly, not inferred — `ffmpeg -vf select=... -update 1 -frames:v 1`):
+  - **Wall frame 0** (`wall-2026-09-01-slot1`, meditations-02-001): dense 44px Literata body text under the
+    running head "MARCUS AURELIUS · MEDITATIONS, BOOK 2", which sits on a visibly tinted warm-grey plate
+    (`TAG_BACKGROUND`) with a clean hairline rule (`BORDER`) along its lower edge — U01 confirmed. No numeral
+    anywhere in frame, confirming T17's rotation stays retired.
+  - **Wall frame 74** (last wall frame, same post): still mid-scroll, dense archaic text, same running head,
+    text has visibly moved from frame 0 (confirming the scroll animates, not a static crop).
+  - **Wall frame 75** (first payoff frame, same post): "In plain English" renders at the larger 38px label
+    size (U03), payoff sentence ("There is only a certain amount of time given to you.") at ~81-88px, and
+    **"Card 1 of 48" renders horizontally centred BELOW the payoff text**, not top-left (U02) — matches every
+    documented acceptance criterion at once. A later payoff frame on the same post (second rest line, "If you
+    don't use it to calm the troubles of your soul...") shows the counter still correctly centred below the
+    new, differently-wrapped text, i.e. the per-line `computePayoffCounterBox` recomputation holds across
+    multiple lines within one post, not just the first.
+  - **A second Wall** (`wall-2026-09-05-slot2`), frame 75: same framing grammar, different payoff text ("Some
+    angry people, as Sextius points out, have been helped by looking in a mirror.") and **no counter at all**
+    — correct, since this post (`on-anger-02-100`) is a scored-pool Wall, not a read-through slot, and the
+    counter only ever renders for read-through cards.
+  - **A third Wall** (`wall-2026-09-06-slot1`, meditations-02-006), frame 0: different opening text from
+    `meditations-02-001`'s frame 0 even though it's the same book/chapter — confirms T16's mid-chapter-entry
+    variation is genuinely varying frame 0 across posts, not accidentally identical.
+  - **Question** (`question-2026-09-02-slot2`, meditations-11-005): mid-archaic frame shows the identical
+    tinted-plate running head treatment as Wall (U01 applies uniformly across formats); last frame (the
+    answer, "Then I have gained from it.") shows the 38px payoff label with **no counter** — correct, since
+    this Question slot is not a read-through card either.
+  - **Objection**: week 1's actual schedule has **zero** Objection slots this run (a pool-weighting outcome
+    of this seed, not a defect — `format_counts` reports `objection: 0`), so there is no in-week Objection
+    frame to inspect here. U01/U02/U03's own verification already covered Objection directly against
+    `discourses-53-011` (a week-02 fixture schedule), and nothing in this task's diff touches Objection's own
+    code path, so this is not treated as a gap.
+  - **Still** (`still-2026-09-02-slot1`, meditations-02-002): confirms U02's deliberate exception — "Card 2 of
+    48" renders **top-left**, unmoved, while the tinted payoff-label plate sits in its usual top slot; visually
+    this reads as acceptable rather than broken, because the full-passage Still text already runs from just
+    under the plate to deep in the lower two-thirds of the frame, leaving no safe below-text position for any
+    counter — exactly the reasoning U02 recorded for keeping this one exception.
+
+  **Recommended sample to hand the user: `social/out/wall-2026-09-01-slot1.mp4`.** It is card 1 of the
+  read-through (so the counter reads "Card 1 of 48," an intuitive starting point), a moderate 20.5s (not the
+  38.5s outlier), and every frame/audio measurement above was captured directly against this exact file —
+  tinted framing plate, no numeral, 38px payoff label, counter centred below text on two different payoff
+  lines, and the full babble → true-silence → slow-bed-return audio arc, all in one post.
+
+  Left all 14 rendered MP4s (plus their `-feed.jpg` and `.json` sidecars) in `social/out/` (gitignored), per
+  instruction, for the user's own phone review. `content/social/render-exclusions.json` and
+  `pilot-schedule-w01.json` needed no changes (both already matched what T08's prior regeneration produced —
+  confirmed via `git diff`, zero delta).
 
 - [x] U08 (DONE 2026-08-27): Make the scroll noise sound like PEOPLE TALKING — `social/src/audio/mix.ts` (user, 2026-08-27:
   "The noise over the wall should sound like people talking"). U04 shipped band-limited pink noise; replace
