@@ -1,37 +1,20 @@
 {
   "week": 1,
   "seed": 42,
-  "weights": {
-    "wall": 7,
-    "question": 6,
-    "objection": 1
-  },
-  "read_through_book": "meditations",
-  "read_through_chapters": [
-    "book-02",
-    "book-03"
-  ],
-  "read_through_format": "dynamic",
-  "read_through_total": 48,
-  "max_objection_per_week": 1,
   "slots": [
     {
       "day": 1,
-      "slot": 1,
-      "card_id": "meditations-02-001",
+      "card_id": "meditations-05-029",
       "book_slug": "meditations",
       "author_slug": "marcus-aurelius",
       "content": {
         "format": "wall",
-        "original_excerpt": "Remember how long thou hast already put off these things, and how often a certain day and hour as it were, having been set unto thee by the gods, thou hast neglected it. It is high time for thee to understand the true nature both of the world, whereof thou art a part; and of that Lord and Governor of the world, from whom, as a channel from the spring, thou thyself didst flow: and that there is but a certain limit of time appointed unto thee, which if thou shalt not make use of to calm and allay the many distempers of thy soul, it will pass away and thou with it, and never after return.",
-        "landing_line": "There is only a certain amount of time given to you."
-      },
-      "read_through": true,
-      "read_through_counter": "Card 1 of 48"
+        "original_excerpt": "Again, that which everything is made for, he is also made unto that, and cannot but naturally incline unto it. That which anything doth naturally incline unto, therein is his end. Wherein the end of everything doth consist, therein also doth his good and benefit consist. Society therefore is the proper good of a rational creature. For that we are made for society, it hath long since been demonstrated. Or can any man make any question of this, that whatsoever is naturally worse and inferior, is ordinarily subordinated to that which is better? and that those things that are best, are made one for another? And those things that have souls, are better than those that have none? and of those that have, those best that have rational souls?",
+        "landing_line": "Things with souls are better than things without souls."
+      }
     },
     {
-      "day": 1,
-      "slot": 2,
+      "day": 2,
       "card_id": "peace-of-mind-17-005",
       "book_slug": "peace-of-mind",
       "author_slug": "seneca",
@@ -39,200 +22,77 @@
         "format": "wall",
         "original_excerpt": "We must not force crops from rich fields, for an unbroken course of heavy crops will soon exhaust their fertility, and so also the liveliness of our minds will be destroyed by unceasing labour, but they will recover their strength after a short period of rest and relief: for continuous toil produces a sort of numbness and sluggishness. Men would not be so eager for this, if play and amusement did not possess natural attractions for them, although constant indulgence in them takes away all gravity and all strength from the mind: for sleep, also, is necessary for our refreshment, yet if you prolong it for days and nights together it will become death. There is a great difference between slackening your hold of a thing and letting it go.",
         "landing_line": "You can't force crops from rich soil forever."
-      },
-      "read_through": false,
-      "read_through_counter": null
-    },
-    {
-      "day": 2,
-      "slot": 1,
-      "card_id": "meditations-02-002",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "content": {
-        "format": "still",
-        "text": "Make it your constant focus as a Roman and as a human being to do whatever you're doing with real seriousness, natural kindness, honesty, and fairness. Let go of all other worries and thoughts that clutter your mind. You can do this if you approach every action as if it were your last. Be free from vanity, from emotional reactions that go against reason, from pretense, from selfishness, and from complaining about what fate or God has given you. You can see that the things needed to live well and to live like the gods intended are not many. The gods ask nothing more from anyone who keeps and follows these simple things."
-      },
-      "read_through": true,
-      "read_through_counter": "Card 2 of 48"
-    },
-    {
-      "day": 2,
-      "slot": 2,
-      "card_id": "meditations-11-005",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "content": {
-        "format": "question",
-        "question": "Have I done anything kind?",
-        "answer": "Then I have gained from it."
-      },
-      "read_through": false,
-      "read_through_counter": null
+      }
     },
     {
       "day": 3,
-      "slot": 1,
-      "card_id": "meditations-02-003",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "Do, soul, do; abuse and contemn thyself; yet a while and the time for thee to respect thyself, will be at an end. Every man's happiness depends from himself, but behold thy life is almost at an end, whiles affording thyself no respect, thou dost make thy happiness to consist in the souls, and conceits of other men.",
-        "landing_line": "You're letting your happiness depend on what other people think and say."
-      },
-      "read_through": true,
-      "read_through_counter": "Card 3 of 48"
-    },
-    {
-      "day": 3,
-      "slot": 2,
-      "card_id": "discourses-18-001",
+      "card_id": "discourses-51-003",
       "book_slug": "discourses",
       "author_slug": "epictetus",
       "content": {
-        "format": "question",
-        "question": "What makes something good?",
-        "answer": "A certain kind of will."
-      },
-      "read_through": false,
-      "read_through_counter": null
+        "format": "wall",
+        "original_excerpt": "Well then, even if we have renounced the contest in this matter (for good fortune and happiness), no man hinders us from renewing the combat again, and we are not compelled to wait for another four years that the games at Olympia may come again; but as soon as you have recovered and restored yourself, and employ the same zeal, you may renew the combat again; and if again you renounce it, you may again renew it; and if you once gain the victory, you are like him who has never renounced the combat. Only do not through a habit of doing the same thing (renouncing the combat), begin to do it with pleasure, and then like a bad athlete go about after being conquered in all the circuit of the games like quails who have run away.",
+        "landing_line": "No one stops you from starting the fight again."
+      }
     },
     {
       "day": 4,
-      "slot": 1,
-      "card_id": "meditations-02-004",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "Why should any of these things that happen externally, so much distract thee? Give thyself leisure to learn some good thing, and cease roving and wandering to and fro. Thou must also take heed of another kind of wandering, for they are idle in their actions, who toil and labour in this life, and have no certain scope to which to direct all their motions, and desires.",
-        "landing_line": "You must also watch out for another kind of wandering."
-      },
-      "read_through": true,
-      "read_through_counter": "Card 4 of 48"
-    },
-    {
-      "day": 4,
-      "slot": 2,
-      "card_id": "on-anger-03-108",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "content": {
-        "format": "question",
-        "question": "Someone has insulted you?",
-        "answer": "It's probably not worse than what happened to the Stoic philosopher Diogenes."
-      },
-      "read_through": false,
-      "read_through_counter": null
-    },
-    {
-      "day": 5,
-      "slot": 1,
-      "card_id": "meditations-02-005",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "content": {
-        "format": "still",
-        "text": "People who don't pay attention to their own inner state are rarely happy. Those who don't use reason to guide their thoughts and feelings will always be miserable.\n\nAlways keep these things in mind: What is the nature of the whole universe? What is my own nature? How do I fit into the bigger picture? What kind of part am I in what kind of whole? Remember that no one can stop you from acting and speaking in ways that match your true nature as part of this universe."
-      },
-      "read_through": true,
-      "read_through_counter": "Card 5 of 48"
-    },
-    {
-      "day": 5,
-      "slot": 2,
-      "card_id": "on-anger-02-100",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "Some angry people, as Sextius remarks, have been benefited by looking at the glass: they have been struck by so great an alteration in their own appearance: they have been, as it were, brought into their own presence and have not recognized themselves: yet how small a part of the real hideousness of anger did that reflected image in the mirror reproduce? Could the mind be displayed or made to appear through any substance, we should be confounded when we beheld how black and stained, how agitated, distorted, and swollen it looked: even at present it is very ugly when seen through all the screens of blood, bones, and so forth: what would it be, were it displayed uncovered? You say, that you do not believe that any one was ever scared out of anger by a mirror: and why not? Because when he came to the mirror to change his mind, he had changed it already: to angry men no face looks fairer than one that is fierce and savage and such as they wish to look like.",
-        "landing_line": "Some angry people, as Sextius points out, have been helped by looking in a mirror."
-      },
-      "read_through": false,
-      "read_through_counter": null
-    },
-    {
-      "day": 6,
-      "slot": 1,
-      "card_id": "meditations-02-006",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "Theophrastus, where he compares sin with sin (as after a vulgar sense such things I grant may be compared:) says well and like a philosopher, that those sins are greater which are committed through lust, than those which are committed through anger. For he that is angry seems with a kind of grief and close contraction of himself, to turn away from reason; but he that sins through lust, being overcome by pleasure, doth in his very sin bewray a more impotent, and unmanlike disposition. Well then and like a philosopher doth he say, that he of the two is the more to be condemned, that sins with pleasure, than he that sins with grief. For indeed this latter may seem first to have been wronged, and so in some manner through grief thereof to have been forced to be angry, whereas he who through lust doth commit anything, did of himself merely resolve upon that action.",
-        "landing_line": "Theophrastus compares different types of wrongdoing."
-      },
-      "read_through": true,
-      "read_through_counter": "Card 6 of 48"
-    },
-    {
-      "day": 6,
-      "slot": 2,
-      "card_id": "on-anger-01-027",
-      "book_slug": "on-anger",
-      "author_slug": "seneca",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "If, therefore, anger allows limits to be imposed upon it, it must be called by some other name, and ceases to be anger, which I understand to be unbridled and unmanageable: and if it does not allow limits to be imposed upon it, it is harmful and not to be counted among aids: wherefore either anger is not anger, or it is useless: for if any man demands the infliction of punishment, not because he is eager for the punishment itself, but because it is right to inflict it, he ought not to be counted as an angry man: that will be the useful soldier, who knows how to obey orders: the passions cannot obey any more than they can command.",
-        "landing_line": "Real anger is wild and uncontrollable."
-      },
-      "read_through": false,
-      "read_through_counter": null
-    },
-    {
-      "day": 7,
-      "slot": 1,
-      "card_id": "meditations-02-007",
-      "book_slug": "meditations",
-      "author_slug": "marcus-aurelius",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "Whatsoever thou dost affect, whatsoever thou dost project, so do, and so project all, as one who, for aught thou knowest, may at this very present depart out of this life. And as for death, if there be any gods, it is no grievous thing to leave the society of men. The gods will do thee no hurt, thou mayest be sure.",
-        "landing_line": "You can be sure the gods will not harm you."
-      },
-      "read_through": true,
-      "read_through_counter": "Card 7 of 48"
-    },
-    {
-      "day": 7,
-      "slot": 2,
-      "card_id": "discourses-64-006",
+      "card_id": "discourses-58-003",
       "book_slug": "discourses",
       "author_slug": "epictetus",
       "content": {
-        "format": "question",
-        "question": "You want me to trust you with my business?",
-        "answer": "You're a man who has corrupted his own will."
-      },
-      "read_through": false,
-      "read_through_counter": null
+        "format": "wall",
+        "original_excerpt": "It will be necessary for you to hire slaves and to possess a few silver vessels, and to exhibit them in public, if it is possible, though they are often the same, and to attempt to conceal the fact that they are the same, and to have splendid garments, and all other things for display, and to show that you are a man honored by the great, and to try to sup at their houses, or to be supposed to sup there, and as to your person to employ some mean arts, that you may appear to be more handsome and nobler than you are. These things you must contrive, if you choose to go by the second path in order not to be pitied.",
+        "landing_line": "Use cheap tricks to make yourself look better and more impressive than you really are."
+      }
+    },
+    {
+      "day": 5,
+      "card_id": "happy-life-03-003",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Meanwhile I follow nature, which is a point upon which every one of the Stoic philosophers are agreed: true wisdom consists in not departing from nature and in moulding our conduct according to her laws and model. A happy life, therefore, is one which is in accordance with its own nature, and cannot be brought about unless in the first place the mind be sound and remain so without interruption, and next, be bold and vigorous, enduring all things with most admirable courage, suited to the times in which it lives, careful of the body and its appurtenances, yet not troublesomely careful. It must also set due value upon all the things which adorn our lives, without over-estimating any one of them, and must be able to enjoy the bounty of Fortune without becoming her slave.",
+        "landing_line": "You also need to be bold and strong, enduring everything with great courage."
+      }
+    },
+    {
+      "day": 6,
+      "card_id": "discourses-53-019",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "And that you may know that this is true, as you have labored for those things, so transfer your labor to these: be vigilant for the purpose of acquiring an opinion which will make you free; pay court to a philosopher instead of to a rich old man; be seen about a philosopher's doors; you will not disgrace yourself by being seen; you will not go away empty nor without profit, if you go to the philosopher as you ought, and if not (if you do not succeed), try at least; the trial (attempt) is not disgraceful.",
+        "landing_line": "There's no shame in trying."
+      }
+    },
+    {
+      "day": 7,
+      "card_id": "happy-life-20-005",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "He who sets up these as the rules of his life will soar aloft and strive to make his way to the gods: of a truth, even though he fails, yet he\n\n\"Fails in a high emprise.\"[4]\n\nBut you, who hate both virtue and those who practise it, do nothing at which we need be surprised, for sickly lights cannot bear the sun, nocturnal creatures avoid the brightness of day, and at its first dawning become bewildered and all betake themselves to their dens together: creatures that fear the light hide themselves in crevices. So croak away, and exercise your miserable tongues in reproaching good men: open wide your jaws, bite hard: you will break many teeth before you make any impression.",
+        "landing_line": "You'll break many teeth before you leave a mark."
+      }
     }
   ],
-  "format_counts": {
-    "wall": 8,
-    "question": 4,
-    "objection": 0,
-    "still": 2
-  },
   "author_mix": {
     "epictetus": {
-      "count": 2,
-      "share": 0.14285714285714285
+      "count": 3,
+      "share": 0.42857142857142855
     },
     "marcus-aurelius": {
-      "count": 8,
-      "share": 0.5714285714285714
+      "count": 1,
+      "share": 0.14285714285714285
     },
     "seneca": {
-      "count": 4,
-      "share": 0.2857142857142857
+      "count": 3,
+      "share": 0.42857142857142855
     }
   },
-  "pool_source": {
-    "wall": "scored",
-    "question": "scored",
-    "objection": "scored"
-  }
+  "pool_source": "scored"
 }

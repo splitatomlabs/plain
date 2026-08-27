@@ -1152,12 +1152,14 @@ is fixable now against recorded fixtures without live voices, so it comes in her
   review. Everything else in this task's acceptance criteria is met.
 
 ## Verify
+Updated by D04 (2026-08-27) for the post-D02 single-slot shape — `--slot` no longer exists on either
+command, and there is one render per day, not two:
 ```
 npm test
-npx tsx social/scripts/write-exclusions.ts --date 2026-08-26
+npx tsx social/scripts/write-exclusions.ts --date <today>
 npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force
-for d in 01 02 03 04 05 06 07; do for s in 1 2; do npx tsx social/src/cli.ts render --date 2026-09-$d --slot $s; done; done
-ffprobe -v error -show_streams social/out/*.mp4
+for d in 01 02 03 04 05 06 07; do npx tsx social/src/cli.ts render --date 2026-09-$d; done
+for f in social/out/*.mp4; do ffprobe -v error -show_streams "$f"; done   # ffprobe takes one input at a time
 ```
 
 ## Follow-up
@@ -2085,9 +2087,168 @@ reorder the read-through" constraint — sub-type spacing now applies freely acr
   rendered there since D02; the payoff label ("In plain English") renders in the exact same plate/slot at 38px
   once the composition cuts to the still payoff, with the 81-88px payoff sentence centred below it and nothing
   overlapping or floating oddly now that the counter's old space is vacated.
-- [ ] D04: Regenerate and re-measure — `content/social/premises/wall.json`, `render-exclusions.json` and a
+- [x] D04 (DONE 2026-08-27): Regenerate and re-measure — `content/social/premises/wall.json`, `render-exclusions.json` and a
   fresh week 1 (now 7 posts, one per day). Render all 7, ffprobe the profile, confirm durations inside
   15s/59s and the 40s Wall ceiling, and confirm the U01/U03/U04/U08 work (tinted plate, 38px label, babble →
   cut → silence → slow return) all survive. Report the render-time and test-time saving versus the 14-post
   two-slot week, since saving processing time is the stated point. Acceptance: 7 Walls render; profile
   confirmed; suite green and measurably faster.
+
+  **Done.** `content/social/premises/wall.json` checked, NOT regenerated: `git log` shows it was last written
+  at T17 (commit `90a8451`), and a diff of `scripts/lib/premises.ts` between that commit and this task's start
+  (`git show 0716f6f -- scripts/lib/premises.ts`, D01's own commit, the only one to touch the file since) shows
+  D01 only deleted Question/Objection/Still-only functions (`hasQuotedSpeech`, `lengthDelta`,
+  `MechanicalGates`, the Question and Objection sections) — `rankWall` and `selectWallBalanced`, the functions
+  that actually produce `wall.json`'s entries, are byte-for-byte unchanged. Regenerating would mean a real,
+  paid `ANTHROPIC_API_KEY` batch run for zero content change, so it was skipped; `git status` confirms the file
+  is untouched by this task.
+
+  `npx tsx social/scripts/write-exclusions.ts --date 2026-08-27`: Wall 685 passed / 211 rejected (duration
+  only — the travel axis stays deleted per T08). The regenerated `render-exclusions.json` is now Wall-only
+  (`{ meta: { generated_at, max_post_duration_frames, max_post_duration_seconds, wall }, wall }`) — no
+  `question`/`objection`/`read_through`/`still` keys survive at all, matching D02's promised future shape
+  (580 lines deleted, 2 inserted).
+
+  `npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force`: **7 single-slot Wall days**,
+  byte-identical to D02's own dry-run of the same command (confirming determinism survived D02/D03 untouched):
+
+  | day | card | author | sub_type |
+  |---|---|---|---|
+  | 1 | meditations-05-029 | marcus-aurelius | thou_wall |
+  | 2 | peace-of-mind-17-005 | seneca | (reserve) |
+  | 3 | discourses-51-003 | epictetus | cascade |
+  | 4 | discourses-58-003 | epictetus | (reserve) |
+  | 5 | happy-life-03-003 | seneca | (reserve) |
+  | 6 | discourses-53-019 | epictetus | cascade |
+  | 7 | happy-life-20-005 | seneca | scene |
+
+  Author mix epictetus 3 / marcus-aurelius 1 / seneca 3. Checked every adjacent pair against `wall.json`'s own
+  `sub_types` field: **zero back-to-back sub-type repeats** (day 3→4 is cascade→reserve, day 4→5 is
+  reserve→reserve but reserve carries no texture to collide with, day 5→6 is reserve→cascade, day 6→7 is
+  cascade→scene — the two cascade days, 3 and 6, are not adjacent).
+
+  **Rendered all 7** (`npx tsx social/src/cli.ts render --date 2026-09-0{1..7}`, no `--slot` — D02 dropped it
+  outright). All 7 exited 0, no retries or fixes needed. Cleaned `social/out/` of stale pre-D02 artifacts first
+  (`question-*`/`still-*`/`*-slot*` files left over from T20/U07's 14-post renders) so the directory holds
+  exactly the 7 fresh Walls.
+
+  **Durations (15s/59s bounds, 40s Wall ceiling):**
+
+  | date | card | bed | duration |
+  |---|---|---|---|
+  | 2026-09-01 | meditations-05-029 | bed-01-c-major9 | 26.517s |
+  | 2026-09-02 | peace-of-mind-17-005 | bed-02-d-minor9 | 35.520s |
+  | 2026-09-03 | discourses-51-003 | bed-03-e-minor7 | 29.504s |
+  | 2026-09-04 | discourses-58-003 | bed-04-f-major7 | 26.517s |
+  | 2026-09-05 | happy-life-03-003 | bed-05-g-sus4 | 29.504s |
+  | 2026-09-06 | discourses-53-019 | bed-06-a-minor | 35.520s |
+  | 2026-09-07 | happy-life-20-005 | bed-01-c-major9 | 35.520s |
+
+  All 7 sit inside **[15s, 59s]**; sorted, p50 29.504s, max 35.520s — comfortably under the **40s Wall
+  ceiling** (4.48s of headroom on the longest).
+
+  **ffprobe profile** (`ffprobe -v error -show_streams`, run per-file — a shell glob of 7 inputs makes ffprobe
+  reject the 2nd+ as a duplicate `-i`, so the plan's own Verify block is corrected below to loop): all 7 report
+  video `h264, profile=High, level=40, 1080x1920, yuv420p, 30/1 fps` and audio `aac, profile=LC, 48000Hz, 2
+  channels` — the full house profile, zero violations.
+
+  **Audio — U04/U08's babble → cut → true-silence → slow-return shape**, spot-checked on **three** different
+  Walls with three different beds (`bed-01-c-major9`, `bed-02-d-minor9`, `bed-06-a-minor`), by extracting each
+  MP4's audio to PCM (`ffmpeg -vn -acodec pcm_s16le -ar 48000 -ac 1`) and computing RMS-dB in fixed windows
+  directly with a throwaway Python script (never `volumedetect` — U08 already found it misleading on the muxed
+  MP4, since AAC priming blurs short-window seeks):
+
+  | window | wall-2026-09-01 (bed-01) | wall-2026-09-02 (bed-02) | wall-2026-09-06 (bed-06) |
+  |---|---|---|---|
+  | scroll/babble (0-2.5s) | -19.0dB | -19.6dB | -20.8dB |
+  | true silence floor (2.55-3.0s) | **-71.6dB** | **-73.2dB** | **-72.5dB** |
+  | rise (3.0-4.0s) | -26.1dB | -28.5dB | -26.5dB |
+  | rise (4.0-5.0s) | -17.8dB | -20.6dB | -19.1dB |
+  | rise (5.0-6.0s) | -14.3dB | -17.3dB | -16.8dB |
+  | steady-state (6-7s) | -14.2dB | -17.4dB | -17.6dB |
+
+  All three: babble across the whole scroll at a comparable, non-silent level; a genuine floor (all three
+  ≤-71.6dB, true silence, not just quiet) across 2.55-3.0s; a smooth, monotonic rise to the bed's own
+  steady-state level by ~6s — U04/U08's documented shape, unchanged by the deprecation.
+
+  **Frame observations** (`ffmpeg -vf "select='eq(n\,N)'"`, read directly as PNGs, not inferred):
+  - **wall-2026-09-01 frame 0**: dense 44px Literata scroll under the running head "MARCUS AURELIUS ·
+    MEDITATIONS, BOOK 5" on a visibly tinted plate. Pixel-sampled the plate interior at (239,236,230) against
+    `theme.ts`'s `TAG_BACKGROUND = '#F0EDE8'` (240,237,232) and a hairline pixel just below the plate edge at
+    (231,229,219) against `BORDER = '#E8E2D9'` (232,226,217) — both within normal antialiasing distance of the
+    real constants, confirming the tinted plate + hairline rule render as designed, not just as claimed. No
+    numeral anywhere in frame (T17's retirement holds).
+  - **frame 40 (mid-scroll)**: different text than frame 0, same running head fixed in the same position —
+    confirms the scroll actually moves and the head doesn't.
+  - **frame 74 (last wall frame) / frame 75 (the cut)**: frame 74 is still dense archaic scroll; frame 75 cuts
+    hard to the payoff — "In plain English" at the label size (measured earlier at T10/U03 as 38px) in the
+    exact slot the running head occupied, with "Things with souls are better than things without souls." set
+    dramatically larger (81-88px range) below it, centred, no counter anywhere (D03 holds).
+  - **frame 120**: pixel-identical to frame 75 in every region that has ink — confirms the payoff is genuinely
+    motionless (house rule), not merely similar.
+  - **wall-2026-09-03 frame 0** (a second author/book, Epictetus/Discourses): running head reads "EPICTETUS ·
+    DISCOURSES, TO THOSE WHO FALL …" — the long-chapter-title clamp (ellipsis) fires correctly, proving the
+    framing layer generalizes past the one Meditations card checked above, not just cosmetically similar on a
+    single fixture.
+
+  **The processing-time saving, measured empirically, not estimated.** Built a disposable `git worktree` at
+  `629e6d3` (the last commit before D01, still carrying the full 14-post/two-slot/four-format machinery and
+  its own committed schedule/exclusions/premises files) with `node_modules` symlinked in from the main
+  checkout (confirmed `package.json`/`package-lock.json` identical between the two commits, so no reinstall
+  needed) — this measures the REAL pre-deprecation baseline, not a linear guess:
+  - **Render time, 7 vs 14 posts:** this task's 7-Wall week (`for d in 01..07: cli.ts render --date
+    2026-09-$d`, no `--slot`) took **150.58s** wall-clock (`2:30.58`, measured via `time` on a from-scratch
+    re-run into a scratch `--out` dir, after deleting all stale pre-D02 output first). The pre-D01 worktree's
+    14-post week (`for d in 01..07; for s in 1 2: cli.ts render --date 2026-09-$d --slot $s`, its own committed
+    schedule/exclusions, both already on disk at that commit) took **227.09s** (`3:47.09`). **1.51x faster,
+    ~76.5s (34%) saved per week's render batch** — less than the naive "half the posts, half the time" guess,
+    because per-invocation overhead (CLI startup, Remotion bundling) doesn't scale down with post count and the
+    deleted formats' fixed 15.018s Question/Still renders were cheaper per-post than a real Wall's
+    chapter-scroll render.
+  - **Test suite time:** the same worktree's `npm test` (all three suites): **pipeline 819/819** (21 files,
+    19.14s), **web 95/95** (7 files, 0.32s), **social 599/599** (31 files, 78.19s — matches D01's own
+    contemporaneous "78.4s" figure almost exactly) — full `npm test` wall time **98.95s** (`1:38.95`). This
+    task's own state (below) runs the full suite in **44.25-49.89s** (measured twice) — **roughly 2x faster**.
+  - **Test counts:** pre-D01 total 1,513 tests (819+95+599) across 59 files; post-D04 total **1,029** tests
+    (551+95+383) across 50 files — a **32% reduction**, tracking the deleted Question/Objection/Still
+    compositions, their timing/gate modules, the read-through, and the counter.
+  - Cleaned up the worktree (`git worktree remove --force`) and its scratch output after measuring; nothing
+    from it is committed.
+
+  **Two stale tests broke once the schedule/exclusions were regenerated for real** (both were deliberately
+  left stale by D02/D03 for exactly this reason — see their own notes) — fixed as part of this task, not
+  deferred:
+  - `social/src/__tests__/cli.test.ts` hardcoded day 1 = `meditations-02-001` and day 6 = `meditations-02-006`
+    from the STALE pre-D02 committed schedule. The freshly regenerated schedule resolves those days to
+    `meditations-05-029` (day 1) and `discourses-53-019` (day 6) instead (D02's rewritten scheduler draws from
+    the whole Wall pool, not a fixed read-through book-order walk) — updated the three hardcoded assertions and
+    the `loadOutputCard` call to match, plus the explanatory comment.
+  - `social/src/remotion/__tests__/exclusions.test.ts` still carried a whole "the read-through slice (F06/M2)"
+    describe block (4 tests) that read `committed.meta.read_through_book`/`read_through_chapters`/
+    `read_through` — all fields the regenerated, Wall-only `render-exclusions.json` no longer writes at all, so
+    the block failed with `TypeError: The "path" argument must be of type string. Received undefined`. Per
+    T17's own rule ("tests for deleted behavior are deleted, never adapted to something weaker"), DELETED the
+    whole block outright rather than patching around the missing fields — the read-through itself was deleted
+    in D02, so there is nothing left for this block to prove. Narrowed the file's `ExclusionsFile` interface to
+    the real, current shape (`meta.generated_at`/`max_post_duration_frames`/`max_post_duration_seconds`/`wall`
+    + `wall` entries only) and dropped the now-unused `loadBookCards`/`computeWallPlainLines`/`gateWallCard`/
+    `selectLandingLine` imports.
+
+  Updated this plan's own **Verify** block (below) for the current single-slot shape: no `--slot` on either
+  command, one render per day not two, and `ffprobe` looped per-file (a glob of multiple inputs makes it
+  reject the 2nd+ as a duplicate `-i`, a tool limitation T20 already hit and documented).
+
+  **Verified:** `cd social && npx tsc --noEmit` clean. `npm test` (repo root, all three suites): **pipeline
+  551/551** (21 files, 15.65s), **web 95/95** (7 files, 0.33s), **social 383/383** (22 files, 33.34s — down 4
+  from D03's 387 for the deleted read-through-slice describe block) — all green. Full `npm test` wall time
+  44.25-49.89s across two measured runs.
+
+  **Recommended sample to hand the user: `social/out/wall-2026-09-01.mp4`.** Marcus Aurelius, Meditations Book
+  5, a moderate 26.5s (not the 35.5s outlier), `bed-01-c-major9`, and every frame/audio measurement above was
+  captured directly against this exact file: tinted running-head plate with its hairline rule, dense 44px
+  chapter-sourced scroll, an audible hard cut into true silence, a slow bed return, and a single large payoff
+  sentence with the 38px "In plain English" label — no counter, no numeral, motionless payoff.
+
+  Left all 7 rendered MP4s (plus `-feed.jpg` and `.json` sidecars) in `social/out/` (gitignored). Regenerated
+  `content/social/pilot-schedule-w01.json` and `content/social/render-exclusions.json` are left in the working
+  tree, uncommitted, per instruction.
