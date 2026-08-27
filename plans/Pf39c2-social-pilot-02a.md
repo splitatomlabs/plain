@@ -2753,7 +2753,7 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   caught by them. Not fixed here (out of scope: this task's acceptance criterion is specifically the 2-line
   wrap regression), but worth a follow-up task if this class of decoupling is a general review concern.
 
-- [ ] V12: (review M2) Restore branch coverage for `surveyWallPool`'s REJECTION path —
+- [x] V12 (DONE 2026-08-27): (review M2) Restore branch coverage for `surveyWallPool`'s REJECTION path —
   `social/src/remotion/__tests__/wall-gate.test.ts`. V10 deleted the only test that ever drove
   `social/src/remotion/wall-pool.ts:219-230` down that path. Both surviving call sites pass the real
   168-entry pool, which now rejects nothing, so `rejectedIds.push` / `rejections.push` / `axis` /
@@ -2767,10 +2767,55 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   `.reason`. Do NOT reintroduce any assertion about the real pool's rejection count. Acceptance: the new test
   fails if the rejection branch stops populating any of those fields.
 
-- [ ] V13: (review, non-blocking) Re-measure `MAX_LAP_REPEATS`'s stale doc comment in
+  Added a new `describe('surveyWallPool — the rejection path (F05)', ...)` block in
+  `social/src/remotion/__tests__/wall-gate.test.ts` with a one-entry synthetic pool
+  (`{ card_id: 'on-anger-03-027', book_slug: 'on-anger', landing_line: '...' }`) run through the real
+  `surveyWallPool`, asserting `passed` 0, `rejectedForDuration` 1, `rejectedIds` equals `['on-anger-03-027']`,
+  and `rejections[0]`'s `axis` ('duration'), `book_slug` ('on-anger'), and `reason` (contains
+  `WALL_MAX_DURATION_FRAMES`). No assertion touches the real pool's rejection count. Verified by breaking
+  `wall-pool.ts`'s branch two ways — (1) commenting out `rejections.push` entirely, (2) dropping the `axis`
+  field from the pushed object — running the suite each time (both went red: case 1 failed
+  `expect(result.rejections).toHaveLength(1)` with "expected [] to have a length of 1 but got +0"; case 2
+  failed `expect(result.rejections[0].axis).toBe('duration')` with "expected undefined to be 'duration'"),
+  then restoring `wall-pool.ts` from a saved copy and confirming the suite is green again (23/23).
+  `git status --short` on `social/src/remotion/wall-pool.ts` shows no diff — byte-identical to HEAD; only
+  the test file changed.
+
+- [x] V13 (DONE 2026-08-27): (review, non-blocking) Re-measure `MAX_LAP_REPEATS`'s stale doc comment in
   `social/src/render/chapter-text.ts` — it states "measured directly across the whole real, non-excluded Wall
   pool (685 entries, R02): worst case needs 6 laps", both figures from the pre-cap pool. The review measured
   the capped pool's worst case at **19 laps** (`enchiridion-27-001`) against the limit of 100. Re-measure it
   yourself over the current 168-entry pool, update the comment to the new figures and pool size, and confirm
   100 still leaves sensible headroom. No behaviour change. Acceptance: the comment states measured numbers
   that reproduce today.
+
+  Wrote a throwaway measurement script (scratchpad, not committed) that reimplements
+  `repeatLapUntilTravelFloorClears`'s own logic — build each entry's chapter lap, apply T18's worst-case
+  offset (`excerptWordCount - 1`), count laps until `computeWallLayout(...).blockHeight` clears
+  `WALL_TRAVEL_FLOOR_PX` — over all 168 entries of the current `content/social/premises/wall.json` pool (all
+  168 non-excluded, per V04). Result: min 1 lap, median 1 lap, worst case **19 laps** at
+  `enchiridion-27-001` — confirms the review's own figure exactly (146 of 168 entries clear on the very
+  first, unrepeated lap; only 22 need any repeat at all). Also re-measured the SINGLE-lap (pre-R02) failure
+  counts the module doc comment separately cites: 20 of 168 fail to clear at offset 0 (was 53 of 685), 2 more
+  fail only at T18's worst-case offset (was 25 more), 13% of the pool total (was 11%) — the rate barely moved
+  even though the raw counts dropped with the pool.
+
+  Corrected every stale figure found by grepping the file for `685`, `896`, `211`, `53`, `25`, `11%`, `6 laps`
+  (all in `social/src/render/chapter-text.ts`'s two doc comments — the module header and `MAX_LAP_REPEATS`'s
+  own):
+    - Module header: "53 of 685 ... 25 more ... 11% of the real pool" -> "20 of 168 ... 2 more ... 13% of the
+      real pool", with a parenthetical noting the pre-cap 685 and the V02/V04 cap that shrank it.
+    - Module header: "measured across the whole non-excluded pool (685 entries), the worst case needs only 6
+      laps (median 1)" -> "(168 entries) ... worst case needs 19 laps (`enchiridion-27-001`; median 1)".
+    - `MAX_LAP_REPEATS`: "non-excluded Wall pool (685 entries, R02): worst case needs 6 laps" -> "(168
+      entries ...; was 685 pre-cap, R02): worst case needs 19 laps (`enchiridion-27-001`) — 81 laps of
+      headroom below this cap" — confirms 100 still leaves ample margin (100 - 19 = 81 laps, over 5x the
+      worst case).
+  Left "Enchiridion's 51 chapters median just 94 words (min 24)" and the "~412 words"/scroll-rate figures
+  untouched after independently re-measuring both directly against `loadBookCards('enchiridion', ...)` — both
+  are properties of the book's own chapter text, not the Wall pool's candidate-card cap, and reproduce
+  identically (51 chapters, median 94, min 24 words) regardless of which cards V02 kept in the scored pool.
+  `chapter-text.test.ts` was already re-anchored to the 168-entry, zero-exclusion pool by an earlier task
+  (dated comments say 2026-08-27) — grepped it for the same stale figures and found none; no test file
+  change needed. Comments-only change; `npx vitest run src/render/__tests__/chapter-text.test.ts` from
+  `social/` passes 28/28 unchanged.

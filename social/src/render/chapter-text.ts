@@ -22,10 +22,15 @@
  * the wall's fixed 44px/4.5-lines-per-second scroll needs to outrun its
  * 2.5s hard cut (`wall-timing.ts`'s `WALL_SCROLL_RATE_PX_PER_SEC` doc
  * comment). A SINGLE lap of a short chapter (this function's pre-R02
- * behaviour) left 53 of 685 non-excluded Wall pool entries finishing their
- * scroll before the cut at offset 0, 25 more at T18's own worst-case
+ * behaviour) left 20 of 168 non-excluded Wall pool entries finishing their
+ * scroll before the cut at offset 0, 2 more at T18's own worst-case
  * mid-chapter offset — the wall goes still, showing blank paper under a
- * floating running head, for 11% of the real pool.
+ * floating running head, for 13% of the real pool. (Re-measured 2026-08-27
+ * against the post-V02/V04 pool, capped to <=5 payoff screens and shrunk
+ * from the pre-cap 685 non-excluded entries to 168 —
+ * `plans/Pf39c2-social-pilot-02a.md` V02-V04. The failure rate barely moved,
+ * 11% to 13%, because the cap removed short- and long-chapter entries in
+ * roughly the same proportion.)
  *
  * THE FIX: repeat the one-lap sequence above, in its entirety, as many
  * times as needed for the block to clear the travel floor even after T18's
@@ -36,15 +41,16 @@
  * severe: Enchiridion's median chapter (94 words) doesn't clear the floor
  * even at ONE lap, so gating on a single lap would have rejected roughly
  * that book's whole Wall pool outright, not just its short tail. Repeating
- * is cheap by comparison — measured across the whole non-excluded pool
- * (685 entries), the worst case needs only 6 laps (median 1, i.e. most
- * chapters already clear the floor unmodified) even at T18's worst-case
- * offset, and repeating a verbatim chapter is not a new KIND of thing this
- * function does — the pre-R02 code already wraps from the chapter's last
- * card back to its first once per lap; this only continues wrapping past
- * that same seam instead of stopping after one revolution. The text stays
- * exactly as verbatim as before: the block is still nothing but
- * `original_excerpt` fields, in chapter order, repeated whole — no
+ * is cheap by comparison — measured across the whole non-excluded pool (168
+ * entries, re-measured 2026-08-27 against the post-V02/V04 pool; was 685
+ * pre-cap), the worst case needs 19 laps (`enchiridion-27-001`; median 1,
+ * i.e. most chapters already clear the floor unmodified) even at T18's
+ * worst-case offset, and repeating a verbatim chapter is not a new KIND of
+ * thing this function does — the pre-R02 code already wraps from the
+ * chapter's last card back to its first once per lap; this only continues
+ * wrapping past that same seam instead of stopping after one revolution.
+ * The text stays exactly as verbatim as before: the block is still nothing
+ * but `original_excerpt` fields, in chapter order, repeated whole — no
  * fabrication, no padding, no truncation.
  *
  * On the visibility of the repeat: at the wall's scroll rate (~1,900wpm,
@@ -92,11 +98,14 @@ const WALL_TRAVEL_FLOOR_PX = FRAME_HEIGHT + WALL_SCROLL_RATE_PX_PER_SEC * WALL_S
  * SUBSEQUENT full lap appended keeps adding its whole, untrimmed height —
  * for any chapter with at least one non-empty excerpt, some finite number
  * of laps clears the floor. Measured directly across the whole real,
- * non-excluded Wall pool (685 entries, R02): worst case needs 6 laps. 100
- * is not a "just in case" tuning knob but a loud failure mode should some
- * future corpus edit produce a chapter this can't converge for (e.g. an
- * accidentally-empty `original_excerpt`) — `buildChapterTextBlock` throws
- * rather than silently shipping a block that still doesn't clear the floor.
+ * non-excluded Wall pool (168 entries, re-measured 2026-08-27 against the
+ * post-V02/V04 <=5-payoff-screen-capped pool; was 685 pre-cap, R02): worst
+ * case needs 19 laps (`enchiridion-27-001`) — 81 laps of headroom below this
+ * cap. 100 is not a "just in case" tuning knob but a loud failure mode
+ * should some future corpus edit produce a chapter this can't converge for
+ * (e.g. an accidentally-empty `original_excerpt`) — `buildChapterTextBlock`
+ * throws rather than silently shipping a block that still doesn't clear the
+ * floor.
  */
 const MAX_LAP_REPEATS = 100;
 
