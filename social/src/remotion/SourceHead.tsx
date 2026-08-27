@@ -60,6 +60,19 @@ import {
  * the second line. See the plate `<div>` and text `<span>` below for why
  * each specific value was chosen, and `SOURCE_HEAD_BOUNDING_BOX`'s own doc
  * comment (`source-head-layout.ts`) for the box-height change this required.
+ *
+ * Pf39c2-social-pilot-02a V08 (2026-08-27): the plate's `SOURCE_HEAD_BOUNDING_BOX`
+ * widens again — this time from 900px to the full frame width (`FRAME_WIDTH`,
+ * 1080), so the plate is a true edge-to-edge masthead band with no bare frame
+ * for the scrolling wall to show through beside it. V05's all-four-sides
+ * `border` becomes `borderTop` + `borderBottom` only (a vertical hairline at
+ * the frame's own edge is not a visible outline); the inset `boxShadow`
+ * stays exactly as V05 left it. This is a FILL-only change: neither the
+ * running head/payoff text's position nor its own wrap width moved — see
+ * `SOURCE_HEAD_BOUNDING_BOX` and `SOURCE_HEAD_TEXT_MAX_WIDTH_PX`'s own doc
+ * comments (`source-head-layout.ts`) for why the text clamp deliberately did
+ * not grow alongside the box, and the plate `<div>` below for the
+ * border/shadow reasoning.
  */
 
 /**
@@ -241,6 +254,42 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 			 *      sits right at the plate's own inside-bottom edge (bordering
 			 *      the scrolling wall — the one edge where "is this laid over the
 			 *      page" matters most), not smeared uniformly across the plate.
+			 *
+			 * Pf39c2-social-pilot-02a V08 (2026-08-27): `SOURCE_HEAD_BOUNDING_BOX`
+			 * widened from 900px to full `FRAME_WIDTH` (1080) — see that
+			 * constant's own doc comment (`source-head-layout.ts`) for the bug
+			 * this fixes (the scrolling wall showing through the bare strip the
+			 * old, narrower plate left down the frame's right edge). Two
+			 * follow-on treatment changes here, both because the plate is now
+			 * edge-to-edge rather than floating with margin on both sides:
+			 *
+			 *   1. `border` (all four sides) is replaced with `borderTop` +
+			 *      `borderBottom` only — V05's left/right border edges used to
+			 *      sit a few hundred px in from the frame's own edges, reading as
+			 *      a distinct rectangle laid over the page. At full frame width
+			 *      those same left/right edges now coincide with the frame's own
+			 *      left/right edges: there is no "outside" pixel beside them for
+			 *      a vertical hairline to separate the plate from, so a left/right
+			 *      border there would be either invisible (nothing on the far
+			 *      side to contrast against) or read as a stray line at the very
+			 *      edge of the video, not a plate outline. The top and bottom
+			 *      edges still divide the plate from real neighbouring content
+			 *      (bare frame above, the scrolling wall below) and keep doing the
+			 *      job a border is for — a masthead band with a rule above and
+			 *      below, the honest treatment for a full-bleed element.
+			 *   2. The inset `boxShadow` is UNCHANGED (still `inset`, still only
+			 *      the bottom edge) — widening the box did not remove the
+			 *      determinism constraint that required `inset` in the first
+			 *      place. The box's left/right edges no longer border anything
+			 *      (they're the frame's own edges now), so an outward shadow
+			 *      there would be harmless — but the bottom edge still borders
+			 *      the actively scrolling wall exactly as before, and an outward
+			 *      shadow on that edge would still paint translucent pixels over
+			 *      non-deterministic scroll content, breaking
+			 *      `assertIdenticalOutsideBoxes` the same way V05 already
+			 *      reasoned through. Keeping it `inset` costs nothing (the shadow
+			 *      was already scoped to the bottom edge only) and preserves the
+			 *      same proof.
 			 */}
 			<div
 				style={{
@@ -250,7 +299,8 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 					width: SOURCE_HEAD_BOUNDING_BOX.width,
 					height: SOURCE_HEAD_BOUNDING_BOX.height,
 					backgroundColor: TAG_BACKGROUND,
-					border: `1px solid ${BORDER}`,
+					borderTop: `1px solid ${BORDER}`,
+					borderBottom: `1px solid ${BORDER}`,
 					boxShadow: `inset 0 -6px 10px -8px ${SOURCE_HEAD_SHADOW_COLOR}`,
 					boxSizing: 'border-box',
 					display: 'flex',

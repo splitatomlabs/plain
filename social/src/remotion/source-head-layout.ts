@@ -21,7 +21,22 @@
  * nothing left to stack below, this module now defines its own top-left
  * anchor directly, rather than deriving one from a module that no longer
  * exists.
+ *
+ * Pf39c2-social-pilot-02a V08 (2026-08-27): `SOURCE_HEAD_BOUNDING_BOX.width`
+ * used to be 900 on the 1080px frame (`FRAME_WIDTH`, imported below from
+ * `wall-timing.ts`), leaving a bare 180px strip down the frame's right edge
+ * at the plate's own vertical band. The plate's fill is the only thing that
+ * makes this band deterministic across frames (see that box's own doc
+ * comment) — the strip outside it was just frame, so the wall's own
+ * actively scrolling text showed through there, stranding orphaned
+ * fragments beside the plate rather than under it. Widened to full
+ * `FRAME_WIDTH` so the plate is a true edge-to-edge masthead band with no
+ * gap for anything to show through. See `SOURCE_HEAD_BOUNDING_BOX`'s own
+ * doc comment for the full change, and `SOURCE_HEAD_TEXT_MAX_WIDTH_PX`'s for
+ * why the TEXT's own clamp deliberately did NOT grow to match.
  */
+
+import { FRAME_WIDTH } from './wall-timing.js';
 
 /**
  * Inset, in frame px (the 1080x1920 reference frame every composition in
@@ -206,10 +221,10 @@ export interface SourceHeadBoundingBox {
  * A generous bounding box the running head/payoff label's rendered text can
  * never exceed — used by `__tests__/source-head.test.ts` (and the pixel-proof
  * helpers it uses, `./pixel-proof.ts`) to crop this region out of an
- * otherwise byte-identical no-reflow comparison. `left: 0` and a wide
- * `width` (900px) so even the longest real running head (an author's full
- * display name plus a book title and chapter reference, e.g. "MARCUS
- * AURELIUS · MEDITATIONS, BOOK 12") sits comfortably inside it at
+ * otherwise byte-identical no-reflow comparison. `left: 0` and `width:
+ * FRAME_WIDTH` (V08, below) so even the longest real running head (an
+ * author's full display name plus a book title and chapter reference, e.g.
+ * "MARCUS AURELIUS · MEDITATIONS, BOOK 12") sits comfortably inside it at
  * `SOURCE_HEAD_FONT_SIZE_PX`. `top` is `SOURCE_HEAD_TOP_PX` — see that
  * constant's own doc comment for this task's geometry change.
  *
@@ -234,11 +249,31 @@ export interface SourceHeadBoundingBox {
  * `(1920 - 800) / 2 = 560px` from the top — this box's bottom edge, even at
  * 180px tall starting at `SOURCE_HEAD_TOP_PX` (64px), ends at 244px, leaving
  * a wide, unaffected gap.
+ *
+ * Pf39c2-social-pilot-02a V08 (2026-08-27): `width` widened from 900 to
+ * `FRAME_WIDTH` (1080) — a real render (`wall-2026-09-03`) showed the
+ * scrolling wall's archaic text bleeding through the 180px strip this box
+ * used to leave bare down the frame's right edge, at the plate's own
+ * vertical band ("e", "are" and other orphaned fragments stranded beside
+ * the plate rather than under it). The plate's fill/border/shadow are the
+ * only things that make this vertical band deterministic frame-to-frame
+ * (see the `<div>` in `SourceHead.tsx`) — anything outside the box is bare
+ * frame, and the wall renders directly beneath everything in this
+ * composition (see `index.ts`'s layer order), so a box narrower than the
+ * frame always left a gap for the wall to show through. Widening `left: 0,
+ * width: FRAME_WIDTH` closes that gap completely; there is no longer any
+ * "outside the box, inside the frame" pixel left at this vertical band for
+ * anything else to occupy. This is a FILL change only — the running
+ * head/payoff TEXT itself does not move or grow: `SOURCE_HEAD_SAFE_INSET_PX`
+ * (the text's left inset) is unchanged, and `SOURCE_HEAD_TEXT_MAX_WIDTH_PX`
+ * (the text's own clamp) is deliberately no longer derived from this box's
+ * width — see that constant's own doc comment for why it stays fixed at its
+ * previous absolute value rather than growing to ~1044px alongside the box.
  */
 export const SOURCE_HEAD_BOUNDING_BOX: SourceHeadBoundingBox = {
 	top: SOURCE_HEAD_TOP_PX,
 	left: 0,
-	width: 900,
+	width: FRAME_WIDTH,
 	height: 180
 };
 
@@ -270,8 +305,25 @@ export const SOURCE_HEAD_BOUNDING_BOX: SourceHeadBoundingBox = {
  * many lines wrap beneath it — a browser wrapping text with `max-width` set
  * cannot itself render a line wider than that budget, so this bound holds by
  * construction on every line, not just the first.
+ *
+ * Pf39c2-social-pilot-02a V08 (2026-08-27): this constant STOPS being derived
+ * from `SOURCE_HEAD_BOUNDING_BOX.width` here, and is instead the literal
+ * value that derivation produced before this task (900 - 64 = 836), typed
+ * out directly. V08 widened `SOURCE_HEAD_BOUNDING_BOX.width` to `FRAME_WIDTH`
+ * (1080, up from 900) so the plate's FILL spans the whole frame and no bare
+ * strip is left for the scrolling wall to show through — but that's a
+ * background-fill change, not licence to also widen the TEXT. Leaving this
+ * constant derived from the box would have silently jumped it to `1080 - 64
+ * = 1016`, undoing V05's whole point: the running head was deliberately
+ * capped to wrap onto a second line rather than run wide on one, and R04's
+ * own worked example ("MARCUS AURELIUS · MEDITATIONS, BOOK 2") was measured
+ * against this exact 836px budget (see this constant's own R04 comment
+ * above). A wider clamp lets more real corpus heads that used to wrap to two
+ * lines fit back onto one, which is the same regression V05 fixed, just
+ * reached from the opposite direction (widening the box instead of shrinking
+ * the font). Kept at 836 — the plate is wider, the type is not.
  */
-export const SOURCE_HEAD_TEXT_MAX_WIDTH_PX = SOURCE_HEAD_BOUNDING_BOX.width - SOURCE_HEAD_SAFE_INSET_PX;
+export const SOURCE_HEAD_TEXT_MAX_WIDTH_PX = 836;
 
 /**
  * Social pilot 02a R07 (2026-08-26): vertical breathing room added to the

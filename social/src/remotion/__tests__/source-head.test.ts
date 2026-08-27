@@ -57,10 +57,16 @@ import {
 	SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX
 } from '../source-head-layout.js';
 import { SERIF_STACK } from '../Wall.js';
-import { PAYOFF_MIN_FONT } from '../wall-timing.js';
+import { FRAME_WIDTH, PAYOFF_MIN_FONT } from '../wall-timing.js';
 import { ACCENTS, type AuthorSlug } from '../../render/theme.js';
 import { getFontCss } from '../../render/fonts.js';
-import { renderFrameAsPng, assertIdenticalOutsideBoxes, assertBoxDiffers, assertBoxIdentical } from './pixel-proof.js';
+import {
+	renderFrameAsPng,
+	assertIdenticalOutsideBoxes,
+	assertBoxDiffers,
+	assertBoxIdentical,
+	type PixelBox
+} from './pixel-proof.js';
 import type { SourceHeadHarnessProps } from './fixtures/source-head-harness.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -208,6 +214,25 @@ describe('source guard — DM Sans + secondary ink, never SERIF_STACK, never an 
 	it('PAYOFF_LABEL_TEXT is never attributed to the author — no possessive, no "he/she said"', () => {
 		expect(PAYOFF_LABEL_TEXT.toLowerCase()).not.toMatch(/\bhe\b|\bshe\b|\bsaid\b|'s\b/);
 	});
+
+	// Pf39c2-social-pilot-02a V08 (2026-08-27): the plate is now full-bleed
+	// (SOURCE_HEAD_BOUNDING_BOX spans FRAME_WIDTH), so V05's all-four-sides
+	// `border` shorthand is gone — a left/right hairline on an edge-to-edge
+	// element has no "outside" pixel to separate it from, so it would read
+	// as a stray line at the frame's own edge, not a plate outline. Only
+	// `borderTop`/`borderBottom` remain, which still divide the plate from
+	// real neighbouring content (bare frame above, the scrolling wall below).
+	it('the plate\'s border is top/bottom only, never the all-sides shorthand or a left/right side — a vertical hairline on a full-bleed element is not a visible outline', () => {
+		expect(renderableSource).toMatch(/bordertop:/);
+		expect(renderableSource).toMatch(/borderbottom:/);
+		expect(renderableSource).not.toMatch(/borderleft:/);
+		expect(renderableSource).not.toMatch(/borderright:/);
+		expect(renderableSource).not.toMatch(/[^-a-z]border:\s*`/);
+	});
+
+	it('the plate\'s boxShadow stays inset — the bottom edge still borders the actively scrolling, non-deterministic wall, so an outward shadow there would still break the no-reflow proof', () => {
+		expect(renderableSource).toMatch(/boxshadow:\s*`inset/);
+	});
 });
 
 // ---------------------------------------------------------------------------
@@ -336,6 +361,59 @@ describe('the running head does not reflow anything else on screen', () => {
 
 			assertIdenticalOutsideBoxes(withoutEither.png, withHeadOnly.png, [SOURCE_HEAD_BOUNDING_BOX]);
 			assertBoxDiffers(withoutEither.png, withHeadOnly.png, SOURCE_HEAD_BOUNDING_BOX);
+		},
+		120_000
+	);
+});
+
+// ---------------------------------------------------------------------------
+// Pf39c2-social-pilot-02a V08 (2026-08-27): before this task
+// `SOURCE_HEAD_BOUNDING_BOX.width` was 900 on the 1080px frame, leaving a
+// bare 180px strip down the frame's right edge at the plate's own vertical
+// band — the wall's own scrolling text showed through it there, stranding
+// orphaned fragments beside the plate rather than under it (see a real
+// render of `wall-2026-09-03`, frame 0). This describe block proves the fix
+// two ways: a geometry-level claim (the box really does span the whole
+// frame now, and the text's own clamp did NOT silently grow alongside it),
+// and a pixel-level regression guard (the specific strip that used to be
+// bare frame is now part of the plate's own deterministic fill, using the
+// OLD literal 900px boundary rather than the current constant, so this
+// guard would still catch a future narrowing even if someone edited both
+// this test and the constant together).
+// ---------------------------------------------------------------------------
+
+describe('V08 — the framing plate spans the full frame width, not a partial strip', () => {
+	it('SOURCE_HEAD_BOUNDING_BOX starts at the frame\'s left edge and its right edge lands exactly at FRAME_WIDTH — a true edge-to-edge band, not a box with a bare margin on either side', () => {
+		expect(SOURCE_HEAD_BOUNDING_BOX.left).toBe(0);
+		expect(SOURCE_HEAD_BOUNDING_BOX.width).toBe(FRAME_WIDTH);
+		expect(SOURCE_HEAD_BOUNDING_BOX.left + SOURCE_HEAD_BOUNDING_BOX.width).toBe(FRAME_WIDTH);
+	});
+
+	it('SOURCE_HEAD_TEXT_MAX_WIDTH_PX stays at its own pre-V08 absolute value (836) — the plate\'s FILL grew, but the TEXT\'s own wrap clamp must not, or V05\'s two-line wrap behaviour silently regresses', () => {
+		expect(SOURCE_HEAD_TEXT_MAX_WIDTH_PX).toBe(836);
+		// Explicitly NOT derived from the (now much wider) box — if it were,
+		// this would be 1080 - 64 = 1016, not 836.
+		expect(SOURCE_HEAD_TEXT_MAX_WIDTH_PX).not.toBe(SOURCE_HEAD_BOUNDING_BOX.width - SOURCE_HEAD_SAFE_INSET_PX);
+	});
+
+	it(
+		'the strip that used to be bare frame (x in [900, 1080) at the plate\'s own vertical band) now renders pixel-identical across two different wall-scroll frames — it is inside the opaque plate now, not bare frame showing scrolling text through',
+		async () => {
+			const props = harnessProps({ sourceHead: RUNNING_HEAD_VARIANT });
+			const frame0 = await renderFrameAsPng(bundleLocation, 'SourceHeadHarness', props, 0);
+			const frame90 = await renderFrameAsPng(bundleLocation, 'SourceHeadHarness', props, 90);
+
+			// Deliberately literal 900/180, NOT derived from
+			// SOURCE_HEAD_BOUNDING_BOX — this is a regression guard for the
+			// OLD box's own right-hand strip, so it must stay meaningful even
+			// against a future edit that changes the constant again.
+			const formerBareStrip: PixelBox = {
+				top: SOURCE_HEAD_BOUNDING_BOX.top,
+				left: 900,
+				width: 180,
+				height: SOURCE_HEAD_BOUNDING_BOX.height
+			};
+			assertBoxIdentical(frame0.png, frame90.png, formerBareStrip);
 		},
 		120_000
 	);

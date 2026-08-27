@@ -2581,7 +2581,7 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   **NEW DEFECT FOUND, filed as V08 — the plate is 900px wide on a 1080px frame.** See V08 below.
 
 
-- [ ] V08: Make the framing plate span the FULL 1080px frame width — `source-head-layout.ts`'s
+- [x] V08: Make the framing plate span the FULL 1080px frame width — `source-head-layout.ts`'s
   `SOURCE_HEAD_BOUNDING_BOX` is `{ left: 0, width: 900 }` on a 1080px frame, leaving a 180px strip of bare
   frame down its right-hand side. On the wall phase the scrolling archaic text shows through that strip at the
   plate's own vertical band, so frame 0 of `wall-2026-09-03` renders the plate with orphaned text fragments
@@ -2594,6 +2594,32 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   rule may be the honest treatment). Update `source-head.test.ts` and the pixel-proof crops, which currently
   assert against the 900px box. Acceptance: frame 0 of a re-rendered `wall-2026-09-03` shows no wall text to
   the right of the plate; suite green.
+
+  **DONE.** `SOURCE_HEAD_BOUNDING_BOX.width` is now `FRAME_WIDTH` (imported from `wall-timing.ts`), `left: 0`
+  unchanged — a true edge-to-edge band. `SOURCE_HEAD_TEXT_MAX_WIDTH_PX` was de-derived from the box (it used
+  to be `SOURCE_HEAD_BOUNDING_BOX.width - SOURCE_HEAD_SAFE_INSET_PX`) and is now the literal absolute value
+  that derivation produced before this task (836) — kept fixed so V05's measured two-line wrap behaviour is
+  unaffected; leaving it derived would have silently widened it to 1016 and let long heads collapse back onto
+  one line, undoing V05. Border: the plate's `border` (4 sides) is now `borderTop` + `borderBottom` only — a
+  vertical hairline exactly at the frame's own left/right edge has no "outside" pixel to separate it from, so
+  it would read as a stray edge line, not an outline; top/bottom still divide the plate from real neighbouring
+  content (bare frame above, scrolling wall below). Shadow: kept `inset` — widening the box didn't remove the
+  determinism constraint, since the bottom edge still borders the actively scrolling (non-deterministic) wall;
+  an outward shadow there would still break `assertIdenticalOutsideBoxes`. Updated `source-head.test.ts`: added
+  a new `V08 —` describe block (geometry assertions that the box is full-width and the text clamp stayed at
+  its old absolute value, plus a pixel-level regression guard against the literal old 900-1080px strip using
+  `assertBoxIdentical`), and two new source-guard assertions (`borderTop`/`borderBottom` present, `border:`/
+  `borderLeft`/`borderRight` absent; `boxShadow` still `inset`). Confirmed by temporarily reverting just
+  `source-head-layout.ts`/`SourceHead.tsx` to HEAD and re-running: all 4 new/changed assertions fail against
+  the old 900px-box code (exact old/new pixel values shown in the failure output), then pass again once
+  restored — genuine TDD, not tests that were vacuously true either way. Re-rendered `wall-2026-09-03` for
+  real (`npx tsx social/src/cli.ts render --date 2026-09-03`) and read frame 0 as a PNG: the plate is now a
+  true edge-to-edge band with no wall text visible beside it at any point along its width, and the running
+  head ("EPICTETUS · DISCOURSES, ABOUT PURITY (CLEANLINESS)") still wraps cleanly to two lines inside it — no
+  regression to V05's two-line behaviour. Full `social/` suite run: 385/391 pass; the 6 failures
+  (`cli.test.ts`, `exclusions.test.ts`, `wall-gate.test.ts`, `chapter-text.test.ts`) are pre-existing content-
+  pool/duration-exclusion failures unrelated to this task — reproduced identically on HEAD before this
+  change (verified via `git stash`), nothing to do with `SourceHead`/`source-head-layout`.
 
 - [ ] V09: Re-check the plate's vertical proportions once V08 lands — at 180px tall with a single 38px line,
   the payoff variant renders as a large, mostly-empty band (visible in `wall-2026-09-03` frame 75). The height
