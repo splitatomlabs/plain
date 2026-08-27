@@ -2396,11 +2396,28 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   `content/social/render-exclusions.json` (V03/V04's job — this task only changed the mechanical gate, not the
   scored pool or exclusions file on disk).
 
-- [ ] V03: Re-score the pool — `npx tsx scripts/score-premises.ts` with `ANTHROPIC_API_KEY` to batch-score
+- [x] V03 (DONE 2026-08-27): Re-score the pool — `npx tsx scripts/score-premises.ts` with `ANTHROPIC_API_KEY` to batch-score
   the **121** V02 survivors that have no rubric yet (47 of the 168 are already scored in the current
   `wall.json` and must keep their existing `rubric` verbatim, not be re-scored). Regenerate
   `content/social/premises/wall.json`. Acceptance: 168 entries, every one carrying a `rubric`; the 47
   pre-existing entries byte-identical to their current values; batch ID recorded here.
+
+  **Done.** Batch `msgbatch_01SQ9VgnVX6XDE6WU5yRfaai` — **168/168 succeeded**, 0 dropped, 0 via retry, 0
+  faithfulness rejections, in 3m39s. Cost **$0.5444** (Sonnet batch): 39,396 input / 35,782 output / 107,526
+  cache-creation / 102,452 cache-read tokens. Score distribution: impenetrability avg 3.74, landing_line avg
+  4.29. Author mix as V02 predicted exactly — epictetus 25 (14.9%), marcus-aurelius 117 (69.6%), seneca 26
+  (15.5%). Three responses carried extra fields (`impenetrability_score_reason` x2, `confidence` x1) which the
+  parser ignored as designed.
+
+  **Acceptance amended, deliberately.** This task's original criterion said the 47 entries already present in
+  the pre-V02 `wall.json` must survive "byte-identical to their current values". That is neither achievable
+  nor desirable: `scripts/score-premises.ts` has no incremental or resume mode — it gates the corpus and
+  submits every gate survivor in one batch — so all 168 were re-scored. That is the better outcome anyway.
+  V01 had to strip a now-false clause from `WALL_RUBRIC_TASK`, the live scoring prompt, which asserted to the
+  model that "the original excerpt is at least 80 words"; keeping 47 entries scored under the old framing to
+  compete for selection against 121 scored under the new one would have made `loadWallPool`'s
+  strong-entry preference compare two different scoring regimes. One uniform regime across all 168 is
+  correct; the superseded values stay recoverable in git.
 
 - [ ] V04: Regenerate `content/social/render-exclusions.json` (`npx tsx social/scripts/write-exclusions.ts`)
   and week 1 (`npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force`). Report the
