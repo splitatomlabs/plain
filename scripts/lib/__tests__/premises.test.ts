@@ -511,14 +511,40 @@ describe("verbatim", () => {
   });
 });
 
+describe("wallGate", () => {
+  // T08/R02 moved the scrolling wall of text off the card's own
+  // original_excerpt and onto the surrounding CHAPTER block
+  // (social/src/render/chapter-text.ts's buildChapterTextBlock), which
+  // repeats whole chapter laps until the block clears the travel floor —
+  // see that module's doc comment. A short original_excerpt therefore
+  // outruns the viewer exactly as well as a long one; only the landing
+  // line (phase 2) still depends on the card itself. This card's
+  // original_excerpt is 9 words, nowhere near the old 80-word floor, but
+  // it must still survive because its plain_english has a qualifying
+  // landing line.
+  it("survives with a short original_excerpt when it has a qualifying landing line", () => {
+    const card = makeCard({
+      original_excerpt: "A short passage of only nine words total.",
+      plain_english: "Virtue alone is enough to live a good life.",
+    });
+    expect(wordCount(card.original_excerpt)).toBeLessThan(80);
+    const entries = wallGate([card]);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].landing_line).toBe("Virtue alone is enough to live a good life.");
+    expect(entries[0].original_word_count).toBe(wordCount(card.original_excerpt));
+  });
+
+  it("still rejects a card with no qualifying landing line, regardless of original_excerpt length", () => {
+    const card = makeCard({
+      original_excerpt: "A short passage of only nine words total.",
+      plain_english: "But this is only a fragment",
+    });
+    expect(wallGate([card])).toHaveLength(0);
+  });
+});
+
 describe("wallGate against the real corpus", () => {
   const entries = wallGate(loadCorpus());
-
-  it("emits only entries with a >=80-word original", () => {
-    for (const entry of entries) {
-      expect(entry.original_word_count).toBeGreaterThanOrEqual(80);
-    }
-  });
 
   it("emits only entries with a non-empty landing line", () => {
     for (const entry of entries) {
@@ -533,10 +559,6 @@ describe("wallGate against the real corpus", () => {
       expect(card).toBeDefined();
       expect(verbatim(entry.landing_line, card!.plain_english)).toBe(true);
     }
-  });
-
-  it("survivor count is <= 1326 (the wallLength gate)", () => {
-    expect(entries.length).toBeLessThanOrEqual(1326);
   });
 
   it("measures the exact survivor count", () => {
@@ -564,10 +586,16 @@ describe("wallGate against the real corpus", () => {
     // accepted ANY earlier capitalized word regardless of number
     // agreement. Dropping the determiner exception (keeping only a narrow
     // "that"-as-subordinating-conjunction carve-out) and requiring number
-    // agreement for personal-pronoun antecedents measures 1,003. If
-    // pipeline content or the landing-line rules change, re-run and update
-    // this assertion deliberately.
-    expect(entries.length).toBe(1003);
+    // agreement for personal-pronoun antecedents measured 1,003, but that
+    // figure was still gated on an >=80-word original_excerpt floor that
+    // died at T08/R02 (see `wallGate`'s doc comment): phase 1 no longer
+    // scrolls the card's own excerpt, so a short excerpt outruns the viewer
+    // exactly as well as a long one. V01 deleted that floor; the gate now
+    // measures 1,161 — exactly the corpus-wide count of cards with a
+    // qualifying landing line, since a non-null `selectLandingLine` is the
+    // only remaining condition. If pipeline content or the landing-line
+    // rules change, re-run and update this assertion deliberately.
+    expect(entries.length).toBe(1161);
   });
 
   // -------------------------------------------------------------------
@@ -685,39 +713,47 @@ describe("classifyWallSubTypes", () => {
 // ---------------------------------------------------------------------------
 
 describe("classifyWallSubTypes against the real corpus", () => {
+  // V01 (social pilot 02a) removed `wallGate`'s >=80-word original_excerpt
+  // floor (see that function's doc comment for why: T08/R02 moved the
+  // scrolling wall of text off the card's own excerpt and onto the
+  // surrounding chapter block, so excerpt length no longer needs to outrun
+  // anything). `classifyWallSubTypes` never depended on that floor either —
+  // it has always run over any card's `original_excerpt` regardless of
+  // length — so this suite now measures it against the full corpus rather
+  // than the dead `>=80-word` filter (formerly 1,326 cards; the filter and
+  // its counts moved to this doc comment).
   const cards = loadCorpus();
-  const gated = cards.filter((c) => wordCount(c.original_excerpt) >= 80);
 
-  it("gates to the 1,326-card wallLength set", () => {
-    expect(gated.length).toBe(1326);
+  it("runs over the full 1,615-card corpus", () => {
+    expect(cards.length).toBe(1615);
   });
 
-  it("measures Thou Wall (>=3 archaic marker occurrences) at exactly 222", () => {
-    const count = gated.filter((c) => classifyWallSubTypes(c).sub_types.includes("thou_wall")).length;
-    expect(count).toBe(222);
+  it("measures Thou Wall (>=3 archaic marker occurrences) at exactly 301", () => {
+    const count = cards.filter((c) => classifyWallSubTypes(c).sub_types.includes("thou_wall")).length;
+    expect(count).toBe(301);
   });
 
-  it("measures Cascade (>=3 semicolons) at exactly 204", () => {
-    const count = gated.filter((c) => classifyWallSubTypes(c).sub_types.includes("cascade")).length;
-    expect(count).toBe(204);
+  it("measures Cascade (>=3 semicolons) at exactly 217", () => {
+    const count = cards.filter((c) => classifyWallSubTypes(c).sub_types.includes("cascade")).length;
+    expect(count).toBe(217);
   });
 
-  it("measures Scene (>=2 double-quote characters) at exactly 137", () => {
+  it("measures Scene (>=2 double-quote characters) at exactly 144", () => {
     // The plan's own estimate for this sub-type was 176; that figure did
     // not reproduce under any quote-character definition tried (see the
-    // in-file comment on classifyWallSubTypes). 137 is the measured count
+    // in-file comment on classifyWallSubTypes). 144 is the measured count
     // for the definition actually implemented and is what's asserted here.
-    const count = gated.filter((c) => classifyWallSubTypes(c).sub_types.includes("scene")).length;
-    expect(count).toBe(137);
+    const count = cards.filter((c) => classifyWallSubTypes(c).sub_types.includes("scene")).length;
+    expect(count).toBe(144);
   });
 
-  it("measures reserve (no sub-type matches) at 813, the complement of the 513-card union", () => {
-    const results = gated.map((c) => classifyWallSubTypes(c));
+  it("measures reserve (no sub-type matches) at 1010, the complement of the 605-card union", () => {
+    const results = cards.map((c) => classifyWallSubTypes(c));
     const unionCount = results.filter((r) => !r.reserve).length;
     const reserveCount = results.filter((r) => r.reserve).length;
-    expect(unionCount).toBe(513);
-    expect(reserveCount).toBe(813);
-    expect(unionCount + reserveCount).toBe(gated.length);
+    expect(unionCount).toBe(605);
+    expect(reserveCount).toBe(1010);
+    expect(unionCount + reserveCount).toBe(cards.length);
   });
 });
 
@@ -754,14 +790,14 @@ describe("rankWall against the real corpus", () => {
     const scene = entries.filter((e) => e.sub_types.includes("scene")).length;
     const reserve = entries.filter((e) => e.reserve).length;
 
-    // These are measured, reported counts within the smaller 1,003-entry
-    // ranked pool (T02 survivors) — necessarily <= the 1,326-card
-    // classifier counts above, since not every length-gated card also has
-    // a qualifying landing line.
-    expect(thou).toBe(171);
-    expect(cascade).toBe(174);
-    expect(scene).toBe(96);
-    expect(reserve).toBe(608);
+    // These are measured, reported counts within the smaller 1,161-entry
+    // ranked pool (wallGate survivors, post-V01) — necessarily <= the
+    // full-corpus classifier counts above, since not every card has a
+    // qualifying landing line.
+    expect(thou).toBe(220);
+    expect(cascade).toBe(185);
+    expect(scene).toBe(98);
+    expect(reserve).toBe(711);
   });
 });
 

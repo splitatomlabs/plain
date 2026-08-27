@@ -2252,3 +2252,134 @@ reorder the read-through" constraint — sub-type spacing now applies freely acr
   Left all 7 rendered MP4s (plus `-feed.jpg` and `.json` sidecars) in `social/out/` (gitignored). Regenerated
   `content/social/pilot-schedule-w01.json` and `content/social/render-exclusions.json` are left in the working
   tree, uncommitted, per instruction.
+
+## User feedback — round 2 (2026-08-27)
+
+Four items from a phone review of D04's seven-post week.
+
+**Item 4 answered, no task filed.** "Is it worth animating the 'In plain English' element when it appears?"
+Decision (user, 2026-08-27): **no** — `SourceHead.tsx` stays zero-motion. U04/U08 deliberately made the cut
+abrupt (babble -> hard stop -> true silence); a fade-in on the label at that exact instant works against the
+drop. The label already went 32px -> 38px at U03, and V05 below adds real plate contrast; contrast is the
+cheaper fix for an attention problem than motion, and it does not cost the zero-motion contract or the
+pixel-proof crops. Revisit only if V07's re-render still reads flat.
+
+**Item 2's root cause, measured 2026-08-27 (this is what the V01/V02 pair is really about).** The user's
+instinct that "there are way more cards that are shorter" was correct. A payoff "screen" is one SENTENCE
+(`splitPayoffLines`), so screen count tracks sentence count, not word count — which is why the current pool
+and the full corpus have near-identical `plain_english` word counts (p50 103 vs 101) but wildly different
+short-card rates. The filter is `wallGate`'s `original_excerpt >= 80 words` floor
+(`scripts/lib/premises.ts:717`):
+
+| stage | all cards | of the 97 corpus cards at <=4 screens |
+|---|---|---|
+| total in `content/output` | 1,615 | 97 |
+| `original_excerpt` >= 80 words | 1,326 | **13** <- 84 die here |
+| has qualifying landing line | 1,003 | 13 |
+| in `wall.json` (ranked + batch-scored) | 896 | 12 |
+| minus `render-exclusions.json` | 685 | 12 |
+
+That floor's stated justification is "the original excerpt is long enough to outrun the viewer in phase 1" —
+which **T08/R02 made obsolete**. The wall no longer scrolls the card's own excerpt at all: it scrolls the
+whole chapter block (`social/src/render/chapter-text.ts`), repeating laps until the travel floor clears. A
+9-word excerpt outruns the viewer exactly as well as a 200-word one now. Dropping the floor means the screen
+cap can be a **pure pool filter** — nothing is ever truncated, videos simply get short.
+
+Cap chosen: **<=5 screens** (user, 2026-08-27), over the <=4 they first asked for. Measured pools:
+
+| cap | cards | ~weeks daily | marcus-aurelius | seneca | epictetus | books |
+|---|---|---|---|---|---|---|
+| <=4 | 97 | 13.9 | 80 (82%) | **2** | 15 | 5 |
+| **<=5** | **168** | **24.0** | 117 (70%) | 26 | 25 | **7** |
+| <=6 | 266 | 38.0 | 177 (67%) | 54 | 35 | 7 |
+
+At <=4 Seneca has two cards, so `selectWallBalanced`'s author balancing has nothing to draw on and the
+channel becomes a Meditations feed. One extra screen buys a pool the scheduler can actually balance, across
+all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
+
+### Tasks
+
+- [x] V01: Delete the `original_excerpt >= 80 words` floor from `wallGate` (`scripts/lib/premises.ts`, ~line
+  717) and rewrite its doc comment to record WHY it is obsolete (T08/R02 moved the scrolling text from the
+  card's excerpt to the repeated chapter block — cite `social/src/render/chapter-text.ts`). Test first in
+  `scripts/lib/__tests__/`: a card with a short `original_excerpt` and a qualifying landing line must now
+  survive the gate. Fix the existing corpus assertions that hard-code the 1,326-card ">=80-word wallLength
+  set" — `classifyWallSubTypes`' documented Thou Wall 222 / Cascade 204 / Scene 137 counts are measured over
+  exactly that set and will move; re-measure and update them rather than preserving the old numbers.
+  Acceptance: gate output goes 1,003 -> the full landing-line-qualifying set; suite green.
+
+  Done. Deleted `if (originalWordCount < 80) continue;` from `wallGate` and rewrote its doc comment to cite
+  `chapter-text.ts`'s `buildChapterTextBlock`. Added a TDD unit test (`wallGate` describe block,
+  `scripts/lib/__tests__/premises.test.ts`) proving a 9-word `original_excerpt` with a qualifying landing
+  line now survives — confirmed it failed before the deletion, passed after.
+
+  Re-measured every number this change touched (old -> new):
+  - `wallGate(loadCorpus())` output: 1,003 -> **1,161** (exactly the corpus-wide count of cards with a
+    non-null `selectLandingLine`, since that's now the only condition).
+  - `classifyWallSubTypes` corpus test population: switched from the dead ">=80-word" filter (1,326 cards)
+    to the full corpus (**1,615** cards), since the function itself never depended on that floor.
+  - Thou Wall: 222 (over 1,326) -> **301** (over 1,615). Cascade: 204 -> **217**. Scene: 137 -> **144**.
+    Reserve: 813 -> **1,010** (union 513 -> 605).
+  - `rankWall` ranked-pool sub-type counts (now over the 1,161-entry `wallGate` output, was 1,003): Thou
+    171 -> **220**, Cascade 174 -> **185**, Scene 96 -> **98**, reserve 608 -> **711**.
+  - Also fixed two live references to the deleted floor outside `premises.ts`: `premises-scoring.ts`'s
+    `WALL_ORIGINAL_MIN_WORDS`/`withinWallOriginalLimit` doc comments (now note the floor they used to mirror
+    no longer exists in `wallGate`, and that neither is called by anything except their own unit tests —
+    left in place since deleting exported API is a separate decision from V01's), and its `WALL_RUBRIC_TASK`
+    LLM prompt string, which asserted to the scoring model "the original excerpt is at least 80 words" —
+    now false, so removed that clause. Grepped the whole repo for other `80`/`1,326`/`1,003`/`wallLength`
+    hits; the remaining ones (`premises-batch.ts`, `parse-failure-log.ts`, `premises-scoring.test.ts`) are
+    historical facts about one past T11 batch run ("the real T11 run lost 107 of 1,003 Wall responses"),
+    not live gate definitions, so left untouched. `MechanicalGates`/`mechanicalGates` no longer exist in code
+    (deleted in D01) — only stale comment references to `MechanicalGates.wallLength`/`.still12Word` remain,
+    both already flagged as dead in D01's own comment; out of scope here since neither hard-codes a number
+    that moved.
+
+  Full `scripts/lib/__tests__/` suite (21 files, 551 tests) green after the change.
+
+- [ ] V02: Add a **<=5 payoff-screen cap** to `wallGate`, where screens = 1 (the landing line) +
+  `splitPayoffLines(remainder).length` and `remainder` is `plain_english` with the landing line spliced out —
+  i.e. exactly `social/src/cli-plan.ts`'s `computeWallPlainLines` arithmetic. `scripts/lib/premises.ts` has
+  its own `sentences()` and `social/src/audio/timing.ts` has `splitPayoffLines`; FIRST verify the two agree
+  on every corpus card and, if they do not, port the canonical one across the boundary the same way
+  `landing-line.ts` was duplicated (with the same "keep byte-identical in behaviour" comment). Test first.
+  Acceptance: `rankWall(cards)` yields **168** entries with the mix in the table above (marcus-aurelius 117 /
+  seneca 26 / epictetus 25, 7 books); no card in the output exceeds 5 screens.
+
+- [ ] V03: Re-score the pool — `npx tsx scripts/score-premises.ts` with `ANTHROPIC_API_KEY` to batch-score
+  the **121** V02 survivors that have no rubric yet (47 of the 168 are already scored in the current
+  `wall.json` and must keep their existing `rubric` verbatim, not be re-scored). Regenerate
+  `content/social/premises/wall.json`. Acceptance: 168 entries, every one carrying a `rubric`; the 47
+  pre-existing entries byte-identical to their current values; batch ID recorded here.
+
+- [ ] V04: Regenerate `content/social/render-exclusions.json` (`npx tsx social/scripts/write-exclusions.ts`)
+  and week 1 (`npx tsx scripts/generate-schedule.ts --week 1 --seed 42 --first-week --force`). Report the
+  pass/reject split and the new 7-day card/author/sub_type table. Acceptance: 7 single-slot Wall days; zero
+  back-to-back sub-type repeats; every scheduled card at <=5 screens.
+
+- [ ] V05: Make the framing plate visually distinct and let the running head WRAP — `SourceHead.tsx` +
+  `source-head-layout.ts`. Three changes: (a) add a **drop shadow and/or hairline outline** so the plate reads
+  as laid OVER the page rather than part of it (U01's `TAG_BACKGROUND` tint plus a single `borderBottom` was
+  not enough on a phone); (b) **raise `SOURCE_HEAD_FONT_SIZE_PX`** from 32px; (c) replace R04's
+  single-line `whiteSpace: nowrap` + `textOverflow: ellipsis` clamp with a **2-line wrap** (`WebkitLineClamp`
+  or equivalent), ellipsising only past line 2 — Epictetus's ~135-char chapter titles currently truncate. This
+  requires growing `SOURCE_HEAD_BOUNDING_BOX`'s fixed 120px height to fit two lines at the new size plus
+  `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`; re-measure R07's descender clearance at the new size rather than
+  assuming 8/8 still clears. Keep the payoff variant on ONE line (`PAYOFF_LABEL_TEXT` is 16 chars) and keep
+  the whole component zero-motion. Update `__tests__/source-head.test.ts` and the pixel-proof box crops.
+  Acceptance: a long Discourses running head renders on two lines inside the plate with no clip; plate is
+  visibly distinct from `PAPER` at phone scale.
+
+- [ ] V06: Raise `WALL_DROP_SILENCE_MS` from **500 to 1000** in `social/src/cli.ts` (~line 311) and update its
+  doc comment. The silence sits inside the 3s `LANDING_LINE_SECONDS` hold, so 1s still fits with 2s to spare —
+  assert that relationship in a test rather than leaving it implicit, so a future `LANDING_LINE_SECONDS` cut
+  cannot silently push the silence past the hold. Update `social/src/audio/__tests__/mix.test.ts` and any
+  `wallSilentSpans` assertion in `social/src/__tests__/cli.test.ts`. Acceptance: suite green; `wallSilentSpans`
+  returns a 1,000ms span starting at the cut.
+
+- [ ] V07: Re-render week 1 and re-measure — V01-V06 move geometry, duration and audio together. Render all 7,
+  ffprobe the house profile, tabulate durations against the 15s/59s bounds, and RMS-dB the babble -> hard cut ->
+  true silence -> slow return shape on at least three different beds (per D04's method: extract PCM and window
+  it directly, never `volumedetect`). Read real frames to confirm V05's two-line plate and V06's longer
+  silence. Acceptance: 7 Walls render; all durations inside bounds and materially shorter than D04's
+  26.5-35.5s; audio shape intact with a 1s floor.

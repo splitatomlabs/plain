@@ -294,11 +294,21 @@ export function checkFaithfulness(
 // ---------------------------------------------------------------------------
 
 /**
- * Floor (not ceiling) for The Wall's original-excerpt side, matching the
- * T01/T02 mechanical gate (`wallGate` in ./premises.ts requires
- * `wordCount(original_excerpt) >= 80`). There is deliberately no upper
- * bound here — a 150+ word original is exactly what makes phase 1
- * impenetrable, and is a valid, not an over-length, Wall original.
+ * V01 (social pilot 02a) note: this used to match a live `wallGate` floor
+ * (`wallGate` in ./premises.ts required `wordCount(original_excerpt) >= 80`)
+ * on the theory that phase 1's scrolling wall needed a long original excerpt
+ * to outrun the viewer. That theory died at T08/R02: phase 1 no longer
+ * scrolls the card's own excerpt at all — it scrolls the surrounding
+ * CHAPTER block (`social/src/render/chapter-text.ts`'s
+ * `buildChapterTextBlock`), which repeats whole chapter laps until IT clears
+ * the travel floor. V01 deleted the corresponding floor from `wallGate`
+ * itself, so this constant and `withinWallOriginalLimit` below no longer
+ * mirror any live gate — nothing in the pipeline calls either of them
+ * outside their own unit tests. Left in place (not deleted) because
+ * removing them is a separate, unscoped decision from V01's; there is
+ * deliberately no upper bound either way — a 150+ word original is exactly
+ * what makes phase 1 impenetrable, and is a valid, not an over-length, Wall
+ * original.
  */
 export const WALL_ORIGINAL_MIN_WORDS = 80;
 
@@ -307,8 +317,10 @@ export const WALL_ORIGINAL_MIN_WORDS = 80;
 // the channel is one Wall a day, drawn from the Wall pool, nothing else.
 
 /**
- * True when a Wall original of `wordCountValue` words clears the format's
- * floor. No ceiling — see `WALL_ORIGINAL_MIN_WORDS` above.
+ * True when a Wall original of `wordCountValue` words clears
+ * `WALL_ORIGINAL_MIN_WORDS`. No ceiling — see that constant's doc comment,
+ * including the V01 note that this floor is no longer enforced anywhere in
+ * the live pipeline.
  */
 export function withinWallOriginalLimit(wordCountValue: number): boolean {
   return wordCountValue >= WALL_ORIGINAL_MIN_WORDS;
@@ -350,7 +362,7 @@ const VOICE_REMINDER = `This app's voice (docs/BRANDING.md) is direct, second pe
 
 const WALL_RUBRIC_TASK = `You are scoring a card for "The Wall" — a social format with two phases. Phase 1 shows the ORIGINAL passage as a dense wall of text that visually outruns the viewer before they can finish reading it. Phase 2 hard-cuts to ONE plain-English sentence, alone on a quiet screen, with zero preceding context.
 
-Every card you see has already passed a mechanical gate: the original excerpt is at least 80 words, and every line in the candidate list below is a real, complete sentence lifted verbatim from the plain English translation. Your job is scoring and selection, not gatekeeping — do not reject the card itself.
+Every card you see has already passed a mechanical gate: every line in the candidate list below is a real, complete sentence lifted verbatim from the plain English translation, standing alone with no preceding context. Your job is scoring and selection, not gatekeeping — do not reject the card itself.
 
 Score TWO things, each 1-5:
 

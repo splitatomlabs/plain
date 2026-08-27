@@ -704,17 +704,27 @@ export interface WallEntry {
 }
 
 /**
- * The Wall's landing-line gate. An entry survives only when both hold:
- *  - the original excerpt is long enough to outrun the viewer in phase 1
- *    (>=80 words, matching MechanicalGates.wallLength);
- *  - the card has a clean standalone sentence to cut to in phase 2
- *    (`selectLandingLine` returns non-null).
+ * The Wall's landing-line gate. An entry survives when the card has a clean
+ * standalone sentence to cut to in phase 2 (`selectLandingLine` returns
+ * non-null) — nothing else.
+ *
+ * This used to also require `original_excerpt` to be >=80 words long, on the
+ * theory that phase 1's scrolling wall of text needed enough of the card's
+ * own excerpt to outrun the viewer before the hard cut. That theory died at
+ * this plan's own T08/R02: phase 1 no longer scrolls the card's
+ * `original_excerpt` at all — it scrolls the surrounding CHAPTER block built
+ * by `buildChapterTextBlock` (`social/src/render/chapter-text.ts`), which
+ * repeats whole chapter laps until the block clears the travel floor on its
+ * own. A 9-word excerpt outruns the viewer exactly as well as a 200-word
+ * one, because the excerpt itself is no longer what's on screen during
+ * phase 1. `original_word_count` is kept on `WallEntry` as plain measured
+ * data (some formats/reporting still find it informative) but no longer
+ * gates anything here.
  */
 export function wallGate(cards: Card[]): WallEntry[] {
   const entries: WallEntry[] = [];
   for (const card of cards) {
     const originalWordCount = wordCount(card.original_excerpt);
-    if (originalWordCount < 80) continue;
     const landingLine = selectLandingLine(card);
     if (!landingLine) continue;
     entries.push({
@@ -754,8 +764,9 @@ export function wallGate(cards: Card[]): WallEntry[] {
  * English. Matched case-insensitively at a word boundary; every OCCURRENCE
  * counts (a repeated marker counts more than once), not just distinct
  * markers — see `classifyWallSubTypes` for why (measured against the real
- * corpus: counting occurrences gives 222 over the >=80-word gate; counting
- * distinct markers per card gives 185, which does not match the plan).
+ * corpus: counting occurrences gives 301 over the full 1,615-card corpus;
+ * counting distinct markers per card gives 242, which does not match the
+ * plan).
  */
 export const ARCHAIC_MARKERS = [
   "thou",
@@ -798,22 +809,33 @@ export interface WallSubTypeClassification {
  * Classify a card's `original_excerpt` into its Wall visual-archaism
  * sub-type(s). Pure and standalone (does not require the T02 landing-line
  * gate) so the corpus test can assert its counts directly over the full
- * >=80-word wallLength set (1,326 cards), independent of how many of those
- * survive `wallGate`.
+ * corpus (1,615 cards), independent of how many of those survive
+ * `wallGate`.
  *
  * Sub-types are NOT mutually exclusive — a card thick with archaic diction
  * AND full of semicolon cascades matches both `thou_wall` and `cascade`.
  * `reserve` is true only when none of the three match.
  *
- * Measured over the 1,326-card >=80-word gate: Thou Wall 222, Cascade 204,
- * Scene 137 (the plan's own estimate for Scene was 176; that figure does
+ * Measured over the full 1,615-card corpus: Thou Wall 301, Cascade 217,
+ * Scene 144 (the plan's own estimate for Scene was 176; that figure does
  * not reproduce under any quote-character definition tried — curly quotes
- * gives 203, checking either plain_english or original_excerpt gives 311 —
- * so 137, the measured count for ">=2 straight double-quote characters in
- * original_excerpt", is what's implemented and asserted here. Same
- * treatment T01 gave its own unreproducible 674 estimate: implement the
- * clean stated definition, measure it, document the gap, don't contort the
- * definition to hit an estimate).
+ * or checking plain_english instead of original_excerpt both give
+ * different figures — so 144, the measured count for ">=2 straight
+ * double-quote characters in original_excerpt", is what's implemented and
+ * asserted here. Same treatment T01 gave its own unreproducible 674
+ * estimate: implement the clean stated definition, measure it, document
+ * the gap, don't contort the definition to hit an estimate).
+ *
+ * V01 (social pilot 02a) dropped this doc comment's prior figures (Thou
+ * Wall 222 / Cascade 204 / Scene 137), which were measured over an
+ * artificial `wordCount(original_excerpt) >= 80` filter borrowed from
+ * `wallGate`'s own now-deleted word-count floor (see that function's doc
+ * comment for why the floor died). This function never depended on that
+ * floor — it has always run over any card's `original_excerpt` regardless
+ * of length — so once `wallGate` stopped applying it, measuring this
+ * function's corpus-wide counts against that same dead filter was no
+ * longer measuring anything meaningful; the full corpus is the clean
+ * population.
  */
 export function classifyWallSubTypes(card: Card): WallSubTypeClassification {
   const text = card.original_excerpt;
@@ -860,12 +882,13 @@ export interface RankedWallEntry extends WallEntry {
  * line) by visual-archaism sub-type.
  *
  * The sub-type counts here are necessarily SMALLER than
- * `classifyWallSubTypes`'s own corpus-wide counts (222/204/137): those are
- * measured over all 1,326 length-gated cards, while `rankWall` only ever
- * sees the 1,003 cards that also survive the landing-line gate. Call
- * `classifyWallSubTypes` directly (or via `mechanicalGates`-style corpus
- * tests) to reproduce the 1,326-card figures; use `rankWall`'s own output
- * to measure the ranked-pool figures.
+ * `classifyWallSubTypes`'s own corpus-wide counts (301/217/144): those are
+ * measured over the full 1,615-card corpus, while `rankWall` only ever sees
+ * the cards that also survive the landing-line gate (V01, social pilot
+ * 02a: 1,161, after the >=80-word floor that used to also apply here was
+ * deleted from `wallGate` — see that function's doc comment). Call
+ * `classifyWallSubTypes` directly to reproduce the full-corpus figures; use
+ * `rankWall`'s own output to measure the ranked-pool figures.
  */
 export function rankWall(cards: Card[]): RankedWallEntry[] {
   const entries = wallGate(cards);
@@ -912,8 +935,9 @@ export interface QuestionEntry {
 // diatribe transcript that natively matches the question/answer format. That
 // skew CANNOT be fixed inside The Question's own pool without discarding
 // otherwise-good material, and T05 is explicitly scoped not to try. Instead,
-// The Wall — whose ranked pool (1,003 entries; see `rankWall`) is more than
-// ten times the size of The Question's — absorbs the correction: it is
+// The Wall — whose ranked pool (1,161 entries as of V01's removal of the
+// >=80-word floor; see `rankWall`) is more than ten times the size of The
+// Question's — absorbs the correction: it is
 // weighted AWAY from Epictetus and TOWARD Marcus Aurelius and Seneca so that
 // once a week's Question and Wall posts are combined, the OVERALL author mix
 // lands closer to even than The Question's pool ever could on its own.
