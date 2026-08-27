@@ -2972,3 +2972,61 @@ cost, reversible); and add a per-week QUOTA rather than an adjacency rule or a p
   a wall, so it is not the same defect, but a 12.5s held frame is a large change in feel from the 3.0s the
   format was tuned around, and it was not a decision anyone made — it fell out of the floor. Raised with the
   user.
+
+## Drop the 15s duration floor (2026-08-27, user)
+
+User, on V16's finding that fewer screens did not yield shorter videos: *"Why can't we have constant hold time
+for each screen and vary the video length?"*
+
+**We can — the floor is our own convention, not a platform limit.** `plans/Pf39c2-social-pilot-index.md:203`
+states the house profile as "H.264 High L4.0, yuv420p, 1080x1920, 30fps, AAC-LC 48kHz, `+faststart`, 15-59s";
+`encode.ts`'s `TARGET.minDurationSec = 15` is that rule in code and `duration-bounds.ts`'s
+`MIN_POST_DURATION_SECONDS` mirrors it. The 59s ceiling has an evident origin (staying under a minute).
+**The 15s floor has no recorded rationale anywhere in the repo** — searched `docs/`, the index plan and every
+`Pf39c2-*` plan. Externally nothing requires it either: Reels and TikTok accept ~3s; Stories' 15s is a
+per-card MAXIMUM, not a minimum. Best available reading is that it was a "nothing trivially short"
+convention. It is recorded here as unexplained rather than justified after the fact.
+
+Decision (user, 2026-08-27): **drop the floor entirely.** Hold time becomes a constant 3.0s per payoff screen
+on every post, and duration becomes a pure function of screen count — the information moves into the length
+instead of into padding.
+
+| screens | duration | week-1 days |
+|---|---|---|
+| 1 | 5.5s | day 5 |
+| 2 | 8.5s | day 6 |
+| 3 | 11.5s | day 4 |
+| 4 | 14.5s | days 3, 7 |
+| 5 | 17.5s | days 1, 2 |
+
+Week 1 becomes `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5` — mean 12.8s against today's flat 15.7s.
+
+- [~] V17: Remove the minimum-duration floor. `social/src/render/encode.ts` (`TARGET.minDurationSec` and the
+  `verifyEncoded`/house-profile duration check that reads it), `social/src/remotion/duration-bounds.ts`
+  (`MIN_POST_DURATION_SECONDS`, `MIN_POST_DURATION_FRAMES`, `padToMinimumDuration` and its `padFrames`
+  return), and `social/src/remotion/wall-timing.ts`'s `computeWallTiming`, which currently calls
+  `padToMinimumDuration` and extends the last payoff phase by `padFrames`. Keep the 59s MAXIMUM and its check
+  — only the floor goes. Delete `padToMinimumDuration` outright if nothing else calls it (grep first; the
+  doc comments say The Question and The Objection also used it, but both formats were DELETED at D01, so it
+  is likely Wall-only now). Rewrite the affected doc comments to record that the floor was a house
+  convention with no recorded rationale, removed by user decision on 2026-08-27, and that duration is now a
+  pure function of screen count. Test first — `duration-bounds.test.ts`, `wall-timing.test.ts` and any
+  encode/house-profile test asserting the 15s bound need re-anchoring or deleting with a stated reason.
+  Watch for: `wall-gate.ts` rejects on `MAX_POST_DURATION_FRAMES` and `WALL_MAX_DURATION_FRAMES` — neither is
+  the floor, both stay. Acceptance: a 1-screen card computes to 5.5s total with its landing line held exactly
+  3.0s; every payoff phase on every card holds exactly `DEFAULT_LINE_FRAMES`; suite green.
+
+- [ ] V18: Amend the parent plan's house rule — `plans/Pf39c2-social-pilot-index.md:203` still states the
+  profile as "15-59s". Change it to the new bound and add a one-line note that the floor was removed on
+  2026-08-27 by user decision, with the reason (it had no recorded rationale and was forcing short cards to
+  pad onto their final motionless hold, up to 12.5s). Do not change anything else in the index plan.
+  Acceptance: the index plan no longer states a floor this repo does not enforce.
+
+- [ ] V19: Re-render week 1 and re-measure. Expect `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5`. Confirm every
+  payoff frame holds exactly 3.0s (read the computed schedule, not just the MP4 duration), confirm the
+  ffprobe house profile still passes with the floor check gone, and confirm the audio shape survives on a
+  short card — the 5.5s day-5 post is only 2.5s of wall + 3.0s of payoff, so U04/U08's babble -> hard cut ->
+  1s true silence -> slow return has to fit inside a 3.0s tail. MEASURE that specifically: the 1s silence
+  plus the bed's return fade may not have room before the video ends, which would leave the post ending
+  mid-fade or effectively silent. Report what you find rather than assuming it works. Acceptance: 7 Walls
+  render; durations as predicted; the short-card audio tail verified by RMS windowing, not assumed.
