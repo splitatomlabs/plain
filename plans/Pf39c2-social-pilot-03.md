@@ -855,3 +855,43 @@ npm test
 npm run test:e2e --prefix web
 npx tsx social/src/job.ts --date 2026-09-01 --dry-run
 ```
+
+## Review fixes (PR #42 code review, 2026-08-27)
+
+Nine must-fix defects found by the code-reviewer on the full `main...social-pilot-03` diff. None were
+dismissed as false positives. Posted to PR #42 before any fix was applied. M4, M6 and M7 are cases
+where the mocked suite passes but the real integration would fail.
+
+- [x] F01: Fix `readout.ts` `medianViewsByWeek`/`computeWeekTrend` throwing on a `publishedAt` before
+  `PILOT_WEEK_1_START` (M1); validate `--breakout-threshold` instead of letting `NaN` silently make
+  criterion A unsatisfiable (M8); require a minimum sample in both endpoint weeks so criterion B
+  cannot fire from two single-post weeks (M9). Regression test for each.
+- [x] F02: Fix `token-store-firestore.ts` to read inside `runTransaction` so the read set is non-empty
+  and a concurrent writer genuinely conflicts (M2), refusing to overwrite a newer `obtainedAt`. Make
+  `tokens.ts`'s 24h minimum-refresh-age per-platform so it stops gating YouTube, whose access tokens
+  live ~1h (M3). Regression test for each.
+- [x] F03: Fix `job.ts` so pending-YouTube-flips persist somewhere durable rather than the container's
+  ephemeral filesystem, and so `metrics/collect.ts` reads them from the same place (M4); make the R2
+  upload a per-platform precondition rather than a whole-run one, so an R2 failure cannot stop the
+  YouTube upload that does not use R2 (M7). Regression test for each.
+- [x] F04: Fix `metrics/instagram.ts` to skip non-video media rather than requesting Reels-only
+  metrics for every item, and wrap each item so one bad post cannot discard the whole day's Instagram
+  rows (M5). Fix the `collect.test.ts` fixture that masks this. Regression test.
+- [x] F05: Fix `publish/youtube.ts` to send `Authorization: Bearer` on the byte-upload PUT and the
+  wildcard status-query PUT, not just on session initiation (M6). Regression test.
+
+## Follow-up (beyond the review's must-fix set)
+
+- [ ] F06: `job.ts` never persists the Instagram media id, so `metrics/instagram.ts` discovers posts
+  from Instagram's own media list and cannot distinguish a pipeline post from one made by hand.
+  Record the media id at publish time and key collection off it.
+- [ ] F07: `stageTikTokWeek` has no CLI wrapper, so the weekly session — the pilot's most important
+  recurring manual step — requires hand-writing a one-off `tsx` script (documented as a workaround in
+  `docs/SOCIAL_PILOT.md` 5.2). Add a real CLI entry point.
+- [ ] F09: A feed-still-only R2 upload failure is logged as an error but does not affect any
+  `PlatformOutcome` or the exit code, because nothing in the current pipeline consumes the feed
+  still's R2 URL. Decide whether the feed still is still needed at all (02a D01 left one Wall video
+  a day) — and if it is, make its upload failure visible; if it is not, stop rendering it.
+- [ ] F08: Set a deliberate posting timezone and time in `functions/src/socialTrigger.ts` — the
+  current `America/New_York` / `07:53` is a placeholder chosen only to avoid an on-the-hour cron
+  pile-up, not an audience decision.

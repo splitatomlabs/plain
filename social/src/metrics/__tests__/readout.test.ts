@@ -40,6 +40,7 @@ import {
 	maxToMedianRatio,
 	median,
 	medianViewsByWeek,
+	parseBreakoutThreshold,
 	type DailyFollowerSnapshot
 } from '../readout.js';
 import type { MetricsRow } from '../schema.js';
@@ -200,6 +201,58 @@ describe('criterion B — week-1-to-week-4 median trend', () => {
 });
 
 // ---------------------------------------------------------------------------
+// M1 — a pre-pilot (or otherwise unbucketable) publishedAt must not crash the
+// whole readout. `dateToWeekDay` throws for a date before `PILOT_WEEK_1_START`;
+// the fix drops that row from the TREND only, never from median/max/top-5.
+// ---------------------------------------------------------------------------
+
+describe('week bucketing tolerates a pre-pilot publishedAt (M1)', () => {
+	it('excludes a pre-pilot row from weekTrend but still counts it toward median/max/top posts', () => {
+		const prePilot = row({ postId: 'pre-pilot', views: 5_000, publishedAt: '2026-08-20T12:00:00.000Z' });
+		const week1: MetricsRow[] = [100, 90, 110].map((views, i) =>
+			row({ postId: `w1-${i}`, views, publishedAt: `2026-09-0${i + 1}T12:00:00.000Z` })
+		);
+		const week4: MetricsRow[] = [300, 320, 280].map((views, i) =>
+			row({ postId: `w4-${i}`, views, publishedAt: `2026-09-2${2 + i}T12:00:00.000Z` })
+		);
+
+		expect(() => computeReadout({ rows: [prePilot, ...week1, ...week4], now: NOW })).not.toThrow();
+
+		const readout = computeReadout({ rows: [prePilot, ...week1, ...week4], now: NOW });
+		expect(readout.verdict.viable).toBe(true);
+
+		const ig = readout.platforms[0];
+		// The pre-pilot row is dropped from the trend — week 1/4 medians are
+		// exactly the non-pre-pilot rows' medians, unaffected by the outlier.
+		expect(ig.weekTrend).toEqual({ status: 'up', week1Median: 100, week4Median: 300 });
+		// But it still counts everywhere else: it is the highest-viewed post.
+		expect(ig.maxViews).toBe(5_000);
+		expect(ig.topPosts[0].postId).toBe('pre-pilot');
+	});
+});
+
+// ---------------------------------------------------------------------------
+// M9 — two single-post endpoint weeks must not read as a trend. The module
+// header promises "insufficient-data" rather than a fabricated two-point
+// trend; `MIN_TREND_SAMPLE_SIZE` is what actually enforces that.
+// ---------------------------------------------------------------------------
+
+describe('criterion B requires a minimum sample in both endpoint weeks, not just non-empty weeks (M9)', () => {
+	it('reports insufficient-data for one week-1 post and one week-4 post with higher views, and the verdict is not viable on that alone', () => {
+		const rows: MetricsRow[] = [
+			row({ postId: 'w1-only', views: 100, publishedAt: '2026-09-01T12:00:00.000Z' }),
+			row({ postId: 'w4-only', views: 500, publishedAt: '2026-09-22T12:00:00.000Z' })
+		];
+
+		const trend = computeWeekTrend(rows);
+		expect(trend.status).toBe('insufficient-data');
+
+		const readout = computeReadout({ rows, now: NOW });
+		expect(readout.verdict.viable).toBe(false);
+	});
+});
+
+// ---------------------------------------------------------------------------
 // The small pure statistics.
 // ---------------------------------------------------------------------------
 
@@ -321,5 +374,34 @@ describe('computeVerdict is exercised through computeReadout, and directly', () 
 		});
 		const verdictAgain = computeVerdict(readout.platforms);
 		expect(verdictAgain).toEqual(readout.verdict);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// M8 — a non-numeric or negative --breakout-threshold must throw a clear
+// error, not silently make criterion A unsatisfiable (`views >= NaN` is
+// false for every row, which used to print a false "NOT VIABLE" with no
+// error at all).
+// ---------------------------------------------------------------------------
+
+describe('parseBreakoutThreshold validates --breakout-threshold explicitly (M8)', () => {
+	it('throws a clear error for a non-numeric value', () => {
+		expect(() => parseBreakoutThreshold('ten-thousand')).toThrow(/breakout-threshold/);
+	});
+
+	it('throws a clear error for a negative value', () => {
+		expect(() => parseBreakoutThreshold('-100')).toThrow(/breakout-threshold/);
+	});
+
+	it('throws a clear error for zero', () => {
+		expect(() => parseBreakoutThreshold('0')).toThrow(/breakout-threshold/);
+	});
+
+	it('returns undefined when not supplied at all, so the default still applies', () => {
+		expect(parseBreakoutThreshold(undefined)).toBeUndefined();
+	});
+
+	it('returns the parsed number for a valid positive value', () => {
+		expect(parseBreakoutThreshold('5000')).toBe(5000);
 	});
 });

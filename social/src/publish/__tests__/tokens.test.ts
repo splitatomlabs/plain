@@ -208,6 +208,29 @@ describe('ensureFreshToken — the >=24h minimum age rule', () => {
 		expect(set).toHaveBeenCalledTimes(1);
 		expect(result).toEqual(newToken);
 	});
+
+	it('the 24h floor is Instagram-specific: a YouTube token younger than 24h IS still refreshed once near expiry', async () => {
+		// YouTube access tokens live ~1 hour, so a token obtained 30 minutes ago
+		// that already expires in 10 minutes must be refreshed immediately — the
+		// Instagram-only 24h age floor must not gate this platform.
+		const youngYouTubeToken = makeToken({
+			platform: 'youtube',
+			obtainedAt: offset(NOW, -30 * 60 * 1000),
+			expiresAt: offset(NOW, 10 * 60 * 1000),
+		});
+		expect(Date.parse(NOW) - Date.parse(youngYouTubeToken.obtainedAt)).toBeLessThan(MIN_REFRESH_AGE_MS);
+
+		const newToken = makeToken({ platform: 'youtube', value: 'refreshed-youtube-token', obtainedAt: NOW });
+		const { store, set } = makeFakeStore(youngYouTubeToken);
+		const refresh = vi.fn(async () => newToken);
+
+		const result = await ensureFreshToken({ store, platform: 'youtube', now: NOW, refresh });
+
+		expect(refresh).toHaveBeenCalledTimes(1);
+		expect(refresh).toHaveBeenCalledWith(youngYouTubeToken, NOW);
+		expect(set).toHaveBeenCalledTimes(1);
+		expect(result).toEqual(newToken);
+	});
 });
 
 describe('ensureFreshToken — persist before use (critical)', () => {

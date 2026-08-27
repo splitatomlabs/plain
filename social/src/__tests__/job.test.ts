@@ -58,6 +58,7 @@ const ARGS: JobArgs = {
 	outDir: '/fake/out',
 	scheduleDir: '/fake/schedule-dir',
 	pendingFlipsPath: '/fake/pending-youtube-flips.json',
+	pendingFlipsStore: 'firestore',
 	dryRun: false
 };
 
@@ -223,6 +224,35 @@ describe('assets are uploaded to R2 before any post is attempted', () => {
 });
 
 // ---------------------------------------------------------------------------
+// M7 regression (code review): an R2 failure is a per-platform precondition,
+// not a whole-run one — Instagram needs the public R2 URL, YouTube does not.
+// ---------------------------------------------------------------------------
+
+describe('an R2 upload failure only fails Instagram, never YouTube', () => {
+	it('uploadAsset rejecting fails Instagram with a clear reason but still attempts and reports YouTube ok, and the run exit status reflects the partial failure', async () => {
+		const deps = makeDeps();
+		deps.uploadAsset = vi.fn(async () => {
+			throw new Error('R2 outage: connection refused');
+		});
+
+		const result = await runJob(ARGS, deps);
+
+		const instagram = result.outcomes.find((o) => o.platform === 'instagram');
+		const youtube = result.outcomes.find((o) => o.platform === 'youtube');
+
+		expect(instagram?.status).toBe('failed');
+		expect(instagram?.message).toContain('R2 outage: connection refused');
+		expect(deps.publishInstagram).not.toHaveBeenCalled(); // never attempted without a video URL.
+
+		expect(deps.publishYouTube).toHaveBeenCalledTimes(1); // attempted from the local file regardless.
+		expect(youtube?.status).toBe('ok');
+
+		expect(result.exitCode).toBe(1); // something failed...
+		expect(result.outcomes).toHaveLength(2); // ...but only after BOTH were attempted.
+	});
+});
+
+// ---------------------------------------------------------------------------
 // --dry-run
 // ---------------------------------------------------------------------------
 
@@ -373,5 +403,44 @@ describe('pending YouTube flips', () => {
 		await runJob(ARGS, deps);
 
 		expect(deps.pendingFlips.write).not.toHaveBeenCalled();
+	});
+
+	// M4 regression (code review): the flips store used to be a plain JSON
+	// file on Cloud Run's throwaway container filesystem, so every real run
+	// effectively started from an empty read — the durable fix is only
+	// proven if a run whose store ALREADY holds a previous day's entry
+	// preserves it, rather than a write that happens to look right against
+	// an empty starting list.
+	it('writes the MERGED list — a previously-stored day survives alongside today\'s new entry (proves read-modify-write against durable state)', async () => {
+		const priorFlip = { date: '2026-08-25', cardId: 'meditations-08-020', videoId: 'yt-video-0' };
+		const deps = makeDeps({
+			pendingFlips: {
+				read: vi.fn(async () => [priorFlip]),
+				write: vi.fn(async () => {})
+			}
+		});
+
+		await runJob(ARGS, deps);
+
+		expect(deps.pendingFlips.write).toHaveBeenCalledTimes(1);
+		const written = (deps.pendingFlips.write as ReturnType<typeof vi.fn>).mock.calls[0][0];
+		expect(written).toEqual([priorFlip, { date: DATE, cardId: SLOT.card_id, videoId: 'yt-video-1' }]);
+	});
+
+	it('reports YouTube as "partial" (not "ok") and fails the run\'s exit code when recording the flip fails, even though the upload itself succeeded', async () => {
+		const deps = makeDeps();
+		deps.pendingFlips = {
+			read: vi.fn(async () => []),
+			write: vi.fn(async () => {
+				throw new Error('Firestore write failed: deadline exceeded');
+			})
+		};
+
+		const result = await runJob(ARGS, deps);
+
+		const youtube = result.outcomes.find((o) => o.platform === 'youtube');
+		expect(youtube?.status).toBe('partial');
+		expect(youtube?.message).toContain('yt-video-1');
+		expect(result.exitCode).toBe(1); // a video whose id was never durably recorded is not a clean success.
 	});
 });

@@ -16,6 +16,9 @@
  *     and still throws if BOTH calls fail (a genuine outage).
  *   - `collectInstagramRows` filters to the 30-day window and builds rows
  *     with `follows: null` always.
+ *   - M5 regressions: a non-`VIDEO` media item is skipped without an
+ *     `/insights` call ever being made for it, and one item's `/insights`
+ *     call failing doesn't abort collection of the rest of the day's rows.
  */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -195,7 +198,7 @@ describe('collectInstagramRows', () => {
 	it('always sets follows to null — per-post follow attribution does not exist on Instagram', async () => {
 		const now = '2026-09-01T00:00:00.000Z';
 		const fetchFn = vi.fn();
-		fetchFn.mockResolvedValueOnce(jsonResponse({ data: [{ id: 'm1', timestamp: now, media_type: 'IMAGE' }] }));
+		fetchFn.mockResolvedValueOnce(jsonResponse({ data: [{ id: 'm1', timestamp: now, media_type: 'VIDEO' }] }));
 		fetchFn.mockResolvedValueOnce(jsonResponse({ data: [{ name: 'likes', values: [{ value: 5 }] }] }));
 
 		const rows = await collectInstagramRows({ config: CONFIG, now, fetchFn });
@@ -204,6 +207,52 @@ describe('collectInstagramRows', () => {
 		expect(rows[0].follows).toBeNull();
 		expect(rows[0].platform).toBe('instagram');
 		expect(rows[0].format).toBe('wall');
+	});
+
+	it('M5 regression: one item whose insights call fails does not abort collection of the rest of the day\'s rows', async () => {
+		const now = '2026-09-01T00:00:00.000Z';
+		const fetchFn = vi.fn();
+		fetchFn.mockResolvedValueOnce(
+			jsonResponse({
+				data: [
+					{ id: 'bad', timestamp: now, media_type: 'VIDEO', video_duration: 10 },
+					{ id: 'good', timestamp: now, media_type: 'VIDEO', video_duration: 10 }
+				]
+			})
+		);
+		// The FIRST item's /insights call errors...
+		fetchFn.mockResolvedValueOnce(jsonResponse(metaError(100, 'Invalid parameter')));
+		// ...but the SECOND item's /insights call still happens and succeeds.
+		fetchFn.mockResolvedValueOnce(jsonResponse({ data: [{ name: 'plays', values: [{ value: 20 }] }] }));
+
+		const rows = await collectInstagramRows({ config: CONFIG, now, fetchFn });
+
+		expect(rows).toHaveLength(1);
+		expect(rows[0].postId).toBe('good');
+		expect(rows[0].views).toBe(20);
+	});
+
+	it('M5 regression: a non-video media item is skipped without an insights call being made at all', async () => {
+		const now = '2026-09-01T00:00:00.000Z';
+		const fetchFn = vi.fn();
+		fetchFn.mockResolvedValueOnce(
+			jsonResponse({
+				data: [
+					{ id: 'still-image', timestamp: now, media_type: 'IMAGE' },
+					{ id: 'reel', timestamp: now, media_type: 'VIDEO', video_duration: 10 }
+				]
+			})
+		);
+		fetchFn.mockResolvedValueOnce(jsonResponse({ data: [{ name: 'plays', values: [{ value: 7 }] }] }));
+
+		const rows = await collectInstagramRows({ config: CONFIG, now, fetchFn });
+
+		expect(rows).toHaveLength(1);
+		expect(rows[0].postId).toBe('reel');
+		// Exactly 2 calls total: one media list, one insights call for the VIDEO item only — none for the IMAGE item.
+		expect(fetchFn).toHaveBeenCalledTimes(2);
+		const insightsCalls = fetchFn.mock.calls.filter((call: unknown[]) => String(call[0]).includes('/still-image/insights'));
+		expect(insightsCalls).toHaveLength(0);
 	});
 });
 

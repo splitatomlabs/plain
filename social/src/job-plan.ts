@@ -22,7 +22,17 @@ import type { ScheduleSlot } from './schedule-types.js';
 // ---------------------------------------------------------------------------
 
 export type PlatformName = 'instagram' | 'youtube';
-export type PlatformStatus = 'ok' | 'failed' | 'dry-run';
+/**
+ * `'partial'` (code review M4 fix): the platform's own post genuinely
+ * succeeded, but some piece of required bookkeeping around it did not — right
+ * now that means exactly one thing, a YouTube upload whose video id failed to
+ * be recorded in the durable pending-flips store. Deliberately NOT folded
+ * into `'ok'`: a video that landed on YouTube but that T07's weekly
+ * TikTok/flip session and the metrics readout can never find again is not a
+ * clean success, and `exitCodeForOutcomes` treats it as a failure for exactly
+ * that reason — a human needs to notice and re-record it by hand.
+ */
+export type PlatformStatus = 'ok' | 'partial' | 'failed' | 'dry-run';
 
 export interface PlatformOutcome {
 	platform: PlatformName;
@@ -31,9 +41,9 @@ export interface PlatformOutcome {
 	message: string;
 }
 
-/** The job's own exit status: non-zero once ANYTHING failed, but only decided after every platform was attempted. */
+/** The job's own exit status: non-zero once ANYTHING failed OR partially failed, but only decided after every platform was attempted. */
 export function exitCodeForOutcomes(outcomes: PlatformOutcome[]): number {
-	return outcomes.some((outcome) => outcome.status === 'failed') ? 1 : 0;
+	return outcomes.some((outcome) => outcome.status === 'failed' || outcome.status === 'partial') ? 1 : 0;
 }
 
 /** One structured, human-readable log line per outcome — `job.ts` logs exactly one of these per platform, every run. */
@@ -120,4 +130,23 @@ export function parsePendingFlips(raw: string): PendingYouTubeFlip[] {
 /** The pending-flips file's on-disk shape: pretty-printed JSON, newline-terminated (matches `post-metadata.ts`'s convention). */
 export function serializePendingFlips(flips: PendingYouTubeFlip[]): string {
 	return `${JSON.stringify(flips, null, 2)}\n`;
+}
+
+/**
+ * The durable store `job.ts` records a day's uploaded YouTube video id into,
+ * and `metrics/collect.ts` reads back to know which videos to poll (M4 fix,
+ * Pf39c2-social-pilot-03 code review). Defined here (not in `job.ts`) so both
+ * `job.ts`'s Firestore-backed default and `metrics/collect.ts`'s reader can
+ * depend on this one shape without importing `job.ts` itself — mirrors
+ * `tokens.ts` defining `TokenStore` for `token-store-firestore.ts` to
+ * implement, rather than the store's own module owning the type.
+ *
+ * `write` always receives the FULL list (already merged via
+ * `upsertPendingFlip`) — a durable implementation persists that whole list
+ * back, read-modify-write, never appending blindly and never treating a
+ * previously-empty read as license to drop older entries.
+ */
+export interface PendingFlipsStore {
+	read(): Promise<PendingYouTubeFlip[]>;
+	write(flips: PendingYouTubeFlip[]): Promise<void>;
 }

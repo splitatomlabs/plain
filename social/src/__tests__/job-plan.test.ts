@@ -79,6 +79,14 @@ describe('exitCodeForOutcomes', () => {
 		];
 		expect(exitCodeForOutcomes(outcomes)).toBe(1);
 	});
+
+	it('is 1 when any outcome only partially succeeded (M4: an unrecorded YouTube flip is not a clean success)', () => {
+		const outcomes: PlatformOutcome[] = [
+			{ platform: 'instagram', status: 'ok', message: 'fine' },
+			{ platform: 'youtube', status: 'partial', message: 'uploaded but not recorded' }
+		];
+		expect(exitCodeForOutcomes(outcomes)).toBe(1);
+	});
 });
 
 describe('formatOutcomeLine / formatExpiryAlertLine', () => {

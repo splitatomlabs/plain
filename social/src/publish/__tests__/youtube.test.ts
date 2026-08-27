@@ -123,6 +123,7 @@ describe('uploadVideoToYouTube — happy path', () => {
 		const [uploadUrl, uploadInit] = fetchFn.mock.calls[1];
 		expect(uploadUrl).toBe(SESSION_URI);
 		expect(uploadInit.method).toBe('PUT');
+		expect(uploadInit.headers.Authorization).toBe(`Bearer ${CONFIG.accessToken}`);
 		expect(uploadInit.headers['Content-Range']).toBe(`bytes 0-${VIDEO_BYTES.length - 1}/${VIDEO_BYTES.length}`);
 		expect(uploadInit.headers['Content-Length']).toBe(String(VIDEO_BYTES.length));
 
@@ -372,6 +373,7 @@ describe('uploadVideoToYouTube — 5xx retries with backoff', () => {
 		// The status-query call used the */total form with no body.
 		const [, statusQueryInit] = fetchFn.mock.calls[2];
 		expect(statusQueryInit.method).toBe('PUT');
+		expect(statusQueryInit.headers.Authorization).toBe(`Bearer ${CONFIG.accessToken}`);
 		expect(statusQueryInit.headers['Content-Range']).toBe(`bytes */${VIDEO_BYTES.length}`);
 		expect(statusQueryInit.body).toBeUndefined();
 

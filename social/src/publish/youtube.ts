@@ -42,7 +42,10 @@
  *      comes back in the `Location` response header — not the body.
  *   2. PUT the video bytes to that session URI, with a `Content-Range:
  *      bytes <start>-<end>/<total>` header on every attempt (even the
- *      first, which is `bytes 0-<total-1>/<total>`).
+ *      first, which is `bytes 0-<total-1>/<total>`) and an `Authorization:
+ *      Bearer <token>` header — the session URI is not itself a bearer of
+ *      auth; every PUT to it (including the wildcard status-query PUT) still
+ *      needs the credential, or YouTube 401s the upload.
  *
  *   **308 Resume Incomplete**: the server may accept only part of the PUT
  *   body (e.g. behind a flaky connection) and respond `308` with a `Range`
@@ -328,11 +331,23 @@ type UploadStatusResult = { done: true; videoId: string } | { done: false; bytes
  * body. The server replies exactly as it would to a real PUT — `308` +
  * `Range` if partial, or a
  * `200`/`201` completion body if the upload had actually finished.
+ *
+ * Sends `Authorization: Bearer <config.accessToken>` — like every other
+ * request in this module, YouTube requires a credential on this PUT too,
+ * not just on session initiation.
  */
-async function queryUploadStatus(sessionUri: string, total: number, fetchFn: FetchFn): Promise<UploadStatusResult> {
+async function queryUploadStatus(
+	sessionUri: string,
+	total: number,
+	fetchFn: FetchFn,
+	config: YouTubeConfig
+): Promise<UploadStatusResult> {
 	const response = await fetchFn(sessionUri, {
 		method: 'PUT',
-		headers: { 'Content-Range': `bytes */${total}` },
+		headers: {
+			Authorization: `Bearer ${config.accessToken}`,
+			'Content-Range': `bytes */${total}`,
+		},
 	});
 
 	if (response.status === 200 || response.status === 201) {
@@ -345,6 +360,7 @@ async function queryUploadStatus(sessionUri: string, total: number, fetchFn: Fet
 }
 
 interface UploadBytesParams {
+	config: YouTubeConfig;
 	sessionUri: string;
 	bytes: Buffer;
 	mimeType: string;
@@ -356,9 +372,13 @@ interface UploadBytesParams {
  * PUTs `bytes` to `sessionUri`, resuming from wherever the server last left
  * off on a 308 and backing off on a 5xx, per this file's header. Bounded at
  * `UPLOAD_MAX_ATTEMPTS` total attempts; a 4xx fails immediately.
+ *
+ * Sends `Authorization: Bearer <config.accessToken>` on every byte PUT —
+ * session initiation authenticating is not enough; YouTube requires the
+ * bearer token on the upload PUTs too, per the resumable-upload protocol.
  */
 async function uploadBytesResumable(params: UploadBytesParams): Promise<string> {
-	const { sessionUri, bytes, mimeType, fetchFn, sleep } = params;
+	const { config, sessionUri, bytes, mimeType, fetchFn, sleep } = params;
 	const total = bytes.length;
 	let offset = 0;
 
@@ -367,6 +387,7 @@ async function uploadBytesResumable(params: UploadBytesParams): Promise<string> 
 		const response = await fetchFn(sessionUri, {
 			method: 'PUT',
 			headers: {
+				Authorization: `Bearer ${config.accessToken}`,
 				'Content-Length': String(chunk.length),
 				'Content-Type': mimeType,
 				'Content-Range': `bytes ${offset}-${total - 1}/${total}`,
@@ -412,7 +433,7 @@ async function uploadBytesResumable(params: UploadBytesParams): Promise<string> 
 			// same offset on the next attempt rather than treating the probe's
 			// own failure as fatal.
 			try {
-				const queried = await queryUploadStatus(sessionUri, total, fetchFn);
+				const queried = await queryUploadStatus(sessionUri, total, fetchFn, config);
 				if (queried.done) {
 					return queried.videoId;
 				}
@@ -464,7 +485,7 @@ export async function uploadVideoToYouTube(options: UploadVideoOptions): Promise
 		fetchFn,
 		sleep,
 	});
-	const videoId = await uploadBytesResumable({ sessionUri, bytes, mimeType, fetchFn, sleep });
+	const videoId = await uploadBytesResumable({ config, sessionUri, bytes, mimeType, fetchFn, sleep });
 
 	return { videoId };
 }

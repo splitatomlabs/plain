@@ -6,16 +6,20 @@
  * ONE source per platform, justified below, rather than inventing a third
  * shape:
  *
- *   - **YouTube -> `content/social/pending-youtube-flips.json`** (T08's own
- *     file, parsed here via `job-plan.ts`'s `parsePendingFlips` — reused,
- *     not reimplemented). `job.ts`'s own header explains why this file
- *     exists at all: it is "the only place that calls
- *     `uploadVideoToYouTube` and therefore the only place that learns a
- *     real video id," so it is exactly and only the record of which videos
- *     the pilot actually uploaded and when. It is durable (committed JSON,
- *     not the ephemeral `--out` render directory) and already carries the
- *     one piece of information this module cannot get any other way: the
- *     real YouTube video id.
+ *   - **YouTube -> the durable pending-flips store**
+ *     (`publish/pending-flips-store-firestore.ts`'s `PendingFlipsStore`, the
+ *     SAME store `job.ts` writes to — code review M4 fix, superseding this
+ *     module's original design of reading `job.ts`'s own
+ *     `content/social/pending-youtube-flips.json` off disk). That file lived
+ *     in the Cloud Run Job's THROWAWAY container filesystem, so under a real
+ *     execution `collectYouTubeRows` always read back an empty list — this
+ *     module's YouTube half was silently dead for the whole pilot. `job.ts`'s
+ *     own header explains why this record exists at all: it is "the only
+ *     place that calls `uploadVideoToYouTube` and therefore the only place
+ *     that learns a real video id," so it is exactly and only the record of
+ *     which videos the pilot actually uploaded and when — now durable
+ *     (Firestore, the same project the OAuth tokens already live in) and
+ *     readable by both processes.
  *
  *   - **Instagram -> Instagram's OWN media list, not a local record.**
  *     Neither candidate local source fits: the pending-flips file is
@@ -93,15 +97,14 @@ import {
 } from './schema.js';
 import { collectInstagramRows, fetchInstagramFollowerSnapshot, type InstagramMetricsConfig, type FetchFn as InstagramFetchFn } from './instagram.js';
 import { collectYouTubeRows, type YouTubeMetricsConfig, type FetchFn as YouTubeFetchFn } from './youtube.js';
-import { parsePendingFlips } from '../job-plan.js';
 import type { PendingYouTubeFlip } from '../publish/tiktok-manual.js';
 import { createFirestoreTokenStore } from '../publish/token-store-firestore.js';
+import { createFirestorePendingFlipsStore } from '../publish/pending-flips-store-firestore.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 /** `social/src/metrics` -> repo root. */
 const REPO_ROOT = path.resolve(moduleDir, '..', '..', '..');
 const DEFAULT_METRICS_DIR = path.join(REPO_ROOT, 'content', 'social', 'metrics');
-const DEFAULT_PENDING_FLIPS_PATH = path.join(REPO_ROOT, 'content', 'social', 'pending-youtube-flips.json');
 
 // ---------------------------------------------------------------------------
 // Injectable collaborators — every one of these is a plain function/store so
@@ -279,19 +282,28 @@ function createDefaultFollowerSnapshotStore(): FollowerSnapshotStore {
 	};
 }
 
+/**
+ * Reads the same durable `PendingFlipsStore` `job.ts` writes to (M4 fix) —
+ * NOT the repo-local `content/social/pending-youtube-flips.json` this used
+ * to read, which lived on the Cloud Run Job's throwaway container
+ * filesystem and was therefore always empty by the time this collector ran
+ * as a separate execution. See this file's header for the full story.
+ *
+ * Firestore client construction is deferred to the FIRST actual call, not
+ * this function's own call (which happens as a default-parameter evaluation
+ * on every `runMetricsCollection` call that doesn't override
+ * `readPendingYouTubeFlips` — including a YouTube-less, Instagram-only run,
+ * which should not need Firestore credentials at all).
+ */
 function createDefaultPendingFlipsReader(): PendingFlipsReader {
+	let store: ReturnType<typeof createFirestorePendingFlipsStore> | undefined;
 	return async () => {
-		try {
-			const raw = await readFile(DEFAULT_PENDING_FLIPS_PATH, 'utf-8');
-			return parsePendingFlips(raw);
-		} catch (error) {
-			if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-			throw error;
-		}
+		if (!store) store = createFirestorePendingFlipsStore();
+		return store.read();
 	};
 }
 
-export { DEFAULT_METRICS_DIR, DEFAULT_PENDING_FLIPS_PATH };
+export { DEFAULT_METRICS_DIR };
 
 // ---------------------------------------------------------------------------
 // CLI entry point — `npx tsx social/src/metrics/collect.ts`. Reuses the same

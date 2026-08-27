@@ -47,17 +47,29 @@
  * `publish/tiktok-manual.ts` and reused here, not redefined). This job is
  * the only place that calls `uploadVideoToYouTube` and therefore the only
  * place that learns a real video id, so it is the natural place to persist
- * that list. Persisted as a plain JSON file under `content/social/`
- * (`pending-youtube-flips.json`, alongside the committed
- * `pilot-schedule-w<NN>.json` files this workspace already keeps there) —
- * NOT Firestore: Firestore already holds the OAuth tokens (a genuine secret
- * needing atomic, access-controlled storage — see `token-store-firestore.ts`'s
- * header for why), but a list of `{date, cardId, videoId}` records is neither
- * secret nor concurrently written (only this daily job writes it, once a
- * day), so a second cloud dependency buys nothing here. A committed-JSON
- * file is also directly `git diff`-able during the weekly TikTok/flip
- * session, the same property that makes the schedule files themselves plain
- * JSON rather than a database row.
+ * that list.
+ *
+ * PERSISTED IN FIRESTORE BY DEFAULT (code review M4 fix, superseding this
+ * comment's original "plain JSON file, not Firestore" reasoning): under
+ * Cloud Run the job's OWN container filesystem is throwaway — a file written
+ * to `content/social/pending-youtube-flips.json` there vanishes the moment
+ * the execution ends, so every real run was silently losing every video id,
+ * and `metrics/collect.ts`'s YouTube collection (reading that same path) was
+ * permanently empty. `createFirestorePendingFlipsStore`
+ * (`publish/pending-flips-store-firestore.ts`, mirroring
+ * `token-store-firestore.ts`'s pattern exactly — ADC, a `runTransaction`
+ * write-back) is now the default `pendingFlips` store, so both this job and
+ * `metrics/collect.ts` read/write the same durable Firestore document. The
+ * plain-JSON-file implementation (`createLocalPendingFlipsStore`, still
+ * below) is NOT gone — it stays available for local runs and manual testing
+ * via `--pending-flips-store local`, selected EXPLICITLY on the command
+ * line, never silently defaulted to (so nobody accidentally runs a real
+ * production day against a throwaway file again).
+ *
+ * A failed flip-record write is never reported as a clean success either: a
+ * YouTube upload whose id could not be durably recorded is a `'partial'`
+ * outcome (`job-plan.ts`'s `PlatformStatus`), which `exitCodeForOutcomes`
+ * treats as a failure — see `publishYouTubeOutcome` below.
  *
  * DETERMINISM: `--date` is the ONLY source of scheduling decisions — nothing
  * here calls `Date.now()`/`new Date()` for anything that affects WHAT gets
@@ -95,6 +107,19 @@
  * formatting, YouTube title/description, the pending-flip list's parse/
  * merge/serialize) lives in `job-plan.ts`, mirroring the `cli.ts`/
  * `cli-plan.ts` split.
+ *
+ * R2 IS A PER-PLATFORM PRECONDITION, NOT A WHOLE-RUN ONE (code review M7
+ * fix): Instagram genuinely needs the asset's public R2 URL (Meta's Graph
+ * API fetches the video FROM that URL), but YouTube's resumable upload reads
+ * straight from the local rendered file and never touches R2 at all. Both
+ * `uploadAsset` calls below are wrapped in `Promise.allSettled`, not two bare
+ * unguarded `await`s: an R2 outage (or any failure uploading either asset)
+ * now makes ONLY Instagram's outcome `'failed'` — with the R2 error as its
+ * message — while YouTube is still attempted from the local file, exactly as
+ * platform isolation requires. The plan's Decision ("assets are uploaded to
+ * R2 before any post is attempted") still holds structurally: both uploads
+ * are still fully settled, success or failure, before either publish call
+ * starts.
  */
 
 import { parseArgs } from 'node:util';
@@ -119,6 +144,7 @@ import {
 	type TokenStore
 } from './publish/tokens.js';
 import { createFirestoreTokenStore } from './publish/token-store-firestore.js';
+import { createFirestorePendingFlipsStore } from './publish/pending-flips-store-firestore.js';
 import { publishToInstagram, type PublishToInstagramOptions, type PublishToInstagramResult } from './publish/instagram.js';
 import { uploadVideoToYouTube, type UploadVideoOptions, type UploadVideoResult } from './publish/youtube.js';
 import type { PendingYouTubeFlip } from './publish/tiktok-manual.js';
@@ -133,6 +159,7 @@ import {
 	parsePendingFlips,
 	serializePendingFlips,
 	upsertPendingFlip,
+	type PendingFlipsStore,
 	type PlatformName,
 	type PlatformOutcome
 } from './job-plan.js';
@@ -162,9 +189,18 @@ Options:
   --out <dir>                    Render output directory (default: social/out/).
   --schedule-dir <dir>           Directory to read pilot-schedule-w<NN>.json
                                   from (default: content/social/).
-  --pending-flips-file <path>    Where the week's pending YouTube video ids
-                                  are recorded for T07's weekly TikTok/flip
-                                  session (default:
+  --pending-flips-store <kind>   Where the week's pending YouTube video ids
+                                  are durably recorded for T07's weekly
+                                  TikTok/flip session and for
+                                  metrics/collect.ts's YouTube polling:
+                                  "firestore" (default — the same project
+                                  the OAuth tokens already live in) or
+                                  "local" (a plain JSON file — for local
+                                  runs/testing only; a Cloud Run execution's
+                                  filesystem is throwaway, so "local" there
+                                  silently loses every video id).
+  --pending-flips-file <path>    The JSON file path used ONLY when
+                                  --pending-flips-store=local (default:
                                   content/social/pending-youtube-flips.json).
   --dry-run                      Render for real, but perform NO uploads and
                                   NO posts — logs exactly what each platform
@@ -172,12 +208,21 @@ Options:
   --help                        Show this help.`);
 }
 
+export type PendingFlipsStoreKind = 'firestore' | 'local';
+
 export interface JobArgs {
 	date: string;
 	outDir: string;
 	scheduleDir: string;
 	pendingFlipsPath: string;
+	pendingFlipsStore: PendingFlipsStoreKind;
 	dryRun: boolean;
+}
+
+function parsePendingFlipsStoreKind(value: string | undefined): PendingFlipsStoreKind {
+	if (value === undefined || value === 'firestore') return 'firestore';
+	if (value === 'local') return 'local';
+	throw new Error(`--pending-flips-store must be "firestore" or "local", got "${value}"`);
 }
 
 export function parseJobArgs(argv: string[]): JobArgs {
@@ -187,6 +232,7 @@ export function parseJobArgs(argv: string[]): JobArgs {
 			date: { type: 'string' },
 			out: { type: 'string', default: DEFAULT_OUT_DIR },
 			'schedule-dir': { type: 'string', default: SCHEDULE_DIR },
+			'pending-flips-store': { type: 'string' },
 			'pending-flips-file': { type: 'string', default: DEFAULT_PENDING_FLIPS_PATH },
 			'dry-run': { type: 'boolean', default: false },
 			help: { type: 'boolean', default: false }
@@ -208,6 +254,7 @@ export function parseJobArgs(argv: string[]): JobArgs {
 		outDir: values.out ?? DEFAULT_OUT_DIR,
 		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
 		pendingFlipsPath: values['pending-flips-file'] ?? DEFAULT_PENDING_FLIPS_PATH,
+		pendingFlipsStore: parsePendingFlipsStoreKind(values['pending-flips-store']),
 		dryRun: Boolean(values['dry-run'])
 	};
 }
@@ -235,10 +282,11 @@ export interface InstagramAccountConfig {
 }
 export type LoadInstagramAccountConfigFn = () => InstagramAccountConfig;
 
-export interface PendingFlipsStore {
-	read(): Promise<PendingYouTubeFlip[]>;
-	write(flips: PendingYouTubeFlip[]): Promise<void>;
-}
+// `PendingFlipsStore` itself now lives in `job-plan.ts` (imported above) —
+// see that file's doc comment for why: both this module's Firestore-backed
+// default and `metrics/collect.ts`'s reader depend on the same shape without
+// either needing to import this file.
+export type { PendingFlipsStore } from './job-plan.js';
 
 export interface PlatformRefreshFns {
 	instagram: RefreshFn;
@@ -314,30 +362,59 @@ export async function runJob(args: JobArgs, deps: JobDeps): Promise<RunJobResult
 		return { outcomes, exitCode: exitCodeForOutcomes(outcomes) };
 	}
 
-	// Plan Decision, enforced structurally: both uploads below complete
-	// BEFORE either publish call starts — a posting failure can never lose a
-	// render, because the render is already durably in R2 by the time either
-	// platform is even attempted.
+	// Plan Decision, enforced structurally: both uploads below are fully
+	// SETTLED (success or failure — `Promise.allSettled`, not a bare `await`
+	// on each) BEFORE either publish call starts, so a posting failure can
+	// never lose a render. But an R2 failure is now a PER-PLATFORM
+	// precondition, not a whole-run one (code review M7 fix): Instagram
+	// genuinely needs the video's public R2 URL, so a failed video upload
+	// makes ONLY the Instagram outcome 'failed' below — YouTube reads the
+	// local rendered file directly and never touches R2, so it is still
+	// attempted regardless of how the uploads went.
 	logger.info('Uploading assets to R2...');
-	const videoUrl = await deps.uploadAsset({
-		filePath: assetPaths.video,
-		key: postKeyFor(args.date, path.basename(assetPaths.video)),
-		contentType: contentTypeFor(assetPaths.video)
-	});
-	logger.info(`Uploaded ${videoUrl}`);
-	await deps.uploadAsset({
-		filePath: assetPaths.feedStill,
-		key: postKeyFor(args.date, path.basename(assetPaths.feedStill)),
-		contentType: contentTypeFor(assetPaths.feedStill)
-	});
-	logger.info(`Uploaded the Instagram feed still.`);
+	const [videoUploadResult, feedStillUploadResult] = await Promise.allSettled([
+		deps.uploadAsset({
+			filePath: assetPaths.video,
+			key: postKeyFor(args.date, path.basename(assetPaths.video)),
+			contentType: contentTypeFor(assetPaths.video)
+		}),
+		deps.uploadAsset({
+			filePath: assetPaths.feedStill,
+			key: postKeyFor(args.date, path.basename(assetPaths.feedStill)),
+			contentType: contentTypeFor(assetPaths.feedStill)
+		})
+	]);
+
+	let videoUploadError: string | undefined;
+	if (videoUploadResult.status === 'fulfilled') {
+		logger.info(`Uploaded ${videoUploadResult.value}`);
+	} else {
+		videoUploadError = errorMessage(videoUploadResult.reason);
+		logger.error(`Failed to upload the video to R2: ${videoUploadError}`);
+	}
+
+	if (feedStillUploadResult.status === 'fulfilled') {
+		logger.info('Uploaded the Instagram feed still.');
+	} else {
+		// Not fed into either platform's publish call today (see
+		// `renderAssetPaths`/`publishInstagramOutcome` — only the video's R2
+		// URL is ever used), so this alone does not fail an outcome; it is
+		// still logged loudly rather than silently dropped.
+		logger.error(`Failed to upload the Instagram feed still to R2: ${errorMessage(feedStillUploadResult.reason)}`);
+	}
 
 	// Publish independently. Each helper below catches its own errors and
 	// ALWAYS resolves to a PlatformOutcome — see this file's header comment
 	// for why that (not a bare Promise.all over the raw publish calls) is
 	// what actually guarantees platform isolation.
 	const settled = await Promise.allSettled([
-		publishInstagramOutcome({ deps, slot, videoUrl }),
+		videoUploadResult.status === 'fulfilled'
+			? publishInstagramOutcome({ deps, slot, videoUrl: videoUploadResult.value })
+			: Promise.resolve<PlatformOutcome>({
+					platform: 'instagram',
+					status: 'failed',
+					message: `R2 upload of the video failed, so Instagram was never attempted: ${videoUploadError}`
+				}),
 		publishYouTubeOutcome({ deps, args, slot, videoPath: assetPaths.video })
 	]);
 
@@ -424,19 +501,37 @@ async function publishYouTubeOutcome(ctx: {
 		});
 
 		const flipRecorded = await recordPendingFlip(deps, args, slot, result.videoId);
-		const flipNote = flipRecorded ? '' : ' (WARNING: failed to record its pending flip — see the run log)';
-		return { platform: 'youtube', status: 'ok', message: `uploaded private video, id ${result.videoId}${flipNote}` };
+		if (!flipRecorded) {
+			// M4 fix: the upload itself succeeded, but the durable record of its
+			// video id did not — that is not a clean success (T07's weekly
+			// flip session and the metrics readout's ONLY source of exact
+			// per-post follow attribution can never find this video again), so
+			// this is 'partial', not 'ok'. `exitCodeForOutcomes` treats
+			// 'partial' as a failure — see `job-plan.ts`.
+			return {
+				platform: 'youtube',
+				status: 'partial',
+				message:
+					`uploaded private video, id ${result.videoId}, but FAILED to durably record its pending flip — ` +
+					'see the run log; this video is unreachable to the weekly flip session and metrics collection until fixed'
+			};
+		}
+		return { platform: 'youtube', status: 'ok', message: `uploaded private video, id ${result.videoId}` };
 	} catch (error) {
 		return { platform: 'youtube', status: 'failed', message: errorMessage(error) };
 	}
 }
 
 /**
- * Records this run's YouTube upload in the week's pending-flip list. A
- * failure here does NOT fail the YouTube outcome — the video already landed
- * on YouTube successfully; only the bookkeeping for T07's weekly session
- * failed, which is logged loudly but surfaced as a warning on an otherwise-`ok`
- * outcome, not a platform failure.
+ * Records this run's YouTube upload in the week's pending-flip list
+ * (read-modify-write against the durable `deps.pendingFlips` store — see
+ * `job-plan.ts`'s `PendingFlipsStore` doc comment). A failure here does NOT
+ * throw — the video already landed on YouTube successfully — but it is never
+ * silently absorbed either: the caller (`publishYouTubeOutcome`) downgrades
+ * an otherwise-`ok` outcome to `'partial'` on a `false` return, which
+ * `exitCodeForOutcomes` treats as a failed run (M4 fix — this used to be a
+ * warning on an `ok` outcome, which let a lost video id pass as a clean
+ * success).
  */
 async function recordPendingFlip(
 	deps: JobDeps,
@@ -524,7 +619,15 @@ function notImplementedRefresh(platform: Platform): RefreshFn {
 	};
 }
 
-function createDefaultPendingFlipsStore(filePath: string): PendingFlipsStore {
+/**
+ * The LOCAL-FILE `PendingFlipsStore` implementation. NOT the production
+ * default (see `buildDefaultJobDeps` below) — a Cloud Run execution's
+ * filesystem is throwaway, so writing here in production silently loses
+ * every video id (the M4 bug this whole store split fixes). Kept for local
+ * runs and manual testing, selected explicitly via `--pending-flips-store
+ * local`, never by omission.
+ */
+function createLocalPendingFlipsStore(filePath: string): PendingFlipsStore {
 	return {
 		async read() {
 			try {
@@ -540,6 +643,38 @@ function createDefaultPendingFlipsStore(filePath: string): PendingFlipsStore {
 			await writeFile(filePath, serializePendingFlips(flips), 'utf-8');
 		}
 	};
+}
+
+/**
+ * The DURABLE default `PendingFlipsStore` — Firestore, mirroring
+ * `createDefaultTokenStore`'s deferred-construction pattern exactly: the real
+ * `Firestore` client (`createFirestorePendingFlipsStore`,
+ * `publish/pending-flips-store-firestore.ts`) is built on the FIRST real
+ * `read`/`write` call, never at `JobDeps` build time, so `--dry-run` (which
+ * never calls either method) needs no Firestore credentials at all.
+ */
+function createDefaultFirestorePendingFlipsStore(): PendingFlipsStore {
+	let store: PendingFlipsStore | undefined;
+	function ensure(): PendingFlipsStore {
+		if (!store) store = createFirestorePendingFlipsStore();
+		return store;
+	}
+	return {
+		read: (): Promise<PendingYouTubeFlip[]> => ensure().read(),
+		write: (flips: PendingYouTubeFlip[]): Promise<void> => ensure().write(flips)
+	};
+}
+
+/**
+ * Selects the `PendingFlipsStore` implementation for a real run — Firestore
+ * by default, the plain-JSON-file implementation only when
+ * `--pending-flips-store local` is passed explicitly (see this file's header
+ * comment's "PENDING YOUTUBE FLIPS" section).
+ */
+function createPendingFlipsStoreFor(args: JobArgs): PendingFlipsStore {
+	return args.pendingFlipsStore === 'local'
+		? createLocalPendingFlipsStore(args.pendingFlipsPath)
+		: createDefaultFirestorePendingFlipsStore();
 }
 
 /**
@@ -568,7 +703,7 @@ function buildDefaultJobDeps(args: JobArgs, now: string, logger: JobLogger): Job
 		loadInstagramAccountConfig: createDefaultInstagramAccountConfigLoader(),
 		publishInstagram: publishToInstagram,
 		publishYouTube: uploadVideoToYouTube,
-		pendingFlips: createDefaultPendingFlipsStore(args.pendingFlipsPath),
+		pendingFlips: createPendingFlipsStoreFor(args),
 		now,
 		logger
 	};

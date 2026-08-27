@@ -65,12 +65,23 @@
  * (week, day) anchor (`PILOT_WEEK_1_START`) the render CLI uses, so "week 1"
  * and "week 4" here mean exactly the same calendar weeks the schedule and
  * render pipeline already use, not a second, independently-invented
- * week-numbering scheme.
+ * week-numbering scheme. `dateToWeekDay` THROWS for any date before
+ * `PILOT_WEEK_1_START` (and for a malformed date string) — the Instagram
+ * collector discovers posts from the account's own media list, so a
+ * pre-pilot post (or a typo'd TikTok hand-entry date) can legitimately show
+ * up in `rows`. `medianViewsByWeek` catches that per row and DROPS the row
+ * from the trend bucketing rather than letting it crash the whole readout;
+ * that row still counts everywhere else — median/max/max-to-median-ratio/
+ * top-5/breakout-posts are all computed in `computePlatformReadout` directly
+ * from `rows`, never through week bucketing, so dropping a row from the
+ * trend does not drop it from anything else this module reports.
  *
  * HONEST ABOUT SMALL DATASETS: with fewer than 4 pilot weeks of published
- * posts, the week-1-vs-week-4 trend is reported as `'insufficient-data'`
- * rather than computed from whatever two points happen to exist — a
- * two-point "trend" this early would be noise dressed up as a finding.
+ * posts, OR fewer than `MIN_TREND_SAMPLE_SIZE` posts in either week 1 or
+ * week 4, the week-1-vs-week-4 trend is reported as `'insufficient-data'`
+ * rather than computed from whatever points happen to exist — a two-point
+ * "trend" (one post per endpoint week) this early would be noise dressed up
+ * as a finding.
  */
 
 import { readdir, readFile } from 'node:fs/promises';
@@ -117,11 +128,33 @@ export interface WeekMedian {
 	postCount: number;
 }
 
-/** Groups `rows` by the pilot week their `publishedAt` date falls in, then takes each week's median views. Sorted ascending by week. */
+/**
+ * Groups `rows` by the pilot week their `publishedAt` date falls in, then
+ * takes each week's median views. Sorted ascending by week.
+ *
+ * DEFENSIVE BUCKETING (M1): `dateToWeekDay` throws for a date before
+ * `PILOT_WEEK_1_START` or a malformed date string — a real possibility here,
+ * since the Instagram collector discovers posts from the account's own media
+ * list (a pre-pilot post can be in `rows`) and TikTok's metrics are hand-
+ * entered (a typo'd date can be too). A row that cannot be bucketed is
+ * dropped from the TREND ONLY, not from the dataset as a whole — this
+ * function's caller, `computeWeekTrend`, only ever affects `weekTrend`; every
+ * other statistic (`median`, `maxViews`, `maxToMedianRatio`, `topPosts`,
+ * `breakoutPosts`) is computed directly from the un-bucketed `rows` in
+ * `computePlatformReadout` and never calls this function, so those figures
+ * still include the dropped row.
+ */
 export function medianViewsByWeek(rows: Pick<MetricsRow, 'publishedAt' | 'views'>[]): WeekMedian[] {
 	const byWeek = new Map<number, number[]>();
 	for (const row of rows) {
-		const { week } = dateToWeekDay(row.publishedAt.slice(0, 10));
+		let week: number;
+		try {
+			({ week } = dateToWeekDay(row.publishedAt.slice(0, 10)));
+		} catch {
+			// Pre-pilot or otherwise unbucketable publishedAt — drop from the
+			// trend only. See this function's doc comment above.
+			continue;
+		}
 		const views = byWeek.get(week) ?? [];
 		views.push(row.views);
 		byWeek.set(week, views);
@@ -136,16 +169,30 @@ export type WeekTrend =
 	| { status: 'up' | 'down' | 'flat'; week1Median: number; week4Median: number };
 
 /**
+ * The minimum post count required in EACH of week 1 and week 4 before this
+ * file will report an "up"/"down"/"flat" trend at all (M9). A single post
+ * per endpoint week is not a median trend — it is one data point compared to
+ * another, and this file's own header already promises fewer-than-4-weeks
+ * datasets are reported as `'insufficient-data'` rather than a fabricated
+ * two-point "trend"; two single-post weeks are exactly that fabrication with
+ * a full 4 weeks elapsed. Three is the smallest sample where "median" means
+ * something more than "the value I happened to get" — the reviewer's
+ * suggested minimum for the pilot's central go/no-go decision.
+ */
+const MIN_TREND_SAMPLE_SIZE = 3;
+
+/**
  * The pre-registered criterion's "B. Accumulating standing" half, verbatim:
  * "the account's median views trend upward from week 1 to week 4." Requires
- * BOTH week 1 and week 4 to have at least one published post; anything less
- * is `'insufficient-data'`, never a fabricated two-point trend.
+ * BOTH week 1 and week 4 to have at least `MIN_TREND_SAMPLE_SIZE` published
+ * posts each; anything less is `'insufficient-data'`, never a fabricated
+ * two-point trend.
  */
 export function computeWeekTrend(rows: Pick<MetricsRow, 'publishedAt' | 'views'>[]): WeekTrend {
 	const byWeek = medianViewsByWeek(rows);
 	const week1 = byWeek.find((w) => w.week === 1);
 	const week4 = byWeek.find((w) => w.week === 4);
-	if (!week1 || !week4) {
+	if (!week1 || !week4 || week1.postCount < MIN_TREND_SAMPLE_SIZE || week4.postCount < MIN_TREND_SAMPLE_SIZE) {
 		return { status: 'insufficient-data', weeksObserved: byWeek.map((w) => w.week) };
 	}
 	if (week4.medianViews > week1.medianViews) return { status: 'up', week1Median: week1.medianViews, week4Median: week4.medianViews };
@@ -485,6 +532,27 @@ export function formatReadout(readout: Readout): string {
 const METRICS_FILENAME_RE = /^metrics-\d{4}-\d{2}-\d{2}\.json$/;
 
 /**
+ * Parses `--breakout-threshold` strictly (M8). `Number(raw)` alone yields
+ * `NaN` for a typo like `"10,000"` or `"abc"` — and `NaN !== undefined`, so
+ * the CLI's own `values['breakout-threshold'] !== undefined` guard would
+ * never fall back to the default; `views >= NaN` is `false` for every row,
+ * silently making criterion A unsatisfiable and printing "NOT VIABLE ... no
+ * breakout post cleared the threshold" with no error, turning an operator
+ * typo into a false no-go on the pilot's central decision. This function
+ * rejects a non-finite or non-positive value with a clear error naming the
+ * bad input, rather than silently falling back to the default (which would
+ * hide the typo just as effectively).
+ */
+export function parseBreakoutThreshold(raw: string | undefined): number | undefined {
+	if (raw === undefined) return undefined;
+	const parsed = Number(raw);
+	if (!Number.isFinite(parsed) || parsed <= 0) {
+		throw new Error(`Invalid --breakout-threshold "${raw}" — must be a positive, finite number of views.`);
+	}
+	return parsed;
+}
+
+/**
  * Reads and merges every `metrics-<date>.json` file in `metricsDir`, keeping
  * only the LATEST row (by `collectedAt`) per `platform:postId` — the
  * "current" snapshot this module's per-post statistics expect, not every
@@ -546,7 +614,10 @@ Options:
                               affect any computed statistic — every one is
                               derived from the rows' own publishedAt/views.
   --breakout-threshold <n>   Views a post must clear to be a criterion-A
-                              candidate (default: 10000).
+                              candidate (default: 10000). Must be a positive
+                              finite number — a typo'd/negative value throws
+                              rather than silently falling back to the
+                              default.
   --help                      Show this help.`);
 }
 
@@ -574,7 +645,7 @@ async function main(): Promise<void> {
 	// instant stamped on the report for a reproducible re-run.
 	const now = values.now ?? new Date().toISOString();
 
-	const breakoutViewThreshold = values['breakout-threshold'] !== undefined ? Number(values['breakout-threshold']) : undefined;
+	const breakoutViewThreshold = parseBreakoutThreshold(values['breakout-threshold']);
 
 	const rows = await readLatestMetricsRows(metricsDir);
 	const instagramFollowerSnapshots = await readInstagramFollowerSnapshots(metricsDir);

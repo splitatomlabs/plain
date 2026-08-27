@@ -13,13 +13,18 @@
  * Constraints from `plans/Pf39c2-social-pilot-03.md` this module exists to
  * encode:
  *   - Instagram long-lived tokens expire in 60 days and must be refreshed.
- *     Meta rejects a refresh attempt against a token that is not yet at
- *     least 24 hours old — `MIN_REFRESH_AGE_MS` below. When a token is both
- *     near expiry AND younger than 24h, `ensureFreshToken` must NOT attempt
- *     the refresh (it would be rejected anyway) and instead returns the
- *     existing token unchanged. Detecting that a token is stuck in that
- *     window before it actually expires is `expiryAlert`'s job, not
- *     `ensureFreshToken`'s — the daily job (T08) is expected to call both.
+ *     Meta rejects a refresh attempt against an Instagram token that is not
+ *     yet at least 24 hours old — `MIN_REFRESH_AGE_MS` below. This floor is
+ *     an INSTAGRAM-SPECIFIC rule of Meta's refresh endpoint; it does NOT
+ *     apply to YouTube or TikTok, whose token lifecycles are unrelated (a
+ *     YouTube access token lives ~1 hour, so a 24h floor would return it
+ *     unchanged long after it had actually expired). When an Instagram
+ *     token is both near expiry AND younger than 24h, `ensureFreshToken`
+ *     must NOT attempt the refresh (it would be rejected anyway) and
+ *     instead returns the existing token unchanged. Detecting that a token
+ *     is stuck in that window before it actually expires is `expiryAlert`'s
+ *     job, not `ensureFreshToken`'s — the daily job (T08) is expected to
+ *     call both.
  *   - "Persist the refreshed value BEFORE using it — a crash between
  *     refresh and persist orphans the account." This is the single most
  *     important behaviour under test: `ensureFreshToken` must `await
@@ -87,9 +92,16 @@ export const REFRESH_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Meta rejects an Instagram long-lived-token refresh unless the CURRENT
- * token is at least this old. `ensureFreshToken` must not attempt a refresh
- * before this floor, even if the token is also within `REFRESH_WINDOW_MS`
- * of expiry.
+ * token is at least this old. `ensureFreshToken` must not attempt an
+ * Instagram refresh before this floor, even if the token is also within
+ * `REFRESH_WINDOW_MS` of expiry.
+ *
+ * THIS IS INSTAGRAM-ONLY. It encodes a quirk of Meta's specific refresh
+ * endpoint, not a general "tokens need to season" rule — do not apply it to
+ * YouTube or TikTok. YouTube OAuth access tokens live roughly one hour, so
+ * gating their refresh on a 24h-old floor would leave `ensureFreshToken`
+ * returning an already-expired token unchanged for up to a day, and the
+ * next publish attempt would fail with a 401.
  */
 export const MIN_REFRESH_AGE_MS = 24 * 60 * 60 * 1000;
 
@@ -139,9 +151,12 @@ export interface EnsureFreshTokenOptions {
  *
  * - If the stored token is not near expiry (`needsRefresh` is false),
  *   returns it unchanged. `refresh` and `store.set` are never called.
- * - If it IS near expiry but younger than `MIN_REFRESH_AGE_MS`, Meta would
- *   reject the refresh — returns the existing token unchanged rather than
- *   attempting it. `refresh` and `store.set` are never called.
+ * - If `platform` is `'instagram'` and the token IS near expiry but younger
+ *   than `MIN_REFRESH_AGE_MS`, Meta would reject the refresh — returns the
+ *   existing token unchanged rather than attempting it. `refresh` and
+ *   `store.set` are never called. This age floor is Instagram-specific (see
+ *   `MIN_REFRESH_AGE_MS`'s own comment) and is NOT applied to YouTube or
+ *   TikTok tokens.
  * - Otherwise, calls `refresh(current, now)`, then `await`s
  *   `store.set(platform, refreshed)` to COMPLETION before returning
  *   `refreshed` — the refreshed value is never handed to the caller until
@@ -165,11 +180,17 @@ export async function ensureFreshToken(options: EnsureFreshTokenOptions): Promis
 		return current;
 	}
 
-	const ageMs = toEpochMs(now) - toEpochMs(current.obtainedAt);
-	if (ageMs < MIN_REFRESH_AGE_MS) {
-		// Near expiry, but too young to refresh yet — a refresh attempt would be rejected.
-		// `expiryAlert` is responsible for surfacing this state to an operator.
-		return current;
+	if (platform === 'instagram') {
+		// The >=24h age floor is a quirk of Meta's refresh endpoint specifically —
+		// see `MIN_REFRESH_AGE_MS`'s comment. YouTube and TikTok tokens have no
+		// such floor, so this branch must stay scoped to Instagram: generalising
+		// it would leave a YouTube token unrefreshed (and dead) for up to a day.
+		const ageMs = toEpochMs(now) - toEpochMs(current.obtainedAt);
+		if (ageMs < MIN_REFRESH_AGE_MS) {
+			// Near expiry, but too young to refresh yet — a refresh attempt would be rejected.
+			// `expiryAlert` is responsible for surfacing this state to an operator.
+			return current;
+		}
 	}
 
 	const refreshed = await refresh(current, now);

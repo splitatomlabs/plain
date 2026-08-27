@@ -40,12 +40,20 @@ function jsonResponse(body: unknown, init: { ok?: boolean; status?: number } = {
 	} as Response;
 }
 
-/** A stable, repeatable Instagram Graph API fake — same response every call, since a re-run re-fetches "current" data. */
+/**
+ * A stable, repeatable Instagram Graph API fake — same response every call,
+ * since a re-run re-fetches "current" data. `media_type: 'VIDEO'` (not
+ * `IMAGE`) throughout this file: instagram.ts's M5 fix skips non-`VIDEO`
+ * media before ever requesting the Reels-only `plays`/`ig_reels_avg_watch_time`
+ * metrics these fixtures return, so an `IMAGE` item paired with a `plays`
+ * value is a combination Meta's real API never produces (and, since the
+ * fix, one this suite would never see collected anyway).
+ */
 function buildInstagramFetchFn() {
 	return vi.fn(async (input: RequestInfo | URL) => {
 		const url = String(input);
 		if (url.includes(`/${IG_CONFIG.igUserId}/media?`)) {
-			return jsonResponse({ data: [{ id: 'media-1', timestamp: '2026-09-01T00:00:00+0000', media_type: 'IMAGE' }] });
+			return jsonResponse({ data: [{ id: 'media-1', timestamp: '2026-09-01T00:00:00+0000', media_type: 'VIDEO' }] });
 		}
 		if (url.includes('/media-1/insights')) {
 			return jsonResponse({ data: [{ name: 'plays', values: [{ value: 42 }] }, { name: 'likes', values: [{ value: 5 }] }] });
@@ -148,7 +156,7 @@ describe('runMetricsCollection — THE ACCEPTANCE CRITERION: idempotent re-runs 
 		const updatedFetchFn = vi.fn(async (input: RequestInfo | URL) => {
 			const url = String(input);
 			if (url.includes(`/${IG_CONFIG.igUserId}/media?`)) {
-				return jsonResponse({ data: [{ id: 'media-1', timestamp: '2026-09-01T00:00:00+0000', media_type: 'IMAGE' }] });
+				return jsonResponse({ data: [{ id: 'media-1', timestamp: '2026-09-01T00:00:00+0000', media_type: 'VIDEO' }] });
 			}
 			if (url.includes('/media-1/insights')) {
 				return jsonResponse({ data: [{ name: 'plays', values: [{ value: 999 }] }, { name: 'likes', values: [{ value: 50 }] }] });
@@ -258,7 +266,7 @@ describe('runMetricsCollection — Instagram follower snapshot', () => {
 		const flakyFetchFn = vi.fn(async (input: RequestInfo | URL) => {
 			const url = String(input);
 			if (url.includes(`/${IG_CONFIG.igUserId}/media?`)) {
-				return jsonResponse({ data: [{ id: 'media-1', timestamp: '2026-09-01T00:00:00+0000', media_type: 'IMAGE' }] });
+				return jsonResponse({ data: [{ id: 'media-1', timestamp: '2026-09-01T00:00:00+0000', media_type: 'VIDEO' }] });
 			}
 			if (url.includes('/media-1/insights')) {
 				return jsonResponse({ data: [{ name: 'plays', values: [{ value: 1 }] }] });

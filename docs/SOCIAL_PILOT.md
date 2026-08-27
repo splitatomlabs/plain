@@ -214,7 +214,11 @@ Once deployed, this runs unattended:
    resolves the schedule slot for that date, renders the video + Instagram feed still (reusing
    `cli.ts`'s render path), uploads every rendered asset to R2 (before any post is attempted — a
    posting failure never loses a render), then publishes independently to Instagram and YouTube.
-   A failure on one platform never stops the other (`Promise.allSettled`, not `Promise.all`).
+   A failure on one platform never stops the other (`Promise.allSettled`, not `Promise.all`). An R2
+   upload failure is a **per-platform** precondition, not a whole-run abort (code review M7 fix):
+   it makes only Instagram's outcome `failed` (Instagram needs the video's public R2 URL for Meta's
+   Graph API), while YouTube still uploads straight from the local rendered file and is unaffected
+   by an R2 outage.
 
 3. `job.ts` appends a structured log to both stdout (captured by Cloud Logging) and
    `content/social/job-logs/job-<date>.log` inside the container (ephemeral once the execution
@@ -228,9 +232,22 @@ Once deployed, this runs unattended:
 
    A YouTube upload always lands **private** by design (`REQUIRED_STATUS` in
    `social/src/publish/youtube.ts` — a caller cannot override this even accidentally). It stays
-   private until the weekly session flips it (section 5). A successful YouTube publish also appends
-   an entry to `content/social/pending-youtube-flips.json` (the week's flip list the weekly session
-   works through).
+   private until the weekly session flips it (section 5). A successful YouTube publish also durably
+   records the new video's id into the week's pending-flip list — by default the
+   `social-pilot-pending-youtube-flips` Firestore collection (single document `flips`,
+   `social/src/publish/pending-flips-store-firestore.ts`'s `createFirestorePendingFlipsStore`), the
+   same GCP project the OAuth tokens already live in (both use ADC — no extra credential to
+   configure). Pass `job.ts --pending-flips-store local` to write to a plain JSON file instead
+   (`--pending-flips-file`, default `content/social/pending-youtube-flips.json`) — for local runs
+   and manual testing only: a Cloud Run execution's filesystem is throwaway, so `local` there
+   silently loses every video id.
+
+   If the upload itself succeeds but this durable record fails to write, the run reports
+   `[youtube] partial — ...` instead of `ok`, and the job's own exit code reflects a failure
+   (`exitCodeForOutcomes` treats `partial` the same as `failed`, per the M4 code-review fix) even
+   though the video did land on YouTube. Treat a `partial` line as needing the same follow-up as a
+   `failed` one — the video is unreachable to the weekly flip session (section 5.3) and to metrics
+   collection (section 7) until someone finds it by hand and re-adds it to the pending-flip list.
 
 4. Check for a healthy run the same way `social/DEPLOY.md`'s step 8 describes:
    ```bash
@@ -238,9 +255,12 @@ Once deployed, this runs unattended:
    gcloud run jobs executions logs EXECUTION_ID --region=us-central1
    ```
    `STATUS: Succeeded` plus both `[instagram] ok` and `[youtube] ok` lines is a clean day. A single
-   `[platform] failed — ...` line is a partial success — the *other* platform completing on its own
-   is expected behavior, not a bug, but it still needs a human to look at why the failing platform
-   failed (most commonly: an expired/missing token per section 3.4).
+   `[platform] failed — ...` line — or a `[youtube] partial — ...` line (the upload itself succeeded
+   but its pending-flip record did not persist, point 3 above) — means the *other* platform
+   completing on its own is expected behavior, not a bug, but it still needs a human to look at why
+   the failing/partial platform did not come back clean (most commonly: an expired/missing token per
+   section 3.4; for `partial` specifically, read the log line's own message for the Firestore
+   write failure).
 
 ## 5. The weekly session — the most important part of this document
 
@@ -284,15 +304,17 @@ it directly with `tsx` via a short one-off script, e.g.:
 import { createR2Client } from './social/src/publish/storage.js';
 import { loadR2Config } from './social/src/publish/env.js';
 import { stageTikTokWeek } from './social/src/publish/tiktok-manual.js';
-import { parsePendingFlips } from './social/src/job-plan.js';
+import { createFirestorePendingFlipsStore } from './social/src/publish/pending-flips-store-firestore.js';
 import { readFile } from 'node:fs/promises';
 
 const config = loadR2Config(); // reads R2_* from process.env — see section 3.1
 const client = createR2Client(config);
 const schedule = JSON.parse(await readFile('content/social/pilot-schedule-w<NN>.json', 'utf-8'));
-const pendingYouTubeFlips = parsePendingFlips(
-  await readFile('content/social/pending-youtube-flips.json', 'utf-8')
-);
+// Reads the same durable Firestore store job.ts wrote the week's uploaded video ids into
+// (`social-pilot-pending-youtube-flips` collection) — via Application Default Credentials, so run
+// this with the same GCP project's credentials active as the Cloud Run Job's service account
+// (e.g. `gcloud auth application-default login`, or from wherever that identity is available).
+const pendingYouTubeFlips = await createFirestorePendingFlipsStore().read();
 
 const manifest = await stageTikTokWeek({
   client, config, schedule,
@@ -321,16 +343,30 @@ For each day in the manifest, in TikTok's app:
 Every YouTube upload from the daily job lands **private** on purpose (section 4, point 3). Flip each
 one to public in YouTube Studio:
 
-1. The list of videos awaiting a flip is `content/social/pending-youtube-flips.json` — the same
-   file the previous step's script already read. Each entry is `{ date, cardId, videoId }`
+1. The list of videos awaiting a flip lives in Firestore, not a git-diffable file (code review M4
+   fix) — the `social-pilot-pending-youtube-flips` collection's single `flips` document (the same
+   store the previous step's script already reads via `createFirestorePendingFlipsStore().read()`).
+   Read it standalone, without staging TikTok, with:
+   ```bash
+   npx tsx -e "
+     import('./social/src/publish/pending-flips-store-firestore.js').then(async (m) => {
+       console.log(JSON.stringify(await m.createFirestorePendingFlipsStore().read(), null, 2));
+     });
+   "
+   ```
+   (same ADC requirement as section 5.2's script), or open it directly in the Firestore console:
+   Firestore Database -> the `social-pilot-pending-youtube-flips` collection -> the `flips`
+   document -> its `flips` array field. Each entry is `{ date, cardId, videoId }`
    (`PendingYouTubeFlip`, `social/src/publish/tiktok-manual.ts`).
 2. In YouTube Studio -> Content, find each `videoId` (or search by upload date) and change its
    visibility from Private to Public. This is quick — the plan's own estimate is ~10 seconds per
    video.
-3. There is no code that removes an entry from `pending-youtube-flips.json` once flipped — treat the
-   file as an append-only weekly log for now (`upsertPendingFlip` only replaces a same-date entry on
-   a re-run of that date's job, it does not prune flipped entries). Cross off or note which ones you
-   flipped by hand if this file's growth becomes hard to scan.
+3. There is no code that removes an entry from the pending-flips document once flipped — treat it
+   as an append-only weekly log for now (`upsertPendingFlip` only replaces a same-date entry on a
+   re-run of that date's job, it does not prune flipped entries). Cross off or note which ones you
+   flipped by hand if this list's growth becomes hard to scan (it is no longer a local file you can
+   `git diff`, so track flipped-vs-not some other way — e.g. a scratch note alongside this session's
+   TikTok staging notes).
 4. Separately, the compliance audit YouTube offers for automated-upload workflows was meant to be
    submitted in parallel with this pilot (plan Decision) — if/when it's approved, this manual flip
    step goes away and uploads can go straight to public. Nothing in this pilot currently tracks the
@@ -416,7 +452,9 @@ npx tsx social/src/metrics/collect.ts --now 2026-09-05T00:00:00.000Z
 This reads the Instagram/YouTube tokens already stored in Firestore (the same store `job.ts` uses;
 this collector does not refresh tokens itself, only reads whatever is currently stored — token
 freshness stays `job.ts`'s job), lists that platform's posts (Instagram via `GET /{ig-user-id}/media`;
-YouTube via `content/social/pending-youtube-flips.json`), and fetches per-post metrics for anything
+YouTube via the same durable `social-pilot-pending-youtube-flips` Firestore store `job.ts` writes to,
+not a local file — `collect.ts`'s own `createDefaultPendingFlipsReader` reads it via
+`createFirestorePendingFlipsStore().read()`), and fetches per-post metrics for anything
 still inside its **30-day polling window** (inclusive at exactly 30 days) — metrics keep accruing
 after publication, so a post is re-polled on every run until it ages out of the window, and each run
 is idempotent (`upsertMetricsRow` replaces a same-`platform:postId` row rather than duplicating it).

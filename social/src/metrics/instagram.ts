@@ -34,6 +34,21 @@
  * instagram.ts`: the token is sent only as the Graph API's `access_token`
  * query parameter, and any error message that might mention "the URL it
  * called" goes through `redactUrl` first.
+ *
+ * M5 fix (code review, social-pilot-03): `collectInstagramRows` used to
+ * request the Reels-only metrics (`plays`, `ig_reels_avg_watch_time`)
+ * against EVERY media item regardless of `media_type`, with no per-item
+ * try/catch — one non-Reel post (Meta returns a `body.error` for an
+ * unsupported metric) threw out of the whole function, and `collect.ts`
+ * then discarded ALL Instagram rows for that day, for as long as that post
+ * stayed inside the 30-day window. Fixed two ways, both in
+ * `collectInstagramRows`: (1) `isVideoMedia` skips any item whose
+ * `media_type` isn't `VIDEO` before ever calling `fetchInstagramMediaMetrics`
+ * — see that function's own comment for which `media_type` values Meta
+ * actually returns; (2) each remaining item's metrics fetch is wrapped in
+ * its own try/catch, so one item's Meta error skips just that item (logged
+ * via `console.warn`, never the access token) rather than aborting the
+ * day's whole collection.
  */
 
 import { isWithinPollingWindow, POLLING_WINDOW_DAYS, type InstagramFollowerSnapshot, type MetricsRow } from './schema.js';
@@ -124,6 +139,28 @@ export interface InstagramMediaSummary {
 	mediaType: string;
 	/** Seconds. Present for VIDEO/REELS media; absent for a still image. */
 	videoDurationSec?: number;
+}
+
+/**
+ * Media types Meta's Graph API actually returns on an IG Media node's
+ * `media_type` field: `IMAGE`, `VIDEO`, or `CAROUSEL_ALBUM` (see
+ * https://developers.facebook.com/docs/instagram-api/reference/ig-media).
+ * There is no `REELS` value here — a Reels post still reports
+ * `media_type: 'VIDEO'` (Reels-vs-feed-video is a separate
+ * `media_product_type` field this module doesn't request). Only `VIDEO`
+ * supports the Reels-only metrics `fetchInstagramMediaMetrics` requests
+ * (`plays`, `ig_reels_avg_watch_time`) — `IMAGE` and `CAROUSEL_ALBUM` return
+ * a Meta `error` for that metric set. `collectInstagramRows` uses this to
+ * skip non-`VIDEO` items before ever calling `fetchInstagramMediaMetrics`
+ * for them. See this file's header for the bug this fixes (M5).
+ */
+function isVideoMedia(mediaType: string): boolean {
+	return mediaType === 'VIDEO';
+}
+
+/** `error.message` if `error` is an `Error`, else its string form. Never a token — see this file's header. */
+function errorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
 }
 
 /**
@@ -304,6 +341,13 @@ export interface CollectInstagramRowsOptions {
  * `MetricsRow` per live Instagram post. `follows` is always `null` — see
  * `schema.ts`'s header for why per-post follow attribution does not exist
  * on Instagram.
+ *
+ * Two per-item guards (see this file's header, M5) keep ONE bad or
+ * unsupported media item from discarding the whole day's Instagram rows:
+ * a non-`VIDEO` item (see `isVideoMedia`) is skipped before any insights
+ * call is made at all, and a `VIDEO` item whose insights call itself fails
+ * is skipped after logging a warning (never the access token) rather than
+ * throwing out of this function.
  */
 export async function collectInstagramRows(options: CollectInstagramRowsOptions): Promise<MetricsRow[]> {
 	const { config, now, windowDays = POLLING_WINDOW_DAYS, fetchFn } = options;
@@ -313,7 +357,21 @@ export async function collectInstagramRows(options: CollectInstagramRowsOptions)
 
 	const rows: MetricsRow[] = [];
 	for (const item of withinWindow) {
-		const metrics = await fetchInstagramMediaMetrics(config, item, fetchFn);
+		if (!isVideoMedia(item.mediaType)) {
+			console.warn(
+				`[instagram] skipping media ${item.id}: media_type "${item.mediaType}" doesn't support the Reels-only insights metrics this module requests.`
+			);
+			continue;
+		}
+
+		let metrics: InstagramMediaMetrics;
+		try {
+			metrics = await fetchInstagramMediaMetrics(config, item, fetchFn);
+		} catch (error) {
+			console.warn(`[instagram] skipping media ${item.id}: insights fetch failed — ${errorMessage(error)}`);
+			continue;
+		}
+
 		rows.push({
 			platform: 'instagram',
 			postId: item.id,
