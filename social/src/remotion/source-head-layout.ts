@@ -51,6 +51,50 @@ export const SOURCE_HEAD_TOP_PX = COUNTER_BOUNDING_BOX.top + COUNTER_BOUNDING_BO
 export const SOURCE_HEAD_FONT_SIZE_PX = 32;
 
 /**
+ * Social pilot 02a U03 (2026-08-27): the PAYOFF LABEL's own font size —
+ * deliberately DIFFERENT from `SOURCE_HEAD_FONT_SIZE_PX`, even though both
+ * render through the exact same slot/plate/span in `SourceHead.tsx`. Before
+ * this task the two variants shared one size (32px); user feedback asked
+ * whether "In plain English" specifically should read larger, and 38px is
+ * the answer, scoped to that variant only:
+ *
+ * - The payoff label sits ALONE on a quiet, motionless frame with one large
+ *   payoff sentence (T10's whole point is that the payoff sentence is the
+ *   largest thing on screen, 81-88px) — at 32px "In plain English" read as
+ *   incidental, an afterthought rather than the product's own name for what
+ *   the viewer is looking at.
+ * - The running head does NOT get the same increase and stays at
+ *   `SOURCE_HEAD_FONT_SIZE_PX` (32px): it sits over a dense, actively
+ *   scrolling wall of archaic text and carries far more characters (author
+ *   name plus book/chapter reference, up to 135 real chars per R04) — making
+ *   it bigger would crowd an already-busy frame and worsen the exact overflow
+ *   risk R04's clamp exists to guard against, for no benefit (there is no
+ *   payoff sentence competing for attention on that frame).
+ * - 38px, not larger: it stays clearly SUBORDINATE to the payoff sentence's
+ *   81-88px (T10's invariant — the payoff must remain the largest thing on
+ *   screen). The user's own brief was explicit that past ~40px the label
+ *   starts competing with the sentence rather than merely gaining presence.
+ *
+ * Re-verified at this size (not assumed): R04's horizontal clamp
+ * (`SOURCE_HEAD_TEXT_MAX_WIDTH_PX`) still holds with enormous margin —
+ * `PAYOFF_LABEL_TEXT` ("In plain English") measures ~274px wide at 38px,
+ * against an 836px budget — and R07's vertical padding
+ * (`SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`, still 8px, unchanged and NOT
+ * grown for this variant) still clears the payoff text's descenders at 38px:
+ * measured `scrollHeight === clientHeight` (54px === 54px) with the real
+ * embedded DM Sans font, the same real-Chromium technique
+ * `__tests__/source-head.test.ts` already uses for the 32px case. (The
+ * minimum padding that clears the clip at 38px measures at 6px, so 8px keeps
+ * the same margin of safety the 32px case has, not a coincidence — both
+ * font sizes happen to need less than 8px of clearance.) The label content
+ * box (38 + 2*8 = 54px) also stays comfortably inside `SOURCE_HEAD_BOUNDING_BOX`'s
+ * fixed 120px plate height, so neither this box nor its non-overlap with
+ * `COUNTER_BOUNDING_BOX` (see `SOURCE_HEAD_TOP_PX`'s doc comment) needs to
+ * change.
+ */
+export const SOURCE_HEAD_PAYOFF_FONT_SIZE_PX = 38;
+
+/**
  * A generous bounding box the running head/payoff label's rendered text can
  * never exceed — used by `__tests__/source-head.test.ts` (and the pixel-proof
  * helpers it shares with `__tests__/counter.test.ts`) to crop this region out
@@ -125,5 +169,15 @@ export const SOURCE_HEAD_TEXT_MAX_WIDTH_PX = SOURCE_HEAD_BOUNDING_BOX.width - SO
  * outside that box or collide with `COUNTER_BOUNDING_BOX` (see
  * `SOURCE_HEAD_TOP_PX`'s own doc comment for why those two boxes are
  * disjoint by construction).
+ *
+ * Social pilot 02a U03 (2026-08-27): this padding is SHARED across both
+ * variants' spans and was NOT grown when the payoff label moved to its own,
+ * larger `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (38px, up from the 32px it used
+ * to share with the running head) — re-measured at 38px rather than assumed,
+ * since a larger font makes the content-area math above font-size-dependent.
+ * The minimum padding that clears the payoff text's descenders at 38px
+ * measures 6px; 8px still clears with margin, same as it did at 32px, so no
+ * change was needed here. See `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX`'s own doc
+ * comment for the full re-verification (horizontal clamp included).
  */
 export const SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX = 8;

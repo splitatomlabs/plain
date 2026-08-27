@@ -45,6 +45,7 @@ import {
 import {
 	SOURCE_HEAD_BOUNDING_BOX,
 	SOURCE_HEAD_FONT_SIZE_PX,
+	SOURCE_HEAD_PAYOFF_FONT_SIZE_PX,
 	SOURCE_HEAD_SAFE_INSET_PX,
 	SOURCE_HEAD_TEXT_MAX_WIDTH_PX,
 	SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX
@@ -52,6 +53,7 @@ import {
 import { COUNTER_BOUNDING_BOX } from '../counter-layout.js';
 import { COUNTER_FONT_STACK } from '../Counter.js';
 import { SERIF_STACK } from '../Wall.js';
+import { PAYOFF_MIN_FONT } from '../wall-timing.js';
 import { ACCENTS, type AuthorSlug } from '../../render/theme.js';
 import { getFontCss } from '../../render/fonts.js';
 import { renderFrameAsPng, assertIdenticalOutsideBoxes, assertBoxDiffers, assertBoxIdentical } from './pixel-proof.js';
@@ -546,13 +548,20 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 // R07 (2026-08-26): the corpus sweep above proves the HORIZONTAL clamp
 // (`getBoundingClientRect().right`) never spills past the plate's right
 // edge — but `overflow: hidden` clips on both axes, and nothing above
-// measures the VERTICAL one. At `SOURCE_HEAD_FONT_SIZE_PX`/`lineHeight: 1`,
-// DM Sans' line box (32px) is shorter than its own glyph content area
-// (~37px of ascent+descent), so the clip flat-cut the descenders ("p", "g")
-// of `PAYOFF_LABEL_TEXT` ("In plain English") on every payoff-phase frame
-// of Wall/Question/Objection — invisible on the ALL-CAPS running head
+// measures the VERTICAL one. At the payoff label's own font size with
+// `lineHeight: 1`, DM Sans' line box is shorter than its own glyph content
+// area (ascent+descent), so the clip flat-cut the descenders ("p", "g") of
+// `PAYOFF_LABEL_TEXT` ("In plain English") on every payoff-phase frame of
+// Wall/Question/Objection — invisible on the ALL-CAPS running head
 // (`formatRunningHead` uppercases everything, so it has no descenders),
 // which is exactly why the sweep above stayed green through R04.
+//
+// U03 (2026-08-27): the payoff label's font size changed from
+// `SOURCE_HEAD_FONT_SIZE_PX` (32px, shared with the running head) to its own
+// `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (38px) — this probe now measures at THAT
+// size, not the running head's, since it's the payoff span this describe
+// block is about. Re-verifying at the new size (not assuming R07's fix still
+// holds) is the whole point of this task's vertical-clearance check.
 //
 // Same real-Chromium-DOM-measurement technique as the horizontal sweep
 // (`getBoundingClientRect()` there, `scrollHeight`/`clientHeight` here —
@@ -587,10 +596,13 @@ describe('the payoff label\'s vertical ink extent stays inside the clamped span 
 			// padding parameterised so this helper can render both the
 			// pre-R07 span (0px — the shape the bug shipped with) and the
 			// real, current component's span (`SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`).
+			// Font size is `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (U03) — this is
+			// the payoff span, which no longer shares a size with the running
+			// head.
 			await page.setContent(`
 				<style>${fontCss}</style>
 				<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
-					<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${verticalPaddingPx}px;padding-bottom:${verticalPaddingPx}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
+					<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${verticalPaddingPx}px;padding-bottom:${verticalPaddingPx}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_PAYOFF_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
 				</div>
 			`);
 
@@ -604,7 +616,7 @@ describe('the payoff label\'s vertical ink extent stays inside the clamped span 
 	}
 
 	it(
-		'witness: the probe itself detects the clip — a span with zero vertical padding (the pre-R07 shape) has scrollHeight strictly greater than clientHeight for the real payoff text, proving descenders were being cut, not that the probe is vacuously blind to the bug',
+		'witness: the probe itself detects the clip — a span with zero vertical padding (the pre-R07 shape) has scrollHeight strictly greater than clientHeight for the real payoff text at SOURCE_HEAD_PAYOFF_FONT_SIZE_PX, proving descenders were being cut at this size too, not that the probe is vacuously blind to the bug',
 		async () => {
 			const { scrollHeight, clientHeight } = await measurePayoffSpan(0);
 			expect(scrollHeight).toBeGreaterThan(clientHeight);
@@ -613,10 +625,73 @@ describe('the payoff label\'s vertical ink extent stays inside the clamped span 
 	);
 
 	it(
-		'fix: the real component\'s own span (SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX) never lets scrollHeight exceed clientHeight for the payoff text — no vertical clip, descenders included',
+		'fix: the real component\'s own span (SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX) never lets scrollHeight exceed clientHeight for the payoff text at SOURCE_HEAD_PAYOFF_FONT_SIZE_PX (38px) — no vertical clip, descenders included, re-verified at the new U03 size rather than assumed',
 		async () => {
 			const { scrollHeight, clientHeight } = await measurePayoffSpan(SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX);
 			expect(scrollHeight).toBeLessThanOrEqual(clientHeight);
+		},
+		60_000
+	);
+});
+
+// ---------------------------------------------------------------------------
+// U03 (2026-08-27): raises the payoff label from SOURCE_HEAD_FONT_SIZE_PX
+// (32px, previously shared with the running head) to its own
+// SOURCE_HEAD_PAYOFF_FONT_SIZE_PX (38px) — user feedback asked whether "In
+// plain English" should read larger; the answer was yes, modestly, and only
+// for the payoff label. Three claims:
+//
+//   1. The two constants really do differ (the split happened, this isn't
+//      still one shared number under two names).
+//   2. The payoff label stays clearly SUBORDINATE to the payoff sentence
+//      (T10's PAYOFF_MIN_FONT/PAYOFF_MAX_FONT, 52-88px) — the whole reason
+//      T10 exists is to guarantee the payoff sentence is the largest thing
+//      on screen, and this task must not erode that.
+//   3. R04's horizontal clamp still holds for the payoff label specifically
+//      at its new, larger size — re-measured here (real Chromium + real DM
+//      Sans, same technique as the running-head corpus sweep above), not
+//      assumed just because "In plain English" is short.
+// ---------------------------------------------------------------------------
+
+describe('U03 — the payoff label reads larger than the running head, but stays subordinate to the payoff sentence', () => {
+	it('SOURCE_HEAD_PAYOFF_FONT_SIZE_PX is strictly larger than SOURCE_HEAD_FONT_SIZE_PX — the running head is unchanged, only the payoff label grew', () => {
+		expect(SOURCE_HEAD_PAYOFF_FONT_SIZE_PX).toBeGreaterThan(SOURCE_HEAD_FONT_SIZE_PX);
+		expect(SOURCE_HEAD_FONT_SIZE_PX).toBe(32);
+		expect(SOURCE_HEAD_PAYOFF_FONT_SIZE_PX).toBe(38);
+	});
+
+	it('the payoff label stays well under the payoff sentence\'s own minimum font size (PAYOFF_MIN_FONT) — T10\'s "payoff sentence is the largest thing on screen" invariant holds at the new size', () => {
+		expect(SOURCE_HEAD_PAYOFF_FONT_SIZE_PX).toBeLessThan(PAYOFF_MIN_FONT);
+	});
+
+	it(
+		'R04\'s horizontal clamp still holds for the payoff label at SOURCE_HEAD_PAYOFF_FONT_SIZE_PX (real Chromium + real DM Sans) — the clamped span\'s right edge stays at or before the plate\'s right edge',
+		async () => {
+			const fontCss = await getFontCss();
+			const browser = await chromium.launch({ headless: true });
+			try {
+				const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+				try {
+					await page.setContent(`
+						<style>${fontCss}</style>
+						<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
+							<span id="probe" style="display:block;min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;padding-bottom:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_PAYOFF_FONT_SIZE_PX}px;line-height:1;letter-spacing:0.02em;margin:0;">${PAYOFF_LABEL_TEXT}</span>
+						</div>
+					`);
+
+					const right = await page.evaluate(() => {
+						const probe = document.getElementById('probe') as HTMLSpanElement;
+						return probe.getBoundingClientRect().right;
+					});
+
+					const plateRightEdge = SOURCE_HEAD_BOUNDING_BOX.left + SOURCE_HEAD_BOUNDING_BOX.width;
+					expect(right).toBeLessThanOrEqual(plateRightEdge);
+				} finally {
+					await page.close();
+				}
+			} finally {
+				await browser.close();
+			}
 		},
 		60_000
 	);

@@ -6,6 +6,7 @@ import { COUNTER_FONT_STACK } from './Counter.js';
 import {
 	SOURCE_HEAD_BOUNDING_BOX,
 	SOURCE_HEAD_FONT_SIZE_PX,
+	SOURCE_HEAD_PAYOFF_FONT_SIZE_PX,
 	SOURCE_HEAD_SAFE_INSET_PX,
 	SOURCE_HEAD_TEXT_MAX_WIDTH_PX,
 	SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX
@@ -35,6 +36,12 @@ import {
  * either variant is mounted, matching `Counter.tsx`'s own discipline and the
  * house rule ("the running head is fixed and the payoff label is static —
  * neither introduces motion").
+ *
+ * U03 (2026-08-27): the two variants no longer share one font size. The
+ * payoff label reads at `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (38px); the running
+ * head stays at `SOURCE_HEAD_FONT_SIZE_PX` (32px). See
+ * `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX`'s own doc comment (`source-head-layout.ts`)
+ * for why they diverge and why 38, specifically.
  */
 
 /**
@@ -110,6 +117,11 @@ export function formatRunningHead(card: RunningHeadCardMetadata): string {
  */
 export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 	const text = variant.kind === 'running-head' ? formatRunningHead(variant.card) : PAYOFF_LABEL_TEXT;
+	// social pilot 02a U03 (2026-08-27): the payoff label reads at
+	// `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (38px), the running head stays at
+	// `SOURCE_HEAD_FONT_SIZE_PX` (32px) — see that constant's own doc comment
+	// for why the two variants deliberately diverge despite sharing one slot.
+	const fontSize = variant.kind === 'payoff' ? SOURCE_HEAD_PAYOFF_FONT_SIZE_PX : SOURCE_HEAD_FONT_SIZE_PX;
 
 	return (
 		<AbsoluteFill style={{ pointerEvents: 'none' }}>
@@ -203,16 +215,24 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 				 * R07 (2026-08-26): `paddingTop`/`paddingBottom:
 				 * SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX` guard the OTHER axis
 				 * `overflow: hidden` clips. At `lineHeight: 1`, DM Sans' line
-				 * box (32px, exactly `SOURCE_HEAD_FONT_SIZE_PX`) is shorter
-				 * than its own content area (~37px of ascent+descent), so
-				 * without this padding the clip flat-cuts descenders — invisible
-				 * on the all-caps running head (no descenders in capitals) but
+				 * box is exactly `fontSize` tall, but the font's own content
+				 * area (ascent+descent) runs taller than that, so without this
+				 * padding the clip flat-cuts descenders — invisible on the
+				 * all-caps running head (no descenders in capitals) but
 				 * cutting the "p" and "g" off `PAYOFF_LABEL_TEXT` ("In plain
 				 * English") on every payoff-phase frame. See
 				 * `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX`'s own doc comment for
 				 * why 8/8 rather than a taller `lineHeight`, and why it cannot
 				 * overflow `SOURCE_HEAD_BOUNDING_BOX` or collide with
 				 * `COUNTER_BOUNDING_BOX`.
+				 *
+				 * U03 (2026-08-27): `fontSize` is now variant-dependent — the
+				 * payoff label reads at `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX`
+				 * (38px), the running head stays at `SOURCE_HEAD_FONT_SIZE_PX`
+				 * (32px). The shared 8px padding was re-measured (not assumed)
+				 * against the payoff label's larger size and still clears its
+				 * descenders — see `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX`'s own doc
+				 * comment for the numbers.
 				 */}
 				<span
 					style={{
@@ -227,7 +247,7 @@ export function SourceHead({ variant }: SourceHeadProps): React.ReactElement {
 						paddingBottom: SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX,
 						fontFamily: SOURCE_HEAD_FONT_STACK,
 						fontWeight: 500,
-						fontSize: SOURCE_HEAD_FONT_SIZE_PX,
+						fontSize,
 						lineHeight: 1,
 						letterSpacing: '0.02em',
 						color: SECONDARY,

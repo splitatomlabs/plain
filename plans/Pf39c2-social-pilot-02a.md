@@ -1508,12 +1508,49 @@ frame may name the product.**
   "below the card text" must resolve per format. Acceptance: counter is horizontally centred below the text
   block in every format that shows it; it cannot collide with or reflow the running head/payoff label;
   `counter.test.ts`'s pixel-level proofs are retargeted, not weakened.
-- [ ] U03: Raise the payoff label from `SOURCE_HEAD_FONT_SIZE_PX` 32px to **38px** — user asked, and 38px
-  keeps it clearly subordinate to the 81-88px payoff sentence (T10's whole point is that the payoff is the
-  largest thing on screen) while giving the product concept real presence on a quiet frame. Past ~40px it
-  starts competing with the sentence. The RUNNING HEAD stays 32px — it is denser text over a busy scroll.
-  Acceptance: payoff label 38px, running head unchanged, R04's horizontal clamp and R07's descender clearance
-  both still hold at the new size (re-verify, do not assume — the clamp is width-sensitive).
+- [x] U03 (DONE 2026-08-27): Raise the payoff label from `SOURCE_HEAD_FONT_SIZE_PX` 32px to **38px** — user
+  asked, and 38px keeps it clearly subordinate to the 81-88px payoff sentence (T10's whole point is that the
+  payoff is the largest thing on screen) while giving the product concept real presence on a quiet frame. Past
+  ~40px it starts competing with the sentence. The RUNNING HEAD stays 32px — it is denser text over a busy
+  scroll. Acceptance: payoff label 38px, running head unchanged, R04's horizontal clamp and R07's descender
+  clearance both still hold at the new size (re-verify, do not assume — the clamp is width-sensitive).
+  DONE: split the one shared constant into two — `SOURCE_HEAD_FONT_SIZE_PX` (32px, running head only, unchanged)
+  and a new `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (38px, payoff label only), both in `source-head-layout.ts` with a
+  doc comment recording the rationale above (subordinate to T10's 81-88px payoff sentence; running head not
+  raised because it sits over a dense, actively scrolling frame and carries far more characters). `SourceHead.tsx`
+  picks the font size per variant (`variant.kind === 'payoff' ? SOURCE_HEAD_PAYOFF_FONT_SIZE_PX :
+  SOURCE_HEAD_FONT_SIZE_PX`); `SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX` (R07's 8px descender guard) stays a single
+  shared value used by both variants' spans — re-measured, not assumed, at 38px (see below) and still clears.
+  Re-verified rather than assumed, per the task's own warning: (1) R04's horizontal clamp — "In plain English" at
+  38px measures ~274px wide against the 836px `SOURCE_HEAD_TEXT_MAX_WIDTH_PX` budget, real Chromium + real
+  embedded DM Sans, enormous margin; (2) R07's vertical descender clearance — at 38px the minimum padding that
+  clears the payoff text's descenders measures 6px (up from ~3px needed at 32px, as expected for a font-size-
+  proportional content area), so the existing 8px still clears with `scrollHeight === clientHeight` (54px each),
+  no padding change needed; (3) plate fit — the payoff span's content box (38 + 2*8 = 54px) stays comfortably
+  inside `SOURCE_HEAD_BOUNDING_BOX`'s fixed 120px plate height, so neither that box nor its non-overlap with
+  `COUNTER_BOUNDING_BOX` needed to change. Added `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` to the `social/src/remotion/
+  index.ts` barrel export (`SOURCE_HEAD_FONT_SIZE_PX` was already there).
+  Tests: `source-head.test.ts` gained a new `describe('U03 — the payoff label reads larger than the running
+  head, but stays subordinate to the payoff sentence')` block (3 tests: the two constants are strictly ordered
+  and equal their expected literal values 32/38; `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` stays strictly below
+  `wall-timing.ts`'s `PAYOFF_MIN_FONT` (52), i.e. T10's invariant holds at the new size; a real-Chromium
+  horizontal-clamp re-measurement of the payoff label specifically at 38px). The pre-existing R07 "vertical ink
+  extent" describe block's probe font-size was switched from `SOURCE_HEAD_FONT_SIZE_PX` to
+  `SOURCE_HEAD_PAYOFF_FONT_SIZE_PX` (it was always meant to measure the payoff span, and the payoff span no
+  longer renders at the running-head's size) — both its assertions (witness clips, fix doesn't) still pass at
+  the new size, confirming R07's fix generalises rather than needing rework. The R04 running-head corpus sweep
+  (83 real book/chapter heads) was left untouched — it measures the running head, which this task does not
+  change.
+  Verified: `cd social && npx vitest run src/remotion/__tests__/source-head.test.ts` — 32/32 (up from 29; 3 new
+  U03 tests). `npx tsc --noEmit` clean. Root `npm test`: 819 pipeline + 95 web unit + 593 social, all green (up
+  from 590 social pre-task). Rendered a real Wall end-to-end (`npx tsx social/src/cli.ts render --date
+  2026-09-06 --slot 1`, `meditations-02-006`) and read both a mid-scroll frame (running head over the moving
+  archaic wall) and the payoff frame. Measured ink extents by cropping the plate region and scanning pixel rows/
+  columns against background: payoff label ink spans rows 44-81 of the 120px plate (38px tall, includes
+  descenders) and columns 66-336 of the 900px-wide plate; running head ink spans rows 47-74 (28px tall, all-caps,
+  no descenders) and columns 65-726 — both comfortably inside the plate on both axes, on both variants, nothing
+  clipped. Visually: "In plain English" reads with clearly more presence than before, still unmistakably smaller
+  than the ~81-88px payoff sentence above it; the running head is visually unchanged.
 - [~] U04: Noisy scroll bed, then silence, then a slow return — `social/src/audio/mix.ts`. Replace the
   soothing bed under the SCROLL with dense, unreadable noise matching the visual; HARD CUT on the cut frame
   (T15's frame-aligned stop, unchanged); **0.5s of true silence**; then fade the existing soothing bed back in
