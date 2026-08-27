@@ -88,8 +88,27 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   `social/src/publish/__tests__/env.test.ts` (12 tests: all-present, each variable missing/blank, and a
   no-secret-leak assertion). `npx vitest run src/publish` from `social/`: 12/12 green. `npx tsc --noEmit`
   clean. T02 (`storage.ts`) is next and will construct the actual R2 client from this config.
-- [ ] T02: Implement R2 upload with explicit contentType and deterministic keys. Acceptance: a unit test with a
+- [x] T02: Implement R2 upload with explicit contentType and deterministic keys. Acceptance: a unit test with a
   mocked client asserts contentType is always set.
+  Done: added `social/src/publish/storage.ts` — `createR2Client` (builds an `S3Client` with `region: 'auto'` and
+  the `https://<accountId>.r2.cloudflarestorage.com` endpoint from `R2Config`), deterministic key builders
+  `postKeyFor(date, baseName)` -> `posts/<date>/<baseName>` and `tiktokStagingKeyFor(weekStartDate, baseName)` ->
+  `tiktok-staging/<weekStartDate>/<baseName>` as a sibling for T07 to extend, `publicUrlFor` (trims exactly one
+  slash on each side of the join, so it tolerates a trailing slash on `publicBaseUrl` and/or a leading slash on
+  `key` without doubling or dropping the separator), `contentTypeFor` (maps `.mp4`/`.jpg`/`.jpeg`/`.json`/`.txt`,
+  throws by name on anything else rather than falling back to `application/octet-stream`), and `uploadObject`/
+  `uploadFile`, both of which declare `contentType` as a required field (not optional-with-default) and also
+  check it at runtime, throwing on blank/whitespace-only before ever calling `client.send`. Added
+  `@aws-sdk/client-s3` to `social/package.json` (R2 is S3-compatible; no Cloudflare-specific SDK needed).
+  No error message anywhere interpolates a credential — only key/path/extension. Tests in
+  `social/src/publish/__tests__/storage.test.ts` (21 tests, dependency-injected fake `S3Client`, `node:fs/promises`
+  mocked for `uploadFile`): every `uploadObject`/`uploadFile` call asserts `ContentType` is present on the
+  `PutObjectCommand` input, blank/whitespace contentType throws before `send` is called, `contentTypeFor` covers
+  each known extension plus an unknown-extension throw, key builders are asserted pure/deterministic across
+  repeated and varying inputs, and `publicUrlFor` is covered for trailing-slash-base / leading-slash-key / both /
+  neither. `npx vitest run src/publish`: 33/33 green (12 pre-existing `env.test.ts` + 21 new). `tsc --noEmit`
+  clean. T03/T04 (token management) are next and are the first callers likely to need a real (non-mocked) R2
+  round-trip once T01's live provisioning happens.
 - [ ] T03: Write token tests — refresh near expiry; persist before use; a crash between the two does not orphan the
   account; expiry inside 30 days raises an alert. Acceptance: tests fail against an empty implementation.
 - [ ] T04: Implement token management in Firestore with atomic write-back. Acceptance: T03 passes.
