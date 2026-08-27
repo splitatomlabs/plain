@@ -3038,13 +3038,13 @@ Week 1 becomes `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5` — mean 12.8s against t
   5 screens 17.5s — matches the table above exactly. `npx vitest run` in `social/`: 387/387 green. Content
   JSON regeneration and re-render are V19's job, not touched here.
 
-- [ ] V18: Amend the parent plan's house rule — `plans/Pf39c2-social-pilot-index.md:203` still states the
+- [x] V18 (DONE 2026-08-27): Amend the parent plan's house rule — `plans/Pf39c2-social-pilot-index.md:203` still states the
   profile as "15-59s". Change it to the new bound and add a one-line note that the floor was removed on
   2026-08-27 by user decision, with the reason (it had no recorded rationale and was forcing short cards to
   pad onto their final motionless hold, up to 12.5s). Do not change anything else in the index plan.
   Acceptance: the index plan no longer states a floor this repo does not enforce.
 
-- [ ] V19: Re-render week 1 and re-measure. Expect `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5`. Confirm every
+- [x] V19 (DONE 2026-08-27): Re-render week 1 and re-measure. Expect `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5`. Confirm every
   payoff frame holds exactly 3.0s (read the computed schedule, not just the MP4 duration), confirm the
   ffprobe house profile still passes with the floor check gone, and confirm the audio shape survives on a
   short card — the 5.5s day-5 post is only 2.5s of wall + 3.0s of payoff, so U04/U08's babble -> hard cut ->
@@ -3052,3 +3052,51 @@ Week 1 becomes `17.5, 17.5, 14.5, 11.5, 5.5, 8.5, 14.5` — mean 12.8s against t
   plus the bed's return fade may not have room before the video ends, which would leave the post ending
   mid-fade or effectively silent. Report what you find rather than assuming it works. Acceptance: 7 Walls
   render; durations as predicted; the short-card audio tail verified by RMS windowing, not assumed.
+
+  **Done.** All 7 re-rendered (1m18s, exit 0). Durations land exactly on the prediction:
+
+  | day | screens | duration |
+  |---|---|---|
+  | 1 | 5 | 17.514s |
+  | 2 | 5 | 17.514s |
+  | 3 | 4 | 14.506s |
+  | 4 | 3 | 11.520s |
+  | 5 | 1 | **5.504s** |
+  | 6 | 2 | 8.512s |
+  | 7 | 4 | 14.506s |
+
+  Mean 12.8s against V16's flat 15.7s. ffprobe: all 7 still `h264 High L4.0 1080x1920 yuv420p` + `aac LC
+  48000 2ch` — dropping the floor did not disturb the profile, and the 59s ceiling still passes.
+
+  **DEFECT FOUND — and it is exactly the risk this task was told to measure rather than assume.** The 1-screen
+  post's audio tail does not fit. RMS-windowed at 0.25s across the whole file, day 5 against two controls:
+
+  | post | final 1.25s |
+  |---|---|
+  | day 5 (1 screen, 5.5s) | -14.5 -> -13.1 -> **-11.9dB** — still RISING at cutoff, no outro |
+  | day 6 (2 screens, 8.5s) | -20.5 -> -24.5 -> -32.3 -> **-93.2dB** (clean) |
+  | day 1 (5 screens, 17.5s) | -23.7 -> -28.1 -> -36.3 -> **-97.8dB** (clean) |
+
+  U04/U08's shape itself survives on day 5 — babble to 2.5s at ~-17dB, hard cut, true silence 2.5-3.5s at
+  -70dB, then the rise. What does not fit is the END: `BED_RETURN_FADE_MS` is 2500ms starting at 3.5s, so the
+  return completes at 6.0s — 0.5s AFTER the 5.504s file ends. The outro fade never runs, and the post stops
+  mid-ramp at **-11.9dB, louder than any other post's steady state** (-13 to -16dB). It reads as the audio
+  being cut off, not as an ending.
+
+  Collision threshold: `WALL_SECONDS 2.5 + WALL_DROP_SILENCE_MS 1.0 + BED_RETURN_FADE_MS 2.5 + outro ~1.5
+  = ~7.5s`. Only the 1-screen case (5.5s) is under it; day 6 at 8.5s fades cleanly, confirming the boundary.
+  Filed as V20.
+
+
+- [~] V20: Scale the bed return so short posts still end properly — `social/src/audio/mix.ts`. V19 measured a
+  1-screen (5.5s) post ending mid-ramp at -11.9dB with no outro fade, because `BED_RETURN_FADE_MS` (2500ms,
+  starting when the true-silence span ends at 3.5s) does not complete until 6.0s, past the end of the file.
+  The outro fade is squeezed out entirely. Fix the CLASS of bug, not the one card: when the remaining time
+  after the silence span cannot fit the full return PLUS the outro fade, COMPRESS the return so both
+  complete — the post must always end at silence, never mid-swell. Derive the available window from the real
+  clip duration rather than hard-coding a threshold. Keep the full 2500ms return whenever it fits (every post
+  at 2+ screens today), so no existing render changes. Test first, and assert the property that actually
+  matters: the final N ms of the mix must fall to the silence floor, for a short clip AND a long one. Verify
+  by re-rendering day 5 and RMS-windowing it (per V19's method: extract PCM, window it directly, never
+  `volumedetect`). Acceptance: day 5's last 0.25s window reads at the silence floor like every other post;
+  days 1-4 and 6-7 are byte-identical to their current renders; suite green.

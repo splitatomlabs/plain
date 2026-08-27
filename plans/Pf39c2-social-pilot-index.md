@@ -200,8 +200,14 @@ full passage in context. One-time cost; revives Three Voices and lifts One-Line 
 - **`docs/BRANDING.md` motion rules do NOT apply to social** (confirmed 2026-08-23): "text never moves",
   ease-out-only and no-bounce govern the app. Kinetic typography, word-by-word reveals, punch-ins and cuts are
   available. What still holds is tonal: calm, direct, warm-not-soft, second person, never clickbait.
-- **One MP4 profile:** H.264 High L4.0, yuv420p, 1080x1920, 30fps, AAC-LC 48kHz, `+faststart`, 15-59s. Never 60fps
-  at L4.0 — 1080x1920@30 already uses 8,160 of 8,192 max macroblocks.
+- **One MP4 profile:** H.264 High L4.0, yuv420p, 1080x1920, 30fps, AAC-LC 48kHz, `+faststart`, **up to 59s**.
+  Never 60fps at L4.0 — 1080x1920@30 already uses 8,160 of 8,192 max macroblocks.
+  - The **15s minimum was removed on 2026-08-27** by user decision (`Pf39c2-social-pilot-02a` V17/V18). It had
+    no recorded rationale anywhere in this repo, and no platform requires one (Reels and TikTok accept ~3s;
+    Stories' 15s is a per-card MAXIMUM). It was forcing short cards to pad up to it, and the padding landed
+    entirely on the final motionless payoff frame — a 1-screen Wall held its landing line for 12.5s against
+    the 3.0s the format is tuned around. Post duration is now a pure function of payoff screen count
+    (5.5 / 8.5 / 11.5 / 14.5 / 17.5s for 1-5 screens). The 59s ceiling is unchanged and still enforced.
 - **Always include an audio track**, even on stills.
 - Instagram: JPEG only for feed, <=8MB; media must be at a public HTTPS URL. Tokens expire in 60 days and must be
   refreshed — the most likely silent failure.
