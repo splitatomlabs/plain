@@ -2712,7 +2712,7 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
 
 ### Review fixes (code-reviewer on `4f4e0f3..195f7e9`, 2026-08-27)
 
-- [~] V11: (review M1) Give V05's two-line wrap a test that actually fails if it regresses —
+- [x] V11 (DONE 2026-08-27): (review M1) Give V05's two-line wrap a test that actually fails if it regresses —
   `social/src/remotion/__tests__/source-head.test.ts`. Reverting `SourceHead.tsx`'s span to R04's
   `whiteSpace: 'nowrap'` + one-line ellipsis currently leaves EVERY test green: the corpus sweep only checks
   `rect.right <= 1080` (unreachable at `maxWidth` 836 + 64px padding) and `rect.bottom <= 244` (a one-line
@@ -2725,6 +2725,33 @@ all 7 books, and still roughly halves runtime (26-35s -> ~18-21s).
   `heads.some(h => renderedLines(h) === 2)` in the corpus sweep so a REAL corpus head is proven to wrap.
   Verify by reverting the span to nowrap+ellipsis, watching the new assertions go red, then restoring.
   Acceptance: the new tests fail on a nowrap regression and pass on current code.
+
+  **Deviation from the literal plan, found during verification:** extending `measureRunningHeadSpan`'s
+  hand-copied `#probe` span (the plan's literal suggestion) does NOT satisfy the acceptance bar. That probe
+  is a second, hand-typed copy of `SourceHead.tsx`'s CSS literals living only in the test file — reverting
+  the REAL component's span to `nowrap`+ellipsis does not touch the probe's own hardcoded
+  `display:-webkit-box` string, so a line-count assertion against it stays green regardless (confirmed
+  empirically: added the suggested `lines` calc to the probe first, reverted the real span, ran the suite —
+  all 38 tests including the new ones stayed green). Fixed by rendering the ACTUAL `SourceHead` component via
+  `react-dom/server`'s `renderToStaticMarkup` (it takes no Remotion context, so this works standalone) instead
+  of a mirrored HTML string, both in the corpus sweep (now keyed on `Map<string, RunningHeadCardMetadata>` so
+  each distinct head has a real card to render from, injected as 83 sibling `<div data-probe-index>` markups
+  in one page load) and in a new `measureRealRunningHeadLines(card)` helper used by two new tests: a synthetic
+  `TWO_LINE_DISCOURSES_CARD` (asserted to format to `NATURAL_TWO_LINE_HEAD`) rendering as exactly 2 lines, and
+  `MARCUS_CARD` rendering as exactly 1. Verified: reverted `SourceHead.tsx`'s span to `nowrap`+ellipsis (`git
+  diff` shows only the `whiteSpace: 'nowrap'` + plain `overflow`/`textOverflow` block, no `-webkit-box`/
+  `WebkitBoxOrient`/`WebkitLineClamp`) — the two new real-component assertions went red (corpus sweep:
+  "expected false to be true"; `TWO_LINE_DISCOURSES_CARD` line count: "expected 1 to be 2"), all other 36
+  tests stayed green. Restored `SourceHead.tsx` via `git checkout --`; full suite green again (38/38).
+  `SourceHead.tsx`/`source-head-layout.ts` are byte-identical to HEAD — only the test file changed
+  (`git diff --stat` confirms one file).
+
+  Follow-up not in scope for this task: the OTHER pre-existing witness/fix pairs in this same test file
+  (`measurePayoffSpan`'s R07/U03 vertical-clip checks) still measure against the same kind of hand-copied
+  mirror span, decoupled from `SourceHead.tsx`'s real markup for the SAME reason described above — they
+  happen to still be correct today, but a future edit to the real component's vertical-clip CSS would not be
+  caught by them. Not fixed here (out of scope: this task's acceptance criterion is specifically the 2-line
+  wrap regression), but worth a follow-up task if this class of decoupling is a general review concern.
 
 - [ ] V12: (review M2) Restore branch coverage for `surveyWallPool`'s REJECTION path —
   `social/src/remotion/__tests__/wall-gate.test.ts`. V10 deleted the only test that ever drove

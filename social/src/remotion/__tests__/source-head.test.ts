@@ -38,10 +38,12 @@ import { mkdtemp, rm } from 'node:fs/promises';
 
 import { bundle } from '@remotion/bundler';
 import { chromium, type Browser } from 'playwright';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import {
 	formatRunningHead,
 	PAYOFF_LABEL_TEXT,
+	SourceHead,
 	SOURCE_HEAD_FONT_STACK,
 	type RunningHeadCardMetadata,
 	type SourceHeadVariant
@@ -506,23 +508,32 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 	// every chapter file — not just the three hand-picked fixtures above, and
 	// not just Discourses, so a future book with its own long-title shape is
 	// covered by the same sweep without anyone remembering to add a new case.
-	function collectCorpusRunningHeads(): string[] {
-		const heads = new Set<string>();
+	//
+	// V11 (Pf39c2-social-pilot-02a review fix, 2026-08-27): keyed by the
+	// formatted head string but VALUED by a real card, not just a `Set` of
+	// strings — this sweep now renders the ACTUAL `SourceHead` component
+	// (below), which needs a real `RunningHeadCardMetadata` per distinct head
+	// to render from, not just its already-formatted text.
+	function collectCorpusRunningHeadCards(): Map<string, RunningHeadCardMetadata> {
+		const cards = new Map<string, RunningHeadCardMetadata>();
 		for (const bookSlug of readdirSync(outputDirForCorpus)) {
 			const bookDir = path.join(outputDirForCorpus, bookSlug);
 			if (!statSync(bookDir).isDirectory()) continue;
 			for (const chapterFile of readdirSync(bookDir)) {
 				if (!chapterFile.endsWith('.json') || chapterFile === '_meta.json') continue;
-				const cards = JSON.parse(readFileSync(path.join(bookDir, chapterFile), 'utf-8')) as Array<{
+				const chapterCards = JSON.parse(readFileSync(path.join(bookDir, chapterFile), 'utf-8')) as Array<{
 					author_slug: AuthorSlug;
 					source_reference: string;
 				}>;
-				for (const card of cards) {
-					heads.add(formatRunningHead(card));
+				for (const card of chapterCards) {
+					const head = formatRunningHead(card);
+					if (!cards.has(head)) {
+						cards.set(head, { author_slug: card.author_slug, source_reference: card.source_reference });
+					}
 				}
 			}
 		}
-		return Array.from(heads);
+		return cards;
 	}
 
 	let browser: Browser;
@@ -536,9 +547,10 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 	});
 
 	it(
-		'every distinct running head string in the corpus renders its clamped span fully inside the plate, on both axes',
+		'every distinct running head string in the corpus renders its clamped span fully inside the plate, on both axes, and at least one wraps to exactly 2 lines',
 		async () => {
-			const heads = collectCorpusRunningHeads();
+			const cardsByHead = collectCorpusRunningHeadCards();
+			const heads = Array.from(cardsByHead.keys());
 			// Sanity on the sweep itself — if this ever collapses to a handful of
 			// strings, the sweep below would be trivially true for the wrong
 			// reason (e.g. a loader bug silently reading zero cards). Distinct
@@ -553,25 +565,47 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 			const fontCss = await getFontCss();
 			const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 			try {
-				// Mirrors SourceHead.tsx's own plate + span structure and inline
-				// styles exactly (see that file, including its V05 2-line
-				// `WebkitLineClamp` shape), so this is a faithful measurement of the
-				// real component's geometry, not an approximation of it.
-				await page.setContent(`
-					<style>${fontCss}</style>
-					<div style="position:absolute;top:${SOURCE_HEAD_BOUNDING_BOX.top}px;left:${SOURCE_HEAD_BOUNDING_BOX.left}px;width:${SOURCE_HEAD_BOUNDING_BOX.width}px;height:${SOURCE_HEAD_BOUNDING_BOX.height}px;display:flex;align-items:center;">
-						<span id="probe" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:${SOURCE_HEAD_MAX_LINES};min-width:0;max-width:${SOURCE_HEAD_TEXT_MAX_WIDTH_PX}px;overflow:hidden;text-overflow:ellipsis;padding-left:${SOURCE_HEAD_SAFE_INSET_PX}px;padding-top:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;padding-bottom:${SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX}px;font-family:${SOURCE_HEAD_FONT_STACK};font-weight:500;font-size:${SOURCE_HEAD_FONT_SIZE_PX}px;line-height:${SOURCE_HEAD_LINE_HEIGHT_RATIO};letter-spacing:0.02em;margin:0;"></span>
-					</div>
-				`);
+				// V11 (Pf39c2-social-pilot-02a review fix): renders the REAL
+				// `SourceHead` component (`renderToStaticMarkup`) for every
+				// distinct corpus head, wrapped in its own `data-probe-index`
+				// container so each can be measured independently in a single
+				// page load — NOT a hand-copied second span with the same style
+				// literals typed out again in this test file. A hand-copied mirror
+				// only stays faithful to `SourceHead.tsx` for as long as whoever
+				// edits one remembers to edit the other; rendering the real
+				// component means a future change to that file's own span (e.g.
+				// reverting the 2-line wrap back to `nowrap`+ellipsis) shows up
+				// here automatically, with no risk of the two drifting apart.
+				// `AbsoluteFill`'s `position: absolute` sizes against the nearest
+				// POSITIONED ancestor (or the viewport, if there is none) — the
+				// wrapping `<div data-probe-index>` here is deliberately left
+				// `position: static` (the default), so each of the 83 renders
+				// still sizes itself against the full 1080x1920 viewport, exactly
+				// as `SourceHead` does when it's the only thing mounted — the
+				// heads happen to visually overlap on screen, but each span's own
+				// `getBoundingClientRect()`/`clientHeight` is computed independent
+				// of that, which is all this sweep measures.
+				const markup = heads
+					.map((head, i) => {
+						const card = cardsByHead.get(head)!;
+						const rendered = renderToStaticMarkup(
+							SourceHead({ variant: { kind: 'running-head', card } })
+						);
+						return `<div data-probe-index="${i}">${rendered}</div>`;
+					})
+					.join('');
+				await page.setContent(`<style>${fontCss}</style>${markup}`);
 
-				const rects = await page.evaluate((allHeads: string[]) => {
-					const probe = document.getElementById('probe') as HTMLSpanElement;
-					return allHeads.map((text) => {
-						probe.textContent = text;
-						const rect = probe.getBoundingClientRect();
-						return { right: rect.right, bottom: rect.bottom };
-					});
-				}, heads);
+				const rects = await page.evaluate((count: number) => {
+					const results: Array<{ right: number; bottom: number; clientHeight: number }> = [];
+					for (let i = 0; i < count; i++) {
+						const container = document.querySelector(`[data-probe-index="${i}"]`) as HTMLElement;
+						const span = container.querySelector('span') as HTMLSpanElement;
+						const rect = span.getBoundingClientRect();
+						results.push({ right: rect.right, bottom: rect.bottom, clientHeight: span.clientHeight });
+					}
+					return results;
+				}, heads.length);
 
 				const plateRightEdge = SOURCE_HEAD_BOUNDING_BOX.left + SOURCE_HEAD_BOUNDING_BOX.width;
 				const plateBottomEdge = SOURCE_HEAD_BOUNDING_BOX.top + SOURCE_HEAD_BOUNDING_BOX.height;
@@ -584,6 +618,23 @@ describe('the running head clamp holds for every distinct card in the corpus (re
 				});
 
 				expect(offenders).toEqual([]);
+
+				// V11 (Pf39c2-social-pilot-02a review fix): the box-geometry
+				// assertion above ("fits inside the plate") is satisfiable by
+				// EITHER a genuine 2-line wrap OR a reverted single-line
+				// `nowrap`+ellipsis clamp — a one-line span is comfortably under
+				// the plate's own height either way, so it cannot tell the two
+				// apart. Assert the rendered LINE COUNT directly (rounded
+				// `clientHeight`, minus the fixed vertical padding the real
+				// component always applies, divided by one line's own pixel
+				// height) — proof that at least one REAL corpus head, drawn
+				// through the actual component, genuinely wraps to 2 lines.
+				const renderedLines = (clientHeight: number): number =>
+					Math.round(
+						(clientHeight - 2 * SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX) /
+							(SOURCE_HEAD_FONT_SIZE_PX * SOURCE_HEAD_LINE_HEIGHT_RATIO)
+					);
+				expect(heads.some((_, i) => renderedLines(rects[i]!.clientHeight) === 2)).toBe(true);
 			} finally {
 				await page.close();
 			}
@@ -697,6 +748,21 @@ describe('the payoff label\'s vertical ink extent stays inside the clamped span 
 // line's descenders" — this describe block is the same witness/fix
 // discipline, applied to a real, naturally two-line-wrapping corpus string at
 // the running head's own font size.
+//
+// V11 (Pf39c2-social-pilot-02a review fix, 2026-08-27): code review found
+// that NONE of the assertions in this file — not the corpus sweep's
+// `rect.right`/`rect.bottom` box check, not the 135-char "draws something,
+// inside the box" test, not this describe block's own scrollHeight-vs-
+// clientHeight witness/fix pair — actually distinguishes a genuine 2-line
+// wrap from a reverted single-line `nowrap`+ellipsis clamp (R04's original
+// shape, and the exact regression V05 fixed per direct user feedback: "it
+// should wrap onto two lines if necessary, currently it truncates"). All of
+// them stay green either way, because a one-line span is well within every
+// box/scrollHeight bound a two-line span would also satisfy. `measureRunningHeadSpan`
+// below now also returns the rendered LINE COUNT itself, and the corpus sweep
+// above asserts a real corpus head renders as 2 lines — verified (per this
+// task's own acceptance) to go red against a `nowrap`+`textOverflow: 'ellipsis'`
+// revert of `SourceHead.tsx`'s span, then restored.
 // ---------------------------------------------------------------------------
 
 describe('the running head\'s 2-line wrapped block stays inside the clamped span (real Chromium + real DM Sans)', () => {
@@ -737,6 +803,51 @@ describe('the running head\'s 2-line wrapped block stays inside the clamped span
 		}
 	}
 
+	// V11 (Pf39c2-social-pilot-02a review fix): renders the REAL `SourceHead`
+	// component (`renderToStaticMarkup`), not a second hand-copied span with
+	// the same style literals typed out again — see the corpus sweep above
+	// for why that distinction matters (a hand-copied mirror only stays
+	// faithful to `SourceHead.tsx` for as long as someone remembers to keep
+	// both in sync; this reads the real, current styles directly). Returns
+	// the rendered LINE COUNT (`clientHeight`, minus the fixed vertical
+	// padding the real component always applies, divided by one line's own
+	// pixel height) — the property that actually distinguishes a genuine
+	// 2-line wrap from a reverted single-line `nowrap`+ellipsis clamp, which
+	// `measureRunningHeadSpan`'s own scrollHeight-vs-clientHeight witness/fix
+	// pair above does NOT (a one-line span never scrolls past its own
+	// clientHeight either).
+	async function measureRealRunningHeadLines(card: RunningHeadCardMetadata): Promise<number> {
+		const fontCss = await getFontCss();
+		const markup = renderToStaticMarkup(SourceHead({ variant: { kind: 'running-head', card } }));
+		const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+		try {
+			await page.setContent(`<style>${fontCss}</style>${markup}`);
+			return await page.evaluate(
+				({ fontSize, lineHeightRatio, verticalPaddingPx }) => {
+					const span = document.querySelector('span') as HTMLSpanElement;
+					return Math.round((span.clientHeight - 2 * verticalPaddingPx) / (fontSize * lineHeightRatio));
+				},
+				{
+					fontSize: SOURCE_HEAD_FONT_SIZE_PX,
+					lineHeightRatio: SOURCE_HEAD_LINE_HEIGHT_RATIO,
+					verticalPaddingPx: SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX
+				}
+			);
+		} finally {
+			await page.close();
+		}
+	}
+
+	// A synthetic card whose OWN `formatRunningHead` output is exactly
+	// `NATURAL_TWO_LINE_HEAD` above (asserted in the test below, not just
+	// assumed) — needed because rendering the REAL `SourceHead` component
+	// takes a card, not raw text; `formatRunningHead` derives the head from
+	// `author_slug`/`source_reference` exactly as any real corpus card would.
+	const TWO_LINE_DISCOURSES_CARD: RunningHeadCardMetadata = {
+		author_slug: 'epictetus',
+		source_reference: 'Discourses, That When We Cannot Fulfil That Which The, Section 1'
+	};
+
 	it(
 		'witness: a genuinely two-line real running head, with zero vertical padding, has scrollHeight strictly greater than clientHeight — the outer-edge clip R07 diagnosed for one line, reproduced for two',
 		async () => {
@@ -751,6 +862,36 @@ describe('the running head\'s 2-line wrapped block stays inside the clamped span
 		async () => {
 			const { scrollHeight, clientHeight } = await measureRunningHeadSpan(SOURCE_HEAD_TEXT_VERTICAL_PADDING_PX);
 			expect(scrollHeight).toBeLessThanOrEqual(clientHeight);
+		},
+		60_000
+	);
+
+	// V11 (Pf39c2-social-pilot-02a review fix): the witness/fix pair above
+	// proves the OUTER-edge clip is guarded, but a reverted single-line
+	// `nowrap`+ellipsis span (R04's original shape) ALSO keeps
+	// `scrollHeight <= clientHeight` — it never wraps in the first place, so
+	// there is nothing for that padding to guard against, and both
+	// assertions above stay green regardless. Assert the rendered LINE
+	// COUNT directly, through the REAL `SourceHead` component (not the
+	// hand-copied `#probe` span `measureRunningHeadSpan` above uses) — the
+	// one property, measured against the real component, that actually
+	// distinguishes "wraps to 2 lines" (current code) from "truncates to 1"
+	// (the R04 regression this whole task guards against).
+	it(
+		'renders TWO_LINE_DISCOURSES_CARD (whose formatted head is NATURAL_TWO_LINE_HEAD) as exactly 2 lines through the ACTUAL SourceHead component — the property a nowrap+ellipsis regression would break',
+		async () => {
+			expect(formatRunningHead(TWO_LINE_DISCOURSES_CARD)).toBe(NATURAL_TWO_LINE_HEAD);
+			const lines = await measureRealRunningHeadLines(TWO_LINE_DISCOURSES_CARD);
+			expect(lines).toBe(2);
+		},
+		60_000
+	);
+
+	it(
+		'renders the plan\'s own short worked example (MARCUS_CARD, "MARCUS AURELIUS · MEDITATIONS, BOOK 2") as exactly 1 line through the ACTUAL SourceHead component — proof the line-count assertion above is not vacuously true because every head renders as 2',
+		async () => {
+			const lines = await measureRealRunningHeadLines(MARCUS_CARD);
+			expect(lines).toBe(1);
 		},
 		60_000
 	);
