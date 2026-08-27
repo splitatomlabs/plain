@@ -15,68 +15,68 @@
     },
     {
       "day": 2,
-      "card_id": "peace-of-mind-15-005",
-      "book_slug": "peace-of-mind",
-      "author_slug": "seneca",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "In one's own misfortunes, also, one ought so to conduct oneself as to bestow upon them just as much sorrow as reason, not as much as custom requires: for many shed tears in order to show them, and whenever no one is looking at them their eyes are dry, but they think it disgraceful not to weep when every one does so. So deeply has this evil of being guided by the opinion of others taken root in us, that even grief, the simplest of all emotions, begins to be counterfeited.",
-        "landing_line": "Many people cry just for show."
-      }
-    },
-    {
-      "day": 3,
-      "card_id": "discourses-62-002",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "So we suppose that there is something superior in man, and that we first receive it from the gods. For since the gods by their nature are pure and free from corruption, so far as men approach them by reason, so far do they cling to purity and to a love (habit) of purity. But since it is impossible that man's nature ([Greek: ousia]) can be altogether pure, being mixed (composed) of such materials, reason is applied, as far as it is possible, and reason endeavors to make human nature love purity.",
-        "landing_line": "Reason tries to make human nature love purity."
-      }
-    },
-    {
-      "day": 4,
-      "card_id": "discourses-15-001",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "If these things are true, and if we are not silly, and are not acting hypocritically when we say that the good of man is in the will, and the evil too, and that everything else does not concern us, why are we still disturbed, why are we still afraid? The things about which we have been busied are in no man's power; and the things which are in the power of others, we care not for. What kind of trouble have we still?",
-        "landing_line": "The things we've been worried about are beyond anyone's control."
-      }
-    },
-    {
-      "day": 5,
-      "card_id": "shortness-of-life-18-003",
-      "book_slug": "shortness-of-life",
-      "author_slug": "seneca",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "Think, moreover, how full of risk is the great task which you have undertaken: you have to deal with the human stomach: a hungry people will not endure reason, will not be appeased by justice, and will not hearken to any prayers. Only just a few days ago, when G. Caesar perished, grieving for nothing so much (if those in the other world can feel grief) as that the Roman people did not die with him, there was said to be only enough corn for seven or eight days' consumption: while he was making bridges with ships and playing with the resources of the empire, want of provisions, the worst evil that can befall even a besieged city, was at hand:",
-        "landing_line": "You have to feed people — and hungry people don't listen to reason."
-      }
-    },
-    {
-      "day": 6,
-      "card_id": "discourses-48-004",
-      "book_slug": "discourses",
-      "author_slug": "epictetus",
-      "content": {
-        "format": "wall",
-        "original_excerpt": "hupolaepseis]) are fixed in you, and you shall have acquired a certain power for your security, I advise you to be careful in your association with common persons; if you are not, every day like wax in the sun there will be melted away whatever you inscribe on your minds in the school. Withdraw then yourselves far from the sun so long as you have these waxen sentiments. For this reason also philosophers advise men to leave their native country, because ancient habits distract them and do not allow a beginning to be made of a different habit; nor can we tolerate those who meet us and say: See such a one is now a philosopher, who was once so and so.",
-        "landing_line": "If you don't, every day your lessons will melt away like wax in the sun."
-      }
-    },
-    {
-      "day": 7,
-      "card_id": "on-anger-02-075",
+      "card_id": "on-anger-02-054",
       "book_slug": "on-anger",
       "author_slug": "seneca",
       "content": {
         "format": "wall",
-        "original_excerpt": "The greatest remedy for anger is delay: beg anger to grant you this at the first, not in order that it may pardon the offence, but that it may form a right judgment about it: if it delays, it will come to an end. Do not attempt to quell it all at once, for its first impulses are fierce; by plucking away its parts we shall remove the whole.",
-        "landing_line": "The best cure for anger is to wait."
+        "original_excerpt": "Once, a boy who was brought up in Plato's house went home to his parents, and, on seeing his father shouting with passion, said, \"I never saw any one at Plato's house act like that.\" I doubt not that he learned to imitate his father sooner than he learned to imitate Plato. Above all, let his food be scanty, his dress not costly, and of the same fashion as that of his comrades: if you begin by putting him on a level with many others, he will not be angry when some one is compared with him.",
+        "landing_line": "A boy was raised in Plato's household."
+      }
+    },
+    {
+      "day": 3,
+      "card_id": "discourses-60-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "When you see another man in the possession of power (magistracy), set against this the fact that you have not the want (desire) of power; when you see another rich, see what you possess in place of riches: for if you possess nothing in place of them, you are miserable; but if you have not the want of riches, know that you possess more than this man possesses and what is worth much more.",
+        "landing_line": "When you see someone rich, think about what you have instead of riches."
+      }
+    },
+    {
+      "day": 4,
+      "card_id": "enchiridion-41-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "It is a mark of want of intellect to spend much time in things relating to the body, as to be immoderate in exercises, in eating and drinking, and in the discharge of other animal functions. These things should be done incidentally and our main strength be applied to our reason.",
+        "landing_line": "Don't overdo exercise, eating, drinking, or other basic physical needs."
+      }
+    },
+    {
+      "day": 5,
+      "card_id": "shortness-of-life-02-003",
+      "book_slug": "shortness-of-life",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "\"We live a small part only of our lives.\"",
+        "landing_line": "We actually live only a small part of our lives."
+      }
+    },
+    {
+      "day": 6,
+      "card_id": "enchiridion-27-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "As a mark[1] is not set up for the sake of missing the aim, so neither does the nature of evil exist in the world.",
+        "landing_line": "In the same way, evil doesn't exist in the world by nature."
+      }
+    },
+    {
+      "day": 7,
+      "card_id": "happy-life-03-004",
+      "book_slug": "happy-life",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "You understand without my mentioning it that an unbroken calm and freedom ensue, when we have driven away all those things which either excite us or alarm us: for in the place of sensual pleasures and those slight perishable matters which are connected with the basest crimes, we thus gain an immense, unchangeable, equable joy, together with peace, calmness and greatness of mind, and kindliness: for all savageness is a sign of weakness.",
+        "landing_line": "Cruelty always comes from weakness."
       }
     }
   ],

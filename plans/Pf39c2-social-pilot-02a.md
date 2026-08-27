@@ -2927,8 +2927,48 @@ cost, reversible); and add a per-week QUOTA rather than an adjacency rule or a p
   exceeded, not just met). No JSON regenerated (that is V16's job). Full pipeline suite: 574/574 green
   (`npx vitest run` from repo root).
 
-- [ ] V16: Regenerate week 1 and re-render — report the new day/author/sub_type/screens table and the per-day
+- [x] V16 (DONE 2026-08-27): Regenerate week 1 and re-render — report the new day/author/sub_type/screens table and the per-day
   durations, which should now VARY rather than all being 17.514s. Confirm durations stay inside [15s, 59s]
   (short cards will pad up to the 15s floor — check `padToMinimumDuration` extends the last payoff hold as
   designed rather than producing a long dead frame). Acceptance: 7 Walls render; screen counts vary per the
   quota; all durations inside bounds.
+
+  **Done.** Regenerated (`--week 1 --seed 42 --first-week --force`) and re-rendered all 7 (1m34s, exit 0).
+  The quota holds: **2** five-screen days (cap 2) and **3** days at <=3 screens (floor 2).
+
+  | day | card | author | sub_types | screens | duration |
+  |---|---|---|---|---|---|
+  | 1 | meditations-09-025 | marcus-aurelius | (reserve) | 5 | 17.514s |
+  | 2 | on-anger-02-054 | seneca | scene | 5 | 17.514s |
+  | 3 | discourses-60-001 | epictetus | (reserve) | 4 | 15.018s |
+  | 4 | enchiridion-41-001 | epictetus | (reserve) | 3 | 15.018s |
+  | 5 | shortness-of-life-02-003 | seneca | scene | 1 | 15.018s |
+  | 6 | enchiridion-27-001 | epictetus | (reserve) | 2 | 15.018s |
+  | 7 | happy-life-03-004 | seneca | (reserve) | 4 | 15.018s |
+
+  Screens `5,5,4,3,1,2,4` against V04's `5,5,5,5,5,5,5`. Author mix epictetus 3 / seneca 3 /
+  marcus-aurelius 1; Enchiridion appears for the first time (2 days) — V01's floor removal reaching the
+  channel. All durations inside [15s, 59s].
+
+  **FINDING — fewer screens does NOT yield shorter videos; the 15s floor absorbs the difference, and it
+  lands entirely on the final motionless hold.** `MIN_POST_DURATION_SECONDS` is 15 (a house encode-profile
+  requirement, not a tunable), and `padToMinimumDuration` extends the LAST payoff phase — the last rest line,
+  or the landing line itself when there are no rest lines:
+
+  | day | screens | raw | padded to | pad | final motionless hold |
+  |---|---|---|---|---|---|
+  | 1 | 5 | 17.5s | 17.5s | 0.0s | 3.0s (last rest line) |
+  | 2 | 5 | 17.5s | 17.5s | 0.0s | 3.0s (last rest line) |
+  | 3 | 4 | 14.5s | 15.0s | 0.5s | 3.5s (last rest line) |
+  | 4 | 3 | 11.5s | 15.0s | 3.5s | 6.5s (last rest line) |
+  | 5 | 1 | 5.5s | 15.0s | **9.5s** | **12.5s (LANDING LINE)** |
+  | 6 | 2 | 8.5s | 15.0s | 6.5s | 9.5s (last rest line) |
+  | 7 | 4 | 14.5s | 15.0s | 0.5s | 3.5s (last rest line) |
+
+  So the SCREEN mix is real but the DURATION mix is not: every post is 15.0-17.5s. Worse, day 5's single
+  landing line now sits motionless for **12.5s** — numerically the exact symptom this plan's own "Why"
+  section opened with as defect #1 ("100 words at ~40px, motionless for 12.5s"), reached by a different
+  route: padding rather than the deleted whole-passage fallback. The text is one short sentence rather than
+  a wall, so it is not the same defect, but a 12.5s held frame is a large change in feel from the 3.0s the
+  format was tuned around, and it was not a decision anyone made — it fell out of the floor. Raised with the
+  user.
