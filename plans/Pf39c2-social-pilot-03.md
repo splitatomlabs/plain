@@ -307,8 +307,70 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
   `npx vitest run` (social/): 412/412 green. `tsc --noEmit -p social/tsconfig.json`: clean. T08 (the daily job) is
   next and is the first real caller of `buildCaption`'s other two platforms and the producer of
   `PendingYouTubeFlip[]` this module consumes.
-- [ ] T08: Build the daily job — read schedule, render, upload, publish, log, alert. A failure on one platform must
+- [x] T08: Build the daily job — read schedule, render, upload, publish, log, alert. A failure on one platform must
   not stop the other. Acceptance: a dry-run completes and logs per-platform outcomes.
+  Done: added `social/src/job.ts` (orchestration) and `social/src/job-plan.ts` (pure decision logic, mirroring the
+  `cli.ts`/`cli-plan.ts` split). `runJob` resolves `--date` -> schedule slot -> render -> upload every rendered
+  asset to R2 -> publish independently to Instagram and YouTube. REUSES `cli.ts`'s render path rather than
+  duplicating it: `renderCommand` and `loadWeekSchedule` are now `export`ed from `cli.ts` (the only change to that
+  file — everything else is untouched and its own 16-test suite, including the real end-to-end render test, stays
+  green), and `job.ts`'s default `render`/`loadSchedule` dependencies import them via a DYNAMIC `await
+  import('./cli.js')` rather than a top-level import, specifically so importing `job.ts` (as `job.test.ts` does,
+  with `render` itself injected) never pulls in `@remotion/bundler`/`@remotion/renderer` — confirmed by `job.test.ts`
+  running in ~10ms rather than the 10s+ a real Remotion bundle takes. The plan's Decision ("assets are uploaded to
+  R2 before any post is attempted") is enforced structurally: both the video and the Instagram feed still finish
+  uploading before either publish call starts — no code path publishes first — and a dedicated ordering test asserts
+  this via a recorded call sequence, not by inspecting the implementation's shape.
+  PLATFORM ISOLATION (the acceptance criterion): each platform's whole sequence (token refresh -> publish ->
+  bookkeeping) is wrapped in its own try/catch that always resolves to a `PlatformOutcome`, never rejects, and both
+  are run under `Promise.allSettled` rather than a bare `Promise.all` over the raw publish calls — the header comment
+  explains why that distinction matters (a bare `Promise.all` can abandon the still-in-flight other platform's
+  promise on the first rejection). Two tests prove both directions (Instagram failing does not stop YouTube, and
+  vice versa) by asserting the OTHER platform's publish mock was still called and its outcome still reported, with
+  the job's own exit code reflecting failure only once both were attempted.
+  TOKENS: `ensureFreshToken`/`expiryAlert` (`tokens.ts`, unmodified) are called per platform before publishing, with
+  the alert (if any) logged as a `WARN` line. No real OAuth refresh endpoint exists anywhere in this codebase yet —
+  T05/T06 deliberately scoped to publish/upload only — so `notImplementedRefresh` is the default `JobDeps.refresh`,
+  throwing a clearly-named error rather than silently no-op'ing; a real implementation is a documented follow-up, not
+  guessed here. Never logs a token: every log line and `PlatformOutcome.message` is built from a fixed string, a
+  card id/date, or `errorMessage(error)` — and every error this file can catch already comes from a module
+  independently audited (T03-T06) to never put a token value in a thrown message. A dedicated test forces both
+  publish calls to fail and asserts neither token value appears in any log line or outcome message.
+  PENDING YOUTUBE FLIPS: recorded to a plain JSON file, `content/social/pending-youtube-flips.json` (NOT Firestore —
+  the header comment justifies this: Firestore already holds the one genuine secret needing atomic, access-
+  controlled storage, but a `{date, cardId, videoId}` list is neither secret nor concurrently written, and a
+  committed-JSON file stays `git diff`-able during the weekly session the same way `pilot-schedule-w<NN>.json`
+  already is). Reuses T07's own `PendingYouTubeFlip` type from `tiktok-manual.ts` rather than redefining it.
+  `upsertPendingFlip` (`job-plan.ts`) replaces same-date entries instead of duplicating them on a re-run.
+  `--dry-run`: renders for REAL (the task's own wording, "does everything up to and including render") but performs
+  NO uploads, NO token operations, and NO posts — `runJob` returns immediately after logging one `'dry-run'`
+  `PlatformOutcome` per platform. Every default dependency that would need a credential
+  (`createDefaultUploadAsset`/`createDefaultTokenStore`/`createDefaultInstagramAccountConfigLoader`) is a closure
+  that defers its `loadR2Config()`/`new Firestore()`/`process.env` read until first ACTUALLY called — never at
+  `JobDeps` construction — so building the whole dependency set at the top of `main()` never throws even with zero
+  credentials set, and the dry-run path never calls any of them at all. Verified live: `npx tsx social/src/job.ts
+  --date 2026-09-01 --dry-run` with every R2/Instagram/YouTube env var explicitly unset completes with exit code 0,
+  performs a real Remotion render, and logs `[instagram] DRY-RUN` / `[youtube] DRY-RUN` lines naming exactly what
+  each platform would have done.
+  Determinism: `--date` is the only source of scheduling decisions (`dateToWeekDay`/`resolveDay`, both pure). The ONE
+  wall-clock read in the whole file (`new Date().toISOString()` in `main()`) is used only for token-freshness
+  decisions and reused verbatim for that run's log-line timestamps — clearly commented at its single call site, per
+  this task's own requirement.
+  Logging: structured `[platform] STATUS — message` lines (`job-plan.ts`'s `formatOutcomeLine`) plus INFO/WARN/ERROR
+  lines, written to both the console and a per-day append-only file, `content/social/job-logs/job-<date>.log`, in
+  the spirit of `content/pipeline/<slug>/pipeline.log` (CLAUDE.md's "Pipeline logs" section) — `*.log` is already
+  gitignored, so these never land in version control.
+  `--help` documents `--date`/`--out`/`--schedule-dir`/`--pending-flips-file`/`--dry-run`, matching `cli.ts`'s style.
+  Tests: `social/src/__tests__/job.test.ts` (13 tests, every collaborator injected — no network, no Firestore, no
+  Remotion render, no credentials) covering platform isolation (both directions, the single most important test),
+  upload-before-publish ordering, dry-run's zero-uploads/zero-posts/two-outcomes behavior, token refresh + expiry
+  alert surfacing, the no-token-leak guarantee (including on the failure path), and pending-flip recording/non-
+  recording. `social/src/__tests__/job-plan.test.ts` (17 tests) covers the pure helpers directly: YouTube title
+  truncation at the exact boundary, caption/description delegation to `caption.ts`, exit-code combination, outcome/
+  alert line formatting, and pending-flip parse/serialize/upsert (including the same-date replacement rule).
+  `npx vitest run` (social/): 442/442 green (412 pre-existing, unmodified + 13 `job.test.ts` + 17 `job-plan.test.ts`).
+  `tsc --noEmit -p social/tsconfig.json`: clean. T09 (the Dockerfile) is next — the first task this render pipeline
+  needs a container for at all.
 - [ ] T09: Write the Dockerfile — Node, ffmpeg, Chromium deps, and Literata + DM Sans installed system-wide.
   Acceptance: the image renders a video via `docker run`.
 - [ ] T10: Deploy the Cloud Run Job and the Firebase trigger, scheduled off the hour. Acceptance: a scheduled run

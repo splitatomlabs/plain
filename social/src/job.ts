@@ -1,0 +1,644 @@
+#!/usr/bin/env node
+/**
+ * The daily job (Pf39c2-social-pilot-03 T08): `social/src/job.ts --date
+ * <YYYY-MM-DD>`.
+ *
+ * One day's full pipeline: resolve the schedule slot for `--date` -> render
+ * it (REUSING `cli.ts`'s existing render path — `renderCommand`/
+ * `loadWeekSchedule`, both exported from `cli.ts` for exactly this reuse,
+ * never re-implemented here) -> upload every rendered asset to R2 -> publish
+ * independently to Instagram and YouTube.
+ *
+ * ORDERING (plan Decision, verbatim): "Assets are uploaded to R2 before any
+ * post is attempted, so a posting failure never loses a render." Enforced
+ * structurally below: `runJob` uploads both rendered assets and only THEN
+ * starts either publish call — there is no code path that publishes before
+ * both uploads have resolved.
+ *
+ * PLATFORM ISOLATION (T08's acceptance criterion): an Instagram failure must
+ * never prevent the YouTube upload, and vice versa. Each platform's whole
+ * sequence (token refresh -> publish -> bookkeeping) is wrapped in its own
+ * try/catch that ALWAYS resolves to a `PlatformOutcome` (`job-plan.ts`) —
+ * never rejects — so the `Promise.allSettled` around both of them can never
+ * see one platform's failure short-circuit the other. This is deliberately
+ * NOT a bare `Promise.all` over the raw publish calls: `Promise.all` would
+ * reject on the FIRST rejection, which (depending on scheduling) can abandon
+ * the still-in-flight other platform's promise with its rejection becoming
+ * unhandled. The job's own exit code reflects a failure (`exitCodeForOutcomes`)
+ * only after BOTH platforms have been attempted and reported.
+ *
+ * TOKENS: `ensureFreshToken` (`publish/tokens.ts`) is called per platform
+ * before publishing, and `expiryAlert`'s result (if any) is logged — plan
+ * Constraint: expiry inside 30 days raises an alert. NEVER logs a token
+ * value: every log line and every `PlatformOutcome.message` below is built
+ * from either a fixed string, a card id/date, or `errorMessage(error)` —
+ * and every error this file can catch already comes from a module
+ * (`tokens.ts`, `instagram.ts`, `youtube.ts`) independently audited to never
+ * put a token value in a thrown error's message. No real OAuth REFRESH
+ * implementation exists anywhere in this codebase yet (T05/T06 deliberately
+ * scoped to publish/upload only, not the refresh-token endpoint calls) —
+ * `notImplementedRefresh` below is what a real run's `JobDeps.refresh` falls
+ * back to, and throws a clear, named error rather than silently doing
+ * nothing; a caller with a real refresh implementation supplies its own
+ * `RefreshFn` per platform instead.
+ *
+ * PENDING YOUTUBE FLIPS: T07's `stageTikTokWeek` needs the week's uploaded
+ * YouTube video ids (`PendingYouTubeFlip[]`, defined in
+ * `publish/tiktok-manual.ts` and reused here, not redefined). This job is
+ * the only place that calls `uploadVideoToYouTube` and therefore the only
+ * place that learns a real video id, so it is the natural place to persist
+ * that list. Persisted as a plain JSON file under `content/social/`
+ * (`pending-youtube-flips.json`, alongside the committed
+ * `pilot-schedule-w<NN>.json` files this workspace already keeps there) —
+ * NOT Firestore: Firestore already holds the OAuth tokens (a genuine secret
+ * needing atomic, access-controlled storage — see `token-store-firestore.ts`'s
+ * header for why), but a list of `{date, cardId, videoId}` records is neither
+ * secret nor concurrently written (only this daily job writes it, once a
+ * day), so a second cloud dependency buys nothing here. A committed-JSON
+ * file is also directly `git diff`-able during the weekly TikTok/flip
+ * session, the same property that makes the schedule files themselves plain
+ * JSON rather than a database row.
+ *
+ * DETERMINISM: `--date` is the ONLY source of scheduling decisions — nothing
+ * here calls `Date.now()`/`new Date()` for anything that affects WHAT gets
+ * rendered or published (see `dateToWeekDay`/`resolveDay`, both re-exported
+ * pure functions). A real wall-clock "now" IS legitimately needed for token
+ * freshness (`ensureFreshToken`/`expiryAlert` compare a token's expiry
+ * against "right now", not against `--date`) — `main()` below has the ONE
+ * call site in this whole file (`const now = new Date().toISOString()`),
+ * clearly commented there, and that same value is reused verbatim for this
+ * run's log-line timestamps rather than reading the clock a second time.
+ *
+ * DRY RUN: `--dry-run` renders for real (the plan's own wording: "does
+ * everything up to and including render") but performs NO uploads and NO
+ * posts — `runJob` returns immediately after logging what each platform
+ * WOULD do. Because none of `uploadAsset`/`tokenStore`/`publishInstagram`/
+ * `publishYouTube`/`loadInstagramAccountConfig`/`pendingFlips` are ever
+ * invoked on that path, and every one of those dependencies loads its own
+ * config LAZILY (on first real call, never at construction) rather than
+ * eagerly at module load, `--dry-run` needs no credentials of any kind —
+ * see `createDefaultUploadAsset`/`createDefaultTokenStore`/
+ * `createDefaultInstagramAccountConfigLoader` below, each a closure that
+ * defers its `loadR2Config()`/`new Firestore()`/`process.env` read until it
+ * is actually called.
+ *
+ * TESTING: `job.test.ts` calls `runJob` directly with every collaborator
+ * injected (`JobDeps`) — no network, no Firestore, no credentials, and
+ * critically no Remotion render: the default `render`/`loadSchedule`
+ * dependencies below import `cli.ts` DYNAMICALLY
+ * (`await import('./cli.js')`), not at this file's top level, specifically
+ * so importing `job.ts` itself never pulls in `@remotion/bundler`/
+ * `@remotion/renderer` — those only load the moment a REAL (non-test)
+ * default `render` call actually runs.
+ *
+ * Orchestration only: every piece of pure decision logic (outcome
+ * formatting, YouTube title/description, the pending-flip list's parse/
+ * merge/serialize) lives in `job-plan.ts`, mirroring the `cli.ts`/
+ * `cli-plan.ts` split.
+ */
+
+import { parseArgs } from 'node:util';
+import { appendFileSync, mkdirSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+import type { S3Client } from '@aws-sdk/client-s3';
+
+import { dateToWeekDay } from './pilot-config.js';
+import { resolveDay, renderAssetPaths } from './cli-plan.js';
+import type { WeekSchedule, ScheduleSlot } from './schedule-types.js';
+import { loadR2Config, type R2Config } from './publish/env.js';
+import { createR2Client, contentTypeFor, postKeyFor, uploadFile } from './publish/storage.js';
+import {
+	ensureFreshToken,
+	expiryAlert,
+	type Platform,
+	type RefreshFn,
+	type StoredToken,
+	type TokenStore
+} from './publish/tokens.js';
+import { createFirestoreTokenStore } from './publish/token-store-firestore.js';
+import { publishToInstagram, type PublishToInstagramOptions, type PublishToInstagramResult } from './publish/instagram.js';
+import { uploadVideoToYouTube, type UploadVideoOptions, type UploadVideoResult } from './publish/youtube.js';
+import type { PendingYouTubeFlip } from './publish/tiktok-manual.js';
+import {
+	buildInstagramCaption,
+	buildYouTubeDescription,
+	buildYouTubeTitle,
+	errorMessage,
+	exitCodeForOutcomes,
+	formatExpiryAlertLine,
+	formatOutcomeLine,
+	parsePendingFlips,
+	serializePendingFlips,
+	upsertPendingFlip,
+	type PlatformName,
+	type PlatformOutcome
+} from './job-plan.js';
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+/** `social/src` -> repo root. */
+const REPO_ROOT = path.resolve(moduleDir, '..', '..');
+const SCHEDULE_DIR = path.join(REPO_ROOT, 'content', 'social');
+const DEFAULT_OUT_DIR = path.join(REPO_ROOT, 'social', 'out');
+const DEFAULT_PENDING_FLIPS_PATH = path.join(REPO_ROOT, 'content', 'social', 'pending-youtube-flips.json');
+const JOB_LOG_DIR = path.join(REPO_ROOT, 'content', 'social', 'job-logs');
+
+// ---------------------------------------------------------------------------
+// CLI arguments
+// ---------------------------------------------------------------------------
+
+function printHelp(): void {
+	console.log(`Usage: npx tsx social/src/job.ts --date <YYYY-MM-DD> [options]
+
+Runs one day's full publish pipeline: resolves the schedule slot for --date,
+renders it (reusing cli.ts's render path), uploads every rendered asset to
+R2, then publishes independently to Instagram and YouTube — a failure on one
+platform never stops the other. See plans/Pf39c2-social-pilot-03.md T08.
+
+Options:
+  --date <YYYY-MM-DD>          The post's calendar date (required).
+  --out <dir>                    Render output directory (default: social/out/).
+  --schedule-dir <dir>           Directory to read pilot-schedule-w<NN>.json
+                                  from (default: content/social/).
+  --pending-flips-file <path>    Where the week's pending YouTube video ids
+                                  are recorded for T07's weekly TikTok/flip
+                                  session (default:
+                                  content/social/pending-youtube-flips.json).
+  --dry-run                      Render for real, but perform NO uploads and
+                                  NO posts — logs exactly what each platform
+                                  WOULD do. Needs no credentials at all.
+  --help                        Show this help.`);
+}
+
+export interface JobArgs {
+	date: string;
+	outDir: string;
+	scheduleDir: string;
+	pendingFlipsPath: string;
+	dryRun: boolean;
+}
+
+export function parseJobArgs(argv: string[]): JobArgs {
+	const { values } = parseArgs({
+		args: argv,
+		options: {
+			date: { type: 'string' },
+			out: { type: 'string', default: DEFAULT_OUT_DIR },
+			'schedule-dir': { type: 'string', default: SCHEDULE_DIR },
+			'pending-flips-file': { type: 'string', default: DEFAULT_PENDING_FLIPS_PATH },
+			'dry-run': { type: 'boolean', default: false },
+			help: { type: 'boolean', default: false }
+		},
+		allowPositionals: true
+	});
+
+	if (values.help) {
+		printHelp();
+		process.exit(0);
+	}
+
+	if (!values.date) {
+		throw new Error('Specify --date <YYYY-MM-DD>');
+	}
+
+	return {
+		date: values.date,
+		outDir: values.out ?? DEFAULT_OUT_DIR,
+		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
+		pendingFlipsPath: values['pending-flips-file'] ?? DEFAULT_PENDING_FLIPS_PATH,
+		dryRun: Boolean(values['dry-run'])
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Dependencies — every collaborator this job needs is injectable, so
+// job.test.ts never touches a network, Firestore, credentials, or a real
+// Remotion render. `buildDefaultJobDeps` (bottom of this section) wires the
+// real implementations `main()` uses.
+// ---------------------------------------------------------------------------
+
+export type RenderFn = (args: { date: string; outDir: string; scheduleDir: string }) => Promise<void>;
+export type LoadScheduleFn = (week: number, scheduleDir: string) => Promise<WeekSchedule>;
+
+export interface UploadAssetInput {
+	filePath: string;
+	key: string;
+	contentType: string;
+}
+/** Uploads one local file to R2 and returns its public URL. Matches `storage.ts`'s `uploadFile`'s effect, minus the client/config plumbing. */
+export type UploadAssetFn = (input: UploadAssetInput) => Promise<string>;
+
+export interface InstagramAccountConfig {
+	igUserId: string;
+}
+export type LoadInstagramAccountConfigFn = () => InstagramAccountConfig;
+
+export interface PendingFlipsStore {
+	read(): Promise<PendingYouTubeFlip[]>;
+	write(flips: PendingYouTubeFlip[]): Promise<void>;
+}
+
+export interface PlatformRefreshFns {
+	instagram: RefreshFn;
+	youtube: RefreshFn;
+}
+
+export interface JobLogger {
+	info(line: string): void;
+	warn(line: string): void;
+	error(line: string): void;
+}
+
+export interface JobDeps {
+	loadSchedule: LoadScheduleFn;
+	render: RenderFn;
+	uploadAsset: UploadAssetFn;
+	tokenStore: TokenStore;
+	refresh: PlatformRefreshFns;
+	loadInstagramAccountConfig: LoadInstagramAccountConfigFn;
+	publishInstagram: (options: PublishToInstagramOptions) => Promise<PublishToInstagramResult>;
+	publishYouTube: (options: UploadVideoOptions) => Promise<UploadVideoResult>;
+	pendingFlips: PendingFlipsStore;
+	/** ISO 8601 — see this file's header comment on the ONE wall-clock call site. */
+	now: string;
+	logger: JobLogger;
+}
+
+// ---------------------------------------------------------------------------
+// runJob — the orchestration itself
+// ---------------------------------------------------------------------------
+
+export interface RunJobResult {
+	outcomes: PlatformOutcome[];
+	exitCode: number;
+}
+
+export async function runJob(args: JobArgs, deps: JobDeps): Promise<RunJobResult> {
+	const { logger } = deps;
+	logger.info(`=== Daily job for ${args.date}${args.dryRun ? ' (DRY RUN)' : ''} ===`);
+
+	const { week, day } = dateToWeekDay(args.date);
+	logger.info(`Resolved ${args.date} -> week ${week}, day ${day}.`);
+
+	const schedule = await deps.loadSchedule(week, args.scheduleDir);
+	const slot = resolveDay(schedule, day);
+	logger.info(`Slot: card ${slot.card_id} (${slot.book_slug}, ${slot.author_slug}), format ${slot.content.format}.`);
+
+	logger.info('Rendering...');
+	await deps.render({ date: args.date, outDir: args.outDir, scheduleDir: args.scheduleDir });
+	const assetPaths = renderAssetPaths(args.outDir, slot.content.format, args.date);
+	logger.info(`Rendered video: ${assetPaths.video}`);
+	logger.info(`Rendered feed still: ${assetPaths.feedStill}`);
+
+	if (args.dryRun) {
+		const outcomes: PlatformOutcome[] = [
+			{
+				platform: 'instagram',
+				status: 'dry-run',
+				message:
+					`would upload ${assetPaths.video} to R2, then publish it as a Reel with the caption built from ` +
+					`card ${slot.card_id}`
+			},
+			{
+				platform: 'youtube',
+				status: 'dry-run',
+				message:
+					`would upload ${assetPaths.video} to R2, then upload it to YouTube (private) titled ` +
+					`"${buildYouTubeTitle(slot)}"`
+			}
+		];
+		for (const outcome of outcomes) logger.info(formatOutcomeLine(outcome));
+		logger.info('Dry run complete — no uploads, no posts.');
+		return { outcomes, exitCode: exitCodeForOutcomes(outcomes) };
+	}
+
+	// Plan Decision, enforced structurally: both uploads below complete
+	// BEFORE either publish call starts — a posting failure can never lose a
+	// render, because the render is already durably in R2 by the time either
+	// platform is even attempted.
+	logger.info('Uploading assets to R2...');
+	const videoUrl = await deps.uploadAsset({
+		filePath: assetPaths.video,
+		key: postKeyFor(args.date, path.basename(assetPaths.video)),
+		contentType: contentTypeFor(assetPaths.video)
+	});
+	logger.info(`Uploaded ${videoUrl}`);
+	await deps.uploadAsset({
+		filePath: assetPaths.feedStill,
+		key: postKeyFor(args.date, path.basename(assetPaths.feedStill)),
+		contentType: contentTypeFor(assetPaths.feedStill)
+	});
+	logger.info(`Uploaded the Instagram feed still.`);
+
+	// Publish independently. Each helper below catches its own errors and
+	// ALWAYS resolves to a PlatformOutcome — see this file's header comment
+	// for why that (not a bare Promise.all over the raw publish calls) is
+	// what actually guarantees platform isolation.
+	const settled = await Promise.allSettled([
+		publishInstagramOutcome({ deps, slot, videoUrl }),
+		publishYouTubeOutcome({ deps, args, slot, videoPath: assetPaths.video })
+	]);
+
+	const platformOrder: PlatformName[] = ['instagram', 'youtube'];
+	const outcomes = settled.map((result, index) =>
+		result.status === 'fulfilled'
+			? result.value
+			: ({
+					platform: platformOrder[index],
+					status: 'failed',
+					message: `unexpected error outside its own try/catch: ${errorMessage(result.reason)}`
+				} satisfies PlatformOutcome)
+	);
+
+	for (const outcome of outcomes) logger.info(formatOutcomeLine(outcome));
+	return { outcomes, exitCode: exitCodeForOutcomes(outcomes) };
+}
+
+// ---------------------------------------------------------------------------
+// Per-platform publish — each of these is the ENTIRE unit `Promise.allSettled`
+// runs concurrently for its platform: token refresh, expiry alert, publish,
+// and (YouTube only) recording the pending flip. Every thrown error inside
+// is caught here and turned into a 'failed' outcome, never rethrown — this
+// is what makes the other platform's promise unaffected by this one's
+// failure.
+// ---------------------------------------------------------------------------
+
+async function publishInstagramOutcome(ctx: {
+	deps: JobDeps;
+	slot: ScheduleSlot;
+	videoUrl: string;
+}): Promise<PlatformOutcome> {
+	const { deps, slot, videoUrl } = ctx;
+	try {
+		const token = await ensureFreshToken({
+			store: deps.tokenStore,
+			platform: 'instagram',
+			now: deps.now,
+			refresh: deps.refresh.instagram
+		});
+		const alert = expiryAlert(token, deps.now);
+		if (alert) deps.logger.warn(formatExpiryAlertLine(alert));
+
+		const { igUserId } = deps.loadInstagramAccountConfig();
+		const caption = buildInstagramCaption(slot);
+		const result = await deps.publishInstagram({
+			config: { igUserId, accessToken: token.value },
+			mediaUrl: videoUrl,
+			caption,
+			mediaKind: 'reel'
+		});
+		return {
+			platform: 'instagram',
+			status: 'ok',
+			message: `published Reel, media id ${result.mediaId} (container ${result.containerId})`
+		};
+	} catch (error) {
+		return { platform: 'instagram', status: 'failed', message: errorMessage(error) };
+	}
+}
+
+async function publishYouTubeOutcome(ctx: {
+	deps: JobDeps;
+	args: JobArgs;
+	slot: ScheduleSlot;
+	videoPath: string;
+}): Promise<PlatformOutcome> {
+	const { deps, args, slot, videoPath } = ctx;
+	try {
+		const token = await ensureFreshToken({
+			store: deps.tokenStore,
+			platform: 'youtube',
+			now: deps.now,
+			refresh: deps.refresh.youtube
+		});
+		const alert = expiryAlert(token, deps.now);
+		if (alert) deps.logger.warn(formatExpiryAlertLine(alert));
+
+		const result = await deps.publishYouTube({
+			config: { accessToken: token.value },
+			video: { filePath: videoPath },
+			title: buildYouTubeTitle(slot),
+			description: buildYouTubeDescription(slot)
+		});
+
+		const flipRecorded = await recordPendingFlip(deps, args, slot, result.videoId);
+		const flipNote = flipRecorded ? '' : ' (WARNING: failed to record its pending flip — see the run log)';
+		return { platform: 'youtube', status: 'ok', message: `uploaded private video, id ${result.videoId}${flipNote}` };
+	} catch (error) {
+		return { platform: 'youtube', status: 'failed', message: errorMessage(error) };
+	}
+}
+
+/**
+ * Records this run's YouTube upload in the week's pending-flip list. A
+ * failure here does NOT fail the YouTube outcome — the video already landed
+ * on YouTube successfully; only the bookkeeping for T07's weekly session
+ * failed, which is logged loudly but surfaced as a warning on an otherwise-`ok`
+ * outcome, not a platform failure.
+ */
+async function recordPendingFlip(
+	deps: JobDeps,
+	args: JobArgs,
+	slot: ScheduleSlot,
+	videoId: string
+): Promise<boolean> {
+	try {
+		const existing = await deps.pendingFlips.read();
+		const updated = upsertPendingFlip(existing, { date: args.date, cardId: slot.card_id, videoId });
+		await deps.pendingFlips.write(updated);
+		return true;
+	} catch (error) {
+		deps.logger.error(`Failed to record the pending YouTube flip for ${args.date}: ${errorMessage(error)}`);
+		return false;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Default (production) dependencies — every one of these defers its config
+// load/network/credential use to the moment it is actually CALLED, never to
+// construction time, so building this whole `JobDeps` object is safe even
+// with zero credentials set (the dry-run path never calls any of them).
+// ---------------------------------------------------------------------------
+
+function createDefaultUploadAsset(): UploadAssetFn {
+	let cached: { client: S3Client; config: R2Config } | undefined;
+	return async ({ filePath, key, contentType }) => {
+		if (!cached) {
+			const config = loadR2Config();
+			cached = { client: createR2Client(config), config };
+		}
+		return uploadFile({ client: cached.client, config: cached.config, filePath, key, contentType });
+	};
+}
+
+/**
+ * Wraps `createFirestoreTokenStore` (which itself constructs a real
+ * `Firestore` client, per `token-store-firestore.ts`'s header, using
+ * Application Default Credentials) so that construction is deferred until
+ * the FIRST real `get`/`set` call — never at `JobDeps` build time — matching
+ * every other default dependency in this section. `--dry-run` never calls
+ * either method, so the Firestore client is never constructed at all on
+ * that path.
+ */
+function createDefaultTokenStore(): TokenStore {
+	let store: TokenStore | undefined;
+	function ensure(): TokenStore {
+		if (!store) store = createFirestoreTokenStore();
+		return store;
+	}
+	return {
+		get: (platform: Platform): Promise<StoredToken | undefined> => ensure().get(platform),
+		set: (platform: Platform, record: StoredToken): Promise<void> => ensure().set(platform, record)
+	};
+}
+
+function createDefaultInstagramAccountConfigLoader(): LoadInstagramAccountConfigFn {
+	return () => {
+		const igUserId = process.env.IG_USER_ID;
+		if (!igUserId) {
+			throw new Error(
+				'Instagram configuration is missing the "IG_USER_ID" environment variable (the IG Business/Creator ' +
+					"account's id — not a secret, but not defaulted here either)."
+			);
+		}
+		return { igUserId };
+	};
+}
+
+/**
+ * The default refresh for a platform, used only until a real OAuth refresh
+ * implementation exists (see this file's header comment). Throws a clearly
+ * named error rather than silently no-op'ing — a job that actually reaches
+ * this (a token near enough to expiry and old enough to refresh) needs a
+ * human to notice, not a swallowed failure.
+ */
+function notImplementedRefresh(platform: Platform): RefreshFn {
+	return async () => {
+		throw new Error(
+			`No real OAuth refresh is implemented for "${platform}" yet (T05/T06 built publish/upload only, not the ` +
+				'refresh-token endpoint calls). Re-authenticate the account by hand and update its stored token, or ' +
+				'supply a real RefreshFn via JobDeps.refresh once one exists.'
+		);
+	};
+}
+
+function createDefaultPendingFlipsStore(filePath: string): PendingFlipsStore {
+	return {
+		async read() {
+			try {
+				const raw = await readFile(filePath, 'utf-8');
+				return parsePendingFlips(raw);
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+				throw error;
+			}
+		},
+		async write(flips) {
+			await mkdir(path.dirname(filePath), { recursive: true });
+			await writeFile(filePath, serializePendingFlips(flips), 'utf-8');
+		}
+	};
+}
+
+/**
+ * Dynamic import (not a top-level one) — see this file's header comment on
+ * why: it keeps `@remotion/bundler`/`@remotion/renderer` out of every test
+ * that imports `job.ts` with `render` itself injected.
+ */
+async function defaultRender(args: { date: string; outDir: string; scheduleDir: string }): Promise<void> {
+	const { renderCommand } = await import('./cli.js');
+	await renderCommand({ date: args.date, outDir: args.outDir, scheduleDir: args.scheduleDir, dryRun: false });
+}
+
+/** Same dynamic-import rationale as `defaultRender` — reuses `cli.ts`'s own schedule-loading/error-message logic verbatim. */
+async function defaultLoadSchedule(week: number, scheduleDir: string): Promise<WeekSchedule> {
+	const { loadWeekSchedule } = await import('./cli.js');
+	return loadWeekSchedule(week, scheduleDir);
+}
+
+function buildDefaultJobDeps(args: JobArgs, now: string, logger: JobLogger): JobDeps {
+	return {
+		loadSchedule: defaultLoadSchedule,
+		render: defaultRender,
+		uploadAsset: createDefaultUploadAsset(),
+		tokenStore: createDefaultTokenStore(),
+		refresh: { instagram: notImplementedRefresh('instagram'), youtube: notImplementedRefresh('youtube') },
+		loadInstagramAccountConfig: createDefaultInstagramAccountConfigLoader(),
+		publishInstagram: publishToInstagram,
+		publishYouTube: uploadVideoToYouTube,
+		pendingFlips: createDefaultPendingFlipsStore(args.pendingFlipsPath),
+		now,
+		logger
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Logging — console plus a per-day append-only file under
+// content/social/job-logs/, in the spirit of `content/pipeline/<slug>/
+// pipeline.log` (see CLAUDE.md's "Pipeline logs" section): a human-readable
+// record of what a run decided and did, kept even after the process exits.
+// Timestamps reuse `now` (this file's one wall-clock read, see the header
+// comment) rather than reading the clock again per line — every line in a
+// single run shares that run's start time.
+// ---------------------------------------------------------------------------
+
+function createJobLogger(date: string, now: string): JobLogger {
+	const logPath = path.join(JOB_LOG_DIR, `job-${date}.log`);
+
+	function write(level: 'INFO' | 'WARN' | 'ERROR', line: string): void {
+		const formatted = `[${now}] [${level}] ${line}`;
+		if (level === 'ERROR') {
+			console.error(formatted);
+		} else {
+			console.log(formatted);
+		}
+		try {
+			mkdirSync(JOB_LOG_DIR, { recursive: true });
+			appendFileSync(logPath, `${formatted}\n`, 'utf-8');
+		} catch {
+			// Logging to disk is best-effort — never let a logging failure crash the job.
+		}
+	}
+
+	return {
+		info: (line) => write('INFO', line),
+		warn: (line) => write('WARN', line),
+		error: (line) => write('ERROR', line)
+	};
+}
+
+// ---------------------------------------------------------------------------
+// entry point
+// ---------------------------------------------------------------------------
+
+async function main(): Promise<void> {
+	const argv = process.argv.slice(2);
+	const args = parseJobArgs(argv);
+
+	// THE ONE WALL-CLOCK READ IN THIS FILE — see the header comment's
+	// "DETERMINISM" section. Used only for token-freshness decisions
+	// (`ensureFreshToken`/`expiryAlert`) and reused verbatim for this run's
+	// log-line timestamps; every SCHEDULING decision above and below this
+	// line comes from `--date` alone.
+	const now = new Date().toISOString();
+
+	const logger = createJobLogger(args.date, now);
+	const deps = buildDefaultJobDeps(args, now, logger);
+
+	const result = await runJob(args, deps);
+	process.exit(result.exitCode);
+}
+
+// Only auto-run `main()` when this file is the actual process entry point —
+// identical guard and rationale to `cli.ts`'s own (see its bottom-of-file
+// comment): importing `job.ts` for its exports (as `job.test.ts` and
+// `job-plan.test.ts` do) must never itself parse `process.argv` as job flags
+// or call `process.exit()`.
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+	main().catch((error) => {
+		console.error(error instanceof Error ? error.message : error);
+		process.exit(1);
+	});
+}
