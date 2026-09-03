@@ -1013,3 +1013,31 @@ where the mocked suite passes but the real integration would fail.
 - [ ] F08: Set a deliberate posting timezone and time in `functions/src/socialTrigger.ts` — the
   current `America/New_York` / `07:53` is a placeholder chosen only to avoid an on-the-hour cron
   pile-up, not an audience decision.
+- [x] F12: Close five gaps an audit found in `docs/SOCIAL_PILOT.md`'s one-time setup that broke T15's
+  own acceptance criterion ("someone else could run the pilot from this document alone").
+  Done: (1) **the attribution bio links were documented nowhere** — added a table to new section 3.0
+  mapping Instagram/TikTok/YouTube bios to `/go/ig`/`/go/tt`/`/go/yt` (`web/src/routes/go/[slug]/
+  +server.js`, T11), explained why per-platform links matter (in-app browsers strip referer, so
+  `utm_source` is the only conversion signal — using one shared plain link silently kills criterion
+  A's follow-conversion half with no error until the week-4 readout), and flagged that these 404 until
+  this branch merges/deploys (fine to set the bios now, must verify with `curl` after). (2) **no GCP
+  project creation anywhere** — added it to `social/DEPLOY.md`'s "0. Prerequisites" (`gcloud auth
+  login`, `gcloud projects create`, `gcloud config set project`, `gcloud billing accounts list` /
+  `gcloud billing projects link`, all flags verified against real `gcloud ... --help` output) with the
+  rough expected cost (a few dollars/month, GCS egress ~a cent), and cross-referenced it from
+  `SOCIAL_PILOT.md` section 3 (once before 3.1, since GCS also needs a project). (3) **Instagram must
+  be Business/Creator, not Personal** — stated as a prerequisite in new section 3.0 (account-creation
+  time, cheapest to fix) and again inline at the top of 3.2 (where the token flow actually breaks if
+  missed), described as an app-settings flow rather than a guessed exact menu path. (4) **account
+  creation wasn't in the ordered setup list** — added section 3.0 as the new first step of section 3,
+  cross-referencing section 2 for hygiene rather than duplicating it, folding in gaps 1 and 3; renumbered
+  nothing else (3.1-3.6 keep their numbers, 3.0 sorts before them). (5) **the TikTok Display API spike
+  had no place in the setup order** — added section 3.7 as the final step, linking to the existing
+  "TikTok metrics collection (T13)" section rather than duplicating it, explicit that it's optional-ish
+  (hand-entry fallback already works today; the spike only decides whether metrics collection stays
+  manual or gets automated, not whether the pilot can launch). Section 3's own intro sentence updated to
+  promise 3.0-3.7 instead of 3.1-3.6 and to flag 3.7 as the one non-gating exception. "Current status"
+  needed no changes — all five gaps were documentation-only; no live step's status changed.
+  Verification: `npm test --prefix social` 569/569 green (touched no `.ts`/`.js` file, per this task's
+  file scope). Not done: actually creating the accounts, running the GCP project/billing setup, or
+  verifying the `/go/` redirects post-deploy — those remain real live steps, same as before this task.

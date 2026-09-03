@@ -30,9 +30,37 @@ this doc only covers what's needed to wire it into the Cloud Run Job.
 ## 0. Prerequisites
 
 - A GCP project with billing enabled (Cloud Run Jobs and Cloud Functions gen 2 both require it).
-- `gcloud` and `firebase-tools` CLIs installed and authenticated (`gcloud auth login`, `gcloud auth
-  application-default login`, `firebase login`) — by the person actually running this deploy, not
-  by any automated session.
+  **Nothing below this doc's step 1 works without this** — `gcloud services enable` (step 1) fails
+  outright on a project with no billing account linked. If a project does not exist yet, create one
+  and link billing before doing anything else:
+
+  ```bash
+  gcloud auth login
+
+  gcloud projects create PROJECT_ID --name="Plain Social Pilot"
+  gcloud config set project PROJECT_ID
+
+  # List billing accounts you have access to, then link one:
+  gcloud billing accounts list
+  gcloud billing projects link PROJECT_ID --billing-account=BILLING_ACCOUNT_ID
+  ```
+
+  (`PROJECT_ID` must be 6-30 characters, lowercase letters/digits/hyphens, and globally unique
+  across all of GCP — pick something specific, e.g. `plain-social-pilot`, and expect a collision
+  error to mean "pick a more specific id," not a misconfiguration. `BILLING_ACCOUNT_ID` is the
+  `0X0X0X-0X0X0X-0X0X0X`-shaped id `gcloud billing accounts list` prints; if that list is empty, a
+  billing account first needs creating in the Google Cloud console under Billing — that step needs a
+  payment method and isn't scriptable via `gcloud`.)
+
+  **Rough expected cost for this pilot:** a few dollars a month. This is one Cloud Run Job execution
+  a day (a few minutes of Chromium + ffmpeg render time), a handful of small Firestore documents, and
+  one GCS bucket holding rendered video/image assets under a 30-day lifecycle rule (`social/gcs/
+  README.md`) — none of these are expensive at this volume. GCS storage egress specifically (the
+  bytes Meta/YouTube fetch when publishing, and whatever a human opens by hand) is roughly a cent's
+  worth at this scale. Nobody should be surprised by the bill, but it is not free.
+- `gcloud` and `firebase-tools` CLIs installed and authenticated (`gcloud auth login` above, plus
+  `gcloud auth application-default login`, `firebase login`) — by the person actually running this
+  deploy, not by any automated session.
 - Docker (see `social/DOCKER.md`'s own prerequisites) to build and push the image.
 - Replace every `PROJECT_ID` placeholder below (and in `social/cloud-run-job.yaml`) with the real
   project id, and set the real project id in `.firebaserc` (currently a placeholder,

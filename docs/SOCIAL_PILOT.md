@@ -87,8 +87,65 @@ weekly session and any live troubleshooting. Read it again before the first post
 
 ## 3. One-time setup (dependency order)
 
-Do these once, in this order, before the daily loop can run for real. Each step links to the doc
-that actually walks through it in detail rather than duplicating that detail here.
+Do these once, in this order, before the daily loop can run for real (3.0-3.6 — 3.7 is the one
+exception, see its own note on why it doesn't gate go-live). Each step links to the doc that
+actually walks through it in detail rather than duplicating that detail here. Everything from 3.2
+onward assumes the three accounts (3.0) already exist — 3.2 and 3.3 both need a real Instagram
+account and a real YouTube channel to attach an app/token to.
+
+### 3.0 Create the three accounts
+
+Create the pilot's Instagram, TikTok, and YouTube/Google accounts before touching anything else in
+this section. Follow section 2's hygiene rules for all three (separate email, real device, phone
+verification, distinct handle/bio, no automation) — that section is not repeated here.
+
+Two things to do at account-creation time specifically, because both are cheapest to fix now rather
+than after the fact:
+
+- **Convert the Instagram account to Business or Creator, not Personal.** Meta's Content Publishing
+  API (what section 3.2 obtains a token for) does not work against a Personal account at all — a
+  Personal account will hit an unexplained wall in 3.2 with no obvious fix. Do this from Instagram's
+  own app: Settings -> Account type (or the equivalent "switch to professional account" flow Meta
+  currently surfaces there) -> Business or Creator. Either type works for this pilot; Business is the
+  more common choice and is what 3.2's Meta Business app setup expects to find.
+- **Set each account's bio/profile link to its own `/go/<slug>` attribution URL, not a shared plain
+  link:**
+
+  | Platform | Bio / channel link |
+  |---|---|
+  | Instagram | `https://thinkplain.ai/go/ig` |
+  | TikTok | `https://thinkplain.ai/go/tt` |
+  | YouTube (channel link) | `https://thinkplain.ai/go/yt` |
+
+  These three URLs are handled by `web/src/routes/go/[slug]/+server.js` (T11): each one 302-redirects
+  to `https://thinkplain.ai/` with a **different** `utm_source` baked in (`instagram`/`tiktok`/
+  `youtube`) before the redirect fires, and `social/src/publish/caption.ts`'s `ATTRIBUTION_URLS`
+  already puts the matching one into every post's caption. The bio link and the caption link exist
+  for different traffic: the caption link is what shows under a post; the bio link is what a profile
+  visit converts through, which is why it needs to be set once, by hand, at account-creation time — no
+  code sets an account's bio.
+
+  **Use a different link per platform, not the same plain `https://thinkplain.ai` link on all
+  three.** In-app browsers on Instagram/TikTok/YouTube strip the HTTP referer, so `utm_source` in the
+  URL is the *only* signal that tells a click apart from organic traffic once it lands on the site.
+  Using the same bare link on all three (or a link with no `utm_source` at all) does not just weaken
+  attribution — it makes criterion A's follow-conversion half (section 1) permanently unmeasurable
+  for that traffic, silently, with no error anywhere: the click still redirects and works fine, it
+  just cannot be told apart from any other visit. There is no symptom until the readout (week 4)
+  shows unattributed traffic and it is too late to have collected the difference.
+
+  **These three `/go/` routes 404 until this branch (`social-pilot-03`, T11) is merged and
+  deployed to production.** It is fine to set the bio links before that happens — Instagram/TikTok/
+  YouTube do not validate a bio link's destination at save time — but verify each one actually
+  redirects (`curl -sI https://thinkplain.ai/go/ig` etc., expect a `302` to a `thinkplain.ai/?utm_source=...`
+  URL) once this branch has shipped, before relying on the numbers it produces.
+
+**Prerequisite for everything from here on: a GCP project with billing enabled.** GCS (3.1 below),
+Cloud Run, Firestore, Secret Manager, and Artifact Registry (3.6 below) all require one, and none of
+this repo creates it for you. `social/DEPLOY.md`'s "0. Prerequisites" section has the exact
+`gcloud auth login` / `gcloud projects create` / `gcloud billing projects link` commands and the
+rough expected monthly cost (a few dollars — Cloud Run/Firestore/Secret Manager usage at this volume
+is cheap, GCS storage egress is about a cent) — do that first if no project exists yet.
 
 ### 3.1 Provision the GCS bucket
 
@@ -110,6 +167,11 @@ is no access key to protect (optionally also `GCS_PUBLIC_BASE_URL`, unset by def
 a custom domain is ever put in front of the bucket).
 
 ### 3.2 Create the Meta app and get an Instagram token
+
+**Prerequisite: the Instagram account must already be Business or Creator, not Personal** (3.0
+above) — Meta's Content Publishing API this section obtains a token for does not work against a
+Personal account at all, and there is no error message pointing at this specifically if it's missed;
+the token-exchange flow just fails to produce a usable Business Account id.
 
 Per the plan's Decision: Instagram needs no App Review. Create a Meta Business-type app, give the
 pilot's Instagram account a role on it, and use Standard Access — it covers
@@ -201,6 +263,20 @@ whole chain actually executes end to end (that doc's step 9).
 Complete section 3.4 (seed the Firestore tokens) **before** attempting a non-dry-run forced run at
 the end of `DEPLOY.md`'s step 8 — otherwise it will fail on both platforms with a missing-token
 error, which is expected in that state, not a deploy bug.
+
+### 3.7 Run the TikTok Display API spike (optional-ish — decides automation, not launch)
+
+Full detail lives in "TikTok metrics collection (T13)" below — this step is listed here only so it
+has a place in the setup order; see that section for the account/app/token steps and the exact
+`tsx social/src/metrics/tiktok-spike.ts --access-token <token>` invocation.
+
+**This does not block going live.** `social/src/metrics/tiktok-manual.ts`'s hand-entry fallback
+(section 5.4) is fully built and works today regardless of the spike's outcome — TikTok posting is
+already manual (native app scheduler, section 5.2), so a weekly hand-entry session is already
+required either way. Running this spike only decides whether TikTok's *metrics* stay hand-entered
+every week or get automated to match Instagram's and YouTube's collectors — it is not a
+go/no-go gate on the pilot itself. Do it whenever the TikTok account/app credentials it needs (steps
+1-4 in the "TikTok metrics collection (T13)" section below) are available, including after go-live.
 
 ## 4. The daily loop
 
