@@ -60,3 +60,9 @@ node_modules/
 
 # Social pilot render output
 social/out/
+
+# Firebase Functions build output and CLI local state
+functions/lib/
+.firebase/
+firebase-debug.log
+firebase-debug.*.log

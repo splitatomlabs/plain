@@ -94,7 +94,15 @@ Options:
   --help                   Show this help.`);
 }
 
-interface RenderArgs {
+// Exported (Pf39c2-social-pilot-03 T08) so `job.ts`'s daily orchestration can
+// build this shape and call `renderCommand` directly — the daily job REUSES
+// this render path rather than re-implementing the Remotion bundle/render/
+// encode pipeline. `job.ts` imports `renderCommand`/`loadWeekSchedule`
+// dynamically (`await import('./cli.js')`), not at module top-level, so that
+// importing `job.ts` itself (as `job.test.ts` does, with every collaborator
+// injected) never pulls in `@remotion/bundler`/`@remotion/renderer` — those
+// are only loaded the moment a REAL (non-test) render actually runs.
+export interface RenderArgs {
 	date: string;
 	outDir: string;
 	scheduleDir: string;
@@ -135,7 +143,7 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 // Loading the schedule
 // ---------------------------------------------------------------------------
 
-async function loadWeekSchedule(week: number, scheduleDir: string): Promise<WeekSchedule> {
+export async function loadWeekSchedule(week: number, scheduleDir: string): Promise<WeekSchedule> {
 	const filePath = path.join(scheduleDir, scheduleFileName(week));
 	if (!existsSync(filePath)) {
 		throw new Error(
@@ -361,7 +369,7 @@ function feedStillText(formatPlan: FormatPlan): string {
 // main
 // ---------------------------------------------------------------------------
 
-async function renderCommand(args: RenderArgs): Promise<void> {
+export async function renderCommand(args: RenderArgs): Promise<void> {
 	const plan = await buildRenderPlan(args);
 
 	if (args.dryRun) {

@@ -1,0 +1,53 @@
+# Pf39c2-social-pilot-03 T09 (`social/Dockerfile`).
+#
+# This is the .dockerignore Docker ACTUALLY reads for `social/Dockerfile`'s
+# build: `docker build -f social/Dockerfile .` uses this repo root as its
+# build context (required — `social/Dockerfile` needs `content/output/` and
+# `content/social/`, which sit outside `social/`, see `social/DOCKER.md`),
+# and Docker resolves `.dockerignore` relative to the CONTEXT root, not the
+# Dockerfile's own directory. `social/.dockerignore` also exists (this
+# task's own file list asked for it) but is not the file Docker consults for
+# that build command — see its header comment. Keep the `social/`-scoped
+# patterns below in sync with it by hand.
+#
+# If this repo ever grows a second Dockerfile (e.g. for `web/`), broaden
+# this file rather than assuming these patterns are social-pilot-specific.
+
+# Never send the whole monorepo's dependency trees into any image's build
+# context — every Dockerfile installs its own fresh, platform-matched
+# node_modules instead (see social/Dockerfile's ffmpeg-static/playwright
+# comments on why a host-built node_modules would be wrong to copy in).
+node_modules/
+**/node_modules/
+
+.git/
+.vercel/
+.DS_Store
+**/.DS_Store
+
+# Social pilot render output and per-day job logs/stray pending-flip state
+# from local runs — never something a build should bake in as if it were
+# committed data. content/social/*.json schedules and render-exclusions.json
+# themselves are NOT excluded here — job.ts/cli.ts read those at runtime.
+social/out/
+content/social/job-logs/
+
+# Pipeline intermediates/fixtures/source texts and the web app — irrelevant
+# to the social image, and content/pipeline/ in particular can be large.
+content/pipeline/
+content/fixtures/
+content/source/
+web/
+functions/
+
+# Editor/OS noise and secrets.
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.env
+.env.local
+.env.*.local
+*.log
+test-results/
