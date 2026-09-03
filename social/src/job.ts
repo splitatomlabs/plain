@@ -6,10 +6,10 @@
  * One day's full pipeline: resolve the schedule slot for `--date` -> render
  * it (REUSING `cli.ts`'s existing render path — `renderCommand`/
  * `loadWeekSchedule`, both exported from `cli.ts` for exactly this reuse,
- * never re-implemented here) -> upload every rendered asset to R2 -> publish
+ * never re-implemented here) -> upload every rendered asset to GCS -> publish
  * independently to Instagram and YouTube.
  *
- * ORDERING (plan Decision, verbatim): "Assets are uploaded to R2 before any
+ * ORDERING (plan Decision, verbatim): "Assets are uploaded to GCS before any
  * post is attempted, so a posting failure never loses a render." Enforced
  * structurally below: `runJob` uploads both rendered assets and only THEN
  * starts either publish call — there is no code path that publishes before
@@ -99,7 +99,7 @@
  * eagerly at module load, `--dry-run` needs no credentials of any kind —
  * see `createDefaultUploadAsset`/`createDefaultTokenStore`/
  * `createDefaultInstagramAccountConfigLoader` below, each a closure that
- * defers its `loadR2Config()`/`new Firestore()`/`process.env` read until it
+ * defers its `loadGcsConfig()`/`new Firestore()`/`process.env` read until it
  * is actually called.
  *
  * TESTING: `job.test.ts` calls `runJob` directly with every collaborator
@@ -116,16 +116,16 @@
  * merge/serialize) lives in `job-plan.ts`, mirroring the `cli.ts`/
  * `cli-plan.ts` split.
  *
- * R2 IS A PER-PLATFORM PRECONDITION, NOT A WHOLE-RUN ONE (code review M7
- * fix): Instagram genuinely needs the asset's public R2 URL (Meta's Graph
+ * GCS IS A PER-PLATFORM PRECONDITION, NOT A WHOLE-RUN ONE (code review M7
+ * fix): Instagram genuinely needs the asset's public GCS URL (Meta's Graph
  * API fetches the video FROM that URL), but YouTube's resumable upload reads
- * straight from the local rendered file and never touches R2 at all. Both
+ * straight from the local rendered file and never touches GCS at all. Both
  * `uploadAsset` calls below are wrapped in `Promise.allSettled`, not two bare
- * unguarded `await`s: an R2 outage (or any failure uploading either asset)
- * now makes ONLY Instagram's outcome `'failed'` — with the R2 error as its
+ * unguarded `await`s: a GCS outage (or any failure uploading either asset)
+ * now makes ONLY Instagram's outcome `'failed'` — with the GCS error as its
  * message — while YouTube is still attempted from the local file, exactly as
  * platform isolation requires. The plan's Decision ("assets are uploaded to
- * R2 before any post is attempted") still holds structurally: both uploads
+ * GCS before any post is attempted") still holds structurally: both uploads
  * are still fully settled, success or failure, before either publish call
  * starts.
  */
@@ -136,13 +136,13 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import type { S3Client } from '@aws-sdk/client-s3';
+import type { Storage } from '@google-cloud/storage';
 
 import { dateToWeekDay } from './pilot-config.js';
 import { resolveDay, renderAssetPaths } from './cli-plan.js';
 import type { WeekSchedule, ScheduleSlot } from './schedule-types.js';
-import { loadR2Config, type R2Config } from './publish/env.js';
-import { createR2Client, contentTypeFor, postKeyFor, uploadFile } from './publish/storage.js';
+import { loadGcsConfig, type GcsConfig } from './publish/env.js';
+import { createGcsClient, contentTypeFor, postKeyFor, uploadFile } from './publish/storage.js';
 import {
 	ensureFreshToken,
 	expiryAlert,
@@ -189,7 +189,7 @@ function printHelp(): void {
 
 Runs one day's full publish pipeline: resolves the schedule slot for --date,
 renders it (reusing cli.ts's render path), uploads every rendered asset to
-R2, then publishes independently to Instagram and YouTube — a failure on one
+GCS, then publishes independently to Instagram and YouTube — a failure on one
 platform never stops the other. See plans/Pf39c2-social-pilot-03.md T08.
 
 Options:
@@ -282,7 +282,7 @@ export interface UploadAssetInput {
 	key: string;
 	contentType: string;
 }
-/** Uploads one local file to R2 and returns its public URL. Matches `storage.ts`'s `uploadFile`'s effect, minus the client/config plumbing. */
+/** Uploads one local file to GCS and returns its public URL. Matches `storage.ts`'s `uploadFile`'s effect, minus the client/config plumbing. */
 export type UploadAssetFn = (input: UploadAssetInput) => Promise<string>;
 
 export interface InstagramAccountConfig {
@@ -354,14 +354,14 @@ export async function runJob(args: JobArgs, deps: JobDeps): Promise<RunJobResult
 				platform: 'instagram',
 				status: 'dry-run',
 				message:
-					`would upload ${assetPaths.video} to R2, then publish it as a Reel with the caption built from ` +
+					`would upload ${assetPaths.video} to GCS, then publish it as a Reel with the caption built from ` +
 					`card ${slot.card_id}`
 			},
 			{
 				platform: 'youtube',
 				status: 'dry-run',
 				message:
-					`would upload ${assetPaths.video} to R2, then upload it to YouTube (private) titled ` +
+					`would upload ${assetPaths.video} to GCS, then upload it to YouTube (private) titled ` +
 					`"${buildYouTubeTitle(slot)}"`
 			}
 		];
@@ -373,13 +373,13 @@ export async function runJob(args: JobArgs, deps: JobDeps): Promise<RunJobResult
 	// Plan Decision, enforced structurally: both uploads below are fully
 	// SETTLED (success or failure — `Promise.allSettled`, not a bare `await`
 	// on each) BEFORE either publish call starts, so a posting failure can
-	// never lose a render. But an R2 failure is now a PER-PLATFORM
+	// never lose a render. But a GCS failure is now a PER-PLATFORM
 	// precondition, not a whole-run one (code review M7 fix): Instagram
-	// genuinely needs the video's public R2 URL, so a failed video upload
+	// genuinely needs the video's public GCS URL, so a failed video upload
 	// makes ONLY the Instagram outcome 'failed' below — YouTube reads the
-	// local rendered file directly and never touches R2, so it is still
+	// local rendered file directly and never touches GCS, so it is still
 	// attempted regardless of how the uploads went.
-	logger.info('Uploading assets to R2...');
+	logger.info('Uploading assets to GCS...');
 	const [videoUploadResult, feedStillUploadResult] = await Promise.allSettled([
 		deps.uploadAsset({
 			filePath: assetPaths.video,
@@ -398,17 +398,17 @@ export async function runJob(args: JobArgs, deps: JobDeps): Promise<RunJobResult
 		logger.info(`Uploaded ${videoUploadResult.value}`);
 	} else {
 		videoUploadError = errorMessage(videoUploadResult.reason);
-		logger.error(`Failed to upload the video to R2: ${videoUploadError}`);
+		logger.error(`Failed to upload the video to GCS: ${videoUploadError}`);
 	}
 
 	if (feedStillUploadResult.status === 'fulfilled') {
 		logger.info('Uploaded the Instagram feed still.');
 	} else {
 		// Not fed into either platform's publish call today (see
-		// `renderAssetPaths`/`publishInstagramOutcome` — only the video's R2
+		// `renderAssetPaths`/`publishInstagramOutcome` — only the video's GCS
 		// URL is ever used), so this alone does not fail an outcome; it is
 		// still logged loudly rather than silently dropped.
-		logger.error(`Failed to upload the Instagram feed still to R2: ${errorMessage(feedStillUploadResult.reason)}`);
+		logger.error(`Failed to upload the Instagram feed still to GCS: ${errorMessage(feedStillUploadResult.reason)}`);
 	}
 
 	// Publish independently. Each helper below catches its own errors and
@@ -421,7 +421,7 @@ export async function runJob(args: JobArgs, deps: JobDeps): Promise<RunJobResult
 			: Promise.resolve<PlatformOutcome>({
 					platform: 'instagram',
 					status: 'failed',
-					message: `R2 upload of the video failed, so Instagram was never attempted: ${videoUploadError}`
+					message: `GCS upload of the video failed, so Instagram was never attempted: ${videoUploadError}`
 				}),
 		publishYouTubeOutcome({ deps, args, slot, videoPath: assetPaths.video })
 	]);
@@ -567,11 +567,11 @@ async function recordPendingFlip(
 // ---------------------------------------------------------------------------
 
 function createDefaultUploadAsset(): UploadAssetFn {
-	let cached: { client: S3Client; config: R2Config } | undefined;
+	let cached: { client: Storage; config: GcsConfig } | undefined;
 	return async ({ filePath, key, contentType }) => {
 		if (!cached) {
-			const config = loadR2Config();
-			cached = { client: createR2Client(config), config };
+			const config = loadGcsConfig();
+			cached = { client: createGcsClient(), config };
 		}
 		return uploadFile({ client: cached.client, config: cached.config, filePath, key, contentType });
 	};

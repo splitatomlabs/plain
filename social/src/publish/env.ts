@@ -1,77 +1,106 @@
 /**
- * Reads and validates the R2 configuration this pilot's publish path needs,
- * from the environment (Pf39c2-social-pilot-03 T01).
+ * Reads and validates the GCS configuration this pilot's publish path needs,
+ * from the environment (Pf39c2-social-pilot-03 F11, superseding T01's R2
+ * version of this file).
  *
- * This module deliberately does ONLY parsing and validation — no R2 client
- * is constructed here. T02 (`storage.ts`) is the one place that turns an
- * `R2Config` into an actual S3-compatible client and does uploads. Keeping
- * this file small means the validation logic (and its tests) never need to
- * touch network code or a mocked client.
+ * DECISION CHANGE (`plans/Pf39c2-social-pilot-03.md`'s "Decision change — GCS
+ * replaces R2", 2026-09-03): object storage moved from Cloudflare R2 to
+ * Google Cloud Storage. Binding a custom domain to R2 needs the DNS zone
+ * inside the Cloudflare account, and `thinkplain.ai` is on Google's
+ * nameservers (via Squarespace) pointing at Vercel — R2 meant repointing the
+ * live app's domain, plus a sixth vendor, before a single post existed. GCS
+ * needs neither: objects are fetched from the stable
+ * `https://storage.googleapis.com/<bucket>/<key>` URL, no DNS change, and
+ * the pilot already needs a GCP project for Cloud Run Jobs, Firestore,
+ * Secret Manager and Artifact Registry — storage just joins it.
  *
- * Every field here corresponds to something `social/r2/README.md` walks
- * through provisioning by hand: `R2_ACCOUNT_ID`/`R2_BUCKET_NAME` identify
- * the bucket created in that runbook's step 1, `R2_ACCESS_KEY_ID`/
- * `R2_SECRET_ACCESS_KEY` are an R2 API token's credentials (see the
- * runbook's step 3 note about NOT reusing the account's global API key),
- * and `R2_PUBLIC_BASE_URL` is `https://media.thinkplain.ai` — the custom
- * domain bound in the runbook's step 2, per the plan's Decision that the
- * default `r2.dev` subdomain is rate-limited and development-only.
+ * THE BIG WIN IS AUTHENTICATION, NOT JUST DNS: the Cloud Run Job already
+ * authenticates to GCP via Application Default Credentials (ADC) — its
+ * attached service account identity — exactly the way
+ * `token-store-firestore.ts` and `pending-flips-store-firestore.ts` already
+ * construct their Firestore clients with `new Firestore()` and no explicit
+ * credentials. `storage.ts`'s `createGcsClient` does the same
+ * (`new Storage()`, no key file, no env-var secret). That means there is NO
+ * access-key material at all for this module to hold: R2's five `R2_*`
+ * variables (`R2_ACCOUNT_ID`/`R2_BUCKET_NAME`/`R2_ACCESS_KEY_ID`/
+ * `R2_SECRET_ACCESS_KEY`/`R2_PUBLIC_BASE_URL`) collapse to essentially just
+ * the bucket name — and with the four dropped variables goes a whole
+ * credential-leak surface (an R2 API token that could sit in a misconfigured
+ * log, a leaked env dump, or a stray `console.log`).
  *
- * Constraint from the plan: never log tokens. This module holds itself to
- * that bar for the values it handles too — every error it throws names
- * WHICH variable is missing or blank, but never echoes back the value of
- * that variable or of any other variable that happens to be set. A config
- * error is a very ordinary way for a secret to end up captured in a log
- * aggregator or crash report, so the validation below never interpolates
- * an env value into a message, only a variable NAME.
+ * This module deliberately does ONLY parsing and validation — no GCS client
+ * is constructed here. `storage.ts` is the one place that turns a
+ * `GcsConfig` into an actual `Storage` client and does uploads. Keeping this
+ * file small means the validation logic (and its tests) never need to touch
+ * network code or a mocked client.
+ *
+ * `bucketName` is the one genuinely required field: the bucket
+ * `social/gcs/README.md` walks through provisioning by hand (unlike R2,
+ * a GCS bucket name must be GLOBALLY unique across all of GCS, not just this
+ * project — see that runbook's own callout). `publicBaseUrl` is OPTIONAL: if
+ * unset, `storage.ts`'s `publicUrlFor` defaults to
+ * `https://storage.googleapis.com/<bucketName>`, which is exactly what a
+ * plain GCS bucket (no custom domain) serves objects from. It exists purely
+ * as an escape hatch for a future custom domain in front of the bucket —
+ * nothing in this pilot's current design sets it.
+ *
+ * Constraint from the plan carried over unchanged: never log tokens/secrets.
+ * This module holds itself to that bar for the values it handles too — every
+ * error it throws names WHICH variable is missing or blank, but never echoes
+ * back the value of that variable or of any other variable that happens to
+ * be set. There is less secret material to leak now than in the R2 version
+ * of this file (no access key, no secret key), but the discipline and its
+ * test stay, since a bucket name or a public base URL landing in a crash
+ * report is still not something to interpolate carelessly.
  */
 
-export interface R2Config {
-	accountId: string;
+export interface GcsConfig {
 	bucketName: string;
-	accessKeyId: string;
-	secretAccessKey: string;
-	/** e.g. `"https://media.thinkplain.ai"` — no trailing slash. */
-	publicBaseUrl: string;
+	/**
+	 * Optional override, e.g. a custom domain fronting the bucket. Unset by
+	 * default — `storage.ts`'s `publicUrlFor` falls back to
+	 * `https://storage.googleapis.com/<bucketName>` when this is absent. No
+	 * trailing slash if set.
+	 */
+	publicBaseUrl?: string;
 }
 
 /**
- * Maps each `R2Config` field to the environment variable that supplies it.
+ * Maps each `GcsConfig` field to the environment variable that supplies it.
  * Exported so a test (or a future caller building its own error message)
  * can enumerate the same names this module validates against without
- * duplicating the list.
+ * duplicating the list. Only `bucketName` is required — `publicBaseUrl` is
+ * read separately (see `GCS_PUBLIC_BASE_URL_ENV_VAR` below) since it is
+ * optional and has no "missing variable" error of its own.
  */
-export const R2_ENV_VARS = {
-	accountId: 'R2_ACCOUNT_ID',
-	bucketName: 'R2_BUCKET_NAME',
-	accessKeyId: 'R2_ACCESS_KEY_ID',
-	secretAccessKey: 'R2_SECRET_ACCESS_KEY',
-	publicBaseUrl: 'R2_PUBLIC_BASE_URL',
-} as const satisfies Record<keyof R2Config, string>;
+export const GCS_ENV_VARS = {
+	bucketName: 'GCS_BUCKET_NAME',
+} as const satisfies Record<'bucketName', string>;
+
+/** The optional public-base-URL override's environment variable name. */
+export const GCS_PUBLIC_BASE_URL_ENV_VAR = 'GCS_PUBLIC_BASE_URL';
 
 /**
- * Reads and validates the R2 configuration from `process.env` (or, in
+ * Reads and validates the GCS configuration from `process.env` (or, in
  * tests, whatever env-like object is passed in). Throws a single `Error`
- * naming the FIRST missing or blank variable it finds, in the field order
- * `R2Config` declares them — never a generic "missing config" message, and
- * never the value of any variable, present or absent.
+ * naming `GCS_BUCKET_NAME` if it is missing or blank — never a generic
+ * "missing config" message, and never the value of any variable, present or
+ * absent. `GCS_PUBLIC_BASE_URL` is optional and simply omitted from the
+ * returned config when unset or blank.
  */
-export function loadR2Config(env: NodeJS.ProcessEnv = process.env): R2Config {
-	const accountId = requireEnv(env, R2_ENV_VARS.accountId);
-	const bucketName = requireEnv(env, R2_ENV_VARS.bucketName);
-	const accessKeyId = requireEnv(env, R2_ENV_VARS.accessKeyId);
-	const secretAccessKey = requireEnv(env, R2_ENV_VARS.secretAccessKey);
-	const publicBaseUrl = requireEnv(env, R2_ENV_VARS.publicBaseUrl);
+export function loadGcsConfig(env: NodeJS.ProcessEnv = process.env): GcsConfig {
+	const bucketName = requireEnv(env, GCS_ENV_VARS.bucketName);
+	const publicBaseUrl = env[GCS_PUBLIC_BASE_URL_ENV_VAR];
 
-	return { accountId, bucketName, accessKeyId, secretAccessKey, publicBaseUrl };
+	return publicBaseUrl ? { bucketName, publicBaseUrl } : { bucketName };
 }
 
 function requireEnv(env: NodeJS.ProcessEnv, name: string): string {
 	const value = env[name];
 	if (value === undefined || value === '') {
 		throw new Error(
-			`R2 configuration is missing the "${name}" environment variable. ` +
-				'See social/r2/README.md for how to provision R2 and set it.'
+			`GCS configuration is missing the "${name}" environment variable. ` +
+				'See social/gcs/README.md for how to provision the bucket and set it.'
 		);
 	}
 	return value;

@@ -32,7 +32,7 @@
 # TIMEOUT — 900s (15 minutes), not anywhere near the 168-hour cap. The
 # longest single step in `job.ts`'s pipeline is Instagram's own container-
 # processing poll, bounded at "once a minute, max 5 minutes" per the plan's
-# own Constraint (`instagram.ts`'s `POLL_MAX_ATTEMPTS`); render, R2 upload,
+# own Constraint (`instagram.ts`'s `POLL_MAX_ATTEMPTS`); render, GCS upload,
 # and the YouTube resumable upload are each on the order of seconds to low
 # minutes for a ~59s vertical video. 15 minutes leaves several minutes of
 # headroom over the realistic worst case (a full 5-minute IG poll plus a slow
@@ -56,14 +56,25 @@
 # here at all — they live in Firestore (`social/src/publish/token-store-
 # firestore.ts`, T04), read at runtime via this job's own service-account
 # identity (Application Default Credentials), so they never pass through an
-# env var, secret or otherwise. What IS listed here are the R2 object-storage
-# credentials (genuinely secret) and the Instagram business account id
-# (`IG_USER_ID` — not itself sensitive, but account-specific and kept out of
-# a checked-in file for the same reason the R2 values are: nothing account-
-# specific belongs hardcoded in version control). `key: "latest"` always
-# resolves to each secret's newest version — see `social/DEPLOY.md` for how
-# to rotate a value (add a new version; Cloud Run picks it up on the next
-# execution without a config change here).
+# env var, secret or otherwise.
+#
+# DECISION CHANGE — GCS replaces R2 (`plans/Pf39c2-social-pilot-03.md`'s
+# "Decision change — GCS replaces R2", 2026-09-03, and F11): object storage
+# moved from Cloudflare R2 to Google Cloud Storage. R2 needed FIVE secret
+# `R2_*` values (account id, bucket name, access key id, secret access key,
+# public base URL) because it authenticated with an S3-compatible access-key
+# pair. GCS needs NONE of that — the job's attached service account IS its
+# Application Default Credentials for GCS too, the same identity already
+# used for Firestore above. What survives is `GCS_BUCKET_NAME`, and it is a
+# PLAIN ENV VAR below, not a Secret Manager reference — a bucket name is not
+# sensitive (see `social/gcs/README.md`'s own provisioning steps, which name
+# it in cleartext), it is just account-specific enough not to hardcode a
+# guessed value here. The only other value still listed is the Instagram
+# business account id (`IG_USER_ID` — likewise not itself sensitive, but
+# account-specific and kept out of a checked-in file for the same reason).
+# `key: "latest"` always resolves to each secret's newest version — see
+# `social/DEPLOY.md` for how to rotate a value (add a new version; Cloud Run
+# picks it up on the next execution without a config change here).
 apiVersion: run.googleapis.com/v1
 kind: Job
 metadata:
@@ -97,31 +108,13 @@ spec:
               # `--date`, passed the same way via `gcloud run jobs execute
               # --args`).
               env:
-                - name: R2_ACCOUNT_ID
-                  valueFrom:
-                    secretKeyRef:
-                      name: social-pilot-r2-account-id
-                      key: latest
-                - name: R2_BUCKET_NAME
-                  valueFrom:
-                    secretKeyRef:
-                      name: social-pilot-r2-bucket-name
-                      key: latest
-                - name: R2_ACCESS_KEY_ID
-                  valueFrom:
-                    secretKeyRef:
-                      name: social-pilot-r2-access-key-id
-                      key: latest
-                - name: R2_SECRET_ACCESS_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: social-pilot-r2-secret-access-key
-                      key: latest
-                - name: R2_PUBLIC_BASE_URL
-                  valueFrom:
-                    secretKeyRef:
-                      name: social-pilot-r2-public-base-url
-                      key: latest
+                # Not a secret — see this file's "SECRETS" comment above for
+                # why this is a plain literal, not a secretKeyRef. Replace
+                # with the real bucket name from `social/gcs/README.md`'s
+                # step 1 (remember: GCS bucket names are globally unique,
+                # unlike R2's).
+                - name: GCS_BUCKET_NAME
+                  value: PLACEHOLDER_BUCKET_NAME
                 - name: IG_USER_ID
                   valueFrom:
                     secretKeyRef:

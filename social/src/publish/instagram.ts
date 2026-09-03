@@ -20,7 +20,7 @@
  * everything":
  *
  *   - **2207052** — a transient failure where Meta's servers could not fetch
- *     the media from `mediaUrl` (R2). This is retried, with backoff, up to
+ *     the media from `mediaUrl` (GCS). This is retried, with backoff, up to
  *     `CONTAINER_CREATE_MAX_ATTEMPTS` total attempts at container creation
  *     ONLY — polling and the final publish call are not retried on this
  *     code, since a failed fetch means no container was ever created to
@@ -197,7 +197,7 @@ async function callGraphApi(url: URL, method: 'GET' | 'POST', fetchFn: FetchFn):
 
 export interface CreateContainerParams {
 	config: InstagramConfig;
-	/** The public R2 URL from `storage.ts`'s `publicUrlFor` — the asset Meta will fetch. */
+	/** The public GCS URL from `storage.ts`'s `publicUrlFor` — the asset Meta will fetch. */
 	mediaUrl: string;
 	caption: string;
 	mediaKind: MediaKind;
@@ -344,7 +344,7 @@ export async function publishContainer(params: PublishContainerParams): Promise<
 
 export interface PublishToInstagramOptions {
 	config: InstagramConfig;
-	/** The public R2 URL from `storage.ts`'s `publicUrlFor`. */
+	/** The public GCS URL from `storage.ts`'s `publicUrlFor`. */
 	mediaUrl: string;
 	caption: string;
 	mediaKind: MediaKind;

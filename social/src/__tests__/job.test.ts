@@ -4,7 +4,7 @@
  * Every collaborator `runJob` needs (render, uploader, token store, both
  * publishers, the pending-flips store, the clock, the logger) is injected
  * via `JobDeps` — nothing here makes a network call, touches Firestore or
- * R2, needs a credential, or triggers a real Remotion render. `runJob` is
+ * GCS, needs a credential, or triggers a real Remotion render. `runJob` is
  * called directly; `main()`/`parseJobArgs`'s `--help` exit path is exercised
  * only via a real subprocess in a couple of smoke checks, mirroring
  * `cli.test.ts`'s own convention for the same reason (calling a
@@ -13,7 +13,7 @@
  * Coverage, matching this task's brief:
  *   - THE ACCEPTANCE CRITERION: a failure on one platform does not stop the
  *     other from being attempted and reported (both directions).
- *   - Every rendered asset is uploaded to R2 BEFORE either publish call
+ *   - Every rendered asset is uploaded to GCS BEFORE either publish call
  *     starts — asserted via a recorded call-order sequence, not by
  *     inspecting the implementation's shape.
  *   - `--dry-run` performs no uploads and no posts, and still reports one
@@ -127,7 +127,7 @@ function makeDeps(overrides: Partial<JobDeps> = {}, calls: string[] = []): JobDe
 		}),
 		uploadAsset: vi.fn(async ({ key }) => {
 			calls.push(`upload:${key}`);
-			return `https://media.thinkplain.ai/${key}`;
+			return `https://storage.googleapis.com/plain-social-media/${key}`;
 		}),
 		tokenStore,
 		refresh: {
@@ -210,7 +210,7 @@ describe('platform isolation — a failure on one platform never stops the other
 // Upload-before-publish ordering — the plan's Decision.
 // ---------------------------------------------------------------------------
 
-describe('assets are uploaded to R2 before any post is attempted', () => {
+describe('assets are uploaded to GCS before any post is attempted', () => {
 	it('both uploads complete before either publish call starts', async () => {
 		const calls: string[] = [];
 		const deps = makeDeps({}, calls);
@@ -242,15 +242,15 @@ describe('assets are uploaded to R2 before any post is attempted', () => {
 });
 
 // ---------------------------------------------------------------------------
-// M7 regression (code review): an R2 failure is a per-platform precondition,
-// not a whole-run one — Instagram needs the public R2 URL, YouTube does not.
+// M7 regression (code review): a GCS failure is a per-platform precondition,
+// not a whole-run one — Instagram needs the public GCS URL, YouTube does not.
 // ---------------------------------------------------------------------------
 
-describe('an R2 upload failure only fails Instagram, never YouTube', () => {
+describe('a GCS upload failure only fails Instagram, never YouTube', () => {
 	it('uploadAsset rejecting fails Instagram with a clear reason but still attempts and reports YouTube ok, and the run exit status reflects the partial failure', async () => {
 		const deps = makeDeps();
 		deps.uploadAsset = vi.fn(async () => {
-			throw new Error('R2 outage: connection refused');
+			throw new Error('GCS outage: connection refused');
 		});
 
 		const result = await runJob(ARGS, deps);
@@ -259,7 +259,7 @@ describe('an R2 upload failure only fails Instagram, never YouTube', () => {
 		const youtube = result.outcomes.find((o) => o.platform === 'youtube');
 
 		expect(instagram?.status).toBe('failed');
-		expect(instagram?.message).toContain('R2 outage: connection refused');
+		expect(instagram?.message).toContain('GCS outage: connection refused');
 		expect(deps.publishInstagram).not.toHaveBeenCalled(); // never attempted without a video URL.
 
 		expect(deps.publishYouTube).toHaveBeenCalledTimes(1); // attempted from the local file regardless.

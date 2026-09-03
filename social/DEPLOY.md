@@ -22,6 +22,11 @@ refresh+access token pair by hand (through each platform's own consent flow) and
 scheduled run. This is a one-time bootstrap, not part of T10's own deploy — noted here because "a
 scheduled run executes end to end" (T10's acceptance) cannot happen without it.
 
+**Object storage is GCS, not R2** (`plans/Pf39c2-social-pilot-03.md`'s "Decision change — GCS
+replaces R2", 2026-09-03, and F11) — step 2 below provisions the bucket. See
+`social/gcs/README.md` for the full reasoning and the bucket's own IAM/lifecycle setup in detail;
+this doc only covers what's needed to wire it into the Cloud Run Job.
+
 ## 0. Prerequisites
 
 - A GCP project with billing enabled (Cloud Run Jobs and Cloud Functions gen 2 both require it).
@@ -44,6 +49,7 @@ gcloud config set project PROJECT_ID
 
 gcloud services enable \
   run.googleapis.com \
+  storage.googleapis.com \
   artifactregistry.googleapis.com \
   secretmanager.googleapis.com \
   firestore.googleapis.com \
@@ -58,8 +64,33 @@ gcloud services enable \
 `pubsub.googleapis.com` are what a 2nd-gen `onSchedule` function is actually built on under the
 hood (Cloud Scheduler creates a Pub/Sub-triggered Cloud Function via Eventarc) — the Firebase CLI
 needs all of them enabled even though `socialTrigger.ts` never calls them directly.
+`storage.googleapis.com` is usually enabled by default on a new project, but list it explicitly —
+this deploy fails on step 2 below without it.
 
-## 2. Create the Firestore database (if this project does not already have one)
+## 2. Provision the GCS bucket
+
+Full detail (bucket creation, uniform bucket-level access, the public-read IAM binding, the 30-day
+lifecycle rule, and the three-part HTTPS/content-type/range-request verification) lives in
+`social/gcs/README.md` — run that runbook's sections 1-4 now. In short:
+
+```bash
+gcloud storage buckets create gs://BUCKET_NAME \
+  --location=us-central1 \
+  --uniform-bucket-level-access
+
+gcloud storage buckets add-iam-policy-binding gs://BUCKET_NAME \
+  --member=allUsers \
+  --role=roles/storage.objectViewer
+
+gcloud storage buckets update gs://BUCKET_NAME \
+  --lifecycle-file=social/gcs/lifecycle.json
+```
+
+**Bucket names are globally unique across all of GCS** (not just this project) — see
+`social/gcs/README.md`'s own callout on this. Whatever name you land on is what
+`GCS_BUCKET_NAME` (`social/cloud-run-job.yaml`'s env var, step 6 below) must be set to.
+
+## 3. Create the Firestore database (if this project does not already have one)
 
 The token store (`social/src/publish/token-store-firestore.ts`) needs a Native-mode Firestore
 database. Skip this if the project already has one (e.g. because `web/` already provisioned it —
@@ -70,17 +101,19 @@ so this is likely the first Firestore use in this project):
 gcloud firestore databases create --location=us-central1 --type=firestore-native
 ```
 
-## 3. Create the service accounts (least privilege — no broad "Editor" role anywhere)
+## 4. Create the service accounts (least privilege — no broad "Editor" role anywhere)
 
 Two distinct identities, because they need different permissions:
 
 - **`plain-social-job`** — the Cloud Run Job's own runtime identity. Needs to read/write its
-  Firestore token documents and read the Secret Manager secrets `cloud-run-job.yaml` references. It
-  does NOT need permission to start Cloud Run executions (it never calls the Admin API — the
-  Firebase trigger does that).
+  Firestore token documents, read/write objects in the GCS bucket from step 2 (via Application
+  Default Credentials — no key file, no access-key secret, see `social/src/publish/env.ts`'s header
+  comment), and read the Secret Manager secret(s) `cloud-run-job.yaml` references. It does NOT need
+  permission to start Cloud Run executions (it never calls the Admin API — the Firebase trigger
+  does that).
 - **`plain-social-trigger`** — the Firebase Function's runtime identity. Needs ONLY permission to
-  start an execution of the one specific Cloud Run Job. It does NOT need Firestore or Secret
-  Manager access — `socialTrigger.ts` never touches either.
+  start an execution of the one specific Cloud Run Job. It does NOT need Firestore, Secret Manager,
+  or GCS access — `socialTrigger.ts` never touches any of them.
 
 ```bash
 gcloud iam service-accounts create plain-social-job \
@@ -99,54 +132,53 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
   --role="roles/datastore.user"
 ```
 
-Secret Manager access for `plain-social-job` is granted per-secret in step 4 below, not at project
+Grant `plain-social-job` write access to the GCS bucket from step 2
+(`roles/storage.objectAdmin`, scoped to the bucket, not the whole project — the job only ever
+touches this one bucket):
+
+```bash
+gcloud storage buckets add-iam-policy-binding gs://BUCKET_NAME \
+  --member="serviceAccount:plain-social-job@PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+```
+
+(This is a separate binding from step 2's `allUsers` -> `roles/storage.objectViewer` grant — that
+one makes objects publicly *readable* for Meta/YouTube to fetch; this one lets the job's own
+identity *write* new objects in the first place.)
+
+Secret Manager access for `plain-social-job` is granted per-secret in step 5 below, not at project
 level — narrower than a single project-wide `roles/secretmanager.secretAccessor` binding.
 
-`plain-social-trigger`'s permission to run the job is granted in step 6, after the job exists (the
+`plain-social-trigger`'s permission to run the job is granted in step 7, after the job exists (the
 IAM binding is on the job resource itself).
 
-## 4. Create the Secret Manager secrets
+## 5. Create the Secret Manager secrets
 
-One secret per env var `social/cloud-run-job.yaml` references. Values are typed at the terminal
-(or piped from a local file you delete afterward) — never pass a secret value as a bare CLI
-argument in shell history:
-
-```bash
-for secret in \
-  social-pilot-r2-account-id \
-  social-pilot-r2-bucket-name \
-  social-pilot-r2-access-key-id \
-  social-pilot-r2-secret-access-key \
-  social-pilot-r2-public-base-url \
-  social-pilot-ig-user-id; do
-  gcloud secrets create "$secret" --replication-policy=automatic
-done
-
-# Then, for each one, add its actual value as the first version, e.g.:
-printf '%s' 'https://media.thinkplain.ai' | gcloud secrets versions add social-pilot-r2-public-base-url --data-file=-
-```
-
-Repeat the `versions add` line for each secret with its real value (R2 account id, bucket name,
-access key id, secret access key, and the Instagram business account's `IG_USER_ID`).
-
-Grant `plain-social-job` read access to each secret individually (least privilege — this
-deliberately does NOT use a project-wide Secret Manager role):
+**This list is shorter than it used to be.** Object storage moved from R2 to GCS
+(`plans/Pf39c2-social-pilot-03.md`'s "Decision change — GCS replaces R2", F11): R2 needed five
+secret `R2_*` values because it authenticated with an S3-compatible access-key pair; GCS
+authenticates the job's own service account via Application Default Credentials (step 4 above), so
+there is no storage secret at all. `GCS_BUCKET_NAME` is a plain env var in `cloud-run-job.yaml`
+(not sensitive — see that file's own "SECRETS" comment), so it does not need a Secret Manager
+entry either. The only secret left in this list is `IG_USER_ID`:
 
 ```bash
-for secret in \
-  social-pilot-r2-account-id \
-  social-pilot-r2-bucket-name \
-  social-pilot-r2-access-key-id \
-  social-pilot-r2-secret-access-key \
-  social-pilot-r2-public-base-url \
-  social-pilot-ig-user-id; do
-  gcloud secrets add-iam-policy-binding "$secret" \
-    --member="serviceAccount:plain-social-job@PROJECT_ID.iam.gserviceaccount.com" \
-    --role="roles/secretmanager.secretAccessor"
-done
+gcloud secrets create social-pilot-ig-user-id --replication-policy=automatic
+
+# Add its actual value as the first version — the Instagram business account's IG_USER_ID:
+printf '%s' 'YOUR_IG_USER_ID' | gcloud secrets versions add social-pilot-ig-user-id --data-file=-
 ```
 
-## 5. Build and push the image to Artifact Registry
+Grant `plain-social-job` read access to it (least privilege — this deliberately does NOT use a
+project-wide Secret Manager role):
+
+```bash
+gcloud secrets add-iam-policy-binding social-pilot-ig-user-id \
+  --member="serviceAccount:plain-social-job@PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+## 6. Build and push the image to Artifact Registry
 
 ```bash
 gcloud artifacts repositories create plain-social \
@@ -164,10 +196,11 @@ docker build --platform linux/amd64 -f social/Dockerfile \
 docker push us-central1-docker.pkg.dev/PROJECT_ID/plain-social/plain-social:latest
 ```
 
-## 6. Create the Cloud Run Job
+## 7. Create the Cloud Run Job
 
 Edit `social/cloud-run-job.yaml`, replacing both `PROJECT_ID` placeholders (the image URL and the
-service account email), then:
+service account email) and the `GCS_BUCKET_NAME` value's `PLACEHOLDER_BUCKET_NAME` with the real
+bucket name from step 2, then:
 
 ```bash
 gcloud run jobs replace social/cloud-run-job.yaml --region=us-central1
@@ -196,11 +229,11 @@ gcloud run jobs add-iam-policy-binding plain-social-daily \
   --role="projects/PROJECT_ID/roles/cloudRunJobRunner"
 ```
 
-## 7. Deploy the Firebase Function
+## 8. Deploy the Firebase Function
 
 Before deploying, replace the `PROJECT_ID` placeholder in `TRIGGER_SERVICE_ACCOUNT`
 (`functions/src/socialTrigger.ts`) with the real project id — this is what makes the function run
-under the least-privilege `plain-social-trigger` identity from step 3 rather than the project's
+under the least-privilege `plain-social-trigger` identity from step 4 rather than the project's
 default (broader) compute service account, which is what 2nd-gen Firebase Functions use if
 `serviceAccount` is left unset:
 
@@ -209,7 +242,7 @@ npm install --prefix functions
 firebase deploy --only functions --project PROJECT_ID
 ```
 
-## 8. Verify a scheduled run executed end to end (T10's acceptance criterion)
+## 9. Verify a scheduled run executed end to end (T10's acceptance criterion)
 
 Do not wait for the next scheduled 07:53 America/New_York firing to find out if this works — force
 one immediately:
@@ -236,7 +269,7 @@ gcloud scheduler jobs run firebase-schedule-socialTrigger-us-central1 --location
    ```
    Success: a line `Starting Cloud Run Job "plain-social-daily" for <date>.` followed by
    `Cloud Run Job "plain-social-daily" started for <date>.`, with no error in between. If this step
-   fails, it is almost always the IAM binding from step 6 (the trigger's service account cannot
+   fails, it is almost always the IAM binding from step 7 (the trigger's service account cannot
    call `jobs.run`) or a wrong region/job-name constant in `socialTrigger.ts` — the error message
    from the Cloud Run Admin API (surfaced verbatim in the thrown error, per that file's own
    comment) names which.
@@ -274,14 +307,23 @@ document exists yet in Firestore) — not a bug in this deploy.
 
 ## Troubleshooting
 
-- **`PERMISSION_DENIED` calling `jobs.run`** — the custom role binding from step 6 either wasn't
+- **`PERMISSION_DENIED` calling `jobs.run`** — the custom role binding from step 7 either wasn't
   applied, or was applied to the wrong service account. Re-run
   `gcloud run jobs get-iam-policy plain-social-daily --region=us-central1` and confirm
   `plain-social-trigger@PROJECT_ID.iam.gserviceaccount.com` is listed with
   `projects/PROJECT_ID/roles/cloudRunJobRunner`.
-- **The Cloud Run execution fails immediately with a missing-secret error** — confirm every secret
-  from step 4 has at least one version (`gcloud secrets versions list SECRET_NAME`) and that
-  `plain-social-job`'s per-secret IAM binding was applied to each one, not just some.
+- **The Cloud Run execution fails immediately with a missing-secret error** — confirm the
+  `social-pilot-ig-user-id` secret from step 5 has at least one version
+  (`gcloud secrets versions list social-pilot-ig-user-id`) and that `plain-social-job`'s
+  per-secret IAM binding was applied.
+- **The Cloud Run execution fails uploading to GCS with a permission error** — confirm step 4's
+  `roles/storage.objectAdmin` binding on the bucket was applied to `plain-social-job`, and that
+  `GCS_BUCKET_NAME` in `social/cloud-run-job.yaml` matches the real bucket name from step 2 exactly
+  (a typo here fails with a "bucket does not exist" or permission error that looks identical to a
+  missing IAM binding — check the bucket name first, it's the more common mistake).
+- **Meta/YouTube can't fetch an uploaded object (403 on the public URL)** — confirm step 2's
+  `allUsers` -> `roles/storage.objectViewer` binding was applied; see `social/gcs/README.md`'s own
+  verification section for the exact `curl` checks.
 - **A Chromium sandbox error inside the execution logs** — see `social/Dockerfile`'s "Non-root
   user" comment and `social/DOCKER.md`'s troubleshooting section; this is a known Cloud Run gVisor
   issue independent of this deploy, with a documented one-line code fix if it occurs.

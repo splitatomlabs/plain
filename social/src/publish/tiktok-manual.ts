@@ -4,7 +4,7 @@
  * Decision (plan 03): "TikTok posts via its native scheduler, manually,
  * ~20 min/week — its POSTING API is unusable here." This module does
  * everything that CAN be automated ahead of that manual session: it writes
- * the week's rendered MP4s and a captions file up to R2's dated
+ * the week's rendered MP4s and a captions file up to GCS's dated
  * `tiktok-staging/<weekStartDate>/` folder (`storage.ts`'s
  * `tiktokStagingKeyFor`) and returns a manifest with direct links, so the
  * human only has to open each link and paste the matching caption into
@@ -44,10 +44,11 @@
  * stages the whole week or uploads nothing.
  *
  * Every object this module uploads goes through `contentTypeFor` (never a
- * hand-picked or default content-type) and never logs a credential —
- * nothing in this module ever touches `config.accessKeyId`/
- * `secretAccessKey` directly; only `storage.ts`'s already-audited functions
- * do.
+ * hand-picked or default content-type). GCS auth is via Application Default
+ * Credentials (see `env.ts`'s header for the R2-to-GCS migration), so there
+ * is no access-key material anywhere in this pipeline for this module — or
+ * any other — to touch or log; the credential-leak surface the original R2
+ * version of this comment was guarding against no longer exists.
  *
  * Captions ship as a single `.txt` file, not `.json`: the weekly session is
  * a HUMAN reading captions off a screen while manually pasting them into
@@ -62,10 +63,10 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-import type { S3Client } from '@aws-sdk/client-s3';
+import type { Storage } from '@google-cloud/storage';
 
 import { buildCaption } from './caption.js';
-import type { R2Config } from './env.js';
+import type { GcsConfig } from './env.js';
 import { contentTypeFor, tiktokStagingKeyFor, uploadFile, uploadObject } from './storage.js';
 import { renderAssetPaths } from '../cli-plan.js';
 import { weekDayToDate } from '../pilot-config.js';
@@ -95,8 +96,8 @@ export interface PendingYouTubeFlip {
 // ---------------------------------------------------------------------------
 
 export interface StageTikTokWeekOptions {
-	client: S3Client;
-	config: R2Config;
+	client: Storage;
+	config: GcsConfig;
 	/** An already-loaded `pilot-schedule-w<NN>.json`. */
 	schedule: WeekSchedule;
 	/**
@@ -112,7 +113,7 @@ export interface StageTikTokWeekOptions {
 export interface TikTokStagedDay {
 	date: string;
 	cardId: string;
-	/** The direct R2 link to the day's MP4 — `publicUrlFor`'s output, never hand-built. */
+	/** The direct GCS link to the day's MP4 — `publicUrlFor`'s output, never hand-built. */
 	videoUrl: string;
 	caption: string;
 }
@@ -122,7 +123,7 @@ export interface TikTokWeekManifest {
 	/** The ISO date of day 1 of this week — also the folder this week staged under. */
 	weekStartDate: string;
 	days: TikTokStagedDay[];
-	/** The direct R2 link to the week's `captions.txt`. */
+	/** The direct GCS link to the week's `captions.txt`. */
 	captionsUrl: string;
 	pendingYouTubeFlips: PendingYouTubeFlip[];
 }
@@ -140,7 +141,7 @@ function buildCaptionsFileContents(days: Array<{ date: string; cardId: string; c
 
 /**
  * Stages one week's Wall videos for TikTok's manual posting session and
- * returns a manifest with direct R2 links, captions, and that week's
+ * returns a manifest with direct GCS links, captions, and that week's
  * pending YouTube flips.
  *
  * Order of operations: EVERY scheduled day's MP4 is checked to exist on

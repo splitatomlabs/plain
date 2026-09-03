@@ -54,43 +54,44 @@ before trying a real date.
 
 ## Run — a real publish (needs credentials)
 
-The full (non-dry-run) job also uploads to R2 and publishes to Instagram/YouTube. None of this is
-live-tested yet (see `plans/Pf39c2-social-pilot-03.md` T01/T05/T06's DEFERRED notes) — this is
-here for when it is.
+The full (non-dry-run) job also uploads to GCS and publishes to Instagram/YouTube. None of this is
+live-tested yet (see `plans/Pf39c2-social-pilot-03.md` T01/T05/T06's DEFERRED notes, superseded for
+storage by F11's "Decision change — GCS replaces R2") — this is here for when it is.
 
-Pass R2 credentials as environment variables (`social/src/publish/env.ts`'s `loadR2Config`):
+Object storage moved from Cloudflare R2 to Google Cloud Storage (`plans/Pf39c2-social-pilot-03.md`'s
+"Decision change — GCS replaces R2", 2026-09-03). Unlike R2, GCS needs **no access-key credential at
+all** — it authenticates via Application Default Credentials (ADC), the same mechanism Firestore
+token storage already uses below. The only GCS-related env var is `GCS_BUCKET_NAME`
+(`social/src/publish/env.ts`'s `loadGcsConfig`), and it is not a secret:
 
 ```bash
 docker run --rm \
-  -e R2_ACCOUNT_ID=... \
-  -e R2_BUCKET_NAME=... \
-  -e R2_ACCESS_KEY_ID=... \
-  -e R2_SECRET_ACCESS_KEY=... \
-  -e R2_PUBLIC_BASE_URL=https://media.thinkplain.ai \
+  -e GCS_BUCKET_NAME=... \
   -e IG_USER_ID=... \
   plain-social:latest --date <YYYY-MM-DD>
 ```
 
-Token storage (`social/src/publish/token-store-firestore.ts`) uses **Application Default
-Credentials**, never an env var with a secret in it (per the plan's "never log tokens... never env
-vars" Constraint) — mount a service account key or a gcloud ADC file into the container and point
-`GOOGLE_APPLICATION_CREDENTIALS` at it:
+Both token storage (`social/src/publish/token-store-firestore.ts`) and GCS uploads
+(`social/src/publish/storage.ts`'s `createGcsClient`) use **Application Default Credentials**, never
+an env var with a secret in it (per the plan's "never log tokens... never env vars" Constraint) —
+mount a service account key or a gcloud ADC file into the container and point
+`GOOGLE_APPLICATION_CREDENTIALS` at it. One mounted credential now covers both Firestore and GCS:
 
 ```bash
 docker run --rm \
   -v "$HOME/.config/gcloud/application_default_credentials.json:/adc.json:ro" \
   -e GOOGLE_APPLICATION_CREDENTIALS=/adc.json \
-  -e R2_ACCOUNT_ID=... -e R2_BUCKET_NAME=... -e R2_ACCESS_KEY_ID=... \
-  -e R2_SECRET_ACCESS_KEY=... -e R2_PUBLIC_BASE_URL=https://media.thinkplain.ai \
+  -e GCS_BUCKET_NAME=... \
   -e IG_USER_ID=... \
   plain-social:latest --date <YYYY-MM-DD>
 ```
 
 On Cloud Run itself (T10), skip the mounted-file approach entirely — a Cloud Run Job's attached
 service account IS its Application Default Credentials automatically, with no file or env var
-needed for that part. See `social/DEPLOY.md` for the full cloud deploy (Artifact Registry, the
-Cloud Run Job config in `social/cloud-run-job.yaml`, the Firebase `onSchedule` trigger, and how to
-verify a scheduled run actually executed end to end).
+needed for that part, for GCS or Firestore. See `social/DEPLOY.md` for the full cloud deploy
+(GCS bucket provisioning, Artifact Registry, the Cloud Run Job config in
+`social/cloud-run-job.yaml`, the Firebase `onSchedule` trigger, and how to verify a scheduled run
+actually executed end to end).
 
 There is no real OAuth **refresh** implementation yet (`job.ts`'s `notImplementedRefresh` — see
 its header comment): a run that reaches a token needing refresh will fail loudly by design until

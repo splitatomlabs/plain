@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { R2Config } from '../env.js';
+import type { GcsConfig } from '../env.js';
 import { publicUrlFor, tiktokStagingKeyFor } from '../storage.js';
 import type { PendingYouTubeFlip } from '../tiktok-manual.js';
 import { stageTikTokWeek } from '../tiktok-manual.js';
@@ -19,18 +19,28 @@ vi.mock('node:fs', () => ({
 	existsSync: (...args: unknown[]) => existsSyncMock(...args)
 }));
 
-const CONFIG: R2Config = {
-	accountId: 'test-account-id',
+const CONFIG: GcsConfig = {
 	bucketName: 'plain-social-media',
-	accessKeyId: 'test-access-key-id',
-	secretAccessKey: 'super-secret-value-do-not-log',
 	publicBaseUrl: 'https://media.thinkplain.ai'
 };
 
 const OUT_DIR = '/fake/out';
 
+/**
+ * A minimal fake `@google-cloud/storage` `Storage` client, matching
+ * `storage.test.ts`'s own fake shape: only
+ * `bucket(name).file(key).save(data, options)` is ever called by
+ * `storage.ts`. Uploads in `stageTikTokWeek` happen sequentially
+ * (`await`ed one at a time), so `file.mock.calls[i][0]` (the key) and
+ * `save.mock.calls[i]` (the `[data, options]` args) line up index-for-index
+ * — used below to recover which key a given upload's content-type/folder
+ * belongs to, since `save` itself is never passed the key directly.
+ */
 function fakeClient() {
-	return { send: vi.fn().mockResolvedValue({}) };
+	const save = vi.fn().mockResolvedValue(undefined);
+	const file = vi.fn().mockReturnValue({ save });
+	const bucket = vi.fn().mockReturnValue({ file });
+	return { bucket, file, save };
 }
 
 /** A real 7-slot week schedule (one per day), mirroring pilot-schedule-w01.json's shape. */
@@ -177,7 +187,7 @@ describe('stageTikTokWeek', () => {
 			})
 		).rejects.toThrowError(new RegExp(weekDayToDate(SCHEDULE.week, 5)));
 
-		expect(client.send).not.toHaveBeenCalled();
+		expect(client.save).not.toHaveBeenCalled();
 	});
 
 	it('never stages a short week — no upload happens when any day is missing', async () => {
@@ -194,7 +204,7 @@ describe('stageTikTokWeek', () => {
 			})
 		).rejects.toThrow();
 
-		expect(client.send).not.toHaveBeenCalled();
+		expect(client.save).not.toHaveBeenCalled();
 	});
 
 	it('uploads every object with an explicit content-type', async () => {
@@ -210,10 +220,10 @@ describe('stageTikTokWeek', () => {
 		});
 
 		// 7 videos + 1 captions file.
-		expect(client.send).toHaveBeenCalledTimes(8);
-		for (const call of client.send.mock.calls) {
-			const input = call[0].input;
-			expect(input.ContentType).toBeTruthy();
+		expect(client.save).toHaveBeenCalledTimes(8);
+		for (const call of client.save.mock.calls) {
+			const options = call[1] as { contentType?: string };
+			expect(options.contentType).toBeTruthy();
 		}
 	});
 
@@ -229,7 +239,7 @@ describe('stageTikTokWeek', () => {
 			pendingYouTubeFlips: []
 		});
 
-		const contentTypes = client.send.mock.calls.map((call) => call[0].input.ContentType as string);
+		const contentTypes = client.save.mock.calls.map((call) => (call[1] as { contentType: string }).contentType);
 		expect(contentTypes.filter((t) => t === 'video/mp4')).toHaveLength(7);
 		expect(contentTypes.filter((t) => t === 'text/plain')).toHaveLength(1);
 	});
@@ -281,8 +291,11 @@ describe('stageTikTokWeek', () => {
 		});
 
 		const weekStartDate = weekDayToDate(SCHEDULE.week, 1);
-		for (const call of client.send.mock.calls) {
-			const key = call[0].input.Key as string;
+		// `file(key)` is called once per upload, in the same order as `save` —
+		// see fakeClient's doc comment for why the key has to be recovered from
+		// `file`'s call args rather than `save`'s.
+		for (const call of client.file.mock.calls) {
+			const key = call[0] as string;
 			expect(key.startsWith(`tiktok-staging/${weekStartDate}/`)).toBe(true);
 		}
 	});
@@ -304,10 +317,14 @@ describe('stageTikTokWeek', () => {
 				})
 			).rejects.toThrow();
 		} finally {
+			// GCS auth is Application Default Credentials — CONFIG itself carries
+			// no secret material anymore (see env.ts's header comment), but the
+			// no-credential-leak assertion stays: nothing in CONFIG's fields
+			// (bucketName, publicBaseUrl) should ever appear in a console call
+			// either, matching this test's own name.
 			for (const spy of [consoleSpy, logSpy]) {
 				for (const call of spy.mock.calls) {
-					expect(JSON.stringify(call)).not.toContain(CONFIG.secretAccessKey);
-					expect(JSON.stringify(call)).not.toContain(CONFIG.accessKeyId);
+					expect(JSON.stringify(call)).not.toContain(CONFIG.bucketName);
 				}
 			}
 			consoleSpy.mockRestore();

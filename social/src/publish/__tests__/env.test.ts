@@ -1,54 +1,62 @@
 import { describe, expect, it } from 'vitest';
-import { loadR2Config, R2_ENV_VARS, type R2Config } from '../env.js';
+import { GCS_ENV_VARS, GCS_PUBLIC_BASE_URL_ENV_VAR, loadGcsConfig, type GcsConfig } from '../env.js';
 
 const VALID_ENV: NodeJS.ProcessEnv = {
-	R2_ACCOUNT_ID: 'test-account-id',
-	R2_BUCKET_NAME: 'plain-social-media',
-	R2_ACCESS_KEY_ID: 'test-access-key-id',
-	R2_SECRET_ACCESS_KEY: 'super-secret-value-do-not-log',
-	R2_PUBLIC_BASE_URL: 'https://media.thinkplain.ai',
+	GCS_BUCKET_NAME: 'plain-social-media',
+	GCS_PUBLIC_BASE_URL: 'https://media.thinkplain.ai',
 };
 
-describe('loadR2Config', () => {
+describe('loadGcsConfig', () => {
 	it('returns the parsed config when every variable is present', () => {
-		const config: R2Config = loadR2Config(VALID_ENV);
+		const config: GcsConfig = loadGcsConfig(VALID_ENV);
 
 		expect(config).toEqual({
-			accountId: 'test-account-id',
 			bucketName: 'plain-social-media',
-			accessKeyId: 'test-access-key-id',
-			secretAccessKey: 'super-secret-value-do-not-log',
 			publicBaseUrl: 'https://media.thinkplain.ai',
 		});
 	});
 
-	for (const name of Object.values(R2_ENV_VARS)) {
-		it(`throws naming "${name}" when it is missing`, () => {
-			const env = { ...VALID_ENV };
-			delete env[name];
-
-			expect(() => loadR2Config(env)).toThrowError(new RegExp(name));
-		});
-
-		it(`throws naming "${name}" when it is blank`, () => {
-			const env = { ...VALID_ENV, [name]: '' };
-
-			expect(() => loadR2Config(env)).toThrowError(new RegExp(name));
-		});
-	}
-
-	it('never leaks the value of a secret that WAS set into the thrown message', () => {
+	it('omits publicBaseUrl from the returned config when it is unset', () => {
 		const env = { ...VALID_ENV };
-		delete env.R2_PUBLIC_BASE_URL;
+		delete env[GCS_PUBLIC_BASE_URL_ENV_VAR];
+
+		const config = loadGcsConfig(env);
+
+		expect(config).toEqual({ bucketName: 'plain-social-media' });
+		expect(config.publicBaseUrl).toBeUndefined();
+	});
+
+	it('omits publicBaseUrl from the returned config when it is blank', () => {
+		const env = { ...VALID_ENV, [GCS_PUBLIC_BASE_URL_ENV_VAR]: '' };
+
+		const config = loadGcsConfig(env);
+
+		expect(config).toEqual({ bucketName: 'plain-social-media' });
+	});
+
+	it(`throws naming "${GCS_ENV_VARS.bucketName}" when it is missing`, () => {
+		const env = { ...VALID_ENV };
+		delete env[GCS_ENV_VARS.bucketName];
+
+		expect(() => loadGcsConfig(env)).toThrowError(new RegExp(GCS_ENV_VARS.bucketName));
+	});
+
+	it(`throws naming "${GCS_ENV_VARS.bucketName}" when it is blank`, () => {
+		const env = { ...VALID_ENV, [GCS_ENV_VARS.bucketName]: '' };
+
+		expect(() => loadGcsConfig(env)).toThrowError(new RegExp(GCS_ENV_VARS.bucketName));
+	});
+
+	it('never leaks the value of a variable that WAS set into the thrown message', () => {
+		const env = { ...VALID_ENV };
+		delete env[GCS_ENV_VARS.bucketName];
 
 		try {
-			loadR2Config(env);
-			throw new Error('expected loadR2Config to throw');
+			loadGcsConfig(env);
+			throw new Error('expected loadGcsConfig to throw');
 		} catch (err) {
 			const message = (err as Error).message;
-			expect(message).not.toContain(VALID_ENV.R2_ACCESS_KEY_ID);
-			expect(message).not.toContain(VALID_ENV.R2_SECRET_ACCESS_KEY);
-			expect(message).not.toContain(VALID_ENV.R2_ACCOUNT_ID);
+			expect(message).not.toContain(VALID_ENV.GCS_PUBLIC_BASE_URL);
 		}
 	});
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { R2Config } from '../env.js';
+import type { GcsConfig } from '../env.js';
 import {
 	contentTypeFor,
 	postKeyFor,
@@ -13,17 +13,23 @@ vi.mock('node:fs/promises', () => ({
 	readFile: vi.fn().mockResolvedValue(Buffer.from('fake video bytes')),
 }));
 
-const CONFIG: R2Config = {
-	accountId: 'test-account-id',
+const CONFIG: GcsConfig = {
 	bucketName: 'plain-social-media',
-	accessKeyId: 'test-access-key-id',
-	secretAccessKey: 'super-secret-value-do-not-log',
 	publicBaseUrl: 'https://media.thinkplain.ai',
 };
 
-/** A minimal fake `S3Client` — only `send` is ever called by `storage.ts`. */
+/**
+ * A minimal fake `@google-cloud/storage` `Storage` client — only
+ * `bucket(name).file(key).save(data, options)` is ever called by
+ * `storage.ts`. `save`/`file`/`bucket` are all exposed on the returned
+ * object so a test can assert on any of them (e.g. that `bucket`/`file` were
+ * called with the right names, or on `save`'s call arguments).
+ */
 function fakeClient() {
-	return { send: vi.fn().mockResolvedValue({}) };
+	const save = vi.fn().mockResolvedValue(undefined);
+	const file = vi.fn().mockReturnValue({ save });
+	const bucket = vi.fn().mockReturnValue({ file });
+	return { bucket, file, save };
 }
 
 describe('contentTypeFor', () => {
@@ -95,10 +101,18 @@ describe('publicUrlFor', () => {
 			'https://media.thinkplain.ai/posts/2026-09-01/a.mp4'
 		);
 	});
+
+	it('defaults to the GCS public object URL when publicBaseUrl is unset', () => {
+		const config: GcsConfig = { bucketName: 'plain-social-media' };
+
+		expect(publicUrlFor(config, 'posts/2026-09-01/a.mp4')).toBe(
+			'https://storage.googleapis.com/plain-social-media/posts/2026-09-01/a.mp4'
+		);
+	});
 });
 
 describe('uploadObject', () => {
-	it('always sets ContentType on the PutObjectCommand input', async () => {
+	it('always sets contentType on the save() call', async () => {
 		const client = fakeClient();
 
 		await uploadObject({
@@ -109,11 +123,11 @@ describe('uploadObject', () => {
 			contentType: 'video/mp4',
 		});
 
-		expect(client.send).toHaveBeenCalledTimes(1);
-		const command = client.send.mock.calls[0][0];
-		expect(command.input.ContentType).toBe('video/mp4');
-		expect(command.input.Bucket).toBe(CONFIG.bucketName);
-		expect(command.input.Key).toBe('posts/2026-09-01/a.mp4');
+		expect(client.bucket).toHaveBeenCalledWith(CONFIG.bucketName);
+		expect(client.file).toHaveBeenCalledWith('posts/2026-09-01/a.mp4');
+		expect(client.save).toHaveBeenCalledTimes(1);
+		const [, options] = client.save.mock.calls[0];
+		expect(options.contentType).toBe('video/mp4');
 	});
 
 	it('returns the public URL of the uploaded object', async () => {
@@ -130,7 +144,7 @@ describe('uploadObject', () => {
 		expect(url).toBe('https://media.thinkplain.ai/posts/2026-09-01/a.mp4');
 	});
 
-	it('throws on a blank contentType and never calls send', async () => {
+	it('throws on a blank contentType and never calls save', async () => {
 		const client = fakeClient();
 
 		await expect(
@@ -143,7 +157,7 @@ describe('uploadObject', () => {
 			})
 		).rejects.toThrowError(/contentType/);
 
-		expect(client.send).not.toHaveBeenCalled();
+		expect(client.save).not.toHaveBeenCalled();
 	});
 
 	it('throws on a whitespace-only contentType', async () => {
@@ -162,7 +176,7 @@ describe('uploadObject', () => {
 });
 
 describe('uploadFile', () => {
-	it('always sets ContentType on the PutObjectCommand input', async () => {
+	it('always sets contentType on the save() call', async () => {
 		const client = fakeClient();
 
 		await uploadFile({
@@ -173,9 +187,9 @@ describe('uploadFile', () => {
 			contentType: 'video/mp4',
 		});
 
-		expect(client.send).toHaveBeenCalledTimes(1);
-		const command = client.send.mock.calls[0][0];
-		expect(command.input.ContentType).toBe('video/mp4');
+		expect(client.save).toHaveBeenCalledTimes(1);
+		const [, options] = client.save.mock.calls[0];
+		expect(options.contentType).toBe('video/mp4');
 	});
 
 	it('returns the public URL of the uploaded object', async () => {
@@ -205,6 +219,6 @@ describe('uploadFile', () => {
 			})
 		).rejects.toThrowError(/contentType/);
 
-		expect(client.send).not.toHaveBeenCalled();
+		expect(client.save).not.toHaveBeenCalled();
 	});
 });

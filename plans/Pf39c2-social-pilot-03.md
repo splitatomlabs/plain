@@ -856,6 +856,106 @@ npm run test:e2e --prefix web
 npx tsx social/src/job.ts --date 2026-09-01 --dry-run
 ```
 
+## Decision change — GCS replaces R2 (2026-09-03, user decision)
+
+The plan's opening Decision chose **Cloudflare R2 behind `media.thinkplain.ai`** for "free tier, zero
+egress", with a custom domain because `r2.dev` is rate-limited and development-only.
+
+**Superseded: object storage is Google Cloud Storage.** Binding a custom domain to R2 requires the
+zone to live in the Cloudflare account, and `thinkplain.ai`'s nameservers are Google's (managed via
+Squarespace, which inherited Google Domains) pointing at Vercel. R2 therefore meant repointing
+nameservers for the domain serving the live app, plus a sixth vendor, before a single post had been
+published. The zero-egress argument was reasoning about scale: at pilot volume (7 videos/week at
+~5MB, fetched a few times each) egress is ~100MB/month, about a cent.
+
+The pilot already requires a GCP project for Cloud Run Jobs, Firestore, Secret Manager and Artifact
+Registry, so storage joins it rather than adding Cloudflare. GCS objects are fetched from a public
+`storage.googleapis.com` URL — no custom domain, no DNS change — and the Job authenticates via the
+service account it already has, so ALL FIVE `R2_*` secrets disappear along with that credential
+surface. If the pilot finds signal and volume justifies zero egress, moving to R2 later is contained:
+storage sits behind an interface.
+
+- [x] F11: Replace the R2 storage layer with GCS. `env.ts` (drop the access-key vars, ADC instead),
+  `storage.ts` (`@google-cloud/storage` for `@aws-sdk/client-s3`, public URL shape), every caller and
+  test, `social/r2/` -> a GCS equivalent with a GCS-format 30-day lifecycle rule, `cloud-run-job.yaml`
+  (drop the R2 secret refs), and the R2 references in `DEPLOY.md`/`DOCKER.md`/`docs/SOCIAL_PILOT.md`.
+  contentType must stay structurally impossible to omit.
+  Done: `env.ts` now exports `GcsConfig`/`loadGcsConfig` — the only required variable is
+  `GCS_BUCKET_NAME`; `GCS_PUBLIC_BASE_URL` is an optional override, omitted from the returned config
+  (not defaulted to an empty string) when unset. There is no access-key field of any kind — ADC is the
+  whole story, same as `token-store-firestore.ts`/`pending-flips-store-firestore.ts`. The
+  never-echo-a-value discipline and its dedicated test both carried over unchanged, even though there
+  is materially less secret surface to leak now.
+  `storage.ts` swaps `@aws-sdk/client-s3`'s `S3Client`/`PutObjectCommand` for `@google-cloud/storage`'s
+  `Storage` client (`createGcsClient()`, no config argument — ADC needs none). `uploadObject` now calls
+  `client.bucket(config.bucketName).file(key).save(body, { contentType })` — `contentType` stays a
+  REQUIRED field on both `UploadObjectOptions`/`UploadFileOptions` (not optional), still checked at
+  runtime before any network call, so it remains structurally impossible to upload without one; the
+  header comment calls out that this is also why `contentType` is passed explicitly rather than letting
+  the SDK's own `contentType: 'auto'` extension-guessing run (that guess is exactly the silent fallback
+  the plan's Constraint forbids). `contentTypeFor`'s throw-on-unknown-extension behaviour is untouched.
+  `postKeyFor`/`tiktokStagingKeyFor` are byte-for-byte unchanged (pure functions of `--date`/a base
+  name, never the storage backend, per the plan's determinism policy — the task's own instruction to
+  leave them alone). `publicUrlFor` now defaults to `https://storage.googleapis.com/<bucketName>` when
+  `config.publicBaseUrl` is unset, or uses the override when set — same trailing/leading-slash tolerance
+  as before, same tests (plus one new case for the no-override default). Object PUBLIC READABILITY is
+  documented in both `storage.ts`'s header and `social/gcs/README.md` as a bucket-IAM-policy concern
+  (`allUsers` granted `roles/storage.objectViewer` under uniform bucket-level access), never a per-object
+  ACL — the upload code never sets one.
+  `social/r2/` -> `social/gcs/`: `lifecycle.json` rewritten to the shape `gcloud storage buckets update
+  --lifecycle-file` actually accepts — verified against that command's own `--help` output (a bare
+  `{"rule": [{"action": {"type": "Delete"}, "condition": {"age": 30}}]}`, not the S3/R2
+  `{"Rules": [...]}` shape and not a `{"lifecycle": {"rule": [...]}}` wrapper either — confirmed by
+  reading `gcloud storage buckets update --help`'s own printed example, not guessed). `README.md`
+  rewritten as a GCS runbook: bucket creation with `--uniform-bucket-level-access`, the public-read IAM
+  binding, the lifecycle rule, and the same three-part verification the original R2 runbook had (HTTPS
+  200, correct `content-type` header, `curl -r 0-99` -> 206 with `content-range`) via `gcloud`/`curl`
+  instead of `aws s3api`/`wrangler`. Flags the one real GCS-specific gotcha the task called out: bucket
+  names are globally unique across ALL of GCS, not just this project (unlike R2's per-account
+  namespace).
+  Callers: `job.ts` and `tiktok-manual.ts` both updated (`S3Client`/`R2Config` -> `Storage`/`GcsConfig`,
+  `createR2Client`/`loadR2Config` -> `createGcsClient`/`loadGcsConfig`, every prose "R2" reference in
+  their header comments and log lines -> "GCS"). `cloud-run-job.yaml`'s five `R2_*` `secretKeyRef`
+  entries collapse to one plain `GCS_BUCKET_NAME` env var (not a secret — a bucket name isn't sensitive)
+  plus the unchanged `IG_USER_ID` secret; the file's header comment explains the collapse and why
+  `GCS_BUCKET_NAME` is a literal, not a `secretKeyRef`. `DEPLOY.md` gets a new numbered step 2
+  ("Provision the GCS bucket", cross-linking `social/gcs/README.md`) with every later step renumbered,
+  a `roles/storage.objectAdmin` binding added to `plain-social-job`'s IAM setup (step 4) alongside its
+  existing `roles/datastore.user`, and its Secret Manager step (5) shrunk to the one `IG_USER_ID`
+  secret with an explicit note on why the R2 secrets are gone. `DOCKER.md`'s credential section rewritten
+  to show `GCS_BUCKET_NAME` as a plain env var and the ADC mount now covering both Firestore and GCS
+  with one credential. `docs/SOCIAL_PILOT.md`: section 3.1 retitled and rewritten around
+  `social/gcs/README.md`, section 3.6's Secret Manager description updated, the daily-loop narrative
+  (section 4) and the weekly-session scratch script (section 5.2) both changed from R2 to GCS
+  (`createR2Client`/`loadR2Config` -> `createGcsClient`/`loadGcsConfig` in the scratch script), the
+  account-disabled contingency section's "survives independently" note, and the "Current status" R2
+  provisioning bullet, all updated to GCS/`social/gcs/README.md`.
+  Tests: `env.test.ts` rewritten around `loadGcsConfig`/`GcsConfig` (6 tests: full config, optional
+  `publicBaseUrl` omitted when unset/blank, missing/blank `GCS_BUCKET_NAME` naming it, and the
+  never-leaks-a-set-value case). `storage.test.ts` rewritten with a fake `Storage` client
+  (`bucket(name).file(key).save(data, options)`, all three legs mockable) replacing the fake `S3Client`
+  — same coverage as before (contentType always present and checked before any call, blank/whitespace
+  throws pre-network, key builders pure/deterministic, `publicUrlFor`'s slash-tolerance cases) plus a new
+  case for the GCS-default public URL when no override is set (22 tests, up from 21). `tiktok-manual.test.ts`
+  ported to the same fake-client shape (`client.save.mock.calls`/`client.file.mock.calls` recovering
+  content-type and key per upload, since GCS's `save` doesn't take the key as an argument the way S3's
+  `PutObjectCommand.input.Key` did) — same 11 tests, same assertions (content-type always set, correct
+  per-extension type, every key under the week's folder, no credential leak — the credential-leak
+  assertion now checks `bucketName` isn't echoed, since GCS's `GcsConfig` has no secret field left to
+  check). `job.test.ts`'s prose ("R2" -> "GCS" in comments/describe blocks/fixture error text) updated
+  for consistency; its actual assertions were already storage-agnostic (`uploadAsset` is an injected,
+  backend-neutral function) and needed no logic changes. `@google-cloud/storage` installed
+  (`npm install --prefix social`); `@aws-sdk/client-s3` uninstalled after confirming (`grep -rl`) nothing
+  else in `social/src` referenced it.
+  Verification: `npx vitest run src/publish` 120/120 green; full `npm test --prefix social` 569/569
+  green (one `wall-gate.test.ts` timeout on the first full-suite run was confirmed a pre-existing flake
+  under parallel-Remotion-render load, unrelated to this task — it passes in 1.2s run in isolation, and
+  the very next full-suite run was clean); `tsc --noEmit -p social/tsconfig.json` clean; `env -i
+  PATH="$PATH" HOME="$HOME" npx tsx social/src/job.ts --date 2026-09-01 --dry-run` exits 0 with zero
+  credentials set and its DRY-RUN log lines now say "GCS" instead of "R2". Not run: any `gcloud`/`gsutil`
+  command that would provision or touch a real bucket — `social/gcs/README.md`'s numbered steps are
+  left for the user, exactly like the R2 runbook was before it.
+
 ## Review fixes (PR #42 code review, 2026-08-27)
 
 Nine must-fix defects found by the code-reviewer on the full `main...social-pilot-03` diff. None were

@@ -90,15 +90,24 @@ weekly session and any live troubleshooting. Read it again before the first post
 Do these once, in this order, before the daily loop can run for real. Each step links to the doc
 that actually walks through it in detail rather than duplicating that detail here.
 
-### 3.1 Provision R2
+### 3.1 Provision the GCS bucket
 
-Follow `social/r2/README.md` in full: create the `plain-social-media` bucket, bind the
-`media.thinkplain.ai` custom domain (the default `r2.dev` subdomain is rate-limited and
-development-only — see that doc's own "Why a custom domain" section), apply the 30-day lifecycle
-rule, and run its section 4 verification (`curl` checks for a 200, the right `content-type` header,
-and a working range request). This produces the five `R2_*` values `social/src/publish/env.ts`'s
-`loadR2Config` reads: `R2_ACCOUNT_ID`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`,
-`R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BASE_URL` (`https://media.thinkplain.ai`).
+**Object storage is Google Cloud Storage, not Cloudflare R2** — see
+`plans/Pf39c2-social-pilot-03.md`'s "Decision change — GCS replaces R2" (2026-09-03) for why: R2's
+custom domain needed the DNS zone inside a Cloudflare account, and `thinkplain.ai`'s nameservers are
+Google's (via Squarespace), pointing at Vercel. GCS instead serves objects from the stable
+`https://storage.googleapis.com/<bucket>/<key>` URL with no DNS change, and the Cloud Run Job
+authenticates to it the same way it already authenticates to Firestore — Application Default
+Credentials, no access key of any kind.
+
+Follow `social/gcs/README.md` in full: create the bucket (name must be **globally unique across all
+of GCS**, unlike R2 — that doc's own callout), set uniform bucket-level access, grant `allUsers` the
+`roles/storage.objectViewer` IAM role so Meta/YouTube can fetch objects unauthenticated, apply the
+30-day lifecycle rule, and run its section 4 verification (`curl` checks for a 200, the right
+`content-type` header, and a working range request). This produces the one value
+`social/src/publish/env.ts`'s `loadGcsConfig` reads: `GCS_BUCKET_NAME` — not a secret, since there
+is no access key to protect (optionally also `GCS_PUBLIC_BASE_URL`, unset by default, only needed if
+a custom domain is ever put in front of the bucket).
 
 ### 3.2 Create the Meta app and get an Instagram token
 
@@ -182,11 +191,12 @@ under gVisor, and a "no browser found" error if the container's working director
 ### 3.6 Deploy the Cloud Run Job and the Firebase trigger
 
 Follow `social/DEPLOY.md` in full — it is a numbered, copy-pasteable sequence: enable the required
-GCP APIs, create the Firestore database (if the project doesn't have one), create the two
-least-privilege service accounts, create the Secret Manager secrets for the R2 values and
-`IG_USER_ID`, push the image to Artifact Registry, create the Cloud Run Job from
-`social/cloud-run-job.yaml`, deploy the Firebase Function (`functions/src/socialTrigger.ts`), and
-force one immediate run to verify the whole chain actually executes end to end (that doc's step 8).
+GCP APIs, provision the GCS bucket (section 3.1 above), create the Firestore database (if the
+project doesn't have one), create the two least-privilege service accounts, create the Secret
+Manager secret for `IG_USER_ID` (the only one left — GCS needs no access-key secret), push the
+image to Artifact Registry, create the Cloud Run Job from `social/cloud-run-job.yaml`, deploy the
+Firebase Function (`functions/src/socialTrigger.ts`), and force one immediate run to verify the
+whole chain actually executes end to end (that doc's step 9).
 
 Complete section 3.4 (seed the Firestore tokens) **before** attempting a non-dry-run forced run at
 the end of `DEPLOY.md`'s step 8 — otherwise it will fail on both platforms with a missing-token
@@ -212,13 +222,13 @@ Once deployed, this runs unattended:
 
 2. That Cloud Run Job execution runs `social/src/job.ts --date <today>` inside the container: it
    resolves the schedule slot for that date, renders the video + Instagram feed still (reusing
-   `cli.ts`'s render path), uploads every rendered asset to R2 (before any post is attempted — a
+   `cli.ts`'s render path), uploads every rendered asset to GCS (before any post is attempted — a
    posting failure never loses a render), then publishes independently to Instagram and YouTube.
-   A failure on one platform never stops the other (`Promise.allSettled`, not `Promise.all`). An R2
+   A failure on one platform never stops the other (`Promise.allSettled`, not `Promise.all`). A GCS
    upload failure is a **per-platform** precondition, not a whole-run abort (code review M7 fix):
-   it makes only Instagram's outcome `failed` (Instagram needs the video's public R2 URL for Meta's
+   it makes only Instagram's outcome `failed` (Instagram needs the video's public GCS URL for Meta's
    Graph API), while YouTube still uploads straight from the local rendered file and is unaffected
-   by an R2 outage.
+   by a GCS outage.
 
 3. `job.ts` appends a structured log to both stdout (captured by Cloud Logging) and
    `content/social/job-logs/job-<date>.log` inside the container (ephemeral once the execution
@@ -301,19 +311,20 @@ it directly with `tsx` via a short one-off script, e.g.:
 
 ```ts
 // scratch-stage-tiktok.ts — run once per week with: npx tsx scratch-stage-tiktok.ts
-import { createR2Client } from './social/src/publish/storage.js';
-import { loadR2Config } from './social/src/publish/env.js';
+import { createGcsClient } from './social/src/publish/storage.js';
+import { loadGcsConfig } from './social/src/publish/env.js';
 import { stageTikTokWeek } from './social/src/publish/tiktok-manual.js';
 import { createFirestorePendingFlipsStore } from './social/src/publish/pending-flips-store-firestore.js';
 import { readFile } from 'node:fs/promises';
 
-const config = loadR2Config(); // reads R2_* from process.env — see section 3.1
-const client = createR2Client(config);
+const config = loadGcsConfig(); // reads GCS_BUCKET_NAME (and optional GCS_PUBLIC_BASE_URL) from process.env — see section 3.1
+const client = createGcsClient(); // Application Default Credentials — no bucket/key argument needed here
 const schedule = JSON.parse(await readFile('content/social/pilot-schedule-w<NN>.json', 'utf-8'));
 // Reads the same durable Firestore store job.ts wrote the week's uploaded video ids into
 // (`social-pilot-pending-youtube-flips` collection) — via Application Default Credentials, so run
 // this with the same GCP project's credentials active as the Cloud Run Job's service account
-// (e.g. `gcloud auth application-default login`, or from wherever that identity is available).
+// (e.g. `gcloud auth application-default login`, or from wherever that identity is available). GCS
+// uploads below use that same ADC identity, no separate credential needed.
 const pendingYouTubeFlips = await createFirestorePendingFlipsStore().read();
 
 const manifest = await stageTikTokWeek({
@@ -324,13 +335,14 @@ const manifest = await stageTikTokWeek({
 console.log(JSON.stringify(manifest, null, 2));
 ```
 
-Run it with the week's R2 credentials set in the environment. It uploads every rendered day's MP4
-plus a single `captions.txt` to `tiktok-staging/<weekStartDate>/` in R2, and prints a manifest with
-each day's direct video URL and its caption, plus that week's pending YouTube flips (see 5.3 — one
-manifest covers both platforms' weekly work, by design).
+Run it with `GCS_BUCKET_NAME` set in the environment and ADC available (no access-key credential
+needed — see section 3.1). It uploads every rendered day's MP4 plus a single `captions.txt` to
+`tiktok-staging/<weekStartDate>/` in GCS, and prints a manifest with each day's direct video URL
+and its caption, plus that week's pending YouTube flips (see 5.3 — one manifest covers both
+platforms' weekly work, by design).
 
 For each day in the manifest, in TikTok's app:
-1. Open the day's `videoUrl` (a direct HTTPS link to the MP4 in R2) and download it to the device
+1. Open the day's `videoUrl` (a direct HTTPS link to the MP4 in GCS) and download it to the device
    posting to TikTok, or otherwise get it onto that device.
 2. Upload it in TikTok's app, using its **native scheduler** — per the plan's Decision, TikTok's
    posting API is unusable here, so every TikTok post goes up through the app by a human, not code.
@@ -414,7 +426,7 @@ Instagram disables the pilot's account:
    flow (or business.facebook.com's Account Quality section if the account had a Business
    presence). This is the only sanctioned path back — do not attempt any workaround in place of it.
 3. **What survives independently of the disabled account:** every asset this pilot has ever posted
-   already lives in R2, under `media.thinkplain.ai`, uploaded *before* any post is attempted
+   already lives in GCS, uploaded *before* any post is attempted
    (`storage.ts`'s upload calls run ahead of every publish call in `job.ts`, and the plan's own
    Decision states this ordering exists partly so a posting failure — or, here, an account-level
    failure — never loses a render). Losing the Instagram account loses that account's reach and
@@ -669,14 +681,15 @@ above have never actually been executed.** Every one of them was built and unit-
 mocked APIs/clients in this session's work, but none was run against a real account, a real cloud
 project, or real hardware. Specifically, per the plan's own task notes:
 
-- **R2 provisioning (T01)** — no bucket has been created, no custom domain bound, no lifecycle rule
-  applied. Closing this requires Cloudflare account access and running `social/r2/README.md`'s
-  numbered steps by hand (create bucket, bind `media.thinkplain.ai`, apply the 30-day lifecycle
-  rule, run its section 4 `curl` verification).
+- **GCS provisioning (T01, superseded by F11's "Decision change — GCS replaces R2")** — no bucket
+  has been created, no IAM binding applied, no lifecycle rule applied. Closing this requires a GCP
+  project and running `social/gcs/README.md`'s numbered steps by hand (create bucket, set uniform
+  bucket-level access, grant `allUsers` the `roles/storage.objectViewer` role, apply the 30-day
+  lifecycle rule, run its section 4 `curl` verification).
 - **A live Instagram post (T05)** — the adapter (`social/src/publish/instagram.ts`) is built and
   unit-tested against a mocked `fetch`, but no real post has ever been made. Closing this requires a
-  Meta app/account (section 3.2 above) and R2 already live, then one real `publishToInstagram` call
-  confirmed publicly visible.
+  Meta app/account (section 3.2 above) and the GCS bucket already live, then one real
+  `publishToInstagram` call confirmed publicly visible.
 - **A live YouTube upload (T06)** — same situation: `social/src/publish/youtube.ts` is built and
   unit-tested against a mocked `fetch`, no real upload has happened. Closing this requires the
   YouTube OAuth app (section 3.3, published to "In production") and channel credentials, then one
