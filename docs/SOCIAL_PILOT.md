@@ -1,6 +1,6 @@
 # Social Pilot — Runbook
 
-This is the operating manual for the social viability pilot (`plans/Pf39c2-social-pilot-index.md`
+This is the operating manual for the social viability pilot (`plans/complete/Pf39c2-social-pilot-index.md`
 and its three sub-plans, `Pf39c2-social-pilot-01/02/02a/03.md`). It is written so someone who was
 not involved in building this system can run the pilot day to day and week to week from this
 document alone — every command below is real, copy-pasteable, and checked against the actual
@@ -16,7 +16,7 @@ describes the system as designed and built; it does not claim the pilot has actu
 cannot be answered at n=1 (one Instagram account, one TikTok account, one YouTube channel, 84
 posts over four weeks — 1 Wall post/day x 3 platforms x 28 days).
 
-**Success criterion, copied verbatim from `plans/Pf39c2-social-pilot-index.md` — do not renegotiate
+**Success criterion, copied verbatim from `plans/complete/Pf39c2-social-pilot-index.md` — do not renegotiate
 this after posting starts:**
 
 > A single 10x-median outlier is NOT sufficient; across 84 posts (1 Wall post/day x 3 platforms x 28
@@ -758,14 +758,14 @@ format, The Wall, one post a day, before any post went out. There is exactly one
 can answer "The Wall" for; there is no cross-format comparison to report, and pretending otherwise
 would fabricate a comparison this pilot's own scope decisions killed before go-live. The only
 within-format axis that COULD differ is The Wall's three sub-types — **The Thou Wall, The Cascade,
-The Scene** (see `plans/Pf39c2-social-pilot-index.md`'s "The Wall — sub-types" table) — if the
+The Scene** (see `plans/complete/Pf39c2-social-pilot-index.md`'s "The Wall — sub-types" table) — if the
 weekly schedules tagged posts by sub-type and the data supports it, report which sub-type(s) the top
 posts in 8.2 actually were here; otherwise say plainly that sub-type was not tracked and this
 question also cannot be answered. TO BE FILLED AT WEEK 4.
 
 ### 8.4 The decision rule — copied verbatim, do not renegotiate it here
 
-From `plans/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered — do not renegotiate
+From `plans/complete/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered — do not renegotiate
 after posting)":
 
 > A single 10x-median outlier is NOT sufficient; across 84 posts (1 Wall post/day x 3 platforms x 28

@@ -9,7 +9,7 @@
  * criterion was met."
  *
  * THE PRE-REGISTERED CRITERION this module implements, quoted verbatim from
- * `plans/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered
+ * `plans/complete/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered
  * — do not renegotiate after posting)" section:
  *
  *   "A single 10x-median outlier is NOT sufficient; across ~168 posts one is
@@ -612,7 +612,7 @@ Reads every dated metrics file under content/social/metrics/ (written by
 hand-entry.ts and follower-snapshot.ts), computes the per-platform viability
 readout — median, maximum, max/median ratio, week-1-vs-week-4 median trend,
 follow conversion, and top 5 posts — and states plainly whether the
-pre-registered criterion (plans/Pf39c2-social-pilot-index.md) was met.
+pre-registered criterion (plans/complete/Pf39c2-social-pilot-index.md) was met.
 
 No TikTok follower-snapshot collector exists yet, so TikTok's follow
 conversion always reports UNAVAILABLE until one is built — see this file's

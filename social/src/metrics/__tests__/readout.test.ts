@@ -2,7 +2,7 @@
  * Tests for `../readout.ts` (Pf39c2-social-pilot-03 T14).
  *
  * THE PRE-REGISTERED CRITERION under test, quoted verbatim from
- * `plans/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered
+ * `plans/complete/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered
  * — do not renegotiate after posting)" section:
  *
  *   "A single 10x-median outlier is NOT sufficient; across ~168 posts one is
