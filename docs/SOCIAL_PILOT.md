@@ -283,39 +283,40 @@ This is the finding that makes native scheduling viable at all in place of the A
 — if TikTok's scheduler had been unavailable, it would have been the binding constraint in the other
 direction and this approach would not work.
 
-### 3.1 What was provisioned and is no longer required
+### 3.1 What was provisioned, and its teardown
 
 Before this plan replaced the API publish pipeline with native scheduling, the following was built
-against real accounts. **None of it is used by this repo any more, and none of the code that used to
-call it exists in this branch.** It is dormant, not deleted — tearing it down (deleting the GCP
-project, revoking the Meta app) is a separate decision this plan deliberately deferred for a week in
-case something about the pilot needs revisiting. The Facebook Page itself is a separate matter —
-it stays, see below.
+and verified live against real accounts. On 2026-09-10 it was actually torn down. This section is a
+record of what existed and what happened to it, not a description of anything still live or dormant.
 
-- **A GCP project, `plain-social-pilot` (billing account `01AA73-8FF54D-C7C23F`), and a GCS bucket,
-  `gs://plain-social-pilot-media` (`US-CENTRAL1`, public read via `allUsers` ->
-  `roles/storage.objectViewer`, 30-day lifecycle rule)** — provisioned and verified live 2026-09-09
-  (an unauthenticated fetch returned `200` with the right `content-type`, and a range request
-  returned `206`). Existed to give Meta and YouTube a public URL to fetch rendered video from; the
-  weekly session now uploads from local disk instead.
-- **A Meta app** (`developers.facebook.com`, Development mode, deliberately never published), a
-  Facebook Page (`1268933229644482`, "Think Plain"), and a long-lived Page access token for
-  `IG_USER_ID` `17841423977412035` — verified live 2026-09-09 by creating (and deliberately not
-  publishing) media container `18114024736799248`, which proved the token, the Page, and
-  `instagram_content_publish` all worked end to end. Worth remembering if this is ever revisited:
-  Meta has two non-interchangeable Instagram API families — Facebook Login (`graph.facebook.com`,
-  requires a Page, `instagram_content_publish`) and Instagram Login (`graph.instagram.com`, no Page,
+- **The GCP project `plain-social-pilot`, and its GCS bucket `gs://plain-social-pilot-media`, were
+  deleted on 2026-09-10.** (The bucket existed to give Meta and YouTube a public URL to fetch
+  rendered video from, before the weekly session switched to uploading from local disk.)
+  `gcloud projects describe plain-social-pilot` now reports `lifecycleState: DELETE_REQUESTED` —
+  Google holds a deleted project in this pending state for 30 days, recoverable with
+  `gcloud projects undelete plain-social-pilot` until then, after which the deletion becomes
+  permanent around **2026-10-10**. Before deletion, the bucket was confirmed to hold 0 objects, so no
+  rendered media or test artefacts were lost.
+- **The Meta app** (`developers.facebook.com`, Development mode, never published) **was deleted on
+  2026-09-10** by hand at `developers.facebook.com` — there is no API for this. The long-lived Page
+  access token it held died with the app; there was nothing separate left to revoke. Worth
+  remembering if this pilot, or another one against Meta's API, is ever revisited: Meta has two
+  non-interchangeable Instagram API families — Facebook Login (`graph.facebook.com`, requires a
+  Page, `instagram_content_publish`) and Instagram Login (`graph.instagram.com`, no Page,
   `instagram_business_*` permissions). This pilot built against the Facebook Login family; getting
-  that wrong the first time cost about an hour to discover. The Facebook Page itself is NOT dormant
-  — see 3.0, it is still needed for Meta Business Suite.
+  that wrong the first time cost about an hour to discover.
+- **The Facebook Page (`1268933229644482`, "Think Plain") was deliberately NOT deleted, and must not
+  be.** Unlike everything else in this section, it is not leftover pipeline infrastructure — see 3.0
+  and 3.0a: Meta Business Suite manages Instagram content through this Page, so it is load-bearing
+  for section 5.3's weekly Instagram scheduling and remains in active use.
 - **A YouTube OAuth app was planned** (Google Cloud console, requesting `youtube.upload` and
   `yt-analytics.readonly` scopes, to be published to "In production" so refresh tokens wouldn't
   expire every 7 days) **but, per this document's own prior "Current status" tracking, was never
-  actually created** — no live YouTube upload was ever completed through it. There is nothing live
-  to leave dormant here.
+  actually created** — no live YouTube upload was ever completed through it. There was nothing to
+  tear down here.
 
-None of this blocks anything above: 3.0/3.0a describe the complete, current setup, and it uses
-nothing on this list.
+None of this blocks anything above: 3.0/3.0a describe the complete, current setup, and — apart from
+the Facebook Page, kept for exactly the reason stated above — it uses nothing on this list.
 
 ## 4. The daily loop
 
