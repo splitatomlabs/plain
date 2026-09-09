@@ -1005,19 +1005,29 @@ where the mocked suite passes but the real integration would fail.
 
 ## Follow-up (beyond the review's must-fix set)
 
-- [ ] F06: `job.ts` never persists the Instagram media id, so `metrics/instagram.ts` discovers posts
+- [!] F06: `job.ts` never persists the Instagram media id, so `metrics/instagram.ts` discovers posts
   from Instagram's own media list and cannot distinguish a pipeline post from one made by hand.
-  Record the media id at publish time and key collection off it.
-- [ ] F07: `stageTikTokWeek` has no CLI wrapper, so the weekly session — the pilot's most important
+  Record the media id at publish time and key collection off it. (obsolete: both files were deleted
+  by `Pb4e17-social-native-scheduling` T07/T08 — there is no API publish path to record an id at, and
+  Instagram metrics are hand-entered per post now, so the ambiguity this describes cannot arise.)
+- [!] F07: `stageTikTokWeek` has no CLI wrapper, so the weekly session — the pilot's most important
   recurring manual step — requires hand-writing a one-off `tsx` script (documented as a workaround in
-  `docs/SOCIAL_PILOT.md` 5.2). Add a real CLI entry point.
-- [ ] F09: A feed-still-only R2 upload failure is logged as an error but does not affect any
+  `docs/SOCIAL_PILOT.md` 5.2). Add a real CLI entry point. (closed elsewhere: `Pb4e17` T05 reworked
+  `stageTikTokWeek` into local weekly prep at `social/src/publish/weekly-prep.ts` and T06 added the
+  CLI wrapper this asked for; `docs/SOCIAL_PILOT.md` 5.2 documents the real command, not a workaround.)
+- [!] F09: A feed-still-only R2 upload failure is logged as an error but does not affect any
   `PlatformOutcome` or the exit code, because nothing in the current pipeline consumes the feed
   still's R2 URL. Decide whether the feed still is still needed at all (02a D01 left one Wall video
-  a day) — and if it is, make its upload failure visible; if it is not, stop rendering it.
-- [ ] F08: Set a deliberate posting timezone and time in `functions/src/socialTrigger.ts` — the
+  a day) — and if it is, make its upload failure visible; if it is not, stop rendering it. (obsolete:
+  `Pb4e17` T07 deleted `publish/storage.ts` and the whole object-storage upload path along with
+  `PlatformOutcome` — nothing uploads anything any more, so there is no failure left to surface.)
+- [!] F08: Set a deliberate posting timezone and time in `functions/src/socialTrigger.ts` — the
   current `America/New_York` / `07:53` is a placeholder chosen only to avoid an on-the-hour cron
-  pile-up, not an audience decision.
+  pile-up, not an audience decision. (not doable as written: `Pb4e17` T09 deleted
+  `functions/src/socialTrigger.ts`. **The underlying question is still open and still unanswered** —
+  it did not close with the file. It now applies to the time typed into each platform's own
+  scheduler during the weekly session, and is tracked as an open decision in `docs/SOCIAL_PILOT.md`
+  section 4 and its "Current status" section. Do not read this `[!]` as "posting time decided.")
 - [x] F12: Close five gaps an audit found in `docs/SOCIAL_PILOT.md`'s one-time setup that broke T15's
   own acceptance criterion ("someone else could run the pilot from this document alone").
   Done: (1) **the attribution bio links were documented nowhere** — added a table to new section 3.0

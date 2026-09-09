@@ -201,8 +201,13 @@ full passage in context. One-time cost; revives Three Voices and lifts One-Line 
    - Status: [x] (2026-08-27 — PR #41, squash-merged into `social-pilot-02`, not `main`: 02a was stacked on 02,
      which is still open as PR #40. The work reaches `main` when 02 does.)
    - Depends on: 02
-3. `plans/Pf39c2-social-pilot-03.md` — Publish and measure: R2, Instagram + YouTube adapters, TikTok staging, readout
-   - Status: [ ]
+3. `plans/complete/Pf39c2-social-pilot-03.md` — Publish and measure: R2, Instagram + YouTube adapters, TikTok staging, readout
+   - Status: [x] (2026-09-10) — reconciled against `Pb4e17-social-native-scheduling`, which replaced this
+     plan's API publish pipeline with native per-platform scheduling and hand-entered metrics. F06/F09
+     marked obsolete (`job.ts`, `metrics/instagram.ts` and `publish/storage.ts` were deleted by Pb4e17
+     T07/T08) and F07 marked closed elsewhere (Pb4e17 T05/T06 built the weekly-prep CLI it asked for).
+     F08 is marked `[!]` only because the file it named was deleted — **choosing a real posting time is
+     still open**, now against each platform's own scheduler (`docs/SOCIAL_PILOT.md` section 4).
    - Depends on: 02a
 
 ## Cross-cutting constraints
