@@ -46,7 +46,7 @@
  * `platform: 'tiktok'`). If the call fails outright (unaudited app/scope
  * not granted/no Sandbox target user configured) or the fields are missing,
  * empty, or clearly placeholder values, the fallback in
- * `tiktok-manual.ts` (T13's OTHER deliverable, already fully built) is what
+ * `hand-entry.ts` (T13's OTHER deliverable, already fully built) is what
  * ships — no further TikTok automation work, per this task's own Timebox
  * instruction.
  *
@@ -117,7 +117,7 @@ export function deriveVerdict(requestOk: boolean, body: unknown): SpikeVerdict {
 			summary:
 				'VERDICT: the video.list request failed outright (see the raw response above — likely the app/scope is ' +
 				"not authorized for this account, or no Sandbox target user is configured). The Display API path is NOT " +
-				'viable as tested. Use the documented fallback: social/src/metrics/tiktok-manual.ts.'
+				'viable as tested. Use the documented fallback: social/src/metrics/hand-entry.ts.'
 		};
 	}
 
@@ -147,7 +147,7 @@ export function deriveVerdict(requestOk: boolean, body: unknown): SpikeVerdict {
 			'still stays manual regardless).'
 		: `VERDICT: video.list responded, but only [${fieldsPresentOnEveryVideo.join(', ') || 'none'}] of ` +
 			`[${EXPECTED_ENGAGEMENT_FIELDS.join(', ')}] came back as numbers on every video. The automated path is NOT ` +
-			'fully viable as tested. Use the documented fallback: social/src/metrics/tiktok-manual.ts.';
+			'fully viable as tested. Use the documented fallback: social/src/metrics/hand-entry.ts.';
 
 	return { requestOk: true, videoCount: videos.length, fieldsPresentOnEveryVideo: [...fieldsPresentOnEveryVideo], automatedPathViable, summary };
 }
@@ -266,7 +266,7 @@ async function main(): Promise<void> {
 
 // Only auto-run `main()` when this file is the actual process entry point —
 // same guard as every other CLI in this workspace (`collect.ts`,
-// `tiktok-manual.ts`): importing this module for its exports (as
+// `hand-entry.ts`): importing this module for its exports (as
 // `__tests__/tiktok-spike.test.ts` does, to test `deriveVerdict`/
 // `redactToken` in isolation) must never parse `process.argv` or make a
 // real network call.

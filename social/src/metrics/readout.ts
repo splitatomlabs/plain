@@ -33,7 +33,7 @@
  * network. `computeReadout` is the one entry point a test calls directly;
  * `formatReadout` turns its result into the human-readable report; this
  * file's own `main()` (bottom) is the thin CLI that reads the dated files
- * `collect.ts`/`tiktok-manual.ts` already write and prints the report.
+ * `collect.ts`/`hand-entry.ts` already write and prints the report.
  * Mirrors this workspace's `job-plan.ts`/`job.ts` and `cli-plan.ts`/`cli.ts`
  * pure-plan-vs-IO split.
  *
@@ -48,7 +48,7 @@
  * post, but it is STILL an inference from an account-level series, not a
  * per-post count — this file never upgrades it to "exact" and always labels
  * it `'inferred'` in its own output.) TikTok has no follower-snapshot
- * collector at all yet (see `tiktok-manual.ts`'s header) — this module's
+ * collector at all yet (see `hand-entry.ts`'s header) — this module's
  * `PlatformFollowConversion.method` reports `'unavailable'` for a platform
  * with per-post `follows: null` on every row and no snapshot series
  * supplied, rather than silently reporting `0` or fabricating an inference
@@ -89,8 +89,7 @@ import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 
 import { dateToWeekDay } from '../pilot-config.js';
-import { DEFAULT_METRICS_DIR } from './collect.js';
-import { instagramFollowersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
+import { DEFAULT_METRICS_DIR, instagramFollowersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // Small pure statistics — each one independently unit-testable.
@@ -519,7 +518,7 @@ export function formatReadout(readout: Readout): string {
 
 // ---------------------------------------------------------------------------
 // CLI entry point — `npx tsx social/src/metrics/readout.ts`. Reads every
-// dated metrics file `collect.ts`/`tiktok-manual.ts` already write from
+// dated metrics file `collect.ts`/`hand-entry.ts` already write from
 // `content/social/metrics/`, reduces them to the latest known row per post
 // (a post appears in every dated file inside its 30-day polling window, so
 // the LAST `collectedAt` wins), reads Instagram's daily follower-snapshot
@@ -598,7 +597,7 @@ function printHelp(): void {
 	console.log(`Usage: npx tsx social/src/metrics/readout.ts [options]
 
 Reads every dated metrics file under content/social/metrics/ (written by
-collect.ts and tiktok-manual.ts), computes the per-platform viability
+collect.ts and hand-entry.ts), computes the per-platform viability
 readout — median, maximum, max/median ratio, week-1-vs-week-4 median trend,
 follow conversion, and top 5 posts — and states plainly whether the
 pre-registered criterion (plans/Pf39c2-social-pilot-index.md) was met.
@@ -655,7 +654,7 @@ async function main(): Promise<void> {
 }
 
 // Only auto-run `main()` when this file is the actual process entry point —
-// identical guard to `collect.ts`'s/`tiktok-manual.ts`'s own: importing this
+// identical guard to `collect.ts`'s/`hand-entry.ts`'s own: importing this
 // module for its exports (as every test in `__tests__/readout.test.ts`
 // does) must never itself parse `process.argv` or touch the filesystem.
 if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {

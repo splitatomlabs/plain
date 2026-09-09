@@ -81,9 +81,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 
 import {
+	DEFAULT_METRICS_DIR,
 	instagramFollowersFilePathFor,
 	metricsFilePathFor,
 	parseFollowerSnapshots,
@@ -101,11 +102,6 @@ import type { PendingYouTubeFlip } from '../publish/tiktok-manual.js';
 import { createFirestoreTokenStore } from '../publish/token-store-firestore.js';
 import { createLocalTokenStore, DEFAULT_LOCAL_TOKEN_PATH } from '../publish/token-store-local.js';
 import { createFirestorePendingFlipsStore } from '../publish/pending-flips-store-firestore.js';
-
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-/** `social/src/metrics` -> repo root. */
-const REPO_ROOT = path.resolve(moduleDir, '..', '..', '..');
-const DEFAULT_METRICS_DIR = path.join(REPO_ROOT, 'content', 'social', 'metrics');
 
 // ---------------------------------------------------------------------------
 // Injectable collaborators — every one of these is a plain function/store so
@@ -303,8 +299,6 @@ function createDefaultPendingFlipsReader(): PendingFlipsReader {
 		return store.read();
 	};
 }
-
-export { DEFAULT_METRICS_DIR };
 
 // ---------------------------------------------------------------------------
 // CLI entry point — `npx tsx social/src/metrics/collect.ts`. Reuses the same

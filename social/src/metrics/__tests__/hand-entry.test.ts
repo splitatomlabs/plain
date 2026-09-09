@@ -150,6 +150,16 @@ describe('averagePercentWatched — optional, null when absent, never fabricated
 });
 
 describe('validateHandEnteredMetrics — fails loudly on a typo, naming the offending field', () => {
+	it('rejects an unrecognised platform', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'facebook' as unknown as MetricsPlatform }))).toThrow(
+			HandEntryValidationError
+		);
+	});
+
+	it('names "platform" in the error message for an unrecognised platform', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'facebook' as unknown as MetricsPlatform }))).toThrow(/platform/);
+	});
+
 	it('rejects an empty postId', () => {
 		expect(() => validateHandEnteredMetrics(validInput({ postId: '' }))).toThrow(HandEntryValidationError);
 	});
@@ -170,6 +180,10 @@ describe('validateHandEnteredMetrics — fails loudly on a typo, naming the offe
 
 	it.each(['views', 'likes', 'comments', 'shares'] as const)('names the offending field %s in the error message', (field) => {
 		expect(() => validateHandEnteredMetrics(validInput({ [field]: -1 }))).toThrow(new RegExp(field));
+	});
+
+	it('rejects a NaN count', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ views: Number.NaN }))).toThrow(HandEntryValidationError);
 	});
 
 	it('rejects a negative follows', () => {
@@ -260,5 +274,13 @@ describe('recordHandEntry — upserts via schema.ts\'s upsertMetricsRow, keyed o
 		const existingCopy = [...existing];
 		recordHandEntry(existing, validInput({ platform: 'youtube', postId: 'b' }));
 		expect(existing).toEqual(existingCopy);
+	});
+
+	it('two different posts on the same platform both persist as separate rows', () => {
+		const afterFirst = recordHandEntry([], validInput({ platform: 'tiktok', postId: 'tiktok-video-1' }));
+		const afterSecond = recordHandEntry(afterFirst, validInput({ platform: 'tiktok', postId: 'tiktok-video-2' }));
+
+		expect(afterSecond).toHaveLength(2);
+		expect(afterSecond.map((row) => row.postId).sort()).toEqual(['tiktok-video-1', 'tiktok-video-2']);
 	});
 });

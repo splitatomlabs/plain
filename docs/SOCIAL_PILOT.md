@@ -624,7 +624,7 @@ Full detail lives in "TikTok metrics collection (T13)" below — this step is li
 has a place in the setup order; see that section for the account/app/token steps and the exact
 `tsx social/src/metrics/tiktok-spike.ts --access-token <token>` invocation.
 
-**This does not block going live.** `social/src/metrics/tiktok-manual.ts`'s hand-entry fallback
+**This does not block going live.** `social/src/metrics/hand-entry.ts`'s hand-entry fallback
 (section 5.4) is fully built and works today regardless of the spike's outcome — TikTok posting is
 already manual (native app scheduler, section 5.2), so a weekly hand-entry session is already
 required either way. Running this spike only decides whether TikTok's *metrics* stay hand-entered
@@ -822,7 +822,8 @@ still inside its 30-day polling window, read four numbers off TikTok's own per-v
 screen — **views, likes, comments, shares** — and run, from `social/`:
 
 ```bash
-npx tsx social/src/metrics/tiktok-manual.ts \
+npx tsx social/src/metrics/hand-entry.ts \
+  --platform tiktok \
   --post-id <tiktok-video-id> \
   --published-at <ISO8601 publish instant, from the app> \
   --views <n> --likes <n> --comments <n> --shares <n>
@@ -982,7 +983,7 @@ them. This stays manual on TikTok no matter what the spike finds.
 - **If it does not** (the call fails outright for an unaudited app, the
   scope isn't grantable without a review this pilot isn't pursuing, or the
   fields come back missing/empty): use the hand-entry fallback,
-  `social/src/metrics/tiktok-manual.ts`, already fully built (see below).
+  `social/src/metrics/hand-entry.ts`, already fully built (see below).
   The Business Account API is **not** treated as a fallback-of-a-fallback —
   it needs strictly more setup (a Business account, app approval) than
   Display API `video.list` does, so if the lighter-weight path fails, hand
@@ -1047,11 +1048,13 @@ defeat the point of spiking at all.
 
 ### The hand-entry fallback (already built, works today regardless of the spike's outcome)
 
-`social/src/metrics/tiktok-manual.ts` is fully built and tested (30 tests in
-`social/src/metrics/__tests__/tiktok-manual.test.ts`) and does not depend on
-the spike's outcome — it is the fallback path if the spike fails, AND it is
-usable today, before the spike has even been run, since TikTok posting is
-already manual and the weekly session already happens.
+`social/src/metrics/hand-entry.ts` (generalised from the platform-specific
+`tiktok-manual.ts`, `Pb4e17-social-native-scheduling` T03 — see
+`social/src/metrics/__tests__/hand-entry.test.ts`, 48 tests as of that task)
+is fully built and tested and does not depend on the spike's outcome — it is
+the fallback path if the spike fails, AND it is usable today, before the
+spike has even been run, since TikTok posting is already manual and the
+weekly session already happens.
 
 During the weekly session (the same session
 `social/src/publish/tiktok-manual.ts` stages TikTok's posts for), for each
@@ -1060,7 +1063,8 @@ TikTok's own per-video analytics screen — **views, likes, comments,
 shares** — and run:
 
 ```
-npx tsx social/src/metrics/tiktok-manual.ts \
+npx tsx social/src/metrics/hand-entry.ts \
+  --platform tiktok \
   --post-id <tiktok-video-id> \
   --published-at <ISO8601 publish instant, from the app> \
   --views <n> --likes <n> --comments <n> --shares <n>

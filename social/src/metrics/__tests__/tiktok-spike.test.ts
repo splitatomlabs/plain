@@ -52,7 +52,7 @@ describe('deriveVerdict', () => {
 		expect(verdict.automatedPathViable).toBe(false);
 		expect(verdict.videoCount).toBe(0);
 		expect(verdict.summary).toMatch(/NOT/);
-		expect(verdict.summary).toMatch(/tiktok-manual\.ts/);
+		expect(verdict.summary).toMatch(/hand-entry\.ts/);
 	});
 
 	it('reports NOT viable when the request succeeded but returned zero videos', () => {

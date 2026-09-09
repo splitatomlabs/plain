@@ -1,9 +1,15 @@
 /**
  * The one shared metrics row schema (Pf39c2-social-pilot-03 T12) plus the
- * pure serialization/idempotency helpers `collect.ts` builds on. Everything
- * here is pure — no I/O, no `Date.now()` — matching this workspace's
+ * pure serialization/idempotency helpers built on top of it. Everything here
+ * is pure — no I/O, no `Date.now()` — matching this workspace's
  * `job-plan.ts`/`cli-plan.ts` split (pure planning logic lives in its own
- * file so it is directly unit-testable without a network or filesystem).
+ * file so it is directly unit-testable without a network or filesystem). The
+ * one exception is `DEFAULT_METRICS_DIR` below: a module-level path constant
+ * is not I/O (it performs no read, write, or filesystem access itself — it
+ * is just a string), so it lives here as the shared default every metrics
+ * module (`hand-entry.ts`, `readout.ts`, and formerly `collect.ts`) imports,
+ * rather than being duplicated or re-exported from whichever module happened
+ * to define it first (Pb4e17-social-native-scheduling T03).
  *
  * Task wording this file implements verbatim: "Implement automated
  * collection for Instagram and YouTube against ONE SHARED ROW SCHEMA —
@@ -80,6 +86,15 @@
  * their own local copy: `social/` is a self-contained npm project (T01's
  * scope note), not a workspace member of the root content-pipeline package.
  */
+
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+/** `social/src/metrics` -> repo root. */
+const REPO_ROOT = path.resolve(moduleDir, '..', '..', '..');
+/** The default metrics output directory every metrics module shares — see this file's header. */
+export const DEFAULT_METRICS_DIR = path.join(REPO_ROOT, 'content', 'social', 'metrics');
 
 export type MetricsPlatform = 'instagram' | 'youtube' | 'tiktok';
 
