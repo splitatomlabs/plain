@@ -113,12 +113,12 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       and their tests. Note in the commit that this removes the deprecated-`plays` bug rather than
       fixing it. `npm test` and `tsc --noEmit` green after.
 
-- [~] T09: Delete cloud infra — `social/Dockerfile`, `social/DOCKER.md`, `social/DEPLOY.md`,
+- [x] T09: Delete cloud infra — `social/Dockerfile`, `social/DOCKER.md`, `social/DEPLOY.md`,
       `social/cloud-run-job.yaml`, `social/gcs/`, `functions/src/socialTrigger.ts` and its test.
       Check whether the `functions/` workspace still has anything to test; if empty, say so rather
       than leaving a hollow suite.
 
-- [ ] T10: Rewrite `docs/SOCIAL_PILOT.md` §3 — collapse 3.1-3.6 (GCS, Meta app, YouTube OAuth, token
+- [~] T10: Rewrite `docs/SOCIAL_PILOT.md` §3 — collapse 3.1-3.6 (GCS, Meta app, YouTube OAuth, token
       seeding, Docker, deploy) into a much shorter setup section: three accounts, TikTok on Creator,
       nothing else. Preserve §3.0's account hygiene and the corrected §2 rules. Keep the historical
       record of what was provisioned, marked as no longer required.
