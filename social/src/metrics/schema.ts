@@ -41,12 +41,14 @@
  * `null` means "not available on this platform," strictly distinct from the
  * number `0` ("available, and the true value is zero"):
  *
- *   - `saves` — Instagram-only. Meta's app surfaces a per-post "saves" count
- *     on Instagram; neither YouTube nor TikTok has an equivalent concept at
- *     all. YouTube rows: `saves: null`, always. TikTok rows: also
- *     `saves: null`, always — not one of the four counts `hand-entry.ts`
- *     asks for on any platform, and not on TikTok's own per-post analytics
- *     screen either.
+ *   - `saves` — Instagram-only in this pipeline. Meta's app surfaces a
+ *     per-post "saves" count on Instagram, so YouTube rows carry
+ *     `saves: null` always — YouTube has no equivalent concept. TikTok is
+ *     different: its own per-video analytics DOES surface a Favorites
+ *     (saves) count, but it is not one of the four counts `hand-entry.ts`
+ *     asks for on any platform, so TikTok rows also carry `saves: null` —
+ *     that `null` means "not collected here," not "no such concept," unlike
+ *     YouTube's.
  *   - `follows` — a REAL per-post number ONLY on YouTube, where Studio's
  *     own per-video "subscribers gained" figure is exact (`hand-entry.ts`'s
  *     `--follows`; `readout.ts`'s `FollowConversionMethod: 'exact'`). Per the

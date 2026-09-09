@@ -116,13 +116,30 @@ describe('prepareWeek', () => {
 		}
 	});
 
-	it('derives the count from the schedule, not a hard-coded constant', async () => {
-		const threeDaySchedule: WeekSchedule = { ...SCHEDULE, slots: SCHEDULE.slots.slice(0, 3) };
-		await writeRenderedVideos(threeDaySchedule);
+	it('derives the day count from the schedule itself, not from a hard-coded SCHEDULE fixture', async () => {
+		// A different 7-day schedule than the module-level SCHEDULE fixture
+		// (different week number, card ids, and day order) — proves
+		// `prepareWeek` reads days from whatever schedule it's given rather
+		// than being coupled to a specific fixture shape.
+		const otherSchedule: WeekSchedule = {
+			...SCHEDULE,
+			week: 2,
+			slots: [...SCHEDULE.slots].reverse().map((slot) => ({ ...slot, card_id: `${slot.card_id}-w2` }))
+		};
+		await writeRenderedVideos(otherSchedule);
 
-		const manifest = await prepareWeek({ schedule: threeDaySchedule, outDir });
+		const manifest = await prepareWeek({ schedule: otherSchedule, outDir });
 
-		expect(manifest.days).toHaveLength(3);
+		expect(manifest.days).toHaveLength(7);
+	});
+
+	it('refuses to prepare a short week — throws and writes no captions file when the schedule itself covers fewer than 7 days', async () => {
+		const sixDaySchedule: WeekSchedule = { ...SCHEDULE, slots: SCHEDULE.slots.filter((s) => s.day !== 4) };
+		await writeRenderedVideos(sixDaySchedule);
+
+		await expect(prepareWeek({ schedule: sixDaySchedule, outDir })).rejects.toThrow(/short week/);
+
+		await expect(readFile(path.join(outDir, 'captions.txt'))).rejects.toThrow();
 	});
 
 	it('resolves each day to its rendered MP4 via renderAssetPaths and weekDayToDate', async () => {

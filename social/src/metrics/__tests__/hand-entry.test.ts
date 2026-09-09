@@ -1,14 +1,11 @@
 /**
  * Tests for `../hand-entry.ts` (Pb4e17-social-native-scheduling T02) — the
- * platform-agnostic generalisation of `tiktok-manual.ts`'s hand-entry
- * fallback, now covering all three native-scheduled platforms
+ * platform-agnostic generalisation of the now-deleted `tiktok-manual.ts`'s
+ * hand-entry fallback, now covering all three native-scheduled platforms
  * (`instagram` / `youtube` / `tiktok`) with `platform` and `follows`
- * promoted from hardcoded values to parameters. See
- * `../tiktok-manual.ts` and `./tiktok-manual.test.ts` for the precedent this
- * file's structure and conventions mirror.
- *
- * TDD — written before `hand-entry.ts` exists. These tests MUST fail on
- * module resolution until T03 lands the implementation.
+ * promoted from hardcoded values to parameters. `../tiktok-manual.ts` and
+ * `./tiktok-manual.test.ts` (this file's precedent for structure and
+ * conventions) were both deleted once `hand-entry.ts` superseded them.
  *
  * Coverage, matching this task's brief:
  *   - A row built for each of `instagram` / `youtube` / `tiktok`, asserting

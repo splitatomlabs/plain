@@ -22,10 +22,14 @@
  * `Pf39c2-social-pilot-02a` D02, which collapsed the channel to a SINGLE
  * Wall post per day — a week is `schedule.slots.length` videos, which is 7
  * for every schedule this pipeline currently generates (one slot per day,
- * 7 days), NOT 14. `prepareWeek` below derives the day count from
+ * 7 days), NOT 14. `prepareWeek` below derives the SLOT count from
  * `schedule.slots` rather than hard-coding 7 OR 14 — if a future schedule
  * format ever carries more than one slot per day, this module keeps working
- * without a code change.
+ * without a code change. The DAY count is not similarly open-ended, though:
+ * every day in `pilot-config.ts`'s `DAYS_PER_WEEK` range must be covered
+ * exactly once (see `prepareWeek`'s guard on `distinctDays`) — that range is
+ * a fixed pilot-wide invariant (`weekDayToDate` already refuses a day
+ * outside it), not something this module should treat as flexible.
  * ---------------------------------------------------------------------
  *
  * No GCS, no upload, no credentials: this module imports nothing from
@@ -33,10 +37,13 @@
  * `Pb4e17-social-native-scheduling` T07) — every path it deals with is a
  * local absolute path on the machine running this code.
  *
- * Fails clearly, naming the missing date, rather than silently preparing a
- * short week — checked with `existsSync` (mirrors `cli.ts`'s own use of it
- * for the schedule file) BEFORE the captions file is written, so a run
- * either prepares the whole week or writes nothing.
+ * Never silently prepares a short week — checked in two passes, both before
+ * the captions file is written, so a run either prepares the whole week or
+ * writes nothing: first, that the schedule itself covers every day 1-
+ * `DAYS_PER_WEEK` exactly once (catches a short or malformed schedule file);
+ * second, `existsSync` per resolved day (mirrors `cli.ts`'s own use of it
+ * for the schedule file), which fails clearly, naming the missing date,
+ * when a day IS scheduled but its render hasn't happened yet.
  *
  * Captions ship as a single `.txt` file, not `.json`: the weekly session is
  * a HUMAN reading captions off a screen while manually pasting them into
@@ -58,7 +65,7 @@ import path from 'node:path';
 
 import { buildCaption, type CaptionPlatform } from './caption.js';
 import { renderAssetPaths } from '../cli-plan.js';
-import { weekDayToDate } from '../pilot-config.js';
+import { DAYS_PER_WEEK, weekDayToDate } from '../pilot-config.js';
 import type { ScheduleSlot, WeekSchedule } from '../schedule-types.js';
 
 // ---------------------------------------------------------------------------
@@ -135,6 +142,28 @@ export async function prepareWeek(options: PrepareWeekOptions): Promise<WeekPrep
 	const { schedule, outDir } = options;
 
 	const orderedSlots = [...schedule.slots].sort((a, b) => a.day - b.day);
+
+	// Guard against a SHORT SCHEDULE, not just a missing render: the days
+	// present must be exactly {1, ..., DAYS_PER_WEEK}, one slot each — a
+	// schedule missing a day, or one that duplicates a day (which, since
+	// `ScheduleSlot.day` is confined to that same 1-DAYS_PER_WEEK range by
+	// `weekDayToDate` below, always means some OTHER day is missing), would
+	// otherwise sail through the per-slot `existsSync` check below and
+	// silently produce a short `captions.txt`. Checking DISTINCT days
+	// (rather than `orderedSlots.length`) is deliberate, not `===
+	// DAYS_PER_WEEK` alone: it still catches a duplicate day even when the
+	// slot count happens to equal `DAYS_PER_WEEK`, and it leaves room for a
+	// future schedule format with more than one slot per day (see this
+	// module's header comment) without penalizing that shape for having
+	// "too many" slots.
+	const distinctDays = new Set(orderedSlots.map((slot) => slot.day));
+	if (distinctDays.size !== DAYS_PER_WEEK) {
+		const presentDays = orderedSlots.map((slot) => slot.day).join(', ') || '(none)';
+		throw new Error(
+			`Week ${schedule.week} covers ${distinctDays.size} of ${DAYS_PER_WEEK} scheduled day(s) ` +
+				`(days present: ${presentDays}) — refusing to prepare a short week.`
+		);
+	}
 
 	const resolved = orderedSlots.map((slot: ScheduleSlot) => {
 		const date = weekDayToDate(schedule.week, slot.day);
