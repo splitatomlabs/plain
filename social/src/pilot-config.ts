@@ -26,7 +26,7 @@
  */
 
 /** Week 1, day 1 of the pilot schedule — see the module doc comment above. */
-export const PILOT_WEEK_1_START = '2026-09-09';
+export const PILOT_WEEK_1_START = '2026-09-14';
 
 /**
  * The number of days in one pilot schedule week — the single source for the
