@@ -548,17 +548,22 @@ Instagram disables the pilot's account:
 
 ## 7. Metrics and the readout
 
-Collection is hand-entered for all three platforms (section 5.4) — for every post still inside its
-**30-day polling window** (metrics keep accruing after publication, so re-reading a post's numbers
-more than once during that window and re-running `hand-entry.ts` for it is expected, not
-redundant), read that platform's own per-post analytics screen and run
-`social/src/metrics/hand-entry.ts` (section 5.4 has the exact flags). Each run is idempotent
-(`upsertMetricsRow` replaces a same-`platform:postId` row rather than duplicating it), so a
-mid-week correction or a repeat read during the polling window is safe. Results land in
-`content/social/metrics/metrics-<date>.json`, one dated file per `hand-entry.ts` run, plus
-`content/social/metrics/instagram-followers.json` (a daily account-level follower snapshot, hand-
-entered by `follower-snapshot.ts` per section 5.5, since Instagram only exposes follower counts at
-the account level, not per-post — see the readout's `'inferred'` conversion labeling below).
+Collection is hand-entered for all three platforms (section 5.4) — nothing polls a platform on any
+schedule, and no code enforces a window. For each post, read that platform's own per-post analytics
+screen and run `social/src/metrics/hand-entry.ts` (section 5.4 has the exact flags), normally once,
+during the weekly session that reaches that post's platform tab. Because a post's numbers keep
+accruing on the platform after publication, *when* the operator does that read is a real decision
+with nothing in code to enforce it — section 5.4's weekly cadence is the default answer, but a post
+read too early can understate what it eventually earns, so the operator can deliberately read it
+again later if that matters more than staying on the default schedule. Re-running `hand-entry.ts`
+for the same `platform:postId` is a correction, not a second reading on a schedule: each run is
+idempotent (`upsertMetricsRow` replaces a same-`platform:postId` row rather than duplicating it), so
+a mid-week fix or a deliberate later re-read both simply replace that row with the latest values.
+Results land in `content/social/metrics/metrics-<date>.json`, one dated file per `hand-entry.ts`
+run, plus `content/social/metrics/instagram-followers.json` (a daily account-level follower
+snapshot, hand-entered by `follower-snapshot.ts` per section 5.5, since Instagram only exposes
+follower counts at the account level, not per-post — see the readout's `'inferred'` conversion
+labeling below).
 
 At week 4, produce the verdict:
 
@@ -569,14 +574,14 @@ npx tsx social/src/metrics/readout.ts --now 2026-09-29T00:00:00.000Z --breakout-
 ```
 
 This reads every `metrics-<date>.json` under `content/social/metrics/` (deduping to the latest
-`collectedAt` per post across the polling window's repeated snapshots) plus
-`instagram-followers.json`, and prints, per platform: the median, the maximum, the max/median
-ratio, the week-1-vs-week-4 median trend, follow conversion (labeled `exact` for YouTube,
-`inferred` for Instagram/TikTok — from daily follower deltas aligned to `publishedAt`, since
-per-post follow attribution only exists on YouTube — or `unavailable` when no follower-snapshot
-series exists for that platform), and the top 5 posts with their format. It then states plainly
-whether the pre-registered criterion (section 1) was met, quoting the same "outlier with no
-conversion and no trend is explicitly a NO" language the criterion itself uses.
+`collectedAt` per post — a safety net for a corrected re-entry of the same post under a different
+date, not a polling flow) plus `instagram-followers.json`, and prints, per platform: the median,
+the maximum, the max/median ratio, the week-1-vs-week-4 median trend, follow conversion (labeled
+`exact` for YouTube, `inferred` for Instagram/TikTok — from daily follower deltas aligned to
+`publishedAt`, since per-post follow attribution only exists on YouTube — or `unavailable` when no
+follower-snapshot series exists for that platform), and the top 5 posts with their format. It then
+states plainly whether the pre-registered criterion (section 1) was met, quoting the same "outlier
+with no conversion and no trend is explicitly a NO" language the criterion itself uses.
 
 `social/src/metrics/readout.ts`'s own tests (`social/src/metrics/__tests__/readout.test.ts`) prove
 this against synthetic data with an injected outlier both ways: an outlier that also converts
@@ -675,9 +680,11 @@ have not been closed yet either.
 
 ### 8.1 Procedure — run this at ~week 4, not before
 
-1. Confirm four full pilot weeks of posts have actually accrued metrics (each post needs to have
-   aged fully through, or far enough into, its 30-day polling window — see section 7 — so its view
-   count is not still climbing when you snapshot it).
+1. Confirm four full pilot weeks of posts have metrics that are settled, not still climbing.
+   Metrics are hand-entered, not polled on a schedule (section 7), so this is a judgement call, not
+   a code-enforced wait: for each post, look at whether enough time has passed since it published
+   that its view count on the platform looks stable rather than still rising, and if it doesn't,
+   re-read that post's numbers later before trusting them in this readout.
 2. Run the readout from `social/`:
    ```bash
    npx tsx social/src/metrics/readout.ts --now <ISO 8601 evaluation instant>
