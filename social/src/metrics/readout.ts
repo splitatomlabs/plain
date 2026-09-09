@@ -520,9 +520,13 @@ export function formatReadout(readout: Readout): string {
 // CLI entry point — `npx tsx social/src/metrics/readout.ts`. Reads every
 // dated metrics file `hand-entry.ts`/`follower-snapshot.ts` already write
 // from `content/social/metrics/`, reduces them to the latest known row per
-// post (a post appears in every dated file inside its 30-day polling window,
-// so the LAST `collectedAt` wins), reads Instagram's daily follower-snapshot
-// file if present, computes the readout, and prints the report. Shares
+// post — with the collectors deleted (see `hand-entry.ts`'s header), a post
+// is written exactly once, into the single dated file named by its own
+// publish date, by one hand-entry run; if the same post is ever entered
+// under two different dates (a correction re-run against a different
+// `--published-at`, or an accidental double-entry) the LAST `collectedAt`
+// wins — reads Instagram's daily follower-snapshot file if present, computes
+// the readout, and prints the report. Shares
 // `hand-entry.ts`'s/`follower-snapshot.ts`'s own CLI conventions (ENOENT ->
 // empty, guarded `main()` so importing this module for its exports never
 // parses `process.argv` or touches the filesystem); the `--now` wall-clock
@@ -555,10 +559,16 @@ export function parseBreakoutThreshold(raw: string | undefined): number | undefi
 /**
  * Reads and merges every `metrics-<date>.json` file in `metricsDir`, keeping
  * only the LATEST row (by `collectedAt`) per `platform:postId` — the
- * "current" snapshot this module's per-post statistics expect, not every
- * historical day's row for a post still inside its polling window. An empty
- * or missing directory yields `[]`, matching this workspace's ENOENT ->
- * empty convention.
+ * "current" snapshot this module's per-post statistics expect. Normally
+ * there is only one row to keep: with the collectors deleted, a post is
+ * hand-entered exactly once, into the one dated file named by its own
+ * publish date (see this file's `main()` comment above). The LATEST-wins
+ * merge exists for the one case where a post genuinely does appear in more
+ * than one dated file — a same-post correction re-run under a different
+ * `--published-at` — so that correction (the higher `collectedAt`) is the
+ * row this module reports, not whichever file `readdir` happens to list
+ * first. An empty or missing directory yields `[]`, matching this
+ * workspace's ENOENT -> empty convention.
  */
 export async function readLatestMetricsRows(metricsDir: string): Promise<MetricsRow[]> {
 	let filenames: string[];

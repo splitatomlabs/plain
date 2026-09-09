@@ -20,7 +20,7 @@ npm test          # runs the pipeline, web unit, and social suites
 
 1. **Pipeline tests** (574 tests) — parser, chunker, refine, translator, cache, batch, validator, and assembler (`scripts/lib/__tests__/`)
 2. **Web unit tests** (104 tests) — content utilities and tag logic (`web/tests/unit/`)
-3. **Social tests** (449 tests, ~23s) — the `social/` workspace: Remotion compositions and gates for The Wall, the encoder, audio mixing (ducking under narration/silence spans), hand-entry metrics recording and the daily follower-snapshot CLI, local weekly-prep planning, and CLI end-to-end renders (`social/src/**/__tests__/`). Slower than the other two suites because it does real Remotion renders and ffmpeg/ffprobe work — there is no live API in this suite at all (no publish/upload calls, no TTS, no image-gen); everything under test runs locally.
+3. **Social tests** (455 tests, ~23s) — the `social/` workspace: Remotion compositions and gates for The Wall, the encoder, audio mixing (ducking under narration/silence spans), hand-entry metrics recording and the daily follower-snapshot CLI, local weekly-prep planning, and CLI end-to-end renders (`social/src/**/__tests__/`). Slower than the other two suites because it does real Remotion renders and ffmpeg/ffprobe work — there is no live API in this suite at all (no publish/upload calls, no TTS, no image-gen); everything under test runs locally.
 
 Playwright e2e tests are separate: `npm run test:e2e --prefix web` (requires a built app).
 

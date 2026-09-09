@@ -39,7 +39,7 @@ import { parseArgs } from 'node:util';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { HandEntryValidationError } from './hand-entry.js';
+import { HandEntryValidationError, toNumber } from './hand-entry.js';
 import {
 	DEFAULT_METRICS_DIR,
 	instagramFollowersFilePathFor,
@@ -179,10 +179,10 @@ export function parseFollowerSnapshotArgs(raw: RawFollowerSnapshotArgs): Followe
 	if (raw.followers === undefined) {
 		throw new Error('Missing required flag "--followers".');
 	}
-	const followers = Number(raw.followers);
-	if (Number.isNaN(followers)) {
-		throw new Error(`Flag "--followers" must be a number — got "${raw.followers}".`);
-	}
+	// `toNumber` (shared with `hand-entry.ts`) rejects an empty-or-
+	// whitespace-only value outright rather than letting `Number('')`
+	// fabricate a real-looking `0` follower count — see its own doc comment.
+	const followers = toNumber(raw.followers, '--followers');
 	return { date: raw.date, followers };
 }
 

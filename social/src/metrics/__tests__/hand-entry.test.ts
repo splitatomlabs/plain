@@ -28,7 +28,12 @@
  *     a distinct row (length grows).
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
 	HandEntryValidationError,
@@ -282,5 +287,91 @@ describe('recordHandEntry — upserts via schema.ts\'s upsertMetricsRow, keyed o
 
 		expect(afterSecond).toHaveLength(2);
 		expect(afterSecond.map((row) => row.postId).sort()).toEqual(['tiktok-video-1', 'tiktok-video-2']);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The real CLI process — `main()` (Pb4e17-social-native-scheduling F1). None
+// of the tests above ever import/exercise `main()`; they only call the pure
+// exports directly. This is where D1 (a `Date.parse`-able but non-ISO
+// `--published-at` silently misfiling the row) and D2 (an empty numeric flag
+// fabricating a `0`) actually lived — a real subprocess run against a real
+// temp directory, mirroring `prepare-week.test.ts`'s own `--help` subprocess
+// convention (see its header comment).
+// ---------------------------------------------------------------------------
+
+describe('CLI — main()', () => {
+	const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+	const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
+	const cliPath = path.join(repoRoot, 'social', 'src', 'metrics', 'hand-entry.ts');
+
+	let outDir: string;
+
+	beforeEach(async () => {
+		outDir = await mkdtemp(path.join(tmpdir(), 'plain-hand-entry-'));
+	});
+
+	afterEach(async () => {
+		await rm(outDir, { recursive: true, force: true });
+	});
+
+	function runCli(args: string[]): { status: number; stdout: string; stderr: string } {
+		try {
+			const stdout = execFileSync('npx', ['tsx', cliPath, ...args], {
+				cwd: repoRoot,
+				encoding: 'utf-8',
+				stdio: ['ignore', 'pipe', 'pipe']
+			});
+			return { status: 0, stdout, stderr: '' };
+		} catch (e) {
+			const err = e as { status: number | null; stdout: string; stderr: string };
+			return { status: err.status ?? 1, stdout: err.stdout ?? '', stderr: err.stderr ?? '' };
+		}
+	}
+
+	const VALID_ARGS = [
+		'--platform', 'tiktok',
+		'--post-id', 't1',
+		'--published-at', '2026-09-09T12:00:00.000Z',
+		'--views', '10',
+		'--likes', '1',
+		'--comments', '0',
+		'--shares', '0'
+	];
+
+	it('writes metrics-<published-date>.json, with follows: null when --follows is omitted', async () => {
+		const result = runCli([...VALID_ARGS, '--out-dir', outDir]);
+		expect(result.status).toBe(0);
+
+		const filePath = path.join(outDir, 'metrics-2026-09-09.json');
+		const rows = JSON.parse(await readFile(filePath, 'utf-8'));
+		expect(rows).toHaveLength(1);
+		expect(rows[0].postId).toBe('t1');
+		expect(rows[0].follows).toBeNull();
+	});
+
+	it('D1 — a Date.parse-able but non-ISO --published-at exits non-zero and writes nothing', async () => {
+		const result = runCli([
+			'--platform', 'youtube',
+			'--post-id', 'abc',
+			'--published-at', '09/09/2026',
+			'--views', '10',
+			'--likes', '1',
+			'--comments', '0',
+			'--shares', '0',
+			'--out-dir', outDir
+		]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/publishedAt/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	it('D2 — an empty --follows exits non-zero and writes nothing', async () => {
+		const result = runCli([...VALID_ARGS, '--follows', '', '--out-dir', outDir]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--follows/);
+		expect(await readdir(outDir)).toHaveLength(0);
 	});
 });

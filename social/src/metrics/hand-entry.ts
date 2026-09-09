@@ -129,8 +129,24 @@ export class HandEntryValidationError extends Error {
 
 const VALID_PLATFORMS: MetricsPlatform[] = ['instagram', 'youtube', 'tiktok'];
 
+/**
+ * Strictly validates an ISO 8601 INSTANT (date + time), not merely a string
+ * `Date.parse` happens to accept. `Date.parse` is far more permissive than
+ * ISO 8601 — `Date.parse('09/09/2026')` succeeds, silently parsing it as
+ * September 9 in the US `M/D/Y` order. `publishedAt` is later sliced to its
+ * first 10 characters (`collectionDate`, in `main()` below) to name the
+ * dated metrics file; a `Date.parse`-able but non-ISO string like
+ * `'09/09/2026'` would slice to the nonsense `'09/09/202'`, silently
+ * misfiling the row into a bogus directory that `readout.ts`'s
+ * `METRICS_FILENAME_RE` never reads — the post vanishes from the pilot's
+ * verdict with no error at all. Requiring the ISO `T` date/time separator up
+ * front rejects that whole class of ambiguous date strings outright, for
+ * BOTH `publishedAt` and `collectedAt` (this function guards both) — both
+ * are documented as ISO 8601 instants, so both must actually be validated as
+ * one, even though only `publishedAt` is presently sliced into a file path.
+ */
 function isValidIsoInstant(value: string): boolean {
-	return typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Date.parse(value));
+	return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value) && !Number.isNaN(Date.parse(value));
 }
 
 /** Non-negative integer check shared by all four required counts (and `follows`) — a fractional or negative count is definitionally a typo, not a real reading. */
@@ -268,15 +284,36 @@ Optional:
   --help                      Show this help.`);
 }
 
-function parseRequiredNumber(raw: string | undefined, flag: string): number {
-	if (raw === undefined) {
-		throw new Error(`Missing required flag "${flag}".`);
+/**
+ * Strictly parses one numeric CLI flag's raw string value. `Number('')` and
+ * `Number(' ')` both evaluate to `0`, not `NaN` — so an empty flag value
+ * (realistically `--follows=$FOLLOWS` with `FOLLOWS` unset in the shell,
+ * which expands to `--follows=`) would otherwise fabricate a real-looking
+ * `0` rather than failing loudly, the exact bug class this plan already
+ * deleted the Instagram collector for. Rejects an empty-or-whitespace-only
+ * value outright; a genuinely numeric value with incidental whitespace
+ * padding (`--views=" 10 "`) is still accepted, since `Number()` itself
+ * already trims a numeric string — only the "nothing here at all" case is
+ * the fabrication risk, not padding around a real value. Exported so
+ * `follower-snapshot.ts`'s `--followers` goes through the exact same guard
+ * rather than a second, possibly-drifting copy.
+ */
+export function toNumber(raw: string, flag: string): number {
+	if (raw.trim() === '') {
+		throw new Error(`Flag "${flag}" must be a number — got an empty value.`);
 	}
 	const value = Number(raw);
 	if (Number.isNaN(value)) {
 		throw new Error(`Flag "${flag}" must be a number — got "${raw}".`);
 	}
 	return value;
+}
+
+function parseRequiredNumber(raw: string | undefined, flag: string): number {
+	if (raw === undefined) {
+		throw new Error(`Missing required flag "${flag}".`);
+	}
+	return toNumber(raw, flag);
 }
 
 function isMetricsPlatform(value: string): value is MetricsPlatform {
@@ -352,8 +389,11 @@ async function main(): Promise<void> {
 		shares: parseRequiredNumber(values.shares, '--shares'),
 		// Omitting --follows must record null, never a fabricated 0 — see
 		// this file's header on why follows is only ever real on YouTube.
-		follows: values.follows !== undefined ? Number(values.follows) : null,
-		averagePercentWatched: values['avg-percent-watched'] !== undefined ? Number(values['avg-percent-watched']) : null,
+		// An EMPTY --follows (e.g. an unset shell variable) must fail loudly
+		// too, not silently fall through Number('') === 0 — see toNumber.
+		follows: values.follows !== undefined ? toNumber(values.follows, '--follows') : null,
+		averagePercentWatched:
+			values['avg-percent-watched'] !== undefined ? toNumber(values['avg-percent-watched'], '--avg-percent-watched') : null,
 		collectedAt
 	};
 
