@@ -98,51 +98,48 @@ best practice, but specific mitigations against specific enforcement mechanisms 
 None of this is enforced by code — it is entirely process discipline for whoever is doing the
 weekly session and any live troubleshooting. Read it again before the first post goes up.
 
-## 3. One-time setup (dependency order)
+## 3. One-time setup
 
-Do these once, in this order, before the daily loop can run for real (3.0-3.6 — 3.7 is the one
-exception, see its own note on why it doesn't gate go-live). Each step links to the doc that
-actually walks through it in detail rather than duplicating that detail here. Everything from 3.2
-onward assumes the 3.0 accounts already exist — 3.2 needs a real Instagram Business account and a
-Facebook login to create the Meta app with, and 3.3 needs a real YouTube channel to attach a token
-to.
+There is no cloud project, API app, OAuth flow, or deployment to do any more (3.1 below records what
+an earlier version of this plan built for that, and why none of it is needed now). The whole setup
+is: create three accounts plus the Facebook account Meta Business Suite needs (3.0, following
+section 2's hygiene rules), then confirm each platform's own scheduler actually works (3.0a).
 
-### 3.0 Create the four accounts
+### 3.0 Create the accounts
 
 Create the pilot's YouTube/Google, Instagram, and TikTok accounts — **plus a Facebook account**,
-which 3.2 needs and which the original version of this section omitted — before touching anything
-else here. Follow section 2's hygiene rules for all of them (one shared pilot email, real device,
-phone verification, same handle everywhere, real bio copy, no automation) — that section is not
-repeated here.
+which Meta Business Suite (3.0a) needs to schedule Instagram Reels — before touching anything else
+here. Follow section 2's hygiene rules for all of them (one shared pilot email, real device, phone
+verification, same handle everywhere, real bio copy, no automation) — that section is not repeated
+here.
 
-**Facebook is required, and it is probably not a new account.** Creating the Meta app in 3.2 needs a
-Facebook developer login. **If you already have a personal Facebook profile, use it** — Facebook
+**Facebook is required, and it is probably not a new account.** Meta Business Suite is reached
+through a Facebook login. **If you already have a personal Facebook profile, use it** — Facebook
 prohibits maintaining more than one personal profile, and a second profile in your own name is the
 misrepresentation signal that gets accounts disabled, which under Meta's co-ownership clause can
 then reach the linked Instagram account. Only if you have no Facebook profile at all should you
 create one, under your real name, with the pilot email, and then leave it completely alone (no
-photo, no friends, no posts — it exists solely to hold the app).
+photo, no friends, no posts — it exists solely to hold the Page below).
 
-**You DO also need a Facebook Page** (corrected 2026-09-09 — an earlier version of this line said
-the opposite, which is wrong and costs an hour to discover). This codebase calls
-`graph.facebook.com`, the Facebook-Login Instagram API, whose permissions flow through a Page; see
-3.2's correction table. Create a Page named `Plain`, give it the same avatar, leave it published but
-empty (no posts), and **connect it to the Instagram professional account** — Page -> Settings ->
-Linked accounts, or from Instagram -> Settings -> Account type and tools -> Linked accounts. Note
-that connecting accounts in Accounts Centre (personal profile <-> Instagram) is a DIFFERENT thing
-and does not satisfy this. Put the Page in whichever business portfolio the pilot uses.
-The Page created for this pilot is `1268933229644482` ("Think Plain").
+**You also need a Facebook Page.** Meta Business Suite manages Instagram content through a Page
+connected to the Instagram account, not the Instagram account by itself. Create a Page named
+`Plain`, give it the same avatar, leave it published but empty (no posts), and **connect it to the
+Instagram professional account** — Page -> Settings -> Linked accounts, or from Instagram ->
+Settings -> Account type and tools -> Linked accounts. Note that connecting accounts in Accounts
+Centre (personal profile <-> Instagram) is a DIFFERENT thing and does not satisfy this. Put the Page
+in whichever business portfolio the pilot uses. The Page created for this pilot is `1268933229644482`
+("Think Plain").
 
-**Which Meta business portfolio the app lands in is a real decision.** Meta's Account Integrity
+**Which Meta business portfolio the Page lands in is a real decision.** Meta's Account Integrity
 clause lets Meta act on accounts "owned by the same person or entity as an account that has been
 disabled," and assets inside one business portfolio are co-owned by the same entity by definition.
-Putting a brand-new account that posts automated video daily into a portfolio holding real company
-assets shares fate with them. Owning multiple portfolios is normal and allowed — it is not the
-"concealed common operatorship" Meta enforces against. Caveat, so this is not oversold: the same
-personal profile admins both portfolios, so person-level linkage exists regardless; a separate
-portfolio limits asset-level blast radius, not linkage. Rule of thumb: if the existing portfolio
-holds ad accounts, client assets, or a Page/IG you would mind losing, use a separate portfolio for
-the pilot; if it is a dormant shell, either is fine.
+Putting a brand-new account that posts video daily into a portfolio holding real company assets
+shares fate with them. Owning multiple portfolios is normal and allowed — it is not the "concealed
+common operatorship" Meta enforces against. Caveat, so this is not oversold: the same personal
+profile admins both portfolios, so person-level linkage exists regardless; a separate portfolio
+limits asset-level blast radius, not linkage. Rule of thumb: if the existing portfolio holds ad
+accounts, client assets, or a Page/IG you would mind losing, use a separate portfolio for the pilot;
+if it is a dormant shell, either is fine.
 
 #### Status and concrete values (2026-09-09)
 
@@ -150,8 +147,8 @@ the pilot; if it is a dormant shell, either is fine.
 |---|---|---|
 | Google / YouTube | **Done** | `thinkplain.ai@gmail.com`; channel is a **Brand Account** (Studio -> Settings -> Permissions offers Invite, which a personal channel does not); avatar, description, and `/go/yt` link set |
 | Instagram | **Done** | `@thinkplainai`, phone-verified, switched to **Business**, avatar + bio + `/go/ig` link set |
-| Facebook | Existing personal profile — no new account created | Used only to log into `developers.facebook.com` at 3.2 |
-| TikTok | **Partial** | `@thinkplainai` created and phone-verified. **NOT switched to Business — deferred, see below** |
+| Facebook | Existing personal profile — no new account created | Used to log into Meta Business Suite and to hold the `Plain` Page |
+| TikTok | **Done for scheduling** | `@thinkplainai`, phone-verified, switched to **Creator** (3.0a) — enough for the native scheduler. **NOT switched to Business — deferred, see below** (that switch is only about the bio link, not scheduling) |
 
 Shared across all of them: avatar is `logos/profile/plain-bmc-profile.png` (512x512, the fading-card
 icon — `logos/README.md` designates that variant for social profile avatars); display name `Plain`.
@@ -197,15 +194,15 @@ accepting the pre-filled default name yields a *personal* channel instead. Verif
 [myaccount.google.com/brandaccounts](https://myaccount.google.com/brandaccounts), or by Studio ->
 Settings -> Permissions offering to invite people. Why it matters: the Brand Account gives the
 channel its own name/handle and a revocable manager list, so access can be granted without sharing
-the Gmail password. **Carry this into 3.3:** Google's OAuth consent asks WHICH channel to grant —
-pick the Brand Account, not the personal channel under the same Gmail. Granting the wrong one
-produces a token that authenticates fine and uploads to an empty channel, and fails silently.
+the Gmail password.
 
 **TikTok: the bio link needs a Business account, and that needs business verification — DEFERRED
-(2026-09-09).** A *personal* TikTok account generally needs 1,000 followers before the Website field
-appears in Edit Profile, so a zero-follower pilot account cannot set the `/go/tt` bio link at all.
-The fix is a Business account — but in practice the switch required business verification, which
-was declined for now as disproportionate before the concept is proven. **What this costs, precisely:**
+(2026-09-09).** This is separate from the Creator switch above, which was only about unlocking the
+native scheduler (3.0a) and needed no verification. A *personal* TikTok account generally needs
+1,000 followers before the Website field appears in Edit Profile, so a zero-follower pilot account
+cannot set the `/go/tt` bio link at all. The fix is a Business account — but in practice the switch
+required business verification, which was declined for now as disproportionate before the concept
+is proven. **What this costs, precisely:**
 
 - **Lost:** the profile-visit conversion path on TikTok only.
 - **NOT lost — caption attribution.** `social/src/publish/caption.ts`'s `ATTRIBUTION_URLS` puts
@@ -216,10 +213,9 @@ was declined for now as disproportionate before the concept is proven. **What th
 - **NOT lost — criterion A's breakout half.** A post clearing ~10,000 views still registers.
 - **Already unavailable anyway — TikTok follow-conversion.** `social/src/metrics/readout.ts`'s
   `computeFollowConversion` returns `method: 'unavailable'` with `follows: null` when no follower
-  snapshots exist, and nothing populates `tiktokFollowerSnapshots` — `metrics/instagram.ts` is the
-  only follower-snapshot collector that exists. `readout.ts`'s own comment says this is "exactly
-  TikTok's current state until a follower-snapshot collector is built for it." So the deferral
-  degrades a signal that was already out of scope, not a working one.
+  snapshots exist for TikTok — nothing collects one. `readout.ts`'s own comment says this is
+  "exactly TikTok's current state until a follower-snapshot collector is built for it" — a signal
+  that was already out of scope, not one this deferral degrades.
 
 Revisit the switch if TikTok turns out to be the platform that performs; the Website field can be
 added at any time, including after posting starts.
@@ -227,12 +223,11 @@ added at any time, including after posting starts.
 Two things to do at account-creation time specifically, because both are cheapest to fix now rather
 than after the fact:
 
-- **Convert the Instagram account to Business or Creator, not Personal.** Meta's Content Publishing
-  API (what section 3.2 obtains a token for) does not work against a Personal account at all — a
-  Personal account will hit an unexplained wall in 3.2 with no obvious fix. Do this from Instagram's
-  own app: Settings -> Account type (or the equivalent "switch to professional account" flow Meta
-  currently surfaces there) -> Business or Creator. Either type works for this pilot; Business is the
-  more common choice and is what 3.2's Meta Business app setup expects to find.
+- **Convert the Instagram account to Business or Creator, not Personal.** Meta Business Suite (3.0a)
+  does not manage a Personal Instagram account at all. Do this from Instagram's own app: Settings ->
+  Account type (or the equivalent "switch to professional account" flow Meta currently surfaces
+  there) -> Business or Creator. Either type works for this pilot; Business is the more common
+  choice.
 - **Set each account's bio/profile link to its own `/go/<slug>` attribution URL, not a shared plain
   link:**
 
@@ -242,35 +237,29 @@ than after the fact:
   | TikTok | `https://thinkplain.ai/go/tt` |
   | YouTube (channel link) | `https://thinkplain.ai/go/yt` |
 
-  These three URLs are handled by `web/src/routes/go/[slug]/+server.js` (T11): each one 302-redirects
-  to `https://thinkplain.ai/` with a **different** `utm_source` baked in (`instagram`/`tiktok`/
+  These three URLs are handled by `web/src/routes/go/[slug]/+server.js`: each one 302-redirects to
+  `https://thinkplain.ai/` with a **different** `utm_source` baked in (`instagram`/`tiktok`/
   `youtube`) before the redirect fires, and `social/src/publish/caption.ts`'s `ATTRIBUTION_URLS`
   already puts the matching one into every post's caption. The bio link and the caption link exist
   for different traffic: the caption link is what shows under a post; the bio link is what a profile
-  visit converts through, which is why it needs to be set once, by hand, at account-creation time — no
-  code sets an account's bio.
+  visit converts through, which is why it needs to be set once, by hand, at account-creation time —
+  no code sets an account's bio.
 
   **Use a different link per platform, not the same plain `https://thinkplain.ai` link on all
-  three.** In-app browsers on Instagram/TikTok/YouTube strip the HTTP referer, so `utm_source` in the
-  URL is the *only* signal that tells a click apart from organic traffic once it lands on the site.
-  Using the same bare link on all three (or a link with no `utm_source` at all) does not just weaken
-  attribution — it makes criterion A's follow-conversion half (section 1) permanently unmeasurable
-  for that traffic, silently, with no error anywhere: the click still redirects and works fine, it
-  just cannot be told apart from any other visit. There is no symptom until the readout (week 4)
-  shows unattributed traffic and it is too late to have collected the difference.
+  three.** In-app browsers on Instagram/TikTok/YouTube strip the HTTP referer, so `utm_source` in
+  the URL is the *only* signal that tells a click apart from organic traffic once it lands on the
+  site. Using the same bare link on all three (or a link with no `utm_source` at all) does not just
+  weaken attribution — it makes criterion A's follow-conversion half (section 1) permanently
+  unmeasurable for that traffic, silently, with no error anywhere: the click still redirects and
+  works fine, it just cannot be told apart from any other visit. There is no symptom until the
+  readout (week 4) shows unattributed traffic and it is too late to have collected the difference.
 
-  **These three `/go/` routes 404 until this branch (`social-pilot-03`, T11) is merged and
-  deployed to production.** It is fine to set the bio links before that happens — Instagram/TikTok/
-  YouTube do not validate a bio link's destination at save time — but verify each one actually
-  redirects (`curl -sI https://thinkplain.ai/go/ig` etc., expect a `302` to a `thinkplain.ai/?utm_source=...`
-  URL) once this branch has shipped, before relying on the numbers it produces.
-
-**Prerequisite for everything from here on: a GCP project with billing enabled.** GCS (3.1 below),
-Cloud Run, Firestore, Secret Manager, and Artifact Registry (3.6 below) all require one, and none of
-this repo creates it for you. `social/DEPLOY.md`'s "0. Prerequisites" section has the exact
-`gcloud auth login` / `gcloud projects create` / `gcloud billing projects link` commands and the
-rough expected monthly cost (a few dollars — Cloud Run/Firestore/Secret Manager usage at this volume
-is cheap, GCS storage egress is about a cent) — do that first if no project exists yet.
+  **These three `/go/` routes 404 until the branch that adds them is merged and deployed to
+  production.** It is fine to set the bio links before that happens — Instagram/TikTok/YouTube do
+  not validate a bio link's destination at save time — but verify each one actually redirects
+  (`curl -sI https://thinkplain.ai/go/ig` etc., expect a `302` to a
+  `thinkplain.ai/?utm_source=...` URL) once that branch has shipped, before relying on the numbers
+  it produces.
 
 ### 3.0a Native scheduling pre-flight (verified 2026-09-09)
 
@@ -288,349 +277,39 @@ This is the finding that makes native scheduling viable at all in place of the A
 — if TikTok's scheduler had been unavailable, it would have been the binding constraint in the other
 direction and this approach would not work.
 
-### 3.1 Provision the GCS bucket
+### 3.1 What was provisioned and is no longer required
 
-**Object storage is Google Cloud Storage, not Cloudflare R2** — see
-`plans/Pf39c2-social-pilot-03.md`'s "Decision change — GCS replaces R2" (2026-09-03) for why: R2's
-custom domain needed the DNS zone inside a Cloudflare account, and `thinkplain.ai`'s nameservers are
-Google's (via Squarespace), pointing at Vercel. GCS instead serves objects from the stable
-`https://storage.googleapis.com/<bucket>/<key>` URL with no DNS change, and the Cloud Run Job
-authenticates to it the same way it already authenticates to Firestore — Application Default
-Credentials, no access key of any kind.
+Before this plan replaced the API publish pipeline with native scheduling, the following was built
+against real accounts. **None of it is used by this repo any more, and none of the code that used to
+call it exists in this branch.** It is dormant, not deleted — tearing it down (deleting the GCP
+project, revoking the Meta app) is a separate decision this plan deliberately deferred for a week in
+case something about the pilot needs revisiting. The Facebook Page itself is a separate matter —
+it stays, see below.
 
-Follow `social/gcs/README.md` in full: create the bucket (name must be **globally unique across all
-of GCS**, unlike R2 — that doc's own callout), set uniform bucket-level access, grant `allUsers` the
-`roles/storage.objectViewer` IAM role so Meta/YouTube can fetch objects unauthenticated, apply the
-30-day lifecycle rule, and run its section 4 verification (`curl` checks for a 200, the right
-`content-type` header, and a working range request). This produces the one value
-`social/src/publish/env.ts`'s `loadGcsConfig` reads: `GCS_BUCKET_NAME` — not a secret, since there
-is no access key to protect (optionally also `GCS_PUBLIC_BASE_URL`, unset by default, only needed if
-a custom domain is ever put in front of the bucket).
+- **A GCP project, `plain-social-pilot` (billing account `01AA73-8FF54D-C7C23F`), and a GCS bucket,
+  `gs://plain-social-pilot-media` (`US-CENTRAL1`, public read via `allUsers` ->
+  `roles/storage.objectViewer`, 30-day lifecycle rule)** — provisioned and verified live 2026-09-09
+  (an unauthenticated fetch returned `200` with the right `content-type`, and a range request
+  returned `206`). Existed to give Meta and YouTube a public URL to fetch rendered video from; the
+  weekly session now uploads from local disk instead.
+- **A Meta app** (`developers.facebook.com`, Development mode, deliberately never published), a
+  Facebook Page (`1268933229644482`, "Think Plain"), and a long-lived Page access token for
+  `IG_USER_ID` `17841423977412035` — verified live 2026-09-09 by creating (and deliberately not
+  publishing) media container `18114024736799248`, which proved the token, the Page, and
+  `instagram_content_publish` all worked end to end. Worth remembering if this is ever revisited:
+  Meta has two non-interchangeable Instagram API families — Facebook Login (`graph.facebook.com`,
+  requires a Page, `instagram_content_publish`) and Instagram Login (`graph.instagram.com`, no Page,
+  `instagram_business_*` permissions). This pilot built against the Facebook Login family; getting
+  that wrong the first time cost about an hour to discover. The Facebook Page itself is NOT dormant
+  — see 3.0, it is still needed for Meta Business Suite.
+- **A YouTube OAuth app was planned** (Google Cloud console, requesting `youtube.upload` and
+  `yt-analytics.readonly` scopes, to be published to "In production" so refresh tokens wouldn't
+  expire every 7 days) **but, per this document's own prior "Current status" tracking, was never
+  actually created** — no live YouTube upload was ever completed through it. There is nothing live
+  to leave dormant here.
 
-#### Provisioned (2026-09-09) — DONE and verified
-
-| | |
-|---|---|
-| GCP project | `plain-social-pilot` (deliberately NOT `split-atom-labs`, see below) |
-| Billing account | `01AA73-8FF54D-C7C23F`, `billingEnabled: true` |
-| Bucket | `gs://plain-social-pilot-media`, `US-CENTRAL1` |
-| Uniform bucket-level access | `true` |
-| Public read | `allUsers` -> `roles/storage.objectViewer`, scoped to this bucket only |
-| Lifecycle | 30-day Delete, confirmed present in `lifecycle_config` |
-| `GCS_BUCKET_NAME` | `plain-social-pilot-media` (set in `social/cloud-run-job.yaml`) |
-
-`social/gcs/README.md` section 4's acceptance criterion passed in full: `200` on an unauthenticated
-HTTPS fetch, `content-type: text/plain` echoed back correctly, and `HTTP/2 206` with
-`content-range: bytes 0-21/22` on a range request. Test object deleted afterwards.
-
-**Why a dedicated project rather than `split-atom-labs`:** that project already runs a Firestore
-database (created 2024-02-08, actively written to). The pilot writes `social-pilot-tokens` and
-pending-flip documents to Firestore, so reusing the project would put a throwaway four-week
-experiment's data in the same database as live company data. A dedicated project also gives a clean
-teardown — delete the project when the pilot ends and every resource goes with it. Same reasoning as
-keeping the pilot out of the company's Meta business portfolio (3.0).
-
-### 3.2 Create the Meta app and get an Instagram token
-
-**Status: DONE and verified live, 2026-09-09.** Concrete values are at the end of this section.
-
-**CORRECTION (2026-09-09) — this section previously named the wrong API family, and cost about an
-hour of setup as a result.** Meta has two different Instagram APIs and they are not interchangeable:
-
-| | Instagram API with **Facebook Login** | Instagram API with **Instagram Login** |
-|---|---|---|
-| Host | `graph.facebook.com` | `graph.instagram.com` |
-| Permissions | `instagram_basic`, `instagram_content_publish`, ... | `instagram_business_basic`, `instagram_business_content_publish`, ... |
-| Facebook Page | **REQUIRED** | not required |
-| Token used to publish | **Page** access token | Instagram user access token |
-
-**This codebase implements the Facebook Login family**, hard-coded:
-`social/src/publish/instagram.ts`'s `DEFAULT_GRAPH_API_BASE_URL` is
-`https://graph.facebook.com/v21.0` (same in `social/src/metrics/instagram.ts`), and it calls
-`POST /{ig-user-id}/media`. The string `instagram_business_content_publish` appears nowhere in the
-source — only in this runbook's prose and the plan. **So a Facebook Page IS required**, contrary to
-what an earlier version of 3.0 said. `v21.0` is pinned and valid until 2027-01-21, comfortably past
-the pilot.
-
-**Prerequisites:** the Instagram account is Business or Creator, not Personal (3.0) — the API does
-not work against a Personal account and gives no error naming that as the cause. And a Facebook Page
-exists and is **connected to the Instagram professional account**. Connecting accounts in Accounts
-Centre (personal profile <-> Instagram) is NOT the same thing and does not put
-`instagram_business_account` on the Page.
-
-**The steps that actually worked:**
-
-1. **Create the app** at `developers.facebook.com`, logged in with your personal Facebook profile
-   (3.0: do not create a second profile). App type Business, attached to the pilot's business
-   portfolio. **Leave it in Development mode — do NOT publish it.** Development mode works against
-   accounts that have a role on the app, which is exactly this case, and Standard Access covers
-   every permission below with no App Review. (Contrast 3.3: the *Google* OAuth app MUST be
-   published, or its refresh tokens expire every 7 days. The two platforms are opposite here.)
-2. **Add the product.** Meta's newer console is use-case driven. The use case whose permission list
-   contains `instagram_content_publish` (NOT `instagram_business_content_publish`) is the right one
-   — check the permission names to tell the two families apart, since both start with `instagram_`.
-   In the older product-based console the equivalent is adding **Facebook Login for Business**, and
-   nothing else.
-3. **Request these five permissions** — Standard Access, and do NOT request Advanced Access:
-   ```
-   instagram_basic
-   instagram_content_publish
-   instagram_manage_insights
-   pages_show_list
-   pages_read_engagement
-   ```
-   `instagram_manage_insights` is the one this runbook previously omitted entirely. Without it,
-   publishing works and METRICS silently fail in week 1 — `metrics/instagram.ts` calls
-   `/{media-id}/insights` and `/{ig-user-id}/insights`.
-4. **Generate a User token** in the Graph API Explorer
-   (`developers.facebook.com/tools/explorer` — a separate tool, not part of the app dashboard).
-   Select the app, token type User Token, tick all five permissions, Generate Access Token.
-   **Ticking permissions does not re-issue the token** — click Generate again after changing them.
-   In the consent dialog, explicitly tick the Page and Instagram account: clicking through with
-   defaults grants the SCOPES while selecting ZERO ASSETS, which produces a token that authenticates
-   fine and returns an empty `/me/accounts`.
-5. **Find `IG_USER_ID`.** The documented route is `GET /me/accounts` -> the Page ->
-   `instagram_business_account`. **If the Page is owned by a business portfolio (as here),
-   `/me/accounts` returns `{"data":[]}` even with `pages_show_list` granted** — your access runs
-   through the portfolio, not a classic personal Page admin role. Query the Page directly instead
-   (its id is in Meta Business Suite -> Settings -> Page details):
-   ```bash
-   curl -sS "https://graph.facebook.com/v21.0/PAGE_ID?fields=instagram_business_account,name&access_token=TOKEN"
-   ```
-   Nothing at runtime ever calls `/me/accounts` — `job.ts` only uses `IG_USER_ID` and the token — so
-   any route that yields the value is equally valid.
-6. **Exchange for a long-lived token, then derive the PAGE token from it.** Order matters: the Page
-   token inherits the long life of the user token it came from.
-   ```bash
-   read -rs FB_APP_SECRET
-   read -rs FB_SHORT_TOKEN
-   curl -sS "https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=APP_ID&client_secret=$FB_APP_SECRET&fb_exchange_token=$FB_SHORT_TOKEN"
-
-   read -rs FB_LONG_TOKEN
-   curl -sS "https://graph.facebook.com/v21.0/PAGE_ID?fields=access_token&access_token=$FB_LONG_TOKEN"
-   ```
-   Use `read -rs` rather than inlining values — it keeps credentials out of shell history. **The
-   PAGE access token from the second call is what `InstagramConfig.accessToken` needs**, not the
-   user token. Set `expiresAt` to the user token's 60-day expiry as the conservative bound. 60 days
-   outlives a 28-day pilot, so **no refresh happens during the pilot at all** — the
-   `MIN_REFRESH_AGE_MS`/`REFRESH_WINDOW_MS` machinery in `tokens.ts` never fires.
-
-**VERIFY THE WHOLE CHAIN WITHOUT POSTING — do this before trusting any of it.** Container creation
-and publishing are separate API calls, and an unpublished container simply expires after 24 hours.
-So this exercises the GCS public URL, the Page token and the publish permission end to end while
-nothing appears on the account:
-
-```bash
-# 1. put any public JPEG in the bucket
-gcloud storage cp test.jpg gs://plain-social-pilot-media/test.jpg --content-type=image/jpeg
-
-# 2. create a container, and STOP — never call media_publish
-read -rs IG_PAGE_TOKEN
-curl -sS -X POST "https://graph.facebook.com/v21.0/IG_USER_ID/media" \
-  -d "image_url=https://storage.googleapis.com/plain-social-pilot-media/test.jpg" \
-  -d "caption=chain test, not published" \
-  -d "access_token=$IG_PAGE_TOKEN"
-
-# 3. clean up
-gcloud storage rm gs://plain-social-pilot-media/test.jpg
-```
-
-An `{"id":"..."}` response means everything works. Failure modes: a `(#200)`/permissions error means
-the Business-Manager-Page-role case (add `ads_management` + `ads_read`, regenerate); an
-`OAuthException` usually means you are holding the USER token rather than the Page token; error
-`2207052` means Meta could not fetch the image from GCS, which is a storage problem, not auth.
-
-**Result of that test on 2026-09-09: container `18114024736799248` created successfully**, so GCS
-public read, the Page token, `IG_USER_ID` and `instagram_content_publish` are all confirmed working
-against the live account. `ads_management`/`ads_read` were NOT needed despite the portfolio-owned
-Page.
-
-#### Concrete values (2026-09-09)
-
-| | |
-|---|---|
-| `IG_USER_ID` | `17841423977412035` |
-| Facebook Page | `1268933229644482` ("Think Plain"), portfolio-owned |
-| App mode | Development (deliberately not published) |
-| Token type stored | **Page** access token |
-| Meta app id | not secret; app SECRET and tokens live only in your password manager |
-
-**Credential hygiene:** the app secret does not expire on its own and, with the app id, is enough to
-mint tokens against the app. If it is ever pasted anywhere it should not be (a chat, a commit, a
-shared terminal), reset it at App Dashboard -> Settings -> Basic -> App secret -> Reset, and revoke
-the app under facebook.com -> Settings -> Apps and Websites, then re-generate.
-
-### 3.3 Create the YouTube OAuth app
-
-Create a Google Cloud OAuth app and complete Google's consent flow for the pilot's YouTube channel,
-requesting both `https://www.googleapis.com/auth/youtube.upload` (for publishing,
-`social/src/publish/youtube.ts`) and `https://www.googleapis.com/auth/yt-analytics.readonly` (for
-metrics, `social/src/metrics/youtube.ts`) on the **same** consent — there is only one OAuth flow for
-this account, not two.
-
-**This OAuth app MUST be published to "In production" in the Google Cloud console, not left in
-"Testing."** This is a plan Constraint, not a nice-to-have: an app left in Testing mode issues
-refresh tokens that expire every 7 days, which silently kills the daily cron a week after whoever
-set it up stops manually re-authorizing it. Publishing to production costs one of Google's 100
-lifetime OAuth user-consent slots and needs no Google verification review for this app's scopes.
-
-### 3.4 No OAuth authorization flow exists in this codebase — seed tokens by hand
-
-**Flag this clearly, because it is the gap most likely to trip up a first run:** nothing in this
-repository performs an OAuth authorization exchange for either platform. `social/src/publish/
-instagram.ts` and `social/src/publish/youtube.ts` only *use* an already-issued token
-(`ensureFreshToken`, `social/src/publish/tokens.ts`) — they never obtain one. The token you get from
-sections 3.2/3.3's manual consent flows must be written directly into Firestore before the daily job
-can publish anything.
-
-Tokens live in the `social-pilot-tokens` Firestore collection (one document per platform, keyed by
-platform name — `social/src/publish/token-store-firestore.ts`'s `DEFAULT_COLLECTION`), each document
-shaped exactly like `StoredToken` (`social/src/publish/tokens.ts`):
-
-```json
-{
-  "value": "<the long-lived Instagram token, or the YouTube refresh+access token pair as your own encoding>",
-  "expiresAt": "2026-10-27T00:00:00.000Z"
-}
-```
-
-Write these two documents (`instagram`, `youtube`) into that collection by hand — e.g. via the
-Firebase console's Firestore data viewer, or a one-off `gcloud`/Firestore-client script — before
-attempting a real (non-`--dry-run`) run. A run that reaches a missing token document fails loudly by
-design (`ensureFreshToken` throws, naming the platform, never the token value) rather than silently
-skipping that platform.
-
-There is also no real OAuth **refresh** implementation yet: `job.ts`'s default `refresh` dependency
-(`notImplementedRefresh`) throws a clearly-named error rather than silently no-op'ing. In practice
-this means: once the seeded token approaches its expiry window, the daily job will start failing
-that platform (loudly, in its logs) until a human re-runs the manual consent flow and re-seeds the
-Firestore document. Watch for `WARN` expiry-alert lines in the job logs (section 4) inside the
-30-day window before a token expires, per `tokens.ts`'s `expiryAlert`.
-
-### 3.4a Where the daily job runs — DECISION (2026-09-09): LOCAL, not Cloud Run
-
-**Decision: run `job.ts` on a local machine on a schedule. Sections 3.5 (Docker) and 3.6 (Cloud Run
-deploy) are NOT part of the current setup path.** They remain written and correct should the pilot
-say yes and this become a real product; they are simply not what this pilot uses.
-
-**Why.** The pilot is a 28-day experiment, so anything built for it is used 28 times. `job.ts`
-renders inline — it reuses `cli.ts`'s Remotion path (`job.ts`'s header, and the `RenderFn`
-dependency) — so the container in 3.5 has to carry Chromium, ffmpeg and Remotion, and **that image
-has never been built**. Remotion-in-a-container is the least-proven part of this whole system, and
-3.5/3.6 together are four of the six never-run steps. A local run needs none of Docker, Cloud Run,
-Firestore, Secret Manager, Artifact Registry, or a service account, and renders on the machine where
-rendering already demonstrably works.
-
-**The cost, stated honestly:** the machine has to be awake and online at posting time. The failure
-mode is mild, though — a missed day is not lost data. The assets are rendered and on disk, so
-`npx tsx social/src/job.ts --date <the missed date> ...` posts it late. That makes an unattended
-laptop a chore, not a data-loss event. If the machine is regularly away for days at a time, this
-decision is wrong and a third-party scheduler with hand-entered metrics is the better trade.
-
-**What this decision required in code** (2026-09-09): `job.ts` and `metrics/collect.ts` both
-hard-coded `createFirestoreTokenStore()`. A local run needs a token store that survives between
-processes — `createInMemoryTokenStore` is explicitly dry-run-only and loses a refreshed token when
-the process exits. Added `social/src/publish/token-store-local.ts`
-(`createLocalTokenStore`, 12 tests), plus matching `--token-store <firestore|local>` and
-`--token-file <path>` flags on BOTH CLIs. The pending-flips half already had this
-(`--pending-flips-store local`), so this mirrors that pattern deliberately.
-
-The local token file holds live credentials in plaintext. It is written `0600`, `set` re-`chmod`s an
-existing file (Node's `writeFile` only applies `mode` when it CREATES a file), and
-`content/social/tokens.*.json` is in `.gitignore`. `set` also refuses to overwrite a record whose
-`obtainedAt` is newer, throwing with the platform named — the same orphaned-token guard the
-Firestore store pays a transaction for, which matters here because two hand-run processes can race.
-
-#### Seeding the token file
-
-```bash
-mkdir -p content/social
-read -rs IG_PAGE_TOKEN     # the PAGE token from 3.2, not the user token
-python3 -c "
-import json, os
-json.dump({'instagram': {
-  'value': os.environ['IG_PAGE_TOKEN'],
-  'obtainedAt': '2026-09-09T00:00:00.000Z',
-  'expiresAt': '2026-11-08T00:00:00.000Z'
-}}, open('content/social/tokens.local.json','w'), indent='\t')
-" && chmod 600 content/social/tokens.local.json
-```
-
-Set `expiresAt` to 60 days after the actual token exchange. A YouTube entry is added the same way
-once 3.3 is done.
-
-#### The daily command
-
-```bash
-GCS_BUCKET_NAME=plain-social-pilot-media IG_USER_ID=17841423977412035 \
-  npx tsx social/src/job.ts --date $(date +%F) \
-  --token-store local --pending-flips-store local
-```
-
-Add `--dry-run` to render for real while performing no uploads and no posts — it needs no
-credentials at all and is the last checkpoint before a first live post. Metrics collection takes the
-same two flags:
-
-```bash
-IG_USER_ID=17841423977412035 npx tsx social/src/metrics/collect.ts --token-store local
-```
-
-**Metrics must run daily even though posting is what people think of as the daily job.**
-`computeFollowConversion` infers follows by diffing the publish-day follower snapshot against the
-prior day's, so a missed snapshot permanently nulls that day's follow conversion. Per-media insights
-are cumulative and can be collected at any time; the follower snapshot cannot be backfilled.
-
-### 3.5 Build the Docker image
-
-> **NOT part of the current setup path** — see 3.4a. Kept for a future productionisation.
-
-Follow `social/DOCKER.md` in full. In short, from the **repo root** (not `social/` — the Dockerfile
-needs `content/output/` and `content/social/`, which live outside `social/`):
-
-```bash
-docker build --platform linux/amd64 -f social/Dockerfile -t plain-social:latest .
-```
-
-Then run the zero-credential smoke test before anything else:
-
-```bash
-docker run --rm plain-social:latest --date <YYYY-MM-DD> --dry-run
-```
-
-A successful run prints `[instagram] DRY-RUN` / `[youtube] DRY-RUN` lines and exits 0 — this proves
-the image can actually render (headless Chromium x2, ffmpeg) before any credential is involved. See
-`social/DOCKER.md`'s troubleshooting section for the two known gotchas (a Chromium sandbox error
-under gVisor, and a "no browser found" error if the container's working directory is wrong).
-
-### 3.6 Deploy the Cloud Run Job and the Firebase trigger
-
-> **NOT part of the current setup path** — see 3.4a. Kept for a future productionisation.
-
-Follow `social/DEPLOY.md` in full — it is a numbered, copy-pasteable sequence: enable the required
-GCP APIs, provision the GCS bucket (section 3.1 above), create the Firestore database (if the
-project doesn't have one), create the two least-privilege service accounts, create the Secret
-Manager secret for `IG_USER_ID` (the only one left — GCS needs no access-key secret), push the
-image to Artifact Registry, create the Cloud Run Job from `social/cloud-run-job.yaml`, deploy the
-Firebase Function (`functions/src/socialTrigger.ts`), and force one immediate run to verify the
-whole chain actually executes end to end (that doc's step 9).
-
-Complete section 3.4 (seed the Firestore tokens) **before** attempting a non-dry-run forced run at
-the end of `DEPLOY.md`'s step 8 — otherwise it will fail on both platforms with a missing-token
-error, which is expected in that state, not a deploy bug.
-
-### 3.7 Run the TikTok Display API spike (optional-ish — decides automation, not launch)
-
-Full detail lives in "TikTok metrics collection (T13)" below — this step is listed here only so it
-has a place in the setup order; see that section for the account/app/token steps and the exact
-`tsx social/src/metrics/tiktok-spike.ts --access-token <token>` invocation.
-
-**This does not block going live.** `social/src/metrics/hand-entry.ts`'s hand-entry fallback
-(section 5.4) is fully built and works today regardless of the spike's outcome — TikTok posting is
-already manual (native app scheduler, section 5.2), so a weekly hand-entry session is already
-required either way. Running this spike only decides whether TikTok's *metrics* stay hand-entered
-every week or get automated to match Instagram's and YouTube's collectors — it is not a
-go/no-go gate on the pilot itself. Do it whenever the TikTok account/app credentials it needs (steps
-1-4 in the "TikTok metrics collection (T13)" section below) are available, including after go-live.
+None of this blocks anything above: 3.0/3.0a describe the complete, current setup, and it uses
+nothing on this list.
 
 ## 4. The daily loop
 

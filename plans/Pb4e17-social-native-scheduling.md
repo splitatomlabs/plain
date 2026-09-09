@@ -118,12 +118,12 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       Check whether the `functions/` workspace still has anything to test; if empty, say so rather
       than leaving a hollow suite.
 
-- [~] T10: Rewrite `docs/SOCIAL_PILOT.md` §3 — collapse 3.1-3.6 (GCS, Meta app, YouTube OAuth, token
+- [x] T10: Rewrite `docs/SOCIAL_PILOT.md` §3 — collapse 3.1-3.6 (GCS, Meta app, YouTube OAuth, token
       seeding, Docker, deploy) into a much shorter setup section: three accounts, TikTok on Creator,
       nothing else. Preserve §3.0's account hygiene and the corrected §2 rules. Keep the historical
       record of what was provisioned, marked as no longer required.
 
-- [ ] T11: Rewrite `docs/SOCIAL_PILOT.md` §5 as the real weekly session: render week → upload and
+- [~] T11: Rewrite `docs/SOCIAL_PILOT.md` §5 as the real weekly session: render week → upload and
       schedule in three browser tabs → hand-enter last week's numbers → daily follower integer.
       Include the TikTok 10-day window as a hard scheduling constraint and the no-delete-and-repost
       rule (scheduled TikToks cannot be edited, only deleted and re-uploaded — which §2 forbids
