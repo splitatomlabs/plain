@@ -35,7 +35,7 @@
  * requires both — that's what `generate-schedule.ts`'s gate calls.
  *
  * The note is deliberately structured around the pre-registered success
- * criterion in `plans/Pf39c2-social-pilot-index.md` (median AND maximum AND
+ * criterion in `plans/complete/Pf39c2-social-pilot-index.md` (median AND maximum AND
  * follow-conversion; a single 10x-median outlier is NOT sufficient), so a
  * reviewer can't drift into post-hoc rationalisation — the template has an
  * explicit field for the criterion A check, the criterion B check, and
@@ -122,7 +122,7 @@ export function buildReviewNoteTemplate(options: ReviewTemplateOptions): string 
 
   return `# Week ${week} Review — ${date}
 
-Pre-registered success criterion (\`plans/Pf39c2-social-pilot-index.md\` — do NOT renegotiate after posting):
+Pre-registered success criterion (\`plans/complete/Pf39c2-social-pilot-index.md\` — do NOT renegotiate after posting):
 Viable requires at least one of A or B. A single 10x-median outlier is NOT sufficient; across ~168 posts one is
 expected from variance alone. Track maximum AND median AND follow-conversion — the maximum alone is not the signal.
 

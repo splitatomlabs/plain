@@ -7,7 +7,9 @@
  * define a 15s FLOOR (`MIN_POST_DURATION_SECONDS`/`MIN_POST_DURATION_FRAMES`)
  * and a `padToMinimumDuration` helper that extended a too-short composition's
  * final motionless payoff phase up to that floor. The floor was a house
- * convention — `plans/Pf39c2-social-pilot-index.md:203`'s "15-59s" profile
+ * convention — the "15-59s" profile statement then in the index plan's "One
+ * MP4 profile" bullet (`plans/complete/Pf39c2-social-pilot-index.md`; that
+ * bullet now records the floor's removal and states the 59s ceiling alone)
  * statement, mirrored here and in `encode.ts`'s `TARGET.minDurationSec` — with
  * NO recorded rationale anywhere in the repo (searched `docs/`, the index
  * plan, and every `Pf39c2-*` plan) and no external platform requiring it

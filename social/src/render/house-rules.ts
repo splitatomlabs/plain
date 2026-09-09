@@ -1,5 +1,5 @@
 /**
- * THE HOUSE RULE — asymmetric motion (see `plans/Pf39c2-social-pilot-index.md`):
+ * THE HOUSE RULE — asymmetric motion (see `plans/complete/Pf39c2-social-pilot-index.md`):
  * "The archaic side moves. The plain side does not." It reduces to exactly
  * three CHECKABLE rules:
  *

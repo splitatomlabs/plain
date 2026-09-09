@@ -1,5 +1,14 @@
 # Social Viability Pilot — Index
 
+> **Archived 2026-09-10 — this means all four BUILD plans are done, NOT that the pilot ran.**
+> Plans 01, 02, 02a and 03 are complete and merged to `main`, so nothing is left to build and this
+> index has no open work to track. **Zero posts have been published on any platform**, the week-4
+> findings in `docs/SOCIAL_PILOT.md` section 8 are an unfilled template, and no posting time has been
+> chosen (section 4). The success criterion below is still LIVE and still pre-registered: it governs
+> the verdict whenever the pilot actually runs, and archiving this file does not settle it or license
+> renegotiating it. `docs/SOCIAL_PILOT.md` is the operating manual from here; this file remains the
+> source the criterion is quoted from (`social/src/metrics/readout.ts`, `scripts/lib/review.ts`).
+
 ## The question
 **Is social media viable at all for Plain?** Not "which format performs best" — that cannot be answered at n=1.
 
@@ -187,7 +196,7 @@ A validated `pull_quote` field in the content pipeline — a verbatim, self-cont
 full passage in context. One-time cost; revives Three Voices and lifts One-Line Gut Punch.
 
 ## Plans
-1. `plans/Pf39c2-social-pilot-01.md` — Content premises: gate and score the corpus into pools, generate a weekly schedule
+1. `plans/complete/Pf39c2-social-pilot-01.md` — Content premises: gate and score the corpus into pools, generate a weekly schedule
    - Status: [x]
 2. `plans/complete/Pf39c2-social-pilot-02.md` — Character system and rendering: three characters, per-format templates, encode
    - Status: [x] (2026-08-27) — reconciled against 02a's deprecation work: T02/T19/F12/F04 marked obsolete (the

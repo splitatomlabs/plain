@@ -1,6 +1,6 @@
 # Format analysis — rejected candidates and negative results (2026-08-23 to 2026-08-25)
 
-Archaeology for `plans/Pf39c2-social-pilot-index.md`. The index carries only the durable RULES these produced;
+Archaeology for `plans/complete/Pf39c2-social-pilot-index.md`. The index carries only the durable RULES these produced;
 this file keeps the measurements and the case-by-case reasoning, so a rejection can be re-checked rather than
 re-derived. Platform and infrastructure research is in `social-experiment-notes.md`.
 
