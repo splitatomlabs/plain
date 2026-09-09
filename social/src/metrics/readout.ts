@@ -651,11 +651,15 @@ async function main(): Promise<void> {
 
 	// `toDir` (shared with `hand-entry.ts`) rejects an empty `--metrics-dir`
 	// outright rather than falling through `?? DEFAULT_METRICS_DIR` — an
-	// empty value here is the worst case in this whole file: it makes
-	// `readLatestMetricsRows` read an empty/wrong directory, `rows` comes
-	// back `[]`, and this CLI prints a confident "NOT VIABLE" verdict over
-	// zero data with exit code 0, rather than failing loudly. See `toDir`'s
-	// own doc comment for the general class this closes.
+	// empty STRING value here is the one shell-level failure mode `toDir`
+	// itself can see (`--metrics-dir=` with an unset variable). See `toDir`'s
+	// own doc comment for that general class. It cannot see a typo'd or
+	// nonexistent PATH, though — a value that is a syntactically fine,
+	// non-empty string but names no real directory. That wider case (any
+	// path, empty or missing or misspelled, that yields zero rows) is closed
+	// below, after `readLatestMetricsRows` runs, by refusing to print a
+	// verdict — "NOT VIABLE" or otherwise — over zero data. See that check's
+	// own comment for why.
 	const metricsDir = toDir(values['metrics-dir'], '--metrics-dir', DEFAULT_METRICS_DIR);
 
 	// THE ONE WALL-CLOCK READ IN THIS FILE — matches this workspace's own
@@ -668,6 +672,28 @@ async function main(): Promise<void> {
 	const breakoutViewThreshold = parseBreakoutThreshold(values['breakout-threshold']);
 
 	const rows = await readLatestMetricsRows(metricsDir);
+
+	// ZERO ROWS IS NEVER "NOT VIABLE" (review round 5). `computeVerdict` over
+	// an empty platform list legitimately returns `viable: false` — that pure
+	// behaviour is `readout.test.ts`'s own `empty datasets` block and stays
+	// unchanged, since another caller may reasonably want "no data" folded
+	// into "not viable" for its own purposes. But THIS CLI is the one output
+	// the pilot exists to produce: a reader acts on "NOT VIABLE" as the
+	// pre-registered negative result, and that phrase must never appear
+	// without real rows behind it — a mistyped or not-yet-existing
+	// `--metrics-dir` must not be indistinguishable from a genuine negative.
+	// So this is a `main()`-level reporting guard, not a change to
+	// `computeReadout`/`computeVerdict`: it reports "insufficient data" and
+	// exits non-zero instead of ever calling `computeReadout` at all when
+	// `rows` is empty. Anything above zero rows is left alone — a real but
+	// thin dataset (one row, one day) is exactly what the pre-registered
+	// criterion's own human-in-the-loop reading (see the plan's §8) is for,
+	// and inventing a second "minimum viable N" here would just relocate the
+	// same fabrication risk this guard exists to close.
+	if (rows.length === 0) {
+		throw new Error(`INSUFFICIENT DATA — no metrics rows found under ${metricsDir}.`);
+	}
+
 	const instagramFollowerSnapshots = await readInstagramFollowerSnapshots(metricsDir);
 
 	const readout = computeReadout({ rows, instagramFollowerSnapshots, now, breakoutViewThreshold });
