@@ -66,3 +66,9 @@ functions/lib/
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
+
+# Local social-pilot credentials — the file-backed TokenStore
+# (social/src/publish/token-store-local.ts, --token-store local) holds live
+# Instagram/YouTube tokens in plaintext. NEVER commit it.
+content/social/tokens.local.json
+content/social/tokens.*.json

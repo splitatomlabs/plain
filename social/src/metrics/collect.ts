@@ -99,6 +99,7 @@ import { collectInstagramRows, fetchInstagramFollowerSnapshot, type InstagramMet
 import { collectYouTubeRows, type YouTubeMetricsConfig, type FetchFn as YouTubeFetchFn } from './youtube.js';
 import type { PendingYouTubeFlip } from '../publish/tiktok-manual.js';
 import { createFirestoreTokenStore } from '../publish/token-store-firestore.js';
+import { createLocalTokenStore, DEFAULT_LOCAL_TOKEN_PATH } from '../publish/token-store-local.js';
 import { createFirestorePendingFlipsStore } from '../publish/pending-flips-store-firestore.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -327,9 +328,14 @@ content/social/metrics/. Re-running for the same day updates rows in place
 rather than duplicating them. See plans/Pf39c2-social-pilot-03.md T12.
 
 Options:
-  --now <ISO 8601>   Override the collection instant (default: real wall-clock time).
-                      Mainly for a manual re-run against a specific day.
-  --help              Show this help.`);
+  --now <ISO 8601>    Override the collection instant (default: real wall-clock time).
+                       Mainly for a manual re-run against a specific day.
+  --token-store <kind> Where to read tokens from: "firestore" (default) or
+                       "local" (the same 0600 JSON file job.ts --token-store
+                       local writes).
+  --token-file <path>  The JSON file used ONLY when --token-store=local
+                       (default: content/social/tokens.local.json).
+  --help               Show this help.`);
 }
 
 function errorMessageForCli(error: unknown): string {
@@ -341,6 +347,8 @@ async function main(): Promise<void> {
 		args: process.argv.slice(2),
 		options: {
 			now: { type: 'string' },
+			'token-store': { type: 'string' },
+			'token-file': { type: 'string', default: DEFAULT_LOCAL_TOKEN_PATH },
 			help: { type: 'boolean', default: false }
 		},
 		allowPositionals: true
@@ -358,7 +366,17 @@ async function main(): Promise<void> {
 	const now = values.now ?? new Date().toISOString();
 
 	const logger = { info: (line: string) => console.log(line), warn: (line: string) => console.warn(line) };
-	const tokenStore = createFirestoreTokenStore();
+	// Mirrors `job.ts`'s `--token-store` flag so a LOCAL daily run reads the
+	// same 0600 JSON file the publish job writes, with no GCP project in play.
+	// See `publish/token-store-local.ts` for when each store is appropriate.
+	const tokenStoreKind = values['token-store'] ?? 'firestore';
+	if (tokenStoreKind !== 'firestore' && tokenStoreKind !== 'local') {
+		throw new Error(`--token-store must be "firestore" or "local", got "${tokenStoreKind}"`);
+	}
+	const tokenStore =
+		tokenStoreKind === 'local'
+			? createLocalTokenStore(values['token-file'] ?? DEFAULT_LOCAL_TOKEN_PATH)
+			: createFirestoreTokenStore();
 
 	let instagram: RunMetricsCollectionOptions['instagram'];
 	try {

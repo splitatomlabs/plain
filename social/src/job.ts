@@ -152,6 +152,7 @@ import {
 	type TokenStore
 } from './publish/tokens.js';
 import { createFirestoreTokenStore } from './publish/token-store-firestore.js';
+import { createLocalTokenStore, DEFAULT_LOCAL_TOKEN_PATH } from './publish/token-store-local.js';
 import { createFirestorePendingFlipsStore } from './publish/pending-flips-store-firestore.js';
 import { publishToInstagram, type PublishToInstagramOptions, type PublishToInstagramResult } from './publish/instagram.js';
 import { uploadVideoToYouTube, type UploadVideoOptions, type UploadVideoResult } from './publish/youtube.js';
@@ -210,6 +211,15 @@ Options:
   --pending-flips-file <path>    The JSON file path used ONLY when
                                   --pending-flips-store=local (default:
                                   content/social/pending-youtube-flips.json).
+  --token-store <kind>           Where the Instagram/YouTube tokens are read
+                                  and written: "firestore" (default) or
+                                  "local" (a 0600 JSON file — for a local
+                                  scheduled run with no GCP project; a Cloud
+                                  Run execution's filesystem is throwaway, so
+                                  "local" there silently loses refreshes).
+  --token-file <path>            The JSON file used ONLY when
+                                  --token-store=local (default:
+                                  content/social/tokens.local.json).
   --dry-run                      Render for real, but perform NO uploads and
                                   NO posts — logs exactly what each platform
                                   WOULD do. Needs no credentials at all.
@@ -217,6 +227,7 @@ Options:
 }
 
 export type PendingFlipsStoreKind = 'firestore' | 'local';
+export type TokenStoreKind = 'firestore' | 'local';
 
 export interface JobArgs {
 	date: string;
@@ -224,7 +235,15 @@ export interface JobArgs {
 	scheduleDir: string;
 	pendingFlipsPath: string;
 	pendingFlipsStore: PendingFlipsStoreKind;
+	tokenStore: TokenStoreKind;
+	tokenPath: string;
 	dryRun: boolean;
+}
+
+function parseTokenStoreKind(value: string | undefined): TokenStoreKind {
+	if (value === undefined || value === 'firestore') return 'firestore';
+	if (value === 'local') return 'local';
+	throw new Error(`--token-store must be "firestore" or "local", got "${value}"`);
 }
 
 function parsePendingFlipsStoreKind(value: string | undefined): PendingFlipsStoreKind {
@@ -242,6 +261,8 @@ export function parseJobArgs(argv: string[]): JobArgs {
 			'schedule-dir': { type: 'string', default: SCHEDULE_DIR },
 			'pending-flips-store': { type: 'string' },
 			'pending-flips-file': { type: 'string', default: DEFAULT_PENDING_FLIPS_PATH },
+			'token-store': { type: 'string' },
+			'token-file': { type: 'string', default: DEFAULT_LOCAL_TOKEN_PATH },
 			'dry-run': { type: 'boolean', default: false },
 			help: { type: 'boolean', default: false }
 		},
@@ -263,6 +284,8 @@ export function parseJobArgs(argv: string[]): JobArgs {
 		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
 		pendingFlipsPath: values['pending-flips-file'] ?? DEFAULT_PENDING_FLIPS_PATH,
 		pendingFlipsStore: parsePendingFlipsStoreKind(values['pending-flips-store']),
+		tokenStore: parseTokenStoreKind(values['token-store']),
+		tokenPath: values['token-file'] ?? DEFAULT_LOCAL_TOKEN_PATH,
 		dryRun: Boolean(values['dry-run'])
 	};
 }
@@ -689,6 +712,18 @@ function createDefaultFirestorePendingFlipsStore(): PendingFlipsStore {
  * `--pending-flips-store local` is passed explicitly (see this file's header
  * comment's "PENDING YOUTUBE FLIPS" section).
  */
+/**
+ * Selects the `TokenStore` implementation for a real run — Firestore by
+ * default, the 0600-JSON-file implementation only when `--token-store local`
+ * is passed explicitly. Mirrors `createPendingFlipsStoreFor` exactly; see
+ * `publish/token-store-local.ts`'s header for when each is appropriate.
+ */
+function createTokenStoreFor(args: JobArgs): TokenStore {
+	return args.tokenStore === 'local'
+		? createLocalTokenStore(args.tokenPath)
+		: createDefaultTokenStore();
+}
+
 function createPendingFlipsStoreFor(args: JobArgs): PendingFlipsStore {
 	return args.pendingFlipsStore === 'local'
 		? createLocalPendingFlipsStore(args.pendingFlipsPath)
@@ -716,7 +751,7 @@ function buildDefaultJobDeps(args: JobArgs, now: string, logger: JobLogger): Job
 		loadSchedule: defaultLoadSchedule,
 		render: defaultRender,
 		uploadAsset: createDefaultUploadAsset(),
-		tokenStore: createDefaultTokenStore(),
+		tokenStore: createTokenStoreFor(args),
 		refresh: { instagram: notImplementedRefresh('instagram'), youtube: notImplementedRefresh('youtube') },
 		loadInstagramAccountConfig: createDefaultInstagramAccountConfigLoader(),
 		publishInstagram: publishToInstagram,

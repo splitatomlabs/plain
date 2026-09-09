@@ -61,6 +61,8 @@ const ARGS: JobArgs = {
 	scheduleDir: '/fake/schedule-dir',
 	pendingFlipsPath: '/fake/pending-youtube-flips.json',
 	pendingFlipsStore: 'firestore',
+	tokenStore: 'firestore',
+	tokenPath: '/fake/tokens.local.json',
 	dryRun: false
 };
 
