@@ -4,7 +4,12 @@
 **Is social media viable at all for Plain?** Not "which format performs best" — that cannot be answered at n=1.
 
 ## Success criterion (pre-registered — do not renegotiate after posting)
-A single 10x-median outlier is NOT sufficient; across ~168 posts one is expected from variance alone.
+A single 10x-median outlier is NOT sufficient; across 84 posts (1 Wall post/day x 3 platforms x 28 days) one
+is still expected from variance alone. (Re-derived 2026-09-09: an earlier ~168 here — 2 posts/day x 3 platforms
+x 28 days — predates `Pf39c2-social-pilot-02a` D02, which collapsed the channel to a single Wall post per day;
+nobody re-derived the post count after that decision. 84 is half of 168, so a lone outlier is expected roughly
+half as often as the stale figure implied — but "half as often" is still "expected," so the argument's point
+survives unchanged: one 10x spike among 84 posts is not evidence of anything by itself.)
 
 Viable requires at least one of:
 - **A. Breakout with conversion** — a post clearing ~10,000 views on any platform AND converting visibly to follows.

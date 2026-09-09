@@ -129,12 +129,24 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       rule (scheduled TikToks cannot be edited, only deleted and re-uploaded — which §2 forbids
       after publish).
 
-- [~] T12: Correct the post-count arithmetic in the criterion. `plans/Pf39c2-social-pilot-index.md`
+- [x] T12: Correct the post-count arithmetic in the criterion. `plans/Pf39c2-social-pilot-index.md`
       reasons about "~168 posts"; the pilot is 1/day × 3 platforms × 28 days = **84**. The A-or-B
       rule is unchanged — annotate the variance argument, do not restate the criterion.
 
-- [ ] T13: Update `CLAUDE.md`'s Testing section — the social suite count and description change
+- [~] T13: Update `CLAUDE.md`'s Testing section — the social suite count and description change
       substantially once the publish/metrics modules are gone.
+
+- [ ] T14: Sweep the rest of `docs/SOCIAL_PILOT.md` for the deleted pipeline. Added during
+      execution (2026-09-09), after T10 and T11 each found the plan's doc scope too narrow: §3 and
+      §5 are now correct but ~315 lines around them still describe the deleted system as live.
+      §4 "The daily loop" opens "Once deployed, this runs unattended" and documents the Firebase
+      trigger and Cloud Run job that T09 deleted — it must become "there is no daily loop; the only
+      daily act is the follower integer", pointing at §5.5. The "TikTok metrics collection (T13)"
+      appendix reasons about automating a read path that is now hand entry by decision — retire it
+      to a short historical note. "Current status — what is NOT done" tracks Docker/Cloud Run steps
+      that no longer exist. §6 and §7 name deleted modules (`storage.ts`, `job.ts`,
+      `metrics/collect.ts`, Firestore stores). Also refresh the preamble's "checked against the
+      actual source files as of 2026-08-27" date. §1, §2 and §8 stay as they are.
 
 ## Verify
 
