@@ -13,10 +13,14 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+	DEFAULT_OUT_DIR,
+	REPO_ROOT,
+	SCHEDULE_DIR,
 	runPrepareWeek,
 	type PrepareWeekArgs,
 	type PrepareWeekDeps
@@ -260,5 +264,56 @@ describe('missing --week', () => {
 		const result = runCli([]);
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toMatch(/--week/);
+	});
+});
+
+describe('F4 — empty --out/--schedule-dir are rejected outright, not silently falling through to the default', () => {
+	it('an empty --out exits non-zero, naming the flag, without touching a schedule file at all', () => {
+		const result = runCli(['--week', '1', '--out', '']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--out\b/);
+	});
+
+	it('an empty --schedule-dir exits non-zero, naming the flag, without touching a schedule file at all', () => {
+		const result = runCli(['--week', '1', '--schedule-dir', '']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--schedule-dir/);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// F3 (Pb4e17-social-native-scheduling review round 4) — REPO_ROOT/
+// SCHEDULE_DIR/DEFAULT_OUT_DIR are new to this file in this diff. Nothing
+// above asserts their actual resolved value, so mutating the `path.resolve`
+// call behind them (e.g. dropping one `'..'`) left every other test green.
+// Anchored on structural markers (a `.git` directory and a `package.json`
+// at the resolved root), never on the repo directory's own name, which
+// would break for anyone who clones this repo under a different name.
+// ---------------------------------------------------------------------------
+
+describe('REPO_ROOT / SCHEDULE_DIR / DEFAULT_OUT_DIR — resolved path pinning', () => {
+	it('SCHEDULE_DIR resolves to the repo root\'s content/social directory', () => {
+		expect(SCHEDULE_DIR.endsWith(path.join('content', 'social'))).toBe(true);
+		const resolvedRoot = path.join(SCHEDULE_DIR, '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		expect(resolvedRoot).toBe(REPO_ROOT);
+	});
+
+	it('DEFAULT_OUT_DIR resolves to the repo root\'s social/out directory', () => {
+		expect(DEFAULT_OUT_DIR.endsWith(path.join('social', 'out'))).toBe(true);
+		const resolvedRoot = path.join(DEFAULT_OUT_DIR, '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		expect(resolvedRoot).toBe(REPO_ROOT);
+	});
+
+	it('REPO_ROOT itself is the actual repo root, not the social/ sub-project', () => {
+		expect(existsSync(path.join(REPO_ROOT, '.git'))).toBe(true);
+		// social/ has its OWN package.json (it's a self-contained npm
+		// project — see this workspace's own doc comments) — asserting
+		// `.git` alone is what actually distinguishes the true repo root
+		// from social/ itself.
+		expect(existsSync(path.join(REPO_ROOT, 'social', 'package.json'))).toBe(true);
 	});
 });

@@ -192,6 +192,22 @@ export function validateHandEnteredMetrics(input: HandEnteredMetrics): void {
 		if (!isNonNegativeInteger(input.follows)) {
 			throw new HandEntryValidationError(`Hand entry's "follows" must be a non-negative whole number — got ${JSON.stringify(input.follows)}.`);
 		}
+		// `follows` is a REAL per-post number ONLY on YouTube (see this file's
+		// header) — accepting it for Instagram/TikTok would record a fabricated
+		// attribution that looks identical, on disk, to a real one. Today
+		// `readout.ts` never trusts a non-YouTube row's `follows` (Instagram/
+		// TikTok always take the 'inferred'/'unavailable' branch instead of
+		// reading the row field), so this specifically hand-typed number is
+		// currently discarded downstream — but a future change that started
+		// trusting `row.follows` directly would silently promote a guess into
+		// criterion A evidence. An explicit `0` is rejected too: a zero is
+		// still a claim that this platform can report a per-post follow
+		// count, which is false regardless of the value entered.
+		if (input.platform !== 'youtube') {
+			throw new HandEntryValidationError(
+				`Hand entry's "follows" is only real on YouTube — got ${JSON.stringify(input.follows)} for ${input.platform}.`
+			);
+		}
 	}
 
 	if (input.averagePercentWatched !== undefined && input.averagePercentWatched !== null) {
@@ -270,13 +286,15 @@ Required:
   --shares <n>      Non-negative whole number.
 
 Optional:
-  --follows <n>               Non-negative whole number. Enter this on
-                              YouTube — read the per-video "subscribers
-                              gained" figure off YouTube Studio, it's exact.
-                              Leave this flag off on Instagram/TikTok, where
-                              no read path attributes a follow to a specific
-                              post; omitting it records null, never a
-                              fabricated 0.
+  --follows <n>               Non-negative whole number. YouTube ONLY — read
+                              the per-video "subscribers gained" figure off
+                              YouTube Studio, it's exact. Leave this flag off
+                              on Instagram/TikTok; omitting it records null,
+                              never a fabricated 0. Passing --follows at all
+                              (even --follows 0) for Instagram or TikTok is
+                              rejected outright — no read path on either
+                              platform attributes a follow to a specific
+                              post, so any value there would be fabricated.
   --avg-percent-watched <n>   0-100. Omit unless the app shows a clean
                               percentage — retention otherwise stays manual.
   --collected-at <ISO8601>    Defaults to the real wall-clock time.
@@ -314,6 +332,29 @@ function parseRequiredNumber(raw: string | undefined, flag: string): number {
 		throw new Error(`Missing required flag "${flag}".`);
 	}
 	return toNumber(raw, flag);
+}
+
+/**
+ * F4 (`Pb4e17-social-native-scheduling` review round 4) — the string-flag
+ * remainder of the class `toNumber` above closed for numerics: `Number('')
+ * === 0` was the fabrication risk there; here, `raw ?? fallback` treats an
+ * EMPTY string as "supplied," not "omitted," so `--out-dir=$OUT_DIR` with
+ * `OUT_DIR` unset in the shell (expanding to `--out-dir=`) would silently
+ * write to a bogus path built from an empty segment rather than falling
+ * back to the documented default — the exact same "unset shell variable"
+ * failure mode `toNumber`'s own doc comment describes, just for a path
+ * instead of a number. Rejects an empty-or-whitespace-only value outright;
+ * `undefined` (the flag genuinely omitted) still falls through to
+ * `fallback` unchanged. Exported so `follower-snapshot.ts`'s `--out-dir` and
+ * `readout.ts`'s `--metrics-dir` go through the exact same guard rather than
+ * a second, possibly-drifting copy — same rationale as `toNumber` itself.
+ */
+export function toDir(raw: string | undefined, flag: string, fallback: string): string {
+	if (raw === undefined) return fallback;
+	if (raw.trim() === '') {
+		throw new Error(`Flag "${flag}" must be a directory path — got an empty value.`);
+	}
+	return raw;
 }
 
 function isMetricsPlatform(value: string): value is MetricsPlatform {
@@ -377,7 +418,9 @@ async function main(): Promise<void> {
 	// operator override this for a manual re-run against a specific instant,
 	// same discipline as `readout.ts`'s own `--now`.
 	const collectedAt = values['collected-at'] ?? new Date().toISOString();
-	const outDir = values['out-dir'] ?? DEFAULT_METRICS_DIR;
+	// `toDir` rejects an empty `--out-dir` outright rather than falling
+	// through `?? DEFAULT_METRICS_DIR` — see its own doc comment.
+	const outDir = toDir(values['out-dir'], '--out-dir', DEFAULT_METRICS_DIR);
 
 	const input: HandEnteredMetrics = {
 		platform: values.platform,

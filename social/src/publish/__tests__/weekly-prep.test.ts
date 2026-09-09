@@ -168,6 +168,26 @@ describe('prepareWeek', () => {
 		);
 	});
 
+	it('refuses to prepare a schedule with a duplicated day even when every day is otherwise covered', async () => {
+		// 8 slots covering days 1-7, with day 3 duplicated — every day 1-7 IS
+		// present (distinctDays.size === DAYS_PER_WEEK), so a guard that only
+		// checked day COVERAGE would let this through and silently produce an
+		// 8-block captions.txt with two blocks for the same date.
+		const duplicatedDaySchedule: WeekSchedule = {
+			...SCHEDULE,
+			slots: [...SCHEDULE.slots, { ...SCHEDULE.slots[2], card_id: 'discourses-60-001-dup' }]
+		};
+		await writeRenderedVideos(SCHEDULE);
+		await writeFile(
+			renderAssetPaths(outDir, 'wall', weekDayToDate(SCHEDULE.week, 3)).video,
+			'fake video bytes'
+		);
+
+		await expect(prepareWeek({ schedule: duplicatedDaySchedule, outDir })).rejects.toThrow(/duplicat/i);
+
+		await expect(readFile(path.join(outDir, 'captions.txt'))).rejects.toThrow();
+	});
+
 	it('never prepares a short week — writes no captions file when any day is missing', async () => {
 		const missingDaySchedule: WeekSchedule = { ...SCHEDULE, slots: SCHEDULE.slots.filter((s) => s.day !== 7) };
 		await writeRenderedVideos(missingDaySchedule);

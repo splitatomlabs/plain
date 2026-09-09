@@ -36,6 +36,7 @@ import {
 	HandEntryValidationError,
 	buildHandEnteredMetricsRow,
 	recordHandEntry,
+	toDir,
 	toNumber,
 	validateHandEnteredMetrics,
 	type HandEnteredMetrics
@@ -64,6 +65,11 @@ describe('buildHandEnteredMetricsRow — a row for each native-scheduled platfor
 		expect(row.platform).toBe(platform);
 		expect(row.postId).toBe(`${platform}-post-1`);
 		expect(metricsRowKey(row)).toBe(`${platform}:${platform}-post-1`);
+	});
+
+	it.each(PLATFORMS)('D1 — saves is always null for platform: %s (schema.ts documents this, hand-entry.ts enforces it)', (platform) => {
+		const row = buildHandEnteredMetricsRow(validInput({ platform, postId: `${platform}-saves-check` }));
+		expect(row.saves).toBeNull();
 	});
 
 	it('produces a plain schema.ts MetricsRow shape with format: wall and saves: null', () => {
@@ -205,6 +211,20 @@ describe('validateHandEnteredMetrics — fails loudly on a typo, naming the offe
 		expect(() => validateHandEnteredMetrics(validInput({ follows: null }))).not.toThrow();
 	});
 
+	it.each(['instagram', 'tiktok'] as const)('F1 — rejects a %s row that supplies follows at all', (platform) => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 5 }))).toThrow(HandEntryValidationError);
+		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 5 }))).toThrow(/follows/);
+	});
+
+	it.each(['instagram', 'tiktok'] as const)('F1 — rejects an explicit follows: 0 on %s (a zero is still a fabricated claim)', (platform) => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 0 }))).toThrow(HandEntryValidationError);
+	});
+
+	it('F1 — a null follows on Instagram/TikTok is still fine (omission, not fabrication)', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'instagram', follows: null }))).not.toThrow();
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: null }))).not.toThrow();
+	});
+
 	it('rejects an out-of-range averagePercentWatched above 100', () => {
 		expect(() => validateHandEnteredMetrics(validInput({ averagePercentWatched: 101 }))).toThrow(HandEntryValidationError);
 	});
@@ -325,6 +345,33 @@ describe('toNumber', () => {
 });
 
 // ---------------------------------------------------------------------------
+// `toDir` — F4 (Pb4e17-social-native-scheduling review round 4), the
+// string-flag remainder of the class `toNumber` above closed for numerics.
+// Shared with `follower-snapshot.ts`'s `--out-dir` and `readout.ts`'s
+// `--metrics-dir` — tested directly here so a future weakening of the
+// guard's own body fails immediately, independent of whichever caller is
+// exercised elsewhere.
+// ---------------------------------------------------------------------------
+
+describe('toDir', () => {
+	it('returns the fallback when raw is undefined (flag genuinely omitted)', () => {
+		expect(toDir(undefined, '--out-dir', '/default/dir')).toBe('/default/dir');
+	});
+
+	it('throws on an empty string, naming the flag, rather than falling through to the fallback', () => {
+		expect(() => toDir('', '--out-dir', '/default/dir')).toThrow(/--out-dir/);
+	});
+
+	it('throws on a whitespace-only string', () => {
+		expect(() => toDir('   ', '--out-dir', '/default/dir')).toThrow(/--out-dir/);
+	});
+
+	it('returns a genuinely supplied path unchanged, not the fallback', () => {
+		expect(toDir('/custom/dir', '--out-dir', '/default/dir')).toBe('/custom/dir');
+	});
+});
+
+// ---------------------------------------------------------------------------
 // The real CLI process — `main()` (Pb4e17-social-native-scheduling F1). None
 // of the tests above ever import/exercise `main()`; they only call the pure
 // exports directly. This is where D1 (a `Date.parse`-able but non-ISO
@@ -406,6 +453,52 @@ describe('CLI — main()', () => {
 
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toMatch(/--follows/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	it('F4 — an empty --out-dir exits non-zero, names the flag, and writes nothing (never silently falls through to the default)', async () => {
+		const result = runCli([...VALID_ARGS, '--out-dir', '']);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--out-dir/);
+		// The fixture outDir this test would otherwise write into (had
+		// --out-dir NOT been overridden to empty) must stay untouched too.
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	it('F1 — --platform instagram --follows 5 exits non-zero, names "follows", and writes nothing', async () => {
+		const result = runCli([
+			'--platform', 'instagram',
+			'--post-id', 'ig1',
+			'--published-at', '2026-09-09T12:00:00.000Z',
+			'--views', '10',
+			'--likes', '1',
+			'--comments', '0',
+			'--shares', '0',
+			'--follows', '5',
+			'--out-dir', outDir
+		]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/follows/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	it('F1 — --platform instagram --follows 0 (an explicit zero) is also rejected, and writes nothing', async () => {
+		const result = runCli([
+			'--platform', 'instagram',
+			'--post-id', 'ig2',
+			'--published-at', '2026-09-09T12:00:00.000Z',
+			'--views', '10',
+			'--likes', '1',
+			'--comments', '0',
+			'--shares', '0',
+			'--follows', '0',
+			'--out-dir', outDir
+		]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/follows/);
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
 

@@ -31,7 +31,12 @@
  * pushing them outside the pilot window.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
 	computeFollowConversion,
@@ -410,5 +415,60 @@ describe('parseBreakoutThreshold validates --breakout-threshold explicitly (M8)'
 
 	it('returns the parsed number for a valid positive value', () => {
 		expect(parseBreakoutThreshold('5000')).toBe(5000);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// F4 (Pb4e17-social-native-scheduling review round 4) — a real subprocess
+// run, mirroring `hand-entry.test.ts`'s/`follower-snapshot.test.ts`'s own
+// CLI subprocess convention. An empty `--metrics-dir` is the worst failure
+// mode in this whole file: without `toDir`'s guard it would silently fall
+// through to reading an empty/wrong directory, `readLatestMetricsRows`
+// would return `[]`, and this CLI would print a confident "NOT VIABLE"
+// verdict over zero rows with exit code 0 — a false verdict on the pilot's
+// central decision, not merely a missing file.
+// ---------------------------------------------------------------------------
+
+describe('CLI — main()', () => {
+	const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+	const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
+	const cliPath = path.join(repoRoot, 'social', 'src', 'metrics', 'readout.ts');
+
+	let metricsDir: string;
+
+	beforeEach(async () => {
+		metricsDir = await mkdtemp(path.join(tmpdir(), 'plain-readout-'));
+	});
+
+	afterEach(async () => {
+		await rm(metricsDir, { recursive: true, force: true });
+	});
+
+	function runCli(args: string[]): { status: number; stdout: string; stderr: string } {
+		try {
+			const stdout = execFileSync('npx', ['tsx', cliPath, ...args], {
+				cwd: repoRoot,
+				encoding: 'utf-8',
+				stdio: ['ignore', 'pipe', 'pipe']
+			});
+			return { status: 0, stdout, stderr: '' };
+		} catch (e) {
+			const err = e as { status: number | null; stdout: string; stderr: string };
+			return { status: err.status ?? 1, stdout: err.stdout ?? '', stderr: err.stderr ?? '' };
+		}
+	}
+
+	it('a real --metrics-dir with no metrics files prints a report and exits 0 (the honest "no data" case)', () => {
+		const result = runCli(['--metrics-dir', metricsDir, '--now', '2026-09-09T00:00:00.000Z']);
+		expect(result.status).toBe(0);
+		expect(result.stdout).toMatch(/No metrics rows supplied/);
+	});
+
+	it('F4 — an empty --metrics-dir exits non-zero, names the flag, and never silently reports a verdict over zero rows', () => {
+		const result = runCli(['--metrics-dir', '', '--now', '2026-09-09T00:00:00.000Z']);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--metrics-dir/);
+		expect(result.stdout).not.toMatch(/VIABLE/);
 	});
 });

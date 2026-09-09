@@ -89,6 +89,7 @@ import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 
 import { dateToWeekDay } from '../pilot-config.js';
+import { toDir } from './hand-entry.js';
 import { DEFAULT_METRICS_DIR, instagramFollowersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
 
 // ---------------------------------------------------------------------------
@@ -648,7 +649,14 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const metricsDir = values['metrics-dir'] ?? DEFAULT_METRICS_DIR;
+	// `toDir` (shared with `hand-entry.ts`) rejects an empty `--metrics-dir`
+	// outright rather than falling through `?? DEFAULT_METRICS_DIR` — an
+	// empty value here is the worst case in this whole file: it makes
+	// `readLatestMetricsRows` read an empty/wrong directory, `rows` comes
+	// back `[]`, and this CLI prints a confident "NOT VIABLE" verdict over
+	// zero data with exit code 0, rather than failing loudly. See `toDir`'s
+	// own doc comment for the general class this closes.
+	const metricsDir = toDir(values['metrics-dir'], '--metrics-dir', DEFAULT_METRICS_DIR);
 
 	// THE ONE WALL-CLOCK READ IN THIS FILE — matches this workspace's own
 	// "DETERMINISM" discipline elsewhere (e.g. `hand-entry.ts`'s/

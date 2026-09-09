@@ -13,9 +13,13 @@
  *     Instagram follower-snapshots file.
  */
 
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+	DEFAULT_METRICS_DIR,
 	INSTAGRAM_FOLLOWERS_FILENAME,
 	instagramFollowersFilePathFor,
 	metricsFilePathFor,
@@ -163,5 +167,31 @@ describe('Instagram follower snapshots — upsert + round trip', () => {
 
 	it('the followers file lives under the metrics outDir, named INSTAGRAM_FOLLOWERS_FILENAME', () => {
 		expect(instagramFollowersFilePathFor('/content/social/metrics')).toBe(`/content/social/metrics/${INSTAGRAM_FOLLOWERS_FILENAME}`);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// F3 (Pb4e17-social-native-scheduling review round 4) — DEFAULT_METRICS_DIR
+// moved into this file in this diff, and nothing asserted its actual
+// resolved value: mutating `path.resolve(moduleDir, '..', '..', '..')` to
+// `'..', '..'` left all 462 social tests green before this test existed.
+// Anchored on structural markers (`.git`, `package.json`), never on the
+// repo directory's own name — that would break for anyone who clones this
+// repo under a different name.
+// ---------------------------------------------------------------------------
+
+describe('DEFAULT_METRICS_DIR — resolved path pinning', () => {
+	it('resolves to the repo root\'s content/social/metrics directory', () => {
+		expect(DEFAULT_METRICS_DIR.endsWith(path.join('content', 'social', 'metrics'))).toBe(true);
+
+		const resolvedRoot = path.join(DEFAULT_METRICS_DIR, '..', '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		// social/ has its OWN package.json (it's a self-contained npm
+		// project — see this file's header) — `.git` is what actually
+		// distinguishes the true repo root from social/ itself, since a
+		// `path.resolve` one level short would land exactly there and still
+		// find A package.json, just the wrong one.
+		expect(existsSync(path.join(resolvedRoot, 'social', 'package.json'))).toBe(true);
 	});
 });

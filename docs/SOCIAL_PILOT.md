@@ -474,9 +474,11 @@ reconciliation step at readout time regardless of which platform or which entry 
 Studio shows subscribers gained per video — read it and pass it as `--follows`; that is exactly what
 lets `readout.ts`'s `computeFollowConversion` report `method: 'exact'` for that row (section 1),
 which is half of criterion A. Instagram and TikTok have no per-post follow attribution on any read
-path, automated or in-app — leave `--follows` off entirely on those two. Omitting it records `null`,
-never a fabricated `0`; passing `0` would claim a real zero-follow reading that was never actually
-taken.
+path, automated or in-app — leave `--follows` off entirely on those two. `hand-entry.ts` enforces
+this: passing `--follows` at all for `--platform instagram` or `--platform tiktok` — even `--follows
+0` — is rejected with a `HandEntryValidationError`, not silently recorded, because a zero is still a
+claim that the platform can report a per-post follow count. Omitting it on YouTube itself records
+`null`, never a fabricated `0`.
 
 `--avg-percent-watched` stays optional and `null` unless a platform's analytics screen shows a clean
 percentage worth typing in — TikTok's retention data in particular is in-app only, with no automated

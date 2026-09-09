@@ -39,7 +39,7 @@ import { parseArgs } from 'node:util';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { HandEntryValidationError, toNumber } from './hand-entry.js';
+import { HandEntryValidationError, toDir, toNumber } from './hand-entry.js';
 import {
 	DEFAULT_METRICS_DIR,
 	instagramFollowersFilePathFor,
@@ -219,7 +219,11 @@ async function main(): Promise<void> {
 	}
 
 	const input = parseFollowerSnapshotArgs({ date: values.date, followers: values.followers });
-	const outDir = values['out-dir'] ?? DEFAULT_METRICS_DIR;
+	// `toDir` (shared with `hand-entry.ts`) rejects an empty `--out-dir`
+	// outright rather than falling through `?? DEFAULT_METRICS_DIR` — see
+	// its own doc comment for why (the string-flag remainder of the
+	// `toNumber` empty-value class).
+	const outDir = toDir(values['out-dir'], '--out-dir', DEFAULT_METRICS_DIR);
 	const filePath = instagramFollowersFilePathFor(outDir);
 
 	const existing = await readExistingSnapshots(filePath);

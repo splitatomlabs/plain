@@ -22,14 +22,23 @@
  * `Pf39c2-social-pilot-02a` D02, which collapsed the channel to a SINGLE
  * Wall post per day — a week is `schedule.slots.length` videos, which is 7
  * for every schedule this pipeline currently generates (one slot per day,
- * 7 days), NOT 14. `prepareWeek` below derives the SLOT count from
- * `schedule.slots` rather than hard-coding 7 OR 14 — if a future schedule
- * format ever carries more than one slot per day, this module keeps working
- * without a code change. The DAY count is not similarly open-ended, though:
- * every day in `pilot-config.ts`'s `DAYS_PER_WEEK` range must be covered
- * exactly once (see `prepareWeek`'s guard on `distinctDays`) — that range is
- * a fixed pilot-wide invariant (`weekDayToDate` already refuses a day
- * outside it), not something this module should treat as flexible.
+ * 7 days), NOT 14. `prepareWeek` below still reads the slot count from
+ * `schedule.slots.length` rather than hard-coding 7 OR 14, so a captions
+ * block per day falls out of iterating the schedule's own slots rather than
+ * a hardcoded loop bound.
+ *
+ * EVERY DAY EXACTLY ONCE — enforced, not aspirational: every day in
+ * `pilot-config.ts`'s `DAYS_PER_WEEK` range must appear in the schedule, and
+ * NONE may appear more than once (`prepareWeek`'s guard checks both,
+ * deliberately in that order — see the guard's own comment). A duplicated
+ * day is corruption (a hand-edited or malformed schedule file), not a
+ * legitimate multiple-posts-per-day format: this pipeline has only ever
+ * generated one slot per day, and a schedule that silently posts the same
+ * day twice while skipping another is precisely the bug this guard exists to
+ * catch. If a future schedule format genuinely needs more than one slot on
+ * the same day, that is a deliberate change to this invariant and must
+ * update this guard (and this comment) at the same time — it is not
+ * something this module accommodates by default today.
  * ---------------------------------------------------------------------
  *
  * No GCS, no upload, no credentials: this module imports nothing from
@@ -143,20 +152,40 @@ export async function prepareWeek(options: PrepareWeekOptions): Promise<WeekPrep
 
 	const orderedSlots = [...schedule.slots].sort((a, b) => a.day - b.day);
 
-	// Guard against a SHORT SCHEDULE, not just a missing render: the days
-	// present must be exactly {1, ..., DAYS_PER_WEEK}, one slot each — a
-	// schedule missing a day, or one that duplicates a day (which, since
-	// `ScheduleSlot.day` is confined to that same 1-DAYS_PER_WEEK range by
-	// `weekDayToDate` below, always means some OTHER day is missing), would
-	// otherwise sail through the per-slot `existsSync` check below and
-	// silently produce a short `captions.txt`. Checking DISTINCT days
-	// (rather than `orderedSlots.length`) is deliberate, not `===
-	// DAYS_PER_WEEK` alone: it still catches a duplicate day even when the
-	// slot count happens to equal `DAYS_PER_WEEK`, and it leaves room for a
-	// future schedule format with more than one slot per day (see this
-	// module's header comment) without penalizing that shape for having
-	// "too many" slots.
+	// Guard against a SHORT OR DUPLICATED SCHEDULE, not just a missing
+	// render — two checks, in this order, both before anything is written:
+	//
+	// 1. NO DAY MAY REPEAT. Comparing `orderedSlots.length` against
+	//    `distinctDays.size` catches a duplicated day even when the total
+	//    slot count still happens to equal `DAYS_PER_WEEK` overall (e.g. an
+	//    8-slot schedule covering days 1-7 with day 3 duplicated: 7 distinct
+	//    days present, which the coverage check below would accept on its
+	//    own) — see this module's header comment for why a duplicate day is
+	//    treated as corruption rather than a valid format, and is checked
+	//    FIRST, ahead of the coverage check, so a duplicate is reported as
+	//    exactly that rather than a confusing "day count" mismatch.
+	// 2. EVERY DAY 1-DAYS_PER_WEEK MUST BE PRESENT. Once no day repeats,
+	//    `distinctDays.size !== DAYS_PER_WEEK` means the schedule is simply
+	//    short — missing a day outright.
+	//
+	// Either failure would otherwise sail through the per-slot `existsSync`
+	// check below and silently produce a short or duplicated `captions.txt`.
 	const distinctDays = new Set(orderedSlots.map((slot) => slot.day));
+	if (distinctDays.size !== orderedSlots.length) {
+		const dayCounts = new Map<number, number>();
+		for (const slot of orderedSlots) {
+			dayCounts.set(slot.day, (dayCounts.get(slot.day) ?? 0) + 1);
+		}
+		const duplicatedDays = [...dayCounts.entries()]
+			.filter(([, count]) => count > 1)
+			.map(([day]) => day)
+			.sort((a, b) => a - b);
+		throw new Error(
+			`Week ${schedule.week}'s schedule has ${orderedSlots.length} slot(s) but only ${distinctDays.size} distinct ` +
+				`day(s) — day(s) ${duplicatedDays.join(', ')} appear more than once. Refusing to prepare a week with a ` +
+				'duplicated day.'
+		);
+	}
 	if (distinctDays.size !== DAYS_PER_WEEK) {
 		const presentDays = orderedSlots.map((slot) => slot.day).join(', ') || '(none)';
 		throw new Error(

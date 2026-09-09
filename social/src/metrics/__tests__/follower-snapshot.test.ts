@@ -194,4 +194,12 @@ describe('CLI — main()', () => {
 		expect(result.stderr).toMatch(/--followers/);
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
+
+	it('F4 — an empty --out-dir exits non-zero, names the flag, and writes nothing (never silently falls through to the default)', async () => {
+		const result = runCli(['--date', '2026-09-09', '--followers', '0', '--out-dir', '']);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--out-dir/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
 });

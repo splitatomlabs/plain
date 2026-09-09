@@ -10,6 +10,7 @@ import { dateToWeekDay, weekDayToDate, PILOT_WEEK_1_START } from '../pilot-confi
 import { resolveDay, postIndexForDay, chooseBed, computeWallPlainLines, scheduleFileName } from '../cli-plan.js';
 import { loadOutputCard } from '../remotion/wall-pool.js';
 import { probe, assertMeetsProfile } from '../render/encode.js';
+import { DEFAULT_OUT_DIR, REPO_ROOT, SCHEDULE_DIR } from '../cli.js';
 import type { WeekSchedule } from '../schedule-types.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -203,6 +204,20 @@ describe('--dry-run', () => {
 	});
 });
 
+describe('F4 — empty --out/--schedule-dir are rejected outright, not silently falling through to the default', () => {
+	it('an empty --out exits non-zero, naming the flag, before anything is rendered', () => {
+		const result = runCli(['render', '--date', '2026-09-09', '--out', '', '--dry-run']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--out\b/);
+	});
+
+	it('an empty --schedule-dir exits non-zero, naming the flag, before anything is rendered', () => {
+		const result = runCli(['render', '--date', '2026-09-09', '--schedule-dir', '', '--dry-run']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--schedule-dir/);
+	});
+});
+
 // `--require-narration` (and the describe block that used to test it here)
 // is deleted along with the rest of the narration subsystem — Pf39c2-
 // social-pilot-02 N01, 2026-08-27. It used to fail loudly instead of
@@ -285,6 +300,40 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 		},
 		300_000
 	);
+});
+
+// ---------------------------------------------------------------------------
+// F3 (Pb4e17-social-native-scheduling review round 4) — pre-existing
+// REPO_ROOT/SCHEDULE_DIR/DEFAULT_OUT_DIR constants, pinned so a one-line
+// change to the `path.resolve` call behind them (e.g. dropping one '..')
+// cannot pass the whole suite unnoticed. Anchored on structural markers
+// (`.git`, `package.json`), never on the repo directory's own name.
+// ---------------------------------------------------------------------------
+
+describe('REPO_ROOT / SCHEDULE_DIR / DEFAULT_OUT_DIR — resolved path pinning', () => {
+	it('SCHEDULE_DIR resolves to the repo root\'s content/social directory', () => {
+		expect(SCHEDULE_DIR.endsWith(path.join('content', 'social'))).toBe(true);
+		const resolvedRoot = path.join(SCHEDULE_DIR, '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		expect(resolvedRoot).toBe(REPO_ROOT);
+	});
+
+	it('DEFAULT_OUT_DIR resolves to the repo root\'s social/out directory', () => {
+		expect(DEFAULT_OUT_DIR.endsWith(path.join('social', 'out'))).toBe(true);
+		const resolvedRoot = path.join(DEFAULT_OUT_DIR, '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		expect(resolvedRoot).toBe(REPO_ROOT);
+	});
+
+	it('REPO_ROOT itself is the actual repo root, not the social/ sub-project', () => {
+		expect(existsSync(path.join(REPO_ROOT, '.git'))).toBe(true);
+		// social/ has its OWN package.json (it's a self-contained npm
+		// project) — asserting `.git` alone is what actually distinguishes
+		// the true repo root from social/ itself.
+		expect(existsSync(path.join(REPO_ROOT, 'social', 'package.json'))).toBe(true);
+	});
 });
 
 // ---------------------------------------------------------------------------

@@ -41,14 +41,12 @@
  * `null` means "not available on this platform," strictly distinct from the
  * number `0` ("available, and the true value is zero"):
  *
- *   - `saves` — Instagram-only in this pipeline. Meta's app surfaces a
- *     per-post "saves" count on Instagram, so YouTube rows carry
- *     `saves: null` always — YouTube has no equivalent concept. TikTok is
- *     different: its own per-video analytics DOES surface a Favorites
- *     (saves) count, but it is not one of the four counts `hand-entry.ts`
- *     asks for on any platform, so TikTok rows also carry `saves: null` —
- *     that `null` means "not collected here," not "no such concept," unlike
- *     YouTube's.
+ *   - `saves` — ALWAYS `null`, on every platform, in this pipeline.
+ *     Instagram's app and TikTok's own analytics both surface a per-post
+ *     saves/Favorites count and YouTube has no equivalent concept, but
+ *     `hand-entry.ts` — the only writer of a `MetricsRow` — does not ask
+ *     for it on any platform, so no row ever carries a number here. The
+ *     field is kept for the pre-registered schema wording only.
  *   - `follows` — a REAL per-post number ONLY on YouTube, where Studio's
  *     own per-video "subscribers gained" figure is exact (`hand-entry.ts`'s
  *     `--follows`; `readout.ts`'s `FollowConversionMethod: 'exact'`). Per the
@@ -132,7 +130,7 @@ export interface MetricsRow {
 	comments: number | null;
 	/** Real on Instagram, YouTube, and TikTok — see this file's header. */
 	shares: number | null;
-	/** Instagram-only. Always `null` on YouTube and TikTok. */
+	/** Always `null` — not collected on any platform; see this file's header. */
 	saves: number | null;
 	/** YouTube-only (per-post follow attribution). Always `null` on Instagram and TikTok — see this file's header. */
 	follows: number | null;
