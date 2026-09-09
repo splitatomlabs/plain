@@ -60,3 +60,11 @@ node_modules/
 
 # Social pilot render output
 social/out/
+
+# Local social-pilot credentials. The file-backed TokenStore that wrote these
+# is gone (Pb4e17 deleted the API publish pipeline), so nothing creates them
+# any more — but the pilot's GCP project and Meta app are deliberately left
+# dormant rather than torn down, so keep ignoring these in case a stray
+# plaintext token file from that setup is still around. NEVER commit one.
+content/social/tokens.local.json
+content/social/tokens.*.json

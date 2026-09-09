@@ -26,7 +26,16 @@
  */
 
 /** Week 1, day 1 of the pilot schedule — see the module doc comment above. */
-export const PILOT_WEEK_1_START = '2026-09-01';
+export const PILOT_WEEK_1_START = '2026-09-09';
+
+/**
+ * The number of days in one pilot schedule week — the single source for the
+ * "1-7" day range this module (and `schedule-types.ts`'s `ScheduleSlot.day`)
+ * otherwise repeats as a bare literal. `weekDayToDate`/`dateToWeekDay` both
+ * enforce it below; `publish/weekly-prep.ts`'s `prepareWeek` imports it to
+ * refuse to prepare a schedule that doesn't cover every day in the range.
+ */
+export const DAYS_PER_WEEK = 7;
 
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -109,8 +118,8 @@ export function weekDayToDate(week: number, day: number): string {
 	if (!Number.isInteger(week) || week < 1) {
 		throw new Error(`Invalid week ${week} — must be a positive integer.`);
 	}
-	if (!Number.isInteger(day) || day < 1 || day > 7) {
-		throw new Error(`Invalid day ${day} — must be an integer in 1-7.`);
+	if (!Number.isInteger(day) || day < 1 || day > DAYS_PER_WEEK) {
+		throw new Error(`Invalid day ${day} — must be an integer in 1-${DAYS_PER_WEEK}.`);
 	}
 
 	const offsetDays = (week - 1) * 7 + (day - 1);

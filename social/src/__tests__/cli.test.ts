@@ -10,6 +10,7 @@ import { dateToWeekDay, weekDayToDate, PILOT_WEEK_1_START } from '../pilot-confi
 import { resolveDay, postIndexForDay, chooseBed, computeWallPlainLines, scheduleFileName } from '../cli-plan.js';
 import { loadOutputCard } from '../remotion/wall-pool.js';
 import { probe, assertMeetsProfile } from '../render/encode.js';
+import { DEFAULT_OUT_DIR, REPO_ROOT, SCHEDULE_DIR } from '../cli.js';
 import type { WeekSchedule } from '../schedule-types.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -63,18 +64,18 @@ function runCli(args: string[]): RunResult {
 // ---------------------------------------------------------------------------
 
 describe('dateToWeekDay / weekDayToDate', () => {
-	it('PILOT_WEEK_1_START (2026-09-01) maps to week 1, day 1', () => {
-		expect(PILOT_WEEK_1_START).toBe('2026-09-01');
-		expect(dateToWeekDay('2026-09-01')).toEqual({ week: 1, day: 1 });
+	it('PILOT_WEEK_1_START (2026-09-09) maps to week 1, day 1', () => {
+		expect(PILOT_WEEK_1_START).toBe('2026-09-09');
+		expect(dateToWeekDay('2026-09-09')).toEqual({ week: 1, day: 1 });
 	});
 
-	it('day 7 of week 1 is 2026-09-07; day 1 of week 2 is 2026-09-08', () => {
-		expect(dateToWeekDay('2026-09-07')).toEqual({ week: 1, day: 7 });
-		expect(dateToWeekDay('2026-09-08')).toEqual({ week: 2, day: 1 });
+	it('day 7 of week 1 is 2026-09-15; day 1 of week 2 is 2026-09-16', () => {
+		expect(dateToWeekDay('2026-09-15')).toEqual({ week: 1, day: 7 });
+		expect(dateToWeekDay('2026-09-16')).toEqual({ week: 2, day: 1 });
 	});
 
 	it('round-trips for a range of dates', () => {
-		const dates = ['2026-09-01', '2026-09-02', '2026-09-07', '2026-09-08', '2026-10-15', '2027-01-01'];
+		const dates = ['2026-09-09', '2026-09-10', '2026-09-15', '2026-09-16', '2026-10-15', '2027-01-01'];
 		for (const date of dates) {
 			const { week, day } = dateToWeekDay(date);
 			expect(weekDayToDate(week, day)).toBe(date);
@@ -91,7 +92,7 @@ describe('dateToWeekDay / weekDayToDate', () => {
 	});
 
 	it('errors clearly on a date before the pilot start', () => {
-		expect(() => dateToWeekDay('2026-08-31')).toThrow(/before the pilot/i);
+		expect(() => dateToWeekDay('2026-09-08')).toThrow(/before the pilot/i);
 	});
 
 	it('errors clearly on a malformed date', () => {
@@ -111,8 +112,8 @@ describe('dateToWeekDay / weekDayToDate', () => {
 // ---------------------------------------------------------------------------
 
 describe('resolveDay — against the real committed week-1 schedule', () => {
-	it('2026-09-01 (day 1) resolves to the expected card and format', () => {
-		const { week, day } = dateToWeekDay('2026-09-01');
+	it('2026-09-09 (day 1) resolves to the expected card and format', () => {
+		const { week, day } = dateToWeekDay('2026-09-09');
 		expect(week).toBe(1);
 		const slot = resolveDay(WEEK_1_SCHEDULE, day);
 		expect(slot.card_id).toBe('meditations-09-025');
@@ -131,13 +132,13 @@ describe('resolveDay — against the real committed week-1 schedule', () => {
 
 describe('chooseBed — deterministic for a given date', () => {
 	it('the same postIndex always chooses the same bed', () => {
-		const seed = postIndexForDay('2026-09-01');
+		const seed = postIndexForDay('2026-09-09');
 		expect(chooseBed(seed).id).toBe(chooseBed(seed).id);
 	});
 
 	it('a different date usually chooses a different postIndex, and consecutive days never repeat a bed', () => {
-		const seedDay1 = postIndexForDay('2026-09-01');
-		const seedDay2 = postIndexForDay('2026-09-02');
+		const seedDay1 = postIndexForDay('2026-09-09');
+		const seedDay2 = postIndexForDay('2026-09-10');
 		expect(seedDay2).toBe(seedDay1 + 1);
 		expect(chooseBed(seedDay1).id).not.toBe(chooseBed(seedDay2).id);
 	});
@@ -191,15 +192,29 @@ describe('--dry-run', () => {
 		parentDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-dry-'));
 		outDir = path.join(parentDir, 'out');
 
-		const result = runCli(['render', '--date', '2026-09-01', '--out', outDir, '--dry-run']);
+		const result = runCli(['render', '--date', '2026-09-09', '--out', outDir, '--dry-run']);
 		expect(result.status).toBe(0);
-		// 2026-09-01 is day 1; derived from the real committed schedule (not
+		// 2026-09-09 is day 1; derived from the real committed schedule (not
 		// hardcoded a second time) so this stays in sync with day 1's card.
 		const day1 = resolveDay(WEEK_1_SCHEDULE, 1);
 		expect(result.stdout).toMatch(new RegExp(day1.card_id));
 		expect(result.stdout).toMatch(/composition: Wall/);
 		expect(result.stdout.toLowerCase()).toMatch(/dry run/);
 		expect(existsSync(outDir)).toBe(false);
+	});
+});
+
+describe('F4 — empty --out/--schedule-dir are rejected outright, not silently falling through to the default', () => {
+	it('an empty --out exits non-zero, naming the flag, before anything is rendered', () => {
+		const result = runCli(['render', '--date', '2026-09-09', '--out', '', '--dry-run']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--out\b/);
+	});
+
+	it('an empty --schedule-dir exits non-zero, naming the flag, before anything is rendered', () => {
+		const result = runCli(['render', '--date', '2026-09-09', '--schedule-dir', '', '--dry-run']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--schedule-dir/);
 	});
 });
 
@@ -285,6 +300,40 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 		},
 		300_000
 	);
+});
+
+// ---------------------------------------------------------------------------
+// F3 (Pb4e17-social-native-scheduling review round 4) — pre-existing
+// REPO_ROOT/SCHEDULE_DIR/DEFAULT_OUT_DIR constants, pinned so a one-line
+// change to the `path.resolve` call behind them (e.g. dropping one '..')
+// cannot pass the whole suite unnoticed. Anchored on structural markers
+// (`.git`, `package.json`), never on the repo directory's own name.
+// ---------------------------------------------------------------------------
+
+describe('REPO_ROOT / SCHEDULE_DIR / DEFAULT_OUT_DIR — resolved path pinning', () => {
+	it('SCHEDULE_DIR resolves to the repo root\'s content/social directory', () => {
+		expect(SCHEDULE_DIR.endsWith(path.join('content', 'social'))).toBe(true);
+		const resolvedRoot = path.join(SCHEDULE_DIR, '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		expect(resolvedRoot).toBe(REPO_ROOT);
+	});
+
+	it('DEFAULT_OUT_DIR resolves to the repo root\'s social/out directory', () => {
+		expect(DEFAULT_OUT_DIR.endsWith(path.join('social', 'out'))).toBe(true);
+		const resolvedRoot = path.join(DEFAULT_OUT_DIR, '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		expect(resolvedRoot).toBe(REPO_ROOT);
+	});
+
+	it('REPO_ROOT itself is the actual repo root, not the social/ sub-project', () => {
+		expect(existsSync(path.join(REPO_ROOT, '.git'))).toBe(true);
+		// social/ has its OWN package.json (it's a self-contained npm
+		// project) — asserting `.git` alone is what actually distinguishes
+		// the true repo root from social/ itself.
+		expect(existsSync(path.join(REPO_ROOT, 'social', 'package.json'))).toBe(true);
+	});
 });
 
 // ---------------------------------------------------------------------------
