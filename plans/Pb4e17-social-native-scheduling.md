@@ -80,14 +80,14 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       YouTube Studio offers scheduled publish. If TikTok scheduling is unavailable, STOP and
       reconsider — TikTok is the binding constraint. Record findings in `docs/SOCIAL_PILOT.md`.
 
-- [ ] T02: Failing tests for platform-agnostic hand entry —
+- [x] T02: Failing tests for platform-agnostic hand entry —
       `social/src/metrics/__tests__/hand-entry.test.ts`. Cover: a row built for each of
       `instagram` / `youtube` / `tiktok`; `follows` accepted as an integer AND as `null`;
       `averagePercentWatched` optional and `null` when absent; validation rejects negative or
       non-integer counts; `upsertMetricsRow` replaces rather than duplicates on
       `platform:postId`. TDD — these must fail first.
 
-- [ ] T03: Generalise `metrics/tiktok-manual.ts` → `metrics/hand-entry.ts`. Replace the hardcoded
+- [~] T03: Generalise `metrics/tiktok-manual.ts` → `metrics/hand-entry.ts`. Replace the hardcoded
       `platform: 'tiktok'` (line 199) and forced `follows: null` with parameters. Keep the same
       `MetricsRow` output and the same `upsertMetricsRow` call. Add `--platform` and `--follows`
       flags to its CLI. T02 goes green.
