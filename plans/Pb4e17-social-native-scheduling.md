@@ -97,12 +97,12 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       upsert-not-duplicate on the same date. This is the ONE un-backfillable input; make the help
       text say so.
 
-- [~] T05: Rework `publish/tiktok-manual.ts`'s `stageTikTokWeek` into a local weekly prep function:
+- [x] T05: Rework `publish/tiktok-manual.ts`'s `stageTikTokWeek` into a local weekly prep function:
       drop the GCS upload entirely (MP4s are already on the machine that will upload them), emit one
       `captions.txt` covering all three platforms per day via `buildCaption({ slot, platform })` —
       it currently hardcodes `platform: 'tiktok'` at line 174. Update its tests.
 
-- [ ] T06: Weekly prep CLI wrapper — renders the week and writes `captions.txt`. Gives §5.2 the
+- [~] T06: Weekly prep CLI wrapper — renders the week and writes `captions.txt`. Gives §5.2 the
       runnable wrapper it never had. Acceptance: one command produces 7 MP4s + one captions file.
 
 - [ ] T07: Delete the publish pipeline — `social/src/job.ts`, `job-plan.ts`,
