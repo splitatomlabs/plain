@@ -92,12 +92,12 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       `MetricsRow` output and the same `upsertMetricsRow` call. Add `--platform` and `--follows`
       flags to its CLI. T02 goes green.
 
-- [~] T04: Daily follower-snapshot hand entry. Small CLI writing a `DailyFollowerSnapshot` via
+- [x] T04: Daily follower-snapshot hand entry. Small CLI writing a `DailyFollowerSnapshot` via
       `metrics/schema.ts`'s existing `upsertFollowerSnapshot` — `--date` and `--followers`. Tests for
       upsert-not-duplicate on the same date. This is the ONE un-backfillable input; make the help
       text say so.
 
-- [ ] T05: Rework `publish/tiktok-manual.ts`'s `stageTikTokWeek` into a local weekly prep function:
+- [~] T05: Rework `publish/tiktok-manual.ts`'s `stageTikTokWeek` into a local weekly prep function:
       drop the GCS upload entirely (MP4s are already on the machine that will upload them), emit one
       `captions.txt` covering all three platforms per day via `buildCaption({ slot, platform })` —
       it currently hardcodes `platform: 'tiktok'` at line 174. Update its tests.
