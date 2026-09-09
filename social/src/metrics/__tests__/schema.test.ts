@@ -5,8 +5,6 @@
  *   - `MetricsRow`'s available-vs-zero distinction: a row can carry a real
  *     `0` for one field and `null` for another, and they must never collapse
  *     into each other through serialization or the upsert path.
- *   - `isWithinPollingWindow`'s 30-day boundary, inclusive at exactly 30
- *     days, exclusive one millisecond past it.
  *   - `upsertMetricsRow`'s idempotency: re-upserting a row keyed on the same
  *     platform+postId replaces it in place rather than appending a
  *     duplicate — the pure building block `hand-entry.ts`'s own idempotent
@@ -19,9 +17,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	INSTAGRAM_FOLLOWERS_FILENAME,
-	POLLING_WINDOW_DAYS,
 	instagramFollowersFilePathFor,
-	isWithinPollingWindow,
 	metricsFilePathFor,
 	metricsRowKey,
 	parseFollowerSnapshots,
@@ -78,35 +74,6 @@ describe('MetricsRow — available vs. zero', () => {
 		expect(youtubeRow.saves).toBeNull();
 		expect(youtubeRow.shares).toBeNull();
 		expect(youtubeRow.follows).toBe(5);
-	});
-});
-
-describe('isWithinPollingWindow', () => {
-	const PUBLISHED_AT = '2026-09-01T00:00:00.000Z';
-
-	it('is true immediately at publication', () => {
-		expect(isWithinPollingWindow(PUBLISHED_AT, PUBLISHED_AT)).toBe(true);
-	});
-
-	it('is true at exactly the 30-day boundary (inclusive)', () => {
-		const exactlyThirtyDaysLater = '2026-10-01T00:00:00.000Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, exactlyThirtyDaysLater, POLLING_WINDOW_DAYS)).toBe(true);
-	});
-
-	it('is false one millisecond past the 30-day boundary', () => {
-		const oneMsPastThirtyDays = '2026-10-01T00:00:00.001Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, oneMsPastThirtyDays, POLLING_WINDOW_DAYS)).toBe(false);
-	});
-
-	it('is false for a post published in the future relative to now', () => {
-		const before = '2026-08-31T00:00:00.000Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, before)).toBe(false);
-	});
-
-	it('respects a custom windowDays', () => {
-		const sevenDaysLater = '2026-09-08T00:00:00.000Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, sevenDaysLater, 7)).toBe(true);
-		expect(isWithinPollingWindow(PUBLISHED_AT, sevenDaysLater, 6)).toBe(false);
 	});
 });
 

@@ -151,33 +151,6 @@ export interface InstagramFollowerSnapshot {
 }
 
 // ---------------------------------------------------------------------------
-// The 30-day polling window — plan Constraint: "Poll for 30 days after
-// publication, since metrics keep accruing."
-// ---------------------------------------------------------------------------
-
-export const POLLING_WINDOW_DAYS = 30;
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/**
- * Whether a post published at `publishedAt` is still inside its polling
- * window at instant `now`. INCLUSIVE at exactly `windowDays` days old —
- * matches `tokens.ts`'s own inclusive-boundary convention
- * (`expiryAlert`/`needsRefresh`'s `<=`) rather than an off-by-one exclusive
- * cut. A post published in the future relative to `now` (clock skew, a bad
- * fixture) is excluded rather than silently treated as "always in window."
- */
-export function isWithinPollingWindow(publishedAt: string, now: string, windowDays: number = POLLING_WINDOW_DAYS): boolean {
-	const publishedMs = Date.parse(publishedAt);
-	const nowMs = Date.parse(now);
-	if (Number.isNaN(publishedMs) || Number.isNaN(nowMs)) {
-		throw new Error(`Invalid ISO 8601 timestamp — publishedAt="${publishedAt}", now="${now}".`);
-	}
-	const ageMs = nowMs - publishedMs;
-	return ageMs >= 0 && ageMs <= windowDays * DAY_MS;
-}
-
-// ---------------------------------------------------------------------------
 // Idempotency — the acceptance criterion: "a run appends a dated file with
 // one row per live post, and re-running is idempotent rather than
 // duplicating rows." Rows are keyed on platform + post id: stable across
