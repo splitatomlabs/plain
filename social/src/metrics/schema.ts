@@ -52,8 +52,13 @@
  *     `--follows`; `readout.ts`'s `FollowConversionMethod: 'exact'`). Per the
  *     plan's Decision: "Instagram reports follower counts at the ACCOUNT
  *     level only, so criterion A's conversion half must be inferred from
- *     daily follower deltas aligned to post times — with two posts a day,
- *     attribution is directional, not exact." Instagram rows therefore carry
+ *     daily follower deltas aligned to post times — even at one post a day,
+ *     attribution is directional, not exact." (Corrected from an earlier
+ *     "two posts a day" premise, `Pb4e17-social-native-scheduling` T14 — the
+ *     pilot posts once a day per platform; the conclusion is unchanged
+ *     either way, since an account-level delta can't be cleanly attributed
+ *     to a single post regardless of how many posts share that day.)
+ *     Instagram rows therefore carry
  *     `follows: null` always — the inferred, directional account-level
  *     series lives in a SEPARATE structure (`InstagramFollowerSnapshot`
  *     below, populated by hand off Instagram's own Insights screen via

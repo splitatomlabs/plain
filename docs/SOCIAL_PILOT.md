@@ -4,11 +4,11 @@ This is the operating manual for the social viability pilot (`plans/Pf39c2-socia
 and its three sub-plans, `Pf39c2-social-pilot-01/02/02a/03.md`). It is written so someone who was
 not involved in building this system can run the pilot day to day and week to week from this
 document alone — every command below is real, copy-pasteable, and checked against the actual
-source files as of 2026-08-27, not paraphrased.
+source files as of 2026-09-09, not paraphrased.
 
-**Read the "Current status" section (near the bottom) before doing anything else.** Six live steps
-this pilot depends on have never been run. This document describes the system as designed and
-built; it does not claim the system has been switched on.
+**Read the "Current status" section (near the bottom) before doing anything else.** Account setup
+and tooling are complete, but zero posts have ever been published on any platform. This document
+describes the system as designed and built; it does not claim the pilot has actually started.
 
 ## 1. What the pilot is, and the pre-registered criterion
 
@@ -318,73 +318,25 @@ nothing on this list.
 
 ## 4. The daily loop
 
-Once deployed, this runs unattended:
+**There is no daily loop any more.** The Firebase trigger, the Cloud Run Job, and everything else
+that used to fire unattended once a day were deleted along with the rest of the API publish
+pipeline (`Pb4e17-social-native-scheduling` T07-T09) — posting is a manual, weekly act now (section
+5), not a daily one.
 
-1. Firebase's `onSchedule` trigger (`functions/src/socialTrigger.ts`) fires daily at **07:53
-   America/New_York** (`SCHEDULE_CRON = '53 7 * * *'`, `PILOT_TIMEZONE = 'America/New_York'`). It
-   computes "today" in that timezone (`computeTodayInTimezone`) and starts one execution of the
-   `plain-social-daily` Cloud Run Job with `containerOverrides.args: ['--date', <today>]`.
+**Exactly one thing genuinely still happens every day, and it is not posting: recording that day's
+Instagram follower count.** Section 5.5 covers the command (`follower-snapshot.ts`) and why it
+can't be folded into the weekly cadence like everything else — Instagram's app shows only *today's*
+total, never a historical series, so a day this is skipped for is gone for good, unlike a missed
+weekly upload which can just run late.
 
-   **`America/New_York` and `07:53` are placeholder values, not a deliberate posting-time
-   decision.** Nothing in this plan or its research notes chose this timezone/time for audience or
-   distribution reasons — the constant exists so the trigger fires off the top of the hour (see the
-   file's own "SCHEDULED OFF THE HOUR" comment: cron jobs that fire on `:00` pile into the same
-   minute as every other tenant on the platform). Treat `PILOT_TIMEZONE`/`SCHEDULE_CRON` in
-   `functions/src/socialTrigger.ts` as something to set deliberately (audience timezone, a posting
-   time chosen for a real reason) before or shortly after go-live, not as a considered choice
-   already made.
-
-2. That Cloud Run Job execution runs `social/src/job.ts --date <today>` inside the container: it
-   resolves the schedule slot for that date, renders the video + Instagram feed still (reusing
-   `cli.ts`'s render path), uploads every rendered asset to GCS (before any post is attempted — a
-   posting failure never loses a render), then publishes independently to Instagram and YouTube.
-   A failure on one platform never stops the other (`Promise.allSettled`, not `Promise.all`). A GCS
-   upload failure is a **per-platform** precondition, not a whole-run abort (code review M7 fix):
-   it makes only Instagram's outcome `failed` (Instagram needs the video's public GCS URL for Meta's
-   Graph API), while YouTube still uploads straight from the local rendered file and is unaffected
-   by a GCS outage.
-
-3. `job.ts` appends a structured log to both stdout (captured by Cloud Logging) and
-   `content/social/job-logs/job-<date>.log` inside the container (ephemeral once the execution
-   ends — Cloud Logging is the durable copy). A healthy run's log looks like:
-
-   ```
-   === Daily job for 2026-09-05 ===
-   [instagram] ok — published Reel, media id ...
-   [youtube] ok — uploaded private video, id ...
-   ```
-
-   A YouTube upload always lands **private** by design (`REQUIRED_STATUS` in
-   `social/src/publish/youtube.ts` — a caller cannot override this even accidentally). It stays
-   private until the weekly session flips it (section 5). A successful YouTube publish also durably
-   records the new video's id into the week's pending-flip list — by default the
-   `social-pilot-pending-youtube-flips` Firestore collection (single document `flips`,
-   `social/src/publish/pending-flips-store-firestore.ts`'s `createFirestorePendingFlipsStore`), the
-   same GCP project the OAuth tokens already live in (both use ADC — no extra credential to
-   configure). Pass `job.ts --pending-flips-store local` to write to a plain JSON file instead
-   (`--pending-flips-file`, default `content/social/pending-youtube-flips.json`) — for local runs
-   and manual testing only: a Cloud Run execution's filesystem is throwaway, so `local` there
-   silently loses every video id.
-
-   If the upload itself succeeds but this durable record fails to write, the run reports
-   `[youtube] partial — ...` instead of `ok`, and the job's own exit code reflects a failure
-   (`exitCodeForOutcomes` treats `partial` the same as `failed`, per the M4 code-review fix) even
-   though the video did land on YouTube. Treat a `partial` line as needing the same follow-up as a
-   `failed` one — the video is unreachable to the weekly flip session (section 5.3) and to metrics
-   collection (section 7) until someone finds it by hand and re-adds it to the pending-flip list.
-
-4. Check for a healthy run the same way `social/DEPLOY.md`'s step 8 describes:
-   ```bash
-   gcloud run jobs executions list --job=plain-social-daily --region=us-central1 --limit=5
-   gcloud run jobs executions logs EXECUTION_ID --region=us-central1
-   ```
-   `STATUS: Succeeded` plus both `[instagram] ok` and `[youtube] ok` lines is a clean day. A single
-   `[platform] failed — ...` line — or a `[youtube] partial — ...` line (the upload itself succeeded
-   but its pending-flip record did not persist, point 3 above) — means the *other* platform
-   completing on its own is expected behavior, not a bug, but it still needs a human to look at why
-   the failing/partial platform did not come back clean (most commonly: an expired/missing token per
-   section 3.4; for `partial` specifically, read the log line's own message for the Firestore
-   write failure).
+**One open question the old daily-trigger design carried and never resolved: what time of day to
+schedule posts for.** The deleted trigger fired at a placeholder time (`America/New_York`, `07:53`)
+chosen only to land off the top of the hour, not for any audience or distribution reason. That
+question hasn't gone away with the trigger — section 5.3's "set the scheduled time" step still
+needs an actual time typed into each platform's scheduler, and nothing in this plan or its research
+notes has chosen one deliberately yet. Decide on a real value (audience timezone, a time chosen for
+a reason) before or shortly after go-live, and use it consistently across all three platforms'
+weekly schedules.
 
 ## 5. The weekly session — the most important part of this document
 
@@ -567,22 +519,23 @@ Instagram disables the pilot's account:
 2. **File Meta's actual appeal**, through the in-app "Request Review" / "Disagree with decision"
    flow (or business.facebook.com's Account Quality section if the account had a Business
    presence). This is the only sanctioned path back — do not attempt any workaround in place of it.
-3. **What survives independently of the disabled account:** every asset this pilot has ever posted
-   already lives in GCS, uploaded *before* any post is attempted
-   (`storage.ts`'s upload calls run ahead of every publish call in `job.ts`, and the plan's own
-   Decision states this ordering exists partly so a posting failure — or, here, an account-level
-   failure — never loses a render). Losing the Instagram account loses that account's reach and
-   history, not the rendered videos, feed stills, or captions — nothing needs to be regenerated to
-   resume once the account issue is resolved or a decision is made to stop that platform.
+3. **What survives independently of the disabled account:** nothing needs to be regenerated to
+   resume once the account issue is resolved or a decision is made to stop that platform. Every
+   week's schedule (`content/social/pilot-schedule-w<NN>.json`) is checked into this repo, and
+   rendering it is deterministic (`social/src/cli.ts`'s render path, reused by `prepare-week.ts`) —
+   so even though the rendered MP4s themselves only live locally in `social/out/` and are not
+   separately backed up, any of them can be reproduced from source at any time. Losing the
+   Instagram account loses that account's reach and history, not the ability to re-render its
+   videos, feed stills, or captions.
 4. **Deciding whether to continue on the remaining two platforms or stop entirely:** this depends on
    how far into the pilot the disabling happens and what the other two platforms' data already show.
    Concretely:
    - If Instagram is disabled **before** four weeks of data have accumulated on TikTok and YouTube,
-     continue running the daily job for those two platforms only (Instagram's publish step will
-     start failing — that's expected and does not block YouTube's, per `job.ts`'s platform
-     isolation) and reach the readout (section 7) with whatever those two platforms show. The
-     pre-registered criterion (section 1) only requires **one** platform to clear criterion A or B —
-     it was never contingent on all three surviving to the end.
+     continue the weekly session (section 5) for those two platforms only — skip Instagram's tab in
+     5.3, skip Instagram in the hand-entry pass in 5.4 — and reach the readout (section 7) with
+     whatever those two platforms show. The pre-registered criterion (section 1) only requires
+     **one** platform to clear criterion A or B — it was never contingent on all three surviving to
+     the end.
    - If the disabling happens **after** the readout window has already produced a verdict on
      Instagram specifically (e.g. Instagram was the platform showing the trend or the breakout),
      treat that data as already collected and valid up to the disabling — the readout doesn't need
@@ -590,32 +543,21 @@ Instagram disables the pilot's account:
    - If Instagram disabling happens very early (before any real signal) AND it happened because of
      something structural to this pilot's approach (not an isolated fluke), reconsider whether the
      same structural issue risks the other two accounts before continuing — re-read section 2's
-     hygiene rules and this section's appeal guidance before resuming anything automated.
+     hygiene rules and this section's appeal guidance before resuming posting on any platform.
 
 ## 7. Metrics and the readout
 
-Collection is automated for Instagram and YouTube, manual for TikTok (section 5.4). Run collection
-regularly (daily is reasonable, since it's idempotent and cheap) from `social/`:
-
-```bash
-npx tsx social/src/metrics/collect.ts
-# or, to pin the collection instant for a reproducible manual re-run:
-npx tsx social/src/metrics/collect.ts --now 2026-09-05T00:00:00.000Z
-```
-
-This reads the Instagram/YouTube tokens already stored in Firestore (the same store `job.ts` uses;
-this collector does not refresh tokens itself, only reads whatever is currently stored — token
-freshness stays `job.ts`'s job), lists that platform's posts (Instagram via `GET /{ig-user-id}/media`;
-YouTube via the same durable `social-pilot-pending-youtube-flips` Firestore store `job.ts` writes to,
-not a local file — `collect.ts`'s own `createDefaultPendingFlipsReader` reads it via
-`createFirestorePendingFlipsStore().read()`), and fetches per-post metrics for anything
-still inside its **30-day polling window** (inclusive at exactly 30 days) — metrics keep accruing
-after publication, so a post is re-polled on every run until it ages out of the window, and each run
-is idempotent (`upsertMetricsRow` replaces a same-`platform:postId` row rather than duplicating it).
-Results land in `content/social/metrics/metrics-<date>.json`, one dated file per collection run, plus
-`content/social/metrics/instagram-followers.json` (a daily account-level follower snapshot, since
-Instagram only exposes follower counts at the account level, not per-post — see the readout's
-`'inferred'` conversion labeling below).
+Collection is hand-entered for all three platforms (section 5.4) — for every post still inside its
+**30-day polling window** (metrics keep accruing after publication, so re-reading a post's numbers
+more than once during that window and re-running `hand-entry.ts` for it is expected, not
+redundant), read that platform's own per-post analytics screen and run
+`social/src/metrics/hand-entry.ts` (section 5.4 has the exact flags). Each run is idempotent
+(`upsertMetricsRow` replaces a same-`platform:postId` row rather than duplicating it), so a
+mid-week correction or a repeat read during the polling window is safe. Results land in
+`content/social/metrics/metrics-<date>.json`, one dated file per `hand-entry.ts` run, plus
+`content/social/metrics/instagram-followers.json` (a daily account-level follower snapshot, hand-
+entered by `follower-snapshot.ts` per section 5.5, since Instagram only exposes follower counts at
+the account level, not per-post — see the readout's `'inferred'` conversion labeling below).
 
 At week 4, produce the verdict:
 
@@ -641,196 +583,49 @@ reports a breakout (criterion A met); an outlier with no conversion and no week-
 reports NOT VIABLE, in those words — so a big single number alone can never produce a false
 "viable."
 
-## TikTok metrics collection (T13)
+## TikTok metrics collection — historical note (T13, superseded by T14)
 
-*(Carried over verbatim from the version T13 wrote — still the authoritative section on TikTok's
-read side; the "weekly session" coverage above (5.4) is the operational checklist, this is the
-underlying reasoning and the spike itself.)*
+T13 investigated whether TikTok per-post metrics (views, likes, comments, shares) could be
+collected automatically — the same way the now-deleted `metrics/instagram.ts`/`metrics/youtube.ts`
+collectors did for their platforms — instead of by hand. Two candidate read paths existed:
+TikTok's **Display API `video.list` scope**, reachable from an unaudited app in Sandbox mode with
+no App Review needed, documented to return per-video view/like/comment/share counts; and the
+**Business Account API**, which additionally exposes average watch time, profile views, and a
+follower series, but requires both a Business account and app approval. A spike
+(`social/src/metrics/tiktok-spike.ts`, since deleted) was built to test the Display API path
+against a real account, but was never run — no TikTok account or app credentials existed at the
+time — so the question was never resolved by evidence.
 
-### The question this section answers
+**It is now closed by decision instead.** This pilot hand-enters metrics for all three platforms
+(`social/src/metrics/hand-entry.ts`, section 5.4), including TikTok, so whether TikTok's read API
+could have been automated is moot regardless of which way the spike would have gone.
 
-TikTok's **posting** API is unusable for this pilot (see the plan's own
-Decision — TikTok posts go up through the app's native scheduler, by hand,
-during the weekly session; see `social/src/publish/tiktok-manual.ts`). That
-says nothing about TikTok's **read** path, though — posting and reading are
-different APIs with different scopes. This section settles, or records that
-it has not yet settled, whether TikTok's per-post metrics (views, likes,
-comments, shares) can be collected automatically, the same way
-`social/src/metrics/instagram.ts` and `social/src/metrics/youtube.ts`
-already do for their platforms.
+Three facts worth keeping so nobody has to re-discover them by trial and error if TikTok
+automation is ever revisited:
 
-### The two candidate read paths
-
-Per the plan's own Constraint (`plans/Pf39c2-social-pilot-03.md`, this
-task's Constraint block):
-
-1. **Display API, `video.list` scope.** Documented to return **per-video
-   view/like/comment/share counts** — "enough for median, maximum and
-   trend." Reachable with an **unaudited app** in TikTok's Sandbox mode,
-   scoped to a target user the developer explicitly adds (i.e. the pilot's
-   own account) — no App Review needed. This is the path this task's spike
-   (`social/src/metrics/tiktok-spike.ts`) attempts.
-2. **Business Account API.** Additionally returns **average watch time,
-   profile views, and a follower series** — but needs a **Business
-   account** and **app approval**. Strictly more setup than path 1, and
-   nothing in this pilot's scope needs those extra fields badly enough to
-   justify that setup on its own — see the decision rule below.
-
-**Retention curves and traffic-source data are in-app only on TikTok,
-regardless of which of these two paths is used.** Neither path exposes
-them. This stays manual on TikTok no matter what the spike finds.
-
-### The decision rule
-
-- **If the spike shows `video.list` returns usable per-video view/like/
-  comment/share counts** (all four present as real numbers on real
-  videos): automate it. Build a real collector mirroring
-  `social/src/metrics/instagram.ts`'s/`youtube.ts`'s shape — list this
-  account's videos, filter to the 30-day polling window
-  (`schema.ts`'s `isWithinPollingWindow`), map each to a `MetricsRow` with
-  `platform: 'tiktok'`. `follows` and `saves` stay `null` on that row
-  either way (see "Why `follows`/`saves` are null" below) —only the four
-  counts change from hand-typed to fetched.
-- **If it does not** (the call fails outright for an unaudited app, the
-  scope isn't grantable without a review this pilot isn't pursuing, or the
-  fields come back missing/empty): use the hand-entry fallback,
-  `social/src/metrics/hand-entry.ts`, already fully built (see below).
-  The Business Account API is **not** treated as a fallback-of-a-fallback —
-  it needs strictly more setup (a Business account, app approval) than
-  Display API `video.list` does, so if the lighter-weight path fails, hand
-  entry is cheaper than the heavier-weight path, not the other way round.
-
-This mirrors the task's own Timebox instruction: the manual fallback costs
-about 7 rows a week inside a session (the weekly TikTok/YouTube staging
-session, `social/src/publish/tiktok-manual.ts`'s own weekly cadence) that
-already happens — not worth an open-ended integration effort to avoid.
-
-**Note on "~14 rows a week":** the task brief that produced this section
-says "~14 rows a week." That figure is stale, for the same reason
-`social/src/publish/tiktok-manual.ts`'s own header flags it stale for T07's
-"14 videos" acceptance wording: it predates `Pf39c2-social-pilot-02a` D02,
-which collapsed the channel to a single Wall post per day. One TikTok post
-a day is **7 rows a week**, not 14. Nothing built for T13 hard-codes either
-number — `tiktok-manual.ts` processes one hand-entered post per invocation,
-however many a real week's post count actually is.
-
-### Status: the spike has NOT been run
-
-**This is the load-bearing sentence in this section: nobody has run
-`social/src/metrics/tiktok-spike.ts` against a real account yet, so the
-finding is currently UNDETERMINED — the hand-entry fallback is in force by
-default, not because the Display API is known not to work.** The session
-that wrote this document had no TikTok account and no TikTok app
-credentials to test with; running the spike needs a real pilot TikTok
-account, a TikTok developer app (unaudited is fine — Sandbox mode), and an
-OAuth access token with the `video.list` scope authorized against that
-account. None of that exists yet in this repo or its secrets.
-
-**What running the spike requires, step by step:**
-
-1. Register a TikTok developer app at TikTok's developer portal (any
-   unaudited/Sandbox app is sufficient for this spike — no App Review
-   needed for path 1).
-2. Add the pilot's own TikTok account as a Sandbox **target user** on that
-   app (Sandbox mode restricts which accounts an unaudited app can act on
-   behalf of — this step is required, not optional).
-3. Complete TikTok's OAuth flow for that app with the `video.list` scope,
-   authorizing the pilot account, to obtain an access token.
-4. Post at least one video to the pilot TikTok account (a video-less
-   account will make the spike report "zero videos," which is inconclusive
-   — see the spike's own `deriveVerdict` for why this is handled as its own
-   result, not silently folded into "not viable").
-5. Run:
-   ```
-   npx tsx social/src/metrics/tiktok-spike.ts --access-token <token>
-   ```
-   from `social/`. (`--help` works without any of the above, to confirm the
-   script itself runs before doing any of steps 1-4.)
-6. Read the printed verdict and the raw response the script prints (the
-   token itself is redacted from anything echoed back). Update THIS
-   section's "Status" above with the actual result — replace "has NOT been
-   run" with the date it was run and which of the two outcomes it found,
-   and follow the decision rule above.
-
-**Do not treat this document as claiming the Display API works, or does
-not work, until that has actually happened.** The spike exists precisely
-to answer that question; asserting an answer here without running it would
-defeat the point of spiking at all.
-
-### The hand-entry fallback (already built, works today regardless of the spike's outcome)
-
-`social/src/metrics/hand-entry.ts` (generalised from the platform-specific
-`tiktok-manual.ts`, `Pb4e17-social-native-scheduling` T03 — see
-`social/src/metrics/__tests__/hand-entry.test.ts`, 48 tests as of that task)
-is fully built and tested and does not depend on the spike's outcome — it is
-the fallback path if the spike fails, AND it is usable today, before the
-spike has even been run, since TikTok posting is already manual and the
-weekly session already happens.
-
-During the weekly session (the same session
-`social/src/publish/tiktok-manual.ts` stages TikTok's posts for), for each
-TikTok post still inside its 30-day polling window, read four numbers off
-TikTok's own per-video analytics screen — **views, likes, comments,
-shares** — and run:
-
-```
-npx tsx social/src/metrics/hand-entry.ts \
-  --platform tiktok \
-  --post-id <tiktok-video-id> \
-  --published-at <ISO8601 publish instant, from the app> \
-  --views <n> --likes <n> --comments <n> --shares <n>
-```
-
-This writes (or updates, if the post already has a row for that date — it
-is idempotent, matching every other platform's collector) one `MetricsRow`
-into the SAME dated file
-(`content/social/metrics/metrics-<date>.json`) that
-`social/src/metrics/collect.ts` already writes Instagram's and YouTube's
-rows into — a TikTok row sits alongside them, same schema, same file, no
-separate format to reconcile at readout time (T14).
-
-**Why `follows` and `saves` are always `null` on a TikTok row, hand-entered
-or (if the spike succeeds) automated:** per the plan's own Decision,
-"per-post follow attribution exists only on YouTube" (`subscribersGained`,
-scoped to one video). TikTok has no per-video follow count on either
-candidate read path — the Business Account API's follower data is an
-account-level series, the same shape problem Instagram already has (see
-`schema.ts`'s `InstagramFollowerSnapshot`), and no TikTok equivalent
-collector for that series exists. `saves` is not one of the four counts
-either TikTok read path is documented to return, and is not on the app's
-own per-video analytics screen either — so it, too, is always `null`, never
-a fabricated number.
-
-**Why `averagePercentWatched` is always `null` by default:** the plan's own
-Constraint states plainly that "retention curves ... are in-app only on
-TikTok regardless" — this is explicitly out of THIS schema's scope on
-TikTok, not merely tedious to type in. `tiktok-manual.ts` accepts it only
-as an optional override (`--avg-percent-watched`, validated 0-100) for the
-rare case the app shows a clean percentage next to a video; nobody is
-required to fill it in, and leaving it out records `null`, never a
-fabricated `0` or guessed value.
-
-**Validation, so a typo does not silently corrupt a row:** every hand-typed
-number is checked — the four counts must be non-negative whole numbers, an
-optional watch percentage must fall within 0-100, and both dates
-(`--published-at`, `--collected-at`) must parse as real instants. Any
-violation throws `TikTokHandEntryValidationError` naming the exact bad
-field and value, before anything is written to disk — hand entry's
-expected failure mode is a mistyped number, not a network error, so this
-fails loudly rather than recording a bad row silently.
+- Sandbox mode's `video.list` requires the target TikTok account to be added explicitly as a
+  Sandbox **target user** on the developer app — a required step, not optional.
+- **Retention curves and traffic-source data are in-app only on TikTok on *either* read path** —
+  even the heavier Business Account API doesn't expose them, so that data stays manual regardless
+  of automation.
+- TikTok exposes no per-post follow count on either path — the Business Account API's follower
+  data is account-level only, the same shape problem Instagram's follower count already has (see
+  `schema.ts`'s `InstagramFollowerSnapshot`) — so TikTok follow-conversion stays `unavailable`
+  (no per-post or daily-snapshot series is collected for it) regardless of which read path, if
+  either, was ever automated.
 
 ## Current status — what is NOT done
 
-**Account setup (3.0) progress, 2026-09-09:** the Google/YouTube (Brand Account), Instagram
-(Business), and TikTok accounts all now exist, phone-verified, on the shared pilot email, each with
-the avatar, display name, and bio copy in 3.0; Facebook uses an existing personal profile. Bio links
-are set on YouTube (`/go/yt`) and Instagram (`/go/ig`) only — **TikTok has NO bio link**, because it
-is not on a Business account (see 3.0 — business verification deferred) and the Website field is
-therefore unavailable. **Everything below this paragraph is still true: none of the six live steps
-has been run, and zero posts have been published.** Note also that both `/go/` links set so far 404
-until this branch ships — they are live on the profiles but unverified; run
-`curl -sI https://thinkplain.ai/go/ig` (and `/yt`), expecting a 302 to a
-`thinkplain.ai/?utm_source=...` URL, once PR #42 is merged and deployed.
+**Account setup (3.0), 2026-09-09: done.** The Google/YouTube (Brand Account), Instagram
+(Business), and TikTok accounts all exist, phone-verified, on the shared pilot email, each with the
+avatar, display name, and bio copy from 3.0; Facebook uses an existing personal profile plus the
+`Plain` Page. Bio links are set on YouTube (`/go/yt`) and Instagram (`/go/ig`) — **TikTok has no
+bio link yet**, deferred pending TikTok business verification (see 3.0's cost breakdown); this does
+not block posting, only the bio-link conversion path on TikTok specifically.
+
+**Native scheduling, verified 2026-09-09 (3.0a): done.** Confirmed by hand that TikTok's own
+scheduler, Instagram's (via Meta Business Suite), and YouTube Studio's are all usable for the
+weekly session (section 5) this pilot now runs on.
 
 **Pilot anchor date reset, 2026-09-09:** `PILOT_WEEK_1_START` (`social/src/pilot-config.ts`) was
 moved from `2026-09-01` to `2026-09-09`, since the original anchor had passed with nothing
@@ -838,53 +633,31 @@ published. Week 1 is now 2026-09-09..15 and week 4 is 2026-09-30..10-06. This is
 again right up until the first real render ships (a render embeds its `--date` in both its filename
 and its metadata sidecar); after that it is fixed for the life of the pilot.
 
-Be honest with yourself before assuming this pilot is ready to run: **six live steps described
-above have never actually been executed.** Every one of them was built and unit-tested against
-mocked APIs/clients in this session's work, but none was run against a real account, a real cloud
-project, or real hardware. Specifically, per the plan's own task notes:
+**Built and unit-tested, not yet exercised for real:** the render pipeline (`social/src/cli.ts`,
+`social/src/prepare-week.ts`), the schedule generator and weekly reviewer
+(`scripts/generate-schedule.ts`, `scripts/review-week.ts` — week 1's schedule,
+`content/social/pilot-schedule-w01.json`, already exists), and all three metrics tools
+(`social/src/metrics/hand-entry.ts`, `social/src/metrics/follower-snapshot.ts`,
+`social/src/metrics/readout.ts`). Every one of these has tests against real fixtures, but none has
+been run end to end against the real accounts yet — the first real weekly session (section 5) has
+not happened.
 
-- ~~**GCS provisioning**~~ — **DONE 2026-09-09.** `gs://plain-social-pilot-media` in project
-  `plain-social-pilot`; all three parts of `social/gcs/README.md` section 4's acceptance criterion
-  pass. See 3.1's "Provisioned" table.
-- **A live Instagram post (T05)** — STILL NOT DONE, but no longer blocked. The Meta app, Page
-  token and `IG_USER_ID` are all live and **verified against the real account** by creating (and
-  deliberately not publishing) media container `18114024736799248` — see 3.2. That proves GCS public
-  read, the token, and `instagram_content_publish` all work. What remains is one real
-  `publishToInstagram` call confirmed publicly visible.
-- **A live YouTube upload (T06)** — same situation: `social/src/publish/youtube.ts` is built and
-  unit-tested against a mocked `fetch`, no real upload has happened. Closing this requires the
-  YouTube OAuth app (section 3.3, published to "In production") and channel credentials, then one
-  real `uploadVideoToYouTube` call confirmed to appear in Studio ready to flip.
-- **The Docker build (T09)** — `social/Dockerfile` was written and verified by reading every module
-  it depends on, not by a live `docker build`. No container has ever actually been built or run.
-  Closing this is section 3.5 above.
-- **The cloud deploy (T10)** — no `gcloud`/`firebase` command has ever been run against a real GCP
-  project; no Cloud Run Job, Firestore database, service account, secret, or Firebase Function
-  exists yet anywhere. Closing this is section 3.6 above, and it is the step that also requires
-  section 3.4 (seeding Firestore tokens by hand) before its own acceptance criterion (a scheduled
-  run executing end to end) can be met.
-- **The TikTok Display API spike (T13)** — `social/src/metrics/tiktok-spike.ts` exists and is
-  unit-tested, but has never been run against a real TikTok account or app. The finding is
-  genuinely undetermined; do not treat the "decision rule" above as already resolved in either
-  direction. See the "Status: the spike has NOT been run" subsection above for the exact steps.
+**What genuinely remains before the pilot can start:**
 
-**Deploy target decided (2026-09-09): local scheduled run, NOT Cloud Run** — see 3.4a for the
-reasoning and the exact commands. This removes the Docker build (T09) and the cloud deploy (T10)
-from the critical path entirely; both remain unrun, and are now deliberately out of scope rather
-than pending. It required one new module, `social/src/publish/token-store-local.ts`, plus
-`--token-store`/`--token-file` flags on `job.ts` and `metrics/collect.ts`.
+- **The `/go/[slug]` attribution redirects still 404 in production.** They exist on this branch
+  (`web/src/routes/go/[slug]/+server.js`) but have not merged to `main` or deployed. The bio links
+  above already point at them; once that branch ships, verify each one actually redirects —
+  `curl -sI https://thinkplain.ai/go/ig` (and `/yt`) should return a 302 to a
+  `thinkplain.ai/?utm_source=...` URL — before relying on the attribution data it produces.
+- **No posting time has been deliberately chosen.** Per section 4: nothing in this plan or its
+  research notes has picked a specific time of day (or audience timezone) to schedule each week's
+  posts for. Decide on one before the first real weekly session and use it consistently.
+- **Zero posts have been published to any platform.** The first live post through this system, on
+  any platform, has not happened yet.
 
-Additionally, **no OAuth authorization flow exists anywhere in this codebase** (section 3.4) — this
-is a permanent gap in the current design, not a step waiting to be run once; every future token
-renewal (Instagram's 60-day expiry, YouTube's refresh-token lifecycle) currently requires a human to
-re-run each platform's manual consent flow and hand-write the result into Firestore. And the
-**posting time in `functions/src/socialTrigger.ts` (`America/New_York`, `07:53`) is a placeholder**
-(section 4) chosen only to avoid an on-the-hour cron pile-up, not a deliberately chosen audience
-timezone or time — decide on a real value before or shortly after go-live.
-
-Do not read the presence of thorough tests, Dockerfiles, and deploy runbooks as evidence that this
-pilot is live. As of this writing, **zero posts have ever been published to any platform by this
-system.**
+Do not read the presence of thorough tests and a verified native-scheduling path as evidence this
+pilot is live: account setup and tooling are complete, but as of this writing, **zero posts have
+ever been published to any platform.**
 
 ## 8. Findings (week 4) — TEMPLATE, NOT YET FILLED IN
 

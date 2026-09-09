@@ -136,7 +136,7 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
 - [x] T13: Update `CLAUDE.md`'s Testing section — the social suite count and description change
       substantially once the publish/metrics modules are gone.
 
-- [~] T14: Sweep the rest of `docs/SOCIAL_PILOT.md` for the deleted pipeline. Added during
+- [x] T14: Sweep the rest of `docs/SOCIAL_PILOT.md` for the deleted pipeline. Added during
       execution (2026-09-09), after T10 and T11 each found the plan's doc scope too narrow: §3 and
       §5 are now correct but ~315 lines around them still describe the deleted system as live.
       §4 "The daily loop" opens "Once deployed, this runs unattended" and documents the Firebase
