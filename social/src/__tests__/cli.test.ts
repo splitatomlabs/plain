@@ -63,18 +63,18 @@ function runCli(args: string[]): RunResult {
 // ---------------------------------------------------------------------------
 
 describe('dateToWeekDay / weekDayToDate', () => {
-	it('PILOT_WEEK_1_START (2026-09-01) maps to week 1, day 1', () => {
-		expect(PILOT_WEEK_1_START).toBe('2026-09-01');
-		expect(dateToWeekDay('2026-09-01')).toEqual({ week: 1, day: 1 });
+	it('PILOT_WEEK_1_START (2026-09-09) maps to week 1, day 1', () => {
+		expect(PILOT_WEEK_1_START).toBe('2026-09-09');
+		expect(dateToWeekDay('2026-09-09')).toEqual({ week: 1, day: 1 });
 	});
 
-	it('day 7 of week 1 is 2026-09-07; day 1 of week 2 is 2026-09-08', () => {
-		expect(dateToWeekDay('2026-09-07')).toEqual({ week: 1, day: 7 });
-		expect(dateToWeekDay('2026-09-08')).toEqual({ week: 2, day: 1 });
+	it('day 7 of week 1 is 2026-09-15; day 1 of week 2 is 2026-09-16', () => {
+		expect(dateToWeekDay('2026-09-15')).toEqual({ week: 1, day: 7 });
+		expect(dateToWeekDay('2026-09-16')).toEqual({ week: 2, day: 1 });
 	});
 
 	it('round-trips for a range of dates', () => {
-		const dates = ['2026-09-01', '2026-09-02', '2026-09-07', '2026-09-08', '2026-10-15', '2027-01-01'];
+		const dates = ['2026-09-09', '2026-09-10', '2026-09-15', '2026-09-16', '2026-10-15', '2027-01-01'];
 		for (const date of dates) {
 			const { week, day } = dateToWeekDay(date);
 			expect(weekDayToDate(week, day)).toBe(date);
@@ -91,7 +91,7 @@ describe('dateToWeekDay / weekDayToDate', () => {
 	});
 
 	it('errors clearly on a date before the pilot start', () => {
-		expect(() => dateToWeekDay('2026-08-31')).toThrow(/before the pilot/i);
+		expect(() => dateToWeekDay('2026-09-08')).toThrow(/before the pilot/i);
 	});
 
 	it('errors clearly on a malformed date', () => {
@@ -111,8 +111,8 @@ describe('dateToWeekDay / weekDayToDate', () => {
 // ---------------------------------------------------------------------------
 
 describe('resolveDay — against the real committed week-1 schedule', () => {
-	it('2026-09-01 (day 1) resolves to the expected card and format', () => {
-		const { week, day } = dateToWeekDay('2026-09-01');
+	it('2026-09-09 (day 1) resolves to the expected card and format', () => {
+		const { week, day } = dateToWeekDay('2026-09-09');
 		expect(week).toBe(1);
 		const slot = resolveDay(WEEK_1_SCHEDULE, day);
 		expect(slot.card_id).toBe('meditations-09-025');
@@ -131,13 +131,13 @@ describe('resolveDay — against the real committed week-1 schedule', () => {
 
 describe('chooseBed — deterministic for a given date', () => {
 	it('the same postIndex always chooses the same bed', () => {
-		const seed = postIndexForDay('2026-09-01');
+		const seed = postIndexForDay('2026-09-09');
 		expect(chooseBed(seed).id).toBe(chooseBed(seed).id);
 	});
 
 	it('a different date usually chooses a different postIndex, and consecutive days never repeat a bed', () => {
-		const seedDay1 = postIndexForDay('2026-09-01');
-		const seedDay2 = postIndexForDay('2026-09-02');
+		const seedDay1 = postIndexForDay('2026-09-09');
+		const seedDay2 = postIndexForDay('2026-09-10');
 		expect(seedDay2).toBe(seedDay1 + 1);
 		expect(chooseBed(seedDay1).id).not.toBe(chooseBed(seedDay2).id);
 	});
@@ -191,9 +191,9 @@ describe('--dry-run', () => {
 		parentDir = await mkdtemp(path.join(tmpdir(), 'plain-social-cli-dry-'));
 		outDir = path.join(parentDir, 'out');
 
-		const result = runCli(['render', '--date', '2026-09-01', '--out', outDir, '--dry-run']);
+		const result = runCli(['render', '--date', '2026-09-09', '--out', outDir, '--dry-run']);
 		expect(result.status).toBe(0);
-		// 2026-09-01 is day 1; derived from the real committed schedule (not
+		// 2026-09-09 is day 1; derived from the real committed schedule (not
 		// hardcoded a second time) so this stays in sync with day 1's card.
 		const day1 = resolveDay(WEEK_1_SCHEDULE, 1);
 		expect(result.stdout).toMatch(new RegExp(day1.card_id));

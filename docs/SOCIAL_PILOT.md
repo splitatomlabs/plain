@@ -50,12 +50,21 @@ Section 7 below covers running it.
 
 These rules exist to avoid getting the accounts banned before the four weeks are up — not general
 best practice, but specific mitigations against specific enforcement mechanisms documented in
-`plans/research/social-experiment-notes.md`. Follow every one of them for all three accounts
-(Instagram, TikTok, YouTube/Google).
+`plans/research/social-experiment-notes.md`. Follow every one of them for all four accounts
+(YouTube/Google, Instagram, TikTok, Facebook — see 3.0 on why Facebook is in this list).
 
-- **Separate email per account, not reused from anything else.** Protects against automated
-  cross-account linkage — platforms correlate accounts sharing signup emails, and a flagged
-  signal on one account should not be traceable to another identity you use for anything else.
+- **One dedicated email for the pilot, not an address used for anything else.** **Decision
+  (2026-09-09): all four pilot accounts share ONE dedicated Google account,
+  `thinkplain.ai@gmail.com` — not one email each.** An earlier version of this rule said "separate
+  email per account"; that was inherited from the original four-Instagram-account design. The threat
+  actually being guarded against is linkage to your real identity — a flagged pilot account should
+  not be traceable to accounts you care about. It is NOT about isolating the pilot accounts from
+  each other: Meta's co-ownership clause (`plans/research/social-experiment-notes.md`) only enforces
+  across Meta properties, so accounts on three different platforms cannot be mutually enforced
+  through a shared signup email. Two consequences that matter: (a) that mailbox is the recovery path
+  for every pilot account — 2FA and a recovery phone go on it before anything depends on it; (b)
+  Google ignores dots in Gmail addresses, so `thinkplain.ai@gmail.com` and `thinkplainai@gmail.com`
+  are one mailbox — use a single spelling verbatim everywhere so the accounts stay consistent.
 - **Create the account manually on a real device, not scripted, not in a headless browser, not
   through an API.** Automated account creation is itself a violation signal on every platform
   named here — no platform documents a "warm-up period" requirement, but every one of them
@@ -63,11 +72,15 @@ best practice, but specific mitigations against specific enforcement mechanisms 
 - **Phone-verify the account.** Phone verification is one of the strongest anti-bot signals a
   platform has; skipping it makes the account look exactly like the automated spam accounts these
   platforms are built to catch, independent of anything you actually post.
-- **Distinct handle and bio, not templated or copy-pasted across accounts.** Even though this
-  pilot only runs one account per platform (so there is no sibling account to look "interchangeable"
-  with on the SAME platform), the handle and bio should still read as a real, specific account —
-  generic or placeholder-looking branding is itself a low-effort/spam signal reviewers and automated
-  systems are tuned to catch.
+- **The SAME handle on every platform, plus real per-platform bio copy.** **Decision (2026-09-09):
+  the pilot is `@thinkplainai` on YouTube, Instagram, and TikTok.** An earlier version of this rule
+  said "distinct handle and bio ... across accounts" — also inherited from the four-account design,
+  where four sibling accounts on the SAME platform looking interchangeable was the Meta
+  inauthenticity signal. This pilot runs one account per platform, where a consistent handle is what
+  every real brand does and reads as legitimacy rather than spam. What survives of the rule: write
+  real, specific bio copy per platform (3.0 has the exact strings used) — generic or
+  placeholder-looking branding is itself a low-effort/spam signal reviewers and automated systems
+  are tuned to catch.
 - **No follow/like/comment automation, ever.** TikTok's Community Guidelines explicitly name "using
   automation to run ... accounts or send repetitive content" as a violation. Meta's Account
   Integrity policy names automation as one of the concealed-operatorship signals it enforces
@@ -90,14 +103,117 @@ weekly session and any live troubleshooting. Read it again before the first post
 Do these once, in this order, before the daily loop can run for real (3.0-3.6 — 3.7 is the one
 exception, see its own note on why it doesn't gate go-live). Each step links to the doc that
 actually walks through it in detail rather than duplicating that detail here. Everything from 3.2
-onward assumes the three accounts (3.0) already exist — 3.2 and 3.3 both need a real Instagram
-account and a real YouTube channel to attach an app/token to.
+onward assumes the 3.0 accounts already exist — 3.2 needs a real Instagram Business account and a
+Facebook login to create the Meta app with, and 3.3 needs a real YouTube channel to attach a token
+to.
 
-### 3.0 Create the three accounts
+### 3.0 Create the four accounts
 
-Create the pilot's Instagram, TikTok, and YouTube/Google accounts before touching anything else in
-this section. Follow section 2's hygiene rules for all three (separate email, real device, phone
-verification, distinct handle/bio, no automation) — that section is not repeated here.
+Create the pilot's YouTube/Google, Instagram, and TikTok accounts — **plus a Facebook account**,
+which 3.2 needs and which the original version of this section omitted — before touching anything
+else here. Follow section 2's hygiene rules for all of them (one shared pilot email, real device,
+phone verification, same handle everywhere, real bio copy, no automation) — that section is not
+repeated here.
+
+**Facebook is required, and it is probably not a new account.** Creating the Meta app in 3.2 needs a
+Facebook developer login. **If you already have a personal Facebook profile, use it** — Facebook
+prohibits maintaining more than one personal profile, and a second profile in your own name is the
+misrepresentation signal that gets accounts disabled, which under Meta's co-ownership clause can
+then reach the linked Instagram account. Only if you have no Facebook profile at all should you
+create one, under your real name, with the pilot email, and then leave it completely alone (no
+photo, no friends, no posts — it exists solely to hold the app). Do NOT create a Facebook Page:
+3.2's `instagram_business_content_publish` is the Instagram-Login permission and does not need one.
+
+**Which Meta business portfolio the app lands in is a real decision.** Meta's Account Integrity
+clause lets Meta act on accounts "owned by the same person or entity as an account that has been
+disabled," and assets inside one business portfolio are co-owned by the same entity by definition.
+Putting a brand-new account that posts automated video daily into a portfolio holding real company
+assets shares fate with them. Owning multiple portfolios is normal and allowed — it is not the
+"concealed common operatorship" Meta enforces against. Caveat, so this is not oversold: the same
+personal profile admins both portfolios, so person-level linkage exists regardless; a separate
+portfolio limits asset-level blast radius, not linkage. Rule of thumb: if the existing portfolio
+holds ad accounts, client assets, or a Page/IG you would mind losing, use a separate portfolio for
+the pilot; if it is a dormant shell, either is fine.
+
+#### Status and concrete values (2026-09-09)
+
+| Account | Status | Notes |
+|---|---|---|
+| Google / YouTube | **Done** | `thinkplain.ai@gmail.com`; channel is a **Brand Account** (Studio -> Settings -> Permissions offers Invite, which a personal channel does not); avatar, description, and `/go/yt` link set |
+| Instagram | **Done** | `@thinkplainai`, phone-verified, switched to **Business**, avatar + bio + `/go/ig` link set |
+| Facebook | Existing personal profile — no new account created | Used only to log into `developers.facebook.com` at 3.2 |
+| TikTok | **Partial** | `@thinkplainai` created and phone-verified. **NOT switched to Business — deferred, see below** |
+
+Shared across all of them: avatar is `logos/profile/plain-bmc-profile.png` (512x512, the fading-card
+icon — `logos/README.md` designates that variant for social profile avatars); display name `Plain`.
+
+Bio copy actually used:
+
+- **YouTube channel description** (link title "Read it plain", matching `caption.ts`'s
+  `Read it plain: <url>` line so the channel and the captions read identically):
+
+  ```
+  Classic Stoic philosophy in plain English.
+
+  One card a day from Marcus Aurelius, Epictetus, and Seneca — the emperor,
+  the slave, and the senator. Three completely different lives, the same
+  answers. No philosophy degree required.
+
+  Read the full books, free: https://thinkplain.ai/go/yt
+  ```
+
+- **Instagram** (150-char limit):
+
+  ```
+  Classic Stoic philosophy in plain English.
+  One card a day — Marcus Aurelius, Epictetus, Seneca.
+  No philosophy degree required.
+  ```
+
+- **TikTok** (80-char limit):
+
+  ```
+  Stoic philosophy in plain English.
+  One card a day. Marcus · Epictetus · Seneca
+  ```
+
+The author names and "Stoic philosophy" are deliberate: channel/profile text is indexed, and
+`plans/research/social-experiment-notes.md` found philosophy is search-driven.
+
+**Create the YouTube channel as a Brand Account, not the account's default personal channel.** Use
+[youtube.com/channel_switcher](https://www.youtube.com/channel_switcher) -> "Create a channel" and
+give it a name that DIFFERS from the Google account's own profile name — that difference is what
+makes YouTube house it in a Brand Account. Clicking "Create channel" from the avatar menu and
+accepting the pre-filled default name yields a *personal* channel instead. Verify at
+[myaccount.google.com/brandaccounts](https://myaccount.google.com/brandaccounts), or by Studio ->
+Settings -> Permissions offering to invite people. Why it matters: the Brand Account gives the
+channel its own name/handle and a revocable manager list, so access can be granted without sharing
+the Gmail password. **Carry this into 3.3:** Google's OAuth consent asks WHICH channel to grant —
+pick the Brand Account, not the personal channel under the same Gmail. Granting the wrong one
+produces a token that authenticates fine and uploads to an empty channel, and fails silently.
+
+**TikTok: the bio link needs a Business account, and that needs business verification — DEFERRED
+(2026-09-09).** A *personal* TikTok account generally needs 1,000 followers before the Website field
+appears in Edit Profile, so a zero-follower pilot account cannot set the `/go/tt` bio link at all.
+The fix is a Business account — but in practice the switch required business verification, which
+was declined for now as disproportionate before the concept is proven. **What this costs, precisely:**
+
+- **Lost:** the profile-visit conversion path on TikTok only.
+- **NOT lost — caption attribution.** `social/src/publish/caption.ts`'s `ATTRIBUTION_URLS` puts
+  `https://thinkplain.ai/go/tt` into every TikTok caption automatically, so `utm_source=tiktok`
+  clicks are logged from the first post regardless of account type.
+- **NOT lost — criterion B.** The week-1-to-week-4 median trend is pure view data (hand-entered per
+  5.4), so TikTok can still independently prove viability.
+- **NOT lost — criterion A's breakout half.** A post clearing ~10,000 views still registers.
+- **Already unavailable anyway — TikTok follow-conversion.** `social/src/metrics/readout.ts`'s
+  `computeFollowConversion` returns `method: 'unavailable'` with `follows: null` when no follower
+  snapshots exist, and nothing populates `tiktokFollowerSnapshots` — `metrics/instagram.ts` is the
+  only follower-snapshot collector that exists. `readout.ts`'s own comment says this is "exactly
+  TikTok's current state until a follower-snapshot collector is built for it." So the deferral
+  degrades a signal that was already out of scope, not a working one.
+
+Revisit the switch if TikTok turns out to be the platform that performs; the Website field can be
+added at any time, including after posting starts.
 
 Two things to do at account-creation time specifically, because both are cheapest to fix now rather
 than after the fact:
@@ -751,6 +867,23 @@ expected failure mode is a mistyped number, not a network error, so this
 fails loudly rather than recording a bad row silently.
 
 ## Current status — what is NOT done
+
+**Account setup (3.0) progress, 2026-09-09:** the Google/YouTube (Brand Account), Instagram
+(Business), and TikTok accounts all now exist, phone-verified, on the shared pilot email, each with
+the avatar, display name, and bio copy in 3.0; Facebook uses an existing personal profile. Bio links
+are set on YouTube (`/go/yt`) and Instagram (`/go/ig`) only — **TikTok has NO bio link**, because it
+is not on a Business account (see 3.0 — business verification deferred) and the Website field is
+therefore unavailable. **Everything below this paragraph is still true: none of the six live steps
+has been run, and zero posts have been published.** Note also that both `/go/` links set so far 404
+until this branch ships — they are live on the profiles but unverified; run
+`curl -sI https://thinkplain.ai/go/ig` (and `/yt`), expecting a 302 to a
+`thinkplain.ai/?utm_source=...` URL, once PR #42 is merged and deployed.
+
+**Pilot anchor date reset, 2026-09-09:** `PILOT_WEEK_1_START` (`social/src/pilot-config.ts`) was
+moved from `2026-09-01` to `2026-09-09`, since the original anchor had passed with nothing
+published. Week 1 is now 2026-09-09..15 and week 4 is 2026-09-30..10-06. This is free to change
+again right up until the first real render ships (a render embeds its `--date` in both its filename
+and its metadata sidecar); after that it is fixed for the life of the pilot.
 
 Be honest with yourself before assuming this pilot is ready to run: **six live steps described
 above have never actually been executed.** Every one of them was built and unit-tested against

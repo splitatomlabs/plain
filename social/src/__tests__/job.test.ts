@@ -37,7 +37,7 @@ import type { WeekSchedule, ScheduleSlot } from '../schedule-types.js';
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const DATE = '2026-09-01'; // PILOT_WEEK_1_START — week 1, day 1.
+const DATE = '2026-09-09'; // PILOT_WEEK_1_START — week 1, day 1.
 const NOW = '2026-08-27T00:00:00.000Z';
 const DAY_MS = 24 * 60 * 60 * 1000;
 

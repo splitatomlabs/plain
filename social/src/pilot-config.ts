@@ -26,7 +26,7 @@
  */
 
 /** Week 1, day 1 of the pilot schedule — see the module doc comment above. */
-export const PILOT_WEEK_1_START = '2026-09-01';
+export const PILOT_WEEK_1_START = '2026-09-09';
 
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 

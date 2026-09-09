@@ -191,7 +191,7 @@ describe('stageTikTokWeek', () => {
 	});
 
 	it('never stages a short week — no upload happens when any day is missing', async () => {
-		existsSyncMock.mockImplementation((filePath: unknown) => !String(filePath).includes('2026-09-07'));
+		existsSyncMock.mockImplementation((filePath: unknown) => !String(filePath).includes(weekDayToDate(SCHEDULE.week, 7)));
 		const client = fakeClient();
 
 		await expect(

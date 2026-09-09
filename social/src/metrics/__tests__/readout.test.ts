@@ -25,9 +25,10 @@
  * blocks (median/ratio math, null-vs-zero, insufficient-data honesty, top-5
  * ordering) this task's brief itemizes.
  *
- * `PILOT_WEEK_1_START` (`pilot-config.ts`) is `'2026-09-01'`, so throughout
- * this file: week 1 = 2026-09-01..07, week 2 = 09-08..14, week 3 =
- * 09-15..21, week 4 = 09-22..28.
+ * Every pilot-week date below is derived from `PILOT_WEEK_1_START` via
+ * `weekDayToDate` (the `at` helper), never written as a literal — so moving
+ * the pilot's anchor date shifts these fixtures with it instead of silently
+ * pushing them outside the pilot window.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -44,13 +45,19 @@ import {
 	type DailyFollowerSnapshot
 } from '../readout.js';
 import type { MetricsRow } from '../schema.js';
+import { weekDayToDate } from '../../pilot-config.js';
+
+/** A `publishedAt` for pilot week `week`, day `day` — anchored, never a literal date. */
+function at(week: number, day: number, time = 'T12:00:00.000Z'): string {
+	return `${weekDayToDate(week, day)}${time}`;
+}
 
 function row(overrides: Partial<MetricsRow> = {}): MetricsRow {
 	return {
 		platform: 'instagram',
 		postId: 'post-1',
 		format: 'wall',
-		publishedAt: '2026-09-01T12:00:00.000Z',
+		publishedAt: at(1, 1),
 		views: 100,
 		averagePercentWatched: 50,
 		likes: 10,
@@ -75,13 +82,13 @@ describe('the acceptance criterion — synthetic outlier with conversion reports
 		// one injected outlier clearing ~10,000 views on the day the follower
 		// count visibly jumped.
 		const baseline: MetricsRow[] = [100, 120, 90, 110, 95].map((views, i) =>
-			row({ postId: `ig-baseline-${i}`, views, publishedAt: `2026-09-0${i + 1}T12:00:00.000Z` })
+			row({ postId: `ig-baseline-${i}`, views, publishedAt: at(1, i + 1) })
 		);
-		const outlier = row({ postId: 'ig-outlier', views: 15_000, publishedAt: '2026-09-06T12:00:00.000Z' });
+		const outlier = row({ postId: 'ig-outlier', views: 15_000, publishedAt: at(1, 6) });
 
 		const followerSnapshots: DailyFollowerSnapshot[] = [
-			{ date: '2026-09-05', followerCount: 500 },
-			{ date: '2026-09-06', followerCount: 540 } // +40 the day the outlier published
+			{ date: weekDayToDate(1, 5), followerCount: 500 },
+			{ date: weekDayToDate(1, 6), followerCount: 540 } // +40 the day the outlier published
 		];
 
 		const readout = computeReadout({
@@ -113,9 +120,9 @@ describe('the acceptance criterion — outlier with NO conversion and NO trend r
 		// fabricated 0 or a fabricated conversion), and all posts fall inside a
 		// single week, so there is no week-4 data to show a trend either.
 		const baseline: MetricsRow[] = [100, 120, 90, 110, 95].map((views, i) =>
-			row({ platform: 'tiktok', postId: `tt-baseline-${i}`, views, publishedAt: `2026-09-0${i + 1}T12:00:00.000Z` })
+			row({ platform: 'tiktok', postId: `tt-baseline-${i}`, views, publishedAt: at(1, i + 1) })
 		);
-		const outlier = row({ platform: 'tiktok', postId: 'tt-outlier', views: 15_000, publishedAt: '2026-09-06T12:00:00.000Z' });
+		const outlier = row({ platform: 'tiktok', postId: 'tt-outlier', views: 15_000, publishedAt: at(1, 6) });
 
 		const readout = computeReadout({
 			rows: [...baseline, outlier],
@@ -157,10 +164,10 @@ describe('the acceptance criterion — outlier with NO conversion and NO trend r
 describe('criterion B — week-1-to-week-4 median trend', () => {
 	it('reports VIABLE under criterion B when median views rise from week 1 to week 4, with no breakout post anywhere', () => {
 		const week1: MetricsRow[] = [100, 90, 110].map((views, i) =>
-			row({ postId: `w1-${i}`, views, publishedAt: `2026-09-0${i + 1}T12:00:00.000Z` })
+			row({ postId: `w1-${i}`, views, publishedAt: at(1, i + 1) })
 		);
 		const week4: MetricsRow[] = [300, 320, 280].map((views, i) =>
-			row({ postId: `w4-${i}`, views, publishedAt: `2026-09-2${2 + i}T12:00:00.000Z` })
+			row({ postId: `w4-${i}`, views, publishedAt: at(4, i + 1) })
 		);
 
 		const readout = computeReadout({ rows: [...week1, ...week4], now: NOW });
@@ -177,8 +184,8 @@ describe('criterion B — week-1-to-week-4 median trend', () => {
 
 	it('reports insufficient-data, not a fabricated trend, with fewer than 4 weeks of posts', () => {
 		const rows: MetricsRow[] = [
-			row({ postId: 'w1-a', views: 100, publishedAt: '2026-09-01T12:00:00.000Z' }),
-			row({ postId: 'w2-a', views: 400, publishedAt: '2026-09-08T12:00:00.000Z' })
+			row({ postId: 'w1-a', views: 100, publishedAt: at(1, 1) }),
+			row({ postId: 'w2-a', views: 400, publishedAt: at(2, 1) })
 		];
 		const trend = computeWeekTrend(rows);
 		expect(trend.status).toBe('insufficient-data');
@@ -189,9 +196,9 @@ describe('criterion B — week-1-to-week-4 median trend', () => {
 
 	it('medianViewsByWeek buckets by pilot week and computes each week’s median independently', () => {
 		const rows: MetricsRow[] = [
-			row({ postId: 'a', views: 10, publishedAt: '2026-09-01T00:00:00.000Z' }), // week 1
-			row({ postId: 'b', views: 20, publishedAt: '2026-09-02T00:00:00.000Z' }), // week 1
-			row({ postId: 'c', views: 1000, publishedAt: '2026-09-08T00:00:00.000Z' }) // week 2
+			row({ postId: 'a', views: 10, publishedAt: at(1, 1, 'T00:00:00.000Z') }), // week 1
+			row({ postId: 'b', views: 20, publishedAt: at(1, 2, 'T00:00:00.000Z') }), // week 1
+			row({ postId: 'c', views: 1000, publishedAt: at(2, 1, 'T00:00:00.000Z') }) // week 2
 		];
 		expect(medianViewsByWeek(rows)).toEqual([
 			{ week: 1, medianViews: 15, postCount: 2 },
@@ -210,10 +217,10 @@ describe('week bucketing tolerates a pre-pilot publishedAt (M1)', () => {
 	it('excludes a pre-pilot row from weekTrend but still counts it toward median/max/top posts', () => {
 		const prePilot = row({ postId: 'pre-pilot', views: 5_000, publishedAt: '2026-08-20T12:00:00.000Z' });
 		const week1: MetricsRow[] = [100, 90, 110].map((views, i) =>
-			row({ postId: `w1-${i}`, views, publishedAt: `2026-09-0${i + 1}T12:00:00.000Z` })
+			row({ postId: `w1-${i}`, views, publishedAt: at(1, i + 1) })
 		);
 		const week4: MetricsRow[] = [300, 320, 280].map((views, i) =>
-			row({ postId: `w4-${i}`, views, publishedAt: `2026-09-2${2 + i}T12:00:00.000Z` })
+			row({ postId: `w4-${i}`, views, publishedAt: at(4, i + 1) })
 		);
 
 		expect(() => computeReadout({ rows: [prePilot, ...week1, ...week4], now: NOW })).not.toThrow();
@@ -240,8 +247,8 @@ describe('week bucketing tolerates a pre-pilot publishedAt (M1)', () => {
 describe('criterion B requires a minimum sample in both endpoint weeks, not just non-empty weeks (M9)', () => {
 	it('reports insufficient-data for one week-1 post and one week-4 post with higher views, and the verdict is not viable on that alone', () => {
 		const rows: MetricsRow[] = [
-			row({ postId: 'w1-only', views: 100, publishedAt: '2026-09-01T12:00:00.000Z' }),
-			row({ postId: 'w4-only', views: 500, publishedAt: '2026-09-22T12:00:00.000Z' })
+			row({ postId: 'w1-only', views: 100, publishedAt: at(1, 1) }),
+			row({ postId: 'w4-only', views: 500, publishedAt: at(4, 1) })
 		];
 
 		const trend = computeWeekTrend(rows);
@@ -323,8 +330,8 @@ describe('follow conversion — null is never a zero', () => {
 	});
 
 	it('Instagram: infers a delta only when both the publish-day and prior-day snapshots exist, else null', () => {
-		const rows: MetricsRow[] = [row({ platform: 'instagram', postId: 'ig-1', publishedAt: '2026-09-10T12:00:00.000Z', views: 500 })];
-		const snapshots: DailyFollowerSnapshot[] = [{ date: '2026-09-10', followerCount: 700 }]; // missing the prior day
+		const rows: MetricsRow[] = [row({ platform: 'instagram', postId: 'ig-1', publishedAt: at(2, 3), views: 500 })];
+		const snapshots: DailyFollowerSnapshot[] = [{ date: weekDayToDate(2, 3), followerCount: 700 }]; // missing the prior day
 		const fc = computeFollowConversion('instagram', rows, snapshots);
 		expect(fc.method).toBe('inferred');
 		expect(fc.posts[0].follows).toBeNull();
