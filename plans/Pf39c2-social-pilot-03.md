@@ -14,7 +14,12 @@ session, collect metrics, and produce a yes-or-no answer to the viability questi
 - **Cloudflare R2 behind `media.thinkplain.ai`.** Free tier, zero egress. The default `r2.dev` subdomain is
   rate-limited and development-only, so a custom domain is required.
 - **Instagram needs no App Review.** Give the account a role on your own Meta Business-type app; Standard Access
-  covers `instagram_business_content_publish`. Do not request Advanced Access — it buys nothing and invites scrutiny.
+  covers the publish permission. Do not request Advanced Access — it buys nothing and invites scrutiny.
+  **CORRECTION (2026-09-09): this Decision originally named `instagram_business_content_publish`, which is the
+  INSTAGRAM-LOGIN permission (`graph.instagram.com`). The code implements the FACEBOOK-LOGIN family
+  (`graph.facebook.com`, see `social/src/publish/instagram.ts`'s `DEFAULT_GRAPH_API_BASE_URL`), whose permissions are
+  `instagram_basic` / `instagram_content_publish` / `instagram_manage_insights` / `pages_show_list` /
+  `pages_read_engagement`, and which REQUIRES a linked Facebook Page. Verified live. See `docs/SOCIAL_PILOT.md` 3.2.**
 - **Firebase `onSchedule` is a THIN TRIGGER ONLY** — scheduled functions are capped at 540s. It starts a **Cloud Run
   Job**, which allows a 168-hour timeout, 32 GiB and 8 vCPU.
 - **YouTube uploads land private and are flipped by hand** in Studio during the weekly session. Submit the

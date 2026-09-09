@@ -114,7 +114,7 @@ spec:
                 # step 1 (remember: GCS bucket names are globally unique,
                 # unlike R2's).
                 - name: GCS_BUCKET_NAME
-                  value: PLACEHOLDER_BUCKET_NAME
+                  value: plain-social-pilot-media
                 - name: IG_USER_ID
                   valueFrom:
                     secretKeyRef:

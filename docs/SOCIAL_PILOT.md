@@ -121,8 +121,17 @@ prohibits maintaining more than one personal profile, and a second profile in yo
 misrepresentation signal that gets accounts disabled, which under Meta's co-ownership clause can
 then reach the linked Instagram account. Only if you have no Facebook profile at all should you
 create one, under your real name, with the pilot email, and then leave it completely alone (no
-photo, no friends, no posts — it exists solely to hold the app). Do NOT create a Facebook Page:
-3.2's `instagram_business_content_publish` is the Instagram-Login permission and does not need one.
+photo, no friends, no posts — it exists solely to hold the app).
+
+**You DO also need a Facebook Page** (corrected 2026-09-09 — an earlier version of this line said
+the opposite, which is wrong and costs an hour to discover). This codebase calls
+`graph.facebook.com`, the Facebook-Login Instagram API, whose permissions flow through a Page; see
+3.2's correction table. Create a Page named `Plain`, give it the same avatar, leave it published but
+empty (no posts), and **connect it to the Instagram professional account** — Page -> Settings ->
+Linked accounts, or from Instagram -> Settings -> Account type and tools -> Linked accounts. Note
+that connecting accounts in Accounts Centre (personal profile <-> Instagram) is a DIFFERENT thing
+and does not satisfy this. Put the Page in whichever business portfolio the pilot uses.
+The Page created for this pilot is `1268933229644482` ("Think Plain").
 
 **Which Meta business portfolio the app lands in is a real decision.** Meta's Account Integrity
 clause lets Meta act on accounts "owned by the same person or entity as an account that has been
@@ -282,22 +291,158 @@ of GCS**, unlike R2 — that doc's own callout), set uniform bucket-level access
 is no access key to protect (optionally also `GCS_PUBLIC_BASE_URL`, unset by default, only needed if
 a custom domain is ever put in front of the bucket).
 
+#### Provisioned (2026-09-09) — DONE and verified
+
+| | |
+|---|---|
+| GCP project | `plain-social-pilot` (deliberately NOT `split-atom-labs`, see below) |
+| Billing account | `01AA73-8FF54D-C7C23F`, `billingEnabled: true` |
+| Bucket | `gs://plain-social-pilot-media`, `US-CENTRAL1` |
+| Uniform bucket-level access | `true` |
+| Public read | `allUsers` -> `roles/storage.objectViewer`, scoped to this bucket only |
+| Lifecycle | 30-day Delete, confirmed present in `lifecycle_config` |
+| `GCS_BUCKET_NAME` | `plain-social-pilot-media` (set in `social/cloud-run-job.yaml`) |
+
+`social/gcs/README.md` section 4's acceptance criterion passed in full: `200` on an unauthenticated
+HTTPS fetch, `content-type: text/plain` echoed back correctly, and `HTTP/2 206` with
+`content-range: bytes 0-21/22` on a range request. Test object deleted afterwards.
+
+**Why a dedicated project rather than `split-atom-labs`:** that project already runs a Firestore
+database (created 2024-02-08, actively written to). The pilot writes `social-pilot-tokens` and
+pending-flip documents to Firestore, so reusing the project would put a throwaway four-week
+experiment's data in the same database as live company data. A dedicated project also gives a clean
+teardown — delete the project when the pilot ends and every resource goes with it. Same reasoning as
+keeping the pilot out of the company's Meta business portfolio (3.0).
+
 ### 3.2 Create the Meta app and get an Instagram token
 
-**Prerequisite: the Instagram account must already be Business or Creator, not Personal** (3.0
-above) — Meta's Content Publishing API this section obtains a token for does not work against a
-Personal account at all, and there is no error message pointing at this specifically if it's missed;
-the token-exchange flow just fails to produce a usable Business Account id.
+**Status: DONE and verified live, 2026-09-09.** Concrete values are at the end of this section.
 
-Per the plan's Decision: Instagram needs no App Review. Create a Meta Business-type app, give the
-pilot's Instagram account a role on it, and use Standard Access — it covers
-`instagram_business_content_publish`. Do **not** request Advanced Access; it buys nothing here and
-invites more scrutiny than this pilot needs. Obtain the account's `IG_USER_ID` (the Instagram
-Business Account id) and a long-lived Instagram access token through Meta's own token-exchange flow.
+**CORRECTION (2026-09-09) — this section previously named the wrong API family, and cost about an
+hour of setup as a result.** Meta has two different Instagram APIs and they are not interchangeable:
 
-**Long-lived Instagram tokens expire in 60 days and must be refreshed** (the token must be at least
-24 hours old before a refresh is eligible — see `social/src/publish/tokens.ts`'s
-`MIN_REFRESH_AGE_MS`). Section 4 below covers where this token has to be seeded by hand.
+| | Instagram API with **Facebook Login** | Instagram API with **Instagram Login** |
+|---|---|---|
+| Host | `graph.facebook.com` | `graph.instagram.com` |
+| Permissions | `instagram_basic`, `instagram_content_publish`, ... | `instagram_business_basic`, `instagram_business_content_publish`, ... |
+| Facebook Page | **REQUIRED** | not required |
+| Token used to publish | **Page** access token | Instagram user access token |
+
+**This codebase implements the Facebook Login family**, hard-coded:
+`social/src/publish/instagram.ts`'s `DEFAULT_GRAPH_API_BASE_URL` is
+`https://graph.facebook.com/v21.0` (same in `social/src/metrics/instagram.ts`), and it calls
+`POST /{ig-user-id}/media`. The string `instagram_business_content_publish` appears nowhere in the
+source — only in this runbook's prose and the plan. **So a Facebook Page IS required**, contrary to
+what an earlier version of 3.0 said. `v21.0` is pinned and valid until 2027-01-21, comfortably past
+the pilot.
+
+**Prerequisites:** the Instagram account is Business or Creator, not Personal (3.0) — the API does
+not work against a Personal account and gives no error naming that as the cause. And a Facebook Page
+exists and is **connected to the Instagram professional account**. Connecting accounts in Accounts
+Centre (personal profile <-> Instagram) is NOT the same thing and does not put
+`instagram_business_account` on the Page.
+
+**The steps that actually worked:**
+
+1. **Create the app** at `developers.facebook.com`, logged in with your personal Facebook profile
+   (3.0: do not create a second profile). App type Business, attached to the pilot's business
+   portfolio. **Leave it in Development mode — do NOT publish it.** Development mode works against
+   accounts that have a role on the app, which is exactly this case, and Standard Access covers
+   every permission below with no App Review. (Contrast 3.3: the *Google* OAuth app MUST be
+   published, or its refresh tokens expire every 7 days. The two platforms are opposite here.)
+2. **Add the product.** Meta's newer console is use-case driven. The use case whose permission list
+   contains `instagram_content_publish` (NOT `instagram_business_content_publish`) is the right one
+   — check the permission names to tell the two families apart, since both start with `instagram_`.
+   In the older product-based console the equivalent is adding **Facebook Login for Business**, and
+   nothing else.
+3. **Request these five permissions** — Standard Access, and do NOT request Advanced Access:
+   ```
+   instagram_basic
+   instagram_content_publish
+   instagram_manage_insights
+   pages_show_list
+   pages_read_engagement
+   ```
+   `instagram_manage_insights` is the one this runbook previously omitted entirely. Without it,
+   publishing works and METRICS silently fail in week 1 — `metrics/instagram.ts` calls
+   `/{media-id}/insights` and `/{ig-user-id}/insights`.
+4. **Generate a User token** in the Graph API Explorer
+   (`developers.facebook.com/tools/explorer` — a separate tool, not part of the app dashboard).
+   Select the app, token type User Token, tick all five permissions, Generate Access Token.
+   **Ticking permissions does not re-issue the token** — click Generate again after changing them.
+   In the consent dialog, explicitly tick the Page and Instagram account: clicking through with
+   defaults grants the SCOPES while selecting ZERO ASSETS, which produces a token that authenticates
+   fine and returns an empty `/me/accounts`.
+5. **Find `IG_USER_ID`.** The documented route is `GET /me/accounts` -> the Page ->
+   `instagram_business_account`. **If the Page is owned by a business portfolio (as here),
+   `/me/accounts` returns `{"data":[]}` even with `pages_show_list` granted** — your access runs
+   through the portfolio, not a classic personal Page admin role. Query the Page directly instead
+   (its id is in Meta Business Suite -> Settings -> Page details):
+   ```bash
+   curl -sS "https://graph.facebook.com/v21.0/PAGE_ID?fields=instagram_business_account,name&access_token=TOKEN"
+   ```
+   Nothing at runtime ever calls `/me/accounts` — `job.ts` only uses `IG_USER_ID` and the token — so
+   any route that yields the value is equally valid.
+6. **Exchange for a long-lived token, then derive the PAGE token from it.** Order matters: the Page
+   token inherits the long life of the user token it came from.
+   ```bash
+   read -rs FB_APP_SECRET
+   read -rs FB_SHORT_TOKEN
+   curl -sS "https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=APP_ID&client_secret=$FB_APP_SECRET&fb_exchange_token=$FB_SHORT_TOKEN"
+
+   read -rs FB_LONG_TOKEN
+   curl -sS "https://graph.facebook.com/v21.0/PAGE_ID?fields=access_token&access_token=$FB_LONG_TOKEN"
+   ```
+   Use `read -rs` rather than inlining values — it keeps credentials out of shell history. **The
+   PAGE access token from the second call is what `InstagramConfig.accessToken` needs**, not the
+   user token. Set `expiresAt` to the user token's 60-day expiry as the conservative bound. 60 days
+   outlives a 28-day pilot, so **no refresh happens during the pilot at all** — the
+   `MIN_REFRESH_AGE_MS`/`REFRESH_WINDOW_MS` machinery in `tokens.ts` never fires.
+
+**VERIFY THE WHOLE CHAIN WITHOUT POSTING — do this before trusting any of it.** Container creation
+and publishing are separate API calls, and an unpublished container simply expires after 24 hours.
+So this exercises the GCS public URL, the Page token and the publish permission end to end while
+nothing appears on the account:
+
+```bash
+# 1. put any public JPEG in the bucket
+gcloud storage cp test.jpg gs://plain-social-pilot-media/test.jpg --content-type=image/jpeg
+
+# 2. create a container, and STOP — never call media_publish
+read -rs IG_PAGE_TOKEN
+curl -sS -X POST "https://graph.facebook.com/v21.0/IG_USER_ID/media" \
+  -d "image_url=https://storage.googleapis.com/plain-social-pilot-media/test.jpg" \
+  -d "caption=chain test, not published" \
+  -d "access_token=$IG_PAGE_TOKEN"
+
+# 3. clean up
+gcloud storage rm gs://plain-social-pilot-media/test.jpg
+```
+
+An `{"id":"..."}` response means everything works. Failure modes: a `(#200)`/permissions error means
+the Business-Manager-Page-role case (add `ads_management` + `ads_read`, regenerate); an
+`OAuthException` usually means you are holding the USER token rather than the Page token; error
+`2207052` means Meta could not fetch the image from GCS, which is a storage problem, not auth.
+
+**Result of that test on 2026-09-09: container `18114024736799248` created successfully**, so GCS
+public read, the Page token, `IG_USER_ID` and `instagram_content_publish` are all confirmed working
+against the live account. `ads_management`/`ads_read` were NOT needed despite the portfolio-owned
+Page.
+
+#### Concrete values (2026-09-09)
+
+| | |
+|---|---|
+| `IG_USER_ID` | `17841423977412035` |
+| Facebook Page | `1268933229644482` ("Think Plain"), portfolio-owned |
+| App mode | Development (deliberately not published) |
+| Token type stored | **Page** access token |
+| Meta app id | not secret; app SECRET and tokens live only in your password manager |
+
+**Credential hygiene:** the app secret does not expire on its own and, with the app id, is enough to
+mint tokens against the app. If it is ever pasted anywhere it should not be (a chat, a commit, a
+shared terminal), reset it at App Dashboard -> Settings -> Basic -> App secret -> Reset, and revoke
+the app under facebook.com -> Settings -> Apps and Websites, then re-generate.
 
 ### 3.3 Create the YouTube OAuth app
 
@@ -346,7 +491,82 @@ that platform (loudly, in its logs) until a human re-runs the manual consent flo
 Firestore document. Watch for `WARN` expiry-alert lines in the job logs (section 4) inside the
 30-day window before a token expires, per `tokens.ts`'s `expiryAlert`.
 
+### 3.4a Where the daily job runs — DECISION (2026-09-09): LOCAL, not Cloud Run
+
+**Decision: run `job.ts` on a local machine on a schedule. Sections 3.5 (Docker) and 3.6 (Cloud Run
+deploy) are NOT part of the current setup path.** They remain written and correct should the pilot
+say yes and this become a real product; they are simply not what this pilot uses.
+
+**Why.** The pilot is a 28-day experiment, so anything built for it is used 28 times. `job.ts`
+renders inline — it reuses `cli.ts`'s Remotion path (`job.ts`'s header, and the `RenderFn`
+dependency) — so the container in 3.5 has to carry Chromium, ffmpeg and Remotion, and **that image
+has never been built**. Remotion-in-a-container is the least-proven part of this whole system, and
+3.5/3.6 together are four of the six never-run steps. A local run needs none of Docker, Cloud Run,
+Firestore, Secret Manager, Artifact Registry, or a service account, and renders on the machine where
+rendering already demonstrably works.
+
+**The cost, stated honestly:** the machine has to be awake and online at posting time. The failure
+mode is mild, though — a missed day is not lost data. The assets are rendered and on disk, so
+`npx tsx social/src/job.ts --date <the missed date> ...` posts it late. That makes an unattended
+laptop a chore, not a data-loss event. If the machine is regularly away for days at a time, this
+decision is wrong and a third-party scheduler with hand-entered metrics is the better trade.
+
+**What this decision required in code** (2026-09-09): `job.ts` and `metrics/collect.ts` both
+hard-coded `createFirestoreTokenStore()`. A local run needs a token store that survives between
+processes — `createInMemoryTokenStore` is explicitly dry-run-only and loses a refreshed token when
+the process exits. Added `social/src/publish/token-store-local.ts`
+(`createLocalTokenStore`, 12 tests), plus matching `--token-store <firestore|local>` and
+`--token-file <path>` flags on BOTH CLIs. The pending-flips half already had this
+(`--pending-flips-store local`), so this mirrors that pattern deliberately.
+
+The local token file holds live credentials in plaintext. It is written `0600`, `set` re-`chmod`s an
+existing file (Node's `writeFile` only applies `mode` when it CREATES a file), and
+`content/social/tokens.*.json` is in `.gitignore`. `set` also refuses to overwrite a record whose
+`obtainedAt` is newer, throwing with the platform named — the same orphaned-token guard the
+Firestore store pays a transaction for, which matters here because two hand-run processes can race.
+
+#### Seeding the token file
+
+```bash
+mkdir -p content/social
+read -rs IG_PAGE_TOKEN     # the PAGE token from 3.2, not the user token
+python3 -c "
+import json, os
+json.dump({'instagram': {
+  'value': os.environ['IG_PAGE_TOKEN'],
+  'obtainedAt': '2026-09-09T00:00:00.000Z',
+  'expiresAt': '2026-11-08T00:00:00.000Z'
+}}, open('content/social/tokens.local.json','w'), indent='\t')
+" && chmod 600 content/social/tokens.local.json
+```
+
+Set `expiresAt` to 60 days after the actual token exchange. A YouTube entry is added the same way
+once 3.3 is done.
+
+#### The daily command
+
+```bash
+GCS_BUCKET_NAME=plain-social-pilot-media IG_USER_ID=17841423977412035 \
+  npx tsx social/src/job.ts --date $(date +%F) \
+  --token-store local --pending-flips-store local
+```
+
+Add `--dry-run` to render for real while performing no uploads and no posts — it needs no
+credentials at all and is the last checkpoint before a first live post. Metrics collection takes the
+same two flags:
+
+```bash
+IG_USER_ID=17841423977412035 npx tsx social/src/metrics/collect.ts --token-store local
+```
+
+**Metrics must run daily even though posting is what people think of as the daily job.**
+`computeFollowConversion` infers follows by diffing the publish-day follower snapshot against the
+prior day's, so a missed snapshot permanently nulls that day's follow conversion. Per-media insights
+are cumulative and can be collected at any time; the follower snapshot cannot be backfilled.
+
 ### 3.5 Build the Docker image
+
+> **NOT part of the current setup path** — see 3.4a. Kept for a future productionisation.
 
 Follow `social/DOCKER.md` in full. In short, from the **repo root** (not `social/` — the Dockerfile
 needs `content/output/` and `content/social/`, which live outside `social/`):
@@ -367,6 +587,8 @@ the image can actually render (headless Chromium x2, ffmpeg) before any credenti
 under gVisor, and a "no browser found" error if the container's working directory is wrong).
 
 ### 3.6 Deploy the Cloud Run Job and the Firebase trigger
+
+> **NOT part of the current setup path** — see 3.4a. Kept for a future productionisation.
 
 Follow `social/DEPLOY.md` in full — it is a numbered, copy-pasteable sequence: enable the required
 GCP APIs, provision the GCS bucket (section 3.1 above), create the Firestore database (if the
@@ -890,14 +1112,13 @@ above have never actually been executed.** Every one of them was built and unit-
 mocked APIs/clients in this session's work, but none was run against a real account, a real cloud
 project, or real hardware. Specifically, per the plan's own task notes:
 
-- **GCS provisioning (T01, superseded by F11's "Decision change — GCS replaces R2")** — no bucket
-  has been created, no IAM binding applied, no lifecycle rule applied. Closing this requires a GCP
-  project and running `social/gcs/README.md`'s numbered steps by hand (create bucket, set uniform
-  bucket-level access, grant `allUsers` the `roles/storage.objectViewer` role, apply the 30-day
-  lifecycle rule, run its section 4 `curl` verification).
-- **A live Instagram post (T05)** — the adapter (`social/src/publish/instagram.ts`) is built and
-  unit-tested against a mocked `fetch`, but no real post has ever been made. Closing this requires a
-  Meta app/account (section 3.2 above) and the GCS bucket already live, then one real
+- ~~**GCS provisioning**~~ — **DONE 2026-09-09.** `gs://plain-social-pilot-media` in project
+  `plain-social-pilot`; all three parts of `social/gcs/README.md` section 4's acceptance criterion
+  pass. See 3.1's "Provisioned" table.
+- **A live Instagram post (T05)** — STILL NOT DONE, but no longer blocked. The Meta app, Page
+  token and `IG_USER_ID` are all live and **verified against the real account** by creating (and
+  deliberately not publishing) media container `18114024736799248` — see 3.2. That proves GCS public
+  read, the token, and `instagram_content_publish` all work. What remains is one real
   `publishToInstagram` call confirmed publicly visible.
 - **A live YouTube upload (T06)** — same situation: `social/src/publish/youtube.ts` is built and
   unit-tested against a mocked `fetch`, no real upload has happened. Closing this requires the
@@ -915,6 +1136,12 @@ project, or real hardware. Specifically, per the plan's own task notes:
   unit-tested, but has never been run against a real TikTok account or app. The finding is
   genuinely undetermined; do not treat the "decision rule" above as already resolved in either
   direction. See the "Status: the spike has NOT been run" subsection above for the exact steps.
+
+**Deploy target decided (2026-09-09): local scheduled run, NOT Cloud Run** — see 3.4a for the
+reasoning and the exact commands. This removes the Docker build (T09) and the cloud deploy (T10)
+from the critical path entirely; both remain unrun, and are now deliberately out of scope rather
+than pending. It required one new module, `social/src/publish/token-store-local.ts`, plus
+`--token-store`/`--token-file` flags on `job.ts` and `metrics/collect.ts`.
 
 Additionally, **no OAuth authorization flow exists anywhere in this codebase** (section 3.4) — this
 is a permanent gap in the current design, not a step waiting to be run once; every future token
