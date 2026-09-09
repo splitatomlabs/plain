@@ -123,13 +123,13 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       nothing else. Preserve §3.0's account hygiene and the corrected §2 rules. Keep the historical
       record of what was provisioned, marked as no longer required.
 
-- [~] T11: Rewrite `docs/SOCIAL_PILOT.md` §5 as the real weekly session: render week → upload and
+- [x] T11: Rewrite `docs/SOCIAL_PILOT.md` §5 as the real weekly session: render week → upload and
       schedule in three browser tabs → hand-enter last week's numbers → daily follower integer.
       Include the TikTok 10-day window as a hard scheduling constraint and the no-delete-and-repost
       rule (scheduled TikToks cannot be edited, only deleted and re-uploaded — which §2 forbids
       after publish).
 
-- [ ] T12: Correct the post-count arithmetic in the criterion. `plans/Pf39c2-social-pilot-index.md`
+- [~] T12: Correct the post-count arithmetic in the criterion. `plans/Pf39c2-social-pilot-index.md`
       reasons about "~168 posts"; the pilot is 1/day × 3 platforms × 28 days = **84**. The A-or-B
       rule is unchanged — annotate the variance argument, do not restate the criterion.
 

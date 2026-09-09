@@ -383,20 +383,46 @@ Once deployed, this runs unattended:
 
 ## 5. The weekly session — the most important part of this document
 
-This is the one recurring piece of manual work the whole pilot depends on. Budget roughly
-**30-40 minutes**: about 20 minutes for TikTok scheduling (per the plan's own estimate) plus 10-15
-minutes for the YouTube flips and TikTok metrics entry, depending on how many posts accumulated that
-week. Do this on the same day each week, ideally right after a week's schedule has fully posted.
+There is no automated posting behind this section any more (section 3.1) — it **is** the pilot now.
+Once a week, at a desk: render the week's videos, open three browser tabs (TikTok, Meta Business
+Suite, YouTube Studio) and manually upload, caption, and schedule seven days of posts on each, then
+hand-enter last week's numbers. Separately, **every single day**, not part of this weekly sitting,
+read off and record that day's Instagram follower count (section 5.5) — the one input on a different
+rhythm from everything else in this section.
+
+No real session has been run yet (see "Current status" below), so there is no measured time cost —
+only the arithmetic: 21 uploads a week (3 platforms x 7 days), each needing a file, a caption paste,
+and a scheduled time set by hand, plus up to 21 `hand-entry.ts` runs for last week's numbers and one
+`follower-snapshot.ts` run every day. Budget the whole sitting at over an hour once real posts exist
+to schedule and measure; do not plan around the old, now-obsolete "20 minutes for TikTok" estimate
+this section used to cite, which covered a single platform's manual step when the other two were
+still automated.
+
+**Two hard constraints govern this whole section — read both before doing anything else:**
+
+- **TikTok's native scheduler only reaches 10 days out (section 3.0a).** Instagram's reaches roughly
+  75 days and YouTube Studio's is effectively unbounded — TikTok alone is the binding constraint on
+  the whole pilot. This session cannot slip more than 3 days late without a gap opening in what's
+  already scheduled: run it on the same day every week, and if it does slip, closing the TikTok gap
+  is the first priority, not an afterthought.
+- **A scheduled TikTok post cannot be edited once it publishes — only deleted and re-uploaded — and
+  section 2 already forbids that.** Section 2's rule, quoted verbatim: "Deleting a post and
+  reposting it (to 'reset' its distribution, chase a trend, or fix a typo) reads to these platforms'
+  spam detection as repetitive/duplicate content ... If a post has a real error, leave it up and
+  correct it in a comment/caption edit where the platform supports it, or simply let it stand — do
+  not pull it down and re-publish the same asset." The practical consequence: get the caption and
+  the scheduled time right *before* confirming a TikTok schedule in section 5.3 below — once a post
+  is live, this pilot's own rules leave no way to fix a mistake, only to live with it.
 
 Checklist, in order:
 
 ### 5.1 Generate next week's schedule (if not already done)
 
-Before this week's posts run out, generate the following week's schedule so the daily job always has
-a slot to resolve. Week 1 is anchored at `2026-09-01` (`social/src/pilot-config.ts`'s
-`PILOT_WEEK_1_START`); every later week reads every prior `pilot-schedule-w<NN>.json` so a card is
-never reused, and (for week > 1) requires that the *prior* week's review note exists and is filled
-in:
+Before this week's posts run out, generate the following week's schedule so there is always a slot
+ready to render and post. Week 1 is anchored at `2026-09-09` (`social/src/pilot-config.ts`'s
+`PILOT_WEEK_1_START`, reset from `2026-09-01` — see "Current status" below); every later week reads
+every prior `pilot-schedule-w<NN>.json` so a card is never reused, and (for week > 1) requires that
+the *prior* week's review note exists and is filled in:
 
 ```bash
 # Write the prior week's review note first (retention notes, hook/format-mix adjustments):
@@ -411,114 +437,115 @@ npx tsx scripts/generate-schedule.ts --week <N> --seed <n>
 generate the next week") — it is not new to this document, just listed here so the weekly session's
 full scope is in one place.
 
-### 5.2 Stage the week's TikTok videos and captions
+### 5.2 Render the week
 
-**No CLI command exists for this yet** — `social/src/publish/tiktok-manual.ts`'s `stageTikTokWeek`
-is a fully-built, fully-tested function (`social/src/publish/__tests__/tiktok-manual.test.ts`, 11
-tests) but nothing in this repo wraps it in a runnable script. Until that wrapper is written, invoke
-it directly with `tsx` via a short one-off script, e.g.:
+One command renders every day of the week that isn't already on disk and writes the single
+`captions.txt` the next step reads from:
 
-```ts
-// scratch-stage-tiktok.ts — run once per week with: npx tsx scratch-stage-tiktok.ts
-import { createGcsClient } from './social/src/publish/storage.js';
-import { loadGcsConfig } from './social/src/publish/env.js';
-import { stageTikTokWeek } from './social/src/publish/tiktok-manual.js';
-import { createFirestorePendingFlipsStore } from './social/src/publish/pending-flips-store-firestore.js';
-import { readFile } from 'node:fs/promises';
-
-const config = loadGcsConfig(); // reads GCS_BUCKET_NAME (and optional GCS_PUBLIC_BASE_URL) from process.env — see section 3.1
-const client = createGcsClient(); // Application Default Credentials — no bucket/key argument needed here
-const schedule = JSON.parse(await readFile('content/social/pilot-schedule-w<NN>.json', 'utf-8'));
-// Reads the same durable Firestore store job.ts wrote the week's uploaded video ids into
-// (`social-pilot-pending-youtube-flips` collection) — via Application Default Credentials, so run
-// this with the same GCP project's credentials active as the Cloud Run Job's service account
-// (e.g. `gcloud auth application-default login`, or from wherever that identity is available). GCS
-// uploads below use that same ADC identity, no separate credential needed.
-const pendingYouTubeFlips = await createFirestorePendingFlipsStore().read();
-
-const manifest = await stageTikTokWeek({
-  client, config, schedule,
-  outDir: 'social/out', // wherever that week's videos were actually rendered to
-  pendingYouTubeFlips
-});
-console.log(JSON.stringify(manifest, null, 2));
+```bash
+npx tsx social/src/prepare-week.ts --week <N>
 ```
 
-Run it with `GCS_BUCKET_NAME` set in the environment and ADC available (no access-key credential
-needed — see section 3.1). It uploads every rendered day's MP4 plus a single `captions.txt` to
-`tiktok-staging/<weekStartDate>/` in GCS, and prints a manifest with each day's direct video URL
-and its caption, plus that week's pending YouTube flips (see 5.3 — one manifest covers both
-platforms' weekly work, by design).
+It loads `content/social/pilot-schedule-w<NN>.json` — the schedule 5.1 wrote, normally in a *prior*
+session (the only time this week number matches 5.1's own is the very first session ever run, before
+any backlog of pre-generated schedules exists) — renders each scheduled day that isn't already
+rendered (reusing `cli.ts`'s render path, never a second implementation of it), and skips any day
+whose MP4 already exists on disk, printing that it was skipped. That makes it safe to re-run after
+fixing one day's schedule entry without re-rendering the other six. `--force` re-renders every day
+regardless; `--dry-run` prints the resolved plan (which days would render, which would be skipped,
+where `captions.txt` would land) and writes nothing. `--out <dir>` and `--schedule-dir <dir>`
+override the defaults (`social/out/` and `content/social/`) — a testing/override affordance, not
+something a real weekly run needs to touch.
 
-For each day in the manifest, in TikTok's app:
-1. Open the day's `videoUrl` (a direct HTTPS link to the MP4 in GCS) and download it to the device
-   posting to TikTok, or otherwise get it onto that device.
-2. Upload it in TikTok's app, using its **native scheduler** — per the plan's Decision, TikTok's
-   posting API is unusable here, so every TikTok post goes up through the app by a human, not code.
-3. Paste the matching caption from `captions.txt` (or the manifest's `days[].caption`) — the file is
-   deliberately plain text, one block per day separated by a rule, meant to be read top to bottom
-   and matched to each video by date and card id, not parsed as JSON mid-session.
+The MP4s land in `social/out/`, one per day, alongside `captions.txt` — one block per day, each
+carrying all three platforms' captions clearly labelled `[tiktok]`, `[instagram]`, `[youtube]`,
+separated by a rule, meant to be read top to bottom during the next step, not parsed as JSON
+mid-session.
 
-### 5.3 Flip the week's YouTube uploads from private to public
+### 5.3 Upload and schedule — three browser tabs
 
-Every YouTube upload from the daily job lands **private** on purpose (section 4, point 3). Flip each
-one to public in YouTube Studio:
+For each of the week's 7 days, in each of three places — TikTok's own upload flow, Meta Business
+Suite (for Instagram Reels), and YouTube Studio — upload that day's MP4 from `social/out/`, paste
+that day's caption for *that specific platform* from `captions.txt`, and set the scheduled time.
+That's 21 uploads a week (3 platforms x 7 days); work through `captions.txt` top to bottom so each
+video is matched to the right caption by date and card id.
 
-1. The list of videos awaiting a flip lives in Firestore, not a git-diffable file (code review M4
-   fix) — the `social-pilot-pending-youtube-flips` collection's single `flips` document (the same
-   store the previous step's script already reads via `createFirestorePendingFlipsStore().read()`).
-   Read it standalone, without staging TikTok, with:
-   ```bash
-   npx tsx -e "
-     import('./social/src/publish/pending-flips-store-firestore.js').then(async (m) => {
-       console.log(JSON.stringify(await m.createFirestorePendingFlipsStore().read(), null, 2));
-     });
-   "
-   ```
-   (same ADC requirement as section 5.2's script), or open it directly in the Firestore console:
-   Firestore Database -> the `social-pilot-pending-youtube-flips` collection -> the `flips`
-   document -> its `flips` array field. Each entry is `{ date, cardId, videoId }`
-   (`PendingYouTubeFlip`, `social/src/publish/tiktok-manual.ts`).
-2. In YouTube Studio -> Content, find each `videoId` (or search by upload date) and change its
-   visibility from Private to Public. This is quick — the plan's own estimate is ~10 seconds per
-   video.
-3. There is no code that removes an entry from the pending-flips document once flipped — treat it
-   as an append-only weekly log for now (`upsertPendingFlip` only replaces a same-date entry on a
-   re-run of that date's job, it does not prune flipped entries). Cross off or note which ones you
-   flipped by hand if this list's growth becomes hard to scan (it is no longer a local file you can
-   `git diff`, so track flipped-vs-not some other way — e.g. a scratch note alongside this session's
-   TikTok staging notes).
-4. Separately, the compliance audit YouTube offers for automated-upload workflows was meant to be
-   submitted in parallel with this pilot (plan Decision) — if/when it's approved, this manual flip
-   step goes away and uploads can go straight to public. Nothing in this pilot currently tracks the
-   audit's status; check on it independently.
+**Match the caption to the platform, every time — this is the step most likely to silently corrupt
+the pilot's own data.** The three captions for a given day are not interchangeable text: each one
+carries a different attribution URL (`caption.ts`'s `ATTRIBUTION_URLS`, `utm_source=tiktok` /
+`instagram` / `youtube`). Pasting Instagram's caption into the TikTok upload does not just read
+wrong — it silently ships the wrong `utm_source` on that post, corrupting the follow-conversion data
+this whole pilot exists to measure (section 1), with no error and no visible symptom until the
+readout tries to attribute traffic that was actually labeled for a different platform.
 
-### 5.4 TikTok metrics — hand entry, plus retention (always manual)
+Per platform:
 
-TikTok metrics collection is **not automated as of this writing** (see the TikTok metrics section
-below, carried over from T13) — the hand-entry fallback is in force by default. For each TikTok post
-still inside its 30-day polling window, read four numbers off TikTok's own per-video analytics
-screen — **views, likes, comments, shares** — and run, from `social/`:
+- **TikTok:** upload and schedule from the app's own native scheduler (section 3.0a) — reread the
+  two hard constraints above before confirming the time.
+- **Instagram:** schedule the Reel from Meta Business Suite, which manages the account through the
+  `Plain` Page (section 3.0) — not from the Instagram app itself.
+- **YouTube:** upload directly into YouTube Studio and use its own scheduled-publish option. There is
+  no more private-upload-then-flip step (section 3.1 — that whole step is gone, not replaced);
+  scheduling in Studio does its job outright.
+
+### 5.4 Hand-enter last week's numbers
+
+For every post from last week, on whichever of the three platforms it published to, read the numbers
+off that platform's own per-post analytics screen and run, once per post, from the repo root:
 
 ```bash
 npx tsx social/src/metrics/hand-entry.ts \
-  --platform tiktok \
-  --post-id <tiktok-video-id> \
-  --published-at <ISO8601 publish instant, from the app> \
-  --views <n> --likes <n> --comments <n> --shares <n>
+  --platform <instagram|youtube|tiktok> \
+  --post-id <the platform's own id for this post> \
+  --published-at <ISO 8601 publish instant, from the app> \
+  --views <n> --likes <n> --comments <n> --shares <n> \
+  [--follows <n>] [--avg-percent-watched <n>] [--collected-at <ISO 8601>] [--out-dir <path>]
 ```
 
-This is idempotent — re-running it for the same `--post-id` on the same collection day updates that
-row in place rather than duplicating it, and writes into the same dated file
-(`content/social/metrics/metrics-<date>.json`) Instagram's and YouTube's automated rows already
-land in.
+Required: `--platform`, `--post-id`, `--published-at`, `--views`, `--likes`, `--comments`,
+`--shares`. Optional: `--follows`, `--avg-percent-watched` (0-100), `--collected-at` (defaults to
+the real wall-clock time this command runs), `--out-dir` (defaults to `content/social/metrics/`).
+Every count is validated as a non-negative whole number — a bad value throws a
+`HandEntryValidationError` naming the exact field rather than writing a bad row. Re-running with the
+same `--platform`/`--post-id` replaces that row instead of duplicating it, so a mid-session
+correction is safe. All three platforms' rows land in the same dated file,
+`content/social/metrics/metrics-<date>.json` (dated by `--published-at`) — one schema, no
+reconciliation step at readout time regardless of which platform or which entry produced a row.
 
-**TikTok retention (average percent watched) and traffic-source breakdowns are in-app only on
-TikTok, regardless of whether the Display API spike below ever gets automated** — no read path,
-automated or manual, exposes them outside TikTok's own app. If you want to track retention
-qualitatively, read it off the app's per-video analytics screen and note it separately; there is no
-field for it to flow into automatically (`averagePercentWatched` stays `null` on every TikTok row
-unless you pass `--avg-percent-watched <n>` by hand for a specific post).
+**`--follows` is the flag that matters most, and it only means something on YouTube.** YouTube
+Studio shows subscribers gained per video — read it and pass it as `--follows`; that is exactly what
+lets `readout.ts`'s `computeFollowConversion` report `method: 'exact'` for that row (section 1),
+which is half of criterion A. Instagram and TikTok have no per-post follow attribution on any read
+path, automated or in-app — leave `--follows` off entirely on those two. Omitting it records `null`,
+never a fabricated `0`; passing `0` would claim a real zero-follow reading that was never actually
+taken.
+
+`--avg-percent-watched` stays optional and `null` unless a platform's analytics screen shows a clean
+percentage worth typing in — TikTok's retention data in particular is in-app only, with no automated
+read path at all, on either candidate API path (see the TikTok metrics section below).
+
+### 5.5 The daily follower integer — not weekly, and gone forever if skipped
+
+**This is the one input in the entire pilot that does not run on the weekly rhythm above, and the
+one most likely to go quietly missing if this section is only opened once a week.** Every day, read
+Instagram's current follower total off the app and run:
+
+```bash
+npx tsx social/src/metrics/follower-snapshot.ts --date <YYYY-MM-DD> --followers <n>
+```
+
+`--date` and `--followers` are both required; `--out-dir` (default `content/social/metrics/`)
+overrides where `instagram-followers.json` is written. Re-running for the same `--date` replaces
+that date's entry rather than duplicating it. `0` is a valid, real reading (an empty account) and is
+recorded as `0`, never treated as missing.
+
+Instagram's own app shows only *today's* follower total — never a historical series — so a day this
+isn't run for is unrecoverable; there is no catching up next week. Skipping a day has a specific,
+measurable cost, too: Instagram's follow-conversion (section 1) is *inferred* from day-over-day
+follower deltas aligned to `publishedAt`, so a day with no recorded count permanently degrades that
+day's conversion reading from `inferred` to `unavailable`. There is no equivalent CLI for TikTok or
+YouTube — no per-post follow path exists to infer a TikTok series from, and YouTube's follow number
+already arrives for free, per post, in section 5.4 above.
 
 ## 6. What to do if the Meta (Instagram) account is disabled
 
