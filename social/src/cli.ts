@@ -94,14 +94,15 @@ Options:
   --help                   Show this help.`);
 }
 
-// Exported (Pf39c2-social-pilot-03 T08) so `job.ts`'s daily orchestration can
-// build this shape and call `renderCommand` directly — the daily job REUSES
-// this render path rather than re-implementing the Remotion bundle/render/
-// encode pipeline. `job.ts` imports `renderCommand`/`loadWeekSchedule`
-// dynamically (`await import('./cli.js')`), not at module top-level, so that
-// importing `job.ts` itself (as `job.test.ts` does, with every collaborator
-// injected) never pulls in `@remotion/bundler`/`@remotion/renderer` — those
-// are only loaded the moment a REAL (non-test) render actually runs.
+// Exported (Pf39c2-social-pilot-03 T08) so `prepare-week.ts`'s weekly
+// orchestration can build this shape and call `renderCommand` directly — it
+// REUSES this render path rather than re-implementing the Remotion bundle/
+// render/encode pipeline. `prepare-week.ts` imports `renderCommand`/
+// `loadWeekSchedule` dynamically (`await import('./cli.js')`), not at
+// module top-level, so that importing `prepare-week.ts` itself (as
+// `prepare-week.test.ts` does, with every collaborator injected) never
+// pulls in `@remotion/bundler`/`@remotion/renderer` — those are only
+// loaded the moment a REAL (non-test) render actually runs.
 export interface RenderArgs {
 	date: string;
 	outDir: string;

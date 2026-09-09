@@ -6,7 +6,7 @@
  * is no remote upload any more, so the whole point of this module is its
  * on-disk behaviour (which MP4s it expects, where it writes `captions.txt`,
  * and what that file actually contains) — mocking the filesystem would test
- * the mock rather than any of that. Matches `token-store-local.test.ts`'s
+ * the mock rather than any of that. Matches `post-metadata.test.ts`'s
  * own rationale for the same choice.
  */
 

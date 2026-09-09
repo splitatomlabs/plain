@@ -105,11 +105,11 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
 - [x] T06: Weekly prep CLI wrapper — renders the week and writes `captions.txt`. Gives §5.2 the
       runnable wrapper it never had. Acceptance: one command produces 7 MP4s + one captions file.
 
-- [~] T07: Delete the publish pipeline — `social/src/job.ts`, `job-plan.ts`,
+- [x] T07: Delete the publish pipeline — `social/src/job.ts`, `job-plan.ts`,
       `publish/{instagram,youtube,tokens,storage,env,token-store-firestore,token-store-local,pending-flips-store-firestore}.ts`
       and their tests. `npm test` and `tsc --noEmit` green after.
 
-- [ ] T08: Delete the API metrics collectors — `metrics/{collect,instagram,youtube,tiktok-spike}.ts`
+- [~] T08: Delete the API metrics collectors — `metrics/{collect,instagram,youtube,tiktok-spike}.ts`
       and their tests. Note in the commit that this removes the deprecated-`plays` bug rather than
       fixing it. `npm test` and `tsc --noEmit` green after.
 

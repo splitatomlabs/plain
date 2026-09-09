@@ -2,8 +2,9 @@
  * The one shared metrics row schema (Pf39c2-social-pilot-03 T12) plus the
  * pure serialization/idempotency helpers built on top of it. Everything here
  * is pure — no I/O, no `Date.now()` — matching this workspace's
- * `job-plan.ts`/`cli-plan.ts` split (pure planning logic lives in its own
- * file so it is directly unit-testable without a network or filesystem). The
+ * `prepare-week-plan.ts`/`cli-plan.ts` split (pure planning logic lives in
+ * its own file so it is directly unit-testable without a network or
+ * filesystem). The
  * one exception is `DEFAULT_METRICS_DIR` below: a module-level path constant
  * is not I/O (it performs no read, write, or filesystem access itself — it
  * is just a string), so it lives here as the shared default every metrics
@@ -201,7 +202,7 @@ export function metricsFilePathFor(outDir: string, collectionDate: string): stri
 	return `${outDir.replace(/[/\\]+$/, '')}/metrics-${collectionDate}.json`;
 }
 
-/** Parses a metrics file's contents. An empty/missing file is `[]`, not an error — matches `job-plan.ts`'s `parsePendingFlips` convention. */
+/** Parses a metrics file's contents. An empty/missing file is `[]`, not an error — matches the standing convention this workspace's pure planning files use for optional on-disk state (see `cli-plan.ts`). */
 export function parseMetricsRows(raw: string): MetricsRow[] {
 	const trimmed = raw.trim();
 	if (trimmed === '') {
@@ -214,7 +215,7 @@ export function parseMetricsRows(raw: string): MetricsRow[] {
 	return parsed as MetricsRow[];
 }
 
-/** Pretty-printed, newline-terminated — matches `job-plan.ts`'s `serializePendingFlips` and `post-metadata.ts`'s convention. */
+/** Pretty-printed, newline-terminated — matches `post-metadata.ts`'s convention. */
 export function serializeMetricsRows(rows: MetricsRow[]): string {
 	return `${JSON.stringify(rows, null, 2)}\n`;
 }

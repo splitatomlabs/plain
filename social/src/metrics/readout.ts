@@ -34,8 +34,8 @@
  * `formatReadout` turns its result into the human-readable report; this
  * file's own `main()` (bottom) is the thin CLI that reads the dated files
  * `collect.ts`/`hand-entry.ts` already write and prints the report.
- * Mirrors this workspace's `job-plan.ts`/`job.ts` and `cli-plan.ts`/`cli.ts`
- * pure-plan-vs-IO split.
+ * Mirrors this workspace's `cli-plan.ts`/`cli.ts` and
+ * `prepare-week-plan.ts`/`prepare-week.ts` pure-plan-vs-IO split.
  *
  * EXACT VS. INFERRED FOLLOW CONVERSION — this file's own label discipline,
  * per `schema.ts`'s header and the plan's Decision it quotes: "per-post
