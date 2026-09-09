@@ -89,10 +89,11 @@ best practice, but specific mitigations against specific enforcement mechanisms 
 - **No follow/like/comment automation, ever.** TikTok's Community Guidelines explicitly name "using
   automation to run ... accounts or send repetitive content" as a violation. Meta's Account
   Integrity policy names automation as one of the concealed-operatorship signals it enforces
-  against. This pilot's own publish pipeline never does this — `social/src/publish/instagram.ts`
-  and `social/src/publish/youtube.ts` only ever POST/upload content the account itself created; there
-  is no code anywhere in this repo that follows, likes, or comments on anyone else's content. Keep
-  it that way by hand, too — no third-party growth tool, no engagement pod, no "follow back" bot.
+  against. This pilot now enforces that more strongly than a publish pipeline ever could: the
+  publish pipeline was deleted entirely (all posting happens by hand through each platform's own
+  native scheduler — section 3.0a), so there is no posting or engagement API code anywhere in this
+  repo at all, let alone code that follows, likes, or comments on anyone else's content. Keep it
+  that way by hand, too — no third-party growth tool, no engagement pod, no "follow back" bot.
 - **No delete-and-repost.** Deleting a post and reposting it (to "reset" its distribution, chase a
   trend, or fix a typo) reads to these platforms' spam detection as repetitive/duplicate content —
   the same clause TikTok's guidelines use to describe "sending repetitive content" and something
@@ -669,7 +670,8 @@ must fill in once four real weeks of posts and metrics exist — written now, ah
 person is filling in a pre-built skeleton with real numbers, not inventing the report's shape under
 pressure to produce a verdict. If you are reading this and the date above is more than a few weeks
 old relative to when go-live actually happened, treat that staleness itself as a signal that the
-six DEFERRED live steps in "Current status" have not been closed yet either.
+three items listed under "What genuinely remains before the pilot can start" in "Current status"
+have not been closed yet either.
 
 ### 8.1 Procedure — run this at ~week 4, not before
 

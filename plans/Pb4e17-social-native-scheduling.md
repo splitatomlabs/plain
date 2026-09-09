@@ -148,6 +148,12 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       `metrics/collect.ts`, Firestore stores). Also refresh the preamble's "checked against the
       actual source files as of 2026-08-27" date. §1, §2 and §8 stay as they are.
 
+- [x] T15: Close the last two dead citations the T14 sweep had to leave. Added during execution
+      (2026-09-09). §2's no-automation bullet cited `publish/instagram.ts` / `publish/youtube.ts`
+      as evidence, and §8's intro referenced "the six DEFERRED live steps" that T14's rewritten
+      Current status no longer contains. Citation-only fixes; §2's rules and §8's decision rule
+      are unchanged. Scoped out of T14 to protect those pre-registered sections.
+
 ## Verify
 
 ```bash
