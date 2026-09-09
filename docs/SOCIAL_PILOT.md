@@ -570,7 +570,7 @@ At week 4, produce the verdict:
 ```bash
 npx tsx social/src/metrics/readout.ts
 # or with an explicit evaluation instant and/or a non-default breakout threshold:
-npx tsx social/src/metrics/readout.ts --now 2026-09-29T00:00:00.000Z --breakout-threshold 10000
+npx tsx social/src/metrics/readout.ts --now 2026-10-07T00:00:00.000Z --breakout-threshold 10000
 ```
 
 This reads every `metrics-<date>.json` under `content/social/metrics/` (deduping to the latest

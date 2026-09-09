@@ -39,6 +39,7 @@ import {
 	HandEntryValidationError,
 	buildHandEnteredMetricsRow,
 	recordHandEntry,
+	toNumber,
 	validateHandEnteredMetrics,
 	type HandEnteredMetrics
 } from '../hand-entry.js';
@@ -231,6 +232,16 @@ describe('validateHandEnteredMetrics — fails loudly on a typo, naming the offe
 		expect(() => validateHandEnteredMetrics(validInput({ collectedAt: '' }))).toThrow(HandEntryValidationError);
 	});
 
+	it('F1 — rejects a Date.parse-able but non-ISO collectedAt (e.g. "09/09/2026")', () => {
+		// `Date.parse('09/09/2026')` succeeds (US M/D/Y order), so a bare
+		// `Number.isNaN(Date.parse(...))` check would accept this — the ISO
+		// `T` separator requirement is what actually rejects it. See
+		// `isValidIsoInstant`'s own comment for why this class of ambiguous
+		// date string must not silently pass.
+		expect(() => validateHandEnteredMetrics(validInput({ collectedAt: '09/09/2026' }))).toThrow(HandEntryValidationError);
+		expect(() => validateHandEnteredMetrics(validInput({ collectedAt: '09/09/2026' }))).toThrow(/collectedAt/);
+	});
+
 	it('accepts a fully valid entry for each platform without throwing', () => {
 		for (const platform of PLATFORMS) {
 			expect(() => validateHandEnteredMetrics(validInput({ platform }))).not.toThrow();
@@ -287,6 +298,32 @@ describe('recordHandEntry — upserts via schema.ts\'s upsertMetricsRow, keyed o
 
 		expect(afterSecond).toHaveLength(2);
 		expect(afterSecond.map((row) => row.postId).sort()).toEqual(['tiktok-video-1', 'tiktok-video-2']);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// `toNumber` — the shared empty/whitespace/NaN guard behind every numeric CLI
+// flag on this file AND `follower-snapshot.ts`'s `--followers`. Tested
+// directly here (not just through a CLI subprocess) so a future refactor
+// that weakens the guard's OWN body fails immediately, independent of
+// whichever caller happens to be exercised elsewhere.
+// ---------------------------------------------------------------------------
+
+describe('toNumber', () => {
+	it('throws on an empty string, naming the flag', () => {
+		expect(() => toNumber('', '--views')).toThrow(/--views/);
+	});
+
+	it('throws on a whitespace-only string', () => {
+		expect(() => toNumber('   ', '--views')).toThrow(/--views/);
+	});
+
+	it('accepts a numeric string with incidental surrounding whitespace', () => {
+		expect(toNumber(' 10 ', '--views')).toBe(10);
+	});
+
+	it('throws on a non-numeric string, naming the flag', () => {
+		expect(() => toNumber('abc', '--views')).toThrow(/--views/);
 	});
 });
 
@@ -372,6 +409,43 @@ describe('CLI — main()', () => {
 
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toMatch(/--follows/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	// F2 — `toNumber`'s empty-value guard is reached through TWO different
+	// call sites: `parseRequiredNumber` (views/likes/comments/shares) and a
+	// direct `toNumber` call (follows/avg-percent-watched). D2 above only
+	// ever exercised `--follows`, so a regression that replaced
+	// `parseRequiredNumber`'s body with a bare `Number(raw)` (restoring
+	// `--views= -> 0` for the four required counts) or replaced
+	// `--avg-percent-watched`'s `toNumber` call with `Number(...)` would have
+	// left the suite green. Parameterised over every numeric flag on this
+	// CLI so no single one of them can regress silently.
+	const ALL_NUMERIC_FLAGS = ['--views', '--likes', '--comments', '--shares', '--follows', '--avg-percent-watched'] as const;
+
+	function fullyPopulatedArgs(): string[] {
+		return [
+			'--platform', 'tiktok',
+			'--post-id', 'flag-test',
+			'--published-at', '2026-09-09T12:00:00.000Z',
+			'--views', '10',
+			'--likes', '1',
+			'--comments', '0',
+			'--shares', '0',
+			'--follows', '2',
+			'--avg-percent-watched', '50'
+		];
+	}
+
+	it.each(ALL_NUMERIC_FLAGS)('F2 — an empty %s exits non-zero, names the flag in stderr, and writes nothing', async (flag) => {
+		const args = fullyPopulatedArgs();
+		const flagIndex = args.indexOf(flag);
+		args[flagIndex + 1] = '';
+
+		const result = runCli([...args, '--out-dir', outDir]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toContain(flag);
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
 });

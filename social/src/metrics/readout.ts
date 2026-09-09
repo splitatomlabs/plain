@@ -228,7 +228,7 @@ export interface DailyFollowerSnapshot {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** One calendar day before `date` (`YYYY-MM-DD` in, `YYYY-MM-DD` out), computed in UTC — matches `schema.ts`'s own `DAY_MS` convention. */
+/** One calendar day before `date` (`YYYY-MM-DD` in, `YYYY-MM-DD` out), computed in UTC. */
 function previousIsoDate(date: string): string {
 	const ms = Date.parse(`${date}T00:00:00.000Z`);
 	return new Date(ms - DAY_MS).toISOString().slice(0, 10);
