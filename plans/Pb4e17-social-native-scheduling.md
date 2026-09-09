@@ -102,10 +102,10 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       `captions.txt` covering all three platforms per day via `buildCaption({ slot, platform })` —
       it currently hardcodes `platform: 'tiktok'` at line 174. Update its tests.
 
-- [~] T06: Weekly prep CLI wrapper — renders the week and writes `captions.txt`. Gives §5.2 the
+- [x] T06: Weekly prep CLI wrapper — renders the week and writes `captions.txt`. Gives §5.2 the
       runnable wrapper it never had. Acceptance: one command produces 7 MP4s + one captions file.
 
-- [ ] T07: Delete the publish pipeline — `social/src/job.ts`, `job-plan.ts`,
+- [~] T07: Delete the publish pipeline — `social/src/job.ts`, `job-plan.ts`,
       `publish/{instagram,youtube,tokens,storage,env,token-store-firestore,token-store-local,pending-flips-store-firestore}.ts`
       and their tests. `npm test` and `tsc --noEmit` green after.
 
