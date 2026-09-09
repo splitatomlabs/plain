@@ -272,6 +272,22 @@ this repo creates it for you. `social/DEPLOY.md`'s "0. Prerequisites" section ha
 rough expected monthly cost (a few dollars — Cloud Run/Firestore/Secret Manager usage at this volume
 is cheap, GCS storage egress is about a cent) — do that first if no project exists yet.
 
+### 3.0a Native scheduling pre-flight (verified 2026-09-09)
+
+Confirmed, by hand, that each platform's own scheduler is usable for the weekly session this plan
+now depends on:
+
+- **TikTok:** switched the pilot account from Personal to Creator (Business was not needed for
+  this). The schedule option is present in the native upload flow. Scheduling window: **10 days** —
+  this is the binding constraint on the whole weekly session, since it means the session cannot slip
+  more than 3 days without a gap opening in what's scheduled.
+- **Instagram:** Meta Business Suite offers Reel scheduling. Window: ~75 days.
+- **YouTube:** YouTube Studio offers scheduled publish. Window: effectively unbounded.
+
+This is the finding that makes native scheduling viable at all in place of the API publish pipeline
+— if TikTok's scheduler had been unavailable, it would have been the binding constraint in the other
+direction and this approach would not work.
+
 ### 3.1 Provision the GCS bucket
 
 **Object storage is Google Cloud Storage, not Cloudflare R2** — see
