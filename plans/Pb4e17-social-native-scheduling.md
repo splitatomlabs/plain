@@ -109,11 +109,11 @@ Keep, unchanged: `social/src/cli.ts`, `cli-plan.ts`, `pilot-config.ts`, `schedul
       `publish/{instagram,youtube,tokens,storage,env,token-store-firestore,token-store-local,pending-flips-store-firestore}.ts`
       and their tests. `npm test` and `tsc --noEmit` green after.
 
-- [~] T08: Delete the API metrics collectors — `metrics/{collect,instagram,youtube,tiktok-spike}.ts`
+- [x] T08: Delete the API metrics collectors — `metrics/{collect,instagram,youtube,tiktok-spike}.ts`
       and their tests. Note in the commit that this removes the deprecated-`plays` bug rather than
       fixing it. `npm test` and `tsc --noEmit` green after.
 
-- [ ] T09: Delete cloud infra — `social/Dockerfile`, `social/DOCKER.md`, `social/DEPLOY.md`,
+- [~] T09: Delete cloud infra — `social/Dockerfile`, `social/DOCKER.md`, `social/DEPLOY.md`,
       `social/cloud-run-job.yaml`, `social/gcs/`, `functions/src/socialTrigger.ts` and its test.
       Check whether the `functions/` workspace still has anything to test; if empty, say so rather
       than leaving a hollow suite.

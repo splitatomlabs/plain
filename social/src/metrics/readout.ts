@@ -33,7 +33,7 @@
  * network. `computeReadout` is the one entry point a test calls directly;
  * `formatReadout` turns its result into the human-readable report; this
  * file's own `main()` (bottom) is the thin CLI that reads the dated files
- * `collect.ts`/`hand-entry.ts` already write and prints the report.
+ * `hand-entry.ts`/`follower-snapshot.ts` already write and prints the report.
  * Mirrors this workspace's `cli-plan.ts`/`cli.ts` and
  * `prepare-week-plan.ts`/`prepare-week.ts` pure-plan-vs-IO split.
  *
@@ -518,14 +518,15 @@ export function formatReadout(readout: Readout): string {
 
 // ---------------------------------------------------------------------------
 // CLI entry point — `npx tsx social/src/metrics/readout.ts`. Reads every
-// dated metrics file `collect.ts`/`hand-entry.ts` already write from
-// `content/social/metrics/`, reduces them to the latest known row per post
-// (a post appears in every dated file inside its 30-day polling window, so
-// the LAST `collectedAt` wins), reads Instagram's daily follower-snapshot
-// file if present, computes the readout, and prints the report. Mirrors
-// `collect.ts`'s own CLI conventions (ENOENT -> empty, a single
-// `--now` wall-clock override, guarded `main()` so importing this module
-// for its exports never parses `process.argv` or touches the filesystem).
+// dated metrics file `hand-entry.ts`/`follower-snapshot.ts` already write
+// from `content/social/metrics/`, reduces them to the latest known row per
+// post (a post appears in every dated file inside its 30-day polling window,
+// so the LAST `collectedAt` wins), reads Instagram's daily follower-snapshot
+// file if present, computes the readout, and prints the report. Shares
+// `hand-entry.ts`'s/`follower-snapshot.ts`'s own CLI conventions (ENOENT ->
+// empty, guarded `main()` so importing this module for its exports never
+// parses `process.argv` or touches the filesystem); the `--now` wall-clock
+// override below is this file's own.
 // ---------------------------------------------------------------------------
 
 const METRICS_FILENAME_RE = /^metrics-\d{4}-\d{2}-\d{2}\.json$/;
@@ -597,7 +598,7 @@ function printHelp(): void {
 	console.log(`Usage: npx tsx social/src/metrics/readout.ts [options]
 
 Reads every dated metrics file under content/social/metrics/ (written by
-collect.ts and hand-entry.ts), computes the per-platform viability
+hand-entry.ts and follower-snapshot.ts), computes the per-platform viability
 readout — median, maximum, max/median ratio, week-1-vs-week-4 median trend,
 follow conversion, and top 5 posts — and states plainly whether the
 pre-registered criterion (plans/Pf39c2-social-pilot-index.md) was met.
@@ -639,9 +640,11 @@ async function main(): Promise<void> {
 
 	const metricsDir = values['metrics-dir'] ?? DEFAULT_METRICS_DIR;
 
-	// THE ONE WALL-CLOCK READ IN THIS FILE — see `collect.ts`'s identical
-	// "DETERMINISM" discipline. `--now` lets an operator pin the evaluation
-	// instant stamped on the report for a reproducible re-run.
+	// THE ONE WALL-CLOCK READ IN THIS FILE — matches this workspace's own
+	// "DETERMINISM" discipline elsewhere (e.g. `hand-entry.ts`'s/
+	// `follower-snapshot.ts`'s `collectedAt`/`date` inputs). `--now` lets an
+	// operator pin the evaluation instant stamped on the report for a
+	// reproducible re-run.
 	const now = values.now ?? new Date().toISOString();
 
 	const breakoutViewThreshold = parseBreakoutThreshold(values['breakout-threshold']);
@@ -654,9 +657,10 @@ async function main(): Promise<void> {
 }
 
 // Only auto-run `main()` when this file is the actual process entry point —
-// identical guard to `collect.ts`'s/`hand-entry.ts`'s own: importing this
-// module for its exports (as every test in `__tests__/readout.test.ts`
-// does) must never itself parse `process.argv` or touch the filesystem.
+// identical guard to `hand-entry.ts`'s/`follower-snapshot.ts`'s own:
+// importing this module for its exports (as every test in
+// `__tests__/readout.test.ts` does) must never itself parse `process.argv`
+// or touch the filesystem.
 if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
 	main().catch((error) => {
 		console.error(error instanceof Error ? error.message : error);

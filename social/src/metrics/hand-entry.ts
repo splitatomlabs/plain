@@ -336,9 +336,9 @@ async function main(): Promise<void> {
 		throw new Error('Missing required flag "--published-at".');
 	}
 
-	// THE ONE WALL-CLOCK READ IN THIS FILE — mirrors `collect.ts`'s own
-	// "DETERMINISM" discipline: `--collected-at` lets an operator override
-	// this for a manual re-run against a specific instant.
+	// THE ONE WALL-CLOCK READ IN THIS FILE — `--collected-at` lets an
+	// operator override this for a manual re-run against a specific instant,
+	// same discipline as `readout.ts`'s own `--now`.
 	const collectedAt = values['collected-at'] ?? new Date().toISOString();
 	const outDir = values['out-dir'] ?? DEFAULT_METRICS_DIR;
 
@@ -368,9 +368,9 @@ async function main(): Promise<void> {
 }
 
 // Only auto-run `main()` when this file is the actual process entry point —
-// identical guard to `collect.ts`'s own (see its bottom-of-file comment):
-// importing this module for its exports (as every test in
-// `__tests__/hand-entry.test.ts` does) must never itself parse
+// identical guard to `follower-snapshot.ts`'s/`readout.ts`'s own (see their
+// bottom-of-file comments): importing this module for its exports (as every
+// test in `__tests__/hand-entry.test.ts` does) must never itself parse
 // `process.argv` as CLI flags or touch the filesystem.
 if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
 	main().catch((error) => {

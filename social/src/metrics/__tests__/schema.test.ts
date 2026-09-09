@@ -9,7 +9,7 @@
  *     days, exclusive one millisecond past it.
  *   - `upsertMetricsRow`'s idempotency: re-upserting a row keyed on the same
  *     platform+postId replaces it in place rather than appending a
- *     duplicate — the pure building block `collect.ts`'s own idempotent
+ *     duplicate — the pure building block `hand-entry.ts`'s own idempotent
  *     re-run acceptance test relies on.
  *   - Round-trip parse/serialize for both the metrics rows file and the
  *     Instagram follower-snapshots file.
