@@ -5,23 +5,23 @@
  *   - `MetricsRow`'s available-vs-zero distinction: a row can carry a real
  *     `0` for one field and `null` for another, and they must never collapse
  *     into each other through serialization or the upsert path.
- *   - `isWithinPollingWindow`'s 30-day boundary, inclusive at exactly 30
- *     days, exclusive one millisecond past it.
  *   - `upsertMetricsRow`'s idempotency: re-upserting a row keyed on the same
  *     platform+postId replaces it in place rather than appending a
- *     duplicate — the pure building block `collect.ts`'s own idempotent
+ *     duplicate — the pure building block `hand-entry.ts`'s own idempotent
  *     re-run acceptance test relies on.
  *   - Round-trip parse/serialize for both the metrics rows file and the
  *     Instagram follower-snapshots file.
  */
 
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+	DEFAULT_METRICS_DIR,
 	INSTAGRAM_FOLLOWERS_FILENAME,
-	POLLING_WINDOW_DAYS,
 	instagramFollowersFilePathFor,
-	isWithinPollingWindow,
 	metricsFilePathFor,
 	metricsRowKey,
 	parseFollowerSnapshots,
@@ -78,35 +78,6 @@ describe('MetricsRow — available vs. zero', () => {
 		expect(youtubeRow.saves).toBeNull();
 		expect(youtubeRow.shares).toBeNull();
 		expect(youtubeRow.follows).toBe(5);
-	});
-});
-
-describe('isWithinPollingWindow', () => {
-	const PUBLISHED_AT = '2026-09-01T00:00:00.000Z';
-
-	it('is true immediately at publication', () => {
-		expect(isWithinPollingWindow(PUBLISHED_AT, PUBLISHED_AT)).toBe(true);
-	});
-
-	it('is true at exactly the 30-day boundary (inclusive)', () => {
-		const exactlyThirtyDaysLater = '2026-10-01T00:00:00.000Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, exactlyThirtyDaysLater, POLLING_WINDOW_DAYS)).toBe(true);
-	});
-
-	it('is false one millisecond past the 30-day boundary', () => {
-		const oneMsPastThirtyDays = '2026-10-01T00:00:00.001Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, oneMsPastThirtyDays, POLLING_WINDOW_DAYS)).toBe(false);
-	});
-
-	it('is false for a post published in the future relative to now', () => {
-		const before = '2026-08-31T00:00:00.000Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, before)).toBe(false);
-	});
-
-	it('respects a custom windowDays', () => {
-		const sevenDaysLater = '2026-09-08T00:00:00.000Z';
-		expect(isWithinPollingWindow(PUBLISHED_AT, sevenDaysLater, 7)).toBe(true);
-		expect(isWithinPollingWindow(PUBLISHED_AT, sevenDaysLater, 6)).toBe(false);
 	});
 });
 
@@ -196,5 +167,31 @@ describe('Instagram follower snapshots — upsert + round trip', () => {
 
 	it('the followers file lives under the metrics outDir, named INSTAGRAM_FOLLOWERS_FILENAME', () => {
 		expect(instagramFollowersFilePathFor('/content/social/metrics')).toBe(`/content/social/metrics/${INSTAGRAM_FOLLOWERS_FILENAME}`);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// F3 (Pb4e17-social-native-scheduling review round 4) — DEFAULT_METRICS_DIR
+// moved into this file in this diff, and nothing asserted its actual
+// resolved value: mutating `path.resolve(moduleDir, '..', '..', '..')` to
+// `'..', '..'` left all 462 social tests green before this test existed.
+// Anchored on structural markers (`.git`, `package.json`), never on the
+// repo directory's own name — that would break for anyone who clones this
+// repo under a different name.
+// ---------------------------------------------------------------------------
+
+describe('DEFAULT_METRICS_DIR — resolved path pinning', () => {
+	it('resolves to the repo root\'s content/social/metrics directory', () => {
+		expect(DEFAULT_METRICS_DIR.endsWith(path.join('content', 'social', 'metrics'))).toBe(true);
+
+		const resolvedRoot = path.join(DEFAULT_METRICS_DIR, '..', '..', '..');
+		expect(existsSync(path.join(resolvedRoot, '.git'))).toBe(true);
+		expect(existsSync(path.join(resolvedRoot, 'package.json'))).toBe(true);
+		// social/ has its OWN package.json (it's a self-contained npm
+		// project — see this file's header) — `.git` is what actually
+		// distinguishes the true repo root from social/ itself, since a
+		// `path.resolve` one level short would land exactly there and still
+		// find A package.json, just the wrong one.
+		expect(existsSync(path.join(resolvedRoot, 'social', 'package.json'))).toBe(true);
 	});
 });

@@ -48,6 +48,7 @@ import {
 	computeWallPlainLines,
 	renderAssetPaths
 } from './cli-plan.js';
+import { toDir } from './metrics/hand-entry.js';
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
 import { loadChapterTextBlock, applyChapterEntryOffset } from './render/chapter-text.js';
@@ -61,10 +62,16 @@ import type { AuthorSlug } from './render/theme.js';
 import { writePostMetadata, postMetadataPathFor, type PostMetadata, type PostFormat } from './render/post-metadata.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-/** `social/src` -> repo root. */
-const REPO_ROOT = path.resolve(moduleDir, '..', '..');
-const SCHEDULE_DIR = path.join(REPO_ROOT, 'content', 'social');
-const DEFAULT_OUT_DIR = path.join(REPO_ROOT, 'social', 'out');
+/**
+ * `social/src` -> repo root. Exported (alongside `SCHEDULE_DIR`/
+ * `DEFAULT_OUT_DIR` below) so `cli.test.ts` can pin the resolved path
+ * directly — see `prepare-week.ts`'s identical constant for why this
+ * matters: a one-line change to the `path.resolve` call above would
+ * otherwise go uncaught by every existing test.
+ */
+export const REPO_ROOT = path.resolve(moduleDir, '..', '..');
+export const SCHEDULE_DIR = path.join(REPO_ROOT, 'content', 'social');
+export const DEFAULT_OUT_DIR = path.join(REPO_ROOT, 'social', 'out');
 const ENTRY_POINT = path.join(moduleDir, 'remotion', 'entry.tsx');
 
 // ---------------------------------------------------------------------------
@@ -94,14 +101,15 @@ Options:
   --help                   Show this help.`);
 }
 
-// Exported (Pf39c2-social-pilot-03 T08) so `job.ts`'s daily orchestration can
-// build this shape and call `renderCommand` directly — the daily job REUSES
-// this render path rather than re-implementing the Remotion bundle/render/
-// encode pipeline. `job.ts` imports `renderCommand`/`loadWeekSchedule`
-// dynamically (`await import('./cli.js')`), not at module top-level, so that
-// importing `job.ts` itself (as `job.test.ts` does, with every collaborator
-// injected) never pulls in `@remotion/bundler`/`@remotion/renderer` — those
-// are only loaded the moment a REAL (non-test) render actually runs.
+// Exported (Pf39c2-social-pilot-03 T08) so `prepare-week.ts`'s weekly
+// orchestration can build this shape and call `renderCommand` directly — it
+// REUSES this render path rather than re-implementing the Remotion bundle/
+// render/encode pipeline. `prepare-week.ts` imports `renderCommand`/
+// `loadWeekSchedule` dynamically (`await import('./cli.js')`), not at
+// module top-level, so that importing `prepare-week.ts` itself (as
+// `prepare-week.test.ts` does, with every collaborator injected) never
+// pulls in `@remotion/bundler`/`@remotion/renderer` — those are only
+// loaded the moment a REAL (non-test) render actually runs.
 export interface RenderArgs {
 	date: string;
 	outDir: string;
@@ -133,8 +141,16 @@ function parseRenderArgs(argv: string[]): RenderArgs {
 
 	return {
 		date: values.date,
-		outDir: values.out ?? DEFAULT_OUT_DIR,
-		scheduleDir: values['schedule-dir'] ?? SCHEDULE_DIR,
+		// F4 (Pb4e17-social-native-scheduling review round 4) — `toDir`
+		// (shared with `metrics/hand-entry.ts`) rejects an empty `--out` or
+		// `--schedule-dir` outright rather than silently falling through
+		// `?? DEFAULT`, for consistency with the metrics CLIs even though a
+		// real render already fails fast on an empty outDir (`mkdir('')`
+		// throws) and a missing schedule file names the resolved path in its
+		// own error — refusing loudly beats a resolved-path error message
+		// the operator has to notice.
+		outDir: toDir(values.out, '--out', DEFAULT_OUT_DIR),
+		scheduleDir: toDir(values['schedule-dir'], '--schedule-dir', SCHEDULE_DIR),
 		dryRun: Boolean(values['dry-run'])
 	};
 }

@@ -1,15 +1,31 @@
 /**
  * The one shared metrics row schema (Pf39c2-social-pilot-03 T12) plus the
- * pure serialization/idempotency helpers `collect.ts` builds on. Everything
- * here is pure — no I/O, no `Date.now()` — matching this workspace's
- * `job-plan.ts`/`cli-plan.ts` split (pure planning logic lives in its own
- * file so it is directly unit-testable without a network or filesystem).
+ * pure serialization/idempotency helpers built on top of it. Everything here
+ * is pure — no I/O, no `Date.now()` — matching this workspace's
+ * `prepare-week-plan.ts`/`cli-plan.ts` split (pure planning logic lives in
+ * its own file so it is directly unit-testable without a network or
+ * filesystem). The
+ * one exception is `DEFAULT_METRICS_DIR` below: a module-level path constant
+ * is not I/O (it performs no read, write, or filesystem access itself — it
+ * is just a string), so it lives here as the shared default every metrics
+ * module (`hand-entry.ts`, `readout.ts`, `follower-snapshot.ts`) imports,
+ * rather than being duplicated or re-exported from whichever module happened
+ * to define it first (Pb4e17-social-native-scheduling T03).
  *
- * Task wording this file implements verbatim: "Implement automated
- * collection for Instagram and YouTube against ONE SHARED ROW SCHEMA —
- * platform, format, publish time, views, average percent watched, likes,
- * comments, shares, saves, follows. (No opening variant column — the
- * opening comparison was CANCELLED outright, social pilot 02a T17.)"
+ * NO API COLLECTORS: this schema originally backed automated collection for
+ * Instagram and YouTube via each platform's own API (`collect.ts`,
+ * `instagram.ts`, `youtube.ts`, `tiktok-spike.ts`). Pb4e17-social-native-
+ * scheduling T07/T08 deleted the API publish and read pipelines outright —
+ * every platform now posts through its own native scheduler by hand, and
+ * every metric is hand-entered too (`hand-entry.ts`, plus the follower
+ * snapshot CLI, `follower-snapshot.ts`). The row shape below is unchanged;
+ * only how each row gets filled in has changed.
+ *
+ * Task wording the schema itself still implements verbatim: "... against
+ * ONE SHARED ROW SCHEMA — platform, format, publish time, views, average
+ * percent watched, likes, comments, shares, saves, follows. (No opening
+ * variant column — the opening comparison was CANCELLED outright, social
+ * pilot 02a T17.)"
  *
  * NO `opening` FIELD: `render/post-metadata.ts`'s `opening` field was
  * deleted along with the opening-rotation comparison it existed to run (see
@@ -25,52 +41,45 @@
  * `null` means "not available on this platform," strictly distinct from the
  * number `0` ("available, and the true value is zero"):
  *
- *   - `saves` — Instagram-only. Meta's Reels insights report a `saved`
- *     metric; YouTube's Data/Analytics APIs have no equivalent concept at
- *     all. YouTube rows: `saves: null`, always. TikTok rows: also
- *     `saves: null`, always — not one of the four counts the plan's
- *     Constraint names for either TikTok read path, and not collected by
- *     `tiktok-manual.ts`'s hand-entry path either.
- *   - `follows` — PER-POST follow attribution exists ONLY on YouTube
- *     (Analytics API's `subscribersGained` metric, scoped to one video via
- *     `dimensions=video`/`filters=video==<id>`). Per the plan's Decision:
- *     "Instagram reports follower counts at the ACCOUNT level only, so
- *     criterion A's conversion half must be inferred from daily follower
- *     deltas aligned to post times — with two posts a day, attribution is
- *     directional, not exact." Instagram rows therefore carry
+ *   - `saves` — ALWAYS `null`, on every platform, in this pipeline.
+ *     Instagram's app and TikTok's own analytics both surface a per-post
+ *     saves/Favorites count and YouTube has no equivalent concept, but
+ *     `hand-entry.ts` — the only writer of a `MetricsRow` — does not ask
+ *     for it on any platform, so no row ever carries a number here. The
+ *     field is kept for the pre-registered schema wording only.
+ *   - `follows` — a REAL per-post number ONLY on YouTube, where Studio's
+ *     own per-video "subscribers gained" figure is exact (`hand-entry.ts`'s
+ *     `--follows`; `readout.ts`'s `FollowConversionMethod: 'exact'`). Per the
+ *     plan's Decision: "Instagram reports follower counts at the ACCOUNT
+ *     level only, so criterion A's conversion half must be inferred from
+ *     daily follower deltas aligned to post times — even at one post a day,
+ *     attribution is directional, not exact." (Corrected from an earlier
+ *     "two posts a day" premise, `Pb4e17-social-native-scheduling` T14 — the
+ *     pilot posts once a day per platform; the conclusion is unchanged
+ *     either way, since an account-level delta can't be cleanly attributed
+ *     to a single post regardless of how many posts share that day.)
+ *     Instagram rows therefore carry
  *     `follows: null` always — the inferred, directional account-level
  *     series lives in a SEPARATE structure (`InstagramFollowerSnapshot`
- *     below), never smuggled into a per-post row as a fabricated number.
- *     TikTok rows (`tiktok-manual.ts`, T13) ALSO carry `follows: null`
- *     always, for the same reason as Instagram — neither TikTok candidate
- *     read path the plan's Constraint names (Display API `video.list`,
- *     Business Account API) reports a per-video follow count, only an
- *     account-level follower series on the Business Account API side, which
- *     is out of scope for the T13 hand-entry fallback this schema supports.
- *   - `shares` — Instagram's Reels insights genuinely report a `shares`
- *     metric, so Instagram rows carry a real number. YouTube's Data API
- *     `statistics` resource has no shares count, and this task's own
- *     Constraint enumerates exactly `engagedViews`/`averageViewPercentage`/
- *     `subscribersGained` to pull from the Analytics API — even though
- *     Analytics also exposes a `shares` metric, pulling it would be scope
- *     creep beyond what this task specifies. YouTube rows: `shares: null`
- *     — genuinely not collected, not a claimed zero. TikTok rows carry a
- *     real number — the plan's Constraint names `video.list` as returning
- *     "per-video view/like/comment/share counts," and a human can read the
- *     same four off the app's own per-video analytics screen, so
- *     `tiktok-manual.ts`'s hand-entry path requires it, same as the other
- *     three counts.
- *   - `averagePercentWatched` — computed for Instagram from
- *     `ig_reels_avg_watch_time` (insights) against the media's own
- *     `video_duration` (see `instagram.ts`); `null` when the media isn't a
- *     video/Reel or its duration is unknown, rather than a fabricated 0%.
- *     YouTube always reports a real `averageViewPercentage` from Analytics.
- *     TikTok rows leave this `null` by default — the plan's own Constraint
- *     is explicit that "retention curves ... are in-app only on TikTok
- *     regardless — those stay manual," i.e. out of THIS schema's scope, not
- *     merely hard to type in. `tiktok-manual.ts` accepts it only as an
- *     optional override for the rare case the app surfaces a plain
- *     percentage next to a video, never requires it.
+ *     below, populated by hand off Instagram's own Insights screen via
+ *     `follower-snapshot.ts`), never smuggled into a per-post row as a
+ *     fabricated number. TikTok rows ALSO carry `follows: null` always, for
+ *     the same reason as Instagram — no screen in the TikTok app attributes
+ *     a follow to a specific post, only an account-level follower count.
+ *   - `shares` — a real number on all three platforms: Instagram, YouTube,
+ *     and TikTok each show a per-post share count on their own analytics
+ *     screen, and `hand-entry.ts` requires it as one of the four counts a
+ *     human reads off any of the three.
+ *   - `averagePercentWatched` — optional on every platform, defaulting to
+ *     `null` in `hand-entry.ts` rather than a fabricated 0%. YouTube Studio
+ *     shows a real average-percentage-watched figure per video, so it is the
+ *     platform this is most often filled in for. Instagram's Insights screen
+ *     shows average watch *time*, not a percentage, so entering this field
+ *     for Instagram requires converting time against the post's own
+ *     duration by hand. TikTok's retention curves are in-app only and not
+ *     part of what `hand-entry.ts` requires anywhere; it accepts this field
+ *     only as an optional override for the rare case a human genuinely has
+ *     a clean percentage to enter, never requires it.
  *
  * `format` is hardcoded to the single literal `'wall'` throughout this
  * module — mirrors `render/post-metadata.ts`'s own `PostFormat`, which
@@ -80,6 +89,15 @@
  * their own local copy: `social/` is a self-contained npm project (T01's
  * scope note), not a workspace member of the root content-pipeline package.
  */
+
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+/** `social/src/metrics` -> repo root. */
+const REPO_ROOT = path.resolve(moduleDir, '..', '..', '..');
+/** The default metrics output directory every metrics module shares — see this file's header. */
+export const DEFAULT_METRICS_DIR = path.join(REPO_ROOT, 'content', 'social', 'metrics');
 
 export type MetricsPlatform = 'instagram' | 'youtube' | 'tiktok';
 
@@ -99,22 +117,24 @@ export interface MetricsRow {
 	/** ISO 8601 — the platform's own reported publish instant, never a locally-guessed date. */
 	publishedAt: string;
 	/**
-	 * On YouTube this is `engagedViews`, NEVER the Data API's `viewCount` —
-	 * see `youtube.ts`'s header for the March 2025 Shorts view-counting
-	 * change this schema field name deliberately does not let a caller
-	 * confuse itself about.
+	 * On YouTube, whoever is hand-entering this row should read Studio's
+	 * `engagedViews`-equivalent figure, NEVER the raw "Views" count — since
+	 * March 2025 YouTube's raw view count counts every Short start with no
+	 * minimum watch time, which would silently inflate this field on Shorts.
+	 * This field name is deliberately not `viewCount` so a caller cannot
+	 * confuse itself about which number belongs here.
 	 */
 	views: number;
 	averagePercentWatched: number | null;
 	likes: number | null;
 	comments: number | null;
-	/** Instagram: real. YouTube: `null` — see this file's header. */
+	/** Real on Instagram, YouTube, and TikTok — see this file's header. */
 	shares: number | null;
-	/** Instagram-only. Always `null` on YouTube. */
+	/** Always `null` — not collected on any platform; see this file's header. */
 	saves: number | null;
-	/** YouTube-only (`subscribersGained`, per-post). Always `null` on Instagram — see this file's header. */
+	/** YouTube-only (per-post follow attribution). Always `null` on Instagram and TikTok — see this file's header. */
 	follows: number | null;
-	/** ISO 8601 — when THIS row's numbers were fetched (distinct from `publishedAt`). */
+	/** ISO 8601 — when THIS row's numbers were read/entered (distinct from `publishedAt`). */
 	collectedAt: string;
 }
 
@@ -131,33 +151,6 @@ export interface InstagramFollowerSnapshot {
 }
 
 // ---------------------------------------------------------------------------
-// The 30-day polling window — plan Constraint: "Poll for 30 days after
-// publication, since metrics keep accruing."
-// ---------------------------------------------------------------------------
-
-export const POLLING_WINDOW_DAYS = 30;
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/**
- * Whether a post published at `publishedAt` is still inside its polling
- * window at instant `now`. INCLUSIVE at exactly `windowDays` days old —
- * matches `tokens.ts`'s own inclusive-boundary convention
- * (`expiryAlert`/`needsRefresh`'s `<=`) rather than an off-by-one exclusive
- * cut. A post published in the future relative to `now` (clock skew, a bad
- * fixture) is excluded rather than silently treated as "always in window."
- */
-export function isWithinPollingWindow(publishedAt: string, now: string, windowDays: number = POLLING_WINDOW_DAYS): boolean {
-	const publishedMs = Date.parse(publishedAt);
-	const nowMs = Date.parse(now);
-	if (Number.isNaN(publishedMs) || Number.isNaN(nowMs)) {
-		throw new Error(`Invalid ISO 8601 timestamp — publishedAt="${publishedAt}", now="${now}".`);
-	}
-	const ageMs = nowMs - publishedMs;
-	return ageMs >= 0 && ageMs <= windowDays * DAY_MS;
-}
-
-// ---------------------------------------------------------------------------
 // Idempotency — the acceptance criterion: "a run appends a dated file with
 // one row per live post, and re-running is idempotent rather than
 // duplicating rows." Rows are keyed on platform + post id: stable across
@@ -171,9 +164,10 @@ export function metricsRowKey(row: Pick<MetricsRow, 'platform' | 'postId'>): str
 
 /**
  * Replaces any existing row with the same `metricsRowKey` and appends
- * otherwise — the idempotent upsert `collect.ts` runs once per fetched row,
- * per platform, per collection run. Keeps the result sorted by key so the
- * on-disk file reads deterministically regardless of fetch order.
+ * otherwise — the idempotent upsert `hand-entry.ts` runs once per
+ * hand-entered row, per platform, per weekly session. Keeps the result
+ * sorted by key so the on-disk file reads deterministically regardless of
+ * entry order.
  */
 export function upsertMetricsRow(existing: MetricsRow[], row: MetricsRow): MetricsRow[] {
 	const key = metricsRowKey(row);
@@ -186,7 +180,7 @@ export function metricsFilePathFor(outDir: string, collectionDate: string): stri
 	return `${outDir.replace(/[/\\]+$/, '')}/metrics-${collectionDate}.json`;
 }
 
-/** Parses a metrics file's contents. An empty/missing file is `[]`, not an error — matches `job-plan.ts`'s `parsePendingFlips` convention. */
+/** Parses a metrics file's contents. An empty/missing file is `[]`, not an error — matches the standing convention this workspace's pure planning files use for optional on-disk state (see `cli-plan.ts`). */
 export function parseMetricsRows(raw: string): MetricsRow[] {
 	const trimmed = raw.trim();
 	if (trimmed === '') {
@@ -199,7 +193,7 @@ export function parseMetricsRows(raw: string): MetricsRow[] {
 	return parsed as MetricsRow[];
 }
 
-/** Pretty-printed, newline-terminated — matches `job-plan.ts`'s `serializePendingFlips` and `post-metadata.ts`'s convention. */
+/** Pretty-printed, newline-terminated — matches `post-metadata.ts`'s convention. */
 export function serializeMetricsRows(rows: MetricsRow[]): string {
 	return `${JSON.stringify(rows, null, 2)}\n`;
 }

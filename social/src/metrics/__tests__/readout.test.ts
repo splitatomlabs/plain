@@ -31,7 +31,12 @@
  * pushing them outside the pilot window.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
 	computeFollowConversion,
@@ -44,7 +49,7 @@ import {
 	parseBreakoutThreshold,
 	type DailyFollowerSnapshot
 } from '../readout.js';
-import type { MetricsRow } from '../schema.js';
+import { metricsFilePathFor, serializeMetricsRows, type MetricsRow } from '../schema.js';
 import { weekDayToDate } from '../../pilot-config.js';
 
 /** A `publishedAt` for pilot week `week`, day `day` — anchored, never a literal date. */
@@ -410,5 +415,92 @@ describe('parseBreakoutThreshold validates --breakout-threshold explicitly (M8)'
 
 	it('returns the parsed number for a valid positive value', () => {
 		expect(parseBreakoutThreshold('5000')).toBe(5000);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// F4 (Pb4e17-social-native-scheduling review round 4) / round 5 — a real
+// subprocess run, mirroring `hand-entry.test.ts`'s/`follower-snapshot.test.ts`'s
+// own CLI subprocess convention.
+//
+// Round 4's `toDir` closed the empty-STRING half of "a bad --metrics-dir
+// silently reports a verdict over zero rows": `--metrics-dir=` now throws
+// before any directory is ever read. But a directory that IS a syntactically
+// fine, non-empty path — a typo, or one that simply does not exist yet, or
+// one that exists but is empty — reached `readLatestMetricsRows`, got `[]`
+// back, and this CLI printed a confident "NOT VIABLE" verdict over zero data
+// with exit code 0 regardless. Round 5 closes that wider case in `main()`
+// itself (see its own comment): zero rows, from ANY cause, is reported as
+// "INSUFFICIENT DATA" and exits non-zero, never "NOT VIABLE" with exit 0.
+// ---------------------------------------------------------------------------
+
+describe('CLI — main()', () => {
+	const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+	const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
+	const cliPath = path.join(repoRoot, 'social', 'src', 'metrics', 'readout.ts');
+
+	let metricsDir: string;
+
+	beforeEach(async () => {
+		metricsDir = await mkdtemp(path.join(tmpdir(), 'plain-readout-'));
+	});
+
+	afterEach(async () => {
+		await rm(metricsDir, { recursive: true, force: true });
+	});
+
+	function runCli(args: string[]): { status: number; stdout: string; stderr: string } {
+		try {
+			const stdout = execFileSync('npx', ['tsx', cliPath, ...args], {
+				cwd: repoRoot,
+				encoding: 'utf-8',
+				stdio: ['ignore', 'pipe', 'pipe']
+			});
+			return { status: 0, stdout, stderr: '' };
+		} catch (e) {
+			const err = e as { status: number | null; stdout: string; stderr: string };
+			return { status: err.status ?? 1, stdout: err.stdout ?? '', stderr: err.stderr ?? '' };
+		}
+	}
+
+	it('round 5 — an empty-but-existing --metrics-dir never reports a verdict over zero rows: exits non-zero, names the directory, and never prints NOT VIABLE', () => {
+		const result = runCli(['--metrics-dir', metricsDir, '--now', '2026-09-09T00:00:00.000Z']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/INSUFFICIENT DATA/);
+		expect(result.stderr).toContain(metricsDir);
+		expect(result.stdout).not.toMatch(/NOT VIABLE/);
+		expect(result.stderr).not.toMatch(/NOT VIABLE/);
+	});
+
+	it('round 5 — a --metrics-dir that does not exist at all behaves identically: never prints NOT VIABLE, names the directory, exits non-zero', () => {
+		const nonexistentDir = path.join(metricsDir, 'does-not-exist');
+		const result = runCli(['--metrics-dir', nonexistentDir, '--now', '2026-09-09T00:00:00.000Z']);
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/INSUFFICIENT DATA/);
+		expect(result.stderr).toContain(nonexistentDir);
+		expect(result.stdout).not.toMatch(/NOT VIABLE/);
+		expect(result.stderr).not.toMatch(/NOT VIABLE/);
+	});
+
+	it('round 5 — a real negative result (rows exist, neither criterion met) still prints NOT VIABLE and exits 0, unchanged', async () => {
+		const rows: MetricsRow[] = [
+			row({ platform: 'tiktok', postId: 'tt-1', views: 100 }),
+			row({ platform: 'tiktok', postId: 'tt-2', views: 120 }),
+			row({ platform: 'tiktok', postId: 'tt-3', views: 90 })
+		];
+		await writeFile(metricsFilePathFor(metricsDir, '2026-09-09'), serializeMetricsRows(rows), 'utf-8');
+
+		const result = runCli(['--metrics-dir', metricsDir, '--now', '2026-09-09T00:00:00.000Z']);
+		expect(result.status).toBe(0);
+		expect(result.stdout).toMatch(/NOT VIABLE — neither criterion met\./);
+		expect(result.stdout).not.toMatch(/INSUFFICIENT DATA/);
+	});
+
+	it('F4 — an empty-STRING --metrics-dir (--metrics-dir=) exits non-zero, names the flag, and never silently reports a verdict over zero rows', () => {
+		const result = runCli(['--metrics-dir', '', '--now', '2026-09-09T00:00:00.000Z']);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--metrics-dir/);
+		expect(result.stdout).not.toMatch(/VIABLE/);
 	});
 });

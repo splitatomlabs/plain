@@ -3,12 +3,12 @@
  * module that sources the wall's scrolling block from the surrounding
  * CHAPTER, not the single card (see `plans/Pf39c2-social-pilot-02a.md`,
  * "the wall is sourced from the CHAPTER, not the card" and its "CONSTRAINT 6
- * AMENDMENT"). This file is written AHEAD of T06's real implementation —
- * `chapter-text.ts` today is an empty stub whose exports throw, so every
- * test below is expected to FAIL until T06 lands (that failure is this
- * task's own acceptance criterion, not a defect in this file).
+ * AMENDMENT"). This file was originally written AHEAD of T06's real
+ * implementation, back when `chapter-text.ts` was an empty stub whose
+ * exports threw; T06 landed long ago, so every test below now exercises the
+ * real implementation.
  *
- * What must hold once T06 implements it:
+ * What T06 implements:
  *   1. The block STARTS at the target card's own `original_excerpt`.
  *   2. It CONTINUES with the FOLLOWING cards' `original_excerpt`, in
  *      document order (`card_number` ascending within the chapter).

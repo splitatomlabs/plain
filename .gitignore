@@ -61,14 +61,10 @@ node_modules/
 # Social pilot render output
 social/out/
 
-# Firebase Functions build output and CLI local state
-functions/lib/
-.firebase/
-firebase-debug.log
-firebase-debug.*.log
-
-# Local social-pilot credentials — the file-backed TokenStore
-# (social/src/publish/token-store-local.ts, --token-store local) holds live
-# Instagram/YouTube tokens in plaintext. NEVER commit it.
+# Local social-pilot credentials. The file-backed TokenStore that wrote these
+# is gone (Pb4e17 deleted the API publish pipeline), so nothing creates them
+# any more — but the pilot's GCP project and Meta app are deliberately left
+# dormant rather than torn down, so keep ignoring these in case a stray
+# plaintext token file from that setup is still around. NEVER commit one.
 content/social/tokens.local.json
 content/social/tokens.*.json

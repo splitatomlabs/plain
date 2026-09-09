@@ -20,13 +20,12 @@
  * this".
  *
  * `#Shorts` is deliberately NOT in `HASHTAGS` — the plan's Constraint says
- * YouTube classifies Shorts automatically from aspect ratio and duration,
- * so the tag buys nothing (the same reasoning `youtube.ts`'s header already
- * documents for why that module adds no such tag).
+ * YouTube classifies Shorts automatically from aspect ratio and duration, so
+ * a manual `#Shorts` tag in the caption buys nothing.
  *
  * Pure function, no I/O, no `Date.now()`: same `ScheduleSlot` + `platform`
  * always produces the same caption string, matching this workspace's
- * determinism policy (`pilot-config.ts`, `storage.ts`).
+ * determinism policy (`pilot-config.ts`).
  */
 
 import type { ScheduleSlot } from '../schedule-types.js';

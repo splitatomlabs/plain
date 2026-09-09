@@ -33,9 +33,9 @@
  * network. `computeReadout` is the one entry point a test calls directly;
  * `formatReadout` turns its result into the human-readable report; this
  * file's own `main()` (bottom) is the thin CLI that reads the dated files
- * `collect.ts`/`tiktok-manual.ts` already write and prints the report.
- * Mirrors this workspace's `job-plan.ts`/`job.ts` and `cli-plan.ts`/`cli.ts`
- * pure-plan-vs-IO split.
+ * `hand-entry.ts`/`follower-snapshot.ts` already write and prints the report.
+ * Mirrors this workspace's `cli-plan.ts`/`cli.ts` and
+ * `prepare-week-plan.ts`/`prepare-week.ts` pure-plan-vs-IO split.
  *
  * EXACT VS. INFERRED FOLLOW CONVERSION — this file's own label discipline,
  * per `schema.ts`'s header and the plan's Decision it quotes: "per-post
@@ -48,7 +48,7 @@
  * post, but it is STILL an inference from an account-level series, not a
  * per-post count — this file never upgrades it to "exact" and always labels
  * it `'inferred'` in its own output.) TikTok has no follower-snapshot
- * collector at all yet (see `tiktok-manual.ts`'s header) — this module's
+ * collector at all yet (see `hand-entry.ts`'s header) — this module's
  * `PlatformFollowConversion.method` reports `'unavailable'` for a platform
  * with per-post `follows: null` on every row and no snapshot series
  * supplied, rather than silently reporting `0` or fabricating an inference
@@ -89,8 +89,8 @@ import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 
 import { dateToWeekDay } from '../pilot-config.js';
-import { DEFAULT_METRICS_DIR } from './collect.js';
-import { instagramFollowersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
+import { toDir } from './hand-entry.js';
+import { DEFAULT_METRICS_DIR, instagramFollowersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // Small pure statistics — each one independently unit-testable.
@@ -229,7 +229,7 @@ export interface DailyFollowerSnapshot {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** One calendar day before `date` (`YYYY-MM-DD` in, `YYYY-MM-DD` out), computed in UTC — matches `schema.ts`'s own `DAY_MS` convention. */
+/** One calendar day before `date` (`YYYY-MM-DD` in, `YYYY-MM-DD` out), computed in UTC. */
 function previousIsoDate(date: string): string {
 	const ms = Date.parse(`${date}T00:00:00.000Z`);
 	return new Date(ms - DAY_MS).toISOString().slice(0, 10);
@@ -519,14 +519,19 @@ export function formatReadout(readout: Readout): string {
 
 // ---------------------------------------------------------------------------
 // CLI entry point — `npx tsx social/src/metrics/readout.ts`. Reads every
-// dated metrics file `collect.ts`/`tiktok-manual.ts` already write from
-// `content/social/metrics/`, reduces them to the latest known row per post
-// (a post appears in every dated file inside its 30-day polling window, so
-// the LAST `collectedAt` wins), reads Instagram's daily follower-snapshot
-// file if present, computes the readout, and prints the report. Mirrors
-// `collect.ts`'s own CLI conventions (ENOENT -> empty, a single
-// `--now` wall-clock override, guarded `main()` so importing this module
-// for its exports never parses `process.argv` or touches the filesystem).
+// dated metrics file `hand-entry.ts`/`follower-snapshot.ts` already write
+// from `content/social/metrics/`, reduces them to the latest known row per
+// post — with the collectors deleted (see `hand-entry.ts`'s header), a post
+// is written exactly once, into the single dated file named by its own
+// publish date, by one hand-entry run; if the same post is ever entered
+// under two different dates (a correction re-run against a different
+// `--published-at`, or an accidental double-entry) the LAST `collectedAt`
+// wins — reads Instagram's daily follower-snapshot file if present, computes
+// the readout, and prints the report. Shares
+// `hand-entry.ts`'s/`follower-snapshot.ts`'s own CLI conventions (ENOENT ->
+// empty, guarded `main()` so importing this module for its exports never
+// parses `process.argv` or touches the filesystem); the `--now` wall-clock
+// override below is this file's own.
 // ---------------------------------------------------------------------------
 
 const METRICS_FILENAME_RE = /^metrics-\d{4}-\d{2}-\d{2}\.json$/;
@@ -555,10 +560,16 @@ export function parseBreakoutThreshold(raw: string | undefined): number | undefi
 /**
  * Reads and merges every `metrics-<date>.json` file in `metricsDir`, keeping
  * only the LATEST row (by `collectedAt`) per `platform:postId` — the
- * "current" snapshot this module's per-post statistics expect, not every
- * historical day's row for a post still inside its polling window. An empty
- * or missing directory yields `[]`, matching this workspace's ENOENT ->
- * empty convention.
+ * "current" snapshot this module's per-post statistics expect. Normally
+ * there is only one row to keep: with the collectors deleted, a post is
+ * hand-entered exactly once, into the one dated file named by its own
+ * publish date (see this file's `main()` comment above). The LATEST-wins
+ * merge exists for the one case where a post genuinely does appear in more
+ * than one dated file — a same-post correction re-run under a different
+ * `--published-at` — so that correction (the higher `collectedAt`) is the
+ * row this module reports, not whichever file `readdir` happens to list
+ * first. An empty or missing directory yields `[]`, matching this
+ * workspace's ENOENT -> empty convention.
  */
 export async function readLatestMetricsRows(metricsDir: string): Promise<MetricsRow[]> {
 	let filenames: string[];
@@ -598,7 +609,7 @@ function printHelp(): void {
 	console.log(`Usage: npx tsx social/src/metrics/readout.ts [options]
 
 Reads every dated metrics file under content/social/metrics/ (written by
-collect.ts and tiktok-manual.ts), computes the per-platform viability
+hand-entry.ts and follower-snapshot.ts), computes the per-platform viability
 readout — median, maximum, max/median ratio, week-1-vs-week-4 median trend,
 follow conversion, and top 5 posts — and states plainly whether the
 pre-registered criterion (plans/Pf39c2-social-pilot-index.md) was met.
@@ -638,16 +649,51 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const metricsDir = values['metrics-dir'] ?? DEFAULT_METRICS_DIR;
+	// `toDir` (shared with `hand-entry.ts`) rejects an empty `--metrics-dir`
+	// outright rather than falling through `?? DEFAULT_METRICS_DIR` — an
+	// empty STRING value here is the one shell-level failure mode `toDir`
+	// itself can see (`--metrics-dir=` with an unset variable). See `toDir`'s
+	// own doc comment for that general class. It cannot see a typo'd or
+	// nonexistent PATH, though — a value that is a syntactically fine,
+	// non-empty string but names no real directory. That wider case (any
+	// path, empty or missing or misspelled, that yields zero rows) is closed
+	// below, after `readLatestMetricsRows` runs, by refusing to print a
+	// verdict — "NOT VIABLE" or otherwise — over zero data. See that check's
+	// own comment for why.
+	const metricsDir = toDir(values['metrics-dir'], '--metrics-dir', DEFAULT_METRICS_DIR);
 
-	// THE ONE WALL-CLOCK READ IN THIS FILE — see `collect.ts`'s identical
-	// "DETERMINISM" discipline. `--now` lets an operator pin the evaluation
-	// instant stamped on the report for a reproducible re-run.
+	// THE ONE WALL-CLOCK READ IN THIS FILE — matches this workspace's own
+	// "DETERMINISM" discipline elsewhere (e.g. `hand-entry.ts`'s/
+	// `follower-snapshot.ts`'s `collectedAt`/`date` inputs). `--now` lets an
+	// operator pin the evaluation instant stamped on the report for a
+	// reproducible re-run.
 	const now = values.now ?? new Date().toISOString();
 
 	const breakoutViewThreshold = parseBreakoutThreshold(values['breakout-threshold']);
 
 	const rows = await readLatestMetricsRows(metricsDir);
+
+	// ZERO ROWS IS NEVER "NOT VIABLE" (review round 5). `computeVerdict` over
+	// an empty platform list legitimately returns `viable: false` — that pure
+	// behaviour is `readout.test.ts`'s own `empty datasets` block and stays
+	// unchanged, since another caller may reasonably want "no data" folded
+	// into "not viable" for its own purposes. But THIS CLI is the one output
+	// the pilot exists to produce: a reader acts on "NOT VIABLE" as the
+	// pre-registered negative result, and that phrase must never appear
+	// without real rows behind it — a mistyped or not-yet-existing
+	// `--metrics-dir` must not be indistinguishable from a genuine negative.
+	// So this is a `main()`-level reporting guard, not a change to
+	// `computeReadout`/`computeVerdict`: it reports "insufficient data" and
+	// exits non-zero instead of ever calling `computeReadout` at all when
+	// `rows` is empty. Anything above zero rows is left alone — a real but
+	// thin dataset (one row, one day) is exactly what the pre-registered
+	// criterion's own human-in-the-loop reading (see the plan's §8) is for,
+	// and inventing a second "minimum viable N" here would just relocate the
+	// same fabrication risk this guard exists to close.
+	if (rows.length === 0) {
+		throw new Error(`INSUFFICIENT DATA — no metrics rows found under ${metricsDir}.`);
+	}
+
 	const instagramFollowerSnapshots = await readInstagramFollowerSnapshots(metricsDir);
 
 	const readout = computeReadout({ rows, instagramFollowerSnapshots, now, breakoutViewThreshold });
@@ -655,9 +701,10 @@ async function main(): Promise<void> {
 }
 
 // Only auto-run `main()` when this file is the actual process entry point —
-// identical guard to `collect.ts`'s/`tiktok-manual.ts`'s own: importing this
-// module for its exports (as every test in `__tests__/readout.test.ts`
-// does) must never itself parse `process.argv` or touch the filesystem.
+// identical guard to `hand-entry.ts`'s/`follower-snapshot.ts`'s own:
+// importing this module for its exports (as every test in
+// `__tests__/readout.test.ts` does) must never itself parse `process.argv`
+// or touch the filesystem.
 if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
 	main().catch((error) => {
 		console.error(error instanceof Error ? error.message : error);
