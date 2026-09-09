@@ -331,14 +331,33 @@ can't be folded into the weekly cadence like everything else — Instagram's app
 total, never a historical series, so a day this is skipped for is gone for good, unlike a missed
 weekly upload which can just run late.
 
-**One open question the old daily-trigger design carried and never resolved: what time of day to
-schedule posts for.** The deleted trigger fired at a placeholder time (`America/New_York`, `07:53`)
-chosen only to land off the top of the hour, not for any audience or distribution reason. That
-question hasn't gone away with the trigger — section 5.3's "set the scheduled time" step still
-needs an actual time typed into each platform's scheduler, and nothing in this plan or its research
-notes has chosen one deliberately yet. Decide on a real value (audience timezone, a time chosen for
-a reason) before or shortly after go-live, and use it consistently across all three platforms'
-weekly schedules.
+**The posting time — DECIDED 2026-09-10: `07:30 America/New_York`, every day, all three
+platforms, unchanged for the full 28 days.** This replaces the deleted daily trigger's placeholder
+(`America/New_York`, `07:53`), which was chosen only to land off the top of the hour and for no
+audience or distribution reason. Type this value into each platform's scheduler at section 5.3's
+"set the scheduled time" step.
+
+Two reasons, in order of weight:
+
+1. **Constancy matters far more than the hour itself.** `plans/research/social-experiment-notes.md`
+   records Buffer's 52M-post finding — "sharing your posts at the 'right' time is not the secret
+   sauce" — alongside the rule that actually binds here: *hold the time CONSTANT per account.*
+   Criterion B (section 1) is a week-1-to-week-4 median trend, so a posting time that drifts
+   mid-pilot confounds the exact signal that trend exists to measure. **Do not "try an evening slot"
+   in week 3.** If the time must change, the pilot restarts; it does not continue with a note.
+2. **An early post protects Instagram's follow-conversion — see 5.5.** IG/TikTok conversion is
+   inferred from a day-over-day follower delta aligned to the post's own calendar date, and the
+   window that delta covers is set by *when you read the follower number each day*. Posting early
+   and snapshotting late puts most of each post's first-day life inside the window credited to that
+   post. Posting in the evening does the opposite, and a morning snapshot with an evening post
+   credits every post's follows to the following day's post. This coupling is the real argument for
+   07:30; the engagement case for morning (reflective content, US-timezone compromise) is secondary
+   and weak by the Buffer finding above.
+
+**A caveat this document should not overstate:** no daily-delta scheme is clean. Some of each post's
+follows always spill into the next day's window, which is exactly why section 1 labels the method
+`'inferred'` and not `'exact'`. 07:30 minimises that error; it does not eliminate it. YouTube is
+unaffected either way — its `subscribersGained` is per-video and exact.
 
 ## 5. The weekly session — the most important part of this document
 
@@ -378,10 +397,10 @@ Checklist, in order:
 ### 5.1 Generate next week's schedule (if not already done)
 
 Before this week's posts run out, generate the following week's schedule so there is always a slot
-ready to render and post. Week 1 is anchored at `2026-09-09` (`social/src/pilot-config.ts`'s
-`PILOT_WEEK_1_START`, reset from `2026-09-01` — see "Current status" below); every later week reads
-every prior `pilot-schedule-w<NN>.json` so a card is never reused, and (for week > 1) requires that
-the *prior* week's review note exists and is filled in:
+ready to render and post. Week 1 is anchored at `2026-09-14` (`social/src/pilot-config.ts`'s
+`PILOT_WEEK_1_START`, reset from `2026-09-01` and then `2026-09-09` — see "Current status"
+below); every later week reads every prior `pilot-schedule-w<NN>.json` so a card is never
+reused, and (for week > 1) requires that the *prior* week's review note exists and is filled in:
 
 ```bash
 # Write the prior week's review note first (retention notes, hook/format-mix adjustments):
@@ -425,7 +444,9 @@ mid-session.
 
 For each of the week's 7 days, in each of three places — TikTok's own upload flow, Meta Business
 Suite (for Instagram Reels), and YouTube Studio — upload that day's MP4 from `social/out/`, paste
-that day's caption for *that specific platform* from `captions.txt`, and set the scheduled time.
+that day's caption for *that specific platform* from `captions.txt`, and set the scheduled time —
+**`07:30 America/New_York`, the same on every platform and every day** (section 4; it is held
+constant for the whole pilot, so this value should never differ between two uploads).
 That's 21 uploads a week (3 platforms x 7 days); work through `captions.txt` top to bottom so each
 video is matched to the right caption by date and card id.
 
@@ -500,11 +521,26 @@ overrides where `instagram-followers.json` is written. Re-running for the same `
 that date's entry rather than duplicating it. `0` is a valid, real reading (an empty account) and is
 recorded as `0`, never treated as missing.
 
+**Take the reading LATE — after that day's post has gone out, ideally 22:00-23:00 ET — and at
+roughly the same hour every day.** The snapshot carries only a `date`, never a time
+(`DailyFollowerSnapshot` in `readout.ts`), so the hour you happen to read the number at is what
+silently defines the measurement window. `inferFollowsForPost` credits a post with
+`followers(its publish date) - followers(the day before)`, so that window runs from whenever you
+read yesterday's number to whenever you read today's. With the 07:30 post time (section 4), a
+22:30 reading puts ~15 hours of each post's own first day inside the window credited to that post.
+**A morning reading throws most of the signal away:** snapshot at 09:00 and the window for a given
+date closes just 1.5 hours after that date's 07:30 post, so nearly all of the post's conversion
+falls into the *next* day's delta and is credited to the next day's post. The failure is worse still
+if the post time is ever moved to the evening — an evening post with a morning snapshot lands wholly
+outside its own window, capturing none of itself. Late is right; early quietly mis-attributes.
+
 Instagram's own app shows only *today's* follower total — never a historical series — so a day this
 isn't run for is unrecoverable; there is no catching up next week. Skipping a day has a specific,
 measurable cost, too: Instagram's follow-conversion (section 1) is *inferred* from day-over-day
 follower deltas aligned to `publishedAt`, so a day with no recorded count permanently degrades that
-day's conversion reading from `inferred` to `unavailable`. There is no equivalent CLI for TikTok or
+day's conversion reading from `inferred` to `unavailable`. **A single missed day breaks TWO posts,
+not one:** a delta needs both endpoints, so the gap takes out the missing day's own post and the
+following day's, which had been relying on that day as its "previous" reading. There is no equivalent CLI for TikTok or
 YouTube — no per-post follow path exists to infer a TikTok series from, and YouTube's follow number
 already arrives for free, per post, in section 5.4 above.
 
@@ -636,11 +672,14 @@ not block posting, only the bio-link conversion path on TikTok specifically.
 scheduler, Instagram's (via Meta Business Suite), and YouTube Studio's are all usable for the
 weekly session (section 5) this pilot now runs on.
 
-**Pilot anchor date reset, 2026-09-09:** `PILOT_WEEK_1_START` (`social/src/pilot-config.ts`) was
-moved from `2026-09-01` to `2026-09-09`, since the original anchor had passed with nothing
-published. Week 1 is now 2026-09-09..15 and week 4 is 2026-09-30..10-06. This is free to change
-again right up until the first real render ships (a render embeds its `--date` in both its filename
-and its metadata sidecar); after that it is fixed for the life of the pilot.
+**Pilot anchor date reset again, 2026-09-10:** `PILOT_WEEK_1_START`
+(`social/src/pilot-config.ts`) moved from `2026-09-09` to **`2026-09-14`** (a Monday). The
+2026-09-09 anchor had itself already begun with nothing published, so week 1 would have started
+mid-week and short. **Week 1 is now 2026-09-14..20 and week 4 is 2026-10-05..11.** This is still
+free to change right up until the first real render ships (a render embeds its `--date` in both its
+filename and its metadata sidecar); after that it is fixed for the life of the pilot. Note the
+anchor is asserted directly in `social/src/__tests__/cli.test.ts`, and several tests there use week-1
+dates — moving it again means updating those too.
 
 **Built and unit-tested, not yet exercised for real:** the render pipeline (`social/src/cli.ts`,
 `social/src/prepare-week.ts`), the schedule generator and weekly reviewer
@@ -658,9 +697,11 @@ not happened.
   above already point at them; once that branch ships, verify each one actually redirects —
   `curl -sI https://thinkplain.ai/go/ig` (and `/yt`) should return a 302 to a
   `thinkplain.ai/?utm_source=...` URL — before relying on the attribution data it produces.
-- **No posting time has been deliberately chosen.** Per section 4: nothing in this plan or its
-  research notes has picked a specific time of day (or audience timezone) to schedule each week's
-  posts for. Decide on one before the first real weekly session and use it consistently.
+- ~~No posting time has been deliberately chosen.~~ **Closed 2026-09-10: `07:30 America/New_York`,
+  all three platforms, held constant for the full 28 days** (section 4 gives the reasoning and the
+  reason it must not be changed mid-pilot). The paired rule is in section 5.5: take the daily
+  Instagram follower reading **late** — after the post, ~22:00-23:00 ET — because the hour you read
+  it at is what defines the window that post's follow-conversion is measured over.
 - **Zero posts have been published to any platform.** The first live post through this system, on
   any platform, has not happened yet.
 
