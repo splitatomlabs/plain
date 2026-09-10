@@ -326,7 +326,7 @@ pipeline (`Pb4e17-social-native-scheduling` T07-T09) — posting is a manual, we
 5), not a daily one.
 
 **Exactly one thing genuinely still happens every day, and it is not posting: recording that day's
-Instagram follower count.** Section 5.5 covers the command (`follower-snapshot.ts`) and why it
+Instagram and TikTok follower counts.** Section 5.5 covers the command (`follower-snapshot.ts`) and why it
 can't be folded into the weekly cadence like everything else — Instagram's app shows only *today's*
 total, never a historical series, so a day this is skipped for is gone for good, unlike a missed
 weekly upload which can just run late.
@@ -513,11 +513,21 @@ one most likely to go quietly missing if this section is only opened once a week
 Instagram's current follower total off the app and run:
 
 ```bash
-npx tsx social/src/metrics/follower-snapshot.ts --date <YYYY-MM-DD> --followers <n>
+npx tsx social/src/metrics/follower-snapshot.ts --platform instagram --date <YYYY-MM-DD> --followers <n>
+npx tsx social/src/metrics/follower-snapshot.ts --platform tiktok    --date <YYYY-MM-DD> --followers <n>
 ```
 
-`--date` and `--followers` are both required; `--out-dir` (default `content/social/metrics/`)
-overrides where `instagram-followers.json` is written. Re-running for the same `--date` replaces
+**Two readings a day, one per platform — Instagram AND TikTok.** Both apps report followers only at
+the account level, so both need this series for their follow-conversion to be anything but
+`unavailable`. YouTube does not appear here and never should: it reports `subscribersGained` per
+video, which you type in per post during 5.4, and which is `'exact'` rather than inferred —
+`--platform youtube` is rejected by name for that reason.
+
+`--platform`, `--date` and `--followers` are all required; `--out-dir` (default
+`content/social/metrics/`) overrides where `<platform>-followers.json` is written. **`--platform` has
+no default on purpose:** defaulting would silently file a TikTok reading into Instagram's series,
+corrupting both at once, with no error and no way to untangle it later — a follower count carries
+nothing identifying the account it came from. Re-running for the same `--date` replaces
 that date's entry rather than duplicating it. `0` is a valid, real reading (an empty account) and is
 recorded as `0`, never treated as missing.
 
@@ -540,9 +550,16 @@ measurable cost, too: Instagram's follow-conversion (section 1) is *inferred* fr
 follower deltas aligned to `publishedAt`, so a day with no recorded count permanently degrades that
 day's conversion reading from `inferred` to `unavailable`. **A single missed day breaks TWO posts,
 not one:** a delta needs both endpoints, so the gap takes out the missing day's own post and the
-following day's, which had been relying on that day as its "previous" reading. There is no equivalent CLI for TikTok or
-YouTube — no per-post follow path exists to infer a TikTok series from, and YouTube's follow number
-already arrives for free, per post, in section 5.4 above.
+following day's, which had been relying on that day as its "previous" reading. **TikTok's series was added on 2026-09-10 and is not optional.** This section
+previously said there was "no equivalent CLI for TikTok or YouTube — no per-post follow path exists
+to infer a TikTok series from". The YouTube half of that is right. The TikTok half was wrong: the
+inference never needed a per-post follow path, only a daily account-level count, which the TikTok app
+displays exactly as Instagram's does. `readout.ts` had already been built to accept a TikTok series
+(`tiktokFollowerSnapshots`); nothing wrote one, so the parameter dead-ended and TikTok's conversion
+was permanently `unavailable`. **That made criterion A unsatisfiable on TikTok — a post could clear
+50,000 views and still fail the conversion half for want of data rather than want of conversion — on
+arguably the platform most likely to produce a breakout for a new account.** YouTube's follow number
+still arrives for free, per post, in section 5.4 above.
 
 ## 6. What to do if the Meta (Instagram) account is disabled
 
@@ -599,9 +616,10 @@ for the same `platform:postId` is a correction, not a second reading on a schedu
 idempotent (`upsertMetricsRow` replaces a same-`platform:postId` row rather than duplicating it), so
 a mid-week fix or a deliberate later re-read both simply replace that row with the latest values.
 Results land in `content/social/metrics/metrics-<date>.json`, one dated file per `hand-entry.ts`
-run, plus `content/social/metrics/instagram-followers.json` (a daily account-level follower
-snapshot, hand-entered by `follower-snapshot.ts` per section 5.5, since Instagram only exposes
-follower counts at the account level, not per-post — see the readout's `'inferred'` conversion
+run, plus `content/social/metrics/instagram-followers.json` and
+`content/social/metrics/tiktok-followers.json` (daily account-level follower snapshots,
+hand-entered by `follower-snapshot.ts` per section 5.5, since Instagram and TikTok both expose
+follower counts only at the account level, not per-post — see the readout's `'inferred'` conversion
 labeling below).
 
 At week 4, produce the verdict:
@@ -614,7 +632,9 @@ npx tsx social/src/metrics/readout.ts --now 2026-10-07T00:00:00.000Z --breakout-
 
 This reads every `metrics-<date>.json` under `content/social/metrics/` (deduping to the latest
 `collectedAt` per post — a safety net for a corrected re-entry of the same post under a different
-date, not a polling flow) plus `instagram-followers.json`, and prints, per platform: the median,
+date, not a polling flow) plus both `instagram-followers.json` and `tiktok-followers.json` —
+each read independently, so a missing file for one degrades only that platform to `unavailable` and
+never borrows the other's series — and prints, per platform: the median,
 the maximum, the max/median ratio, the week-1-vs-week-4 median trend, follow conversion (labeled
 `exact` for YouTube, `inferred` for Instagram/TikTok — from daily follower deltas aligned to
 `publishedAt`, since per-post follow attribution only exists on YouTube — or `unavailable` when no

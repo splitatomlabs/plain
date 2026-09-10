@@ -34,10 +34,11 @@ import {
 	validateFollowerSnapshotInput,
 	type FollowerSnapshotInput
 } from '../follower-snapshot.js';
-import type { InstagramFollowerSnapshot } from '../schema.js';
+import type { FollowerSnapshot } from '../schema.js';
 
 function validInput(overrides: Partial<FollowerSnapshotInput> = {}): FollowerSnapshotInput {
 	return {
+		platform: 'instagram',
 		date: '2026-09-01',
 		followers: 1234,
 		...overrides
@@ -45,9 +46,9 @@ function validInput(overrides: Partial<FollowerSnapshotInput> = {}): FollowerSna
 }
 
 describe('buildFollowerSnapshot', () => {
-	it('produces a plain InstagramFollowerSnapshot shape', () => {
+	it('produces a plain FollowerSnapshot shape', () => {
 		const snapshot = buildFollowerSnapshot(validInput());
-		expect(snapshot).toEqual<InstagramFollowerSnapshot>({
+		expect(snapshot).toEqual<FollowerSnapshot>({
 			date: '2026-09-01',
 			followerCount: 1234
 		});
@@ -86,7 +87,7 @@ describe('recordFollowerSnapshot — upsert-not-duplicate keyed on date', () => 
 		const second = recordFollowerSnapshot(first, validInput({ date: '2026-09-01', followers: 1050 }));
 
 		expect(second).toHaveLength(1);
-		expect(second[0]).toEqual<InstagramFollowerSnapshot>({ date: '2026-09-01', followerCount: 1050 });
+		expect(second[0]).toEqual<FollowerSnapshot>({ date: '2026-09-01', followerCount: 1050 });
 	});
 
 	it('two different dates produce two entries, sorted by date', () => {
@@ -111,26 +112,39 @@ describe('recordFollowerSnapshot — upsert-not-duplicate keyed on date', () => 
 
 describe('parseFollowerSnapshotArgs — CLI-level required-flag validation', () => {
 	it('throws when --date is missing', () => {
-		expect(() => parseFollowerSnapshotArgs({ followers: '100' })).toThrow(/--date/);
+		expect(() => parseFollowerSnapshotArgs({ platform: 'instagram', followers: '100' })).toThrow(/--date/);
 	});
 
 	it('throws when --followers is missing', () => {
-		expect(() => parseFollowerSnapshotArgs({ date: '2026-09-01' })).toThrow(/--followers/);
+		expect(() => parseFollowerSnapshotArgs({ platform: 'instagram', date: '2026-09-01' })).toThrow(/--followers/);
 	});
 
 	it('throws when --followers is not a number', () => {
-		expect(() => parseFollowerSnapshotArgs({ date: '2026-09-01', followers: 'not-a-number' })).toThrow(/--followers/);
+		expect(() => parseFollowerSnapshotArgs({ platform: 'instagram', date: '2026-09-01', followers: 'not-a-number' })).toThrow(/--followers/);
 	});
 
 	it('parses valid raw args into a FollowerSnapshotInput', () => {
-		expect(parseFollowerSnapshotArgs({ date: '2026-09-01', followers: '0' })).toEqual<FollowerSnapshotInput>({
+		expect(parseFollowerSnapshotArgs({ platform: 'instagram', date: '2026-09-01', followers: '0' })).toEqual<FollowerSnapshotInput>({
+			platform: 'instagram',
 			date: '2026-09-01',
 			followers: 0
 		});
 	});
 
+	it('throws when --platform is missing, rather than defaulting to a platform', () => {
+		expect(() => parseFollowerSnapshotArgs({ date: '2026-09-01', followers: '10' })).toThrow(/--platform/);
+	});
+
+	it('carries --platform tiktok through unchanged', () => {
+		expect(parseFollowerSnapshotArgs({ platform: 'tiktok', date: '2026-09-01', followers: '7' })).toEqual<FollowerSnapshotInput>({
+			platform: 'tiktok',
+			date: '2026-09-01',
+			followers: 7
+		});
+	});
+
 	it('D2 — an empty --followers value throws rather than fabricating 0', () => {
-		expect(() => parseFollowerSnapshotArgs({ date: '2026-09-01', followers: '' })).toThrow(/--followers/);
+		expect(() => parseFollowerSnapshotArgs({ platform: 'instagram', date: '2026-09-01', followers: '' })).toThrow(/--followers/);
 	});
 });
 
@@ -171,7 +185,7 @@ describe('CLI — main()', () => {
 	}
 
 	it('records a followerCount of 0 as a real reading, and re-running for the same date leaves exactly one entry', async () => {
-		const args = ['--date', '2026-09-09', '--followers', '0', '--out-dir', outDir];
+		const args = ['--platform', 'instagram', '--date', '2026-09-09', '--followers', '0', '--out-dir', outDir];
 
 		const first = runCli(args);
 		expect(first.status).toBe(0);
@@ -188,7 +202,7 @@ describe('CLI — main()', () => {
 	});
 
 	it('D2 — an empty --followers exits non-zero and writes nothing', async () => {
-		const result = runCli(['--date', '2026-09-09', '--followers', '', '--out-dir', outDir]);
+		const result = runCli(['--platform', 'instagram', '--date', '2026-09-09', '--followers', '', '--out-dir', outDir]);
 
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toMatch(/--followers/);
@@ -196,10 +210,40 @@ describe('CLI — main()', () => {
 	});
 
 	it('F4 — an empty --out-dir exits non-zero, names the flag, and writes nothing (never silently falls through to the default)', async () => {
-		const result = runCli(['--date', '2026-09-09', '--followers', '0', '--out-dir', '']);
+		const result = runCli(['--platform', 'instagram', '--date', '2026-09-09', '--followers', '0', '--out-dir', '']);
 
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toMatch(/--out-dir/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	it('writes tiktok readings to their own file, leaving instagram\'s series untouched', async () => {
+		expect(runCli(['--platform', 'instagram', '--date', '2026-09-13', '--followers', '100', '--out-dir', outDir]).status).toBe(0);
+		expect(runCli(['--platform', 'tiktok', '--date', '2026-09-13', '--followers', '7', '--out-dir', outDir]).status).toBe(0);
+
+		// The whole point of the split: same date, two platforms, two files,
+		// neither overwriting the other.
+		expect(JSON.parse(await readFile(path.join(outDir, 'instagram-followers.json'), 'utf-8'))).toEqual([
+			{ date: '2026-09-13', followerCount: 100 }
+		]);
+		expect(JSON.parse(await readFile(path.join(outDir, 'tiktok-followers.json'), 'utf-8'))).toEqual([
+			{ date: '2026-09-13', followerCount: 7 }
+		]);
+	});
+
+	it('a missing --platform exits non-zero and writes nothing, rather than defaulting to instagram', async () => {
+		const result = runCli(['--date', '2026-09-13', '--followers', '5', '--out-dir', outDir]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/--platform/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	it('--platform youtube is rejected by name, and writes no file — its follows are exact and per-post', async () => {
+		const result = runCli(['--platform', 'youtube', '--date', '2026-09-13', '--followers', '5', '--out-dir', outDir]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/youtube/i);
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
 });

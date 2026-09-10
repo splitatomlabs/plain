@@ -34,7 +34,7 @@
  *     `--follows` off entirely for those platforms and the row records
  *     `null`, never a fabricated `0`. (Instagram's account-level follower
  *     series has its own separate structure — `schema.ts`'s
- *     `InstagramFollowerSnapshot` — and is never smuggled into a per-post row
+ *     `FollowerSnapshot` — and is never smuggled into a per-post row
  *     here.)
  *   - `saves` — ALWAYS `null`, on every platform. Not one of the four counts
  *     this module asks for, and not on any of the three platforms' per-post
