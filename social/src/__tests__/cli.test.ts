@@ -10,6 +10,9 @@ import { dateToWeekDay, weekDayToDate, PILOT_WEEK_1_START } from '../pilot-confi
 import { resolveDay, postIndexForDay, chooseBed, computeWallPlainLines, scheduleFileName } from '../cli-plan.js';
 import { loadOutputCard } from '../remotion/wall-pool.js';
 import { probe, assertMeetsProfile } from '../render/encode.js';
+import { readJpegDimensions } from '../render/__tests__/image-dims.js';
+import { coverFrame } from '../cli.js';
+import { computeWallTiming } from '../remotion/wall-timing.js';
 import { DEFAULT_OUT_DIR, REPO_ROOT, SCHEDULE_DIR } from '../cli.js';
 import type { WeekSchedule } from '../schedule-types.js';
 
@@ -236,7 +239,7 @@ describe('--help', () => {
 	});
 });
 
-describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar', () => {
+describe('render — end-to-end: a real MP4, upload cover, and metadata sidecar', () => {
 	let outDir: string;
 
 	afterEach(async () => {
@@ -248,7 +251,7 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 		// gone — duration is now a pure function of screen count and can land
 		// well under 15s (this real day-6 card renders ~8.5s). Only the 59s
 		// ceiling remains.
-		'produces a house-profile-conformant MP4 (<=59s), an IG feed JPEG, and a metadata sidecar',
+		'produces a house-profile-conformant MP4 (<=59s), a 1080x1920 cover JPEG, and a metadata sidecar',
 		async () => {
 			// Day 6 of the REAL committed week-1 schedule (discourses-53-019) —
 			// a real Wall slot.
@@ -262,11 +265,11 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 			expect(result.status).toBe(0);
 
 			const videoPath = path.join(outDir, `wall-${date}.mp4`);
-			const feedPath = path.join(outDir, `wall-${date}-feed.jpg`);
+			const coverPath = path.join(outDir, `wall-${date}-cover.jpg`);
 			const metadataPath = path.join(outDir, `wall-${date}.json`);
 
 			expect(existsSync(videoPath)).toBe(true);
-			expect(existsSync(feedPath)).toBe(true);
+			expect(existsSync(coverPath)).toBe(true);
 			expect(existsSync(metadataPath)).toBe(true);
 
 			const probeResult = await probe(videoPath);
@@ -294,9 +297,18 @@ describe('render — end-to-end: a real MP4, IG feed still, and metadata sidecar
 			// — no `slot` field on the sidecar any more.
 			expect(metadata.slot).toBeUndefined();
 
-			const feedBuf = readFileSync(feedPath);
+			const coverBuf = readFileSync(coverPath);
 			// JPEG magic bytes.
-			expect(feedBuf.subarray(0, 2).toString('hex')).toBe('ffd8');
+			expect(coverBuf.subarray(0, 2).toString('hex')).toBe('ffd8');
+
+			// The cover is the composition's OWN payoff frame, so it must be
+			// the full 1080x1920 video frame — not the 1080x1350 Instagram
+			// feed still it replaced, and not a letterboxed variant.
+			expect(readJpegDimensions(coverPath)).toEqual({ width: 1080, height: 1920 });
+
+			// YouTube caps a custom thumbnail at 2MB; a PNG of this frame can
+			// exceed that, which is why the cover is encoded as JPEG.
+			expect(coverBuf.byteLength).toBeLessThanOrEqual(2 * 1024 * 1024);
 		},
 		300_000
 	);
@@ -345,3 +357,38 @@ describe('REPO_ROOT / SCHEDULE_DIR / DEFAULT_OUT_DIR — resolved path pinning',
 // blocks, and the week-2 fixture schedule they used, are gone. The Wall's
 // own end-to-end coverage above is unaffected.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// The upload cover's frame — the landing line, never the last frame.
+// ---------------------------------------------------------------------------
+
+describe('coverFrame', () => {
+	it('lands inside the landing line\'s own motionless window, for every card in the real week-1 schedule', () => {
+		for (const slot of WEEK_1_SCHEDULE.slots) {
+			const timing = computeWallTiming({
+				originalExcerpt: slot.content.original_excerpt,
+				plainLines: []
+			});
+
+			expect(coverFrame()).toBeGreaterThanOrEqual(timing.landingLine.startFrame);
+			expect(coverFrame()).toBeLessThan(timing.landingLine.endFrame);
+			expect(timing.landingLine.motionless).toBe(true);
+		}
+	});
+
+	it('is NOT the last frame — that shows the passage\'s closing sentence, not the payoff', () => {
+		// The bug this pins: the cover was first rendered from
+		// `totalFrames - 1`, which on meditations-09-025 produced "In all of
+		// this, there is no harm." instead of the "Every action has an end."
+		// that the YouTube title and all three captions lead with.
+		const slot = WEEK_1_SCHEDULE.slots[0];
+		const timing = computeWallTiming({
+			originalExcerpt: slot.content.original_excerpt,
+			plainLines: ['A rest line.', 'Another rest line.']
+		});
+
+		const lastFrame = timing.restLines[timing.restLines.length - 1].endFrame - 1;
+		expect(coverFrame()).toBeLessThan(lastFrame);
+		expect(coverFrame()).toBeLessThan(timing.restLines[0].startFrame);
+	});
+});

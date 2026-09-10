@@ -435,10 +435,11 @@ where `captions.txt` would land) and writes nothing. `--out <dir>` and `--schedu
 override the defaults (`social/out/` and `content/social/`) — a testing/override affordance, not
 something a real weekly run needs to touch.
 
-The MP4s land in `social/out/`, one per day, alongside `captions.txt` — one block per day, each
-carrying all three platforms' captions clearly labelled `[tiktok]`, `[instagram]`, `[youtube]`,
-separated by a rule, meant to be read top to bottom during the next step, not parsed as JSON
-mid-session.
+The MP4s land in `social/out/`, one per day, each alongside a `wall-<date>-cover.jpg` (the upload
+cover — see 5.3) and a `wall-<date>.json` metadata sidecar that is never uploaded. With them sits a
+single `captions.txt` — one block per day, each carrying all three platforms' captions clearly
+labelled `[tiktok]`, `[instagram]`, `[youtube title]`/`[youtube description]`, separated by a rule,
+meant to be read top to bottom during the next step, not parsed as JSON mid-session.
 
 ### 5.3 Upload and schedule — three browser tabs
 
@@ -466,7 +467,31 @@ Per platform:
   `Plain` Page (section 3.0) — not from the Instagram app itself.
 - **YouTube:** upload directly into YouTube Studio and use its own scheduled-publish option. There is
   no more private-upload-then-flip step (section 3.1 — that whole step is gone, not replaced);
-  scheduling in Studio does its job outright.
+  scheduling in Studio does its job outright. **YouTube is the one platform that needs TWO fields**,
+  and `captions.txt` supplies both, adjacent: `[youtube title]` goes in Studio's title box and
+  `[youtube description]` in its description box. The title is `<landing line> — <Author>, <Book>`
+  (`caption.ts`'s `buildYouTubeTitle`) — hook first, because the Shorts player truncates a title at
+  roughly 40 characters, while the attribution stays indexed for search in full. Do not retype or
+  improvise it: the generator applies YouTube's 100-character limit, dropping the book and then the
+  author if a line is long, and never trimming the quote itself (a trimmed quote is a misquote —
+  Constraint 6). Week 1 day 4 already lands on exactly 100 characters, so the margin is real.
+- **Covers, on every platform that asks for one: upload `wall-<date>-cover.jpg`.** The render writes
+  it next to the MP4. It is the composition's own landing-line frame at 1080x1920 — the same image
+  the viewer sees when the video cuts from the wall — so the cover, the YouTube title and all three
+  captions all lead with the same sentence.
+
+  **Do not pick a frame from the platform's own suggestions.** YouTube samples its suggested covers
+  across the video and they land in the scrolling archaic block, never on the landing line. Scrubbing
+  by hand has a subtler trap: the payoff is NOT one hold. The landing line holds for its own window
+  right after the cut, and then every remaining sentence of the passage holds in turn, so the END of
+  the video is the passage's closing sentence — on 2026-09-14 that is "In all of this, there is no
+  harm.", not "Every action has an end." Scrubbing to the end gets the wrong line. The generated
+  cover is taken from the middle of the landing-line window (`cli.ts`'s `coverFrame`, pinned against
+  `computeWallTiming` by test) precisely so nobody has to know that.
+
+  Skip TikTok's own cover-text overlay — the payoff line is already the text. Keep this identical for
+  all 28 days, the same way the posting time is held constant: a coherent grid is part of what
+  converts a breakout into follows.
 
 ### 5.4 Hand-enter last week's numbers
 
@@ -583,7 +608,7 @@ Instagram disables the pilot's account:
    so even though the rendered MP4s themselves only live locally in `social/out/` and are not
    separately backed up, any of them can be reproduced from source at any time. Losing the
    Instagram account loses that account's reach and history, not the ability to re-render its
-   videos, feed stills, or captions.
+   videos, covers, or captions.
 4. **Deciding whether to continue on the remaining two platforms or stop entirely:** this depends on
    how far into the pilot the disabling happens and what the other two platforms' data already show.
    Concretely:

@@ -37,7 +37,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { bundle } from '@remotion/bundler';
-import { renderMedia, selectComposition } from '@remotion/renderer';
+import { renderMedia, renderStill, selectComposition } from '@remotion/renderer';
 
 import { dateToWeekDay } from './pilot-config.js';
 import {
@@ -52,12 +52,11 @@ import { toDir } from './metrics/hand-entry.js';
 import type { WeekSchedule } from './schedule-types.js';
 import { loadOutputCard } from './remotion/wall-pool.js';
 import { loadChapterTextBlock, applyChapterEntryOffset } from './render/chapter-text.js';
-import { WALL_FRAMES, FPS } from './remotion/wall-timing.js';
+import { WALL_FRAMES, LANDING_LINE_FRAMES, FPS } from './remotion/wall-timing.js';
 import { formatRunningHead } from './remotion/SourceHead.js';
 import { bedPath } from './audio/beds.js';
 import { mix, type TimeSpan } from './audio/mix.js';
 import { encode, probe, assertMeetsProfile } from './render/encode.js';
-import { renderCard, closeRenderer } from './render/card.js';
 import type { AuthorSlug } from './render/theme.js';
 import { writePostMetadata, postMetadataPathFor, type PostMetadata, type PostFormat } from './render/post-metadata.js';
 
@@ -376,9 +375,21 @@ export function wallSilentSpans(): TimeSpan[] {
 	return [{ startMs: wallEndMs, endMs: wallEndMs + WALL_DROP_SILENCE_MS }];
 }
 
-/** The still text shown on the Instagram feed card — the Wall's own landing line. */
-function feedStillText(formatPlan: FormatPlan): string {
-	return formatPlan.landingLine;
+/**
+ * The frame the upload cover is rendered from: the middle of the landing
+ * line's own motionless window.
+ *
+ * NOT the last frame. `computeWallTiming` holds the landing line from
+ * `WALL_FRAMES` to `WALL_FRAMES + LANDING_LINE_FRAMES`, and then holds every
+ * REST line of the passage after it — so the final frame shows the passage's
+ * closing sentence, not the payoff the title and captions lead with.
+ *
+ * Exported so `__tests__/cli.test.ts` can pin it inside the landing window
+ * that `computeWallTiming` computes independently, rather than trusting this
+ * arithmetic to stay in step with the timing module by inspection.
+ */
+export function coverFrame(): number {
+	return WALL_FRAMES + Math.floor(LANDING_LINE_FRAMES / 2);
 }
 
 // ---------------------------------------------------------------------------
@@ -476,14 +487,48 @@ export async function renderCommand(args: RenderArgs): Promise<void> {
 		assertMeetsProfile(probeResult);
 		console.log(`Wrote ${assetPaths.video} (${(probeResult.durationSec ?? 0).toFixed(1)}s)`);
 
-		console.log('Rendering Instagram feed still...');
-		await renderCard({
-			text: feedStillText(plan.formatPlan),
-			author: plan.authorSlug as AuthorSlug,
-			size: 'igFeed',
-			outPath: assetPaths.feedStill
+		// The upload cover, for every platform that asks for one.
+		//
+		// This is the composition's OWN final frame, not a separately
+		// designed card: the payoff hold, rendered from the same bundle and
+		// the same `composition` the video above came from, so the cover is
+		// pixel-identical to what a viewer sees when the video lands rather
+		// than a second, drifting rendition of the same sentence.
+		//
+		// THE LANDING-LINE FRAME SPECIFICALLY, not the last frame. The Wall's
+		// payoff is not one hold: `computeWallTiming` gives the landing line
+		// its own motionless window (`WALL_FRAMES` -> `+ LANDING_LINE_FRAMES`)
+		// and then holds each REST line of the passage after it. The final
+		// frame is therefore the passage's last sentence, not its payoff —
+		// on `meditations-09-025` that is "In all of this, there is no harm."
+		// rather than "Every action has an end.", which is the line the title
+		// and every caption lead with. Taking the midpoint of the landing
+		// window rather than its first frame keeps this clear of the
+		// boundary; the window is motionless, so every frame in it is
+		// identical.
+		//
+		// Why this exists at all: YouTube's auto-suggested cover frames are
+		// sampled across the video, and on a Wall they land in the scrolling
+		// archaic block — never on the payoff line — so a manual image is the
+		// only way to get a legible cover. TikTok and Instagram both accept an
+		// uploaded cover too, so one 1080x1920 JPEG serves all three.
+		//
+		// Replaces a 1080x1350 Instagram FEED still that nothing ever
+		// consumed: `Pf39c2-social-pilot-02a` D01/D02 collapsed the channel to
+		// one Wall video a day, which left no feed post to carry it.
+		console.log('Rendering upload cover (payoff frame)...');
+		await renderStill({
+			composition,
+			serveUrl: bundleLocation,
+			output: assetPaths.cover,
+			frame: coverFrame(),
+			inputProps,
+			// JPEG, not PNG: YouTube caps a custom thumbnail at 2MB, which a
+			// 1080x1920 PNG of this frame can exceed.
+			imageFormat: 'jpeg',
+			overwrite: true
 		});
-		console.log(`Wrote ${assetPaths.feedStill}`);
+		console.log(`Wrote ${assetPaths.cover}`);
 
 		const metadata: PostMetadata = {
 			card_id: plan.cardId,
@@ -495,14 +540,11 @@ export async function renderCommand(args: RenderArgs): Promise<void> {
 		await writePostMetadata(metadataPath, fullMetadata);
 		console.log(`Wrote ${metadataPath}`);
 	} finally {
-		// `closeRenderer()` runs first, in its own try, so a failing
-		// `rm(workDir)` below can never leave the Playwright/Chromium
-		// process (used by `renderCard` for the IG feed still) running.
-		try {
-			await closeRenderer();
-		} finally {
-			await rm(workDir, { recursive: true, force: true });
-		}
+		// The Playwright/Chromium browser this used to also have to close
+		// went with `render/card.ts`: the cover is now a Remotion
+		// `renderStill` off the same bundle as the video, so this render
+		// path no longer starts a second browser of its own.
+		await rm(workDir, { recursive: true, force: true });
 	}
 }
 

@@ -207,6 +207,34 @@ describe('prepareWeek', () => {
 		expect(contents.length).toBeGreaterThan(0);
 	});
 
+	it("carries YouTube's title as its own labelled line, above the description", async () => {
+		await writeRenderedVideos(SCHEDULE);
+
+		const manifest = await prepareWeek({ schedule: SCHEDULE, outDir });
+		const contents = await readFile(manifest.captionsPath, 'utf-8');
+
+		for (const day of manifest.days) {
+			// The gap this closes: the YouTube upload form needs a title AND
+			// a description, and captions.txt used to supply only the latter,
+			// leaving the title to per-day judgement at upload time.
+			expect(day.youtubeTitle.length).toBeGreaterThan(0);
+			expect(contents).toContain(`[youtube title]\n${day.youtubeTitle}`);
+			expect(contents).toContain(`[youtube description]\n${day.captions.youtube}`);
+		}
+	});
+
+	it('never labels a title for TikTok or Instagram — only YouTube takes two fields', async () => {
+		await writeRenderedVideos(SCHEDULE);
+
+		const manifest = await prepareWeek({ schedule: SCHEDULE, outDir });
+		const contents = await readFile(manifest.captionsPath, 'utf-8');
+
+		expect(contents).not.toContain('[tiktok title]');
+		expect(contents).not.toContain('[instagram title]');
+		expect(contents).toContain('[tiktok]');
+		expect(contents).toContain('[instagram]');
+	});
+
 	it('lists every day in the captions file, labelled by date and card id, separated by a rule', async () => {
 		await writeRenderedVideos(SCHEDULE);
 
@@ -245,7 +273,10 @@ describe('prepareWeek', () => {
 		for (const day of manifest.days) {
 			expect(contents).toContain(`[tiktok]\n${day.captions.tiktok}`);
 			expect(contents).toContain(`[instagram]\n${day.captions.instagram}`);
-			expect(contents).toContain(`[youtube]\n${day.captions.youtube}`);
+			// YouTube's caption is labelled `[youtube description]`, not
+			// `[youtube]` — it sits under its own title line (see the
+			// YouTube-title test above), because Studio asks for two fields.
+			expect(contents).toContain(`[youtube description]\n${day.captions.youtube}`);
 		}
 	});
 });
