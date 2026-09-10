@@ -20,8 +20,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	DEFAULT_METRICS_DIR,
-	INSTAGRAM_FOLLOWERS_FILENAME,
-	instagramFollowersFilePathFor,
+	FOLLOWER_SNAPSHOT_PLATFORMS,
+	followersFilenameFor,
+	followersFilePathFor,
 	metricsFilePathFor,
 	metricsRowKey,
 	parseFollowerSnapshots,
@@ -30,7 +31,7 @@ import {
 	serializeMetricsRows,
 	upsertFollowerSnapshot,
 	upsertMetricsRow,
-	type InstagramFollowerSnapshot,
+	type FollowerSnapshot,
 	type MetricsRow
 } from '../schema.js';
 
@@ -142,7 +143,7 @@ describe('parseMetricsRows / serializeMetricsRows round trip', () => {
 });
 
 describe('Instagram follower snapshots — upsert + round trip', () => {
-	function snapshot(overrides: Partial<InstagramFollowerSnapshot> = {}): InstagramFollowerSnapshot {
+	function snapshot(overrides: Partial<FollowerSnapshot> = {}): FollowerSnapshot {
 		return { date: '2026-09-01', followerCount: 42, ...overrides };
 	}
 
@@ -165,8 +166,24 @@ describe('Instagram follower snapshots — upsert + round trip', () => {
 		expect(parseFollowerSnapshots(serializeFollowerSnapshots(snapshots))).toEqual(snapshots);
 	});
 
-	it('the followers file lives under the metrics outDir, named INSTAGRAM_FOLLOWERS_FILENAME', () => {
-		expect(instagramFollowersFilePathFor('/content/social/metrics')).toBe(`/content/social/metrics/${INSTAGRAM_FOLLOWERS_FILENAME}`);
+	it('each platform gets its own followers file under the metrics outDir', () => {
+		expect(followersFilePathFor('/content/social/metrics', 'instagram')).toBe('/content/social/metrics/instagram-followers.json');
+		expect(followersFilePathFor('/content/social/metrics', 'tiktok')).toBe('/content/social/metrics/tiktok-followers.json');
+	});
+
+	it('instagram keeps its original filename, so an existing series file is still found after the rename', () => {
+		expect(followersFilenameFor('instagram')).toBe('instagram-followers.json');
+	});
+
+	it('the two inferred-conversion platforms never share a file — youtube has none at all', () => {
+		expect(FOLLOWER_SNAPSHOT_PLATFORMS).toEqual(['instagram', 'tiktok']);
+		expect(FOLLOWER_SNAPSHOT_PLATFORMS).not.toContain('youtube');
+		const paths = FOLLOWER_SNAPSHOT_PLATFORMS.map((p) => followersFilePathFor('/m', p));
+		expect(new Set(paths).size).toBe(paths.length);
+	});
+
+	it('a trailing slash on outDir never doubles up, for either platform', () => {
+		expect(followersFilePathFor('/content/social/metrics/', 'tiktok')).toBe('/content/social/metrics/tiktok-followers.json');
 	});
 });
 

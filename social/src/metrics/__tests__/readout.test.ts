@@ -341,6 +341,46 @@ describe('follow conversion — null is never a zero', () => {
 		expect(fc.method).toBe('inferred');
 		expect(fc.posts[0].follows).toBeNull();
 	});
+
+	it('TikTok: with a series supplied, conversion is INFERRED exactly like Instagram — the two are symmetric', () => {
+		const rows: MetricsRow[] = [row({ platform: 'tiktok', postId: 'tt-1', publishedAt: at(2, 3), views: 500 })];
+		const snapshots: DailyFollowerSnapshot[] = [
+			{ date: weekDayToDate(2, 2), followerCount: 700 },
+			{ date: weekDayToDate(2, 3), followerCount: 742 }
+		];
+		const fc = computeFollowConversion('tiktok', rows, snapshots);
+		expect(fc.method).toBe('inferred');
+		expect(fc.posts[0].follows).toBe(42);
+	});
+
+	it('a TikTok breakout CONVERTS to criterion A once a follower series exists — the gap this series closes', () => {
+		const rows: MetricsRow[] = [
+			row({ platform: 'tiktok', postId: 'tt-1', publishedAt: at(1, 1), views: 400 }),
+			row({ platform: 'tiktok', postId: 'tt-2', publishedAt: at(1, 2), views: 500 }),
+			row({ platform: 'tiktok', postId: 'tt-breakout', publishedAt: at(2, 3), views: 20_000 })
+		];
+		const tiktokFollowerSnapshots: DailyFollowerSnapshot[] = [
+			{ date: weekDayToDate(2, 2), followerCount: 700 },
+			{ date: weekDayToDate(2, 3), followerCount: 1_500 }
+		];
+
+		// Without the series the SAME breakout fails criterion A for want of
+		// data, not for want of conversion — that was the blind spot.
+		expect(computeReadout({ rows, now: NOW }).verdict.viable).toBe(false);
+
+		expect(computeReadout({ rows, tiktokFollowerSnapshots, now: NOW }).verdict.viable).toBe(true);
+	});
+
+	it('a TikTok series is never borrowed for Instagram, nor the reverse', () => {
+		const rows: MetricsRow[] = [row({ platform: 'instagram', postId: 'ig-1', publishedAt: at(2, 3), views: 500 })];
+		const tiktokFollowerSnapshots: DailyFollowerSnapshot[] = [
+			{ date: weekDayToDate(2, 2), followerCount: 700 },
+			{ date: weekDayToDate(2, 3), followerCount: 742 }
+		];
+		const readout = computeReadout({ rows, tiktokFollowerSnapshots, now: NOW });
+		const instagram = readout.platforms.find((p) => p.platform === 'instagram');
+		expect(instagram?.followConversion.method).toBe('unavailable');
+	});
 });
 
 // ---------------------------------------------------------------------------

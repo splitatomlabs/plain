@@ -60,12 +60,19 @@
  *     to a single post regardless of how many posts share that day.)
  *     Instagram rows therefore carry
  *     `follows: null` always — the inferred, directional account-level
- *     series lives in a SEPARATE structure (`InstagramFollowerSnapshot`
- *     below, populated by hand off Instagram's own Insights screen via
+ *     series lives in a SEPARATE structure (`FollowerSnapshot` below,
+ *     populated by hand off Instagram's own Insights screen via
  *     `follower-snapshot.ts`), never smuggled into a per-post row as a
  *     fabricated number. TikTok rows ALSO carry `follows: null` always, for
  *     the same reason as Instagram — no screen in the TikTok app attributes
- *     a follow to a specific post, only an account-level follower count.
+ *     a follow to a specific post, only an account-level follower count —
+ *     and TikTok therefore gets its OWN series in that same structure,
+ *     `tiktok-followers.json`, recorded by the same CLI under
+ *     `--platform tiktok`. That symmetry was always the right reading of
+ *     this paragraph; TikTok simply had no series file until then, which
+ *     left its follow-conversion permanently `'unavailable'` and made
+ *     criterion A unsatisfiable on TikTok for want of data rather than for
+ *     want of conversion.
  *   - `shares` — a real number on all three platforms: Instagram, YouTube,
  *     and TikTok each show a per-post share count on their own analytics
  *     screen, and `hand-entry.ts` requires it as one of the four counts a
@@ -139,16 +146,33 @@ export interface MetricsRow {
 }
 
 /**
- * A single day's Instagram ACCOUNT-level follower count. The plan's
- * Decision: Instagram reports followers only at the account level, so this
- * is deliberately a SEPARATE series from `MetricsRow`, never folded into a
- * per-post row as a fabricated `follows` number — see this file's header.
+ * A single day's ACCOUNT-level follower count, for a platform that reports
+ * followers only at the account level and never per post. The plan's
+ * Decision: this is deliberately a SEPARATE series from `MetricsRow`, never
+ * folded into a per-post row as a fabricated `follows` number — see this
+ * file's header.
+ *
+ * Instagram and TikTok both land here. YouTube deliberately does NOT: it
+ * reports `subscribersGained` per video, so its follow-conversion is read
+ * per post into `MetricsRow.follows` and is `'exact'` rather than inferred
+ * (`readout.ts`'s `computeFollowConversion`). A YouTube follower series
+ * would be redundant, not merely unbuilt.
  */
-export interface InstagramFollowerSnapshot {
+export interface FollowerSnapshot {
 	/** ISO calendar date (`YYYY-MM-DD`) this snapshot represents. */
 	date: string;
 	followerCount: number;
 }
+
+/**
+ * The platforms whose follow-conversion is INFERRED from a daily
+ * account-level series, and so have a follower-snapshot file. Deliberately
+ * not `MetricsPlatform`: YouTube is a member of that union but must never
+ * have a series here (see `FollowerSnapshot` above).
+ */
+export type FollowerSnapshotPlatform = 'instagram' | 'tiktok';
+
+export const FOLLOWER_SNAPSHOT_PLATFORMS: FollowerSnapshotPlatform[] = ['instagram', 'tiktok'];
 
 // ---------------------------------------------------------------------------
 // Idempotency — the acceptance criterion: "a run appends a dated file with
@@ -199,37 +223,45 @@ export function serializeMetricsRows(rows: MetricsRow[]): string {
 }
 
 // ---------------------------------------------------------------------------
-// Instagram's daily account-level follower series — a separate file, same
+// The daily account-level follower series — one file per platform, same
 // idempotency discipline: one snapshot per calendar date, keyed by date so a
 // same-day re-run replaces rather than duplicates.
 // ---------------------------------------------------------------------------
 
-export const INSTAGRAM_FOLLOWERS_FILENAME = 'instagram-followers.json';
+/**
+ * One file per platform, named for it — `instagram-followers.json`,
+ * `tiktok-followers.json`. Separate files rather than one file with a
+ * `platform` column so a platform's whole series is a single readable
+ * artifact, and so adding one never rewrites another's file.
+ */
+export function followersFilenameFor(platform: FollowerSnapshotPlatform): string {
+	return `${platform}-followers.json`;
+}
 
-export function instagramFollowersFilePathFor(outDir: string): string {
-	return `${outDir.replace(/[/\\]+$/, '')}/${INSTAGRAM_FOLLOWERS_FILENAME}`;
+export function followersFilePathFor(outDir: string, platform: FollowerSnapshotPlatform): string {
+	return `${outDir.replace(/[/\\]+$/, '')}/${followersFilenameFor(platform)}`;
 }
 
 export function upsertFollowerSnapshot(
-	existing: InstagramFollowerSnapshot[],
-	snapshot: InstagramFollowerSnapshot
-): InstagramFollowerSnapshot[] {
+	existing: FollowerSnapshot[],
+	snapshot: FollowerSnapshot
+): FollowerSnapshot[] {
 	const withoutSameDate = existing.filter((entry) => entry.date !== snapshot.date);
 	return [...withoutSameDate, snapshot].sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function parseFollowerSnapshots(raw: string): InstagramFollowerSnapshot[] {
+export function parseFollowerSnapshots(raw: string): FollowerSnapshot[] {
 	const trimmed = raw.trim();
 	if (trimmed === '') {
 		return [];
 	}
 	const parsed: unknown = JSON.parse(trimmed);
 	if (!Array.isArray(parsed)) {
-		throw new Error('Instagram followers file did not contain a JSON array.');
+		throw new Error('Follower snapshot file did not contain a JSON array.');
 	}
-	return parsed as InstagramFollowerSnapshot[];
+	return parsed as FollowerSnapshot[];
 }
 
-export function serializeFollowerSnapshots(snapshots: InstagramFollowerSnapshot[]): string {
+export function serializeFollowerSnapshots(snapshots: FollowerSnapshot[]): string {
 	return `${JSON.stringify(snapshots, null, 2)}\n`;
 }

@@ -47,10 +47,11 @@
  * day-over-day attribution in this file more directly aligned to a single
  * post, but it is STILL an inference from an account-level series, not a
  * per-post count — this file never upgrades it to "exact" and always labels
- * it `'inferred'` in its own output.) TikTok has no follower-snapshot
- * collector at all yet (see `hand-entry.ts`'s header) — this module's
- * `PlatformFollowConversion.method` reports `'unavailable'` for a platform
- * with per-post `follows: null` on every row and no snapshot series
+ * it `'inferred'` in its own output.) TikTok has its own follower-snapshot
+ * series too, recorded by the same CLI under `--platform tiktok` — the two
+ * inferred-conversion platforms are symmetric. This module's
+ * `PlatformFollowConversion.method` still reports `'unavailable'` for a
+ * platform with per-post `follows: null` on every row and no snapshot series
  * supplied, rather than silently reporting `0` or fabricating an inference
  * from nothing.
  *
@@ -90,7 +91,7 @@ import { pathToFileURL } from 'node:url';
 
 import { dateToWeekDay } from '../pilot-config.js';
 import { toDir } from './hand-entry.js';
-import { DEFAULT_METRICS_DIR, instagramFollowersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
+import { DEFAULT_METRICS_DIR, followersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type FollowerSnapshotPlatform, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // Small pure statistics — each one independently unit-testable.
@@ -220,7 +221,7 @@ export interface PlatformFollowConversion {
 	posts: PostFollowConversion[];
 }
 
-/** A generic daily account-level snapshot — same shape as `schema.ts`'s `InstagramFollowerSnapshot`, reused here (not reimported by name) so this file can also accept a TikTok series once one exists, without `schema.ts` growing a TikTok-specific type for a collector that isn't built yet. */
+/** A generic daily account-level snapshot — same shape as `schema.ts`'s `FollowerSnapshot`, declared here rather than reimported so this module's computation stays independent of the on-disk schema. Both inferred-conversion platforms (Instagram and TikTok) supply one of these series. */
 export interface DailyFollowerSnapshot {
 	/** ISO calendar date (`YYYY-MM-DD`). */
 	date: string;
@@ -259,9 +260,10 @@ function inferFollowsForPost(publishedAt: string, snapshots: DailyFollowerSnapsh
  * `follows: null` on the row itself (see `schema.ts`'s header); this
  * function infers a number from `snapshots` when supplied (`method:
  * 'inferred'`), or reports `method: 'unavailable'` with every post's
- * `follows: null` when no snapshot series exists for that platform yet —
- * exactly TikTok's current state until a follower-snapshot collector is
- * built for it.
+ * `follows: null` when no snapshot series was supplied for that platform —
+ * now a real gap in the day's recording (a skipped reading) rather than a
+ * permanent property of the platform, since both Instagram and TikTok have
+ * a series.
  */
 export function computeFollowConversion(
 	platform: MetricsPlatform,
@@ -594,10 +596,13 @@ export async function readLatestMetricsRows(metricsDir: string): Promise<Metrics
 	return [...latestByKey.values()];
 }
 
-/** Reads Instagram's daily follower-snapshot file if present. Missing file -> `[]` (report `'unavailable'`), never a fabricated series. */
-async function readInstagramFollowerSnapshots(metricsDir: string): Promise<DailyFollowerSnapshot[]> {
+/** Reads one platform's daily follower-snapshot file if present. Missing file -> `[]` (report `'unavailable'`), never a fabricated series. */
+async function readFollowerSnapshots(
+	metricsDir: string,
+	platform: FollowerSnapshotPlatform
+): Promise<DailyFollowerSnapshot[]> {
 	try {
-		const raw = await readFile(instagramFollowersFilePathFor(metricsDir), 'utf-8');
+		const raw = await readFile(followersFilePathFor(metricsDir, platform), 'utf-8');
 		return parseFollowerSnapshots(raw);
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
@@ -609,7 +614,8 @@ function printHelp(): void {
 	console.log(`Usage: npx tsx social/src/metrics/readout.ts [options]
 
 Reads every dated metrics file under content/social/metrics/ (written by
-hand-entry.ts and follower-snapshot.ts), computes the per-platform viability
+hand-entry.ts and follower-snapshot.ts, including each platform's
+<platform>-followers.json series), computes the per-platform viability
 readout — median, maximum, max/median ratio, week-1-vs-week-4 median trend,
 follow conversion, and top 5 posts — and states plainly whether the
 pre-registered criterion (plans/complete/Pf39c2-social-pilot-index.md) was met.
@@ -694,9 +700,15 @@ async function main(): Promise<void> {
 		throw new Error(`INSUFFICIENT DATA — no metrics rows found under ${metricsDir}.`);
 	}
 
-	const instagramFollowerSnapshots = await readInstagramFollowerSnapshots(metricsDir);
+	// Both inferred-conversion platforms, read independently: a missing file
+	// for one degrades only that platform to `'unavailable'` and never
+	// silently borrows the other's series.
+	const [instagramFollowerSnapshots, tiktokFollowerSnapshots] = await Promise.all([
+		readFollowerSnapshots(metricsDir, 'instagram'),
+		readFollowerSnapshots(metricsDir, 'tiktok')
+	]);
 
-	const readout = computeReadout({ rows, instagramFollowerSnapshots, now, breakoutViewThreshold });
+	const readout = computeReadout({ rows, instagramFollowerSnapshots, tiktokFollowerSnapshots, now, breakoutViewThreshold });
 	console.log(formatReadout(readout));
 }
 
