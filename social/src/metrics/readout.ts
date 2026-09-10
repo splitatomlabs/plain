@@ -47,10 +47,11 @@
  * day-over-day attribution in this file more directly aligned to a single
  * post, but it is STILL an inference from an account-level series, not a
  * per-post count — this file never upgrades it to "exact" and always labels
- * it `'inferred'` in its own output.) TikTok has no follower-snapshot
- * collector at all yet (see `hand-entry.ts`'s header) — this module's
- * `PlatformFollowConversion.method` reports `'unavailable'` for a platform
- * with per-post `follows: null` on every row and no snapshot series
+ * it `'inferred'` in its own output.) TikTok has its own follower-snapshot
+ * series too, recorded by the same CLI under `--platform tiktok` — the two
+ * inferred-conversion platforms are symmetric. This module's
+ * `PlatformFollowConversion.method` still reports `'unavailable'` for a
+ * platform with per-post `follows: null` on every row and no snapshot series
  * supplied, rather than silently reporting `0` or fabricating an inference
  * from nothing.
  *
@@ -259,9 +260,10 @@ function inferFollowsForPost(publishedAt: string, snapshots: DailyFollowerSnapsh
  * `follows: null` on the row itself (see `schema.ts`'s header); this
  * function infers a number from `snapshots` when supplied (`method:
  * 'inferred'`), or reports `method: 'unavailable'` with every post's
- * `follows: null` when no snapshot series exists for that platform yet —
- * exactly TikTok's current state until a follower-snapshot collector is
- * built for it.
+ * `follows: null` when no snapshot series was supplied for that platform —
+ * now a real gap in the day's recording (a skipped reading) rather than a
+ * permanent property of the platform, since both Instagram and TikTok have
+ * a series.
  */
 export function computeFollowConversion(
 	platform: MetricsPlatform,
