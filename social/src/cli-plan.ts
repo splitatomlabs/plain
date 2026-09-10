@@ -101,7 +101,8 @@ export function computeWallPlainLines(plainEnglish: string, landingLine: string)
 
 export interface RenderAssetPaths {
 	video: string;
-	feedStill: string;
+	/** The upload cover — the composition's own payoff frame, for the platforms that ask for a cover image. */
+	cover: string;
 }
 
 /**
@@ -117,6 +118,6 @@ export function renderAssetPaths(outDir: string, format: string, date: string): 
 	const stem = `${format}-${date}`;
 	return {
 		video: path.join(outDir, `${stem}.mp4`),
-		feedStill: path.join(outDir, `${stem}-feed.jpg`)
+		cover: path.join(outDir, `${stem}-cover.jpg`)
 	};
 }
