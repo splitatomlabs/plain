@@ -10,7 +10,9 @@
  * platform's own scheduler from the machine that just rendered it. This
  * module does everything that CAN be prepared ahead of that session: it
  * confirms the week's rendered MP4s exist on disk and writes a single local
- * `captions.txt` carrying all three platforms' captions for every day, so
+ * `captions.txt` carrying all three platforms' captions for every day —
+ * plus YouTube's separate video title, which its caption (the description)
+ * does not cover — so
  * the operator has one file to read top to bottom while working through
  * three browser tabs.
  *
@@ -72,7 +74,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { buildCaption, type CaptionPlatform } from './caption.js';
+import { buildCaption, buildYouTubeTitle, type CaptionPlatform } from './caption.js';
 import { renderAssetPaths } from '../cli-plan.js';
 import { DAYS_PER_WEEK, weekDayToDate } from '../pilot-config.js';
 import type { ScheduleSlot, WeekSchedule } from '../schedule-types.js';
@@ -106,8 +108,10 @@ export interface PreparedDay {
 	cardId: string;
 	/** The local absolute path to the day's rendered MP4, ready to drag into a browser tab. */
 	videoPath: string;
-	/** This day's caption for each platform, keyed the same way `WEEKLY_CAPTION_PLATFORMS` orders them. */
+	/** This day's caption for each platform, keyed the same way `WEEKLY_CAPTION_PLATFORMS` orders them. On YouTube this is the DESCRIPTION, not the title. */
 	captions: Record<CaptionPlatform, string>;
+	/** This day's YouTube video title — a separate required upload field the caption does not cover (`caption.ts`'s `buildYouTubeTitle`). */
+	youtubeTitle: string;
 }
 
 export interface WeekPrepManifest {
@@ -126,13 +130,21 @@ export interface WeekPrepManifest {
  * three browser tabs.
  */
 function buildCaptionsFileContents(
-	days: Array<{ date: string; cardId: string; captions: Record<CaptionPlatform, string> }>
+	days: Array<{ date: string; cardId: string; captions: Record<CaptionPlatform, string>; youtubeTitle: string }>
 ): string {
 	return days
-		.map(({ date, cardId, captions }) => {
-			const platformBlocks = WEEKLY_CAPTION_PLATFORMS.map(
-				(platform) => `[${platform}]\n${captions[platform]}`
-			).join('\n\n');
+		.map(({ date, cardId, captions, youtubeTitle }) => {
+			const platformBlocks = WEEKLY_CAPTION_PLATFORMS.map((platform) => {
+				// YouTube is the one platform needing TWO fields at upload
+				// time: a title and a description. The caption is the
+				// description; the title has its own labelled line directly
+				// above it so the two are pasted from one block, in the order
+				// the Studio form asks for them.
+				if (platform === 'youtube') {
+					return `[youtube title]\n${youtubeTitle}\n\n[youtube description]\n${captions[platform]}`;
+				}
+				return `[${platform}]\n${captions[platform]}`;
+			}).join('\n\n');
 			return `${date} — ${cardId}\n\n${platformBlocks}`;
 		})
 		.join('\n\n---\n\n');
@@ -215,7 +227,7 @@ export async function prepareWeek(options: PrepareWeekOptions): Promise<WeekPrep
 		const captions = Object.fromEntries(
 			WEEKLY_CAPTION_PLATFORMS.map((platform) => [platform, buildCaption({ slot, platform })])
 		) as Record<CaptionPlatform, string>;
-		return { date, cardId: slot.card_id, videoPath, captions };
+		return { date, cardId: slot.card_id, videoPath, captions, youtubeTitle: buildYouTubeTitle(slot) };
 	});
 
 	const captionsPath = path.join(outDir, 'captions.txt');

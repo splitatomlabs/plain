@@ -466,7 +466,22 @@ Per platform:
   `Plain` Page (section 3.0) — not from the Instagram app itself.
 - **YouTube:** upload directly into YouTube Studio and use its own scheduled-publish option. There is
   no more private-upload-then-flip step (section 3.1 — that whole step is gone, not replaced);
-  scheduling in Studio does its job outright.
+  scheduling in Studio does its job outright. **YouTube is the one platform that needs TWO fields**,
+  and `captions.txt` supplies both, adjacent: `[youtube title]` goes in Studio's title box and
+  `[youtube description]` in its description box. The title is `<landing line> — <Author>, <Book>`
+  (`caption.ts`'s `buildYouTubeTitle`) — hook first, because the Shorts player truncates a title at
+  roughly 40 characters, while the attribution stays indexed for search in full. Do not retype or
+  improvise it: the generator applies YouTube's 100-character limit, dropping the book and then the
+  author if a line is long, and never trimming the quote itself (a trimmed quote is a misquote —
+  Constraint 6). Week 1 day 4 already lands on exactly 100 characters, so the margin is real.
+- **TikTok cover:** scrub to the payoff frame at the END of the video — the still, motionless frame
+  showing the landing line — and use that. Covers are a profile-grid and search asset, not a For You
+  one (the FYP autoplays the video), and at grid-thumbnail size the scrolling archaic wall reads as
+  grey noise while one short sentence stays legible. Do NOT upload `wall-<date>-feed.jpg` as the
+  cover: it is 1080x1350, Instagram's feed ratio, not TikTok's 9:16. Skip TikTok's own cover-text
+  overlay — the payoff line is already the text. Keep this identical for all 28 days, the same way
+  the posting time is held constant: a coherent grid is part of what converts a breakout into
+  follows.
 
 ### 5.4 Hand-enter last week's numbers
 

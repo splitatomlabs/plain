@@ -143,6 +143,57 @@ export interface BuildCaptionInput {
  * the same way). Everything else is framing text: factual, unattributed to
  * the author, per Constraint 6's ruling in the index plan.
  */
+/**
+ * YouTube's hard limit on a video title. A title over this is rejected by
+ * the upload form outright, so `buildYouTubeTitle` degrades below it rather
+ * than handing the weekly session a value that cannot be pasted.
+ */
+export const YOUTUBE_TITLE_MAX_LENGTH = 100;
+
+/**
+ * The title for a YouTube Short — a field `buildCaption` does NOT cover,
+ * because on YouTube the caption is the DESCRIPTION and the title is a
+ * separate required input. Before this existed, `docs/SOCIAL_PILOT.md` 5.3
+ * asked for a title with no source at all, leaving it to per-day judgement
+ * at upload time.
+ *
+ *   <landing line, verbatim> — <Author>, <Book>
+ *
+ * Hook first because the Shorts player truncates a title at roughly 40
+ * characters, so the landing line is what a viewer actually reads; the
+ * attribution is still indexed for search in full, and search is where a
+ * title earns its keep for philosophy (the author's name is the term people
+ * actually type).
+ *
+ * OVERFLOW DEGRADES THE FRAMING, NEVER THE QUOTE. Week 1 day 4 already lands
+ * on exactly 100 characters, so the full form does not always fit. When it
+ * does not, the book is dropped first, then the author — the landing line is
+ * returned verbatim and alone rather than trimmed, because it is the card's
+ * own words and Constraint 6 (index plan) requires anything presented as the
+ * author's words to be verbatim. A truncated quote would be a misquote.
+ *
+ * A landing line longer than the limit on its own is returned in full and
+ * over the limit, deliberately: silently truncating it here would produce
+ * exactly the misquote this function refuses to make, and an over-long value
+ * fails loudly and visibly in the upload form where a human can fix it. No
+ * scheduled card is anywhere near this — the longest in week 1 is 70
+ * characters — and `assertFaithful` (`scripts/lib/schedule.ts`) already
+ * governs what a landing line may be.
+ */
+export function buildYouTubeTitle(slot: ScheduleSlot): string {
+	const line = slot.content.landing_line;
+	const authorName = displayAuthorName(slot.author_slug);
+	const bookTitle = displayBookTitle(slot.book_slug);
+
+	const withBook = `${line} — ${authorName}, ${bookTitle}`;
+	if (withBook.length <= YOUTUBE_TITLE_MAX_LENGTH) return withBook;
+
+	const withAuthor = `${line} — ${authorName}`;
+	if (withAuthor.length <= YOUTUBE_TITLE_MAX_LENGTH) return withAuthor;
+
+	return line;
+}
+
 export function buildCaption({ slot, platform }: BuildCaptionInput): string {
 	const authorName = displayAuthorName(slot.author_slug);
 	const bookTitle = displayBookTitle(slot.book_slug);
