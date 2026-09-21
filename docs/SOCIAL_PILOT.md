@@ -45,11 +45,10 @@ to follows (criterion A) or whether the *median* also moved (criterion B) before
 
 `social/src/metrics/readout.ts` is the code that actually computes this verdict — not a spreadsheet,
 not a judgment call. It implements criterion A and criterion B exactly as quoted above
-(`computeReadout`/`computeVerdict`), labels follow-conversion per post as `'exact'` (the platform's
-own per-post attribution — available on all three: YouTube's `subscribersGained`, Instagram's
-per-Reel Follows, TikTok's per-video Follows) or `'inferred'` (from day-over-day follower deltas,
-now only a fallback for a post whose figure was not read), aggregating to
-`'exact'`/`'inferred'`/`'mixed'`/`'unavailable'` per platform, and its summary text literally contains the "outlier with no conversion and no
+(`computeReadout`/`computeVerdict`), labels follow-conversion `'exact'` — the platform's own
+per-post attribution, which all three report: YouTube's `subscribersGained`, Instagram's per-Reel
+Follows, TikTok's per-video Follows — or `'unavailable'` for a platform none of whose posts carried
+a recorded figure, and its summary text literally contains the "outlier with no conversion and no
 trend is explicitly a NO" wording so a raw max/median ratio can never flip the verdict by itself.
 Section 7 below covers running it.
 
@@ -219,11 +218,11 @@ is proven. **What this costs, precisely:**
 - **NOT lost — criterion B.** The week-1-to-week-4 median trend is pure view data (hand-entered per
   5.4), so TikTok can still independently prove viability.
 - **NOT lost — criterion A's breakout half.** A post clearing ~10,000 views still registers.
-- **Already unavailable anyway — TikTok follow-conversion.** `social/src/metrics/readout.ts`'s
-  `computeFollowConversion` returns `method: 'unavailable'` with `follows: null` when no follower
-  snapshots exist for TikTok — nothing collects one. `readout.ts`'s own comment says this is
-  "exactly TikTok's current state until a follower-snapshot collector is built for it" — a signal
-  that was already out of scope, not one this deferral degrades.
+- ~~**Already unavailable anyway — TikTok follow-conversion.**~~ **Obsolete as of 2026-09-21:**
+  TikTok reports Follows per video, read during the weekly session (5.4), so its conversion is
+  `exact` like every other platform's. This bullet argued the signal was out of scope because
+  nothing collected a TikTok follower series — a conclusion that rested on the same wrong premise
+  section 5.5 records, not on the deferral it was justifying.
 
 Revisit the switch if TikTok turns out to be the platform that performs; the Website field can be
 added at any time, including after posting starts.
@@ -327,11 +326,10 @@ that used to fire unattended once a day were deleted along with the rest of the 
 pipeline (`Pb4e17-social-native-scheduling` T07-T09) — posting is a manual, weekly act now (section
 5), not a daily one.
 
-**Exactly one thing genuinely still happens every day, and it is not posting: recording that day's
-Instagram and TikTok follower counts.** Section 5.5 covers the command (`follower-snapshot.ts`) and why it
-can't be folded into the weekly cadence like everything else — Instagram's app shows only *today's*
-total, never a historical series, so a day this is skipped for is gone for good, unlike a missed
-weekly upload which can just run late.
+**Nothing happens every day any more, either.** A daily follower-count reading used to be the one
+genuine exception; it was deleted on 2026-09-21 once all three platforms turned out to report
+follows per post, which the weekly session records instead (5.4, and 5.5 for why). The pilot is now
+a purely weekly operation.
 
 **The posting time — DECIDED 2026-09-10: `07:30 America/New_York`, every day, all three
 platforms, unchanged for the full 28 days.** This replaces the deleted daily trigger's placeholder
@@ -347,14 +345,12 @@ Two reasons, in order of weight:
    Criterion B (section 1) is a week-1-to-week-4 median trend, so a posting time that drifts
    mid-pilot confounds the exact signal that trend exists to measure. **Do not "try an evening slot"
    in week 3.** If the time must change, the pilot restarts; it does not continue with a note.
-2. **An early post protects Instagram's follow-conversion — see 5.5.** IG/TikTok conversion is
-   inferred from a day-over-day follower delta aligned to the post's own calendar date, and the
-   window that delta covers is set by *when you read the follower number each day*. Posting early
-   and snapshotting late puts most of each post's first-day life inside the window credited to that
-   post. Posting in the evening does the opposite, and a morning snapshot with an evening post
-   credits every post's follows to the following day's post. This coupling is the real argument for
-   07:30; the engagement case for morning (reflective content, US-timezone compromise) is secondary
-   and weak by the Buffer finding above.
+2. ~~**An early post protects Instagram's follow-conversion — see 5.5.**~~ **Obsolete as of
+   2026-09-21.** This argued that 07:30 mattered because conversion was inferred from a daily
+   follower delta whose window depended on when the count was read. All three platforms report
+   follows per post, that inference is gone (5.5), and the posting hour no longer couples to
+   conversion measurement at all. **The 07:30 time still does not change** — reason 1 above is the
+   binding one, and holding it constant is what criterion B's week-1-to-week-4 trend requires.
 
 **A caveat this document should not overstate:** no daily-delta scheme is clean. Some of each post's
 follows always spill into the next day's window, which is exactly why section 1 labels the method
@@ -366,14 +362,12 @@ unaffected either way — its `subscribersGained` is per-video and exact.
 There is no automated posting behind this section any more (section 3.1) — it **is** the pilot now.
 Once a week, at a desk: render the week's videos, open three browser tabs (TikTok, Meta Business
 Suite, YouTube Studio) and manually upload, caption, and schedule seven days of posts on each, then
-hand-enter last week's numbers. Separately, **every single day**, not part of this weekly sitting,
-read off and record that day's Instagram follower count (section 5.5) — the one input on a different
-rhythm from everything else in this section.
+hand-enter last week's numbers. **Everything in this pilot now happens in this one weekly sitting**
+— the daily follower reading that used to run on its own rhythm was deleted on 2026-09-21 (5.5).
 
 No real session has been run yet (see "Current status" below), so there is no measured time cost —
 only the arithmetic: 21 uploads a week (3 platforms x 7 days), each needing a file, a caption paste,
-and a scheduled time set by hand, plus up to 21 `hand-entry.ts` runs for last week's numbers and one
-`follower-snapshot.ts` run every day. Budget the whole sitting at over an hour once real posts exist
+and a scheduled time set by hand, plus up to 21 `hand-entry.ts` runs for last week's numbers. Budget the whole sitting at over an hour once real posts exist
 to schedule and measure; do not plan around the old, now-obsolete "20 minutes for TikTok" estimate
 this section used to cite, which covered a single platform's manual step when the other two were
 still automated.
@@ -589,77 +583,29 @@ one platform.
 percentage worth typing in — TikTok's retention data in particular is in-app only, with no automated
 read path at all, on either candidate API path (see the TikTok metrics section below).
 
-### 5.5 The daily follower integer — not weekly, and gone forever if skipped
+### 5.5 The daily follower integer — REMOVED 2026-09-21
 
-**This is the one input in the entire pilot that does not run on the weekly rhythm above, and the
-one most likely to go quietly missing if this section is only opened once a week.** Every day, read
-Instagram's current follower total off the app and run:
+**There is no daily task in this pilot any more.** This section described a follower count to be
+read off Instagram and TikTok every single day, late in the evening, via
+`social/src/metrics/follower-snapshot.ts`, warning that it was un-backfillable and that a skipped
+day broke two posts' conversion readings.
 
-```bash
-npx tsx social/src/metrics/follower-snapshot.ts --platform instagram --date <YYYY-MM-DD> --followers <n>
-npx tsx social/src/metrics/follower-snapshot.ts --platform tiktok    --date <YYYY-MM-DD> --followers <n>
-```
+It existed for one reason: the belief that Instagram and TikTok reported follower counts only at
+the account level, so criterion A's conversion half had to be *inferred* from day-over-day deltas.
+**That belief was wrong about both platforms.** Meta Business Suite reports Follows per Reel and
+TikTok reports Follows per video, the same way YouTube Studio reports subscribers gained — all
+three are exact, per-post, and read during the weekly session (5.4) off screens the operator is
+already looking at.
 
-**Two readings a day, one per platform — Instagram AND TikTok.** Both apps report followers at the
-account level, and this series is the only way either one's conversion becomes anything but
-`unavailable` when a per-post figure is missing. YouTube does not appear here and never should: it
-reports `subscribersGained` per video, which you type in per post during 5.4, and which is
-`'exact'` rather than inferred — `--platform youtube` is rejected by name for that reason.
+So the CLI, the two `<platform>-followers.json` series, and the delta inference in `readout.ts`
+were all deleted rather than kept as a fallback. What replaces it is one more number per post in
+5.4. `git log` has the removed code and the two recorded readings if the premise ever needs
+revisiting.
 
-**This section is now a FALLBACK, not a primary measurement — and whether it is worth continuing
-at all is an open decision (2026-09-21).** As of 5.4, all three platforms report follows per post,
-which is exact and supersedes the daily delta for every post it covers. Nothing in the readout
-consumes this series except `inferFollowsForPost`, which only runs for a post whose per-post
-figure was not read. Two things still argue for keeping it, and neither is about criterion A: it
-covers a post whose figure was missed, and it is the only independent cross-check on numbers typed
-in by hand. One argues against: it is the most failure-prone input in the pilot — daily, easy to
-skip, and un-backfillable — and it was in fact missed for all of week 1.
-
-Note also that it measures something genuinely different: an account-level count moves on follows
-from profile visits, search and the bio link, not only from posts, so it is not a like-for-like
-substitute for per-post attribution in either direction.
-
-`--platform`, `--date` and `--followers` are all required; `--out-dir` (default
-`content/social/metrics/`) overrides where `<platform>-followers.json` is written. **`--platform` has
-no default on purpose:** defaulting would silently file a TikTok reading into Instagram's series,
-corrupting both at once, with no error and no way to untangle it later — a follower count carries
-nothing identifying the account it came from. Re-running for the same `--date` replaces
-that date's entry rather than duplicating it. `0` is a valid, real reading (an empty account) and is
-recorded as `0`, never treated as missing.
-
-**Take the reading LATE — after that day's post has gone out, ideally 22:00-23:00 ET — and at
-roughly the same hour every day.** The snapshot carries only a `date`, never a time
-(`DailyFollowerSnapshot` in `readout.ts`), so the hour you happen to read the number at is what
-silently defines the measurement window. `inferFollowsForPost` credits a post with
-`followers(its publish date) - followers(the day before)`, so that window runs from whenever you
-read yesterday's number to whenever you read today's. With the 07:30 post time (section 4), a
-22:30 reading puts ~15 hours of each post's own first day inside the window credited to that post.
-**A morning reading throws most of the signal away:** snapshot at 09:00 and the window for a given
-date closes just 1.5 hours after that date's 07:30 post, so nearly all of the post's conversion
-falls into the *next* day's delta and is credited to the next day's post. The failure is worse still
-if the post time is ever moved to the evening — an evening post with a morning snapshot lands wholly
-outside its own window, capturing none of itself. Late is right; early quietly mis-attributes.
-
-Instagram's own app shows only *today's* follower total — never a historical series — so a day this
-isn't run for is unrecoverable; there is no catching up next week. Skipping a day has a specific,
-measurable cost, too: follow-conversion (section 1) is *inferred* from day-over-day
-follower deltas aligned to `publishedAt`, so a day with no recorded count permanently degrades that
-day's conversion reading from `inferred` to `unavailable`. **That cost is now recoverable on every
-platform** — each one's exact per-post follow count can still be read off its own analytics screen
-later and entered with 5.4's `--follows`, which supersedes the missing delta entirely. A skipped
-reading is no longer the unrecoverable loss it was when inference was the only path; it is only the
-loss of the cross-check. **A single missed day breaks TWO posts,
-not one:** a delta needs both endpoints, so the gap takes out the missing day's own post and the
-following day's, which had been relying on that day as its "previous" reading. **TikTok's series was added on 2026-09-10 and is not optional.** This section
-previously said there was "no equivalent CLI for TikTok or YouTube — no per-post follow path exists
-to infer a TikTok series from". The YouTube half of that is right. The TikTok half was wrong: the
-inference never needed a per-post follow path, only a daily account-level count, which the TikTok app
-displays exactly as Instagram's does. `readout.ts` had already been built to accept a TikTok series
-(`tiktokFollowerSnapshots`); nothing wrote one, so the parameter dead-ended and TikTok's conversion
-was permanently `unavailable`. **That made criterion A unsatisfiable on TikTok — a post could clear
-50,000 views and still fail the conversion half for want of data rather than want of conversion — on
-arguably the platform most likely to produce a breakout for a new account.** YouTube's follow number
-still arrives for free, per post, in section 5.4 above.
+**The cost while it stood is worth remembering when a measurement plan is being designed from
+assumptions about an external system rather than from its screens:** the pilot carried a daily,
+un-backfillable manual chore for weaker data than was freely available — and it was in fact missed
+for every day of week 1, which is what surfaced the question in the first place.
 
 ## 6. What to do if the Meta (Instagram) account is disabled
 
@@ -716,11 +662,8 @@ for the same `platform:postId` is a correction, not a second reading on a schedu
 idempotent (`upsertMetricsRow` replaces a same-`platform:postId` row rather than duplicating it), so
 a mid-week fix or a deliberate later re-read both simply replace that row with the latest values.
 Results land in `content/social/metrics/metrics-<date>.json`, one dated file per `hand-entry.ts`
-run, plus `content/social/metrics/instagram-followers.json` and
-`content/social/metrics/tiktok-followers.json` (daily account-level follower snapshots,
-hand-entered by `follower-snapshot.ts` per section 5.5, since Instagram and TikTok both expose
-follower counts only at the account level, not per-post — see the readout's `'inferred'` conversion
-labeling below).
+run — the only metrics artifact there is. (Two `<platform>-followers.json` series used to sit
+beside them; see 5.5 for what they were and why they are gone.)
 
 At week 4, produce the verdict:
 
@@ -732,14 +675,10 @@ npx tsx social/src/metrics/readout.ts --now 2026-10-07T00:00:00.000Z --breakout-
 
 This reads every `metrics-<date>.json` under `content/social/metrics/` (deduping to the latest
 `collectedAt` per post — a safety net for a corrected re-entry of the same post under a different
-date, not a polling flow) plus both `instagram-followers.json` and `tiktok-followers.json` —
-each read independently, so a missing file for one degrades only that platform to `unavailable` and
-never borrows the other's series — and prints, per platform: the median,
-the maximum, the max/median ratio, the week-1-vs-week-4 median trend, follow conversion (resolved
-per post: `exact` from the platform's own per-post attribution wherever a figure was read — all
-three platforms report one — and `inferred` from daily follower deltas aligned to `publishedAt`
-otherwise; aggregated per platform to `exact`, `inferred`, `mixed`, or `unavailable` when no number
-of either kind exists), and the top 5 posts with their format. It then
+date, not a polling flow) and prints, per platform: the median,
+the maximum, the max/median ratio, the week-1-vs-week-4 median trend, follow conversion (`exact`
+from the platform's own per-post attribution, with a count of how many of its posts carried a
+recorded figure, or `unavailable` when none did), and the top 5 posts with their format. It then
 states plainly whether the pre-registered criterion (section 1) was met, quoting the same "outlier
 with no conversion and no trend is explicitly a NO" language the criterion itself uses.
 
@@ -823,9 +762,8 @@ dates — moving it again means updating those too.
 **Built and unit-tested, not yet exercised for real:** the render pipeline (`social/src/cli.ts`,
 `social/src/prepare-week.ts`), the schedule generator and weekly reviewer
 (`scripts/generate-schedule.ts`, `scripts/review-week.ts` — week 1's schedule,
-`content/social/pilot-schedule-w01.json`, already exists), and all three metrics tools
-(`social/src/metrics/hand-entry.ts`, `social/src/metrics/follower-snapshot.ts`,
-`social/src/metrics/readout.ts`). Every one of these has tests against real fixtures, but none has
+`content/social/pilot-schedule-w01.json`, already exists), and both metrics tools
+(`social/src/metrics/hand-entry.ts`, `social/src/metrics/readout.ts`). Every one of these has tests against real fixtures, but none has
 been run end to end against the real accounts yet — the first real weekly session (section 5) has
 not happened.
 
@@ -838,9 +776,9 @@ not happened.
   `thinkplain.ai/?utm_source=...` URL — before relying on the attribution data it produces.
 - ~~No posting time has been deliberately chosen.~~ **Closed 2026-09-10: `07:30 America/New_York`,
   all three platforms, held constant for the full 28 days** (section 4 gives the reasoning and the
-  reason it must not be changed mid-pilot). The paired rule is in section 5.5: take the daily
-  Instagram follower reading **late** — after the post, ~22:00-23:00 ET — because the hour you read
-  it at is what defines the window that post's follow-conversion is measured over.
+  reason it must not be changed mid-pilot). The paired rule about reading a daily follower count
+  late in the evening is gone with section 5.5 — conversion is now read per post, so the posting
+  hour no longer affects how it is measured.
 - **Zero posts have been published to any platform.** The first live post through this system, on
   any platform, has not happened yet.
 
@@ -895,14 +833,13 @@ For each platform (`instagram`, `youtube`, `tiktok`) that has at least one post:
 | Max/median ratio | `<ratio>x` — TO BE FILLED AT WEEK 4 | `<ratio>x` — TO BE FILLED AT WEEK 4 | `<ratio>x` — TO BE FILLED AT WEEK 4 |
 | Week 1 median -> week 4 median | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 |
 | Trend direction | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 |
-| Follow conversion method | inferred (per plan Decision) — TO BE CONFIRMED AT WEEK 4 | **exact** (per plan Decision — `subscribersGained`) — TO BE CONFIRMED AT WEEK 4 | inferred, or unavailable if no TikTok follower-snapshot series was ever collected — TO BE CONFIRMED AT WEEK 4 |
+| Follow conversion method | **exact** (per-Reel Follows) — TO BE CONFIRMED AT WEEK 4 | **exact** (`subscribersGained`) — TO BE CONFIRMED AT WEEK 4 | **exact** (per-video Follows) — TO BE CONFIRMED AT WEEK 4 |
 | Follow conversion value(s) | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 |
 
-Do not relabel a platform's follow-conversion method by hand. The table's default labels above are
-what the plan's Decision predicts each platform will report (YouTube exact, Instagram/TikTok
-inferred-or-unavailable) — but copy whatever `readout.ts` actually printed, not the prediction, in
-case the on-the-ground implementation ended up different (e.g. TikTok's follower-snapshot collector
-was never built, in which case its row is `unavailable`, not `inferred`).
+Do not relabel a platform's follow-conversion method by hand. All three rows above say `exact`
+because all three platforms report follows per post — but copy whatever `readout.ts` actually
+printed, not the expectation. A platform reads `unavailable` when no post of its own carried a
+recorded figure, which is a gap in the entry, not a property of the platform.
 
 **Top 5 posts overall** (across all platforms, richest-first — pull the `topPosts` list per platform
 from the printed report and merge/re-sort by views):

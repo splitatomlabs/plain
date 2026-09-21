@@ -20,18 +20,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	DEFAULT_METRICS_DIR,
-	FOLLOWER_SNAPSHOT_PLATFORMS,
-	followersFilenameFor,
-	followersFilePathFor,
 	metricsFilePathFor,
 	metricsRowKey,
-	parseFollowerSnapshots,
 	parseMetricsRows,
-	serializeFollowerSnapshots,
 	serializeMetricsRows,
-	upsertFollowerSnapshot,
 	upsertMetricsRow,
-	type FollowerSnapshot,
 	type MetricsRow
 } from '../schema.js';
 
@@ -141,61 +134,6 @@ describe('parseMetricsRows / serializeMetricsRows round trip', () => {
 		expect(() => parseMetricsRows('{"not":"an array"}')).toThrow(/JSON array/);
 	});
 });
-
-describe('Instagram follower snapshots — upsert + round trip', () => {
-	function snapshot(overrides: Partial<FollowerSnapshot> = {}): FollowerSnapshot {
-		return { date: '2026-09-01', followerCount: 42, ...overrides };
-	}
-
-	it('replaces a same-date snapshot rather than duplicating it', () => {
-		const existing = [snapshot({ date: '2026-09-01', followerCount: 42 })];
-		const updated = upsertFollowerSnapshot(existing, snapshot({ date: '2026-09-01', followerCount: 50 }));
-
-		expect(updated).toHaveLength(1);
-		expect(updated[0].followerCount).toBe(50);
-	});
-
-	it('appends a distinct date', () => {
-		const existing = [snapshot({ date: '2026-09-01' })];
-		const updated = upsertFollowerSnapshot(existing, snapshot({ date: '2026-09-02' }));
-		expect(updated).toHaveLength(2);
-	});
-
-	it('round-trips through parse/serialize', () => {
-		const snapshots = [snapshot({ date: '2026-09-01' }), snapshot({ date: '2026-09-02', followerCount: 43 })];
-		expect(parseFollowerSnapshots(serializeFollowerSnapshots(snapshots))).toEqual(snapshots);
-	});
-
-	it('each platform gets its own followers file under the metrics outDir', () => {
-		expect(followersFilePathFor('/content/social/metrics', 'instagram')).toBe('/content/social/metrics/instagram-followers.json');
-		expect(followersFilePathFor('/content/social/metrics', 'tiktok')).toBe('/content/social/metrics/tiktok-followers.json');
-	});
-
-	it('instagram keeps its original filename, so an existing series file is still found after the rename', () => {
-		expect(followersFilenameFor('instagram')).toBe('instagram-followers.json');
-	});
-
-	it('the two inferred-conversion platforms never share a file — youtube has none at all', () => {
-		expect(FOLLOWER_SNAPSHOT_PLATFORMS).toEqual(['instagram', 'tiktok']);
-		expect(FOLLOWER_SNAPSHOT_PLATFORMS).not.toContain('youtube');
-		const paths = FOLLOWER_SNAPSHOT_PLATFORMS.map((p) => followersFilePathFor('/m', p));
-		expect(new Set(paths).size).toBe(paths.length);
-	});
-
-	it('a trailing slash on outDir never doubles up, for either platform', () => {
-		expect(followersFilePathFor('/content/social/metrics/', 'tiktok')).toBe('/content/social/metrics/tiktok-followers.json');
-	});
-});
-
-// ---------------------------------------------------------------------------
-// F3 (Pb4e17-social-native-scheduling review round 4) — DEFAULT_METRICS_DIR
-// moved into this file in this diff, and nothing asserted its actual
-// resolved value: mutating `path.resolve(moduleDir, '..', '..', '..')` to
-// `'..', '..'` left all 462 social tests green before this test existed.
-// Anchored on structural markers (`.git`, `package.json`), never on the
-// repo directory's own name — that would break for anyone who clones this
-// repo under a different name.
-// ---------------------------------------------------------------------------
 
 describe('DEFAULT_METRICS_DIR — resolved path pinning', () => {
 	it('resolves to the repo root\'s content/social/metrics directory', () => {

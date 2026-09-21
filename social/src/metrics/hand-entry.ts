@@ -45,10 +45,11 @@
  *     screen they were already reading. Worth remembering as a caution
  *     about encoding a claim about an external system as a validation rule.
  *
- *     The account-level follower series (`schema.ts`'s `FollowerSnapshot`)
- *     is still a separate structure and is still never smuggled into a
- *     per-post row here. With per-post numbers available everywhere it is
- *     now only a FALLBACK, for a post whose figure was not read.
+ *     The account-level follower series that used to stand in for the two
+ *     "unavailable" platforms (`follower-snapshot.ts`,
+ *     `<platform>-followers.json`) was deleted once all three were
+ *     confirmed — it existed only to infer what the platforms report
+ *     exactly, at the cost of a daily, un-backfillable manual reading.
  *   - `saves` — ALWAYS `null`, on every platform. Not one of the four counts
  *     this module asks for, and not on any of the three platforms' per-post
  *     analytics screens either.
@@ -384,7 +385,7 @@ Optional:
  * padding (`--views=" 10 "`) is still accepted, since `Number()` itself
  * already trims a numeric string — only the "nothing here at all" case is
  * the fabrication risk, not padding around a real value. Exported so
- * `follower-snapshot.ts`'s `--followers` goes through the exact same guard
+ * the deleted `follower-snapshot.ts`'s `--followers` went through the exact same guard
  * rather than a second, possibly-drifting copy.
  */
 export function toNumber(raw: string, flag: string): number {
@@ -416,7 +417,7 @@ function parseRequiredNumber(raw: string | undefined, flag: string): number {
  * failure mode `toNumber`'s own doc comment describes, just for a path
  * instead of a number. Rejects an empty-or-whitespace-only value outright;
  * `undefined` (the flag genuinely omitted) still falls through to
- * `fallback` unchanged. Exported so `follower-snapshot.ts`'s `--out-dir` and
+ * `fallback` unchanged. Exported so `readout.ts`'s `--out-dir`/`--schedule-dir` and
  * `readout.ts`'s `--metrics-dir` go through the exact same guard rather than
  * a second, possibly-drifting copy — same rationale as `toNumber` itself.
  */
@@ -531,7 +532,7 @@ async function main(): Promise<void> {
 }
 
 // Only auto-run `main()` when this file is the actual process entry point —
-// identical guard to `follower-snapshot.ts`'s/`readout.ts`'s own (see their
+// identical guard to `readout.ts`'s own (see its
 // bottom-of-file comments): importing this module for its exports (as every
 // test in `__tests__/hand-entry.test.ts` does) must never itself parse
 // `process.argv` as CLI flags or touch the filesystem.

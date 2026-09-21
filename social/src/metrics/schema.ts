@@ -8,7 +8,7 @@
  * one exception is `DEFAULT_METRICS_DIR` below: a module-level path constant
  * is not I/O (it performs no read, write, or filesystem access itself — it
  * is just a string), so it lives here as the shared default every metrics
- * module (`hand-entry.ts`, `readout.ts`, `follower-snapshot.ts`) imports,
+ * module (`hand-entry.ts`, `readout.ts`) imports,
  * rather than being duplicated or re-exported from whichever module happened
  * to define it first (Pb4e17-social-native-scheduling T03).
  *
@@ -17,9 +17,11 @@
  * `instagram.ts`, `youtube.ts`, `tiktok-spike.ts`). Pb4e17-social-native-
  * scheduling T07/T08 deleted the API publish and read pipelines outright —
  * every platform now posts through its own native scheduler by hand, and
- * every metric is hand-entered too (`hand-entry.ts`, plus the follower
- * snapshot CLI, `follower-snapshot.ts`). The row shape below is unchanged;
- * only how each row gets filled in has changed.
+ * every metric is hand-entered too (`hand-entry.ts`). The row shape below is
+ * unchanged; only how each row gets filled in has changed. A second CLI,
+ * `follower-snapshot.ts`, once recorded a daily account-level follower
+ * series alongside it; it was deleted on 2026-09-21 once every platform was
+ * confirmed to report follows per post (see `follows` below).
  *
  * Task wording the schema itself still implements verbatim: "... against
  * ONE SHARED ROW SCHEMA — platform, format, publish time, views, average
@@ -47,32 +49,28 @@
  *     `hand-entry.ts` — the only writer of a `MetricsRow` — does not ask
  *     for it on any platform, so no row ever carries a number here. The
  *     field is kept for the pre-registered schema wording only.
- *   - `follows` — a REAL per-post number ONLY on YouTube, where Studio's
- *     own per-video "subscribers gained" figure is exact (`hand-entry.ts`'s
- *     `--follows`; `readout.ts`'s `FollowConversionMethod: 'exact'`). Per the
- *     plan's Decision: "Instagram reports follower counts at the ACCOUNT
+ *   - `follows` — a REAL per-post number on ALL THREE platforms: YouTube
+ *     Studio's per-video "subscribers gained", Meta Business Suite's
+ *     per-Reel Follows, and TikTok's per-video Follows. Read by hand off
+ *     that platform's own screen (`hand-entry.ts`'s `--follows`) and
+ *     reported as `readout.ts`'s `FollowConversionMethod: 'exact'`. Here
+ *     `null` means "not read" rather than "not available on this platform",
+ *     and is still strictly distinct from `0` ("read, and this post
+ *     converted nobody").
+ *
+ *     HISTORY, because this field's rule was wrong twice and the wrongness
+ *     was enforced rather than merely written down: the plan's original
+ *     Decision held that "Instagram reports follower counts at the ACCOUNT
  *     level only, so criterion A's conversion half must be inferred from
- *     daily follower deltas aligned to post times — even at one post a day,
- *     attribution is directional, not exact." (Corrected from an earlier
- *     "two posts a day" premise, `Pb4e17-social-native-scheduling` T14 — the
- *     pilot posts once a day per platform; the conclusion is unchanged
- *     either way, since an account-level delta can't be cleanly attributed
- *     to a single post regardless of how many posts share that day.)
- *     Instagram rows therefore carry
- *     `follows: null` always — the inferred, directional account-level
- *     series lives in a SEPARATE structure (`FollowerSnapshot` below,
- *     populated by hand off Instagram's own Insights screen via
- *     `follower-snapshot.ts`), never smuggled into a per-post row as a
- *     fabricated number. TikTok rows ALSO carry `follows: null` always, for
- *     the same reason as Instagram — no screen in the TikTok app attributes
- *     a follow to a specific post, only an account-level follower count —
- *     and TikTok therefore gets its OWN series in that same structure,
- *     `tiktok-followers.json`, recorded by the same CLI under
- *     `--platform tiktok`. That symmetry was always the right reading of
- *     this paragraph; TikTok simply had no series file until then, which
- *     left its follow-conversion permanently `'unavailable'` and made
- *     criterion A unsatisfiable on TikTok for want of data rather than for
- *     want of conversion.
+ *     daily follower deltas", and TikTok was grouped with it on the same
+ *     reasoning. Both platforms do in fact report follows per post, which
+ *     was established by looking at the screens (2026-09-21). Until then
+ *     `hand-entry.ts` REJECTED the real number on those platforms as a
+ *     fabrication, and a separate daily account-level series
+ *     (`follower-snapshot.ts`, `<platform>-followers.json`) existed solely
+ *     to infer what the platforms were reporting exactly all along. That
+ *     series and its inference were deleted once all three platforms were
+ *     confirmed; `git log` has them if the premise ever needs revisiting.
  *   - `shares` — a real number on all three platforms: Instagram, YouTube,
  *     and TikTok each show a per-post share count on their own analytics
  *     screen, and `hand-entry.ts` requires it as one of the four counts a
@@ -141,40 +139,11 @@ export interface MetricsRow {
 	shares: number | null;
 	/** Always `null` — not collected on any platform; see this file's header. */
 	saves: number | null;
-	/** Real per-post follow attribution on YouTube (Studio's subscribersGained) and Instagram (Business Suite's per-Reel Follows). Always `null` on TikTok, which reports no per-post follow count on any read path — see this file's header. */
+	/** Real per-post follow attribution, reported by all three platforms: YouTube Studio's subscribersGained, Meta Business Suite's per-Reel Follows, TikTok's per-video Follows. `null` means "not read", never zero — see this file's header. */
 	follows: number | null;
 	/** ISO 8601 — when THIS row's numbers were read/entered (distinct from `publishedAt`). */
 	collectedAt: string;
 }
-
-/**
- * A single day's ACCOUNT-level follower count, for a platform that reports
- * followers only at the account level and never per post. The plan's
- * Decision: this is deliberately a SEPARATE series from `MetricsRow`, never
- * folded into a per-post row as a fabricated `follows` number — see this
- * file's header.
- *
- * Instagram and TikTok both land here. YouTube deliberately does NOT: it
- * reports `subscribersGained` per video, so its follow-conversion is read
- * per post into `MetricsRow.follows` and is `'exact'` rather than inferred
- * (`readout.ts`'s `computeFollowConversion`). A YouTube follower series
- * would be redundant, not merely unbuilt.
- */
-export interface FollowerSnapshot {
-	/** ISO calendar date (`YYYY-MM-DD`) this snapshot represents. */
-	date: string;
-	followerCount: number;
-}
-
-/**
- * The platforms whose follow-conversion is INFERRED from a daily
- * account-level series, and so have a follower-snapshot file. Deliberately
- * not `MetricsPlatform`: YouTube is a member of that union but must never
- * have a series here (see `FollowerSnapshot` above).
- */
-export type FollowerSnapshotPlatform = 'instagram' | 'tiktok';
-
-export const FOLLOWER_SNAPSHOT_PLATFORMS: FollowerSnapshotPlatform[] = ['instagram', 'tiktok'];
 
 // ---------------------------------------------------------------------------
 // Idempotency — the acceptance criterion: "a run appends a dated file with
@@ -222,48 +191,4 @@ export function parseMetricsRows(raw: string): MetricsRow[] {
 /** Pretty-printed, newline-terminated — matches `post-metadata.ts`'s convention. */
 export function serializeMetricsRows(rows: MetricsRow[]): string {
 	return `${JSON.stringify(rows, null, 2)}\n`;
-}
-
-// ---------------------------------------------------------------------------
-// The daily account-level follower series — one file per platform, same
-// idempotency discipline: one snapshot per calendar date, keyed by date so a
-// same-day re-run replaces rather than duplicates.
-// ---------------------------------------------------------------------------
-
-/**
- * One file per platform, named for it — `instagram-followers.json`,
- * `tiktok-followers.json`. Separate files rather than one file with a
- * `platform` column so a platform's whole series is a single readable
- * artifact, and so adding one never rewrites another's file.
- */
-export function followersFilenameFor(platform: FollowerSnapshotPlatform): string {
-	return `${platform}-followers.json`;
-}
-
-export function followersFilePathFor(outDir: string, platform: FollowerSnapshotPlatform): string {
-	return `${outDir.replace(/[/\\]+$/, '')}/${followersFilenameFor(platform)}`;
-}
-
-export function upsertFollowerSnapshot(
-	existing: FollowerSnapshot[],
-	snapshot: FollowerSnapshot
-): FollowerSnapshot[] {
-	const withoutSameDate = existing.filter((entry) => entry.date !== snapshot.date);
-	return [...withoutSameDate, snapshot].sort((a, b) => a.date.localeCompare(b.date));
-}
-
-export function parseFollowerSnapshots(raw: string): FollowerSnapshot[] {
-	const trimmed = raw.trim();
-	if (trimmed === '') {
-		return [];
-	}
-	const parsed: unknown = JSON.parse(trimmed);
-	if (!Array.isArray(parsed)) {
-		throw new Error('Follower snapshot file did not contain a JSON array.');
-	}
-	return parsed as FollowerSnapshot[];
-}
-
-export function serializeFollowerSnapshots(snapshots: FollowerSnapshot[]): string {
-	return `${JSON.stringify(snapshots, null, 2)}\n`;
 }

@@ -5,6 +5,9 @@
  * the median, the maximum, the max/median ratio, the week-1-vs-week-4
  * median trend, follow conversion (exact on YouTube, inferred from daily
  * deltas on Instagram and TikTok — label which is which), and the top 5
+ * [the inferred half of that wording is obsolete: all three platforms report
+ * follows per post, so conversion is exact or absent — see this file's
+ * FOLLOW CONVERSION note below]
  * posts with their format. State plainly whether the pre-registered
  * criterion was met."
  *
@@ -33,27 +36,31 @@
  * network. `computeReadout` is the one entry point a test calls directly;
  * `formatReadout` turns its result into the human-readable report; this
  * file's own `main()` (bottom) is the thin CLI that reads the dated files
- * `hand-entry.ts`/`follower-snapshot.ts` already write and prints the report.
+ * `hand-entry.ts` already writes and prints the report.
  * Mirrors this workspace's `cli-plan.ts`/`cli.ts` and
  * `prepare-week-plan.ts`/`prepare-week.ts` pure-plan-vs-IO split.
  *
- * EXACT VS. INFERRED FOLLOW CONVERSION — this file's own label discipline,
- * per `schema.ts`'s header and the plan's Decision it quotes: "per-post
- * follow attribution exists ONLY on YouTube ... Instagram reports follower
- * counts at the ACCOUNT level only, so criterion A's conversion half must be
- * inferred from daily follower deltas aligned to post times — with two
- * posts a day, attribution is directional, not exact." (Social pilot 02a
- * D02 later collapsed both channels to one post a day, which makes the
- * day-over-day attribution in this file more directly aligned to a single
- * post, but it is STILL an inference from an account-level series, not a
- * per-post count — this file never upgrades it to "exact" and always labels
- * it `'inferred'` in its own output.) TikTok has its own follower-snapshot
- * series too, recorded by the same CLI under `--platform tiktok` — the two
- * inferred-conversion platforms are symmetric. This module's
- * `PlatformFollowConversion.method` still reports `'unavailable'` for a
- * platform with per-post `follows: null` on every row and no snapshot series
- * supplied, rather than silently reporting `0` or fabricating an inference
- * from nothing.
+ * FOLLOW CONVERSION IS EXACT, OR IT IS NOTHING — this file's label
+ * discipline. Every platform reports a follow count per post on its own
+ * analytics screen (YouTube Studio's subscribersGained, Meta Business
+ * Suite's per-Reel Follows, TikTok's per-video Follows), hand-entered into
+ * `MetricsRow.follows`. A platform whose posts carry such a figure reports
+ * `'exact'`; one whose posts carry none reports `'unavailable'` — a real gap
+ * in the recording, never a fabricated `0` and never a method named over
+ * absent data.
+ *
+ * HISTORY (2026-09-21): this file used to carry a second, weaker path. The
+ * plan's Decision held that "per-post follow attribution exists ONLY on
+ * YouTube ... Instagram reports follower counts at the ACCOUNT level only,
+ * so criterion A's conversion half must be inferred from daily follower
+ * deltas aligned to post times", and TikTok was grouped with Instagram on
+ * the same reasoning. Both premises were false: each platform does report
+ * per-post follows. The inference (`inferFollowsForPost`, a daily
+ * `<platform>-followers.json` series written by `follower-snapshot.ts`) and
+ * its `'inferred'`/`'mixed'` labels were deleted once that was established,
+ * rather than left as a dormant fallback — `git log` has them if the premise
+ * ever needs revisiting. The daily series cost an un-backfillable manual
+ * reading every day and, in practice, was missed for the whole of week 1.
  *
  * `follows: null` IS NEVER A ZERO — `schema.ts`'s own header states the
  * rule this file must not violate: "some fields are genuinely unavailable
@@ -92,7 +99,7 @@ import { pathToFileURL } from 'node:url';
 import { buildCardIndex, cardIdForPublishedAt } from './card-index.js';
 import { dateToWeekDay } from '../pilot-config.js';
 import { toDir } from './hand-entry.js';
-import { DEFAULT_METRICS_DIR, DEFAULT_SCHEDULE_DIR, followersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type FollowerSnapshotPlatform, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
+import { DEFAULT_METRICS_DIR, DEFAULT_SCHEDULE_DIR, metricsRowKey, parseMetricsRows, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // Small pure statistics — each one independently unit-testable.
@@ -204,37 +211,20 @@ export function computeWeekTrend(rows: Pick<MetricsRow, 'publishedAt' | 'views'>
 
 // ---------------------------------------------------------------------------
 // Follow conversion — EXACT from the platform's own per-post attribution
-// wherever a figure was read, INFERRED from the daily account-level follower
-// series otherwise. See this file's header for why "inferred" never upgrades
-// to "exact" even under the pilot's one-post-a-day cadence.
-//
-// UPDATED 2026-09-21: all three platforms turned out to report a per-post
-// follow count — YouTube Studio's subscribersGained, Meta Business Suite's
-// per-Reel Follows, and TikTok's per-video Follows. The original design
-// treated this as YouTube-only and routed the other two through the
-// day-over-day delta; that was corrected in two steps as each platform's
-// screen was actually checked. Resolution is PER POST rather than per
-// platform, so a row carrying a real `follows` is exact on any platform, one
-// without it still falls back to the inference, and a platform can honestly
-// report a mix of both. With per-post numbers available everywhere, the
-// inference is now a fallback for an unread figure rather than any
-// platform's primary path.
+// wherever a figure was read, and UNAVAILABLE where none was. There is no
+// third state: see this file's header for the daily-delta inference that
+// used to sit here and why it was deleted rather than kept as a fallback.
 // ---------------------------------------------------------------------------
 
-export type FollowConversionMethod = 'exact' | 'inferred' | 'mixed' | 'unavailable';
-
-/** Where ONE post's `follows` number came from. `null` when there is no number at all — never a claim about a value that does not exist. */
-export type FollowsSource = 'exact' | 'inferred';
+export type FollowConversionMethod = 'exact' | 'unavailable';
 
 export interface PostFollowConversion {
 	postId: string;
 	/** The card this post was built from, resolved from its publish date (`card-index.ts`). `null` when no schedule covers that date. */
 	cardId: string | null;
 	views: number;
-	/** `null` = not available / not measurable for this post. NEVER treated as `0` — see this file's header. */
+	/** `null` = the platform's per-post figure was not read for this post. NEVER treated as `0` — see this file's header. */
 	follows: number | null;
-	/** How `follows` was obtained, or `null` when it is `null`. Lets the criterion-A verdict describe the evidence for the SPECIFIC post it names, rather than the platform's aggregate. */
-	followsSource: FollowsSource | null;
 }
 
 export interface PlatformFollowConversion {
@@ -242,78 +232,31 @@ export interface PlatformFollowConversion {
 	posts: PostFollowConversion[];
 }
 
-/** A generic daily account-level snapshot — same shape as `schema.ts`'s `FollowerSnapshot`, declared here rather than reimported so this module's computation stays independent of the on-disk schema. Both inferred-conversion platforms (Instagram and TikTok) supply one of these series. */
-export interface DailyFollowerSnapshot {
-	/** ISO calendar date (`YYYY-MM-DD`). */
-	date: string;
-	followerCount: number;
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** One calendar day before `date` (`YYYY-MM-DD` in, `YYYY-MM-DD` out), computed in UTC. */
-function previousIsoDate(date: string): string {
-	const ms = Date.parse(`${date}T00:00:00.000Z`);
-	return new Date(ms - DAY_MS).toISOString().slice(0, 10);
-}
-
 /**
- * Infers one post's follow conversion from a day-over-day delta in the
- * account's follower count, aligned to the post's own publish date — the
- * plan's Decision, verbatim: "inferred from daily follower deltas aligned
- * to post times." Returns `null` (never a fabricated `0`) whenever either
- * the publish day's or the prior day's snapshot is missing, since a delta
- * cannot be computed without both endpoints.
- */
-function inferFollowsForPost(publishedAt: string, snapshots: DailyFollowerSnapshot[]): number | null {
-	const date = publishedAt.slice(0, 10);
-	const prevDate = previousIsoDate(date);
-	const today = snapshots.find((s) => s.date === date);
-	const prev = snapshots.find((s) => s.date === prevDate);
-	if (!today || !prev) return null;
-	return today.followerCount - prev.followerCount;
-}
-
-/**
- * Builds one platform's `PlatformFollowConversion`. YouTube rows already
- * carry a real `follows` (per-post `subscribersGained`) — `method: 'exact'`,
- * passed straight through. Instagram/TikTok rows always carry
- * `follows: null` on the row itself (see `schema.ts`'s header); this
- * function infers a number from `snapshots` when supplied (`method:
- * 'inferred'`), or reports `method: 'unavailable'` with every post's
- * `follows: null` when no snapshot series was supplied for that platform —
- * now a real gap in the day's recording (a skipped reading) rather than a
- * permanent property of the platform, since both Instagram and TikTok have
- * a series.
+ * Builds one platform's `PlatformFollowConversion`. Every platform reports a
+ * per-post follow count on its own analytics screen, so a row's `follows` is
+ * passed straight through as `'exact'` wherever one was read, and a row
+ * without one simply has no number (`null`, NEVER a zero — see `schema.ts`'s
+ * available-vs-zero rule).
+ *
+ * There is no inference path any more. A daily account-level follower series
+ * (`follower-snapshot.ts`, `<platform>-followers.json`) used to stand in for
+ * Instagram's and TikTok's conversion, on the belief that neither platform
+ * attributed a follow to a post. Both do; the series was deleted once that
+ * was established, along with the delta arithmetic that consumed it. `git
+ * log` has it if the premise ever needs revisiting.
  */
 export function computeFollowConversion(
 	platform: MetricsPlatform,
 	rows: Pick<MetricsRow, 'postId' | 'views' | 'publishedAt' | 'follows'>[],
-	snapshots?: DailyFollowerSnapshot[],
 	cardIdByDate?: ReadonlyMap<string, string>
 ): PlatformFollowConversion {
-	// All three platforms report a per-post follow count on their own
-	// analytics screens, so a row carrying one is believed on every platform
-	// — no platform-name special case remains here. `hand-entry.ts` is what
-	// guarantees the number was read rather than estimated; this function's
-	// job is only to prefer it over the weaker inference.
-	const posts: PostFollowConversion[] = rows.map((r) => {
-		const identity = {
-			postId: r.postId,
-			cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
-			views: r.views
-		};
-
-		if (r.follows !== null) {
-			return { ...identity, follows: r.follows, followsSource: 'exact' as const };
-		}
-
-		// Fall back to the daily-delta inference for a post whose per-post
-		// figure was not read. A platform with no series simply has no number
-		// for this post, which is `null` and NEVER a zero.
-		const inferred = snapshots && snapshots.length > 0 ? inferFollowsForPost(r.publishedAt, snapshots) : null;
-		return { ...identity, follows: inferred, followsSource: inferred === null ? null : ('inferred' as const) };
-	});
+	const posts: PostFollowConversion[] = rows.map((r) => ({
+		postId: r.postId,
+		cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
+		views: r.views,
+		follows: r.follows
+	}));
 
 	return { method: aggregateFollowMethod(posts), posts };
 }
@@ -322,23 +265,17 @@ export function computeFollowConversion(
  * The platform-level label, derived from what its posts ACTUALLY carry
  * rather than from the platform's name.
  *
- * This is why the label is computed rather than hardcoded per platform:
- * Instagram can now be exact, inferred, or a mix of the two within one week,
- * depending on which posts had their Business Suite figure read. Reporting a
- * flat "EXACT" over a set where half the posts were inferred would overstate
- * the evidence behind criterion A; reporting a flat "INFERRED" would
- * understate it. A platform whose posts carry no number at all is
- * `'unavailable'` — including YouTube, when nobody entered `--follows`:
- * naming the method available while holding no data would imply conversion
- * evidence that does not exist.
+ * Computed rather than hardcoded because a platform's label now depends on
+ * whether anyone read the figures, not on which platform it is: all three
+ * report follows per post, so a platform is `'exact'` once any of its posts
+ * carries one, and `'unavailable'` while none do. That second case is a real
+ * gap in the recording, never a property of the platform — and it is
+ * reported as `'unavailable'` rather than as the method that WOULD apply,
+ * because naming a method while holding no data implies conversion evidence
+ * that does not exist.
  */
 function aggregateFollowMethod(posts: PostFollowConversion[]): FollowConversionMethod {
-	const hasExact = posts.some((p) => p.followsSource === 'exact');
-	const hasInferred = posts.some((p) => p.followsSource === 'inferred');
-	if (hasExact && hasInferred) return 'mixed';
-	if (hasExact) return 'exact';
-	if (hasInferred) return 'inferred';
-	return 'unavailable';
+	return posts.some((p) => p.follows !== null) ? 'exact' : 'unavailable';
 }
 
 // ---------------------------------------------------------------------------
@@ -372,14 +309,13 @@ function computePlatformReadout(
 	platform: MetricsPlatform,
 	rows: MetricsRow[],
 	breakoutViewThreshold: number,
-	followerSnapshots: DailyFollowerSnapshot[] | undefined,
 	cardIdByDate?: ReadonlyMap<string, string>
 ): PlatformReadout {
 	const views = rows.map((r) => r.views);
 	const medianViews = views.length > 0 ? median(views) : null;
 	const maxViews = views.length > 0 ? Math.max(...views) : null;
 	const ratio = medianViews !== null && maxViews !== null ? maxToMedianRatio(maxViews, medianViews) : null;
-	const followConversion = computeFollowConversion(platform, rows, followerSnapshots, cardIdByDate);
+	const followConversion = computeFollowConversion(platform, rows, cardIdByDate);
 	const conversionByPostId = new Map(followConversion.posts.map((p) => [p.postId, p]));
 
 	const sortedByViewsDesc = [...rows].sort((a, b) => b.views - a.views);
@@ -394,16 +330,12 @@ function computePlatformReadout(
 		followConversion,
 		breakoutPosts: sortedByViewsDesc
 			.filter((r) => r.views >= breakoutViewThreshold)
-			.map((r) => {
-				const conversion = conversionByPostId.get(r.postId);
-				return {
-					postId: r.postId,
-					cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
-					views: r.views,
-					follows: conversion?.follows ?? null,
-					followsSource: conversion?.followsSource ?? null
-				};
-			}),
+			.map((r) => ({
+				postId: r.postId,
+				cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
+				views: r.views,
+				follows: conversionByPostId.get(r.postId)?.follows ?? null
+			})),
 		topPosts: sortedByViewsDesc.slice(0, 5).map((r) => ({
 			postId: r.postId,
 			cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
@@ -424,8 +356,6 @@ export interface ViabilityEvidenceA {
 	postId: string;
 	views: number;
 	follows: number;
-	/** Whether this specific post's `follows` came from the platform's own per-post attribution or from a daily follower delta — the strength of the criterion-A evidence, carried structurally so a consumer never has to parse the summary prose. */
-	followsSource: FollowsSource;
 }
 
 export interface ViabilityEvidenceB {
@@ -459,7 +389,7 @@ function describePost(post: { postId: string; cardId: string | null }): string {
 
 /**
  * The pre-registered criterion, applied. Checks A first (a breakout post
- * with visible follow conversion, exact or inferred), then B (an upward
+ * with visible follow conversion), then B (an upward
  * week-1-to-week-4 median trend on any platform). Neither met is reported
  * as `viable: false` with a plain, unhedged summary — "an outlier with no
  * conversion and no trend is explicitly a NO," per the plan.
@@ -467,26 +397,20 @@ function describePost(post: { postId: string; cardId: string | null }): string {
 export function computeVerdict(platforms: PlatformReadout[]): ViabilityVerdict {
 	for (const p of platforms) {
 		for (const post of p.breakoutPosts) {
-			// `followsSource` is non-null whenever `follows` is (both are set
-			// together in `computeFollowConversion`), but check it explicitly
-			// rather than asserting: criterion A's evidence must state how the
-			// number was obtained, and a post carrying a count with no
-			// recorded provenance is not evidence this verdict should rest on.
-			if (post.follows !== null && post.follows > 0 && post.followsSource !== null) {
+			if (post.follows !== null && post.follows > 0) {
 				return {
 					viable: true,
 					criterion: 'A',
 					summary:
 						`VIABLE (criterion A met) — ${p.platform} post ${describePost(post)} cleared the breakout threshold ` +
 						`with ${post.views} views and converted to ${post.follows} follow(s) ` +
-						`(${post.followsSource === 'exact' ? 'exact per-post attribution' : 'inferred from daily follower deltas — directional, not exact'}).`,
+						'(exact per-post attribution, read off the platform).',
 					evidence: {
 						criterion: 'A',
 						platform: p.platform,
 						postId: post.postId,
 						views: post.views,
-						follows: post.follows,
-						followsSource: post.followsSource
+						follows: post.follows
 					}
 				};
 			}
@@ -527,10 +451,6 @@ export function computeVerdict(platforms: PlatformReadout[]): ViabilityVerdict {
 export interface ComputeReadoutOptions {
 	/** One row per post — the LATEST known snapshot for each still-tracked post, not every historical day's row. Callers aggregating multiple dated files must dedupe to the latest `collectedAt` per `platform:postId` before calling this. */
 	rows: MetricsRow[];
-	/** Instagram's daily account-level follower series, for inferred follow conversion. Omit to report `'unavailable'`. */
-	instagramFollowerSnapshots?: DailyFollowerSnapshot[];
-	/** TikTok's daily account-level follower series, recorded by `follower-snapshot.ts --platform tiktok`. Omit to report `'unavailable'`. */
-	tiktokFollowerSnapshots?: DailyFollowerSnapshot[];
 	/** ISO 8601 — the evaluation instant. Not used in any computation below (all of it is derived from `rows`' own `publishedAt`/`views`), but threaded through and stamped onto the result so the readout is reproducible against a fixed moment rather than implicitly "now." */
 	now: string;
 	/** Defaults to ~10,000, per the pre-registered criterion's "clearing ~10,000 views on any platform." */
@@ -556,14 +476,7 @@ const DEFAULT_BREAKOUT_VIEW_THRESHOLD = 10_000;
 
 /** The pure computation this whole module exists to provide. No `Date.now()`, no IO — see this file's header. */
 export function computeReadout(options: ComputeReadoutOptions): Readout {
-	const {
-		rows,
-		instagramFollowerSnapshots,
-		tiktokFollowerSnapshots,
-		now,
-		breakoutViewThreshold = DEFAULT_BREAKOUT_VIEW_THRESHOLD,
-		cardIdByDate
-	} = options;
+	const { rows, now, breakoutViewThreshold = DEFAULT_BREAKOUT_VIEW_THRESHOLD, cardIdByDate } = options;
 
 	const byPlatform = new Map<MetricsPlatform, MetricsRow[]>();
 	for (const row of rows) {
@@ -572,16 +485,8 @@ export function computeReadout(options: ComputeReadoutOptions): Readout {
 		byPlatform.set(row.platform, existing);
 	}
 
-	const snapshotsFor = (platform: MetricsPlatform): DailyFollowerSnapshot[] | undefined => {
-		if (platform === 'instagram') return instagramFollowerSnapshots;
-		if (platform === 'tiktok') return tiktokFollowerSnapshots;
-		return undefined;
-	};
-
 	const platforms = [...byPlatform.entries()]
-		.map(([platform, platformRows]) =>
-			computePlatformReadout(platform, platformRows, breakoutViewThreshold, snapshotsFor(platform), cardIdByDate)
-		)
+		.map(([platform, platformRows]) => computePlatformReadout(platform, platformRows, breakoutViewThreshold, cardIdByDate))
 		.sort((a, b) => a.platform.localeCompare(b.platform));
 
 	return {
@@ -599,18 +504,11 @@ export function computeReadout(options: ComputeReadoutOptions): Readout {
 // ---------------------------------------------------------------------------
 
 function formatFollowConversionLine(fc: PlatformFollowConversion): string {
-	const exact = fc.posts.filter((p) => p.followsSource === 'exact').length;
-	const inferred = fc.posts.filter((p) => p.followsSource === 'inferred').length;
-
-	if (fc.method === 'exact') return 'Follow conversion: EXACT (per-post attribution reported by the platform).';
-	if (fc.method === 'inferred')
-		return 'Follow conversion: INFERRED (from daily follower-count deltas aligned to publish date — directional, not exact).';
-	if (fc.method === 'mixed')
-		return (
-			`Follow conversion: MIXED — ${exact} post(s) exact (per-post attribution), ` +
-			`${inferred} inferred from daily follower deltas (directional, not exact).`
-		);
-	return 'Follow conversion: UNAVAILABLE (no per-post figure recorded and no follower-snapshot series covering these posts).';
+	if (fc.method === 'unavailable') {
+		return 'Follow conversion: UNAVAILABLE (no per-post follow figure recorded for any of these posts).';
+	}
+	const read = fc.posts.filter((p) => p.follows !== null).length;
+	return `Follow conversion: EXACT (per-post attribution reported by the platform; ${read}/${fc.posts.length} post(s) recorded).`;
 }
 
 /** Renders one `Readout` as plain text for the weekly session / T15's runbook / T16's findings. Pure string formatting — no IO. */
@@ -648,16 +546,15 @@ export function formatReadout(readout: Readout): string {
 
 // ---------------------------------------------------------------------------
 // CLI entry point — `npx tsx social/src/metrics/readout.ts`. Reads every
-// dated metrics file `hand-entry.ts`/`follower-snapshot.ts` already write
+// dated metrics file `hand-entry.ts` already writes
 // from `content/social/metrics/`, reduces them to the latest known row per
 // post — with the collectors deleted (see `hand-entry.ts`'s header), a post
 // is written exactly once, into the single dated file named by its own
 // publish date, by one hand-entry run; if the same post is ever entered
 // under two different dates (a correction re-run against a different
 // `--published-at`, or an accidental double-entry) the LAST `collectedAt`
-// wins — reads Instagram's daily follower-snapshot file if present, computes
-// the readout, and prints the report. Shares
-// `hand-entry.ts`'s/`follower-snapshot.ts`'s own CLI conventions (ENOENT ->
+// wins — computes the readout, and prints the report. Shares
+// `hand-entry.ts`'s own CLI conventions (ENOENT ->
 // empty, guarded `main()` so importing this module for its exports never
 // parses `process.argv` or touches the filesystem); the `--now` wall-clock
 // override below is this file's own.
@@ -723,35 +620,19 @@ export async function readLatestMetricsRows(metricsDir: string): Promise<Metrics
 	return [...latestByKey.values()];
 }
 
-/** Reads one platform's daily follower-snapshot file if present. Missing file -> `[]` (report `'unavailable'`), never a fabricated series. */
-async function readFollowerSnapshots(
-	metricsDir: string,
-	platform: FollowerSnapshotPlatform
-): Promise<DailyFollowerSnapshot[]> {
-	try {
-		const raw = await readFile(followersFilePathFor(metricsDir, platform), 'utf-8');
-		return parseFollowerSnapshots(raw);
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-		throw error;
-	}
-}
 
 function printHelp(): void {
 	console.log(`Usage: npx tsx social/src/metrics/readout.ts [options]
 
 Reads every dated metrics file under content/social/metrics/ (written by
-hand-entry.ts and follower-snapshot.ts, including each platform's
-<platform>-followers.json series), computes the per-platform viability
+hand-entry.ts), computes the per-platform viability
 readout — median, maximum, max/median ratio, week-1-vs-week-4 median trend,
 follow conversion, and top 5 posts — and states plainly whether the
 pre-registered criterion (plans/complete/Pf39c2-social-pilot-index.md) was met.
 
-Instagram AND TikTok both have a daily follower-snapshot series, recorded by
-follower-snapshot.ts under --platform instagram/tiktok; each platform's
-follow conversion reports INFERRED when its series covers a post's own date
-and the day before, and UNAVAILABLE when it doesn't. YouTube is EXACT
-(per-video subscribersGained, entered via hand-entry.ts --follows).
+Follow conversion is EXACT wherever a per-post follow figure was recorded
+(hand-entry.ts --follows; every platform reports one), and UNAVAILABLE for a
+platform where none of its posts carry one.
 
 Options:
   --metrics-dir <path>       Defaults to content/social/metrics/.
@@ -806,8 +687,8 @@ async function main(): Promise<void> {
 	const metricsDir = toDir(values['metrics-dir'], '--metrics-dir', DEFAULT_METRICS_DIR);
 
 	// THE ONE WALL-CLOCK READ IN THIS FILE — matches this workspace's own
-	// "DETERMINISM" discipline elsewhere (e.g. `hand-entry.ts`'s/
-	// `follower-snapshot.ts`'s `collectedAt`/`date` inputs). `--now` lets an
+	// "DETERMINISM" discipline elsewhere (e.g. `hand-entry.ts`'s
+	// `collectedAt` input). `--now` lets an
 	// operator pin the evaluation instant stamped on the report for a
 	// reproducible re-run.
 	const now = values.now ?? new Date().toISOString();
@@ -837,14 +718,6 @@ async function main(): Promise<void> {
 		throw new Error(`INSUFFICIENT DATA — no metrics rows found under ${metricsDir}.`);
 	}
 
-	// Both inferred-conversion platforms, read independently: a missing file
-	// for one degrades only that platform to `'unavailable'` and never
-	// silently borrows the other's series.
-	const [instagramFollowerSnapshots, tiktokFollowerSnapshots] = await Promise.all([
-		readFollowerSnapshots(metricsDir, 'instagram'),
-		readFollowerSnapshots(metricsDir, 'tiktok')
-	]);
-
 	// Resolve each post's card from its publish date, so the top-posts list
 	// and the criterion-A verdict name the premise rather than an opaque
 	// platform id (see `card-index.ts`). A missing schedule directory yields
@@ -853,19 +726,12 @@ async function main(): Promise<void> {
 	const scheduleDir = toDir(values['schedule-dir'], '--schedule-dir', DEFAULT_SCHEDULE_DIR);
 	const cardIdByDate = await buildCardIndex(scheduleDir);
 
-	const readout = computeReadout({
-		rows,
-		instagramFollowerSnapshots,
-		tiktokFollowerSnapshots,
-		now,
-		breakoutViewThreshold,
-		cardIdByDate
-	});
+	const readout = computeReadout({ rows, now, breakoutViewThreshold, cardIdByDate });
 	console.log(formatReadout(readout));
 }
 
 // Only auto-run `main()` when this file is the actual process entry point —
-// identical guard to `hand-entry.ts`'s/`follower-snapshot.ts`'s own:
+// identical guard to `hand-entry.ts`'s own:
 // importing this module for its exports (as every test in
 // `__tests__/readout.test.ts` does) must never itself parse `process.argv`
 // or touch the filesystem.
