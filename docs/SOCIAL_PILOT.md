@@ -707,6 +707,24 @@ follower-snapshot series exists for that platform), and the top 5 posts with the
 states plainly whether the pre-registered criterion (section 1) was met, quoting the same "outlier
 with no conversion and no trend is explicitly a NO" language the criterion itself uses.
 
+**Posts are named by CARD, not just by platform id.** A `MetricsRow` stores the platform's own id
+(an Instagram media id, a YouTube video id) because that is the only stored pointer back to the
+real post, but `ler2U2CFzHs` does not tell you which premise a post was built from — and criterion
+A's payoff is "rebuild around whatever premise did it." So the readout resolves each post's card
+from its publish date against the committed `pilot-schedule-w<NN>.json` files
+(`social/src/metrics/card-index.ts`, inverting `pilot-config.ts`'s own week/day anchor) and prints
+both:
+
+```
+Top 1 post(s):
+  - meditations-09-025 [ler2U2CFzHs] (wall): 16 views
+```
+
+The criterion-A verdict sentence names the card the same way. `--schedule-dir` overrides where the
+schedules are read from (default `content/social/`); a date no schedule covers, or a missing
+directory, falls back to the platform id alone rather than guessing a card, and never fails the
+run.
+
 `social/src/metrics/readout.ts`'s own tests (`social/src/metrics/__tests__/readout.test.ts`) prove
 this against synthetic data with an injected outlier both ways: an outlier that also converts
 reports a breakout (criterion A met); an outlier with no conversion and no week-1-to-4 trend

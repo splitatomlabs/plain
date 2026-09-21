@@ -105,6 +105,8 @@ const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(moduleDir, '..', '..', '..');
 /** The default metrics output directory every metrics module shares — see this file's header. */
 export const DEFAULT_METRICS_DIR = path.join(REPO_ROOT, 'content', 'social', 'metrics');
+/** Where the committed `pilot-schedule-w<NN>.json` files live — `readout.ts` reads them to name a post's card (`card-index.ts`). Same "a path constant is not I/O" rationale as `DEFAULT_METRICS_DIR` above. */
+export const DEFAULT_SCHEDULE_DIR = path.join(REPO_ROOT, 'content', 'social');
 
 export type MetricsPlatform = 'instagram' | 'youtube' | 'tiktok';
 

@@ -46,6 +46,7 @@ import {
 	maxToMedianRatio,
 	median,
 	medianViewsByWeek,
+	formatReadout,
 	parseBreakoutThreshold,
 	type DailyFollowerSnapshot
 } from '../readout.js';
@@ -542,5 +543,87 @@ describe('CLI — main()', () => {
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toMatch(/--metrics-dir/);
 		expect(result.stdout).not.toMatch(/VIABLE/);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Card resolution (card-index.ts) surfacing in the readout.
+//
+// The pre-registered criterion's payoff is "rebuild around whatever premise
+// did it", so the two outputs a human actually reads — the top-posts list
+// and the criterion-A verdict sentence — have to name the CARD. A bare
+// platform id answers the wrong question at exactly the moment the pilot's
+// conclusion depends on it.
+// ---------------------------------------------------------------------------
+
+describe('card resolution in the readout', () => {
+	const cardIdByDate = new Map([
+		[weekDayToDate(1, 1), 'meditations-09-025'],
+		[weekDayToDate(4, 1), 'happy-life-03-004']
+	]);
+
+	it('attaches the card id to top posts, resolved from the publish date', () => {
+		const readout = computeReadout({
+			rows: [row({ postId: 'ler2U2CFzHs', publishedAt: at(1, 1) })],
+			now: NOW,
+			cardIdByDate
+		});
+		expect(readout.platforms[0].topPosts[0].cardId).toBe('meditations-09-025');
+	});
+
+	it('leaves cardId null when no schedule covers the date, never guessing', () => {
+		const readout = computeReadout({
+			rows: [row({ publishedAt: at(2, 1) })],
+			now: NOW,
+			cardIdByDate
+		});
+		expect(readout.platforms[0].topPosts[0].cardId).toBeNull();
+	});
+
+	it('omitting cardIdByDate entirely leaves every cardId null — the pre-resolution behaviour', () => {
+		const readout = computeReadout({ rows: [row()], now: NOW });
+		expect(readout.platforms[0].topPosts[0].cardId).toBeNull();
+		expect(readout.platforms[0].followConversion.posts[0].cardId).toBeNull();
+	});
+
+	it('names the card, and keeps the platform id, in the top-posts list', () => {
+		const readout = computeReadout({
+			rows: [row({ postId: 'ler2U2CFzHs', publishedAt: at(1, 1) })],
+			now: NOW,
+			cardIdByDate
+		});
+		expect(formatReadout(readout)).toContain('meditations-09-025 [ler2U2CFzHs]');
+	});
+
+	it('falls back to the platform id alone when the card is unknown', () => {
+		const readout = computeReadout({ rows: [row({ postId: 'ABC123', publishedAt: at(2, 1) })], now: NOW, cardIdByDate });
+		const text = formatReadout(readout);
+		expect(text).toContain('ABC123');
+		expect(text).not.toContain('[ABC123]');
+	});
+
+	// THE SENTENCE THE WHOLE PILOT PRODUCES.
+	it('names the card in the criterion-A verdict', () => {
+		const readout = computeReadout({
+			rows: [
+				row({ platform: 'youtube', postId: 'ler2U2CFzHs', publishedAt: at(1, 1), views: 40_000, follows: 25 })
+			],
+			now: NOW,
+			cardIdByDate
+		});
+		expect(readout.verdict.viable).toBe(true);
+		expect(readout.verdict.criterion).toBe('A');
+		expect(readout.verdict.summary).toContain('meditations-09-025 [ler2U2CFzHs]');
+	});
+
+	// The structured evidence keeps the platform id as its own field, so a
+	// consumer is never forced to parse the prose.
+	it('keeps the raw platform id in the verdict evidence', () => {
+		const readout = computeReadout({
+			rows: [row({ platform: 'youtube', postId: 'ler2U2CFzHs', publishedAt: at(1, 1), views: 40_000, follows: 25 })],
+			now: NOW,
+			cardIdByDate
+		});
+		expect(readout.verdict.evidence).toMatchObject({ postId: 'ler2U2CFzHs' });
 	});
 });

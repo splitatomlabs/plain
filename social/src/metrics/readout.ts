@@ -89,9 +89,10 @@ import { readdir, readFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 
+import { buildCardIndex, cardIdForPublishedAt } from './card-index.js';
 import { dateToWeekDay } from '../pilot-config.js';
 import { toDir } from './hand-entry.js';
-import { DEFAULT_METRICS_DIR, followersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type FollowerSnapshotPlatform, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
+import { DEFAULT_METRICS_DIR, DEFAULT_SCHEDULE_DIR, followersFilePathFor, metricsRowKey, parseFollowerSnapshots, parseMetricsRows, type FollowerSnapshotPlatform, type MetricsFormat, type MetricsPlatform, type MetricsRow } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // Small pure statistics — each one independently unit-testable.
@@ -211,6 +212,8 @@ export type FollowConversionMethod = 'exact' | 'inferred' | 'unavailable';
 
 export interface PostFollowConversion {
 	postId: string;
+	/** The card this post was built from, resolved from its publish date (`card-index.ts`). `null` when no schedule covers that date. */
+	cardId: string | null;
 	views: number;
 	/** `null` = not available / not measurable for this post. NEVER treated as `0` — see this file's header. */
 	follows: number | null;
@@ -268,23 +271,30 @@ function inferFollowsForPost(publishedAt: string, snapshots: DailyFollowerSnapsh
 export function computeFollowConversion(
 	platform: MetricsPlatform,
 	rows: Pick<MetricsRow, 'postId' | 'views' | 'publishedAt' | 'follows'>[],
-	snapshots?: DailyFollowerSnapshot[]
+	snapshots?: DailyFollowerSnapshot[],
+	cardIdByDate?: ReadonlyMap<string, string>
 ): PlatformFollowConversion {
+	const identify = (r: Pick<MetricsRow, 'postId' | 'views' | 'publishedAt'>) => ({
+		postId: r.postId,
+		cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
+		views: r.views
+	});
+
 	if (platform === 'youtube') {
 		return {
 			method: 'exact',
-			posts: rows.map((r) => ({ postId: r.postId, views: r.views, follows: r.follows }))
+			posts: rows.map((r) => ({ ...identify(r), follows: r.follows }))
 		};
 	}
 	if (!snapshots || snapshots.length === 0) {
 		return {
 			method: 'unavailable',
-			posts: rows.map((r) => ({ postId: r.postId, views: r.views, follows: null }))
+			posts: rows.map((r) => ({ ...identify(r), follows: null }))
 		};
 	}
 	return {
 		method: 'inferred',
-		posts: rows.map((r) => ({ postId: r.postId, views: r.views, follows: inferFollowsForPost(r.publishedAt, snapshots) }))
+		posts: rows.map((r) => ({ ...identify(r), follows: inferFollowsForPost(r.publishedAt, snapshots) }))
 	};
 }
 
@@ -294,6 +304,8 @@ export function computeFollowConversion(
 
 export interface TopPost {
 	postId: string;
+	/** The card this post was built from, resolved from its publish date (`card-index.ts`). `null` when no schedule covers that date. */
+	cardId: string | null;
 	views: number;
 	format: MetricsFormat;
 }
@@ -317,13 +329,14 @@ function computePlatformReadout(
 	platform: MetricsPlatform,
 	rows: MetricsRow[],
 	breakoutViewThreshold: number,
-	followerSnapshots: DailyFollowerSnapshot[] | undefined
+	followerSnapshots: DailyFollowerSnapshot[] | undefined,
+	cardIdByDate?: ReadonlyMap<string, string>
 ): PlatformReadout {
 	const views = rows.map((r) => r.views);
 	const medianViews = views.length > 0 ? median(views) : null;
 	const maxViews = views.length > 0 ? Math.max(...views) : null;
 	const ratio = medianViews !== null && maxViews !== null ? maxToMedianRatio(maxViews, medianViews) : null;
-	const followConversion = computeFollowConversion(platform, rows, followerSnapshots);
+	const followConversion = computeFollowConversion(platform, rows, followerSnapshots, cardIdByDate);
 	const followsByPostId = new Map(followConversion.posts.map((p) => [p.postId, p.follows]));
 
 	const sortedByViewsDesc = [...rows].sort((a, b) => b.views - a.views);
@@ -338,8 +351,18 @@ function computePlatformReadout(
 		followConversion,
 		breakoutPosts: sortedByViewsDesc
 			.filter((r) => r.views >= breakoutViewThreshold)
-			.map((r) => ({ postId: r.postId, views: r.views, follows: followsByPostId.get(r.postId) ?? null })),
-		topPosts: sortedByViewsDesc.slice(0, 5).map((r) => ({ postId: r.postId, views: r.views, format: r.format }))
+			.map((r) => ({
+				postId: r.postId,
+				cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
+				views: r.views,
+				follows: followsByPostId.get(r.postId) ?? null
+			})),
+		topPosts: sortedByViewsDesc.slice(0, 5).map((r) => ({
+			postId: r.postId,
+			cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
+			views: r.views,
+			format: r.format
+		}))
 	};
 }
 
@@ -369,6 +392,23 @@ export type ViabilityVerdict =
 	| { viable: false; summary: string };
 
 /**
+ * How a post is NAMED wherever a human reads it — the criterion-A verdict
+ * sentence and the top-posts list.
+ *
+ * Leads with the card id, because the pre-registered criterion's payoff is
+ * "rebuild around whatever premise did it": a bare platform id answers the
+ * wrong question at the exact moment the pilot's conclusion depends on it.
+ * Keeps the platform id in brackets rather than replacing it, because it is
+ * the only pointer back to the real post for re-reading its analytics.
+ * Falls back to the platform id alone when no schedule covers the date (a
+ * pre-pilot row, or a checkout with no schedules) — never to a fabricated
+ * or guessed card.
+ */
+function describePost(post: { postId: string; cardId: string | null }): string {
+	return post.cardId === null ? post.postId : `${post.cardId} [${post.postId}]`;
+}
+
+/**
  * The pre-registered criterion, applied. Checks A first (a breakout post
  * with visible follow conversion, exact or inferred), then B (an upward
  * week-1-to-week-4 median trend on any platform). Neither met is reported
@@ -383,7 +423,7 @@ export function computeVerdict(platforms: PlatformReadout[]): ViabilityVerdict {
 					viable: true,
 					criterion: 'A',
 					summary:
-						`VIABLE (criterion A met) — ${p.platform} post ${post.postId} cleared the breakout threshold ` +
+						`VIABLE (criterion A met) — ${p.platform} post ${describePost(post)} cleared the breakout threshold ` +
 						`with ${post.views} views and converted to ${post.follows} follow(s) ` +
 						`(${p.followConversion.method === 'exact' ? 'exact per-post attribution' : 'inferred from daily follower deltas — directional, not exact'}).`,
 					evidence: { criterion: 'A', platform: p.platform, postId: post.postId, views: post.views, follows: post.follows }
@@ -434,6 +474,14 @@ export interface ComputeReadoutOptions {
 	now: string;
 	/** Defaults to ~10,000, per the pre-registered criterion's "clearing ~10,000 views on any platform." */
 	breakoutViewThreshold?: number;
+	/**
+	 * `date -> card_id`, from `card-index.ts`'s `buildCardIndex`. Optional:
+	 * omit it and every `cardId` below is `null` and the readout names
+	 * platform ids alone, exactly as it did before card resolution existed.
+	 * Passing a plain map keeps this function pure — the schedule files are
+	 * read by the CLI, never here.
+	 */
+	cardIdByDate?: ReadonlyMap<string, string>;
 }
 
 export interface Readout {
@@ -447,7 +495,14 @@ const DEFAULT_BREAKOUT_VIEW_THRESHOLD = 10_000;
 
 /** The pure computation this whole module exists to provide. No `Date.now()`, no IO — see this file's header. */
 export function computeReadout(options: ComputeReadoutOptions): Readout {
-	const { rows, instagramFollowerSnapshots, tiktokFollowerSnapshots, now, breakoutViewThreshold = DEFAULT_BREAKOUT_VIEW_THRESHOLD } = options;
+	const {
+		rows,
+		instagramFollowerSnapshots,
+		tiktokFollowerSnapshots,
+		now,
+		breakoutViewThreshold = DEFAULT_BREAKOUT_VIEW_THRESHOLD,
+		cardIdByDate
+	} = options;
 
 	const byPlatform = new Map<MetricsPlatform, MetricsRow[]>();
 	for (const row of rows) {
@@ -463,7 +518,9 @@ export function computeReadout(options: ComputeReadoutOptions): Readout {
 	};
 
 	const platforms = [...byPlatform.entries()]
-		.map(([platform, platformRows]) => computePlatformReadout(platform, platformRows, breakoutViewThreshold, snapshotsFor(platform)))
+		.map(([platform, platformRows]) =>
+			computePlatformReadout(platform, platformRows, breakoutViewThreshold, snapshotsFor(platform), cardIdByDate)
+		)
 		.sort((a, b) => a.platform.localeCompare(b.platform));
 
 	return {
@@ -510,7 +567,7 @@ export function formatReadout(readout: Readout): string {
 		lines.push(formatFollowConversionLine(p.followConversion));
 		lines.push(`Top ${Math.min(5, p.topPosts.length)} post(s):`);
 		for (const post of p.topPosts) {
-			lines.push(`  - ${post.postId} (${post.format}): ${post.views} views`);
+			lines.push(`  - ${describePost(post)} (${post.format}): ${post.views} views`);
 		}
 		lines.push('');
 	}
@@ -628,6 +685,13 @@ and the day before, and UNAVAILABLE when it doesn't. YouTube is EXACT
 
 Options:
   --metrics-dir <path>       Defaults to content/social/metrics/.
+  --schedule-dir <path>      Where the committed pilot-schedule-w<NN>.json
+                              files live (default: content/social/). Each
+                              post's card is resolved from its publish date,
+                              so the top-posts list and the criterion-A
+                              verdict name the card, not just the platform's
+                              own id. A missing directory is not an error —
+                              posts are then named by platform id alone.
   --now <ISO 8601>           The evaluation instant stamped on the report
                               (default: real wall-clock time). Does not
                               affect any computed statistic — every one is
@@ -645,6 +709,7 @@ async function main(): Promise<void> {
 		args: process.argv.slice(2),
 		options: {
 			'metrics-dir': { type: 'string' },
+			'schedule-dir': { type: 'string' },
 			now: { type: 'string' },
 			'breakout-threshold': { type: 'string' },
 			help: { type: 'boolean', default: false }
@@ -710,7 +775,22 @@ async function main(): Promise<void> {
 		readFollowerSnapshots(metricsDir, 'tiktok')
 	]);
 
-	const readout = computeReadout({ rows, instagramFollowerSnapshots, tiktokFollowerSnapshots, now, breakoutViewThreshold });
+	// Resolve each post's card from its publish date, so the top-posts list
+	// and the criterion-A verdict name the premise rather than an opaque
+	// platform id (see `card-index.ts`). A missing schedule directory yields
+	// an empty index and the readout simply names platform ids — never a
+	// reason to fail the run that produces the pilot's verdict.
+	const scheduleDir = toDir(values['schedule-dir'], '--schedule-dir', DEFAULT_SCHEDULE_DIR);
+	const cardIdByDate = await buildCardIndex(scheduleDir);
+
+	const readout = computeReadout({
+		rows,
+		instagramFollowerSnapshots,
+		tiktokFollowerSnapshots,
+		now,
+		breakoutViewThreshold,
+		cardIdByDate
+	});
 	console.log(formatReadout(readout));
 }
 
