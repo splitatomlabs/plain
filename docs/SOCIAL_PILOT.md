@@ -6,9 +6,9 @@ not involved in building this system can run the pilot day to day and week to we
 document alone — every command below is real, copy-pasteable, and checked against the actual
 source files as of 2026-09-09, not paraphrased.
 
-**Read the "Current status" section (near the bottom) before doing anything else.** Account setup
-and tooling are complete, but zero posts have ever been published on any platform. This document
-describes the system as designed and built; it does not claim the pilot has actually started.
+**Read the "Current status" section (near the bottom) before doing anything else.** The pilot is
+LIVE: week 1 (2026-09-14..20) published on all three platforms and is measured, and week 2 is
+scheduled. Section 8's verdict is due after week 4 closes on 2026-10-11.
 
 ## 1. What the pilot is, and the pre-registered criterion
 
@@ -737,7 +737,24 @@ automation is ever revisited:
   (no per-post or daily-snapshot series is collected for it) regardless of which read path, if
   either, was ever automated.
 
-## Current status — what is NOT done
+## Current status — the pilot is LIVE
+
+**Week 1 is published and measured; week 2 is scheduled and starts 2026-09-21.** Updated 2026-09-21.
+This section spent a long time saying the opposite and was not updated on the day posting began —
+read the dates below, not the prose, if the two ever disagree again.
+
+| | Status |
+|---|---|
+| Week 1 (2026-09-14..20) | **Published on all three platforms, all 21 posts.** Metrics hand-entered and committed; review note filled (`content/social/pilot-review-w01.md`) |
+| Week 2 (2026-09-21..27) | Generated, rendered, scheduled. First post 07:30 ET on 2026-09-21 |
+| Week 3 (2026-09-28..10-04) | Not generated — gated on week 2's review note (5.1) |
+| Week 4 (2026-10-05..11) | Not generated. The verdict (section 8) is due after it closes |
+
+**Week 1 result, for orientation only — it decides nothing:** 3,033 views across 21 posts; medians
+65 (Instagram), 199 (TikTok), 212 (YouTube); maximum 398; **one** follow in total. Criterion A is
+not met and is not close (398 against a ~10,000 threshold). Criterion B is not assessable until
+week 4 by construction. The full reading, including a Day 3 YouTube post that drew 1 view for
+reasons never established, is in the week 1 review note.
 
 **Account setup (3.0), 2026-09-09: done.** The Google/YouTube (Brand Account), Instagram
 (Business), and TikTok accounts all exist, phone-verified, on the shared pilot email, each with the
@@ -759,45 +776,58 @@ filename and its metadata sidecar); after that it is fixed for the life of the p
 anchor is asserted directly in `social/src/__tests__/cli.test.ts`, and several tests there use week-1
 dates — moving it again means updating those too.
 
-**Built and unit-tested, not yet exercised for real:** the render pipeline (`social/src/cli.ts`,
-`social/src/prepare-week.ts`), the schedule generator and weekly reviewer
-(`scripts/generate-schedule.ts`, `scripts/review-week.ts` — week 1's schedule,
-`content/social/pilot-schedule-w01.json`, already exists), and both metrics tools
-(`social/src/metrics/hand-entry.ts`, `social/src/metrics/readout.ts`). Every one of these has tests against real fixtures, but none has
-been run end to end against the real accounts yet — the first real weekly session (section 5) has
-not happened.
+**Exercised for real, 2026-09-14..21:** the render pipeline (`social/src/cli.ts`,
+`social/src/prepare-week.ts`) has produced two weeks of MP4s; the schedule generator and weekly
+reviewer (`scripts/generate-schedule.ts`, `scripts/review-week.ts`) have produced weeks 1-2 and
+week 1's filled review note; and both metrics tools (`social/src/metrics/hand-entry.ts`,
+`social/src/metrics/readout.ts`) have taken all 21 of week 1's rows and produced a real readout.
+The first real weekly session (section 5) happened on 2026-09-21.
 
 **What genuinely remains before the pilot can start:**
 
-- **The `/go/[slug]` attribution redirects still 404 in production.** They exist on this branch
-  (`web/src/routes/go/[slug]/+server.js`) but have not merged to `main` or deployed. The bio links
-  above already point at them; once that branch ships, verify each one actually redirects —
-  `curl -sI https://thinkplain.ai/go/ig` (and `/yt`) should return a 302 to a
-  `thinkplain.ai/?utm_source=...` URL — before relying on the attribution data it produces.
+- ~~**The `/go/[slug]` attribution redirects still 404 in production.**~~ **Closed — verified live
+  2026-09-21.** All three return a 302 with the correct `utm_source`
+  (`curl -sI https://thinkplain.ai/go/ig`, `/yt`, `/tt`). **What is NOT verified is whether anything
+  reaches them:** Instagram and TikTok do not render caption URLs as clickable links, so the
+  attribution URL in those captions is plain text, and TikTok has no bio link either (3.0) — which
+  leaves the platform carrying 40% of week 1's views with no clickable route to the site at all.
+  3.0's claim that caption attribution survives the TikTok deferral looks wrong and should be
+  checked on a live post. Check Umami for `/go/` traffic before concluding anything about
+  conversion.
 - ~~No posting time has been deliberately chosen.~~ **Closed 2026-09-10: `07:30 America/New_York`,
   all three platforms, held constant for the full 28 days** (section 4 gives the reasoning and the
   reason it must not be changed mid-pilot). The paired rule about reading a daily follower count
   late in the evening is gone with section 5.5 — conversion is now read per post, so the posting
   hour no longer affects how it is measured.
-- **Zero posts have been published to any platform.** The first live post through this system, on
-  any platform, has not happened yet.
+- ~~**Zero posts have been published to any platform.**~~ **Closed 2026-09-14**, when week 1 day 1
+  went out on all three platforms. 21 posts published as of 2026-09-20.
 
-Do not read the presence of thorough tests and a verified native-scheduling path as evidence this
-pilot is live: account setup and tooling are complete, but as of this writing, **zero posts have
-ever been published to any platform.**
+**Two open questions carried out of week 1**, both operational rather than experimental — neither
+changes what gets posted:
+
+- **Day 3's YouTube post (`t_9C0SzdAks`) drew 1 view** while the same card took 159 on TikTok.
+  Visibility is Public with no restrictions, the rendered file is sound, and title length does not
+  predict views across the week. Read its **Impressions** (Analytics → Reach): near-zero means it
+  never entered the Shorts feed; thousands at ~0% CTR means it was shown and ignored. Nothing else
+  distinguishes those.
+- **TikTok's day 1 post drew 0 views.** Cold start explains low, not zero — confirm it published.
 
 ## 8. Findings (week 4) — TEMPLATE, NOT YET FILLED IN
 
-**As of 2026-08-27, this section is empty on purpose.** The pilot has not run. Zero posts have been
-published on any platform (see "Current status" immediately above) — there is no week 1, no week 4,
-no metrics file under `content/social/metrics/`, and therefore no finding. Nothing below this line is
-a result. It is the exact procedure and the exact blanks whoever closes `Pf39c2-social-pilot-03` T16
-must fill in once four real weeks of posts and metrics exist — written now, ahead of time, so that
-person is filling in a pre-built skeleton with real numbers, not inventing the report's shape under
-pressure to produce a verdict. If you are reading this and the date above is more than a few weeks
-old relative to when go-live actually happened, treat that staleness itself as a signal that the
-three items listed under "What genuinely remains before the pilot can start" in "Current status"
-have not been closed yet either.
+**This section is still empty on purpose, but no longer because the pilot has not run.** Updated
+2026-09-21: week 1 IS published and measured (21 posts, metrics under `content/social/metrics/`,
+review note filled). What is missing is weeks 2-4 — and the verdict below is a WEEK 4 verdict by
+construction, because criterion B is a week-1-to-week-4 median trend that cannot be evaluated with
+one week of data. **Do not fill this in early.** Week 4 closes 2026-10-11.
+
+Nothing below this line is a result. It is the exact procedure and the exact blanks whoever closes
+`Pf39c2-social-pilot-03` T16 must fill in once four real weeks exist — written ahead of time so that
+person fills in a pre-built skeleton with real numbers rather than inventing the report's shape
+under pressure to produce a verdict.
+
+**Week 1's numbers are in `content/social/pilot-review-w01.md`, not here.** They are a baseline, not
+a finding: criterion A is not met and not close (maximum 398 views against ~10,000; one follow
+across 3,033 views), and criterion B is not assessable yet.
 
 ### 8.1 Procedure — run this at ~week 4, not before
 
