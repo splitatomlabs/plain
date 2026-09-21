@@ -620,9 +620,11 @@ readout — median, maximum, max/median ratio, week-1-vs-week-4 median trend,
 follow conversion, and top 5 posts — and states plainly whether the
 pre-registered criterion (plans/complete/Pf39c2-social-pilot-index.md) was met.
 
-No TikTok follower-snapshot collector exists yet, so TikTok's follow
-conversion always reports UNAVAILABLE until one is built — see this file's
-own header.
+Instagram AND TikTok both have a daily follower-snapshot series, recorded by
+follower-snapshot.ts under --platform instagram/tiktok; each platform's
+follow conversion reports INFERRED when its series covers a post's own date
+and the day before, and UNAVAILABLE when it doesn't. YouTube is EXACT
+(per-video subscribersGained, entered via hand-entry.ts --follows).
 
 Options:
   --metrics-dir <path>       Defaults to content/social/metrics/.
