@@ -415,6 +415,32 @@ npx tsx scripts/generate-schedule.ts --week <N> --seed <n>
 generate the next week") — it is not new to this document, just listed here so the weekly session's
 full scope is in one place.
 
+**If you reject a card, write it into `content/social/rejected-cards.json` in the same sitting —
+editing the schedule alone does not stick.** Some drawn cards are unpostable on content grounds
+even though they render fine: the usual case is a landing line that reads as a fragment of a longer
+passage rather than a payoff, which the pool's own rubric does not reliably catch (it scored the
+worked example below a 4 and called it "self-contained"). A card swapped out of a week's schedule
+is then in no schedule at all, and `loadPriorWeeks` builds later weeks' exclusion sets from what
+the schedules *contain* — so the rejected card goes back in the pool and can be drawn again. That
+is not hypothetical: `on-anger-02-054` ("A boy was raised in Plato's household.") was pulled from
+week 1 day 2 by commit `ee25b4f` (#46) and the week 2 draw handed back the same card.
+
+The list is hand-maintained and committed — there is deliberately no CLI that appends to it, since
+writing the reason by hand is the point. Add an entry with `card_id`, `book_slug`, `reason`,
+`rejected_on` (and `rejected_in`/`replaced_by` when they apply); every field but the last two is
+required and validated, and a `card_id` matching no real card fails generation loudly rather than
+silently protecting nothing. `generate-schedule.ts` reads it by default and prints what it
+excluded:
+
+```
+Excluded: 0 un-renderable, 1 content-rejected
+```
+
+**This is not `render-exclusions.json`.** That file is renderer-derived, regenerated wholesale by
+`social/scripts/write-exclusions.ts`, and means "this card cannot be rendered"; entries added there
+by hand would both misstate the reason and be lost on the next regeneration. See
+`scripts/lib/rejections.ts`.
+
 ### 5.2 Render the week
 
 One command renders every day of the week that isn't already on disk and writes the single

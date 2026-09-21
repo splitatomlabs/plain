@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -24,18 +24,17 @@ interface RunResult {
   stderr: string;
 }
 
+// spawnSync, not execFileSync: execFileSync only hands back stdout on
+// success (it throws on failure, and only then carries stderr), so a
+// warning printed by a run that SUCCEEDS — e.g. generating with no
+// content-rejection list present — was unobservable here.
 function run(script: string, args: string[]): RunResult {
-  try {
-    const stdout = execFileSync("npx", ["tsx", script, ...args], {
-      cwd: process.cwd(),
-      encoding: "utf-8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return { status: 0, stdout, stderr: "" };
-  } catch (e) {
-    const err = e as { status: number | null; stdout: string; stderr: string };
-    return { status: err.status ?? 1, stdout: err.stdout, stderr: err.stderr };
-  }
+  const result = spawnSync("npx", ["tsx", script, ...args], {
+    cwd: process.cwd(),
+    encoding: "utf-8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  return { status: result.status ?? 1, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
 }
 
 function generate(args: string[]): RunResult {
@@ -248,5 +247,84 @@ describe("review-week.ts", () => {
     reviewWeek(["--week", "1", "--date", "2026-08-25", "--schedule-dir", outputDir]);
     const second = reviewWeek(["--week", "1", "--date", "2026-08-26", "--schedule-dir", outputDir, "--force"]);
     expect(second.status).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The content-rejection list (./rejections.ts) wired into the CLI.
+//
+// Differential, not incidental: the first run records what the seed actually
+// draws, the second rejects that exact card and re-runs the SAME seed. A
+// test that merely asserted "some card isn't scheduled" would pass whether
+// or not the mechanism worked, since most cards aren't drawn anyway.
+// ---------------------------------------------------------------------------
+
+describe("content-rejection list", () => {
+  async function scheduledCardIds(dir: string): Promise<string[]> {
+    const raw = await readFile(path.join(dir, "pilot-schedule-w01.json"), "utf-8");
+    return (JSON.parse(raw) as { slots: { card_id: string }[] }).slots.map((s) => s.card_id);
+  }
+
+  async function writeRejections(dir: string, cardIds: string[]): Promise<void> {
+    const { writeFile } = await import("node:fs/promises");
+    await writeFile(
+      path.join(dir, "rejected-cards.json"),
+      JSON.stringify({
+        meta: { purpose: "test" },
+        wall: cardIds.map((card_id) => ({
+          card_id,
+          book_slug: card_id.split(/-\d/)[0],
+          reason: "rejected by this test",
+          rejected_on: "2026-09-20",
+        })),
+      }),
+      "utf-8",
+    );
+  }
+
+  it("excludes a card the same seed would otherwise draw", async () => {
+    const first = generate(["--week", "1", "--seed", "7", "--output", outputDir, "--first-week"]);
+    expect(first.status).toBe(0);
+    const drawn = await scheduledCardIds(outputDir);
+    expect(drawn).toHaveLength(7);
+
+    await writeRejections(outputDir, [drawn[0]]);
+
+    const second = generate(["--week", "1", "--seed", "7", "--output", outputDir, "--first-week", "--force"]);
+    expect(second.status).toBe(0);
+
+    const redrawn = await scheduledCardIds(outputDir);
+    expect(redrawn).not.toContain(drawn[0]);
+    expect(redrawn).toHaveLength(7);
+  });
+
+  it("reports how many cards each list excluded", async () => {
+    await writeRejections(outputDir, []);
+    const result = generate(["--week", "1", "--seed", "7", "--output", outputDir, "--first-week", "--dry-run"]);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/0 content-rejected/);
+  });
+
+  it("warns, but still generates, when no rejection list exists", () => {
+    const result = generate(["--week", "1", "--seed", "7", "--output", outputDir, "--first-week", "--dry-run"]);
+    expect(result.status).toBe(0);
+    expect(result.stderr).toMatch(/No content-rejection list/i);
+  });
+
+  // A typo'd id silently protects nothing — the one failure the list exists
+  // to prevent.
+  it("refuses to generate when a rejected id matches no corpus card", async () => {
+    await writeRejections(outputDir, ["not-a-real-card-99"]);
+    const result = generate(["--week", "1", "--seed", "7", "--output", outputDir, "--first-week", "--dry-run"]);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/not-a-real-card-99/);
+  });
+
+  it("refuses to generate on a malformed rejection list rather than running ungated", async () => {
+    const { writeFile } = await import("node:fs/promises");
+    await writeFile(path.join(outputDir, "rejected-cards.json"), "[]", "utf-8");
+    const result = generate(["--week", "1", "--seed", "7", "--output", outputDir, "--first-week", "--dry-run"]);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/unrecognized shape/i);
   });
 });

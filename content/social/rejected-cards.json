@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "purpose": "Cards rejected on CONTENT grounds — they render fine, but must never be posted. Read by scripts/generate-schedule.ts, which excludes every card_id here from every future week's draw. Hand-maintained: add an entry, with a reason, in the same commit that rejects the card. This is NOT render-exclusions.json, which is renderer-derived, regenerated wholesale, and means 'cannot be rendered'. See scripts/lib/rejections.ts.",
+    "updated_at": "2026-09-20"
+  },
+  "wall": [
+    {
+      "card_id": "on-anger-02-054",
+      "book_slug": "on-anger",
+      "reason": "Landing line 'A boy was raised in Plato's household.' is the opening of an anecdote, not a payoff — on screen, alone, with no surrounding passage, it says nothing. The pool's own rubric scores it 4 and calls it 'self-contained', which is why the scorer cannot be relied on to catch this class of line; it is a human judgment.",
+      "rejected_on": "2026-09-10",
+      "rejected_in": "ee25b4f (#46)",
+      "replaced_by": "on-anger-02-062"
+    }
+  ]
+}

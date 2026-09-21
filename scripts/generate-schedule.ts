@@ -26,6 +26,7 @@ import { parseArgs } from "node:util";
 import { loadCorpus, rankWall } from "./lib/premises.js";
 import { generateWeek, loadWallPool, loadPriorWeeks } from "./lib/schedule.js";
 import { isReviewComplete, reviewNoteFileName } from "./lib/review.js";
+import { assertRejectionsResolve, loadRejections } from "./lib/rejections.js";
 
 // ---------------------------------------------------------------------------
 // CLI arguments
@@ -37,6 +38,7 @@ const { values: args } = parseArgs({
     seed: { type: "string" },
     "premises-dir": { type: "string", default: "content/social/premises" },
     exclusions: { type: "string" },
+    rejections: { type: "string" },
     output: { type: "string", default: "content/social" },
     "corpus-dir": { type: "string", default: "content/output" },
     "dry-run": { type: "boolean", default: false },
@@ -58,6 +60,11 @@ Options:
                                  social/scripts/write-exclusions.ts (default: <output>/render-exclusions.json).
                                  Optional — if absent, generation proceeds ungated (logged loudly) exactly as
                                  it did before F05.
+  --rejections <path>           Hand-maintained list of cards rejected on CONTENT grounds — they render
+                                 fine but must never be posted (default: <output>/rejected-cards.json).
+                                 Every card_id in it is excluded from this and every future week's draw.
+                                 Distinct from --exclusions, which is renderer-derived and regenerated
+                                 wholesale. Optional — if absent, generation proceeds ungated (logged).
   --corpus-dir <dir>            Card corpus directory (default: content/output)
   --output <dir>                Schedule output directory (default: content/social)
   --dry-run                     Print the week's summary; do not write a file
@@ -116,6 +123,11 @@ const outputDir = args.output!;
 // spell it out — still fully overridable via --exclusions, and loadWallPool
 // tolerates this path being absent (logged, not fatal).
 const exclusionsPath = args.exclusions ?? path.join(outputDir, "render-exclusions.json");
+// The content-rejection list lives beside the schedules and the renderer's
+// own exclusion list, and defaults the same way. See ./lib/rejections.ts for
+// why it is a separate file from render-exclusions.json rather than more
+// rows in it.
+const rejectionsPath = args.rejections ?? path.join(outputDir, "rejected-cards.json");
 const dryRun = !!args["dry-run"];
 const force = !!args.force;
 
@@ -196,6 +208,24 @@ async function main(): Promise<void> {
 
   const { usedCardIds } = await loadPriorWeeks(outputDir, week);
 
+  // Content rejections (./lib/rejections.ts). Unioned with the renderer's
+  // own exclusions rather than replacing them: a card can be both
+  // un-renderable AND rejected, and neither list is authoritative over the
+  // other. This is what stops a card that was swapped out of one week —
+  // and so never landed in a schedule for `loadPriorWeeks` to read back —
+  // from being handed straight back by the next week's draw.
+  const rejected = await loadRejections(rejectionsPath);
+  if (rejected === null) {
+    console.warn(
+      `No content-rejection list at "${rejectionsPath}" — generating without it. A card rejected on content ` +
+        `grounds can be redrawn in a later week unless it is listed there (see scripts/lib/rejections.ts).`,
+    );
+  } else {
+    assertRejectionsResolve(rejected, new Set(cards.map((c) => c.id)));
+  }
+
+  const wallExclusions = new Set<string>([...(exclusions?.wall ?? []), ...(rejected ?? [])]);
+
   const schedule = generateWeek({
     weekNumber: week,
     seed,
@@ -203,11 +233,12 @@ async function main(): Promise<void> {
     wallPool: pool,
     poolSource: source,
     priorUsedCardIds: usedCardIds,
-    wallExclusions: exclusions?.wall ?? undefined,
+    wallExclusions: wallExclusions.size > 0 ? wallExclusions : undefined,
   });
 
   console.log(`Week ${week} (seed ${seed}):`);
   console.log(`  Pool source — wall: ${source}`);
+  console.log(`  Excluded: ${exclusions?.wall.size ?? 0} un-renderable, ${rejected?.size ?? 0} content-rejected`);
   console.log(`  ${schedule.slots.length} Wall posts scheduled (one per day)`);
   console.log("  Author mix:");
   for (const [author, m] of Object.entries(schedule.author_mix)) {
