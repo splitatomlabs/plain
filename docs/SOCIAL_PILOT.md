@@ -887,6 +887,35 @@ Paste `readout.ts`'s printed verdict summary line here verbatim, unedited:
 > `<paste the exact "VIABLE (criterion A met) — ..." / "VIABLE (criterion B met) — ..." /
 > "NOT VIABLE — ..." line the tool printed>` — TO BE FILLED AT WEEK 4
 
+**Site traffic — NOT part of the criterion, and reported anyway.** Fill this in from Umami for the
+full 28 days, beside the verdict rather than after it:
+
+| Metric | Value |
+|---|---|
+| Total site visitors, 28 days | `<n>` — TO BE FILLED AT WEEK 4 |
+| Visitors attributed to `/go/ig`, `/go/yt`, `/go/tt` (`utm_source`) | `<n>` — TO BE FILLED AT WEEK 4 |
+| `book_started` events | `<n>` — TO BE FILLED AT WEEK 4 |
+| Total post views over the same 28 days (from the table above) | `<n>` — TO BE FILLED AT WEEK 4 |
+
+**Why this table exists, given that neither criterion uses it.** Criterion A is views plus follows;
+criterion B is a median-views trend. Neither measures whether anyone reached the site — so **the
+pilot can satisfy criterion B and deliver zero readers**, and a rising view count would read as
+"viable" over an empty site. Plain's goal is people reading books, so that outcome must be visible
+to whoever reads this section rather than inferable from its absence.
+
+**This is NOT a fourth criterion and must not be used as one.** Do not let a weak traffic number
+veto a met criterion, and do not let a strong one rescue an unmet one — that is exactly the
+post-hoc renegotiation section 1 forbids. It is context reported alongside the verdict, and if the
+two point in different directions, say so plainly in 8.3's recommendation instead of resolving it
+by arithmetic.
+
+Week 1's reading, for whoever fills this in: 3,033 post views produced ~4 site visitors, none
+attributed to a `/go/` link, with one follow. The Umami tag is installed and working (verified
+2026-09-21), and honours Do Not Track, so it undercounts by an unknown but small amount. Notably,
+YouTube's 1,414 views came with a working clickable description link and converted no better than
+Instagram and TikTok, where caption URLs are not clickable at all — so a missing link is not the
+explanation, and buying one (e.g. TikTok's bio link, 3.0) should not be expected to change it.
+
 ### 8.3 The recommendation — fill in only after 8.2, and only using 8.4's rule
 
 **Verdict: `<YES, social is viable / NO, stop>` — TO BE FILLED AT WEEK 4.**

@@ -75,16 +75,43 @@ against week 4, so that ~13% sits inside the baseline.
 ## Carried into week 2 — operational, not experimental
 None of these change what gets posted; they fix measurement plumbing that week 1 showed to be broken or unverified.
 
-1. **The conversion path may not exist on two of three platforms.** Instagram and TikTok do not render caption URLs
-   as clickable links, so `/go/ig` and `/go/tt` in those captions are plain text. TikTok additionally has no bio
-   link (deferred pending Business verification — runbook 3.0), which leaves the platform carrying 40% of all views
-   and the only follow with no clickable route to the site at all. Runbook 3.0 claims caption attribution survives
-   the deferral; that claim looks wrong and should be verified on a live post. The `/go/` redirects themselves work
-   — all three return 302 with the correct `utm_source`.
-2. **Check Umami for `/go/` traffic.** Site visits are a more sensitive conversion signal than follows at this
-   volume, and nothing in this note measures them.
+1. **Instagram and TikTok do not render caption URLs as clickable links**, so `/go/ig` and `/go/tt` in those
+   captions are plain text, and TikTok has no bio link either (deferred pending Business verification — runbook
+   3.0). Runbook 3.0's claim that caption attribution survives that deferral looks wrong. The `/go/` redirects
+   themselves work — all three return 302 with the correct `utm_source`. **But see "Site traffic" below before
+   acting on any of this: the missing links turn out not to be the bottleneck.**
+2. ~~**Check Umami for `/go/` traffic.**~~ **Done 2026-09-21 — and it is the most important number week 1
+   produced.** See "Site traffic" below.
 3. **Day 3 YouTube: read Impressions** on `t_9C0SzdAks` (Analytics → Reach). Near-zero impressions means it never
    entered the Shorts feed; thousands with ~0% CTR means it was shown and ignored. Those have opposite implications
    and nothing else distinguishes them. Also worth confirming the video shows the right card — a duplicate file
    uploaded twice would be suppressed by duplicate detection while Studio showed nothing wrong.
 4. **TikTok Day 1 drew 0 views.** Cold start explains low, not zero; confirm it actually published.
+
+## Site traffic — 3,033 post views produced ~4 visitors
+Checked in Umami on 2026-09-21, covering the 7 days of week 1: **~4 site visitors, all reported as direct, none
+attributed to a `/go/` link.** The Umami tag is installed and working on the live site (verified the same day), and
+is configured to honour Do Not Track, so it undercounts by an unknown but small amount — not remotely enough to
+explain the ratio.
+
+**The decisive detail is YouTube.** Its 1,414 views came with a working, clickable description link, and produced
+no more traffic than Instagram and TikTok, where the caption URL is not clickable at all. So the missing links are
+real but are NOT the bottleneck, and the earlier plan to buy a clickable path on TikTok (Business verification,
+runbook 3.0) should be dropped unless something else changes — it buys exactly what YouTube already had and did not
+benefit from. The plausible constraint is that short-form viewers do not leave the app, compounded on Shorts by the
+description being collapsed behind a tap.
+
+Two caveats against over-reading it. The 4 direct visits may themselves be social traffic — someone who cannot tap
+a caption URL and types the domain by hand arrives as direct — so the true figure is not necessarily zero. And one
+week at cold start, on accounts with no standing, is genuinely early.
+
+**What this does NOT do is touch the verdict.** Criterion A is views plus follows; criterion B is a median-views
+trend. Neither measures site traffic, so nothing here changes the pre-registered machinery, and nothing here may be
+used to renegotiate it. What it exposes is a gap worth stating plainly: **the pilot can satisfy criterion B and
+still deliver zero readers** — views trending up week 1 to week 4 would register as "viable" over an empty site,
+and Plain's goal is people reading books. That is a reason for section 8.2 of the runbook to report site traffic
+beside the verdict (added 2026-09-21), not a reason to change what counts as viable.
+
+Three ways of asking whether anyone cared — 3,033 views, 1 follow, ~4 visits — give three answers near zero. Too
+early to conclude at one week. If weeks 2-4 hold this shape, the verdict the criterion already anticipates is the
+honest one.
