@@ -1,0 +1,98 @@
+{
+  "week": 2,
+  "seed": 42,
+  "slots": [
+    {
+      "day": 1,
+      "card_id": "meditations-02-012",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Consider with thyself how man, and by what part of his, is joined unto God, and how that part of man is affected, when it is said to be diffused. There is nothing more wretched than that soul, which in a kind of circuit compasseth all things, searching (as he saith) even the very depths of the earth; and by all signs and conjectures prying into the very thoughts of other men's souls; and yet of this, is not sensible, that it is sufficient for a man to apply himself wholly, and to confine all his thoughts and cares to the tendance of that spirit which is within him, and truly and really to serve him.",
+        "landing_line": "Think about how man is connected to God, and through what part of himself."
+      }
+    },
+    {
+      "day": 2,
+      "card_id": "on-anger-02-075",
+      "book_slug": "on-anger",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "The greatest remedy for anger is delay: beg anger to grant you this at the first, not in order that it may pardon the offence, but that it may form a right judgment about it: if it delays, it will come to an end. Do not attempt to quell it all at once, for its first impulses are fierce; by plucking away its parts we shall remove the whole.",
+        "landing_line": "The best cure for anger is to wait."
+      }
+    },
+    {
+      "day": 3,
+      "card_id": "enchiridion-50-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Whatever rules you have adopted, abide by them as laws, and as if you would be impious to transgress them; and do not regard what anyone says of you, for this, after all, is no concern of yours.",
+        "landing_line": "Don't worry about what other people say about you."
+      }
+    },
+    {
+      "day": 4,
+      "card_id": "enchiridion-28-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "If a person had delivered up your body to some passer-by, you would certainly be angry. And do you feel no shame in delivering up your own mind to any reviler, to be disconcerted and confounded?",
+        "landing_line": "If someone handed your body over to a random stranger, you'd be furious."
+      }
+    },
+    {
+      "day": 5,
+      "card_id": "meditations-03-024",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "As physicians and chirurgeons have always their instruments ready at hand for all sudden cures; so have thou always thy dogmata in a readiness for the knowledge of things, both divine and human: and whatsoever thou dost, even in the smallest things that thou dost, thou must ever remember that mutual relation, and connection that is between these two things divine, and things human. For without relation unto God, thou shalt never speed in any worldly actions; nor on the other side in any divine, without some respect had to things human.",
+        "landing_line": "Whatever you do, even the smallest things, remember the connection between the divine and the human."
+      }
+    },
+    {
+      "day": 6,
+      "card_id": "enchiridion-23-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "If you ever happen to turn your attention to externals, for the pleasure of anyone, be assured that you have ruined your scheme of life. Be content, then, in everything, with being a philosopher; and if you wish to seem so likewise to anyone, appear so to yourself, and it will suffice you.",
+        "landing_line": "Be satisfied with simply being a philosopher in everything you do."
+      }
+    },
+    {
+      "day": 7,
+      "card_id": "meditations-09-030",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Go to the quality of the cause from which the effect doth proceed. Behold it by itself bare and naked, separated from all that is material. Then consider the utmost bounds of time that that cause, thus and thus qualified, can subsist and abide.",
+        "landing_line": "Look at the real nature of what causes something to happen."
+      }
+    }
+  ],
+  "author_mix": {
+    "epictetus": {
+      "count": 3,
+      "share": 0.42857142857142855
+    },
+    "marcus-aurelius": {
+      "count": 3,
+      "share": 0.42857142857142855
+    },
+    "seneca": {
+      "count": 1,
+      "share": 0.14285714285714285
+    }
+  },
+  "pool_source": "scored"
+}
