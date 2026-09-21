@@ -46,10 +46,10 @@ to follows (criterion A) or whether the *median* also moved (criterion B) before
 `social/src/metrics/readout.ts` is the code that actually computes this verdict — not a spreadsheet,
 not a judgment call. It implements criterion A and criterion B exactly as quoted above
 (`computeReadout`/`computeVerdict`), labels follow-conversion per post as `'exact'` (the platform's
-own per-post attribution — YouTube's `subscribersGained` per video, Instagram's per-Reel Follows in
-Meta Business Suite) or `'inferred'` (from day-over-day follower deltas, the only path on TikTok and
-the fallback on Instagram), aggregating to `'exact'`/`'inferred'`/`'mixed'`/`'unavailable'` per
-platform, and its summary text literally contains the "outlier with no conversion and no
+own per-post attribution — available on all three: YouTube's `subscribersGained`, Instagram's
+per-Reel Follows, TikTok's per-video Follows) or `'inferred'` (from day-over-day follower deltas,
+now only a fallback for a post whose figure was not read), aggregating to
+`'exact'`/`'inferred'`/`'mixed'`/`'unavailable'` per platform, and its summary text literally contains the "outlier with no conversion and no
 trend is explicitly a NO" wording so a raw max/median ratio can never flip the verdict by itself.
 Section 7 below covers running it.
 
@@ -545,32 +545,31 @@ correction is safe. All three platforms' rows land in the same dated file,
 `content/social/metrics/metrics-<date>.json` (dated by `--published-at`) — one schema, no
 reconciliation step at readout time regardless of which platform or which entry produced a row.
 
-**`--follows` is the flag that matters most. Read it on YouTube AND Instagram — only TikTok has no
-per-post source.** YouTube Studio shows subscribers gained per video; Meta Business Suite shows
-Follows per Reel. Read both and pass them as `--follows`; that is exactly what lets `readout.ts`'s
-`computeFollowConversion` record that post as `'exact'` (section 1), which is half of criterion A.
-Omitting the flag records `null`, never a fabricated `0`, and that post falls back to the inferred
-daily-delta path instead.
+**`--follows` is the flag that matters most, and every one of the three platforms reports it per
+post.** YouTube Studio shows subscribers gained per video, Meta Business Suite shows Follows per
+Reel, and TikTok shows Follows per video. Read all three and pass them as `--follows`; that is what
+lets `readout.ts`'s `computeFollowConversion` record a post as `'exact'` (section 1), which is half
+of criterion A. Omitting the flag records `null` ("not read"), never a fabricated `0`, and that
+post falls back to the inferred daily-delta path instead. An explicit `--follows 0` is a real
+reading meaning that post converted nobody: it is recorded as data, and it does not satisfy
+criterion A, which requires visible conversion.
 
 **Corrected 2026-09-21 — this section previously said `--follows` "only means something on
-YouTube" and that "Instagram and TikTok have no per-post follow attribution on any read path."**
-That was true of TikTok and wrong about Instagram. The error was not harmless: it pushed
-Instagram's conversion through the inferred daily-delta path even though an exact per-post number
-was on the same Business Suite screen the operator was already reading, and `hand-entry.ts`
-actively rejected the real number if it was typed in.
-
-TikTok is still rejected, and deliberately: passing `--follows` at all for `--platform tiktok` —
-even `--follows 0` — fails with a `HandEntryValidationError` naming the daily follower series as
-the alternative, because a zero there is still a claim the platform can report a per-post follow
-count, which it cannot on any read path. An explicit `--follows 0` on YouTube or Instagram is
-different and is accepted: it is a real reading, meaning that post converted nobody, and it does
-not satisfy criterion A (which requires visible conversion) while still counting as recorded data.
+YouTube" and that "Instagram and TikTok have no per-post follow attribution on any read path."
+That claim was wrong about both.** It was corrected in two steps, as each platform's screen was
+actually checked rather than reasoned about. The error was not harmless while it stood: it pushed
+two platforms' conversion through the weaker daily-delta inference even though an exact per-post
+number was on the same screen the operator was already reading, and `hand-entry.ts` actively
+REJECTED that real number if it was typed in, calling it a fabrication. There is no per-platform
+rejection left; what remains is the non-negative-integer check, which catches hand entry's actual
+failure mode — a mistyped number. **Never estimate this figure. Read it or omit it.**
 
 **A post whose number was read and one whose was not can sit in the same week**, so the platform
 label reports what the data actually holds: `exact` when every post carries a per-post figure,
 `inferred` when none do and the follower series covers them, `mixed` when both, and `unavailable`
-when there is no number of either kind — including on YouTube, where a platform naming a method it
-has no data for would imply conversion evidence that does not exist.
+when there is no number of either kind — including on a platform that simply had no figure
+entered, since naming a method while holding no data would imply conversion evidence that does not
+exist.
 
 **`--post-id` and `--published-at` are both required and neither is redundant, but nothing
 cross-checks them — so a mistyped `--post-id` is guarded.** The two do different jobs: `--post-id`
@@ -607,11 +606,18 @@ account level, and this series is the only way either one's conversion becomes a
 reports `subscribersGained` per video, which you type in per post during 5.4, and which is
 `'exact'` rather than inferred — `--platform youtube` is rejected by name for that reason.
 
-**Keep taking Instagram's reading even though 5.4 now records its per-post Follows.** The two are
-not redundant: the per-post figure is exact and supersedes the delta for any post it covers, but
-the series is what covers a post whose figure was not read, and it is the only cross-check on a
-number typed by hand. **TikTok's reading is not optional at all** — it remains that platform's
-sole route to criterion A, exactly as before.
+**This section is now a FALLBACK, not a primary measurement — and whether it is worth continuing
+at all is an open decision (2026-09-21).** As of 5.4, all three platforms report follows per post,
+which is exact and supersedes the daily delta for every post it covers. Nothing in the readout
+consumes this series except `inferFollowsForPost`, which only runs for a post whose per-post
+figure was not read. Two things still argue for keeping it, and neither is about criterion A: it
+covers a post whose figure was missed, and it is the only independent cross-check on numbers typed
+in by hand. One argues against: it is the most failure-prone input in the pilot — daily, easy to
+skip, and un-backfillable — and it was in fact missed for all of week 1.
+
+Note also that it measures something genuinely different: an account-level count moves on follows
+from profile visits, search and the bio link, not only from posts, so it is not a like-for-like
+substitute for per-post attribution in either direction.
 
 `--platform`, `--date` and `--followers` are all required; `--out-dir` (default
 `content/social/metrics/`) overrides where `<platform>-followers.json` is written. **`--platform` has
@@ -638,11 +644,11 @@ Instagram's own app shows only *today's* follower total — never a historical s
 isn't run for is unrecoverable; there is no catching up next week. Skipping a day has a specific,
 measurable cost, too: follow-conversion (section 1) is *inferred* from day-over-day
 follower deltas aligned to `publishedAt`, so a day with no recorded count permanently degrades that
-day's conversion reading from `inferred` to `unavailable`. **On Instagram that cost is now
-recoverable and on TikTok it is not** — an Instagram post's exact per-post Follows can still be
-read off Business Suite later and entered with 5.4's `--follows`, which supersedes the missing
-delta entirely; a TikTok post has no such second source, so a skipped TikTok reading is the loss it
-always was. **A single missed day breaks TWO posts,
+day's conversion reading from `inferred` to `unavailable`. **That cost is now recoverable on every
+platform** — each one's exact per-post follow count can still be read off its own analytics screen
+later and entered with 5.4's `--follows`, which supersedes the missing delta entirely. A skipped
+reading is no longer the unrecoverable loss it was when inference was the only path; it is only the
+loss of the cross-check. **A single missed day breaks TWO posts,
 not one:** a delta needs both endpoints, so the gap takes out the missing day's own post and the
 following day's, which had been relying on that day as its "previous" reading. **TikTok's series was added on 2026-09-10 and is not optional.** This section
 previously said there was "no equivalent CLI for TikTok or YouTube — no per-post follow path exists
@@ -730,10 +736,10 @@ date, not a polling flow) plus both `instagram-followers.json` and `tiktok-follo
 each read independently, so a missing file for one degrades only that platform to `unavailable` and
 never borrows the other's series — and prints, per platform: the median,
 the maximum, the max/median ratio, the week-1-vs-week-4 median trend, follow conversion (resolved
-per post: `exact` where the platform attributes follows to the post itself — YouTube and Instagram
-— and `inferred` from daily follower deltas aligned to `publishedAt` otherwise, which is TikTok's
-only path and Instagram's fallback; aggregated per platform to `exact`, `inferred`, `mixed`, or
-`unavailable` when no number of either kind exists), and the top 5 posts with their format. It then
+per post: `exact` from the platform's own per-post attribution wherever a figure was read — all
+three platforms report one — and `inferred` from daily follower deltas aligned to `publishedAt`
+otherwise; aggregated per platform to `exact`, `inferred`, `mixed`, or `unavailable` when no number
+of either kind exists), and the top 5 posts with their format. It then
 states plainly whether the pre-registered criterion (section 1) was met, quoting the same "outlier
 with no conversion and no trend is explicitly a NO" language the criterion itself uses.
 

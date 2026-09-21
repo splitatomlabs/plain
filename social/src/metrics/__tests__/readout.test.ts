@@ -691,14 +691,26 @@ describe('Instagram per-post follow attribution', () => {
 		expect(fc.posts.find((p) => p.postId === 'ig-unread')?.followsSource).toBe('inferred');
 	});
 
-	// TikTok reports no per-post follow count on any read path, so a number
-	// on a TikTok row could only be fabricated — hand-entry.ts rejects it,
-	// and this refuses to trust one that reached the file another way.
-	it('never trusts a follows on a TikTok row, even if one is present', () => {
+	// UPDATED 2026-09-21: TikTok reports Follows per video too, so a real
+	// number on a TikTok row is now believed exactly as on the other two —
+	// this previously asserted the opposite.
+	it('trusts a real per-post follows on a TikTok row, like every other platform', () => {
 		const rows: MetricsRow[] = [row({ platform: 'tiktok', postId: 'tt-1', publishedAt: at(2, 3), views: 500, follows: 99 })];
 		const fc = computeFollowConversion('tiktok', rows);
-		expect(fc.posts[0].follows).toBeNull();
-		expect(fc.method).toBe('unavailable');
+		expect(fc.posts[0].follows).toBe(99);
+		expect(fc.posts[0].followsSource).toBe('exact');
+		expect(fc.method).toBe('exact');
+	});
+
+	it('still falls back to the follower series for a TikTok post with no figure read', () => {
+		const rows: MetricsRow[] = [row({ platform: 'tiktok', postId: 'tt-1', publishedAt: at(2, 3), views: 500, follows: null })];
+		const snapshots: DailyFollowerSnapshot[] = [
+			{ date: weekDayToDate(2, 2), followerCount: 700 },
+			{ date: weekDayToDate(2, 3), followerCount: 742 }
+		];
+		const fc = computeFollowConversion('tiktok', rows, snapshots);
+		expect(fc.posts[0].follows).toBe(42);
+		expect(fc.posts[0].followsSource).toBe('inferred');
 	});
 
 	it('an Instagram breakout with a real per-post follows satisfies criterion A as EXACT evidence', () => {

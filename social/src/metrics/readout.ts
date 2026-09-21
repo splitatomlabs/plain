@@ -203,20 +203,22 @@ export function computeWeekTrend(rows: Pick<MetricsRow, 'publishedAt' | 'views'>
 }
 
 // ---------------------------------------------------------------------------
-// Follow conversion — EXACT where the platform itself attributes a follow to
-// a post (YouTube's per-video subscribersGained; Instagram's per-Reel Follows
-// in Meta Business Suite), INFERRED from the daily account-level follower
+// Follow conversion — EXACT from the platform's own per-post attribution
+// wherever a figure was read, INFERRED from the daily account-level follower
 // series otherwise. See this file's header for why "inferred" never upgrades
 // to "exact" even under the pilot's one-post-a-day cadence.
 //
-// UPDATED 2026-09-21: Instagram moved from inferred-only to exact-when-read.
-// It was grouped with TikTok on the belief that neither platform reported a
-// per-post follow count; that holds for TikTok but not for Instagram, whose
-// Business Suite reports Follows per Reel. Resolution is now PER POST rather
-// than per platform — a row carrying a real `follows` is exact, and one
-// without it still falls back to the daily-delta inference, so a post whose
-// number simply was not read is not silently downgraded to nothing, and a
-// platform can honestly report a mix of both.
+// UPDATED 2026-09-21: all three platforms turned out to report a per-post
+// follow count — YouTube Studio's subscribersGained, Meta Business Suite's
+// per-Reel Follows, and TikTok's per-video Follows. The original design
+// treated this as YouTube-only and routed the other two through the
+// day-over-day delta; that was corrected in two steps as each platform's
+// screen was actually checked. Resolution is PER POST rather than per
+// platform, so a row carrying a real `follows` is exact on any platform, one
+// without it still falls back to the inference, and a platform can honestly
+// report a mix of both. With per-post numbers available everywhere, the
+// inference is now a fallback for an unread figure rather than any
+// platform's primary path.
 // ---------------------------------------------------------------------------
 
 export type FollowConversionMethod = 'exact' | 'inferred' | 'mixed' | 'unavailable';
@@ -290,13 +292,11 @@ export function computeFollowConversion(
 	snapshots?: DailyFollowerSnapshot[],
 	cardIdByDate?: ReadonlyMap<string, string>
 ): PlatformFollowConversion {
-	// TikTok reports no per-post follow count on any read path, so a
-	// `follows` on a TikTok row could only ever be fabricated —
-	// `hand-entry.ts` rejects it at entry, and this refuses to trust one that
-	// reached the file some other way. YouTube and Instagram both attribute
-	// follows per post, so their rows are believed when they carry a number.
-	const platformAttributesPerPost = platform !== 'tiktok';
-
+	// All three platforms report a per-post follow count on their own
+	// analytics screens, so a row carrying one is believed on every platform
+	// — no platform-name special case remains here. `hand-entry.ts` is what
+	// guarantees the number was read rather than estimated; this function's
+	// job is only to prefer it over the weaker inference.
 	const posts: PostFollowConversion[] = rows.map((r) => {
 		const identity = {
 			postId: r.postId,
@@ -304,15 +304,13 @@ export function computeFollowConversion(
 			views: r.views
 		};
 
-		if (platformAttributesPerPost && r.follows !== null) {
+		if (r.follows !== null) {
 			return { ...identity, follows: r.follows, followsSource: 'exact' as const };
 		}
 
-		// Fall back to the daily-delta inference for a post with no per-post
-		// number — an Instagram post whose Business Suite figure was not
-		// read, or any TikTok post. A platform with no series (YouTube, or a
-		// day never snapshotted) simply has no number for this post, which is
-		// `null` and NEVER a zero.
+		// Fall back to the daily-delta inference for a post whose per-post
+		// figure was not read. A platform with no series simply has no number
+		// for this post, which is `null` and NEVER a zero.
 		const inferred = snapshots && snapshots.length > 0 ? inferFollowsForPost(r.publishedAt, snapshots) : null;
 		return { ...identity, follows: inferred, followsSource: inferred === null ? null : ('inferred' as const) };
 	});

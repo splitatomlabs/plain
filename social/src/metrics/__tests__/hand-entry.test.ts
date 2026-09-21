@@ -212,37 +212,35 @@ describe('validateHandEnteredMetrics — fails loudly on a typo, naming the offe
 		expect(() => validateHandEnteredMetrics(validInput({ follows: null }))).not.toThrow();
 	});
 
-	// UPDATED 2026-09-21: this used to reject Instagram alongside TikTok, on
-	// the stated ground that neither platform attributes a follow to a
-	// specific post. That is true of TikTok and was wrong about Instagram,
-	// whose Meta Business Suite reports Follows per Reel — so Instagram now
-	// carries a real, exact per-post number and only TikTok is rejected.
-	it('F1 — rejects a tiktok row that supplies follows at all', () => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 5 }))).toThrow(HandEntryValidationError);
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 5 }))).toThrow(/follows/);
+	// UPDATED 2026-09-21: `follows` was originally YouTube-only, then
+	// YouTube+Instagram, and is now accepted on all three — every platform
+	// reports a per-post follow count on its own analytics screen. The
+	// per-platform rejection that used to live here encoded a claim about
+	// what these platforms expose, and that claim turned out to be wrong
+	// twice; what remains is the validation that actually catches hand
+	// entry's real failure mode, a mistyped number.
+	it.each(PLATFORMS)('accepts a real per-post follows on %s', (platform) => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 12 }))).not.toThrow();
 	});
 
-	it('F1 — rejects an explicit follows: 0 on tiktok (a zero is still a fabricated claim)', () => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 0 }))).toThrow(HandEntryValidationError);
+	// A read zero is data ("this post converted nobody"), distinct from an
+	// omitted flag, which records null ("not read").
+	it.each(PLATFORMS)('accepts an explicit follows: 0 on %s as a genuine reading', (platform) => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 0 }))).not.toThrow();
 	});
 
-	it('F1 — the TikTok rejection points at the daily follower series instead of just refusing', () => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 5 }))).toThrow(/follower series/i);
+	it.each(PLATFORMS)('still rejects a negative follows on %s — a mistyped count, not a reading', (platform) => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: -1 }))).toThrow(HandEntryValidationError);
 	});
 
-	it('accepts a real per-post follows on Instagram — Business Suite reports it per Reel', () => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'instagram', follows: 12 }))).not.toThrow();
+	it.each(PLATFORMS)('still rejects a fractional follows on %s', (platform) => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 1.5 }))).toThrow(/follows/);
 	});
 
-	// A real, read zero is data ("this Reel converted nobody"), unlike a
-	// fabricated zero standing in for a number the platform cannot report.
-	it('accepts an explicit follows: 0 on Instagram as a genuine reading', () => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'instagram', follows: 0 }))).not.toThrow();
-	});
-
-	it('F1 — a null follows on Instagram/TikTok is still fine (omission, not fabrication)', () => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'instagram', follows: null }))).not.toThrow();
-		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: null }))).not.toThrow();
+	it('a null follows is fine on every platform (omission, not fabrication)', () => {
+		for (const platform of PLATFORMS) {
+			expect(() => validateHandEnteredMetrics(validInput({ platform, follows: null }))).not.toThrow();
+		}
 	});
 
 	it('rejects an out-of-range averagePercentWatched above 100', () => {
@@ -486,7 +484,7 @@ describe('CLI — main()', () => {
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
 
-	it('F1 — --platform tiktok --follows 5 exits non-zero, names "follows", and writes nothing', async () => {
+	it('--platform tiktok --follows 5 is recorded — TikTok reports Follows per video too', async () => {
 		const result = runCli([
 			'--platform', 'tiktok',
 			'--post-id', 'tt1',
@@ -499,12 +497,17 @@ describe('CLI — main()', () => {
 			'--out-dir', outDir
 		]);
 
-		expect(result.status).not.toBe(0);
-		expect(result.stderr).toMatch(/follows/);
-		expect(await readdir(outDir)).toHaveLength(0);
+		expect(result.status).toBe(0);
+		const raw = await readFile(path.join(outDir, 'metrics-2026-09-09.json'), 'utf-8');
+		expect((JSON.parse(raw) as MetricsRow[])[0].follows).toBe(5);
 	});
 
-	it('F1 — --platform tiktok --follows 0 (an explicit zero) is also rejected, and writes nothing', async () => {
+	// `--follows=-1`, not `--follows -1`: parseArgs rejects the spaced form
+	// as an ambiguous option argument before validation ever runs, so the
+	// spaced form would test node's arg parser rather than this module's
+	// own non-negative-integer guard — the thing that actually has to keep
+	// working now that no platform is refused outright.
+	it('a negative --follows is still rejected on tiktok by the value guard, and writes nothing', async () => {
 		const result = runCli([
 			'--platform', 'tiktok',
 			'--post-id', 'tt2',
@@ -513,12 +516,30 @@ describe('CLI — main()', () => {
 			'--likes', '1',
 			'--comments', '0',
 			'--shares', '0',
-			'--follows', '0',
+			'--follows=-1',
 			'--out-dir', outDir
 		]);
 
 		expect(result.status).not.toBe(0);
-		expect(result.stderr).toMatch(/follows/);
+		expect(result.stderr).toMatch(/non-negative whole number/);
+		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	it('a fractional --follows is rejected on tiktok, and writes nothing', async () => {
+		const result = runCli([
+			'--platform', 'tiktok',
+			'--post-id', 'tt3',
+			'--published-at', '2026-09-09T12:00:00.000Z',
+			'--views', '10',
+			'--likes', '1',
+			'--comments', '0',
+			'--shares', '0',
+			'--follows', '1.5',
+			'--out-dir', outDir
+		]);
+
+		expect(result.status).not.toBe(0);
+		expect(result.stderr).toMatch(/non-negative whole number/);
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
 
