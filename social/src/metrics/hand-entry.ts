@@ -27,15 +27,25 @@
  *   - `views`, `likes`, `comments`, `shares` — REQUIRED, validated
  *     non-negative integers. These are what a human reads off the app for
  *     any of the three platforms.
- *   - `follows` — a REAL per-post number ONLY on YouTube, where Studio's
- *     per-video "subscribers gained" figure is exact. Read it off Studio and
- *     type it in for a YouTube row. On Instagram and TikTok, no read path —
- *     automated or in-app — attributes a follow to a specific post; leave
- *     `--follows` off entirely for those platforms and the row records
- *     `null`, never a fabricated `0`. (Instagram's account-level follower
- *     series has its own separate structure — `schema.ts`'s
- *     `FollowerSnapshot` — and is never smuggled into a per-post row
- *     here.)
+ *   - `follows` — a REAL per-post number on YouTube (Studio's per-video
+ *     "subscribers gained") and on Instagram (Meta Business Suite reports
+ *     Follows per Reel). Read it off that platform's own screen and type it
+ *     in. TikTok has no per-post follow attribution on any read path, in-app
+ *     or API, so `--follows` stays rejected there and a TikTok row records
+ *     `null`, never a fabricated `0`.
+ *
+ *     UPDATED 2026-09-21: Instagram was previously rejected here alongside
+ *     TikTok, on the stated ground that "no read path attributes a follow to
+ *     a specific post" on either. That was true of TikTok and wrong about
+ *     Instagram — Business Suite does report it per Reel. The rejection cost
+ *     something real: it forced Instagram's follow conversion through the
+ *     inferred daily-delta path even where an exact per-post number was
+ *     sitting on the screen the operator was already reading.
+ *
+ *     The account-level follower series (`schema.ts`'s `FollowerSnapshot`)
+ *     is still a separate structure and is still never smuggled into a
+ *     per-post row here. It remains the ONLY path for TikTok, and the
+ *     fallback for an Instagram post whose per-post number was not read.
  *   - `saves` — ALWAYS `null`, on every platform. Not one of the four counts
  *     this module asks for, and not on any of the three platforms' per-post
  *     analytics screens either.
@@ -104,9 +114,10 @@ export interface HandEnteredMetrics {
 	shares: number;
 	/**
 	 * Optional. Exact and expected on YouTube (Studio's per-video
-	 * "subscribers gained"). Leave omitted or pass `null` on Instagram/TikTok,
-	 * where no read path attributes a follow to a specific post — see this
-	 * file's header. Validated as a non-negative integer when provided.
+	 * "subscribers gained") and on Instagram (Meta Business Suite's per-Reel
+	 * Follows). Leave omitted or pass `null` on TikTok, which attributes no
+	 * follow to a specific post on any read path — see this file's header.
+	 * Validated as a non-negative integer when provided.
 	 */
 	follows?: number | null;
 	/**
@@ -192,20 +203,19 @@ export function validateHandEnteredMetrics(input: HandEnteredMetrics): void {
 		if (!isNonNegativeInteger(input.follows)) {
 			throw new HandEntryValidationError(`Hand entry's "follows" must be a non-negative whole number — got ${JSON.stringify(input.follows)}.`);
 		}
-		// `follows` is a REAL per-post number ONLY on YouTube (see this file's
-		// header) — accepting it for Instagram/TikTok would record a fabricated
-		// attribution that looks identical, on disk, to a real one. Today
-		// `readout.ts` never trusts a non-YouTube row's `follows` (Instagram/
-		// TikTok always take the 'inferred'/'unavailable' branch instead of
-		// reading the row field), so this specifically hand-typed number is
-		// currently discarded downstream — but a future change that started
-		// trusting `row.follows` directly would silently promote a guess into
+		// TikTok, and only TikTok, has no per-post follow attribution on any
+		// read path (in-app or API — see this file's header and the runbook's
+		// TikTok metrics note). Accepting a number there would record a
+		// fabricated attribution that looks identical, on disk, to a real
+		// one, and `readout.ts` now DOES trust a row's `follows` where it is
+		// real, so a guess typed here would be promoted straight into
 		// criterion A evidence. An explicit `0` is rejected too: a zero is
-		// still a claim that this platform can report a per-post follow
-		// count, which is false regardless of the value entered.
-		if (input.platform !== 'youtube') {
+		// still a claim that the platform can report a per-post follow count,
+		// which is false regardless of the value entered.
+		if (input.platform === 'tiktok') {
 			throw new HandEntryValidationError(
-				`Hand entry's "follows" is only real on YouTube — got ${JSON.stringify(input.follows)} for ${input.platform}.`
+				`Hand entry's "follows" has no per-post source on TikTok — got ${JSON.stringify(input.follows)}. ` +
+					`Leave --follows off for TikTok; its conversion is inferred from the daily follower series instead.`
 			);
 		}
 	}
@@ -333,15 +343,17 @@ Required:
   --shares <n>      Non-negative whole number.
 
 Optional:
-  --follows <n>               Non-negative whole number. YouTube ONLY — read
-                              the per-video "subscribers gained" figure off
-                              YouTube Studio, it's exact. Leave this flag off
-                              on Instagram/TikTok; omitting it records null,
-                              never a fabricated 0. Passing --follows at all
-                              (even --follows 0) for Instagram or TikTok is
-                              rejected outright — no read path on either
-                              platform attributes a follow to a specific
-                              post, so any value there would be fabricated.
+  --follows <n>               Non-negative whole number. Real on YouTube
+                              (Studio's per-video "subscribers gained") and on
+                              Instagram (Meta Business Suite reports Follows
+                              per Reel) — read it off that screen and type it
+                              in; both are exact per-post attribution.
+                              Omitting it records null, never a fabricated 0.
+                              Passing --follows at all (even --follows 0) for
+                              TikTok is rejected outright: no read path there
+                              attributes a follow to a specific post, so any
+                              value would be fabricated. TikTok's conversion
+                              comes from the daily follower series instead.
   --avg-percent-watched <n>   0-100. Omit unless the app shows a clean
                               percentage — retention otherwise stays manual.
   --allow-second-post         Record this post even though the same platform
@@ -488,7 +500,8 @@ async function main(): Promise<void> {
 		comments: parseRequiredNumber(values.comments, '--comments'),
 		shares: parseRequiredNumber(values.shares, '--shares'),
 		// Omitting --follows must record null, never a fabricated 0 — see
-		// this file's header on why follows is only ever real on YouTube.
+		// this file's header on where follows is real (YouTube, Instagram)
+		// and where it is not (TikTok).
 		// An EMPTY --follows (e.g. an unset shell variable) must fail loudly
 		// too, not silently fall through Number('') === 0 — see toNumber.
 		follows: values.follows !== undefined ? toNumber(values.follows, '--follows') : null,

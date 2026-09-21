@@ -212,13 +212,32 @@ describe('validateHandEnteredMetrics — fails loudly on a typo, naming the offe
 		expect(() => validateHandEnteredMetrics(validInput({ follows: null }))).not.toThrow();
 	});
 
-	it.each(['instagram', 'tiktok'] as const)('F1 — rejects a %s row that supplies follows at all', (platform) => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 5 }))).toThrow(HandEntryValidationError);
-		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 5 }))).toThrow(/follows/);
+	// UPDATED 2026-09-21: this used to reject Instagram alongside TikTok, on
+	// the stated ground that neither platform attributes a follow to a
+	// specific post. That is true of TikTok and was wrong about Instagram,
+	// whose Meta Business Suite reports Follows per Reel — so Instagram now
+	// carries a real, exact per-post number and only TikTok is rejected.
+	it('F1 — rejects a tiktok row that supplies follows at all', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 5 }))).toThrow(HandEntryValidationError);
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 5 }))).toThrow(/follows/);
 	});
 
-	it.each(['instagram', 'tiktok'] as const)('F1 — rejects an explicit follows: 0 on %s (a zero is still a fabricated claim)', (platform) => {
-		expect(() => validateHandEnteredMetrics(validInput({ platform, follows: 0 }))).toThrow(HandEntryValidationError);
+	it('F1 — rejects an explicit follows: 0 on tiktok (a zero is still a fabricated claim)', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 0 }))).toThrow(HandEntryValidationError);
+	});
+
+	it('F1 — the TikTok rejection points at the daily follower series instead of just refusing', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'tiktok', follows: 5 }))).toThrow(/follower series/i);
+	});
+
+	it('accepts a real per-post follows on Instagram — Business Suite reports it per Reel', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'instagram', follows: 12 }))).not.toThrow();
+	});
+
+	// A real, read zero is data ("this Reel converted nobody"), unlike a
+	// fabricated zero standing in for a number the platform cannot report.
+	it('accepts an explicit follows: 0 on Instagram as a genuine reading', () => {
+		expect(() => validateHandEnteredMetrics(validInput({ platform: 'instagram', follows: 0 }))).not.toThrow();
 	});
 
 	it('F1 — a null follows on Instagram/TikTok is still fine (omission, not fabrication)', () => {
@@ -467,10 +486,10 @@ describe('CLI — main()', () => {
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
 
-	it('F1 — --platform instagram --follows 5 exits non-zero, names "follows", and writes nothing', async () => {
+	it('F1 — --platform tiktok --follows 5 exits non-zero, names "follows", and writes nothing', async () => {
 		const result = runCli([
-			'--platform', 'instagram',
-			'--post-id', 'ig1',
+			'--platform', 'tiktok',
+			'--post-id', 'tt1',
 			'--published-at', '2026-09-09T12:00:00.000Z',
 			'--views', '10',
 			'--likes', '1',
@@ -485,10 +504,10 @@ describe('CLI — main()', () => {
 		expect(await readdir(outDir)).toHaveLength(0);
 	});
 
-	it('F1 — --platform instagram --follows 0 (an explicit zero) is also rejected, and writes nothing', async () => {
+	it('F1 — --platform tiktok --follows 0 (an explicit zero) is also rejected, and writes nothing', async () => {
 		const result = runCli([
-			'--platform', 'instagram',
-			'--post-id', 'ig2',
+			'--platform', 'tiktok',
+			'--post-id', 'tt2',
 			'--published-at', '2026-09-09T12:00:00.000Z',
 			'--views', '10',
 			'--likes', '1',
@@ -501,6 +520,27 @@ describe('CLI — main()', () => {
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toMatch(/follows/);
 		expect(await readdir(outDir)).toHaveLength(0);
+	});
+
+	// Instagram's per-Reel Follows figure reaches disk as a real number —
+	// the whole point of allowing the flag there.
+	it('--platform instagram --follows 12 is recorded, exactly as typed', async () => {
+		const result = runCli([
+			'--platform', 'instagram',
+			'--post-id', 'ig1',
+			'--published-at', '2026-09-09T12:00:00.000Z',
+			'--views', '10',
+			'--likes', '1',
+			'--comments', '0',
+			'--shares', '0',
+			'--follows', '12',
+			'--out-dir', outDir
+		]);
+
+		expect(result.status).toBe(0);
+		const raw = await readFile(path.join(outDir, 'metrics-2026-09-09.json'), 'utf-8');
+		const rows = JSON.parse(raw) as MetricsRow[];
+		expect(rows[0].follows).toBe(12);
 	});
 
 	// F2 — `toNumber`'s empty-value guard is reached through TWO different

@@ -335,12 +335,18 @@ describe('follow conversion — null is never a zero', () => {
 		expect(fc.posts[0].follows).toBeNull();
 	});
 
+	// A delta needs BOTH endpoints. With the prior day missing there is no
+	// number for this post — and the platform label follows the DATA, not
+	// the method that was attempted: a series that covers none of these
+	// posts is 'unavailable', because reporting 'inferred' while holding
+	// zero numbers would imply conversion evidence that does not exist.
 	it('Instagram: infers a delta only when both the publish-day and prior-day snapshots exist, else null', () => {
 		const rows: MetricsRow[] = [row({ platform: 'instagram', postId: 'ig-1', publishedAt: at(2, 3), views: 500 })];
 		const snapshots: DailyFollowerSnapshot[] = [{ date: weekDayToDate(2, 3), followerCount: 700 }]; // missing the prior day
 		const fc = computeFollowConversion('instagram', rows, snapshots);
-		expect(fc.method).toBe('inferred');
 		expect(fc.posts[0].follows).toBeNull();
+		expect(fc.posts[0].followsSource).toBeNull();
+		expect(fc.method).toBe('unavailable');
 	});
 
 	it('TikTok: with a series supplied, conversion is INFERRED exactly like Instagram — the two are symmetric', () => {
@@ -611,9 +617,11 @@ describe('card resolution in the readout', () => {
 			now: NOW,
 			cardIdByDate
 		});
-		expect(readout.verdict.viable).toBe(true);
-		expect(readout.verdict.criterion).toBe('A');
-		expect(readout.verdict.summary).toContain('meditations-09-025 [ler2U2CFzHs]');
+		const verdict = readout.verdict;
+		expect(verdict.viable).toBe(true);
+		if (!verdict.viable) throw new Error('expected a viable verdict');
+		expect(verdict.criterion).toBe('A');
+		expect(verdict.summary).toContain('meditations-09-025 [ler2U2CFzHs]');
 	});
 
 	// The structured evidence keeps the platform id as its own field, so a
@@ -624,6 +632,100 @@ describe('card resolution in the readout', () => {
 			now: NOW,
 			cardIdByDate
 		});
-		expect(readout.verdict.evidence).toMatchObject({ postId: 'ler2U2CFzHs' });
+		const verdict = readout.verdict;
+		if (!verdict.viable) throw new Error('expected a viable verdict');
+		expect(verdict.evidence).toMatchObject({ postId: 'ler2U2CFzHs' });
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Instagram's per-post follow attribution (Meta Business Suite reports
+// Follows per Reel), added 2026-09-21.
+//
+// Instagram was previously grouped with TikTok as inferred-only, on the
+// belief that neither platform attributed a follow to a post. That held for
+// TikTok and was wrong for Instagram. Resolution is now per POST: a row
+// carrying a real `follows` is exact, one without it still falls back to the
+// daily-delta inference, and the platform label reports honestly which —
+// including 'mixed' when a week contains both.
+// ---------------------------------------------------------------------------
+
+describe('Instagram per-post follow attribution', () => {
+	it('uses a real per-post follows as EXACT, not the inferred delta', () => {
+		const rows: MetricsRow[] = [row({ platform: 'instagram', postId: 'ig-1', publishedAt: at(2, 3), views: 500, follows: 9 })];
+		// A series that WOULD infer a different number, to prove which one wins.
+		const snapshots: DailyFollowerSnapshot[] = [
+			{ date: weekDayToDate(2, 2), followerCount: 700 },
+			{ date: weekDayToDate(2, 3), followerCount: 742 }
+		];
+		const fc = computeFollowConversion('instagram', rows, snapshots);
+		expect(fc.method).toBe('exact');
+		expect(fc.posts[0].follows).toBe(9);
+		expect(fc.posts[0].followsSource).toBe('exact');
+	});
+
+	it('still infers from the follower series for a post whose figure was not read', () => {
+		const rows: MetricsRow[] = [row({ platform: 'instagram', postId: 'ig-1', publishedAt: at(2, 3), views: 500, follows: null })];
+		const snapshots: DailyFollowerSnapshot[] = [
+			{ date: weekDayToDate(2, 2), followerCount: 700 },
+			{ date: weekDayToDate(2, 3), followerCount: 742 }
+		];
+		const fc = computeFollowConversion('instagram', rows, snapshots);
+		expect(fc.method).toBe('inferred');
+		expect(fc.posts[0].follows).toBe(42);
+		expect(fc.posts[0].followsSource).toBe('inferred');
+	});
+
+	it('reports MIXED when one week holds both kinds, rather than overstating either', () => {
+		const rows: MetricsRow[] = [
+			row({ platform: 'instagram', postId: 'ig-read', publishedAt: at(2, 3), views: 500, follows: 9 }),
+			row({ platform: 'instagram', postId: 'ig-unread', publishedAt: at(2, 5), views: 400, follows: null })
+		];
+		const snapshots: DailyFollowerSnapshot[] = [
+			{ date: weekDayToDate(2, 4), followerCount: 700 },
+			{ date: weekDayToDate(2, 5), followerCount: 742 }
+		];
+		const fc = computeFollowConversion('instagram', rows, snapshots);
+		expect(fc.method).toBe('mixed');
+		expect(fc.posts.find((p) => p.postId === 'ig-read')?.followsSource).toBe('exact');
+		expect(fc.posts.find((p) => p.postId === 'ig-unread')?.followsSource).toBe('inferred');
+	});
+
+	// TikTok reports no per-post follow count on any read path, so a number
+	// on a TikTok row could only be fabricated — hand-entry.ts rejects it,
+	// and this refuses to trust one that reached the file another way.
+	it('never trusts a follows on a TikTok row, even if one is present', () => {
+		const rows: MetricsRow[] = [row({ platform: 'tiktok', postId: 'tt-1', publishedAt: at(2, 3), views: 500, follows: 99 })];
+		const fc = computeFollowConversion('tiktok', rows);
+		expect(fc.posts[0].follows).toBeNull();
+		expect(fc.method).toBe('unavailable');
+	});
+
+	it('an Instagram breakout with a real per-post follows satisfies criterion A as EXACT evidence', () => {
+		const readout = computeReadout({
+			rows: [
+				row({ platform: 'instagram', postId: 'ig-1', publishedAt: at(1, 1), views: 400, follows: 0 }),
+				row({ platform: 'instagram', postId: 'ig-breakout', publishedAt: at(1, 2), views: 20_000, follows: 310 })
+			],
+			now: NOW
+		});
+		const verdict = readout.verdict;
+		expect(verdict.viable).toBe(true);
+		if (!verdict.viable) throw new Error('expected a viable verdict');
+		expect(verdict.criterion).toBe('A');
+		expect(verdict.summary).toContain('exact per-post attribution');
+		expect(verdict.evidence).toMatchObject({ platform: 'instagram', follows: 310, followsSource: 'exact' });
+	});
+
+	// A real zero is data — "this Reel converted nobody" — and must not
+	// satisfy criterion A, which requires visible conversion.
+	it('a real follows of 0 is recorded but does not satisfy criterion A', () => {
+		const readout = computeReadout({
+			rows: [row({ platform: 'instagram', postId: 'ig-breakout', publishedAt: at(1, 2), views: 20_000, follows: 0 })],
+			now: NOW
+		});
+		expect(readout.verdict.viable).toBe(false);
+		expect(readout.platforms[0].followConversion.posts[0].follows).toBe(0);
+		expect(readout.platforms[0].followConversion.posts[0].followsSource).toBe('exact');
 	});
 });

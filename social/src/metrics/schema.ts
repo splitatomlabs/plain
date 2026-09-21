@@ -141,7 +141,7 @@ export interface MetricsRow {
 	shares: number | null;
 	/** Always `null` — not collected on any platform; see this file's header. */
 	saves: number | null;
-	/** YouTube-only (per-post follow attribution). Always `null` on Instagram and TikTok — see this file's header. */
+	/** Real per-post follow attribution on YouTube (Studio's subscribersGained) and Instagram (Business Suite's per-Reel Follows). Always `null` on TikTok, which reports no per-post follow count on any read path — see this file's header. */
 	follows: number | null;
 	/** ISO 8601 — when THIS row's numbers were read/entered (distinct from `publishedAt`). */
 	collectedAt: string;

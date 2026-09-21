@@ -203,12 +203,26 @@ export function computeWeekTrend(rows: Pick<MetricsRow, 'publishedAt' | 'views'>
 }
 
 // ---------------------------------------------------------------------------
-// Follow conversion — exact on YouTube, inferred (and labeled as such) on
-// Instagram/TikTok. See this file's header for why "inferred" never
-// upgrades to "exact" even under the pilot's current one-post-a-day cadence.
+// Follow conversion — EXACT where the platform itself attributes a follow to
+// a post (YouTube's per-video subscribersGained; Instagram's per-Reel Follows
+// in Meta Business Suite), INFERRED from the daily account-level follower
+// series otherwise. See this file's header for why "inferred" never upgrades
+// to "exact" even under the pilot's one-post-a-day cadence.
+//
+// UPDATED 2026-09-21: Instagram moved from inferred-only to exact-when-read.
+// It was grouped with TikTok on the belief that neither platform reported a
+// per-post follow count; that holds for TikTok but not for Instagram, whose
+// Business Suite reports Follows per Reel. Resolution is now PER POST rather
+// than per platform — a row carrying a real `follows` is exact, and one
+// without it still falls back to the daily-delta inference, so a post whose
+// number simply was not read is not silently downgraded to nothing, and a
+// platform can honestly report a mix of both.
 // ---------------------------------------------------------------------------
 
-export type FollowConversionMethod = 'exact' | 'inferred' | 'unavailable';
+export type FollowConversionMethod = 'exact' | 'inferred' | 'mixed' | 'unavailable';
+
+/** Where ONE post's `follows` number came from. `null` when there is no number at all — never a claim about a value that does not exist. */
+export type FollowsSource = 'exact' | 'inferred';
 
 export interface PostFollowConversion {
 	postId: string;
@@ -217,6 +231,8 @@ export interface PostFollowConversion {
 	views: number;
 	/** `null` = not available / not measurable for this post. NEVER treated as `0` — see this file's header. */
 	follows: number | null;
+	/** How `follows` was obtained, or `null` when it is `null`. Lets the criterion-A verdict describe the evidence for the SPECIFIC post it names, rather than the platform's aggregate. */
+	followsSource: FollowsSource | null;
 }
 
 export interface PlatformFollowConversion {
@@ -274,28 +290,57 @@ export function computeFollowConversion(
 	snapshots?: DailyFollowerSnapshot[],
 	cardIdByDate?: ReadonlyMap<string, string>
 ): PlatformFollowConversion {
-	const identify = (r: Pick<MetricsRow, 'postId' | 'views' | 'publishedAt'>) => ({
-		postId: r.postId,
-		cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
-		views: r.views
+	// TikTok reports no per-post follow count on any read path, so a
+	// `follows` on a TikTok row could only ever be fabricated —
+	// `hand-entry.ts` rejects it at entry, and this refuses to trust one that
+	// reached the file some other way. YouTube and Instagram both attribute
+	// follows per post, so their rows are believed when they carry a number.
+	const platformAttributesPerPost = platform !== 'tiktok';
+
+	const posts: PostFollowConversion[] = rows.map((r) => {
+		const identity = {
+			postId: r.postId,
+			cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
+			views: r.views
+		};
+
+		if (platformAttributesPerPost && r.follows !== null) {
+			return { ...identity, follows: r.follows, followsSource: 'exact' as const };
+		}
+
+		// Fall back to the daily-delta inference for a post with no per-post
+		// number — an Instagram post whose Business Suite figure was not
+		// read, or any TikTok post. A platform with no series (YouTube, or a
+		// day never snapshotted) simply has no number for this post, which is
+		// `null` and NEVER a zero.
+		const inferred = snapshots && snapshots.length > 0 ? inferFollowsForPost(r.publishedAt, snapshots) : null;
+		return { ...identity, follows: inferred, followsSource: inferred === null ? null : ('inferred' as const) };
 	});
 
-	if (platform === 'youtube') {
-		return {
-			method: 'exact',
-			posts: rows.map((r) => ({ ...identify(r), follows: r.follows }))
-		};
-	}
-	if (!snapshots || snapshots.length === 0) {
-		return {
-			method: 'unavailable',
-			posts: rows.map((r) => ({ ...identify(r), follows: null }))
-		};
-	}
-	return {
-		method: 'inferred',
-		posts: rows.map((r) => ({ ...identify(r), follows: inferFollowsForPost(r.publishedAt, snapshots) }))
-	};
+	return { method: aggregateFollowMethod(posts), posts };
+}
+
+/**
+ * The platform-level label, derived from what its posts ACTUALLY carry
+ * rather than from the platform's name.
+ *
+ * This is why the label is computed rather than hardcoded per platform:
+ * Instagram can now be exact, inferred, or a mix of the two within one week,
+ * depending on which posts had their Business Suite figure read. Reporting a
+ * flat "EXACT" over a set where half the posts were inferred would overstate
+ * the evidence behind criterion A; reporting a flat "INFERRED" would
+ * understate it. A platform whose posts carry no number at all is
+ * `'unavailable'` — including YouTube, when nobody entered `--follows`:
+ * naming the method available while holding no data would imply conversion
+ * evidence that does not exist.
+ */
+function aggregateFollowMethod(posts: PostFollowConversion[]): FollowConversionMethod {
+	const hasExact = posts.some((p) => p.followsSource === 'exact');
+	const hasInferred = posts.some((p) => p.followsSource === 'inferred');
+	if (hasExact && hasInferred) return 'mixed';
+	if (hasExact) return 'exact';
+	if (hasInferred) return 'inferred';
+	return 'unavailable';
 }
 
 // ---------------------------------------------------------------------------
@@ -337,7 +382,7 @@ function computePlatformReadout(
 	const maxViews = views.length > 0 ? Math.max(...views) : null;
 	const ratio = medianViews !== null && maxViews !== null ? maxToMedianRatio(maxViews, medianViews) : null;
 	const followConversion = computeFollowConversion(platform, rows, followerSnapshots, cardIdByDate);
-	const followsByPostId = new Map(followConversion.posts.map((p) => [p.postId, p.follows]));
+	const conversionByPostId = new Map(followConversion.posts.map((p) => [p.postId, p]));
 
 	const sortedByViewsDesc = [...rows].sort((a, b) => b.views - a.views);
 
@@ -351,12 +396,16 @@ function computePlatformReadout(
 		followConversion,
 		breakoutPosts: sortedByViewsDesc
 			.filter((r) => r.views >= breakoutViewThreshold)
-			.map((r) => ({
-				postId: r.postId,
-				cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
-				views: r.views,
-				follows: followsByPostId.get(r.postId) ?? null
-			})),
+			.map((r) => {
+				const conversion = conversionByPostId.get(r.postId);
+				return {
+					postId: r.postId,
+					cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
+					views: r.views,
+					follows: conversion?.follows ?? null,
+					followsSource: conversion?.followsSource ?? null
+				};
+			}),
 		topPosts: sortedByViewsDesc.slice(0, 5).map((r) => ({
 			postId: r.postId,
 			cardId: cardIdForPublishedAt(r.publishedAt, cardIdByDate),
@@ -377,6 +426,8 @@ export interface ViabilityEvidenceA {
 	postId: string;
 	views: number;
 	follows: number;
+	/** Whether this specific post's `follows` came from the platform's own per-post attribution or from a daily follower delta — the strength of the criterion-A evidence, carried structurally so a consumer never has to parse the summary prose. */
+	followsSource: FollowsSource;
 }
 
 export interface ViabilityEvidenceB {
@@ -418,15 +469,27 @@ function describePost(post: { postId: string; cardId: string | null }): string {
 export function computeVerdict(platforms: PlatformReadout[]): ViabilityVerdict {
 	for (const p of platforms) {
 		for (const post of p.breakoutPosts) {
-			if (post.follows !== null && post.follows > 0) {
+			// `followsSource` is non-null whenever `follows` is (both are set
+			// together in `computeFollowConversion`), but check it explicitly
+			// rather than asserting: criterion A's evidence must state how the
+			// number was obtained, and a post carrying a count with no
+			// recorded provenance is not evidence this verdict should rest on.
+			if (post.follows !== null && post.follows > 0 && post.followsSource !== null) {
 				return {
 					viable: true,
 					criterion: 'A',
 					summary:
 						`VIABLE (criterion A met) — ${p.platform} post ${describePost(post)} cleared the breakout threshold ` +
 						`with ${post.views} views and converted to ${post.follows} follow(s) ` +
-						`(${p.followConversion.method === 'exact' ? 'exact per-post attribution' : 'inferred from daily follower deltas — directional, not exact'}).`,
-					evidence: { criterion: 'A', platform: p.platform, postId: post.postId, views: post.views, follows: post.follows }
+						`(${post.followsSource === 'exact' ? 'exact per-post attribution' : 'inferred from daily follower deltas — directional, not exact'}).`,
+					evidence: {
+						criterion: 'A',
+						platform: p.platform,
+						postId: post.postId,
+						views: post.views,
+						follows: post.follows,
+						followsSource: post.followsSource
+					}
 				};
 			}
 		}
@@ -538,9 +601,18 @@ export function computeReadout(options: ComputeReadoutOptions): Readout {
 // ---------------------------------------------------------------------------
 
 function formatFollowConversionLine(fc: PlatformFollowConversion): string {
-	if (fc.method === 'exact') return 'Follow conversion: EXACT (per-post subscribersGained).';
-	if (fc.method === 'inferred') return 'Follow conversion: INFERRED (from daily follower-count deltas aligned to publish date — directional, not exact).';
-	return 'Follow conversion: UNAVAILABLE (no per-post attribution and no follower-snapshot series supplied for this platform).';
+	const exact = fc.posts.filter((p) => p.followsSource === 'exact').length;
+	const inferred = fc.posts.filter((p) => p.followsSource === 'inferred').length;
+
+	if (fc.method === 'exact') return 'Follow conversion: EXACT (per-post attribution reported by the platform).';
+	if (fc.method === 'inferred')
+		return 'Follow conversion: INFERRED (from daily follower-count deltas aligned to publish date — directional, not exact).';
+	if (fc.method === 'mixed')
+		return (
+			`Follow conversion: MIXED — ${exact} post(s) exact (per-post attribution), ` +
+			`${inferred} inferred from daily follower deltas (directional, not exact).`
+		);
+	return 'Follow conversion: UNAVAILABLE (no per-post figure recorded and no follower-snapshot series covering these posts).';
 }
 
 /** Renders one `Readout` as plain text for the weekly session / T15's runbook / T16's findings. Pure string formatting — no IO. */
