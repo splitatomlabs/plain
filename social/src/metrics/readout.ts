@@ -428,7 +428,7 @@ export interface ComputeReadoutOptions {
 	rows: MetricsRow[];
 	/** Instagram's daily account-level follower series, for inferred follow conversion. Omit to report `'unavailable'`. */
 	instagramFollowerSnapshots?: DailyFollowerSnapshot[];
-	/** TikTok's daily account-level follower series, if one is ever collected (no such collector exists yet — see this file's header). Omit to report `'unavailable'`. */
+	/** TikTok's daily account-level follower series, recorded by `follower-snapshot.ts --platform tiktok`. Omit to report `'unavailable'`. */
 	tiktokFollowerSnapshots?: DailyFollowerSnapshot[];
 	/** ISO 8601 — the evaluation instant. Not used in any computation below (all of it is derived from `rows`' own `publishedAt`/`views`), but threaded through and stamped onto the result so the readout is reproducible against a fixed moment rather than implicitly "now." */
 	now: string;

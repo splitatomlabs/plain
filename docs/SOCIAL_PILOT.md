@@ -553,6 +553,20 @@ this: passing `--follows` at all for `--platform instagram` or `--platform tikto
 claim that the platform can report a per-post follow count. Omitting it on YouTube itself records
 `null`, never a fabricated `0`.
 
+**`--post-id` and `--published-at` are both required and neither is redundant, but nothing
+cross-checks them — so a mistyped `--post-id` is guarded.** The two do different jobs: `--post-id`
+alone is the row's identity (`schema.ts`'s `metricsRowKey`, `platform:postId`), while
+`--published-at` alone drives the dated filename, the criterion-B week bucket, and the criterion-A
+follower alignment. A platform's id carries no date and a date names no post, so both have to be
+typed. The failure that creates: a typo'd id on a correction re-run does *not* replace the row it
+was meant to fix — it writes a second row, `readout.ts` dedupes by `platform:postId` and keeps
+both, and the phantom post's views land in the median criterion B is measured on, with no error and
+no symptom until the week-4 readout is quietly wrong. `hand-entry.ts` therefore refuses a second,
+different `--post-id` for a platform that already has a post on that published date, naming both
+ids, and writes nothing. The pilot posts once per platform per day, so this only fires on a
+mistake; `--allow-second-post` is the escape hatch for a day that genuinely carried two posts on
+one platform.
+
 `--avg-percent-watched` stays optional and `null` unless a platform's analytics screen shows a clean
 percentage worth typing in — TikTok's retention data in particular is in-app only, with no automated
 read path at all, on either candidate API path (see the TikTok metrics section below).

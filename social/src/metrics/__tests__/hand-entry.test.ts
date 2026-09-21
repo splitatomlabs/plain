@@ -34,6 +34,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
 	HandEntryValidationError,
+	assertSingleDailyPost,
 	buildHandEnteredMetricsRow,
 	recordHandEntry,
 	toDir,
@@ -537,5 +538,179 @@ describe('CLI — main()', () => {
 		expect(result.status).not.toBe(0);
 		expect(result.stderr).toContain(flag);
 		expect(await readdir(outDir)).toHaveLength(0);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// `assertSingleDailyPost` — the one-post-per-platform-per-day guard.
+//
+// The hole it closes, concretely: --post-id is the row's whole identity and
+// --published-at drives the week bucket and follower alignment, but nothing
+// cross-checks them. A typo'd id on a correction re-run therefore does not
+// replace the row it meant to fix — it writes a second one, readout.ts
+// dedupes by platform:postId and keeps both, and the phantom post's views
+// land in the median criterion B is measured on.
+// ---------------------------------------------------------------------------
+
+describe('assertSingleDailyPost — refuses a second post-id for one platform-day', () => {
+	function rowFor(overrides: Partial<MetricsRow> = {}): MetricsRow {
+		return buildHandEnteredMetricsRow(validInput(overrides as Partial<HandEnteredMetrics>));
+	}
+
+	it('allows the first post of a platform-day', () => {
+		expect(() => assertSingleDailyPost([], rowFor({ postId: 'a' }))).not.toThrow();
+	});
+
+	// The correction path must keep working — this is the whole reason
+	// re-running hand-entry.ts is safe.
+	it('allows re-entering the SAME post-id (a correction), which upserts rather than duplicating', () => {
+		const existing = [rowFor({ postId: 'a', views: 100 })];
+		expect(() => assertSingleDailyPost(existing, rowFor({ postId: 'a', views: 200 }))).not.toThrow();
+	});
+
+	it('rejects a different post-id on the same platform and published date', () => {
+		const existing = [rowFor({ platform: 'instagram', postId: 'ABC123' })];
+		expect(() => assertSingleDailyPost(existing, rowFor({ platform: 'instagram', postId: 'ABC124' }))).toThrow(
+			HandEntryValidationError
+		);
+	});
+
+	it('names both ids and the date, so the typo is visible without opening the file', () => {
+		const existing = [rowFor({ platform: 'instagram', postId: 'ABC123' })];
+		expect(() => assertSingleDailyPost(existing, rowFor({ platform: 'instagram', postId: 'ABC124' }))).toThrow(
+			/ABC123.*ABC124|ABC124.*ABC123/s
+		);
+		expect(() => assertSingleDailyPost(existing, rowFor({ platform: 'instagram', postId: 'ABC124' }))).toThrow(/2026-09-01/);
+	});
+
+	// Each platform gets its own post that day — that is the normal weekly
+	// session, not a conflict.
+	it('allows a different platform on the same date', () => {
+		const existing = [rowFor({ platform: 'instagram', postId: 'ig-1' })];
+		expect(() => assertSingleDailyPost(existing, rowFor({ platform: 'tiktok', postId: 'tt-1' }))).not.toThrow();
+	});
+
+	it('allows the same platform on a different published date', () => {
+		const existing = [rowFor({ platform: 'tiktok', postId: 'tt-1', publishedAt: '2026-09-01T12:00:00.000Z' })];
+		expect(() =>
+			assertSingleDailyPost(existing, rowFor({ platform: 'tiktok', postId: 'tt-2', publishedAt: '2026-09-02T12:00:00.000Z' }))
+		).not.toThrow();
+	});
+
+	// The guard compares CALENDAR DATE, not instant — two posts hours apart
+	// on one day is exactly the case it exists to catch.
+	it('compares the date, not the exact instant', () => {
+		const existing = [rowFor({ platform: 'tiktok', postId: 'tt-1', publishedAt: '2026-09-01T07:30:00.000Z' })];
+		expect(() =>
+			assertSingleDailyPost(existing, rowFor({ platform: 'tiktok', postId: 'tt-2', publishedAt: '2026-09-01T23:00:00.000Z' }))
+		).toThrow(HandEntryValidationError);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The same-day guard through the real CLI, including its escape hatch.
+// Subprocess, matching the `CLI — main()` suite above: the point is that the
+// typo'd entry never reaches disk.
+// ---------------------------------------------------------------------------
+
+describe('CLI — the same-day guard', () => {
+	const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+	const repoRoot = path.resolve(moduleDir, '..', '..', '..', '..');
+	const cliPath = path.join(repoRoot, 'social', 'src', 'metrics', 'hand-entry.ts');
+
+	let outDir: string;
+
+	beforeEach(async () => {
+		outDir = await mkdtemp(path.join(tmpdir(), 'plain-hand-entry-guard-'));
+	});
+
+	afterEach(async () => {
+		await rm(outDir, { recursive: true, force: true });
+	});
+
+	function runCli(args: string[]): { status: number; stdout: string; stderr: string } {
+		try {
+			const stdout = execFileSync('npx', ['tsx', cliPath, ...args], {
+				cwd: repoRoot,
+				encoding: 'utf-8',
+				stdio: ['ignore', 'pipe', 'pipe']
+			});
+			return { status: 0, stdout, stderr: '' };
+		} catch (e) {
+			const err = e as { status: number | null; stdout: string; stderr: string };
+			return { status: err.status ?? 1, stdout: err.stdout ?? '', stderr: err.stderr ?? '' };
+		}
+	}
+
+	function entry(postId: string, extra: string[] = []): string[] {
+		return [
+			'--platform', 'instagram',
+			'--post-id', postId,
+			'--published-at', '2026-09-14T11:30:00.000Z',
+			'--views', '100', '--likes', '1', '--comments', '0', '--shares', '0',
+			'--out-dir', outDir,
+			...extra
+		];
+	}
+
+	async function rowsOnDisk(): Promise<MetricsRow[]> {
+		const raw = await readFile(path.join(outDir, 'metrics-2026-09-14.json'), 'utf-8');
+		return JSON.parse(raw) as MetricsRow[];
+	}
+
+	it('rejects a second post-id for the same platform-day, and writes nothing', async () => {
+		expect(runCli(entry('ABC123')).status).toBe(0);
+
+		const second = runCli(entry('ABC124'));
+		expect(second.status).not.toBe(0);
+		expect(second.stderr).toMatch(/already has a post recorded for 2026-09-14/);
+		expect(second.stderr).toMatch(/--allow-second-post/);
+
+		// The phantom row never reached disk — the real point of the guard.
+		const rows = await rowsOnDisk();
+		expect(rows).toHaveLength(1);
+		expect(rows[0].postId).toBe('ABC123');
+	});
+
+	it('still lets the same post-id be re-entered as a correction', async () => {
+		expect(runCli(entry('ABC123')).status).toBe(0);
+		const correction = runCli([
+			'--platform', 'instagram', '--post-id', 'ABC123',
+			'--published-at', '2026-09-14T11:30:00.000Z',
+			'--views', '250', '--likes', '9', '--comments', '2', '--shares', '1',
+			'--out-dir', outDir
+		]);
+		expect(correction.status).toBe(0);
+
+		const rows = await rowsOnDisk();
+		expect(rows).toHaveLength(1);
+		expect(rows[0].views).toBe(250);
+	});
+
+	it('records both when --allow-second-post is passed deliberately', async () => {
+		expect(runCli(entry('ABC123')).status).toBe(0);
+		expect(runCli(entry('ABC124', ['--allow-second-post'])).status).toBe(0);
+
+		const rows = await rowsOnDisk();
+		expect(rows).toHaveLength(2);
+		expect(rows.map((r) => r.postId).sort()).toEqual(['ABC123', 'ABC124']);
+	});
+
+	it('does not block a different platform on the same day — the normal weekly session', async () => {
+		expect(runCli(entry('ABC123')).status).toBe(0);
+		const tiktok = runCli([
+			'--platform', 'tiktok', '--post-id', 'TT999',
+			'--published-at', '2026-09-14T11:30:00.000Z',
+			'--views', '50', '--likes', '0', '--comments', '0', '--shares', '0',
+			'--out-dir', outDir
+		]);
+		expect(tiktok.status).toBe(0);
+		expect(await rowsOnDisk()).toHaveLength(2);
+	});
+
+	it('documents --allow-second-post in --help', () => {
+		const result = runCli(['--help']);
+		expect(result.status).toBe(0);
+		expect(result.stdout).toMatch(/--allow-second-post/);
 	});
 });

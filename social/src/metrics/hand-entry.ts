@@ -255,6 +255,53 @@ export function recordHandEntry(existing: MetricsRow[], input: HandEnteredMetric
 	return upsertMetricsRow(existing, buildHandEnteredMetricsRow(input));
 }
 
+/**
+ * Refuses a second, DIFFERENT `--post-id` for a platform that already has a
+ * post recorded on the same published date.
+ *
+ * Why this is needed even though `--post-id` and `--published-at` are both
+ * load-bearing and neither derives from the other: `--post-id` alone is the
+ * row's identity (`schema.ts`'s `metricsRowKey`, `platform:postId`), while
+ * `--published-at` alone drives the dated filename, the criterion-B week
+ * bucket (`readout.ts`'s `medianViewsByWeek`) and the criterion-A follower
+ * alignment (`inferFollowsForPost`). Nothing cross-checks the two, so a
+ * typo'd id on a correction re-run does NOT replace the row it was meant to
+ * fix — it writes a second row, `readout.ts` dedupes by `platform:postId`
+ * and so keeps both, and the phantom post lands in the denominator of the
+ * median that criterion B is measured on. There is no error and no symptom
+ * until the week-4 readout is quietly wrong.
+ *
+ * This pilot publishes exactly one post per platform per day (the runbook's
+ * section 5.3: 21 uploads a week, 3 platforms x 7 days), so the invariant is
+ * already true and this only ever fires on a mistake. `--allow-second-post`
+ * is the escape hatch for the real exception — a day that genuinely carried
+ * two posts on one platform.
+ *
+ * Deliberately NOT folded into `recordHandEntry`/`upsertMetricsRow` above:
+ * those are the storage layer, and "one post per platform per day" is a fact
+ * about THIS pilot's posting schedule, not about how rows are keyed. The
+ * upsert still allows two same-day rows, and its own test says so.
+ */
+export function assertSingleDailyPost(
+	existing: MetricsRow[],
+	row: Pick<MetricsRow, 'platform' | 'postId' | 'publishedAt'>
+): void {
+	const date = row.publishedAt.slice(0, 10);
+	const conflict = existing.find(
+		(entry) => entry.platform === row.platform && entry.publishedAt.slice(0, 10) === date && entry.postId !== row.postId
+	);
+	if (!conflict) return;
+
+	throw new HandEntryValidationError(
+		`${row.platform} already has a post recorded for ${date}, under a different --post-id ` +
+			`("${conflict.postId}", against the "${row.postId}" just passed). This pilot posts once per platform ` +
+			`per day, so this is almost certainly a typo in --post-id — and left alone it would not correct the ` +
+			`existing row, it would invent a second post, whose views land in the median criterion B is measured ` +
+			`on. Re-run with the exact id already on file to correct that row, or pass --allow-second-post if ` +
+			`${row.platform} genuinely published twice on ${date}.`
+	);
+}
+
 // ---------------------------------------------------------------------------
 // CLI entry point — `npx tsx social/src/metrics/hand-entry.ts`. Reads and
 // writes the SAME dated file (`schema.ts`'s `metricsFilePathFor`), so a row
@@ -297,6 +344,15 @@ Optional:
                               post, so any value there would be fabricated.
   --avg-percent-watched <n>   0-100. Omit unless the app shows a clean
                               percentage — retention otherwise stays manual.
+  --allow-second-post         Record this post even though the same platform
+                              already has a DIFFERENT post-id on this
+                              published date. Off by default: the pilot posts
+                              once per platform per day, so a second id for
+                              one day is almost always a typo in --post-id,
+                              which would silently add a phantom post to the
+                              median rather than correcting the real row. Use
+                              this only when that platform genuinely
+                              published twice that day.
   --collected-at <ISO8601>    Defaults to the real wall-clock time.
   --out-dir <path>            Defaults to content/social/metrics/.
   --help                      Show this help.`);
@@ -390,6 +446,7 @@ async function main(): Promise<void> {
 			follows: { type: 'string' },
 			'avg-percent-watched': { type: 'string' },
 			'collected-at': { type: 'string' },
+			'allow-second-post': { type: 'boolean', default: false },
 			'out-dir': { type: 'string' },
 			help: { type: 'boolean', default: false }
 		},
@@ -444,7 +501,14 @@ async function main(): Promise<void> {
 	const filePath = metricsFilePathFor(outDir, collectionDate);
 
 	const existing = await readExistingRows(filePath);
-	const updated = recordHandEntry(existing, input);
+	// Validate BEFORE the same-day guard, so a malformed --published-at
+	// reports as the field error it is rather than being sliced into a
+	// nonsense date the guard then compares against.
+	const row = buildHandEnteredMetricsRow(input);
+	if (!values['allow-second-post']) {
+		assertSingleDailyPost(existing, row);
+	}
+	const updated = upsertMetricsRow(existing, row);
 	await writeRows(filePath, updated);
 
 	console.log(`Recorded ${input.platform} post ${input.postId} into ${filePath} (${updated.length} row(s) total for that date).`);
