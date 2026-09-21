@@ -15,7 +15,7 @@
  * `plans/complete/Pf39c2-social-pilot-index.md`'s "Success criterion (pre-registered
  * — do not renegotiate after posting)" section:
  *
- *   "A single 10x-median outlier is NOT sufficient; across ~168 posts one is
+ *   "A single 10x-median outlier is NOT sufficient; across 84 posts one is
  *   expected from variance alone.
  *
  *   Viable requires at least one of:

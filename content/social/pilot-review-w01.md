@@ -4,9 +4,10 @@ Pre-registered success criterion (`plans/complete/Pf39c2-social-pilot-index.md` 
 Viable requires at least one of A or B. A single 10x-median outlier is NOT sufficient; across 84 posts one is
 expected from variance alone. Track maximum AND median AND follow-conversion — the maximum alone is not the signal.
 
-(The generated template said "~168 posts" here. That figure predates `Pf39c2-social-pilot-02a` D02, which collapsed
-the channel to one Wall post per day; the runbook's section 1 re-derived it to 84 on 2026-09-09. Corrected in this
-note only — `scripts/lib/review.ts` still emits the stale number into every template it writes.)
+(The template this note was generated from said "~168 posts" here — a figure that predates
+`Pf39c2-social-pilot-02a` D02, which collapsed the channel to one Wall post per day. Corrected to 84 by hand in this
+note, and in `scripts/lib/review.ts` itself on 2026-09-21, so weeks 2-4's notes are generated correct rather than
+needing the same hand-correction. The runbook's section 1 has the re-derivation.)
 
 Filled in 2026-09-21, from all 21 week-1 rows under `content/social/metrics/`. Reproduce with
 `npx tsx social/src/metrics/readout.ts`.

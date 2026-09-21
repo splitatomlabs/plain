@@ -123,8 +123,13 @@ export function buildReviewNoteTemplate(options: ReviewTemplateOptions): string 
   return `# Week ${week} Review — ${date}
 
 Pre-registered success criterion (\`plans/complete/Pf39c2-social-pilot-index.md\` — do NOT renegotiate after posting):
-Viable requires at least one of A or B. A single 10x-median outlier is NOT sufficient; across ~168 posts one is
-expected from variance alone. Track maximum AND median AND follow-conversion — the maximum alone is not the signal.
+Viable requires at least one of A or B. A single 10x-median outlier is NOT sufficient; across 84 posts
+(1 Wall post/day x 3 platforms x 28 days) one is expected from variance alone. Track maximum AND median AND
+follow-conversion — the maximum alone is not the signal.
+(84, not the ~168 this line said until 2026-09-21: that figure assumed 2 posts/day and predates
+Pf39c2-social-pilot-02a D02, which collapsed the channel to one Wall post per day. docs/SOCIAL_PILOT.md
+section 1 has the re-derivation. The argument is unchanged either way — a lone outlier among 84 posts is
+still expected, just half as often.)
 
 ## Schedule
 - Schedule file: ${scheduleFilePath}
