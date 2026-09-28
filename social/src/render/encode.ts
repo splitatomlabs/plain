@@ -92,8 +92,15 @@ function resolveFfmpegBinary(): string {
 	return typeof staticPath === 'string' && staticPath.length > 0 ? staticPath : 'ffmpeg';
 }
 
-/** Same as {@link resolveFfmpegBinary}, but for `ffprobe-static`. */
+/**
+ * Same as {@link resolveFfmpegBinary}, but for `ffprobe-static` — except on
+ * Apple Silicon, where it goes straight to `ffprobe` on PATH. ffprobe-static
+ * 3.1.0's `bin/darwin/arm64/ffprobe` is an x86_64 binary, so it only ever ran
+ * under Rosetta; without Rosetta every spawn fails with EBADARCH ("spawn
+ * Unknown system error -86") after the encode has already succeeded.
+ */
 function resolveFfprobeBinary(): string {
+	if (process.platform === 'darwin' && process.arch === 'arm64') return 'ffprobe';
 	const staticPath: string | undefined = require('ffprobe-static')?.path;
 	return typeof staticPath === 'string' && staticPath.length > 0 ? staticPath : 'ffprobe';
 }

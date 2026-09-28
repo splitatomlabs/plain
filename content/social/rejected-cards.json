@@ -1,7 +1,7 @@
 {
   "meta": {
     "purpose": "Cards rejected on CONTENT grounds — they render fine, but must never be posted. Read by scripts/generate-schedule.ts, which excludes every card_id here from every future week's draw. Hand-maintained: add an entry, with a reason, in the same commit that rejects the card. This is NOT render-exclusions.json, which is renderer-derived, regenerated wholesale, and means 'cannot be rendered'. See scripts/lib/rejections.ts.",
-    "updated_at": "2026-09-20"
+    "updated_at": "2026-09-28"
   },
   "wall": [
     {
@@ -11,6 +11,14 @@
       "rejected_on": "2026-09-10",
       "rejected_in": "ee25b4f (#46)",
       "replaced_by": "on-anger-02-062"
+    },
+    {
+      "card_id": "meditations-04-030",
+      "book_slug": "meditations",
+      "reason": "Landing line \"There are mean people, weak people, cruel people, savage people, cowardly people, childish people.\" is the list that sets up the passage, not its payoff — the point arrives only after \"what then?\". On screen, alone, it is a catalogue of insults that says nothing. Same class of failure as on-anger-02-054.",
+      "rejected_on": "2026-09-28",
+      "rejected_in": "week 3 schedule, 2026-09-28",
+      "replaced_by": "meditations-10-030"
     }
   ]
 }

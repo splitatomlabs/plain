@@ -1,0 +1,44 @@
+[
+  {
+    "platform": "instagram",
+    "postId": "18111342266150868",
+    "format": "wall",
+    "publishedAt": "2026-09-26T11:30:00.000Z",
+    "views": 66,
+    "averagePercentWatched": null,
+    "likes": 0,
+    "comments": 0,
+    "shares": 0,
+    "saves": null,
+    "follows": 0,
+    "collectedAt": "2026-09-28T03:17:55.313Z"
+  },
+  {
+    "platform": "tiktok",
+    "postId": "7687892018202168597",
+    "format": "wall",
+    "publishedAt": "2026-09-26T11:30:00.000Z",
+    "views": 216,
+    "averagePercentWatched": null,
+    "likes": 3,
+    "comments": 0,
+    "shares": 0,
+    "saves": null,
+    "follows": 0,
+    "collectedAt": "2026-09-28T03:17:54.993Z"
+  },
+  {
+    "platform": "youtube",
+    "postId": "-KEh4HVj2EY",
+    "format": "wall",
+    "publishedAt": "2026-09-26T11:30:00.000Z",
+    "views": 69,
+    "averagePercentWatched": null,
+    "likes": 1,
+    "comments": 0,
+    "shares": 0,
+    "saves": null,
+    "follows": 1,
+    "collectedAt": "2026-09-28T03:17:55.626Z"
+  }
+]

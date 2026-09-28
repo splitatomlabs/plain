@@ -1,0 +1,98 @@
+{
+  "week": 3,
+  "seed": 42,
+  "slots": [
+    {
+      "day": 1,
+      "card_id": "meditations-06-063",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "No man can hinder thee to live as thy nature doth require. Nothing can happen unto thee, but what the common good of nature doth require.",
+        "landing_line": "No one can stop you from living as your nature requires."
+      }
+    },
+    {
+      "day": 2,
+      "card_id": "peace-of-mind-15-005",
+      "book_slug": "peace-of-mind",
+      "author_slug": "seneca",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "In one's own misfortunes, also, one ought so to conduct oneself as to bestow upon them just as much sorrow as reason, not as much as custom requires: for many shed tears in order to show them, and whenever no one is looking at them their eyes are dry, but they think it disgraceful not to weep when every one does so. So deeply has this evil of being guided by the opinion of others taken root in us, that even grief, the simplest of all emotions, begins to be counterfeited.",
+        "landing_line": "Many people cry just for show."
+      }
+    },
+    {
+      "day": 3,
+      "card_id": "discourses-55-001",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Keep this thought in readiness, when you lose anything external, what you acquire in place of it; and if it be worth more, never say, I have had a loss; neither if you have got a horse in place of an ass, or an ox in place of a sheep, nor a good action in place of a bit of money, nor in place of idle talk such tranquillity as befits a man, nor in place of lewd talk if you have acquired modesty. If you remember this, you will always maintain your character such as it ought to be.",
+        "landing_line": "If what you gain is worth more, never say you've suffered a loss."
+      }
+    },
+    {
+      "day": 4,
+      "card_id": "enchiridion-01-001",
+      "book_slug": "enchiridion",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "There are things which are within our power, and there are things which are beyond our power. Within our power are opinion, aim, desire, aversion, and, in one word, whatever affairs are our own. Beyond our power are body, property, reputation, office, and, in one word, whatever are not properly our own affairs.",
+        "landing_line": "Some things are up to you."
+      }
+    },
+    {
+      "day": 5,
+      "card_id": "meditations-10-030",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Make it not any longer a matter of dispute or discourse, what are the signs and proprieties of a good man, but really and actually to be such.",
+        "landing_line": "Stop talking about what makes a good person."
+      }
+    },
+    {
+      "day": 6,
+      "card_id": "discourses-46-005",
+      "book_slug": "discourses",
+      "author_slug": "epictetus",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Every great power (faculty) is dangerous to beginners. You must then bear such things as you are able, but conformably to nature: but not ... Practise sometimes a way of living like a person out of health that you may at some time live like a man in health.",
+        "landing_line": "Any great power is dangerous for beginners."
+      }
+    },
+    {
+      "day": 7,
+      "card_id": "meditations-01-012",
+      "book_slug": "meditations",
+      "author_slug": "marcus-aurelius",
+      "content": {
+        "format": "wall",
+        "original_excerpt": "Of Catulus, not to contemn any friend's expostulation, though unjust, but to strive to reduce him to his former disposition: freely and heartily to speak well of all my masters upon any occasion, as it is reported of Domitius, and Athenodotus: and to love my children with true affection.",
+        "landing_line": "From Catulus I learned not to dismiss a friend's criticism, even when it seems unfair."
+      }
+    }
+  ],
+  "author_mix": {
+    "epictetus": {
+      "count": 3,
+      "share": 0.42857142857142855
+    },
+    "marcus-aurelius": {
+      "count": 3,
+      "share": 0.42857142857142855
+    },
+    "seneca": {
+      "count": 1,
+      "share": 0.14285714285714285
+    }
+  },
+  "pool_source": "scored"
+}

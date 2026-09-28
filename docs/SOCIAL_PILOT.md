@@ -7,7 +7,7 @@ document alone — every command below is real, copy-pasteable, and checked agai
 source files as of 2026-09-09, not paraphrased.
 
 **Read the "Current status" section (near the bottom) before doing anything else.** The pilot is
-LIVE: week 1 (2026-09-14..20) published on all three platforms and is measured, and week 2 is
+LIVE: weeks 1-2 (2026-09-14..27) published on all three platforms and are measured, and week 3 is
 scheduled. Section 8's verdict is due after week 4 closes on 2026-10-11.
 
 ## 1. What the pilot is, and the pre-registered criterion
@@ -529,6 +529,13 @@ npx tsx social/src/metrics/hand-entry.ts \
   [--follows <n>] [--avg-percent-watched <n>] [--collected-at <ISO 8601>] [--out-dir <path>]
 ```
 
+**Or hand the numbers to Claude in one paste**, the way weeks 2 onward were entered:
+`social/week2results.md` is the template — one line per post, grouped by day,
+`<tt|ig|yt> <M/D> <post id> views <n> likes <n> comments <n> shares <n> follows <n>`. Any value that
+is not a number (week 2's first paste had two `likes Z`) must be re-read off the screen, not guessed.
+A post id starting with `-` (YouTube's can) has to be passed as `--post-id=<id>`, or `parseArgs`
+reads it as a flag.
+
 Required: `--platform`, `--post-id`, `--published-at`, `--views`, `--likes`, `--comments`,
 `--shares`. Optional: `--follows`, `--avg-percent-watched` (0-100), `--collected-at` (defaults to
 the real wall-clock time this command runs), `--out-dir` (defaults to `content/social/metrics/`).
@@ -739,22 +746,27 @@ automation is ever revisited:
 
 ## Current status — the pilot is LIVE
 
-**Week 1 is published and measured; week 2 is scheduled and starts 2026-09-21.** Updated 2026-09-21.
+**Weeks 1-2 are published and measured; week 3 is scheduled and starts 2026-09-28.** Updated 2026-09-28.
 This section spent a long time saying the opposite and was not updated on the day posting began —
 read the dates below, not the prose, if the two ever disagree again.
 
 | | Status |
 |---|---|
 | Week 1 (2026-09-14..20) | **Published on all three platforms, all 21 posts.** Metrics hand-entered and committed; review note filled (`content/social/pilot-review-w01.md`) |
-| Week 2 (2026-09-21..27) | Generated, rendered, scheduled. First post 07:30 ET on 2026-09-21 |
-| Week 3 (2026-09-28..10-04) | Not generated — gated on week 2's review note (5.1) |
-| Week 4 (2026-10-05..11) | Not generated. The verdict (section 8) is due after it closes |
+| Week 2 (2026-09-21..27) | **Published on all three platforms, all 21 posts.** Metrics hand-entered; review note filled (`content/social/pilot-review-w02.md`) |
+| Week 3 (2026-09-28..10-04) | Generated (seed 42, `--skip-review-check`), rendered, scheduled. First post 07:30 ET on 2026-09-28 |
+| Week 4 (2026-10-05..11) | Not generated — schedule by ~2026-10-02 (TikTok's 10-day window). The verdict (section 8) is due after it closes |
 
 **Week 1 result, for orientation only — it decides nothing:** 3,033 views across 21 posts; medians
 65 (Instagram), 199 (TikTok), 212 (YouTube); maximum 398; **one** follow in total. Criterion A is
 not met and is not close (398 against a ~10,000 threshold). Criterion B is not assessable until
 week 4 by construction. The full reading, including a Day 3 YouTube post that drew 1 view for
 reasons never established, is in the week 1 review note.
+
+**Week 2 result, same caveat:** 3,402 views across 21 posts — up 12%, all of it YouTube — but **every
+platform's median fell**: 27 (Instagram, from 65), 158 (TikTok, from 199), 185 (YouTube, from 212);
+maximum 500; 4 follows. Week 1's cross-platform ranking consistency did not replicate (Spearman
+−0.14 to +0.32). See the week 2 review note.
 
 **Account setup (3.0), 2026-09-09: done.** The Google/YouTube (Brand Account), Instagram
 (Business), and TikTok accounts all exist, phone-verified, on the shared pilot email, each with the
@@ -802,15 +814,13 @@ The first real weekly session (section 5) happened on 2026-09-21.
 - ~~**Zero posts have been published to any platform.**~~ **Closed 2026-09-14**, when week 1 day 1
   went out on all three platforms. 21 posts published as of 2026-09-20.
 
-**Two open questions carried out of week 1**, both operational rather than experimental — neither
-changes what gets posted:
+**Two questions carried out of week 1, both closed 2026-09-28** (operational, neither changes what gets posted):
 
-- **Day 3's YouTube post (`t_9C0SzdAks`) drew 1 view** while the same card took 159 on TikTok.
-  Visibility is Public with no restrictions, the rendered file is sound, and title length does not
-  predict views across the week. Read its **Impressions** (Analytics → Reach): near-zero means it
-  never entered the Shorts feed; thousands at ~0% CTR means it was shown and ignored. Nothing else
-  distinguishes those.
-- **TikTok's day 1 post drew 0 views.** Cold start explains low, not zero — confirm it published.
+- **Day 3's YouTube post (`t_9C0SzdAks`) drew 1 view** while the same card took 159 on TikTok. Its
+  Reach screen reads 3 — near-zero, so YouTube never put it into the Shorts feed, rather than showing
+  it and having it ignored. Why is still unknown.
+- **TikTok's day 1 post drew 0 views.** Confirmed published; recorded as a platform quirk, no cause
+  established.
 
 ## 8. Findings (week 4) — TEMPLATE, NOT YET FILLED IN
 
