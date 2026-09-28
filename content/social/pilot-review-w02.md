@@ -76,6 +76,13 @@ best post of the week (216) was YouTube's worst (69).
 - Next week hook changes: none to format, timing or selection method. Week 3 (2026-09-28..10-04) was generated with seed 42 on 2026-09-28, before this note was filled, via `--skip-review-check` — Day 1 posted at 07:30 ET the same morning and TikTok cannot be scheduled more than 10 days out, the same constraint as week 2's sitting. One card was rejected by hand in that draw: `meditations-04-030` (landing line was a list of insults, the setup to the passage and not its payoff — logged in `rejected-cards.json`), which re-drew Days 5 and 7.
 - Reason: nothing in week 2 points at a change that could be defended. The only candidate signal from week 1 — that some cards do well everywhere — did not replicate, so there is nothing to select harder for. Falling medians are a reason to watch, not a reason to change: criterion B is a week-1-to-week-4 median trend, and changing format, cards or posting time in week 3 would confound the very trend the pilot exists to measure. Two weeks of a flat-to-falling median on accounts this new is also exactly what the criterion anticipates for a NO. Let weeks 3-4 run unchanged.
 
+## Decision added 2026-09-28, after this note was first filled — Instagram stops
+**From week 3 day 1, the pilot posts to TikTok and YouTube only.** Made for time (14 of the 42 remaining uploads),
+from the numbers above and before any week-3 Instagram post: median 65 -> 27, 0 follows in 14 posts, 0 likes in all of
+week 2. It cannot bias the verdict — viable needs any one platform, so dropping one only removes a chance of YES —
+and it leaves TikTok and YouTube untouched. Instagram is reported at week 4 as "stopped after week 2, not assessed".
+The account stays up. Full reasoning in the runbook's "Current status".
+
 ## Carried into week 3 — operational, not experimental
 1. **Site traffic for 2026-09-21..27: 5 visitors** (Umami, read 2026-09-28), against ~4 in week 1. 3,402 post
    views produced 5 visits — the week-1 shape holds: views, follows and site traffic all near zero. Runbook 8.2

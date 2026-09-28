@@ -768,6 +768,21 @@ platform's median fell**: 27 (Instagram, from 65), 158 (TikTok, from 199), 185 (
 maximum 500; 4 follows. Week 1's cross-platform ranking consistency did not replicate (Spearman
 −0.14 to +0.32). See the week 2 review note.
 
+**Instagram stopped after week 2 — DECIDED 2026-09-28, before any week-3 post.** From week 3 day 1
+(2026-09-28) the pilot runs on TikTok and YouTube only: skip Meta Business Suite in 5.3, skip the
+`[instagram]` block in `captions.txt` (`prepare-week.ts` still writes it; not worth a code change for
+two weeks), and skip Instagram in 5.4. The account stays up, untouched — not deleted, no farewell post.
+
+- **Why:** time. It removes 14 of the 42 remaining uploads. The decision was made from these numbers,
+  and they are recorded so it cannot later read as post-hoc: median 65 -> 27, zero follows across all 14
+  posts, zero likes on all 7 of week 2's. Criterion B would need a week-4 median above 65; criterion A a
+  post at ~10,000 views, ~90x its best (115).
+- **Why it cannot bias the verdict:** viable means ANY one platform meets A or B, so removing a platform
+  only removes a chance of YES — it cannot manufacture one. TikTok and YouTube are measured on their own
+  posts and are unaffected. Section 6 already describes a two-platform run; this is that, chosen.
+- **What it costs:** Instagram gets no criterion verdict. Section 8.2 reports it as **"stopped after
+  week 2, not assessed"** — not as NOT VIABLE, which would claim a week-4 reading that was never taken.
+
 **Account setup (3.0), 2026-09-09: done.** The Google/YouTube (Brand Account), Instagram
 (Business), and TikTok accounts all exist, phone-verified, on the shared pilot email, each with the
 avatar, display name, and bio copy from 3.0; Facebook uses an existing personal profile plus the
@@ -875,6 +890,10 @@ For each platform (`instagram`, `youtube`, `tiktok`) that has at least one post:
 | Trend direction | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 |
 | Follow conversion method | **exact** (per-Reel Follows) — TO BE CONFIRMED AT WEEK 4 | **exact** (`subscribersGained`) — TO BE CONFIRMED AT WEEK 4 | **exact** (per-video Follows) — TO BE CONFIRMED AT WEEK 4 |
 | Follow conversion value(s) | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 |
+
+**Instagram was stopped after week 2 (see "Current status").** Fill its column from `readout.ts` as
+printed — 14 posts, weeks 1-2 only, and a trend of `insufficient data` — and write **"stopped after week
+2, not assessed"** in its trend-direction cell. It does not count toward the verdict either way.
 
 Do not relabel a platform's follow-conversion method by hand. All three rows above say `exact`
 because all three platforms report follows per post — but copy whatever `readout.ts` actually
