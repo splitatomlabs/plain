@@ -7,8 +7,8 @@ document alone — every command below is real, copy-pasteable, and checked agai
 source files as of 2026-09-09, not paraphrased.
 
 **Read the "Current status" section (near the bottom) before doing anything else.** The pilot is
-LIVE: weeks 1-2 (2026-09-14..27) published on all three platforms and are measured, and week 3 is
-scheduled. Section 8's verdict is due after week 4 closes on 2026-10-11.
+**STOPPED**, after week 3 (decided 2026-10-06): weeks 1-3 (2026-09-14..10-04) published and are
+measured, week 4 was never run, and section 8 records the outcome.
 
 ## 1. What the pilot is, and the pre-registered criterion
 
@@ -744,9 +744,10 @@ automation is ever revisited:
   (no per-post or daily-snapshot series is collected for it) regardless of which read path, if
   either, was ever automated.
 
-## Current status — the pilot is LIVE
+## Current status — the pilot is STOPPED
 
-**Weeks 1-2 are published and measured; week 3 is scheduled and starts 2026-09-28.** Updated 2026-09-28.
+**Stopped after week 3, decided 2026-10-06, before any week-4 post.** Weeks 1-3 are published and
+measured; week 4 was not generated, rendered or posted. Section 8 has the outcome. Updated 2026-10-06.
 This section spent a long time saying the opposite and was not updated on the day posting began —
 read the dates below, not the prose, if the two ever disagree again.
 
@@ -754,8 +755,8 @@ read the dates below, not the prose, if the two ever disagree again.
 |---|---|
 | Week 1 (2026-09-14..20) | **Published on all three platforms, all 21 posts.** Metrics hand-entered and committed; review note filled (`content/social/pilot-review-w01.md`) |
 | Week 2 (2026-09-21..27) | **Published on all three platforms, all 21 posts.** Metrics hand-entered; review note filled (`content/social/pilot-review-w02.md`) |
-| Week 3 (2026-09-28..10-04) | Generated (seed 42, `--skip-review-check`), rendered, scheduled. First post 07:30 ET on 2026-09-28 |
-| Week 4 (2026-10-05..11) | Not generated — schedule by ~2026-10-02 (TikTok's 10-day window). The verdict (section 8) is due after it closes |
+| Week 3 (2026-09-28..10-04) | **Published on TikTok and YouTube, all 14 posts** (Instagram stopped after week 2). Metrics hand-entered; review note filled (`content/social/pilot-review-w03.md`) |
+| Week 4 (2026-10-05..11) | **Not run — the pilot stopped.** Never generated; its first two days had already been missed when the decision was made |
 
 **Week 1 result, for orientation only — it decides nothing:** 3,033 views across 21 posts; medians
 65 (Instagram), 199 (TikTok), 212 (YouTube); maximum 398; **one** follow in total. Criterion A is
@@ -782,6 +783,23 @@ two weeks), and skip Instagram in 5.4. The account stays up, untouched — not d
   posts and are unaffected. Section 6 already describes a two-platform run; this is that, chosen.
 - **What it costs:** Instagram gets no criterion verdict. Section 8.2 reports it as **"stopped after
   week 2, not assessed"** — not as NOT VIABLE, which would claim a week-4 reading that was never taken.
+
+**Week 3 result:** TikTok + YouTube 2,610 views across 14 posts — back to week 1's 2,643 for the same
+two platforms. Medians 174 (TikTok: 199 → 158 → 174) and 177 (YouTube: 212 → 185 → 177); maximum 367;
+**zero** follows; 3 site visitors. TT–YT ranking Spearman −0.68. See the week 3 review note.
+
+**The pilot stopped after week 3 — DECIDED 2026-10-06, before any week-4 post.** Nothing was posted
+for week 4; the TikTok and YouTube accounts stay up, untouched, like Instagram's.
+
+- **Why:** no plausible week-4 outcome would have changed the decision. Criterion A is ~20x out of reach
+  (best post of 56: 500 views; 5 follows in 9,045 views). Criterion B could at most have been met on its
+  letter — a week-4 median above 199 (TikTok) or 212 (YouTube), neither reached since week 1 — and would
+  still have meant ~200 views a post, near-zero follows and ~3-5 site visitors a week. Week 4 was also
+  already compromised: days 1-2 (10/5, 10/6) had been missed, leaving at most five late days read on a
+  different cadence.
+- **What it costs:** criterion B gets no formal verdict. Section 8 reports **"stopped after week 3;
+  criterion A not met, criterion B not formally assessed"** — not a measured NO, which would claim a
+  week-4 reading that was never taken.
 
 **Account setup (3.0), 2026-09-09: done.** The Google/YouTube (Brand Account), Instagram
 (Business), and TikTok accounts all exist, phone-verified, on the shared pilot email, each with the
@@ -837,136 +855,91 @@ The first real weekly session (section 5) happened on 2026-09-21.
 - **TikTok's day 1 post drew 0 views.** Confirmed published; recorded as a platform quirk, no cause
   established.
 
-## 8. Findings (week 4) — TEMPLATE, NOT YET FILLED IN
+## 8. Findings — the pilot stopped after week 3
 
-**This section is still empty on purpose, but no longer because the pilot has not run.** Updated
-2026-09-21: week 1 IS published and measured (21 posts, metrics under `content/social/metrics/`,
-review note filled). What is missing is weeks 2-4 — and the verdict below is a WEEK 4 verdict by
-construction, because criterion B is a week-1-to-week-4 median trend that cannot be evaluated with
-one week of data. **Do not fill this in early.** Week 4 closes 2026-10-11.
+**Filled in 2026-10-06. This was built as a week-4 template; the pilot stopped after week 3 instead**
+(see "Current status" for the decision and its reasoning). Everything below is from three weeks
+(2026-09-14..10-04), 56 posts: Instagram 14 (weeks 1-2), TikTok 21, YouTube 21. Where a blank asked
+for a week-4 figure, it says so rather than standing a week-3 figure in its place.
 
-Nothing below this line is a result. It is the exact procedure and the exact blanks whoever closes
-`Pf39c2-social-pilot-03` T16 must fill in once four real weeks exist — written ahead of time so that
-person fills in a pre-built skeleton with real numbers rather than inventing the report's shape
-under pressure to produce a verdict.
+### 8.1 Procedure — as run
 
-**Week 1's numbers are in `content/social/pilot-review-w01.md`, not here.** They are a baseline, not
-a finding: criterion A is not met and not close (maximum 398 views against ~10,000; one follow
-across 3,033 views), and criterion B is not assessable yet.
+Run 2026-10-06 against all 56 rows under `content/social/metrics/`. Week 3's rows were read
+2026-10-05 ~18:30 ET, about a day later than weeks 1-2's Sunday-night cadence, which can only have
+flattered week 3:
 
-### 8.1 Procedure — run this at ~week 4, not before
+```bash
+npx tsx social/src/metrics/readout.ts
+```
 
-1. Confirm four full pilot weeks of posts have metrics that are settled, not still climbing.
-   Metrics are hand-entered, not polled on a schedule (section 7), so this is a judgement call, not
-   a code-enforced wait: for each post, look at whether enough time has passed since it published
-   that its view count on the platform looks stable rather than still rising, and if it doesn't,
-   re-read that post's numbers later before trusting them in this readout.
-2. Run the readout from `social/`:
-   ```bash
-   npx tsx social/src/metrics/readout.ts --now <ISO 8601 evaluation instant>
-   # optionally pin --metrics-dir <path> if not using the default content/social/metrics/,
-   # or --breakout-threshold <n> to override the default 10,000-view criterion-A threshold
-   ```
-   (Flags confirmed against `readout.ts`'s own `printHelp()`: `--metrics-dir`, `--now`,
-   `--breakout-threshold`, `--help`. Do not guess at flags not listed there.)
-3. Copy the printed report's numbers into section 8.2 below verbatim — do not round, do not
-   summarize away a platform with no data, and do not silently drop TikTok's `UNAVAILABLE`
-   follow-conversion label if that is what the run actually printed.
-4. Fill in section 8.3 by applying the decision rule in section 8.4 to the numbers in 8.2 — not to a
-   vibe, not to "but the video really seemed to land." If the numbers do not clear the bar, the
-   answer is stop, per section 8.4's own verbatim warning.
-
-### 8.2 The numbers — fill in per platform, copied straight from the readout's output
-
-For each platform (`instagram`, `youtube`, `tiktok`) that has at least one post:
+### 8.2 The numbers — copied from the readout's output
 
 | Metric | Instagram | YouTube | TikTok |
 |---|---|---|---|
-| Post count | `<n>` — TO BE FILLED AT WEEK 4 | `<n>` — TO BE FILLED AT WEEK 4 | `<n>` — TO BE FILLED AT WEEK 4 |
-| Median views | `<median>` — TO BE FILLED AT WEEK 4 | `<median>` — TO BE FILLED AT WEEK 4 | `<median>` — TO BE FILLED AT WEEK 4 |
-| Maximum views | `<max>` — TO BE FILLED AT WEEK 4 | `<max>` — TO BE FILLED AT WEEK 4 | `<max>` — TO BE FILLED AT WEEK 4 |
-| Max/median ratio | `<ratio>x` — TO BE FILLED AT WEEK 4 | `<ratio>x` — TO BE FILLED AT WEEK 4 | `<ratio>x` — TO BE FILLED AT WEEK 4 |
-| Week 1 median -> week 4 median | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 | `<w1> -> <w4>` — TO BE FILLED AT WEEK 4 |
-| Trend direction | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 | `<up/down/flat/insufficient-data>` — TO BE FILLED AT WEEK 4 |
-| Follow conversion method | **exact** (per-Reel Follows) — TO BE CONFIRMED AT WEEK 4 | **exact** (`subscribersGained`) — TO BE CONFIRMED AT WEEK 4 | **exact** (per-video Follows) — TO BE CONFIRMED AT WEEK 4 |
-| Follow conversion value(s) | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 | `<follows>` — TO BE FILLED AT WEEK 4 |
+| Post count | 14 | 21 | 21 |
+| Median views | 38.5 | 185 | 186 |
+| Maximum views | 115 | 500 | 367 |
+| Max/median ratio | 2.99x | 2.70x | 1.97x |
+| Week 1 median -> week 4 median | 65 -> not run | 212 -> not run (week 3: 177) | 199 -> not run (week 3: 174) |
+| Trend direction | stopped after week 2, not assessed | stopped after week 3, not assessed (readout: insufficient data, weeks 1, 2, 3) | stopped after week 3, not assessed (readout: insufficient data, weeks 1, 2, 3) |
+| Follow conversion method | EXACT, 14/14 posts | EXACT, 21/21 posts | EXACT, 21/21 posts |
+| Follow conversion value(s) | 0 | 3 | 2 |
 
-**Instagram was stopped after week 2 (see "Current status").** Fill its column from `readout.ts` as
-printed — 14 posts, weeks 1-2 only, and a trend of `insufficient data` — and write **"stopped after week
-2, not assessed"** in its trend-direction cell. It does not count toward the verdict either way.
+Weekly medians, which are what criterion B would have compared: TikTok 199 → 158 → 174, YouTube
+212 → 185 → 177, Instagram 65 → 27.
 
-Do not relabel a platform's follow-conversion method by hand. All three rows above say `exact`
-because all three platforms report follows per post — but copy whatever `readout.ts` actually
-printed, not the expectation. A platform reads `unavailable` when no post of its own carried a
-recorded figure, which is a gap in the entry, not a property of the platform.
-
-**Top 5 posts overall** (across all platforms, richest-first — pull the `topPosts` list per platform
-from the printed report and merge/re-sort by views):
+**Top 5 posts overall** (all YouTube; TikTok's best, `discourses-46-005` at 367, is sixth):
 
 | Rank | Post ID | Platform | Format | Views |
 |---|---|---|---|---|
-| 1 | `<postId>` | `<platform>` | `<format — The Wall / The Question / The Objection>` | `<views>` — TO BE FILLED AT WEEK 4 |
-| 2 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
-| 3 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
-| 4 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
-| 5 | `<postId>` | `<platform>` | `<format>` | `<views>` — TO BE FILLED AT WEEK 4 |
+| 1 | `drE1NSavtng` (`enchiridion-28-001`) | youtube | The Wall | 500 |
+| 2 | `z1NKt_Jz_eQ` (`on-anger-02-075`) | youtube | The Wall | 445 |
+| 3 | `XdB18B4Ov1Y` (`meditations-09-030`) | youtube | The Wall | 415 |
+| 4 | `A9R6_m-iVcs` (`on-anger-02-062`) | youtube | The Wall | 398 |
+| 5 | `_wow7y9c2Ng` (`enchiridion-27-001`) | youtube | The Wall | 373 |
 
-Paste `readout.ts`'s printed verdict summary line here verbatim, unedited:
+The readout's printed verdict line, verbatim, **over three weeks, not four**. Its criterion-B half
+reads "no upward trend" because there is no week 4 to compare, not because one was measured:
 
-> `<paste the exact "VIABLE (criterion A met) — ..." / "VIABLE (criterion B met) — ..." /
-> "NOT VIABLE — ..." line the tool printed>` — TO BE FILLED AT WEEK 4
+> NOT VIABLE — neither criterion met. No breakout post cleared the threshold with visible follow conversion, and no platform shows an upward week-1-to-week-4 median trend. Per the pre-registered criterion, an outlier with no conversion and no trend is explicitly a NO.
 
-**Site traffic — NOT part of the criterion, and reported anyway.** Fill this in from Umami for the
-full 28 days, beside the verdict rather than after it:
+**Site traffic — not part of the criterion, reported anyway.** Over 21 days, not 28:
 
 | Metric | Value |
 |---|---|
-| Total site visitors, 28 days | `<n>` — TO BE FILLED AT WEEK 4 |
-| Visitors attributed to `/go/ig`, `/go/yt`, `/go/tt` (`utm_source`) | `<n>` — TO BE FILLED AT WEEK 4 |
-| `book_started` events | `<n>` — TO BE FILLED AT WEEK 4 |
-| Total post views over the same 28 days (from the table above) | `<n>` — TO BE FILLED AT WEEK 4 |
+| Total site visitors, 21 days | ~12 (Umami: ~4, 5, 3 per week) |
+| Visitors attributed to `/go/ig`, `/go/yt`, `/go/tt` (`utm_source`) | none in week 1; not read for weeks 2-3 |
+| `book_started` events | not read |
+| Total post views over the same 21 days | 9,045 (3,033 / 3,402 / 2,610) |
 
-**Why this table exists, given that neither criterion uses it.** Criterion A is views plus follows;
-criterion B is a median-views trend. Neither measures whether anyone reached the site — so **the
-pilot can satisfy criterion B and deliver zero readers**, and a rising view count would read as
-"viable" over an empty site. Plain's goal is people reading books, so that outcome must be visible
-to whoever reads this section rather than inferable from its absence.
+Week 1's note still stands: YouTube's description link is clickable and converted no better than
+the two platforms where caption URLs are not, so a missing link does not explain the traffic.
 
-**This is NOT a fourth criterion and must not be used as one.** Do not let a weak traffic number
-veto a met criterion, and do not let a strong one rescue an unmet one — that is exactly the
-post-hoc renegotiation section 1 forbids. It is context reported alongside the verdict, and if the
-two point in different directions, say so plainly in 8.3's recommendation instead of resolving it
-by arithmetic.
+### 8.3 The recommendation
 
-Week 1's reading, for whoever fills this in: 3,033 post views produced ~4 site visitors, none
-attributed to a `/go/` link, with one follow. The Umami tag is installed and working (verified
-2026-09-21), and honours Do Not Track, so it undercounts by an unknown but small amount. Notably,
-YouTube's 1,414 views came with a working clickable description link and converted no better than
-Instagram and TikTok, where caption URLs are not clickable at all — so a missing link is not the
-explanation, and buying one (e.g. TikTok's bio link, 3.0) should not be expected to change it.
+**Verdict: stop. The pilot stopped after week 3; criterion A not met, criterion B not formally
+assessed.**
 
-### 8.3 The recommendation — fill in only after 8.2, and only using 8.4's rule
+**Which criterion, if any, was met:** neither. A was not met: the best of 56 posts drew 500 views
+against ~10,000, and the pilot drew 5 follows in total. B was not assessed, because it is defined as
+week 1 against week 4 and week 4 was not run. No platform's median rose above its week-1 level in
+weeks 2 or 3.
 
-**Verdict: `<YES, social is viable / NO, stop>` — TO BE FILLED AT WEEK 4.**
+**Why stopping without week 4 is not a renegotiation of 8.4:** the rule says neither met -> stop,
+and stopping early cannot manufacture a YES. What it forgoes is the chance of a criterion-B YES. That
+chance needed a week-4 median above 199 (TikTok) or 212 (YouTube). Even if it had come, it would have
+meant ~200 views a post, near-zero follows and a handful of site visitors a week, so it is not worth
+rebuilding around. Week 4 was also already short two days when the decision was made. The decision
+was made 2026-10-06, from the numbers above, before any week-4 post.
 
-**Which criterion, if any, was met:** `<A / B / neither>` — TO BE FILLED AT WEEK 4.
+**No hedge:** social, as run here (one Wall video a day on new accounts), did not show viability for
+Plain. The accounts stay up, untouched; nothing further is scheduled.
 
-**If YES:** name the specific post/platform/format combination that met the criterion, and state
-what "rebuild around whatever premise did it" concretely means here — TO BE FILLED AT WEEK 4.
-
-**If NO:** state that plainly, with no hedge (no "promising but," no "worth one more month") — the
-pre-registered rule in 8.4 does not have a maybe. TO BE FILLED AT WEEK 4.
-
-**On format:** the format question this task's own wording asks ("which format broke out") is
-**degenerate for this pilot** — `Pf39c2-social-pilot-02a` D01/D02 collapsed the channel to a single
-format, The Wall, one post a day, before any post went out. There is exactly one format this pilot
-can answer "The Wall" for; there is no cross-format comparison to report, and pretending otherwise
-would fabricate a comparison this pilot's own scope decisions killed before go-live. The only
-within-format axis that COULD differ is The Wall's three sub-types — **The Thou Wall, The Cascade,
-The Scene** (see `plans/complete/Pf39c2-social-pilot-index.md`'s "The Wall — sub-types" table) — if the
-weekly schedules tagged posts by sub-type and the data supports it, report which sub-type(s) the top
-posts in 8.2 actually were here; otherwise say plainly that sub-type was not tracked and this
-question also cannot be answered. TO BE FILLED AT WEEK 4.
+**On format:** degenerate, as anticipated. `Pf39c2-social-pilot-02a` D01/D02 collapsed the channel to
+The Wall before go-live, so there is no cross-format comparison. Wall sub-type (Thou Wall / Cascade /
+Scene) was not tagged in the weekly schedules, so which sub-type the top posts were cannot be
+answered either. The one cross-card signal week 1 suggested, that some cards do well everywhere, did
+not replicate: TikTok–YouTube rank correlation went +0.64..+0.86 → −0.14 → −0.68.
 
 ### 8.4 The decision rule — copied verbatim, do not renegotiate it here
 

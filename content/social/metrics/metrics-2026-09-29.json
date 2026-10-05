@@ -1,0 +1,30 @@
+[
+  {
+    "platform": "tiktok",
+    "postId": "7690444131310521620",
+    "format": "wall",
+    "publishedAt": "2026-09-29T11:30:00.000Z",
+    "views": 126,
+    "averagePercentWatched": null,
+    "likes": 1,
+    "comments": 0,
+    "shares": 0,
+    "saves": null,
+    "follows": 0,
+    "collectedAt": "2026-10-05T22:32:24.538Z"
+  },
+  {
+    "platform": "youtube",
+    "postId": "WOiM8FJvfwA",
+    "format": "wall",
+    "publishedAt": "2026-09-29T11:30:00.000Z",
+    "views": 250,
+    "averagePercentWatched": null,
+    "likes": 2,
+    "comments": 0,
+    "shares": 0,
+    "saves": null,
+    "follows": 0,
+    "collectedAt": "2026-10-05T22:32:24.825Z"
+  }
+]
