@@ -530,7 +530,7 @@ npx tsx social/src/metrics/hand-entry.ts \
 ```
 
 **Or hand the numbers to Claude in one paste**, the way weeks 2 onward were entered:
-`social/week2results.md` is the template — one line per post, grouped by day,
+`social/results-template.md` is the template — one line per post, grouped by day,
 `<tt|ig|yt> <M/D> <post id> views <n> likes <n> comments <n> shares <n> follows <n>`. Any value that
 is not a number (week 2's first paste had two `likes Z`) must be re-read off the screen, not guessed.
 A post id starting with `-` (YouTube's can) has to be passed as `--post-id=<id>`, or `parseArgs`
